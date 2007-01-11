@@ -30,12 +30,12 @@ void main()
   	Timer frame = new Timer();
 
 	// Create skybox and scene
-	Scene skybox = new Scene();
-	ModelNode sky = new ModelNode(skybox);
+	//Scene skybox = new Scene();
+	//ModelNode sky = new ModelNode(skybox);
 	//sky.setModel("sky/g2.ms3d");
 	Universe scene = new Universe();
 
-	scene.setSkybox(skybox);
+	//scene.setSkybox(skybox);
 	scene.setGlobalAmbient(.5, .5, 1);
 /*	scene.setClearColor(.7, .4, .2);
 	scene.setFogColor(.7, .4, .2);
