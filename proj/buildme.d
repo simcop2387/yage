@@ -10,7 +10,8 @@
  *
  * Examples:
  * ------
- * dmd -run buildme.d -release -run
+ * dmd -run buildme.d -release -clean -run
+ * dmd -run buildme.d -release -clean -run
  * ------
  *
  * TODO:
@@ -110,7 +111,9 @@ void clean()
 {	// Remove all intermediate files
 	char[][] files = scan(obj_path, ".obj")~scan(obj_path, ".o")~scan(obj_path, ".map")~scan(obj_path, bin_ext);
 	foreach(char[] file; files)
-		std.file.remove(file);
+	{	std.file.remove(file);
+		//writefln(file);
+	}
 	
 	// Remove all intermediate folders
 	char[][] folders = recls(obj_path);
@@ -186,7 +189,9 @@ void docsPreProcess()
 	chdir(doc_path);
 	char[][] docs = scan(".", ".html");
 	foreach (char[] doc; docs)
-		std.file.remove(doc);
+	{	std.file.remove(doc);
+		//writefln(doc);
+	}
 		
 	// Build modules file for candydoc
 	chdir(src_path);
@@ -201,6 +206,8 @@ void docsPreProcess()
 	std.file.write("modules.ddoc", modules);	
 }
 
+/**
+ * Rename and move documentation files, and delete intermediate candydoc files.*/
 void docsPostProcess()
 {
 	// Move all html files in doc_path to the same folder and rename with the "package.module" naming convention.
@@ -211,6 +218,7 @@ void docsPostProcess()
 		if (doc != dest)
 		{	copy(doc, dest);
 			std.file.remove(doc);
+			//writefln(doc);
 		}
 	}
 	
@@ -273,8 +281,13 @@ int main(char[][] args)
 	clean();
 	
 	// Clean docs and generate candydoc module
-	if (ddoc)
-		docsPreProcess();
+	try
+	{	if (ddoc)
+			docsPreProcess();
+	} catch (Exception e)
+	{	writefln(e);
+		writefln("Error with optional documentation step.  Continuing.");	
+	}
 
 	// Compile
 	if (!compile(_debug, _release, profile, ddoc, verbose))
@@ -296,12 +309,22 @@ int main(char[][] args)
 	}
 	
 	// Move Docs
-	if (ddoc)
-		docsPostProcess();
+	try
+	{	if (ddoc)
+			docsPostProcess();
+	} catch (Exception e)
+	{	writefln(e);
+		writefln("Error with optional documentation step.  Continuing.");	
+	}
 	
 	// Clean
-	if (_clean)
-		clean();	
+	try
+	{	if (_clean)
+			clean();	
+	} catch (Exception e)
+	{	writefln(e);
+		writefln("Error with optional clean step.  Continuing.");	
+	}
 	
 	writefln("The build completed successfully.");
 	if (!nolink)
