@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <material>
-  <layer ambient="CCCCCC" specular="404040" specularity="128" draw="line" width="12">
+  <layer ambient="CCCCCC" specular="404040" specularity="128">
   	<shader src="../shader/diffuse.vert" type="vertex" />
 	<shader src="../shader/diffuse-hdr.frag" type="fragment" />
 	<texture src="asteroid1.jpg" />
