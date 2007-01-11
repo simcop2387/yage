@@ -1,0 +1,20 @@
+<!--
+This is a reference material with sample nodes and all possible attributes set to the default values.
+Explanation of non-obvious values:
+Layers:
+	blend: can be none, add, multiply, and possibly more
+	sort: render these polygons (and all others with the sort property) in reverse z order.
+	cull: set the culling mode, can be front, back, neither
+	draw: can be polygon, line, or point
+	width: set the point size or line width
+-->
+<material maxlights="8">
+  <layer ambient="000000" diffuse="FFFFFF" specular="000000" emissive="000000" specularity="0"
+         blend="none" sort="false" cull="backface" draw="polygon" width="1"
+         clamp="false" filter="trilinear">
+    <!-- Multiple textures and shaders can be specified up to the hardware's limit -->
+    <shader type="vertex" src="example.vert" />
+    <shader type="fragment" src="example.frag" />    
+    <texture src="earth.png" compress="true" mipmap="true" />
+  </layer>
+</material>

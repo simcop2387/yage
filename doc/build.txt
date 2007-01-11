@@ -1,0 +1,17 @@
+
+[How to Build a C Library for Use in D]
+Ensure that dmc is setup on your system and there is a path variable
+to dmc's bin folder.
+Create header files with function prototypes of extern "C"
+Compile the project but don't link... c:\>dmc -c main.cpp
+The dmc compiler must be used because it outputs in omf binary format.
+Run lib.exe 
+type a name for your library file
+type +main.obj // or whatever your object files are
+Yes, create a new library.
+Ignore the .lst file.
+Type a name for your library file (again)
+now you can copy your lib file to the appropriate directory and run
+c:\>dmd.exe main.d library.lib
+and everything should link with no error messages
+You will receive an error message if you use another c++ compiler than dmc.

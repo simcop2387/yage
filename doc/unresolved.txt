@@ -1,0 +1,34 @@
+This is a list of bugs that I don't yet know the solution for.  If
+something just hasn't been implemented or fixed yet and the fix is
+known, it shouldn't appear on this list.
+
+
+[Unresolved]
+
+Q:  What happens when a light is added to a Node's list of lights and then
+light.remove() is called?
+A:  In theory, nothing, since it should hang around as long as that
+reference to it exists.
+
+When the window is sized below about 1/4th the size of it's starting size,
+SDL's grab input mode freezes the application until the mouse is released
+    
+It looks like an SDL_VIDEORESIZE event isn't sent when the window is
+maximized or minimized, but only when the borders are resized.\
+This causes viewport sizing problems.
+	
+How can I get the state of mouse buttons 6+ with SDL?
+
+How can I use the scroll wheel (mouse buttons 4-5)?
+
+How do I enable key repeating?  SDL_EnableKeyRepeat doesn't seem to work.
+
+Quaternion bug when rotating around exactly 360 degrees on a single axis?
+fixed?
+
+Dmd has trouble compiling incrementally with -O
+
+There is jumpiness in the rendering.  Every 10th or so frame takes almost exactly twice as long to render
+than others, when rendering the same thing.  Especially noticable when rendering lots of models
+The issue is in my timing code.  Lots of time spent in opengl functions makes
+std.perf and sdl_getticks inaccurate.  Need to test on linux

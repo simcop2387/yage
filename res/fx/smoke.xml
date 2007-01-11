@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<material>
+  <layer blend="average" diffuse="000000" emissive="FFFFFF">
+	<texture src="smoke.png" />
+  </layer>
+</material>
