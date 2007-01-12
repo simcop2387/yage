@@ -19,9 +19,8 @@ import yage.core.misc;
  * class so it can be created and destroyed without any dynamic memory allocation.
  * The Euler operations may be unreliable and should be used cautiously.
  * See_Also:
- * <a href="http://en.wikipedia.org/wiki/Transformation_matrix">Wikipedia: Transformation _Matrix</a><br>
- * <a href="http://www.gamedev.net/reference/articles/article1691.asp">The _Matrix and Quaternion Faq</a>
- * */
+ * <a href="http://en.wikipedia.org/wiki/Transformation_matrix">Wikipedia: Transformation Matrix</a><br>
+ * <a href="http://www.gamedev.net/reference/articles/article1691.asp">The Matrix and Quaternion Faq</a>*/
 struct Matrix
 {
 	/// The 16 values of the Matrix.
