@@ -62,15 +62,16 @@ char[][] scan(char[] directory, char[] ext)
 	return res;
 }
 
-// Return all directories in a path
+// Return all directories in a path, except hidden ones
 char[][] recls(char[] directory=".")
 {	char[][] list = listdir(directory);
-	char[][] res;
-	res ~= directory;
+	char[][] result;
+	result ~= directory;
 	foreach(char[] filename; list)
-		if(isdir(directory~sep~filename))
-			res ~= recls(directory~sep~filename);	
-	return res;
+	{	if(isdir(directory~sep~filename) && filename[0]!='.')
+			result ~= recls(directory~sep~filename);
+	}
+	return result;
 }
 
 /// Given relative path rel_path, returns an absolute path.
