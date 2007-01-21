@@ -35,7 +35,7 @@ class Ship
 		flyer = new Flyer(parent);
 		attach = new ModelNode(flyer.getPivot());
 		ship = new ModelNode(attach);
-		ship.setModel("space/fighter.ms3d");
+		ship.setModel("scifi/fighter.ms3d");
 		spring = new Spring(attach);
 
 		Material matl = new Material("fx/smoke.xml");

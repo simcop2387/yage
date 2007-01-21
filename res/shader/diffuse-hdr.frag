@@ -1,7 +1,6 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Eric Poggel
- * License:    Either LGPL or zlib/libpng
+ * License:    public domain
  * 
  * Same as diffuse.frag except with max_brightness to allow materials to be
  * brighter than 100%.  This probably requires floating point textures and a

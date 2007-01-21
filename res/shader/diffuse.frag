@@ -1,7 +1,6 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Eric Poggel
- * License:    Either LGPL or zlib/libpng
+ * License:    public domain
  * 
  * See documentation for diffuse.vert
  */

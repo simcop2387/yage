@@ -1,7 +1,6 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Eric Poggel
- * License:    Either LGPL or zlib/libpng
+ * License:    public domain
  * 
  * This shader re-invents the fixed-function OpenGL vertex and fragment
  * pipeline as closely as possible.  It does use a few odd hacks here and there

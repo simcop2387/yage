@@ -9,7 +9,9 @@
 module yage.core.misc;
 
 import std.math;
+import std.path;
 import std.random;
+import std.regexp;
 import std.string;
 import std.stdio;
 
@@ -100,6 +102,25 @@ bool almostEqual(float a, float b, float fudge=0.0001)
 		if (fabs((a-b)/b) <= fudge)
 			return true;
 	return false;
+}
+
+/**
+ * Resolve "../", "./", "//" and other redirections from any path.
+ * This function also ensures correct use of path separators for the current platform.*/
+char[] cleanPath(char[] path)
+{	char[] sep = "/";
+
+	//version(Windows)
+		path = replace(path, "/", sep);
+	//else
+		path = replace(path, "\\", sep);
+	path = replace(path, sep~"."~sep, sep);		// remove "./"
+
+	char[][] paths = std.string.split(path, sep);
+
+	path = std.string.join(paths, sep);
+
+	return path;
 }
 
 

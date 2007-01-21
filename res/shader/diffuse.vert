@@ -1,7 +1,6 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Eric Poggel
- * License:    Either LGPL or zlib/libpng
+ * License:    public domain
  * 
  * This shader re-invents the fixed-function OpenGL vertex and fragment
  * pipeline except with per-pixel lighting.  It suports fog and up to 2

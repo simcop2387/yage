@@ -12,14 +12,15 @@ import yage.ship;
 /// Current program entry point.  This may change in the future.
 void main()
 {
+
 	// Variables
 	float res = 1440;
 	float dtime=0;
   	float step = .1;
 
   	// Init
-	Device.init(800, 600, 32, false);
-	//Device.init(1440, 900, 32, true);
+	//Device.init(800, 600, 32, false);
+	Device.init(1440, 900, 32, true);
 	//Device.init(1024, 768, 32, true);
 	Resource.addPath("../res/");
 	Resource.addPath("../res2/");
@@ -30,13 +31,13 @@ void main()
   	Timer frame = new Timer();
 
 	// Create skybox and scene
-	//Scene skybox = new Scene();
-	//ModelNode sky = new ModelNode(skybox);
-	//sky.setModel("sky/g2.ms3d");
+	Scene skybox = new Scene();
+	ModelNode sky = new ModelNode(skybox);
+	sky.setModel("sky/sanctuary.ms3d");
 	Universe scene = new Universe();
 
-	//scene.setSkybox(skybox);
-	scene.setGlobalAmbient(.5, .5, 1);
+	scene.setSkybox(skybox);
+	scene.setGlobalAmbient(1, .5, 0);
 /*	scene.setClearColor(.7, .4, .2);
 	scene.setFogColor(.7, .4, .2);
 	scene.setFogDensity(.002);
@@ -45,7 +46,7 @@ void main()
 	// Camera
 	CameraNode camera = new CameraNode(scene);
 	Device.texture = camera.getTexture();
-	camera.setView(.1, 100000, 75, 0, 1);	// wide angle view
+	camera.setView(.1, 100000, 60, 0, 1);	// wide angle view
 
 	// Music
 	SoundNode music = new SoundNode(camera);
@@ -57,17 +58,17 @@ void main()
 	LightNode l1 = new LightNode(scene);
 	l1.setPosition(0, 0, -40);
 	l1.setDiffuse(1, .85, .7);
-	l1.setLightRadius(1200);
+	l1.setLightRadius(4800);
 
 	// Star
 	SpriteNode star = new SpriteNode(l1);
-	star.setMaterial("fx/flare1.xml");
-	star.setScale(250);
+	star.setMaterial("space/star.xml");
+	star.setScale(1200);
 
 	// Ship
 	Ship ship = new Ship(scene);
 	camera.setParent(ship.getCameraSpot());
-	ship.setPosition(Vec3f(0, 0, 300));
+	ship.setPosition(Vec3f(0, 0, 1300));
 	ship.getCameraSpot().setPosition(0, 2000, 10000);
 
 

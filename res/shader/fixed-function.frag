@@ -1,9 +1,6 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Eric Poggel
- * License:    Either LGPL or zlib/libpng
- * 
- * See documentation for fixed-function.vert
+ * License:    public domain
  */
 
 uniform sampler2D tex;

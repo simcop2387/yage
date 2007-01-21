@@ -67,7 +67,7 @@ class Universe : Scene
 		dist.z -= temp.z;
 
 		float d = dist.x*dist.x + dist.y*dist.y + dist.z*dist.z;
-		float force = step*80/d; // 1 should be G.
+		float force = step*8/d; // 1 should be G.
 
 		float af = force*a.mass;
 		float bf = force*b.mass;
