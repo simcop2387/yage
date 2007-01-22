@@ -97,7 +97,6 @@ class Image
 		source = Resource.resolvePath(filename);
 		Log.write("Loading image '" ~ source ~ "'.");
 		SDL_Surface *sdl_image;
-		std.stdio.writefln(source);
 		if ((sdl_image = IMG_Load(toStringz(source))) is null)
 			throw new Exception("Could not open image file '" ~ source ~ "'.");
 		width = sdl_image.w;

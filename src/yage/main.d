@@ -25,6 +25,9 @@ void main()
 	Resource.addPath("../res2/");
 	Resource.addPath("../res/shader");
 
+	//foreach (char[] a; Device.getExtensions())
+	//	writefln(a);
+
 	Timer time  = new Timer();
 	Timer delta = new Timer();
   	Timer frame = new Timer();
@@ -70,18 +73,8 @@ void main()
 	ship.setPosition(Vec3f(0, 0, 1300));
 	ship.getCameraSpot().setPosition(0, 2000, 10000);
 
-
 	// Universe
 	scene.generate(400, 2000);
-	Resource.material("fx/smoke.xml");
-
-	void update(float dtime)
-	{
-
-	}
-	Repeater updater = new Repeater(&update, 40);
-	updater.start();
-
 
 	// main loop
 	Log.write("Beginning rendering loop" ~"");
@@ -146,6 +139,6 @@ void main()
 			frame.reset();
 			fps = 0;
 		}
-		std.c.time.msleep(2);
+		std.c.time.usleep(2000);
 	}
 }

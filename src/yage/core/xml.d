@@ -1,7 +1,7 @@
 /**
  * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Andy Friesen, Eric Poggel
- * License:    Either <a href="lgpl.txt">LGPL</a> or <a href="zlib-libpng.txt">zlib/libpng</a>
+ * License:    <a href="lgpl.txt">LGPL</a>
  *
  * Xml contains functions and classes for reading, parsing, and writing xml
  * documents.

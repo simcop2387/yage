@@ -1,7 +1,7 @@
 /**
  * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Eric Poggel
- * License:    Either <a href="lgpl.txt">LGPL</a> or <a href="zlib-libpng.txt">zlib/libpng</a>
+ * License:    <a href="lgpl.txt">LGPL</a>
  *
  * Miscellaneous core types, functions, and templates that have no other place.
  */

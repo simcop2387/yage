@@ -58,7 +58,6 @@ abstract class Device
 	public:
 
 
-
 	/// Unload SDL at exit.
 	static ~this()
 	{	if (initialized)
@@ -172,6 +171,12 @@ abstract class Device
 		Log.write("Yage has been initialized.");
 	}
 
+	/// Return an array of all supported OpenGL extensions.
+	static char[][] getExtensions()
+	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
+		return split(exts, " ");
+	}
+
 
 	/** Searches to see if the given extension is supported in hardware.
 	 *  Spaces are pre and postpended to name because extension names can be
@@ -213,6 +218,9 @@ abstract class Device
 	static bool getSupport(int constant)
 	{	switch (constant)
 		{	case DEVICE_SHADER:
+				version(linux)	// Shaders often fail on linux due to poor driver support!  :(
+				{	return false;
+				}
 				static int s = -1;
 				if (s==-1)
 					s = checkExtension("GL_ARB_shader_objects");
