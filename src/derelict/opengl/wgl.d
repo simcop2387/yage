@@ -40,6 +40,8 @@ private
     import derelict.util.loader;
     import derelict.util.exception;
     import std.c.windows.windows;
+    
+    import std.string;
 }
 
 //------------------------------------------------------------------------------
@@ -114,7 +116,7 @@ package void loadPlatformGL(SharedLib lib)
 
 package void wglBindFunc(void **ptr, char[] funcName, SharedLib lib)
 {
-    void *func = wglGetProcAddress(cast(char*)funcName);
+    void *func = wglGetProcAddress(toStringz(funcName));
     if(!func)
         Derelict_HandleMissingProc(lib.name, funcName);
     else

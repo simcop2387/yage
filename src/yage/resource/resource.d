@@ -10,6 +10,7 @@ import std.file;
 import std.path;
 import std.stdio;
 import yage.core.horde;
+import yage.core.misc;
 import yage.resource.model;
 import yage.resource.material;
 import yage.resource.texture;
@@ -77,11 +78,10 @@ abstract class Resource
 			current_dir = tolower(current_dir);
 		}
 		if (std.file.exists(std.path.join(current_dir, path)))
-			return current_dir~path;
+			return cleanPath(current_dir~path);
 		foreach(char[] p; paths.array())
-		{	if (std.file.exists(std.path.join(p, path)))
-				return p~path;
-		}
+			if (std.file.exists(std.path.join(p, path)))
+				return cleanPath(p~path);
 		throw new Exception("The path '" ~ path ~ "' could not be resolved.");
 	}
 

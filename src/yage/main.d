@@ -12,7 +12,6 @@ import yage.ship;
 /// Current program entry point.  This may change in the future.
 void main()
 {
-
 	// Variables
 	float res = 1440;
 	float dtime=0;

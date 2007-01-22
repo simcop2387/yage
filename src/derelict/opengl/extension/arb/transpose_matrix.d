@@ -39,7 +39,7 @@ private
     import std.string;
 }
 
-bool enabled = false;
+private bool enabled = false;
 
 struct ARBTransposeMatrix
 {
@@ -57,7 +57,7 @@ struct ARBTransposeMatrix
             return false;
 
         enabled = true;
-        return true;;
+        return true;
     }
 
     static bool isEnabled()

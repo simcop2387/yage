@@ -35,10 +35,6 @@ public
 {
     import derelict.openal.altypes;
     import derelict.openal.alctypes;
-
-    version(DerelictAL_Static)
-        import derelict.openal.alstatic;
-    else
-        import derelict.openal.almanual;
+    import derelict.openal.alfuncs;
 }
 

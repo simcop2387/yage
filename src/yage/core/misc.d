@@ -8,10 +8,10 @@
 
 module yage.core.misc;
 
+import std.file;
 import std.math;
 import std.path;
 import std.random;
-import std.regexp;
 import std.string;
 import std.stdio;
 
@@ -104,22 +104,54 @@ bool almostEqual(float a, float b, float fudge=0.0001)
 	return false;
 }
 
+/// Given relative path rel_path, returns an absolute path.
+char[] absPath(char[] rel_path)
+{
+	// Remove filename
+	char[] filename;
+	int index = rfind(rel_path, sep);
+	if (index != -1)
+	{	filename = rel_path[rfind(rel_path, sep)..length];
+		rel_path = replace(rel_path, filename, "");
+	}
+
+	char[] cur_path = getcwd();
+	try {	// if can't chdir, rel_path is current path.
+		chdir(rel_path);
+	} catch {};
+	char[] result = getcwd();
+	chdir(cur_path);
+	return result~filename;
+}
+
 /**
  * Resolve "../", "./", "//" and other redirections from any path.
  * This function also ensures correct use of path separators for the current platform.*/
 char[] cleanPath(char[] path)
 {	char[] sep = "/";
 
-	//version(Windows)
-		path = replace(path, "/", sep);
-	//else
-		path = replace(path, "\\", sep);
+	path = replace(path, "\\", sep);
 	path = replace(path, sep~"."~sep, sep);		// remove "./"
 
 	char[][] paths = std.string.split(path, sep);
+	char[][] result;
 
-	path = std.string.join(paths, sep);
-
+	foreach (char[] token; paths)
+	{	switch (token)
+		{	case "":
+				break;
+			case "..":
+				if (result.length)
+				{	result.length = result.length-1;
+					break;
+				}
+			default:
+				result~= token;
+		}
+	}
+	path = std.string.join(result, sep);
+	delete paths;
+	delete result;
 	return path;
 }
 

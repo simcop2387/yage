@@ -8,7 +8,6 @@
 
 module yage.system.constant;
 
-
 const int DEVICE_SHADER					= 100;
 const int DEVICE_VBO					= 101;
 const int DEVICE_NON_2_TEXTURE			= 102;

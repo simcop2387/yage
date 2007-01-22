@@ -33,7 +33,7 @@ module derelict.opengl.glext;
 
 public
 {
-	// ARB
+    // ARB
     import derelict.opengl.extension.arb.pixel_buffer_object;
     import derelict.opengl.extension.arb.texture_float;
     import derelict.opengl.extension.arb.half_float_pixel;
@@ -68,8 +68,121 @@ public
     import derelict.opengl.extension.arb.texture_env_add;
     import derelict.opengl.extension.arb.multisample;
     import derelict.opengl.extension.arb.transpose_matrix;
-    
+    import derelict.opengl.extension.arb.multitexture;
+
     // EXT
+    import derelict.opengl.extension.ext.gpu_program_parameters;
+    import derelict.opengl.extension.ext.timer_query;
+    import derelict.opengl.extension.ext.framebuffer_multisample;
+    import derelict.opengl.extension.ext.framebuffer_blit;
+    import derelict.opengl.extension.ext.texture_sRGB;
+    import derelict.opengl.extension.ext.stencil_clear_tag;
+    import derelict.opengl.extension.ext.packed_depth_stencil;
     import derelict.opengl.extension.ext.framebuffer_object;
+    import derelict.opengl.extension.ext.texture_compression_s3tc;
+    import derelict.opengl.extension.ext.pixel_buffer_object;
+    import derelict.opengl.extension.ext.blend_equation_separate;
+    import derelict.opengl.extension.ext.texture_mirror_clamp;
+    import derelict.opengl.extension.ext.depth_bounds_test;
+    import derelict.opengl.extension.ext.stencil_two_side;
+    import derelict.opengl.extension.ext.shadow_funcs;
     import derelict.opengl.extension.ext.texture_filter_anisotropic;
-}
+    import derelict.opengl.extension.ext.texture_lod_bias;
+    import derelict.opengl.extension.ext.texture_env_add;
+    import derelict.opengl.extension.ext.four22_pixels;
+    import derelict.opengl.extension.ext.stencil_wrap;
+    import derelict.opengl.extension.ext.blend_func_separate;
+    import derelict.opengl.extension.ext.texture_env_combine;
+    import derelict.opengl.extension.ext.fog_coord;
+    import derelict.opengl.extension.ext.multi_draw_arrays;
+    import derelict.opengl.extension.ext.texture_perturb_normal;
+    import derelict.opengl.extension.ext.secondary_color;
+    import derelict.opengl.extension.ext.separate_specular_color;
+    import derelict.opengl.extension.ext.shared_texture_palette;
+    import derelict.opengl.extension.ext.pixel_transform_color_table;
+    import derelict.opengl.extension.ext.pixel_transform;
+    import derelict.opengl.extension.ext.bgra;
+    import derelict.opengl.extension.ext.light_texture;
+    import derelict.opengl.extension.ext.draw_range_elements;
+    import derelict.opengl.extension.ext.cull_vertex;
+    import derelict.opengl.extension.ext.clip_volume_hint;
+    import derelict.opengl.extension.ext.paletted_texture;
+    import derelict.opengl.extension.ext.color_subtable;
+    import derelict.opengl.extension.ext.point_parameters;
+    import derelict.opengl.extension.ext.abgr;
+    import derelict.opengl.extension.ext.compiled_vertex_array;
+    import derelict.opengl.extension.ext.Cg_shader;
+    import derelict.opengl.extension.ext.packed_pixels;
+    import derelict.opengl.extension.ext.rescale_normal;
+    import derelict.opengl.extension.ext.texture3D;
+    import derelict.opengl.extension.ext.texture_cube_map;
+    import derelict.opengl.extension.ext.texture_edge_clamp;
+    import derelict.opengl.extension.ext.texture_env_dot3;
+    import derelict.opengl.extension.ext.histogram;
+    import derelict.opengl.extension.ext.convolution;
+    import derelict.opengl.extension.ext.blend_color;
+    import derelict.opengl.extension.ext.blend_minmax;
+    import derelict.opengl.extension.ext.blend_subtract;
+
+    // ATI
+    import derelict.opengl.extension.ati.element_array;
+    import derelict.opengl.extension.ati.map_object_buffer;
+    import derelict.opengl.extension.ati.pn_triangles;
+    import derelict.opengl.extension.ati.vertex_array_object;
+    import derelict.opengl.extension.ati.vertex_attrib_array_object;
+    import derelict.opengl.extension.ati.vertex_streams;
+    import derelict.opengl.extension.ati.separate_stencil;
+    import derelict.opengl.extension.ati.draw_buffers;
+    import derelict.opengl.extension.ati.envmap_bumpmap;
+    import derelict.opengl.extension.ati.fragment_shader;
+    import derelict.opengl.extension.ati.texture_env_combine3;
+    import derelict.opengl.extension.ati.texture_float;
+    import derelict.opengl.extension.ati.texture_mirror_once;
+
+    // NV
+    import derelict.opengl.extension.nv.blend_square;
+    import derelict.opengl.extension.nv.copy_depth_to_color;
+    import derelict.opengl.extension.nv.depth_buffer_float;
+    import derelict.opengl.extension.nv.depth_clamp;
+    import derelict.opengl.extension.nv.evaluators;
+    import derelict.opengl.extension.nv.fence;
+    import derelict.opengl.extension.nv.float_buffer;
+    import derelict.opengl.extension.nv.fog_distance;
+    import derelict.opengl.extension.nv.fragment_program;
+    import derelict.opengl.extension.nv.fragment_program2;
+    import derelict.opengl.extension.nv.fragment_program4;
+    import derelict.opengl.extension.nv.fragment_program_option;
+    import derelict.opengl.extension.nv.framebuffer_multisample_coverage;
+    import derelict.opengl.extension.nv.geometry_program4;
+    import derelict.opengl.extension.nv.gpu_program4;
+    import derelict.opengl.extension.nv.half_float;
+    import derelict.opengl.extension.nv.light_max_exponent;
+    import derelict.opengl.extension.nv.multisample_filter_hint;
+    import derelict.opengl.extension.nv.occlusion_query;
+    import derelict.opengl.extension.nv.packed_depth_stencil;
+    import derelict.opengl.extension.nv.parameter_buffer_object;
+    import derelict.opengl.extension.nv.pixel_data_range;
+    import derelict.opengl.extension.nv.point_sprite;
+    import derelict.opengl.extension.nv.primitive_restart;
+    import derelict.opengl.extension.nv.register_combiners;
+    import derelict.opengl.extension.nv.register_combiners2;
+    import derelict.opengl.extension.nv.texgen_emboss;
+    import derelict.opengl.extension.nv.texgen_reflection;
+    import derelict.opengl.extension.nv.texture_compression_vtc;
+    import derelict.opengl.extension.nv.texture_env_combine4;
+    import derelict.opengl.extension.nv.texture_expand_normal;
+    import derelict.opengl.extension.nv.texture_rectangle;
+    import derelict.opengl.extension.nv.texture_shader;
+    import derelict.opengl.extension.nv.texture_shader2;
+    import derelict.opengl.extension.nv.texture_shader3;
+
+    // HP
+    import derelict.opengl.extension.hp.convolution_border_modes;
+
+    // SGI
+    import derelict.opengl.extension.sgi.color_matrix;
+
+    // SGIS
+    import derelict.opengl.extension.sgis.generate_mipmap;
+
+} // public

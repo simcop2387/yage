@@ -312,6 +312,33 @@ Either <a href="lgpl.txt">LGPL</a> or <a href="zlib-libpng.txt">zlib/libpng</a>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">char[] 
+<span class="currsymbol">absPath</span>
+<script type="text/javascript">explorer.outline.addDecl('absPath');</script>
+(char[] <span class="funcparam">rel_path</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Given relative path <span class="funcparam">rel_path</span>, returns an absolute path.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">cleanPath</span>
+<script type="text/javascript">explorer.outline.addDecl('cleanPath');</script>
+(char[] <span class="funcparam">path</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Resolve "../", "./", "//" and other redirections from any <span class="funcparam">path</span>.
+ This function also ensures correct use of <span class="funcparam">path</span> separators for the current platform.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
 <span class="currsymbol">formatString</span>
 <script type="text/javascript">explorer.outline.addDecl('formatString');</script>
 (...);
@@ -581,7 +608,7 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 13 11:47:07 2007
+		on Sun Jan 21 19:48:25 2007
 
 	</div>
 	

@@ -285,9 +285,9 @@ const GLdouble GLU_TESS_MAX_COORD           = 1.0e150;
 //==============================================================================
 // TYPES
 //==============================================================================
-struct GLUnurbs;
-struct GLUquadric;
-struct GLUtesselator;
+struct GLUnurbs {}
+struct GLUquadric {}
+struct GLUtesselator {}
 
 typedef GLUnurbs GLUnurbsObj;
 typedef GLUquadric GLUquadricObj;

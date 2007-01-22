@@ -6,7 +6,6 @@
 
 module yage.resource.image;
 
-
 import derelict.sdl.sdl;
 import derelict.sdl.image;
 import std.string;
@@ -18,7 +17,8 @@ import yage.system.device;
 import yage.system.constant;
 import yage.system.log;
 
-///
+
+/// A class for loading and manipulating images.
 class Image
 {
 	protected char[] source;
@@ -26,37 +26,43 @@ class Image
 	protected uint width, height;
 	protected int format;
 
-	///
+	/// Construct and load image data from filename.
 	this(char[] filename)
 	{	load(filename);
 	}
 
-	///
-	this (ubyte[] image)
+	/// Construct from image data in memory
+	this (ubyte[] image, uint width, uint height, int format)
 	{	data = image;
+		this.width = width;
+		this.height = height;
+		this.format = format;
 	}
 
-	///
+	/// Get the raw image data.
 	ubyte[] get()
 	{	return data;
 	}
 
-	///
+	/**
+	 * Get the format of the image.
+	 * See Also:
+	 * The IMAGE_FORMAT constants in system.constant. */
 	int getFormat()
 	{	return format;
 	}
 
-	///
+	/// Get the height of the image in pixels.
 	int getHeight()
 	{	return height;
 	}
 
-	///
+	/// Get the name of the file the image was loaded from, or an empty string if loaded from memory.
 	char[] getSource()
 	{	return source;
 	}
 
-	///
+	/// Get the width of the image in pixels.
 	int getWidth()
 	{	return width;
 	}
@@ -91,7 +97,8 @@ class Image
 		source = Resource.resolvePath(filename);
 		Log.write("Loading image '" ~ source ~ "'.");
 		SDL_Surface *sdl_image;
-		if ((sdl_image = IMG_Load(source.ptr)) is null)
+		std.stdio.writefln(source);
+		if ((sdl_image = IMG_Load(toStringz(source))) is null)
 			throw new Exception("Could not open image file '" ~ source ~ "'.");
 		width = sdl_image.w;
 		height= sdl_image.h;

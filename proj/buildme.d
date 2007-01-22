@@ -245,7 +245,7 @@ int main(char[][] args)
 	writefln("   -nolink    Compile but do not link.");	
 	writefln("   -profile   Compile in profiling code.");
 	writefln("   -release   Optimize, inline expand functions, and remove unit tests and asserts.");
-	writefln("   -run		Run when finished.");
+	writefln("   -run       Run when finished.");
 	writefln("   -verbose   Print all commands as they're being executed.");
 
 	// Create the paths we write to if they don't exist

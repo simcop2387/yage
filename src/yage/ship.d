@@ -104,9 +104,9 @@ class Ship
 		if (Input.keydown[SDLK_DOWN] || Input.keydown[SDLK_s])
 			flyer.accelerate(0, 0, speed/3);
 		if (Input.keydown[SDLK_LEFT] || Input.keydown[SDLK_a])
-			flyer.accelerate(-speed/6, 0, 0);
+			flyer.accelerate(-speed*6, 0, 0);
 		if (Input.keydown[SDLK_RIGHT] || Input.keydown[SDLK_d])
-			flyer.accelerate(speed/6, 0, 0);
+			flyer.accelerate(speed*6, 0, 0);
 
 		// Get mouse movement input to rotate camera
 		if (Input.getGrabMouse())

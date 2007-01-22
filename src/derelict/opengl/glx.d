@@ -45,8 +45,8 @@ extern (C):
 typedef int  Bool;
 typedef uint VisualID;
 
-struct __GLXcontextRec;
-struct __GLXFBConfigRec;
+struct __GLXcontextRec {}
+struct __GLXFBConfigRec {}
 
 typedef uint GLXContentID;
 typedef uint GLXPixmap;

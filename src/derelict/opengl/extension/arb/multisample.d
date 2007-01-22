@@ -39,7 +39,7 @@ private
     import std.string;
 }
 
-bool enabled = false;
+private bool enabled = false;
 
 struct ARBMultisample
 {
@@ -51,7 +51,7 @@ struct ARBMultisample
             return false;
 
         enabled = true;
-        return true;;
+        return true;
     }
 
     static bool isEnabled()

@@ -39,7 +39,7 @@ private
     import std.string;
 }
 
-bool enabled = false;
+private bool enabled = false;
 
 struct ARBDrawBuffers
 {

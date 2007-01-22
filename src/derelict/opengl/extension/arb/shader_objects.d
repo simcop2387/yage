@@ -186,7 +186,7 @@ alias char GLcharARB;
 alias uint GLhandleARB;
 
 version(Windows)
-	extern(Windows):
+    extern(Windows):
 else
     extern(C):
 
