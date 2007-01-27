@@ -172,7 +172,7 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 	}	}
 
 	char[] compile = "dmd -" ~ std.string.join(flags, " -") ~ " " ~std.string.join(sources, " ");	
-	bool success = !system(compile.ptr);
+	bool success = !system(toStringz(compile));
 	return success;
 }
 
@@ -189,7 +189,7 @@ bool link(bool verbose=false)
 	if (libs.length)
 		link ~= ","~bin_name~".map,"~std.string.join(libs, "+");
 
-	bool success = !system(link.ptr);
+	bool success = !system(toStringz(link));
 	return success;
 }
 
@@ -345,7 +345,7 @@ int main(char[][] args)
 
 	if (run)
 	{	chdir(bin_path);
-		system((bin_name ~ bin_ext).ptr);
+		system(toStringz(bin_name ~ bin_ext));
 		chdir(cur_path);
 	}
 
