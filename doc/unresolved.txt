@@ -32,3 +32,5 @@ There is jumpiness in the rendering.  Every 10th or so frame takes almost exactl
 than others, when rendering the same thing.  Especially noticable when rendering lots of models
 The issue is in my timing code.  Lots of time spent in opengl functions makes
 std.perf and sdl_getticks inaccurate.  Need to test on linux
+
+The ship's rotation values are sometimes nan

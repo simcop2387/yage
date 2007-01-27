@@ -1,3 +1,14 @@
+/**
+ * Copyright:  (c) 2006 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl.txt">LGPL</a>
+ *
+ * This module is not technically part of the engine, but merely uses it.
+ */
+
+module yage.main;
+
+
 import std.string;
 import std.math;
 import std.stdio;
@@ -13,22 +24,17 @@ import yage.ship;
 void main()
 {
 	// Variables
-	float res = 1440;
 	float dtime=0;
   	float step = .1;
 
   	// Init
-	//Device.init(800, 600, 32, false);
-	Device.init(1440, 900, 32, true);
+	Device.init(800, 600, 32, false);
 	//Device.init(1024, 768, 32, true);
+	//Device.init(1440, 900, 32, true);
 	Resource.addPath("../res/");
 	Resource.addPath("../res2/");
 	Resource.addPath("../res/shader");
 
-	//foreach (char[] a; Device.getExtensions())
-	//	writefln(a);
-
-	Timer time  = new Timer();
 	Timer delta = new Timer();
   	Timer frame = new Timer();
 
@@ -37,14 +43,8 @@ void main()
 	ModelNode sky = new ModelNode(skybox);
 	sky.setModel("sky/sanctuary.ms3d");
 	Universe scene = new Universe();
-
 	scene.setSkybox(skybox);
-	scene.setGlobalAmbient(1, .5, 0);
-/*	scene.setClearColor(.7, .4, .2);
-	scene.setFogColor(.7, .4, .2);
-	scene.setFogDensity(.002);
-	scene.enableFog(true);
-*/
+
 	// Camera
 	CameraNode camera = new CameraNode(scene);
 	Device.texture = camera.getTexture();
@@ -65,16 +65,17 @@ void main()
 	// Star
 	SpriteNode star = new SpriteNode(l1);
 	star.setMaterial("space/star.xml");
-	star.setScale(1200);
+	star.setScale(160);
+	star.setPosition(100, 0, 0);
 
 	// Ship
 	Ship ship = new Ship(scene);
-	camera.setParent(ship.getCameraSpot());
-	ship.setPosition(Vec3f(0, 0, 1300));
+	ship.setPosition(Vec3f(0, 1000, 1300));
 	ship.getCameraSpot().setPosition(0, 2000, 10000);
+	camera.setParent(ship.getCameraSpot());
 
 	// Universe
-	scene.generate(400, 2000);
+	scene.generate(300, 2000);
 
 	// main loop
 	Log.write("Beginning rendering loop" ~"");
@@ -84,13 +85,12 @@ void main()
 
 
 	int fps = 0;
-	int last;
-	Input.setGrabMouse(true);
-	scene.update(.1);
+	//Input.setGrabMouse(true);
 	while(!Input.exit)
 	{
 		dtime = delta.get();
 		delta.reset();
+		dtime = 0.03;
 
 		// check for exit
 		if (Input.keydown[SDLK_ESCAPE])
@@ -107,22 +107,21 @@ void main()
 		// Create Explosion
 		if (Input.keydown[SDLK_LSHIFT])
 		{
-			for (int i=0; i<100; i++)
+			for (int i=0; i<40; i++)
 			{	SpriteNode s = new SpriteNode(scene);
 				s.setMaterial("fx/flare1.xml");
 				s.setPosition(0, 0, 0);
-				s.setVelocity(random(-1, 1)*100, random(-1, 1)*100, random(-1, 1)*100);
-				s.setLifetime(random(8, 10));
-				s.setScale(3);
+				s.setVelocity(random(-1, 1)*500, random(-1, 1)*500, random(-1, 1)*500);
+				s.setLifetime(random(8, 20));
+				s.setScale(12);
 			}
 		}
-
-		camera.toTexture();
-		Device.render();
+		//star.setPosition(0, dtime*10000, 0);
 
 		Input.processInput();
 		scene.update(dtime);
-		ship.update(dtime);
+		camera.toTexture();
+		Device.render();
 
 		// Print framerate
 		fps++;
@@ -139,6 +138,5 @@ void main()
 			frame.reset();
 			fps = 0;
 		}
-		std.c.time.usleep(2000);
 	}
 }

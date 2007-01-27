@@ -273,11 +273,11 @@ private class VorbisFile : SoundFile
 	{	super(filename);
 
 		// Open the file
-		file = fopen(filename.ptr, "rb");
+		file = fopen(toStringz(filename), "rb");
 		int status = ov_open(file, &vf, null, 0);
 
 		version(linux){}
-		else  // this returns false errors on linux
+		else  // this returns false errors on linux?
 		{	if(status < 0)
 				throw new Exception("'"~filename~"' is not an ogg vorbis file.\n");
 		}

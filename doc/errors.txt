@@ -1,0 +1,11 @@
+
+
+[On exit in linux]
+FATAL: fglX11FreeBuffer: firegl_FreeBuffer() failed!
+
+[Attempting to run in linux]
+Fatal signal: Segmentation Fault (SDL Parachute Deployed)
+FATAL: fglX11FreeBuffer: firegl_FreeBuffer() failed!
+
+[buildme.d with -D]
+Error: unrecognized file extension ddoc

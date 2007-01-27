@@ -25,6 +25,10 @@ class Flyer
 		xdamp = ydamp = 1;
 	}
 
+	void setBase(Node base)
+	{	base = this.base;
+	}
+
 	Node getBase()
 	{	return base;
 	}

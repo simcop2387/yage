@@ -2,14 +2,16 @@
  * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
+ *
+ * This module is not technically part of the engine, but merely uses it.
  */
 
 module yage.ship;
 
+import std.stdio;
 import yage.core.all;
 import yage.node.basenode;
 import yage.node.node;
-import yage.node.light;
 import yage.node.model;
 import yage.node.sprite;
 import yage.node.sound;
@@ -19,41 +21,41 @@ import yage.resource.resource;
 import yage.util.flyer;
 import yage.util.spring;
 import yage.universe;
+import yage.gameobj;
 
-class Ship
+class Ship : GameObject
 {
-	Flyer flyer;
-	Spring spring;
-	Node attach;
-	ModelNode ship;
+	Node pitch;			// attached to this node to look up and down
+	ModelNode ship;		// attached to pitch and rolls left & right
+	Spring spring;		// spring to attach camera
 	SoundNode sound;
 
-	LightNode light;
+	float ldamp=.5, xdamp=2, ydamp=2;
 
 	this(BaseNode parent)
 	{	// Ship
-		flyer = new Flyer(parent);
-		attach = new ModelNode(flyer.getPivot());
-		ship = new ModelNode(attach);
+		super(parent);
+
+		pitch = new Node(this);
+
+		ship = new ModelNode(pitch);
 		ship.setModel("scifi/fighter.ms3d");
-		spring = new Spring(attach);
-
-		Material matl = new Material("fx/smoke.xml");
-
 		ship.setScale(.25);
+
+		spring = new Spring(ship);
 		spring.setDistance(Vec3f(0, 2, 6));
 		spring.setStiffness(1);
-		flyer.setDampening(.5);
-		flyer.setAngularDampening(2, 2);
+
+		//flyer.setDampening(.5);
+		//flyer.setAngularDampening(2, 2);
 
 		sound = new SoundNode(ship);
 		sound.setSound("sound/ship_eng.ogg");
 		sound.setLooping(true);
 
-		light = new LightNode(ship);
-		light.setDiffuse(1, .5, 0);
-		light.setLightRadius(0);
-		light.setPosition(0, -3, 0);
+		// Preload
+		new Material("fx/smoke.xml");
+		new Material("fx/flare1.xml");
 	}
 
 	ModelNode getShip()
@@ -64,87 +66,104 @@ class Ship
 	{	return spring.getTail();
 	}
 
-	void setPosition(Vec3f pos)
-	{	flyer.getBase.setPosition(pos);
-	}
-
 	void update(float delta)
 	{
-		if (spring.getStiffness()<24)
-			spring.setStiffness(spring.getStiffness*(delta+1));
+		super.update(delta);
+		//writefln(getRotation().y);
 
-		flyer.update(delta);
-		spring.update(delta);
-
-		// Move the flyer
+		// Set the acceleration speed
 		float speed = 100*delta;
+		if (Input.keydown[SDLK_q])
+		{
+			//writefln(getRotation());
+			speed *= 20; // Hyperdrive
+		}
+
+		if (Input.keyup[SDLK_j])
+		{	Input.keyup[SDLK_j] = false;
+			angularAccelerate(0, -0.0001, 0);
+		}
+		if (Input.keyup[SDLK_k])
+		{	Input.keyup[SDLK_k] = false;
+			angularAccelerate(0, 0.0001, 0);
+		}
+
+		// Accelerate forward
 		if (Input.keydown[SDLK_UP] || Input.keydown[SDLK_w])
-		{	// Engine smoke
-			flyer.accelerate(0, 0, -speed);
+		{
+			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
+			//accelerate(Vec3f(0, 0, -speed).rotate(Vec3f(0,  getRotation().y, 0)));
+			sound.play();
+
+			// Engine smoke
 			SpriteNode puff = new SpriteNode(ship.getScene());
 			puff.setMaterial(Resource.material("fx/smoke.xml"));
 			puff.setLifetime(.5);
 			puff.setScale(.4);
-			puff.setVelocity(flyer.getBase().getVelocity()*.9);
+			puff.setVelocity(getVelocity()*.9);
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 
 			puff = new SpriteNode(ship.getScene());
 			puff.setMaterial("fx/smoke.xml");
 			puff.setLifetime(.5);
 			puff.setScale(.4);
-			puff.setVelocity(flyer.getBase().getVelocity()*.9);
+			puff.setVelocity(getVelocity()*.9);
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-
-			sound.play();
 		}
 		else
 			sound.stop();
 
-
-		if (Input.keydown[SDLK_DOWN] || Input.keydown[SDLK_s])
-			flyer.accelerate(0, 0, speed/3);
+		// Accelerate left, right, and backward
 		if (Input.keydown[SDLK_LEFT] || Input.keydown[SDLK_a])
-			flyer.accelerate(-speed*6, 0, 0);
+			accelerate(Vec3f(-speed/6, 0, 0).rotate(pitch.getTransform()).rotate(getTransform()));
 		if (Input.keydown[SDLK_RIGHT] || Input.keydown[SDLK_d])
-			flyer.accelerate(speed*6, 0, 0);
+			accelerate(Vec3f(speed/6, 0, 0).rotate(pitch.getTransform()).rotate(getTransform()));
+		if (Input.keydown[SDLK_DOWN] || Input.keydown[SDLK_s])
+			accelerate(Vec3f(0, 0, speed/3).rotate(pitch.getTransform()).rotate(getTransform()));
 
-		// Get mouse movement input to rotate camera
+		// Rotate
 		if (Input.getGrabMouse())
-			flyer.angularAccelerate(-Input.mousedx/16.0, Input.mousedy/24.0);
+		{	angularAccelerate(0, -Input.mousedx/16.0, 0);
+			pitch.angularAccelerate(Input.mousedy/24.0, 0, 0);
+		}
 
-		// Maximum turning speed
-		flyer.getBase().setAngularVelocity(flyer.getBase().getAngularVelocity().clamp(-3, 3));
-		flyer.getPivot().setAngularVelocity(flyer.getPivot().getAngularVelocity().clamp(-3, 3));
-
-
+		/*
 		// Bank on turn
-		float turn = flyer.getBase().getAngularVelocity().y;
-		float cur = attach.getRotation().z;
+		float turn = getAngularVelocity().y;
+		float cur = ship.getRotation().z;
 		if (cur > 1 || cur < -1)	// Prevent banking too far
-			attach.setAngularVelocity(0, 0, -cur/16);
+			ship.setAngularVelocity(0, 0, -cur/16);
 		else
-			attach.setAngularVelocity(0, 0, (turn-cur));
+			ship.setAngularVelocity(0, 0, (turn-cur));
+
+		// Clamp turning speed
+		setAngularVelocity(getAngularVelocity().clamp(-3, 3));
+		pitch.setAngularVelocity(pitch.getAngularVelocity().clamp(-3, 3));
+		*/
+
+		// Apply linear and angular dampening
+		setVelocity(getVelocity().scale(maxf(1-delta*ldamp, 0.0f)));
+		pitch.setAngularVelocity(pitch.getAngularVelocity().scale(maxf(1-delta*xdamp, 0.0f)));
+		setAngularVelocity(getAngularVelocity().scale(maxf(1-delta*ydamp, 0.0f)));
+
+		// Update the spring
+		if (spring.getStiffness()<24)
+			spring.setStiffness(spring.getStiffness*(delta+1));
+		spring.update(delta);
 
 		// Fire a flare
 		if (Input.keydown[SDLK_SPACE])
-		{	light.setLightRadius(100);
-			SpriteNode flare = new SpriteNode(ship.getScene());
-			flare.setMaterial("fx/flare1.xml");
-
+		{
+			Flare flare = new Flare(ship.getScene());
 			flare.setPosition(ship.getAbsolutePosition());
-			flare.setVelocity(Vec3f(0, 0, -100).rotate(ship.getAbsoluteTransform())+flyer.getBase().getVelocity());
-			flare.setLifetime(5);
+			flare.setVelocity(Vec3f(0, 0, -400).rotate(ship.getAbsoluteTransform())+getVelocity());
 
 			SoundNode zap = new SoundNode(ship);
 			zap.setSound("sound/laser.wav");
 			zap.setLifetime(2);
 			zap.play();
-
-			LightNode light = new LightNode(flare);
-			light.setDiffuse(1, .5, 0);
-			light.setLightRadius(256);
 		}
-		else
-			light.setLightRadius(0);
+
+
 	}
 }

@@ -54,11 +54,12 @@ class Spring
 
 	/// Update the position of the floater relative to what it's attached to.
 	void update(float delta)
-	{	Vec3f dist = (head.getAbsolutePosition() + distance.rotate(head.getAbsoluteTransform())) - tail.getAbsolutePosition();
+	{	tail.setRotation(head.getAbsoluteRotation());
+
+		Vec3f dist = (head.getAbsolutePosition() + distance.rotate(head.getAbsoluteTransform())) - tail.getAbsolutePosition();
 		Vec3f vel = dist.scale(stiffness);
-		if (vel.scale(delta).length2 >= dist.length2)
-			vel = dist.scale(1/delta);
 		tail.setVelocity(vel);
-		tail.setRotation(head.getAbsoluteRotation());
+
+		//std.c.time.usleep(cast(int)(yage.core.misc.random(0, .1)*1000000));
 	}
 }

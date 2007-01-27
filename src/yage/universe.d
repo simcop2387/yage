@@ -1,3 +1,11 @@
+/**
+ * Copyright:  (c) 2006 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl.txt">LGPL</a>
+ *
+ * This module is not technically part of the engine, but merely uses it.
+ */
+
 module yage.universe;
 
 import std.math;
@@ -6,39 +14,32 @@ import std.stdio;
 import yage.core.horde;
 import yage.core.misc;
 import yage.core.vector;
-import yage.resource.resource;
-import yage.resource.model;
 import yage.node.basenode;
 import yage.node.node;
-import yage.node.model;
+import yage.resource.resource;
+import yage.resource.model;
 import yage.node.scene;
+import yage.node.sprite;
+import yage.node.model;
+import yage.node.light;
+import yage.gameobj;
+
 
 int step = 32;
 
-class GameObject : Node
-{
-	float mass;
-	int type = 0;
 
-	this (Universe scene)
-	{	super(scene);
-		ModelNode rock = new ModelNode(this);
-		rock.setModel(Resource.model("space/asteroid1.ms3d"));
-	}
-
-	float getRadius()
-	{	return pow(mass, .3333)*.75*4;
-	}
-
-	void setMass(float mass)
-	{	this.mass = mass;
-		children[0].setScale(pow(mass, .33333)/2);
-	}
-
-}
-
+/*
+ * A scene with extra methods to manage a space simulation. */
 class Universe : Scene
 {
+	Horde!(GameObject) gravity_objs;
+
+	this()
+	{	gravity_objs = new Horde!(GameObject);
+		super();
+	}
+
+	// Generate a random universe
 	void generate(int number, float radius)
 	{
 		for (int i=0; i<number; i++)
@@ -48,7 +49,7 @@ class Universe : Scene
 			float height = random(-radius, radius)*random(0, 1)*random(0, 1)/16;
 			Vec3f position = Vec3f(sin(angle)*dist, height, cos(angle)*dist);
 
-			GameObject ast = new GameObject(this);
+			Asteroid ast = new Asteroid(this);
 			ast.setPosition(position);
 			ast.setVisible(true);
 			ast.setMass(random(1, 3));
@@ -56,6 +57,7 @@ class Universe : Scene
 		}
 	}
 
+	// Apply forces and accelerate two objects
 	void applyForces(GameObject a, GameObject b)
 	{
 		Vec3f dist;
@@ -67,7 +69,7 @@ class Universe : Scene
 		dist.z -= temp.z;
 
 		float d = dist.x*dist.x + dist.y*dist.y + dist.z*dist.z;
-		float force = step*8/d; // 1 should be G.
+		float force = step*20/d; // constant should be G?
 
 		float af = force*a.mass;
 		float bf = force*b.mass;
@@ -88,6 +90,7 @@ class Universe : Scene
 		b1.z += dist.z*af;
 	}
 
+	// Check collision of two objects
 	bool checkCollision(Node a, Node b)
 	{	Vec3f a1;
 		a1.v[0..3] = a.getTransformPtr().v[12..15];
@@ -102,31 +105,25 @@ class Universe : Scene
 		return dist < radius*radius;
 	}
 
-	void join(Node a, Node b)
-	{
-		if (a.getType() != "yage.universe.GameObject" || b.getType() != "yage.universe.GameObject")
+	// Handle the collision of two objects
+	void collide(Node a, Node b)
+	{	if (a.getType() != "yage.universe.GameObject" || b.getType() != "yage.universe.GameObject")
 			return;
 
 		GameObject c = cast(GameObject)a;
 		GameObject d = cast(GameObject)b;
 
-		Vec3f pos = (c.getPosition()*c.mass + d.getPosition()*d.mass) / (c.mass+d.mass);
-		Vec3f rot = (c.getRotation()*c.mass + d.getRotation()*d.mass) / (c.mass+d.mass);
-		Vec3f vel = (c.getVelocity()*c.mass + d.getVelocity()*d.mass) / (c.mass+d.mass);
-		Vec3f ang = (c.getAngularVelocity()*c.mass + d.getAngularVelocity()*d.mass) / (c.mass+d.mass);
-		float mass = c.mass+d.mass;
-
 		c.remove();
 		d.remove();
-		GameObject e = new GameObject(this);
-		e.setPosition(pos);
-		e.setPosition(rot);
-		e.setVelocity(vel);
-		e.setAngularVelocity(ang);
-		e.setMass(mass);
-
+		Asteroid e = new Asteroid(this);
+		e.setPosition((c.getPosition()*c.mass + d.getPosition()*d.mass) / (c.mass+d.mass));
+		e.setRotation((c.getRotation()*c.mass + d.getRotation()*d.mass) / (c.mass+d.mass));
+		e.setVelocity((c.getVelocity()*c.mass + d.getVelocity()*d.mass) / (c.mass+d.mass));
+		e.setAngularVelocity((c.getAngularVelocity()*c.mass + d.getAngularVelocity()*d.mass) / (c.mass+d.mass));
+		e.setMass(c.mass+d.mass);
 	}
 
+	// Override scene.update() to apply gravity and collide Nodes.
 	void update(float delta)
 	{
 		// Apply forces to all first-level children that are GameObjects,
@@ -137,9 +134,9 @@ class Universe : Scene
 			q = 0;
 		for (int i=0; i<children.length; i++)
 		{	if (i%step==q)
-				if (children[i].getType() == "yage.universe.GameObject")
+				if (children[i].getType() == "yage.gameobj.Asteroid")
 					for (int j=i+1; j<children.length; j++)
-						if (children[j].getType() == "yage.universe.GameObject")
+						if (children[j].getType() == "yage.gameobj.Asteroid")
 							applyForces(cast(GameObject)children[j], cast(GameObject)children[i]);
 		}
 
@@ -159,14 +156,14 @@ class Universe : Scene
 			// While there are Nodes to the left and the distance is less than this Node's radius
 			for (int j=i-1; j>0 && r > abs(x-children[j].getPosition().x); j--)
 			{	if (checkCollision(children[i], children[j]))
-				{	join(children[i], children[j]);
+				{	collide(children[i], children[j]);
 					break;
 			}	}
 
 			// Check Nodes to the right of this Node
 			for (int j=i+1; j<children.length && r > abs(children[j].getPosition().x-x); j++)
 			{	if (checkCollision(children[i], children[j]))
-				{	join(children[i], children[j]);
+				{	collide(children[i], children[j]);
 					break;
 			}	}
 		}
@@ -174,8 +171,5 @@ class Universe : Scene
 		// Normal update
 		super.update(delta);
 	}
-
-
-
 
 }
