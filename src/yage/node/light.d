@@ -97,8 +97,8 @@ class LightNode : Node
 	{	ambient.set(r, g, b, 0);
 	}
 	/// Set the ambient color of the light.
-	void setAmbient(Vec4f _ambient)
-	{	ambient = _ambient;
+	void setAmbient(Vec4f ambient)
+	{	this.ambient = ambient;
 	}
 
 
@@ -111,8 +111,8 @@ class LightNode : Node
 	{	diffuse.set(r, g, b, 0);
 	}
 	/// Set the diffuse color of the light.
-	void setDiffuse(Vec4f _diffuse)
-	{	diffuse = _diffuse;
+	void setDiffuse(Vec4f diffuse)
+	{	this.diffuse = diffuse;
 	}
 
 
@@ -125,8 +125,8 @@ class LightNode : Node
 	{	specular.set(r, g, b, 0);
 	}
 	/// Set the specular color of the light.
-	void setSpecular(Vec4f _specular)
-	{	specular = _specular;
+	void setSpecular(Vec4f specular)
+	{	this.specular = specular;
 	}
 
 

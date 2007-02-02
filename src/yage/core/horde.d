@@ -34,7 +34,6 @@ class Horde(T)
 	protected T[] elements;		// An array of all elements in the Horde, + extra length in reserve for new elements
 	protected uint count;		// number of elements currently in the horde.
 	protected uint _reserve;	// reserve at least this much space in the array.
-	protected bool _ordered=false;// maintian order upon remove, sacrificing constant time removal.
 
 	unittest
 	{/*
@@ -55,8 +54,15 @@ class Horde(T)
 	/// Construct and reserve size
 	this(uint size)
 	{	elements.length = size;
-		_reserve = size;
 		count=0;
+		_reserve = size;
+	}
+
+	/// Construct from an existing array.
+	this (T[] array)
+	{	elements = array;
+		count = elements.length;
+		_reserve = 0;
 	}
 
 	private synchronized void sizeup()

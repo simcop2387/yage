@@ -50,7 +50,7 @@ class Repeater : Thread
 			{	func(1/frequency);
 				callcount++;
 			}
-			std.c.time.usleep(cast(uint)(1000*1000 / (frequency/*-a.get()*/) ));
+			//std.c.time.usleep(cast(uint)(1000*1000 / (frequency/*-a.get()*/) ));
 		}
 		return 0;
 	}

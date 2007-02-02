@@ -71,11 +71,18 @@ void main()
 	// Ship
 	Ship ship = new Ship(scene);
 	ship.setPosition(Vec3f(0, 1000, 1300));
-	ship.getCameraSpot().setPosition(0, 2000, 10000);
+	ship.getCameraSpot().setPosition(0, 1000, 1300);
 	camera.setParent(ship.getCameraSpot());
 
 	// Universe
-	scene.generate(300, 2000);
+	scene.generate(400, 2000);
+
+	void doSomething()
+	{	// Why do some functions work and others cause access violations?
+		star.setVelocity(1, 2, 3);
+		star.setVisible(true);		// causes access violation
+	}
+	star.onUpdate(&doSomething);
 
 	// main loop
 	Log.write("Beginning rendering loop" ~"");
@@ -83,14 +90,13 @@ void main()
 	delta.reset();
 	Input.mousedx = Input.mousedy = 0;
 
-
 	int fps = 0;
 	//Input.setGrabMouse(true);
 	while(!Input.exit)
 	{
 		dtime = delta.get();
 		delta.reset();
-		dtime = 0.03;
+		//dtime = 0.03;
 
 		// check for exit
 		if (Input.keydown[SDLK_ESCAPE])
@@ -119,6 +125,7 @@ void main()
 		//star.setPosition(0, dtime*10000, 0);
 
 		Input.processInput();
+		ship.getSpring().update(dtime);
 		scene.update(dtime);
 		camera.toTexture();
 		Device.render();

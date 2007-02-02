@@ -283,14 +283,6 @@ private class VorbisFile : SoundFile
 		}
 		vorbis_info *vi = ov_info(&vf, -1);
 
-		// Read the comments
-		/*char **ptr = ov_comment(&vf, -1).user_comments;
-		for(int i=0; *ptr; i++)
-		{	++ptr;
-			comments.length = i+1;
-			comments[i] = .toString(*ptr);
-		}*/
-
 		// Get relevant data from the file
 		channels = vi.channels;
 		frequency = vi.rate;
@@ -312,7 +304,7 @@ private class VorbisFile : SoundFile
 			return null;
 		ov_pcm_seek(&vf, offset/(bools/8)/channels);
 		buffer.length = _size;
-		long ret = 0;
+		int ret = 0;
 		while (ret<_size)	// because it may take several requests to fill our buffer
 			ret += ov_read(&vf, cast(byte*)buffer[ret..length], _size-ret, 0, 2, 1, &current_section);
 		return buffer;

@@ -8,6 +8,7 @@ module yage.node.node;
 
 import std.math;
 import std.stdio;
+import std.traits;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
@@ -52,8 +53,8 @@ class Node : BaseNode
 {
 	protected bool 	onscreen = true;		// used internally by cameras to mark if they can see this node.
 	protected bool 	visible = true;
-	protected bool	lit = true;				// if not lit, lighting calculations are skipped
 	protected Vec3f	scale;
+	protected Vec4f color;					// RGBA, used for glColor4f()
 
 	protected LightNode[] lights;			// Lights that affect this Node
 	protected float[]     intensities;	// stores the brightness of each light on this Node.
@@ -77,7 +78,6 @@ class Node : BaseNode
 		debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
 		this(parent);
 		setVisible(original.visible);
-		setLit(original.lit);
 
 		transform = original.transform;
 		linear_velocity = original.linear_velocity;
@@ -87,25 +87,24 @@ class Node : BaseNode
 
 		// Also recursively copy every child
 		foreach (inout Node c; original.children.array())
-		{	// Node is abstract and Scene is never a child
-			if (c.getType() == "CameraNode")
-				new CameraNode(this, cast(CameraNode)c);
-			if (c.getType() == "GraphNode")
-				new GraphNode(this, cast(GraphNode)c);
-			if (c.getType() == "LightNode")
-				new LightNode(this, cast(LightNode)c);
-			if (c.getType() == "ModelNode")
-				new ModelNode(this, cast(ModelNode)c);
-			if (c.getType() == "SoundNode")
-				new SoundNode(this, cast(SoundNode)c);
-			if (c.getType() == "SpriteNode")
-				new SpriteNode(this, cast(SpriteNode)c);
+		{	// Scene and BaseNode are never children
+			// Is there a better way to do this?
+			switch (c.getType())
+			{	case "yage.node.node.Node": new Node(this, cast(Node)c); break;
+				case "yage.node.camera.CameraNode": new CameraNode(this, cast(CameraNode)c); break;
+				case "yage.node.graph.GraphNode": new GraphNode(this, cast(GraphNode)c); break;
+				case "yage.node.light.LightNode": new LightNode(this, cast(LightNode)c); break;
+				case "yage.node.model.ModelNode": new ModelNode(this, cast(ModelNode)c); break;
+				case "yage.node.sound.SoundNode": new SoundNode(this, cast(SoundNode)c); break;
+				case "yage.node.sprite.SpriteNode": new SpriteNode(this, cast(SpriteNode)c); break;
+				default:
+			}
 		}
 	}
 
 	/// Hopefully a less volatile version of the destructor.
 	void remove()
-	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
 		if (index != -1)
 		{	parent.children.remove(index);
 			if (index < parent.children.length)
@@ -138,6 +137,13 @@ class Node : BaseNode
 		return this;
 	}
 
+	Vec4f getColor()
+	{	return color;
+	}
+
+	void setColor(Vec4f color)
+	{	this.color = color;
+	}
 
 	/// Get the radius of this Node's culling sphere.
 	float getRadius()
@@ -148,14 +154,12 @@ class Node : BaseNode
 	Vec3f getScale()
 	{	return scale;
 	}
-
 	/**
 	 * Set the scale of this Node in the x, y, and z directions.
 	 * The default is (1, 1, 1) */
 	void setScale(Vec3f scale)
 	{	this.scale = scale;
 	}
-
 	/**
 	 * Set the scale of this Node in the x, y, and z directions.
 	 * The default is (1, 1, 1) */
@@ -163,17 +167,6 @@ class Node : BaseNode
 	{	this.scale.set(scale);
 	}
 
-	/// Is this node affected by lighting?
-	bool getLit()
-	{	return lit;
-	}
-
-	/**
-	 * Set whether this Node is affected by lighting.
-	 * If unlit, it will appear at full brightness unless affected by a shader. */
-	void setLit(bool lit)
-	{	this.lit = lit;
-	}
 
 	/// Is rendering enabled for this node?
 	bool getVisible()
@@ -183,7 +176,8 @@ class Node : BaseNode
 	/** Set whether this Node will be renered.  This has nothing to do with frustum culling.
 	 *  Setting a Node as invisible will not make its children invisible also. */
 	void setVisible(bool visible)
-	{	this.visible = visible;
+	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+		this.visible = visible;
 	}
 
 	/** Get whether this node is inside the view frustum and large enough to be drawn by
@@ -358,7 +352,8 @@ class Node : BaseNode
 	Vec3f getVelocity()
 	{	return linear_velocity;
 	}
-	/// Get the absolute velocity of this Node. (TODO: what about velicity_dirty ?)
+
+	/// Get the absolute velocity of this Node. TODO: this can be incorrect.
 	Vec3f getAbsoluteVelocity()
 	{	if (transform_dirty)
 			calcTransform();
@@ -396,17 +391,12 @@ class Node : BaseNode
 	{	angular_velocity = rotation.toAxis();
 	}
 
-
+	/*
 	/// Set the angular velocity axis relative to the absolute worldspace.
 	void setAngularVelocityAbsolute(float x, float y, float z)
 	{	setAngularVelocityAbsolute(Vec3f(x, y, z));
 	}
-	/// Set the angular velocity axis relative to the absolute worldspace.
-	void setAngularVelocityAbsolute(Vec3f axis)
-	{	// Inefficient!  An in-place rotateInverse() would be much faster.
-		angular_velocity = axis.rotate(getAbsoluteTransform().inverse());
-	}
-
+	*/
 
 	/// Accelerate the Node in this direction.
 	void accelerate(float x, float y, float z)
@@ -454,8 +444,7 @@ class Node : BaseNode
 	 * Accelerate the rotation of this Node, interpreting the acceleration axis
 	 * in terms of absolute worldspace coordinates. */
 	void angularAccelerateAbsolute(Vec3f axis)
-	{	angularAccelerateAbsolute(axis.x, axis.y, axis.z);
-		angular_velocity += axis.rotate(getAbsoluteTransform().inverse());
+	{	angular_velocity += axis.rotate(getAbsoluteTransform().inverse());
 	}
 
 
@@ -464,7 +453,8 @@ class Node : BaseNode
 	 * Render this Node as a cube.  Note that this Node type is invisible by default.
 	 * This function is called automatically as needed by camera.toTexture().*/
 	void render()
-	{	// Front Face
+	{
+		// Front Face
 		glTexCoord2f(0, 1); glVertex3f(-1, -1, 1);
 		glTexCoord2f(1, 1); glVertex3f( 1, -1, 1);
 		glTexCoord2f(1, 0); glVertex3f( 1,  1, 1);
@@ -495,8 +485,6 @@ class Node : BaseNode
 		glTexCoord2f(1, 0); glVertex3f(-1,  1,  1);
 		glTexCoord2f(0, 0); glVertex3f(-1,  1, -1);
 		glEnd();
-		glScalef(1/scale.x, 1/scale.y, 1/scale.z);
-
 	}
 
 	/**
@@ -505,7 +493,7 @@ class Node : BaseNode
 	void update(float delta)
 	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
 
-		// If the object has a linear velocity
+		// Move by linear velocity if not zero.
 		if (linear_velocity.length2() != 0)
 			move(linear_velocity*delta);
 

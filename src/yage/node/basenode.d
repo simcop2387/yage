@@ -7,6 +7,7 @@
 module yage.node.basenode;
 
 import std.stdio;
+import std.traits;
 import yage.core.horde;
 import yage.core.misc;
 import yage.node.node;
@@ -39,13 +40,15 @@ abstract class BaseNode
 	bool		velocity_dirty=true;	// The absolute velocity vectors need to be recalculated.
 
 	float lifetime = float.infinity;	// in seconds
-	BaseNode[] path;	// used in calcTransform
+	BaseNode[] path;					// used in calcTransform
+
+	void delegate() on_update = null;	// called on update
 
 	public:
 
 	/// Construct.
 	this()
-	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
 		children = new Horde!(Node);
 	}
 
@@ -91,6 +94,10 @@ abstract class BaseNode
 	{	return this.classinfo.name;
 	}
 
+	/// Get the time before the Node will be removed.
+	float getLifetime()
+	{	return lifetime;
+	}
 	/**
 	 * The Node will be removed (along with all of its children) after a given time.
 	 * Params:
@@ -100,10 +107,84 @@ abstract class BaseNode
 	{	lifetime = seconds;
 	}
 
-	/// Get the time before the Node will be removed.
-	float getLifetime()
-	{	return lifetime;
+	/**
+	 * Set a function that will be called every time this Node is updated.
+	 * Params:
+	 * on_update = the function that will be called.  Use null as an argument to clear
+	 * the function.
+	 * Bugs:
+	 * Certain Node methods cause access violations.  Perhaps this is a dmd bug?
+	 * Example:
+	 * --------------------------------
+	 * Node a = new Node(scene);
+	 *
+	 * void doSomething()
+	 * {	self.setScale(a.getLifetime()); // Get smaller over time
+	 * }
+	 * a.setLifetime(5);
+	 * a.onUpdate(&doSomething);
+	 * --------------------------------*/
+	void onUpdate(void delegate() on_update)
+	{	this.on_update = on_update;
 	}
+
+	/// Return a string representation of this Node for human reading.
+	char[] toString()
+	{	return toString(false);
+	}
+
+	/**
+	 * Return a string representation of this Node for human reading.
+	 * Params:
+	 * recurse = Print this Node's children as well. */
+	char[] toString(bool recurse)
+	{	static int indent;
+		char[] pad = new char[indent*3];
+		pad[0..length] = ' ';
+
+		char[] result = pad ~ "[" ~ getType() ~ "]\n";
+		if(parent)
+			result ~= pad~"Parent  : " ~ parent.getType() ~ "\n";
+		result ~= pad~"Position: " ~ Vec3f(transform.v[12..15]).toString() ~ "\n";
+		result ~= pad~"Rotation: " ~ transform.toAxis().toString() ~ "\n";
+		result ~= pad~"Velocity: " ~ transform.toAxis().toString() ~ "\n";
+		result ~= pad~"Angular : " ~ transform.toAxis().toString() ~ "\n";
+		result ~= pad~"Children: " ~ std.string.toString(children.length) ~ "\n";
+		delete pad;
+
+		if (recurse)
+		{	indent++;
+			foreach (Node c; children.array())
+				result ~= c.toString(recurse);
+			indent--;
+		}
+
+		return result;
+	}
+
+	/// Update the positions and rotations of this Node and all children by delta seconds.
+	void update(float delta)
+	{
+		debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+
+		// Call the onUpdate() function
+		if (on_update !is null)
+			on_update();
+
+		// Decrement lifetime and remove children with < 0 lifetime.
+		// We iterate in reverse to ensure we hit all of them, since the last item
+		// is moved over the current item when removing from a Horde.
+		lifetime-= delta;
+		int i = children.length-1;
+		while (i>=0)
+		{	if (children[i].lifetime<=0)
+				children[i].remove();
+			else
+				children[i].update(delta); //may as well update it in the same loop
+			i--;
+		}
+	}
+
 
 	/**
 	 * Calculate and store the absolute transformation matrices of this Node up to the first node
@@ -175,61 +256,6 @@ abstract class BaseNode
 			}
 		}
 		path.length = 0;
-	}
-
-	/// Return a string representation of this Node for human reading.
-	char[] toString()
-	{	return toString(false);
-	}
-
-	/**
-	 * Return a string representation of this Node for human reading.
-	 * Params:
-	 * recurse = Print this Node's children as well. */
-	char[] toString(bool recurse)
-	{	static int indent;
-		char[] pad = new char[indent*3];
-		pad[0..length] = ' ';
-
-		char[] result = pad ~ "[" ~ getType() ~ "]\n";
-		if(parent)
-			result ~= pad~"Parent  : " ~ parent.getType() ~ "\n";
-		result ~= pad~"Position: " ~ Vec3f(transform.v[12..15]).toString() ~ "\n";
-		result ~= pad~"Rotation: " ~ transform.toAxis().toString() ~ "\n";
-		result ~= pad~"Velocity: " ~ transform.toAxis().toString() ~ "\n";
-		result ~= pad~"Angular : " ~ transform.toAxis().toString() ~ "\n";
-		result ~= pad~"Children: " ~ std.string.toString(children.length) ~ "\n";
-		delete pad;
-
-		if (recurse)
-		{	indent++;
-			foreach (Node c; children.array())
-				result ~= c.toString(recurse);
-			indent--;
-		}
-
-		return result;
-	}
-
-	/// Update the positions and rotations of this Node and all children by delta seconds.
-	void update(float delta)
-	{
-		debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
-
-		// Decrement lifetime and remove children with < 0 lifetime.
-		// We iterate in reverse to ensure we hit all of them, since the last item
-		// is moved over the current item when removing from a Horde.
-		lifetime-= delta;
-		int i = children.length-1;
-		while (i>=0)
-		{	if (children[i].lifetime<=0)
-				children[i].remove();
-			i--;
-		}
-
-		// Children
-		foreach(Node c; children.array())
-			c.update(delta);
 	}
 
 }

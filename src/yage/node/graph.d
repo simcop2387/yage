@@ -216,8 +216,6 @@ class GraphNode : Node
 		Vec3f[] normals = model.normals;
 		Vec2f[] texcoords = model.texcoords;
 
-		glScalef(scale.x, scale.y, scale.z);
-
 		// Use the VBO Extension
 		if (model.cached)
 		{	glBindBufferARB(GL_ARRAY_BUFFER, model.getVerticesVBO());
@@ -255,6 +253,6 @@ class GraphNode : Node
 		}
 		else
 			draw();
-		glScalef(1/scale.x, 1/scale.y, 1/scale.z);
+
 	}
 }

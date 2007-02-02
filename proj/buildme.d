@@ -145,7 +145,7 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 	{	flags~="debug";
 		flags~="g";
 		//flags~="gc";
-		//flags~="unittest";
+		
 	}else if (_release)
 	{	flags~="O";
 		flags~="inline";
@@ -157,6 +157,8 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 	{	flags~="D";
 		flags~="Dd"~doc_path;
 	}
+	if (!_release)
+		flags~="unittest";
 	flags~="I"~imp_path;
 	flags~="od"~obj_path;	// Set the object output directory
 	flags~="op";			// Preserve path of object files, otherwise duplicate names will overwrite one another!

@@ -46,9 +46,6 @@ class Ship : GameObject
 		spring.setDistance(Vec3f(0, 2, 6));
 		spring.setStiffness(1);
 
-		//flyer.setDampening(.5);
-		//flyer.setAngularDampening(2, 2);
-
 		sound = new SoundNode(ship);
 		sound.setSound("sound/ship_eng.ogg");
 		sound.setLooping(true);
@@ -66,48 +63,45 @@ class Ship : GameObject
 	{	return spring.getTail();
 	}
 
+	Spring getSpring()
+	{	return spring;
+	}
+
 	void update(float delta)
 	{
 		super.update(delta);
-		//writefln(getRotation().y);
 
 		// Set the acceleration speed
 		float speed = 100*delta;
 		if (Input.keydown[SDLK_q])
-		{
-			//writefln(getRotation());
 			speed *= 20; // Hyperdrive
-		}
 
-		if (Input.keyup[SDLK_j])
-		{	Input.keyup[SDLK_j] = false;
-			angularAccelerate(0, -0.0001, 0);
-		}
-		if (Input.keyup[SDLK_k])
-		{	Input.keyup[SDLK_k] = false;
-			angularAccelerate(0, 0.0001, 0);
-		}
+		if (Input.keydown[SDLK_j])
+			angularAccelerate(0, -0.001, 0);
+		if (Input.keydown[SDLK_k])
+			angularAccelerate(0, 0.001, 0);
 
 		// Accelerate forward
 		if (Input.keydown[SDLK_UP] || Input.keydown[SDLK_w])
 		{
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
-			//accelerate(Vec3f(0, 0, -speed).rotate(Vec3f(0,  getRotation().y, 0)));
 			sound.play();
+
+			//Vec3f vel = Vec3f(0, 0, -1).rotate(pitch.getAbsoluteRotation()).scale(getVelocity().length()).s;
 
 			// Engine smoke
 			SpriteNode puff = new SpriteNode(ship.getScene());
 			puff.setMaterial(Resource.material("fx/smoke.xml"));
-			puff.setLifetime(.5);
+			puff.setLifetime(1);
 			puff.setScale(.4);
-			puff.setVelocity(getVelocity()*.9);
+			//puff.setVelocity(vel);
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 
 			puff = new SpriteNode(ship.getScene());
 			puff.setMaterial("fx/smoke.xml");
-			puff.setLifetime(.5);
+			puff.setLifetime(1);
 			puff.setScale(.4);
-			puff.setVelocity(getVelocity()*.9);
+			//puff.setVelocity(vel);
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 		}
 		else
@@ -127,7 +121,7 @@ class Ship : GameObject
 			pitch.angularAccelerate(Input.mousedy/24.0, 0, 0);
 		}
 
-		/*
+
 		// Bank on turn
 		float turn = getAngularVelocity().y;
 		float cur = ship.getRotation().z;
@@ -139,7 +133,6 @@ class Ship : GameObject
 		// Clamp turning speed
 		setAngularVelocity(getAngularVelocity().clamp(-3, 3));
 		pitch.setAngularVelocity(pitch.getAngularVelocity().clamp(-3, 3));
-		*/
 
 		// Apply linear and angular dampening
 		setVelocity(getVelocity().scale(maxf(1-delta*ldamp, 0.0f)));
@@ -149,7 +142,6 @@ class Ship : GameObject
 		// Update the spring
 		if (spring.getStiffness()<24)
 			spring.setStiffness(spring.getStiffness*(delta+1));
-		spring.update(delta);
 
 		// Fire a flare
 		if (Input.keydown[SDLK_SPACE])
@@ -160,6 +152,7 @@ class Ship : GameObject
 
 			SoundNode zap = new SoundNode(ship);
 			zap.setSound("sound/laser.wav");
+			zap.setVolume(.3);
 			zap.setLifetime(2);
 			zap.play();
 		}

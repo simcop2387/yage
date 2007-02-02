@@ -56,38 +56,34 @@ struct Matrix
 		}
 
 		// Matrices used in testing
-		Matrix[10] m;
-		m[ 0] = Matrix();
-		m[ 1] = Vec3f(0, 0, 0).toMatrix().move(Vec3f(.1, 3, 0));//Matrix([0.0f,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]);
-		m[ 2] = Vec3f(0, 0, 1).toMatrix().move(Vec3f(.1, 3, 0));
-		m[ 3] = Vec3f(1, 3, -1).toMatrix().move(Vec3f(2, -1, 1));
-		m[ 4] = Vec3f(-.75, -1, -1.7).toMatrix().move(Vec3f(-1, 0, 4));
-		m[ 5] = Vec3f(-.371, .1, -1.570796).toMatrix().move(Vec3f(1000, 2000, 4000));
-		m[ 6] = Vec3f(0.0001, 0.0001, 0.0001).toMatrix();
-		m[ 7] = Matrix([1,0,0,0, 0,-1,0,0, 0,0,-1,0, 0,0,0,1]);	// Branch B of toQuatrn();
-		m[ 8] = Matrix([-1,0,0,0, 0,1,0,0, 0,0,-1,0, 0,0,0,1]);	// Branch C of toQuatrn();
-		m[ 9] = Matrix([-1,0,0,0, 0,-1,0,0, 0,0,1,0, 0,0,0,1]);	// Branch D of toQuatrn();
+		Matrix[] m;
+		m~= Matrix();
+		m~= Vec3f(0, 0, 0).toMatrix().move(Vec3f(.1, 3, 0));//Matrix([0.0f,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]);
+		m~= Vec3f(0, 0, 1).toMatrix().move(Vec3f(.1, 3, 0));
+		m~= Vec3f(1, 3, -1).toMatrix().move(Vec3f(2, -1, 1));
+		m~= Vec3f(-.75, -1, -1.7).toMatrix().move(Vec3f(-1, 0, 4));
+		m~= Vec3f(-.371, .1, -1.570796).toMatrix().move(Vec3f(1000, 2000, 4000));
+		m~= Vec3f(0.0001, 0.0001, 0.0001).toMatrix();
+		m~= Matrix([1,0,0,0, 0,-1,0,0, 0,0,-1,0, 0,0,0,1]);	// 7, Branch B of toQuatrn();
+		m~= Matrix([-1,0,0,0, 0,1,0,0, 0,0,-1,0, 0,0,0,1]);	// 8, Branch C of toQuatrn();
+		m~= Matrix([-1,0,0,0, 0,-1,0,0, 0,0,1,0, 0,0,0,1]);	// 9, Branch D of toQuatrn();
 
-		//if (1 + v[0] + v[5] + v[10] >= 0.00000001)
-		//else if ((v[0]>v[5]) && (v[0]>v[10]))
-		//else if (v[5]>v[10])
-		//else
 		foreach (Matrix c; m)
 		{	test("Transpose", c, c.transpose().transpose());
 			test("Negate", c, c.negate().negate());
 			test("Inverse 1", c, c.inverse().inverse());
 			test("Inverse 2", Matrix(), c*c.inverse(), c);
 			test("Identity", c, c*Matrix()); // [Below] compared this way because non-rotation values are lost.
-			//test("toQuatrn & toAxis", c.toAxis().toMatrix(), c.toQuatrn().toMatrix(), c);
+			test("toQuatrn & toAxis", c.toAxis().toMatrix(), c.toQuatrn().toMatrix(), c);
 			Matrix res = c;
 			res.set(c.toQuatrn());
 			test("Set Rotation", res, c);
 
 			foreach (Matrix d; m)
 			{	test("Multiply & Inverse", c, c*d*d.inverse(), d);
-			//	test("MoveRelative", c, c.moveRelative(d.toAxis()).moveRelative(d.toAxis().inverse()), d);
+				test("MoveRelative", c, c.moveRelative(d.toAxis()).moveRelative(d.toAxis().inverse()), d);
 				test("Rotate Matrix", c, c.rotate(d).rotate(d.inverse()), d);
-			//	test("Rotate Quatrn", c, c.rotate(d.toQuatrn()).rotate(d.toQuatrn().inverse()), d);
+				test("Rotate Quatrn", c, c.rotate(d.toQuatrn()).rotate(d.toQuatrn().inverse()), d);
 				test("Rotate Axis", c, c.rotate(d.toAxis()).rotate(d.toAxis().inverse()), d);
 
 				// These don't pass for Matrices 7, 8, and 9

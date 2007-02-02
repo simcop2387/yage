@@ -62,11 +62,10 @@ class SpriteNode : Node
 	/// Render the SpriteNode.  This is used internally.
 	void render()
 	{
-		Vec3f axis = Device.getCurrentCamera().getAbsoluteRotation();
+		Vec3f axis = Device.getCurrentCamera().getAbsoluteRotation()-getAbsoluteRotation();
 		float angle = axis.length();
 		axis = axis.scale(1/angle);
 		glRotatef(angle*57.295, axis.x, axis.y, axis.z);
-		glScalef(scale.x, scale.y, scale.z);
 
 		Matrix m;
 		glGetFloatv(GL_MODELVIEW_MATRIX, m.v.ptr);

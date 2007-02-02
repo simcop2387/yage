@@ -13,6 +13,7 @@ import yage.resource.model;
 import yage.system.constant;
 import yage.system.device;
 import yage.node.light;
+import yage.node.node;
 
 struct RenderNode
 {	Model model;
@@ -39,6 +40,7 @@ struct RenderNode
 class Render
 {
 	static Horde!(RenderNode) queue;
+	//static Horde!(Node) queue2; // probably better than using RenderNode
 
 	/**
 	 * Add a model to the queue for rendering.

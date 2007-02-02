@@ -27,6 +27,7 @@ class ModelNode : Node
 	this(BaseNode parent)
 	{	super(parent);
 		scale = Vec3f(1);
+		setVisible(true);
 	}
 
 	/**
@@ -48,7 +49,6 @@ class ModelNode : Node
 	void setModel(Model _model)
 	{	model = _model;
 		setScale(1);	// force calculation of radius
-		visible = true;
 	}
 
 	/** Set the 3D model used by this Node, using the Resource Manager
@@ -74,7 +74,6 @@ class ModelNode : Node
 		{
 			glEnable(GL_LIGHTING);
 			enableLights();
-			glScalef(scale.x, scale.y, scale.z);
 
 			// Use the VBO Extension
 			if (model.cached)
@@ -109,8 +108,6 @@ class ModelNode : Node
 					l.unApply();
 				}
 			}
-
-			glScalef(1/scale.x, 1/scale.y, 1/scale.z);
 			glDisable(GL_LIGHTING);
 		}
 	}

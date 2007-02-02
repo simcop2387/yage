@@ -182,7 +182,8 @@ class Scene : BaseNode
 	/** Remove the light with the given light index.
 	 *  This function is used internally by the engine and should not be called manually or exported.*/
 	synchronized void removeLight(int light_index)
-	{	lights.remove(light_index);
+	{
+		lights.remove(light_index);
 		if (light_index < lights.length) // set the index of the light that was moved over the one just deleted.
 			lights[light_index].setLightIndex(light_index);
 	}

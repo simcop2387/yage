@@ -142,7 +142,7 @@ class Universe : Scene
 
 
 		// Sort every object by its x position
-		children.sortType!(float).radix( (Node v) { return v.getPosition().x; }, true, true);
+		//children.sortType!(float).radix( (Node v) { return v.getPosition().x; }, true, true);
 		for (int i=0; i<children.length; i++)
 			children[i].index = i;	// and update each index
 

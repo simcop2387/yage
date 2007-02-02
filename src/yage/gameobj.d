@@ -62,14 +62,14 @@ class Flare : GameObject
 {
 	this (BaseNode parent)
 	{	super(parent);
+		this.setLifetime(5);
 
 		SpriteNode flare = new SpriteNode(this);
 		flare.setMaterial("fx/flare1.xml");
-		flare.setLifetime(5);
 		flare.setScale(2);
 
 		LightNode light = new LightNode(this);
 		light.setDiffuse(1, .5, 0);
-		light.setLightRadius(100);
+		light.setLightRadius(256);
 	}
 }

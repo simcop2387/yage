@@ -198,6 +198,8 @@ class CameraNode : Node
 				else // Onscreen and big enough to draw
 				{	glPushMatrix();
 					glMultMatrixf(node_abs.v.ptr);
+					Vec3f s = node.getScale();
+					glScalef(s.x, s.y, s.z);
 					node.render();
 					glPopMatrix();
 					node_count++;

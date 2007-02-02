@@ -5,11 +5,6 @@ known, it shouldn't appear on this list.
 
 [Unresolved]
 
-Q:  What happens when a light is added to a Node's list of lights and then
-light.remove() is called?
-A:  In theory, nothing, since it should hang around as long as that
-reference to it exists.
-
 When the window is sized below about 1/4th the size of it's starting size,
 SDL's grab input mode freezes the application until the mouse is released
     
@@ -33,4 +28,8 @@ than others, when rendering the same thing.  Especially noticable when rendering
 The issue is in my timing code.  Lots of time spent in opengl functions makes
 std.perf and sdl_getticks inaccurate.  Need to test on linux
 
-The ship's rotation values are sometimes nan
+The end of the spring following the ship is way too close half the time.
+This is caused by tail.getAbsolutePosition() returning an incorrect result.
+The sort in Universe.update() changes the order of update between the spring head and tail
+if one is updated and the other isn't, positions will be different.
+Need to ensure that both have been updated before calling spring.update().
