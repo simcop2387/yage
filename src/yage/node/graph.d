@@ -8,12 +8,11 @@ module yage.node.graph;
 
 import std.stdio;
 import std.math;
-import derelict.opengl.gl;
-import derelict.opengl.glext;
 import yage.core.vector;
 import yage.core.misc;
 import yage.resource.resource;
 import yage.resource.material;
+import yage.resource.mesh;
 import yage.resource.model;
 import yage.node.basenode;
 import yage.node.node;
@@ -25,12 +24,12 @@ import yage.node.basenode;
  * and rendered as a triangle mesh (a 3D graph), complete with a material and lighting.
  * Example:
  * --------------------------------
- * GraphNode p1 = new GraphNode(scene);
- * p1.setWindow(-2, 2, -2, 2, step, step);
- * p1.setFunction((float s, float t){ return Vec3f(s, 1-(s*s+t*t), t); });
- * p1.setTextureFunction((float s, float t){ return Vec2f(s/4-.5, t/4-.5); } );
- * p1.setMaterial(Resource.material("blue.xml"));
- * p1.regenerate(); // required to generate the graph.
+ * GraphNode plot = new GraphNode(scene);
+ * plot.setWindow(-2, 2, -2, 2, step, step);
+ * plot.setFunction((float s, float t){ return Vec3f(s, 1-(s*s+t*t), t); });
+ * plot.setTextureFunction((float s, float t){ return Vec2f(s/4-.5, t/4-.5); } );
+ * plot.setMaterial(Resource.material("blue.xml"));
+ * plot.regenerate(); // required to generate the graph.
  * --------------------------------
  */
 class GraphNode : Node
@@ -72,6 +71,10 @@ class GraphNode : Node
 		setTextureFunction(original.texfunc);
 		setWrap(original.swrap, original.twrap);
 		regenerate();
+	}
+
+	Model getModel()
+	{	return model;
 	}
 
 	/// Get the distance to the furthest point, afer scaling.
@@ -206,53 +209,5 @@ class GraphNode : Node
 
 		// Cache model in video memory
 		model.upload();
-	}
-
-	/// Render the GraphNode.  This is called automatically by CameraNodes when needed.
-	void render()
-	{
-		Vec3i[] triangles = model.meshes[0].triangles;
-		Vec3f[] vertices = model.vertices;
-		Vec3f[] normals = model.normals;
-		Vec2f[] texcoords = model.texcoords;
-
-		// Use the VBO Extension
-		if (model.cached)
-		{	glBindBufferARB(GL_ARRAY_BUFFER, model.getVerticesVBO());
-			glVertexPointer(3, GL_FLOAT, 0, null);
-			glBindBufferARB(GL_ARRAY_BUFFER, model.getTexCoordsVBO());
-			glTexCoordPointer(2, GL_FLOAT, 0, null);
-			glBindBufferARB(GL_ARRAY_BUFFER, model.getNormalsVBO());
-			glNormalPointer(GL_FLOAT, 0, null);
-			glBindBufferARB(GL_ARRAY_BUFFER, 0);
-		}
-		else// Don't cache the model in video memory
-		{	glVertexPointer(3, GL_FLOAT, 0, model.getVertices().ptr);
-			glTexCoordPointer(2, GL_FLOAT, 0, model.getTexCoords().ptr);
-			glNormalPointer(GL_FLOAT, 0, model.getNormals().ptr);
-		}
-
-		void draw()
-		{	if (model.cached)
-			{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, model.meshes[0].getTrianglesVBO());
-				glDrawElements(GL_TRIANGLES, model.meshes[0].getTriangles().length*3, GL_UNSIGNED_INT, null);
-				glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
-			}else
-				glDrawElements(GL_TRIANGLES, model.meshes[0].getTriangles().length*3, GL_UNSIGNED_INT, model.meshes[0].getTriangles().ptr);
-		}
-
-		if (model.meshes[0].getMaterial() !is null)
-		{	glEnable(GL_LIGHTING);
-			enableLights();
-			foreach (Layer l; model.meshes[0].getMaterial().getLayers().array())
-			{	l.apply();
-				draw();
-				l.unApply();
-			}
-			glDisable(GL_LIGHTING);
-		}
-		else
-			draw();
-
 	}
 }

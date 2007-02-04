@@ -274,9 +274,9 @@ struct Matrix
 	{	return *this*b;
 	}
 
-	/// Print the values of this matrix to the standard output.
-	void print()
-	{	writefln("Matrix:\n", toString());
+	///
+	void *ptr()
+	{	return v.ptr;
 	}
 
 	/// Return a copy of this Matrix rotated by an axis Vec3f.

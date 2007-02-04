@@ -32,6 +32,7 @@ int step = 32;
  * A scene with extra methods to manage a space simulation. */
 class Universe : Scene
 {
+	/*
 	Horde!(GameObject) gravity_objs;
 
 	this()
@@ -53,7 +54,7 @@ class Universe : Scene
 			ast.setPosition(position);
 			ast.setVisible(true);
 			ast.setMass(random(1, 3));
-			ast.setAngularVelocity(random(-.1, .1), random(-.1, .1), random(-.1, .1));
+			ast.setAngularVelocity(Vec3f(random(-.1, .1), random(-.1, .1), random(-.1, .1)));
 		}
 	}
 
@@ -122,10 +123,10 @@ class Universe : Scene
 		e.setAngularVelocity((c.getAngularVelocity()*c.mass + d.getAngularVelocity()*d.mass) / (c.mass+d.mass));
 		e.setMass(c.mass+d.mass);
 	}
-
+*/
 	// Override scene.update() to apply gravity and collide Nodes.
 	void update(float delta)
-	{
+	{/*
 		// Apply forces to all first-level children that are GameObjects,
 		// splitting the work between update frames
 		static int q = 0;
@@ -166,7 +167,7 @@ class Universe : Scene
 				{	collide(children[i], children[j]);
 					break;
 			}	}
-		}
+		}*/
 
 		// Normal update
 		super.update(delta);

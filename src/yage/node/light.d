@@ -18,6 +18,7 @@ import yage.node.node;
 import yage.node.scene;
 import yage.system.device;
 import yage.system.constant;
+import yage.system.render;
 
 
 /**
@@ -248,7 +249,7 @@ class LightNode : Node
 	}body
 	{
 		glPushMatrix();
-		glLoadMatrixf(Device.getCurrentCamera().getInverseAbsoluteMatrix().v.ptr); // required for spotlights.
+		glLoadMatrixf(Render.getCurrentCamera().getInverseAbsoluteMatrix().v.ptr); // required for spotlights.
 
 		// Set position and direction
 		glEnable(GL_LIGHT0+num);
@@ -279,17 +280,6 @@ class LightNode : Node
 		glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, quad_attenuation);
 
 		glPopMatrix();
-	}
-
-	/*
-	 * Draw a 1x1x1 cube the same color as the light.  Use .setVisible(true) to
-	 * Enable rendering the light, since they're invisible by default.
-	 * This function is used internally by the engine and should not be called manually or exported. */
-	void render()
-	{	// Just draw a cube for now.
-		glColor3fv(diffuse.v.ptr);
-		super.render();
-		glColor3f(1, 1, 1);
 	}
 
 	/*

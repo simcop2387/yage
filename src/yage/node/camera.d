@@ -15,9 +15,9 @@ import derelict.sdl.sdl;
 import yage.core.all;
 import yage.resource.all;
 import yage.resource.texture;
-import yage.node.all;
 import yage.node.node;
 import yage.node.basenode;
+import yage.node.scene;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.render;
@@ -42,9 +42,8 @@ class CameraNode : Node
 	float threshold = 2.25;		// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
 	CameraTexture capture;		// The camera renders to this Texture
-	Plane[6] frustum;
 	uint node_count=0;			// The number of nodes that were rendered.
-
+	Plane[6] frustum;
 	Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
 
 	public:
@@ -75,70 +74,6 @@ class CameraNode : Node
 		threshold = original.threshold;
 	}
 
-	/// Get the Texture that the camera renders to.
-	CameraTexture getTexture()
-	{	return capture;
-	}
-
-	/// Get the inverse of the camera's absolute matrix.  This is pre-calculated per call to .toTexture().
-	Matrix getInverseAbsoluteMatrix()
-	{	return inverse_absolute;
-	}
-
-	/// Get the number of Nodes on-screen after the last call to .toTexture().
-	uint getNodeCount()
-	{	return node_count;
-	}
-
-	/// x and y in screen coordinates, z is distance from camera. Unfinished
-	void getWorldCoordinate(int x, int y, float z, Vec3f result)
-	{	Matrix clip;
-		Matrix modl;
-
-		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
-		glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
-	}
-
-	/**
-	 * Return the closest Node to the Camera in the Camera's Scene at the x, y
-	 * coordinates in the Camera's Texture.  This will not return any Nodes from
-	 * the Scene's skybox.  Returns null if no Node is at the position.*/
-	Node getNodeAtCoordinate(int x, int y)
-	{
-		return null;
-	}
-
-	/**
-	 * Set multiple variables that affect the camera's view when .toTexture() is called.
-	 * \param near Nothing closer than this will be rendered.  The default is 1.
-	 * \param far Nothing further away than this will be rendered.  The default is 100,000.
-	 * \param fov The field of view of the camera, in degrees.  The default is 45.
-	 * \param apsect The aspect ratio of the camera.  A special value of zero allows for
-	 * it to be set automatically by the size of the window (Device.getWidth() /
-	 * Device.getHeight()).  Zero is also the default value.
-	 * \param threshold Minimum size of a node in pixels before it's rendered.  The default
-	 * is 0.667 (2/3rds of a pixel).*/
-	void setView(float near=1, float far=100000, float fov=45, float aspect=0, float threshold=0.667)
-	{	this.near = near;
-		this.far = far;
-		this.fov = fov;
-		this.aspect = aspect;
-		this.threshold = 1/(threshold*threshold);
-	}
-
-	/**
-	 * Set the resolution of the texture that the camera renders to.
-	 * Special values of zero set the resolution to the current window size.*/
-	void setResolution(uint width, uint height)
-	{	xres = width;
-		yres = height;
-
-		// Ensure our new resolution is below the maximum texture size
-		uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
-		if (xres > max)	xres = max;
-		if (yres > max)	yres = max;
-	}
-
 	/**
 	 * Build a 6-plane view frutum based on the orientation of the camera and
 	 * the parameters passed to setView(). */
@@ -162,61 +97,87 @@ class CameraNode : Node
 			p = p.normalize();
 	}
 
-	protected void renderScene(BaseNode node)
-	{	// Recurse through and render children.
-		foreach (Node c; node.getChildren())
-			renderScene(c);
+	///
+	Plane[] getFrustum()
+	{	return frustum;
 	}
 
-	/// Render node and recursively every child Node to the framebuffer.
-	protected void renderScene(Node node)
-	{	node.setOnscreen(true);
-
-		if (node.getVisible())
-		{	float r = -node.getRadius();
-			Matrix node_abs = node.getAbsoluteTransform();
-			// Cull nodes that are not inside the frustum
-			for (int i=0; i<frustum.length; i++)
-			{	// formula for the plane distance-to-point function, expanded in-line.
-				if (frustum[i].x*node_abs.v[12] + frustum[i].y*node_abs.v[13] + frustum[i].z*node_abs.v[14] + frustum[i].d < r)
-				{	node.setOnscreen(false);
-					break;
-				}
-			}
-
-			// cull nodes that are too small to see.
-			if (node.getOnscreen())
-			{	float x = transform_abs.v[12]-node_abs.v[12];
-				float y = transform_abs.v[13]-node_abs.v[13];
-				float z = transform_abs.v[14]-node_abs.v[14];
-
-				float height = yres;
-				if (height==0)
-					height = Device.getHeight();
-				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
-					node.setOnscreen(false);
-				else // Onscreen and big enough to draw
-				{	glPushMatrix();
-					glMultMatrixf(node_abs.v.ptr);
-					Vec3f s = node.getScale();
-					glScalef(s.x, s.y, s.z);
-					node.render();
-					glPopMatrix();
-					node_count++;
-				}
-			}
-		}
-		// Recurse through and render children.
-		foreach (Node c; node.getChildren())
-			renderScene(c);
+	/// Get the inverse of the camera's absolute matrix.  This is pre-calculated per call to .toTexture().
+	Matrix getInverseAbsoluteMatrix()
+	{	return inverse_absolute;
 	}
+
+	/**
+	 * Return the closest Node to the Camera in the Camera's Scene at the x, y
+	 * coordinates in the Camera's Texture.  This will not return any Nodes from
+	 * the Scene's skybox.  Returns null if no Node is at the position.*/
+	Node getNodeAtCoordinate(int x, int y)
+	{	return null;
+	}
+
+	///
+	int getNodeCount()
+	{	return node_count;
+	}
+
+	///
+	Vec2i getResolution()
+	{	return Vec2i(xres, yres);
+	}
+
+	/// Get the Texture that the camera renders to.
+	CameraTexture getTexture()
+	{	return capture;
+	}
+
+	/// x and y in screen coordinates, z is distance from camera. Unfinished
+	void getWorldCoordinate(int x, int y, float z, Vec3f result)
+	{	Matrix clip;
+		Matrix modl;
+
+		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
+		glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
+	}
+
+	/**
+	 * Set the resolution of the texture that the camera renders to.
+	 * Special values of zero set the resolution to the current window size.*/
+	void setResolution(uint width, uint height)
+	{	xres = width;
+		yres = height;
+
+		// Ensure our new resolution is below the maximum texture size
+		uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
+		if (xres > max)	xres = max;
+		if (yres > max)	yres = max;
+	}
+
+	/**
+	 * Set multiple variables that affect the camera's view when .toTexture() is called.
+	 * Params:
+	 * near = Nothing closer than this will be rendered.  The default is 1.
+	 * far = Nothing further away than this will be rendered.  The default is 100,000.
+	 * fov = The field of view of the camera, in degrees.  The default is 45.
+	 * apsect = The aspect ratio of the camera.  A special value of zero allows for
+	 * it to be set automatically by the size of the window (Device.getWidth() /
+	 * Device.getHeight()).  Zero is also the default value.
+	 * threshold = Minimum size of a node in pixels before it's rendered.  The default
+	 * is 0.667 (2/3rds of a pixel).*/
+	void setView(float near=1, float far=100000, float fov=45, float aspect=0, float threshold=0.667)
+	{	this.near = near;
+		this.far = far;
+		this.fov = fov;
+		this.aspect = aspect;
+		this.threshold = 1/(threshold*threshold);
+	}
+
 
 	/**
 	 * Render everything seen by the camera to its own Texture.  The Texture can then be
 	 * added to a material or used for any other purpose by using getTexture(). */
 	void toTexture()
-	{
-		Device.setCurrentCamera(this);
+	{	node_count = 0;
+		Render.setCurrentCamera(this);
 
 		// Precalculate the inverse of the Camera's absolute transformation Matrix.
 		calcTransform();
@@ -240,7 +201,8 @@ class CameraNode : Node
 			transform_abs.v[12..15] = 0;
 			buildFrustum(); // temporary frustum exclusively for skybox rendering.
 			scene.getSkybox().apply();
-			renderScene(scene.getSkybox());
+			addNodesToRender(scene.getSkybox());
+			Render.all();
 			glClear(GL_DEPTH_BUFFER_BIT);
 			transform_abs.v[12..15] = push[0..3]; // restore position
 		}
@@ -251,12 +213,11 @@ class CameraNode : Node
 		glTranslatef(-transform_abs.v[12], -transform_abs.v[13], -transform_abs.v[14]);
 
 		// Build view frustum, cull, and render
-		node_count=0;
 		buildFrustum();
 		scene.apply();
-		renderScene(scene);
+		addNodesToRender(scene);
+		Render.all();
 
-		Render.flush();
 
 		// Copy framebuffer to our texture.
 		//int modified_xres=xres, modified_yres=yres;
@@ -293,5 +254,52 @@ class CameraNode : Node
 		alListenerfv(AL_POSITION, &transform_abs.v[12]);
 		alListenerfv(AL_ORIENTATION, concat.ptr);
 		alListenerfv(AL_VELOCITY, &linear_velocity_abs.v[0]);
+	}
+
+
+	/// Add the node and all child Nodes to the framebuffer, if onscreen.
+	protected void addNodesToRender(Scene node)
+	{	// Recurse through and render children.
+		foreach (Node c; node.getChildren())
+			addNodesToRender(c);
+	}
+
+	/// Ditto
+	protected void addNodesToRender(Node node)
+	{
+		if (node.getVisible())
+		{	node.setOnscreen(true);
+
+			float r = -node.getRadius();
+			Matrix *node_abs = node.getAbsoluteTransformPtr();
+			// Cull nodes that are not inside the frustum
+			for (int i=0; i<frustum.length; i++)
+			{	// formula for the plane distance-to-point function, expanded in-line.
+				if (frustum[i].x*node_abs.v[12] + frustum[i].y*node_abs.v[13] + frustum[i].z*node_abs.v[14] + frustum[i].d < r)
+				{	node.setOnscreen(false);
+					break;
+				}
+			}
+
+			// cull nodes that are too small to see.
+			if (node.getOnscreen())
+			{	float x = transform_abs.v[12]-node_abs.v[12];
+				float y = transform_abs.v[13]-node_abs.v[13];
+				float z = transform_abs.v[14]-node_abs.v[14];
+
+				float height = yres;
+				if (height==0)
+					height = Device.getHeight();
+				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
+					node.setOnscreen(false);
+				else // Onscreen and big enough to draw
+				{	Render.add(node);
+					node_count++;
+				}
+			}
+		}
+		// Recurse through and render children.
+		foreach (Node c; node.getChildren())
+			addNodesToRender(c);
 	}
 }

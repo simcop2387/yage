@@ -176,9 +176,9 @@ struct Quatrn
 		else return *this;
 	}
 
-	/// Print the x, y, z, w values of the Quaternion to the standard output.
-	void print()
-	{	writefln("Quatrn: ", toString());
+	///
+	void *ptr()
+	{	return v.ptr;
 	}
 
 	/**

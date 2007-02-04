@@ -142,7 +142,7 @@ Eric Poggel
 <dt><span class="decl">Vec!(T,K) 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
-(T[] <span class="funcparam">s</span>...);
+(T[K] <span class="funcparam">s</span>...);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -159,7 +159,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Create a new vector with the values of <span class="funcparam">s</span>; <span class="funcparam">s</span> must be at least of length 3.
+<dd>Create a new vector with the values of <span class="funcparam">s</span>; <span class="funcparam">s</span> must be at least of length K.
 <br><br>
 
 </dd>
@@ -788,16 +788,14 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">print</span>
-<script type="text/javascript">explorer.outline.addDecl('print');</script>
+<dt><span class="decl">void* 
+<span class="currsymbol">ptr</span>
+<script type="text/javascript">explorer.outline.addDecl('ptr');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Print the x, y, z values of the vector to the standard output.
-<br><br>
-
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -1020,7 +1018,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 27 13:55:25 2007
+		on Sun Feb  4 00:19:17 2007
 
 	</div>
 	
@@ -1067,6 +1065,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
+	explorer.packageExplorer.addModule("yage.node.moveable");
+
 	explorer.packageExplorer.addModule("yage.node.node");
 
 	explorer.packageExplorer.addModule("yage.node.scene");
@@ -1082,6 +1082,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.resource.layer");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 

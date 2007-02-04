@@ -133,8 +133,8 @@ void clean()
 // Compile sources in src_path to objects in obj_path
 bool compile(bool _debug=false, bool _release=false, bool profile=false, bool ddoc=false, bool verbose=false)
 {	if (verbose)
-		writefln("[Compiling]");		
-
+		writefln("[Compiling]");
+		
 	// Get the source files and set compiler flags
 	chdir(src_path);
 
@@ -173,7 +173,10 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 				mkdir(path);
 	}	}
 
-	char[] compile = "dmd -" ~ std.string.join(flags, " -") ~ " " ~std.string.join(sources, " ");	
+	char[] compile = "dmd -" ~ std.string.join(flags, " -") ~ " " ~std.string.join(sources, " ");
+	if (verbose)
+		writefln(compile);
+		
 	bool success = !system(toStringz(compile));
 	return success;
 }
@@ -190,7 +193,9 @@ bool link(bool verbose=false)
 	char[] link = "link " ~ std.string.join(objects, "+") ~","~bin_name~bin_ext;
 	if (libs.length)
 		link ~= ","~bin_name~".map,"~std.string.join(libs, "+");
-
+	if (verbose)
+		writefln(link);
+		
 	bool success = !system(toStringz(link));
 	return success;
 }

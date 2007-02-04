@@ -8,7 +8,6 @@ module yage.core.plane;
 
 import std.math;
 import std.stdio;
-import yage.core.freelist;
 import yage.core.vector;
 import yage.core.misc;
 
@@ -74,9 +73,9 @@ struct Plane
 	{	return v[i] = value;
 	}
 
-	/// Print the values of this Plane to the standard output.
-	void print()
-	{	writefln("Plane: ", toString());
+	///
+	void *ptr()
+	{	return v.ptr;
 	}
 
 	/// Set the values of the plane.

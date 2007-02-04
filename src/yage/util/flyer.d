@@ -51,8 +51,8 @@ class Flyer
 	}
 
 	void angularAccelerate(float x, float y)
-	{	base.angularAccelerate(0, x, 0);
-		pivot.angularAccelerate(y, 0, 0);
+	{	base.angularAccelerate(Vec3f(0, x, 0));
+		pivot.angularAccelerate(Vec3f(y, 0, 0));
 	}
 
 	void setPosition(Vec3f pos)
@@ -64,8 +64,8 @@ class Flyer
 	}
 
 	void setRotation(float x, float y)
-	{	base.setRotation(0, x, 0);
-		pivot.setRotation(y, 0, 0);
+	{	base.setRotation(Vec3f(0, x, 0));
+		pivot.setRotation(Vec3f(y, 0, 0));
 	}
 
 	void setDampening(float percent)

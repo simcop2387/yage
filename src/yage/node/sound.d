@@ -275,7 +275,7 @@ class SoundNode : Node
 			to_process = maxi(processed, cast(int)(size-(buffer_end-buffer_start)));
 
 			// Update the buffers for this source
-			if (to_process > size/32)
+			if (to_process > size/4)
 			{
 				// If looping and our buffer has reached the end of the track
 				int blength = sound.getBuffersLength();
@@ -334,15 +334,6 @@ class SoundNode : Node
 	{	super.setTransformDirty();
 		alSourcefv(al_source, AL_POSITION, &(getAbsoluteTransform().v[12]));
 		alSourcefv(al_source, AL_VELOCITY, &(getAbsoluteVelocity().v[0]));
-	}
-
-	/** Draw a 1x1x1 dark gray cube.  Use .setVisible(true) to
-	 *  Enable rendering this cube, since SoundNodes are invisible by default. */
-	void render()
-	{	// Just draw a gray cube for now.
-		glColor3f(.3, .3, .3);
-		super.render();
-		glColor3f(1, 1, 1);
 	}
 
 }

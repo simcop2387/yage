@@ -152,11 +152,11 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">setModel</span>
 <script type="text/javascript">explorer.outline.addDecl('setModel');</script>
-(Model <span class="funcparam">_model</span>);
+(Model <span class="funcparam">model</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the 3D model used by this Node.  This also makes the Node visible.
+<dd>Set the 3D <span class="funcparam">model</span> used by this Node.
 <br><br>
 
 </dd>
@@ -170,11 +170,37 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Set the 3D model used by this Node, using the Resource Manager
-  to ensure that no Model is loaded twice.
-  Equivalent of 
+ to ensure that no Model is loaded twice.
+ Equivalent of 
 <span class="currsymbol">setModel</span>
 <script type="text/javascript">explorer.outline.addDecl('setModel');</script>
 (Resource.model(<span class="funcparam">filename</span>)); 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(Vec3f <span class="funcparam">scale</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Overridden to cache new radius
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(float <span class="funcparam">scale</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Ditto.
 <br><br>
 
 </dd>
@@ -188,21 +214,8 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the radius of the culling sphere used when rendering the 3D Model
-  This is usually the distance from the center of its coordinate plane to
-  the most distant vertex.  There is no setRadius() 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">render</span>
-<script type="text/javascript">explorer.outline.addDecl('render');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Draw the 3D model
+ This is usually the distance from the center of its coordinate plane to
+ the most distant vertex.  There is no setRadius() 
 <br><br>
 
 </dd>
@@ -225,7 +238,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 27 13:55:26 2007
+		on Sun Feb  4 00:19:17 2007
 
 	</div>
 	
@@ -272,6 +285,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
+	explorer.packageExplorer.addModule("yage.node.moveable");
+
 	explorer.packageExplorer.addModule("yage.node.node");
 
 	explorer.packageExplorer.addModule("yage.node.scene");
@@ -287,6 +302,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.resource.layer");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 

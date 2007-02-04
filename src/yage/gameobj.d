@@ -42,6 +42,8 @@ abstract class GravityObject : GameObject
 
 class Asteroid : GravityObject
 {
+	float radius; // cached
+
 	this (BaseNode parent)
 	{	super(parent);
 		ModelNode rock = new ModelNode(this);
@@ -49,12 +51,13 @@ class Asteroid : GravityObject
 	}
 
 	float getRadius()
-	{	return pow(mass, .3333)*.75*4;
+	{	return radius;
 	}
 
 	void setMass(float mass)
 	{	this.mass = mass;
 		children[0].setScale(pow(mass, .33333)/2);
+		radius = pow(mass, .3333)*.75*4;
 	}
 }
 

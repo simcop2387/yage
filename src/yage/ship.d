@@ -77,9 +77,9 @@ class Ship : GameObject
 			speed *= 20; // Hyperdrive
 
 		if (Input.keydown[SDLK_j])
-			angularAccelerate(0, -0.001, 0);
+			angularAccelerate(Vec3f(0, -0.001, 0));
 		if (Input.keydown[SDLK_k])
-			angularAccelerate(0, 0.001, 0);
+			angularAccelerate(Vec3f(0, 0.001, 0));
 
 		// Accelerate forward
 		if (Input.keydown[SDLK_UP] || Input.keydown[SDLK_w])
@@ -117,8 +117,8 @@ class Ship : GameObject
 
 		// Rotate
 		if (Input.getGrabMouse())
-		{	angularAccelerate(0, -Input.mousedx/16.0, 0);
-			pitch.angularAccelerate(Input.mousedy/24.0, 0, 0);
+		{	angularAccelerate(Vec3f(0, -Input.mousedx/16.0, 0));
+			pitch.angularAccelerate(Vec3f(Input.mousedy/24.0, 0, 0));
 		}
 
 
@@ -126,9 +126,9 @@ class Ship : GameObject
 		float turn = getAngularVelocity().y;
 		float cur = ship.getRotation().z;
 		if (cur > 1 || cur < -1)	// Prevent banking too far
-			ship.setAngularVelocity(0, 0, -cur/16);
+			ship.setAngularVelocity(Vec3f(0, 0, -cur/16));
 		else
-			ship.setAngularVelocity(0, 0, (turn-cur));
+			ship.setAngularVelocity(Vec3f(0, 0, (turn-cur)));
 
 		// Clamp turning speed
 		setAngularVelocity(getAngularVelocity().clamp(-3, 3));

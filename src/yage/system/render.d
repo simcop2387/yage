@@ -1,123 +1,199 @@
+/**
+ * Copyright:  (c) 2006 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl.txt">LGPL</a>
+ */
+
 module yage.system.render;
 
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 
-import yage.core.freelist;
+import std.stdio;
 import yage.core.horde;
 import yage.core.matrix;
 import yage.core.vector;
+import yage.core.plane;
+import yage.system.constant;
+import yage.system.device;
 import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
-import yage.system.constant;
-import yage.system.device;
-import yage.node.light;
+import yage.resource.mesh;
+import yage.node.all;
+import yage.node.camera;
 import yage.node.node;
+import yage.node.light;
+import yage.node.scene;
 
-struct RenderNode
-{	Model model;
-	Matrix transform;
-	Material materials;
-	LightNode[] lights;
 
-	static RenderNode opCall(Matrix transform, Model model, Material materials, LightNode[] lights)
-	{	RenderNode a;
-
-		a.transform = transform;
-		a.model = model;
-		a.materials = materials;
-		a.lights = lights;
-		return a;
-	}
+struct AlphaTriangle
+{	Vec3f[3] vertices;
+	Material material;
 }
 
 /**
- * As the nodes of the scene graph are traversed, 3d mesh data is added to an
- * internal queue of rendering nodes.  They are then sorted to optimize
- * rendering speed, to correctly render translucent polygons, etc.  Call flush()
- * to process the queue and render.*/
+ * As the nodes of the scene graph are traversed, those to be rendered in
+ * the current frame are added to a queue.  They are then reordered for correct
+ * and optimal rendering.  Translucent polygons are separated, sorted
+ * and rendered in a second pass. */
 class Render
 {
-	static Horde!(RenderNode) queue;
-	//static Horde!(Node) queue2; // probably better than using RenderNode
 
-	/**
-	 * Add a model to the queue for rendering.
-	 * Params:
-	 * transform = the model's absolute transformatin matrix containing rotation,
-	 * translation, and scaling values.
-	 * model = contains vertex, triangle, etc. data to render.
-	 * materials = An optional array of materials to override the materials of
-	 * the model.  The first material will override the material of the model's
-	 * first mesh, the second for the second, and etc.
-	 * lights = an array of lights that affect the model data.*/
-	static void addModel(Matrix transform, Model model, Material materials=null, LightNode[] lights=null)
-	{	if (queue is null)
-			queue = new Horde!(RenderNode);
+	protected static Node[] nodes;			// Linking errors when created as a Horde :(
+	protected static Horde!(Mesh) translucent;
 
-		queue.add(RenderNode(transform, model, materials, lights));
+	// Basic shapes
+	protected static Model mcube;
+	protected static Model msprite;
+
+	protected static bool models_generated = false;
+	protected static CameraNode current_camera;
+
+
+	/// Add a node to the queue for rendering.
+	static void add(Node node)
+	{	//if (nodes is null)
+		//	nodes = new Horde!(Node);
+		nodes ~= node;
 	}
 
-	/// Render everything in the queue, in an optimized order.
-	static void flush()
+	/// Render everything in the queue
+	static void all()
 	{
-		// Sort everything in the queue by its distance from the camera.
-		Matrix camera = Device.getCurrentCamera().getAbsoluteTransform();
-		queue.sortType!(float).radix( (RenderNode n) { return -Vec3f(n.transform.v[11..15]).distance2(Device.getCurrentCamera().getAbsolutePosition()); }, true, true);
+		if (!models_generated)
+			generate();
 
-		glEnable(GL_LIGHTING);
-		foreach(RenderNode rn; queue.array())
+		// Loop through all nodes in the queue
+		foreach (Node n; nodes)
 		{
 			glPushMatrix();
-			glLoadMatrixf(rn.transform.v.ptr);
-			Model model = rn.model;
+			glMultMatrixf(n.getAbsoluteTransformPtr().v.ptr);
+			glScalef(n.getScale().x, n.getScale().y, n.getScale().z);
+			glColor4fv(n.getColor().v.ptr);
+			n.enableLights();
 
-
-			// Use the VBO Extension
-			if (model.cached)
-			{	glBindBufferARB(GL_ARRAY_BUFFER, model.getVerticesVBO());
-				glVertexPointer(3, GL_FLOAT, 0, null);
-				glBindBufferARB(GL_ARRAY_BUFFER, model.getTexCoordsVBO());
-				glTexCoordPointer(2, GL_FLOAT, 0, null);
-				glBindBufferARB(GL_ARRAY_BUFFER, model.getNormalsVBO());
-				glNormalPointer(GL_FLOAT, 0, null);
-				glBindBufferARB(GL_ARRAY_BUFFER, 0);
-			}
-			else// Don't cache the model in video memory
-			{	glVertexPointer(3, GL_FLOAT, 0, model.getVertices().ptr);
-				glTexCoordPointer(2, GL_FLOAT, 0, model.getTexCoords().ptr);
-				glNormalPointer(GL_FLOAT, 0, model.getNormals().ptr);
-			}
-
-			foreach (Mesh m; model.getMeshes())
-			{	// Render each layer of the material.
-
-				//Material matl = rn.materials.length ? rn.materials[0] : m.getMaterial();
-				Material matl = rn.materials;
-
-
-				if (matl !is null)
-					foreach (Layer l; matl.getLayers().array())
-					{
-						l.apply(rn.lights);
-						if (model.cached)
-						{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, m.getTrianglesVBO());
-							glDrawElements(GL_TRIANGLES, m.getTriangles().length*3, GL_UNSIGNED_INT, null);
-							glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
-						}else
-							glDrawElements(GL_TRIANGLES, m.getTriangles().length*3, GL_UNSIGNED_INT, m.getTriangles().ptr);
-						l.unApply();
-					}
+			switch(n.getType())
+			{	case "yage.node.model.ModelNode":
+					model((cast(ModelNode)n).getModel(), n.getLights(), n.getColor());
+					break;
+				case "yage.node.sprite.SpriteNode":
+					sprite((cast(SpriteNode)n).getMaterial(), n.getLights(), n.getColor());
+					break;
+				case "yage.node.graph.GraphNode":
+					model((cast(GraphNode)n).getModel(), n.getLights(), n.getColor());
+					break;
+				default:
+					cube(n.getColor());
 			}
 			glPopMatrix();
 		}
-
-		// Prevent a costly sizedown() and then erase the queue.
-		queue.reserve(queue.length);
-		queue.clear();
-		glDisable(GL_LIGHTING);
+		nodes.length = 0;
 	}
 
 
+	/// Get the current (or last) camera that is/was rendering a scene.
+	static CameraNode getCurrentCamera()
+	{	return current_camera;
+	}
+
+	/// Set the current camera for rendering.
+	static void setCurrentCamera(CameraNode camera)
+	{	current_camera = camera;
+	}
+
+	/// Render a cube
+	protected static void cube(Vec4f color)
+	{	model(mcube, null, color);
+	}
+
+	/**
+	 * Render the meshes with opaque materials and pass any meshes with materials
+	 * that require blending to the queue of translucent meshes. */
+	protected static void model(Model model, LightNode[] lights, Vec4f color)
+	{
+		model.bind();
+
+		// Loop through the meshes
+		foreach (Mesh m; model.getMeshes())
+		{
+			// Bind and draw the triangles
+			void draw()
+			{	if (model.cached)
+				{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, m.getTrianglesVBO());
+					glDrawElements(GL_TRIANGLES, m.getTriangles().length*3, GL_UNSIGNED_INT, null);
+					// glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+				}else
+					glDrawElements(GL_TRIANGLES, m.getTriangles().length*3, GL_UNSIGNED_INT, m.getTriangles().ptr);
+			}
+
+			Material matl = m.getMaterial();
+			if (matl !is null)
+				// Loop through each layer
+				foreach (Layer l; matl.getLayers().array())
+				{
+					// If not translucent
+						l.apply(lights, color);
+						draw();
+						l.unApply();
+				}
+			else
+				draw();
+		}
+	}
+
+	/// Render a sprite
+	protected static void sprite(Material material, LightNode[] lights, Vec4f color)
+	{
+		// Rotate so that sprite always faces camera
+		Matrix m;
+		glGetFloatv(GL_MODELVIEW_MATRIX, m.v.ptr);
+		Vec3f axis = current_camera.getAbsoluteRotation();
+		float angle = axis.length();
+		axis = axis.scale(1/angle);
+		glRotatef(angle*57.295779513, axis.x, axis.y, axis.z);
+
+		// Set material and draw as model
+		msprite.getMesh(0).setMaterial(material);
+		model(msprite, lights, color);
+	}
+
+
+	/**
+	 * Generate models used for various Nodes (like the quad for SpriteNodes. */
+	protected static void generate()
+	{	// Sprite
+		msprite = new Model();
+		msprite.addVertex(Vec3f(-1,-1, 0), Vec3f(0, 0, 1), Vec2f(0, 1));
+		msprite.addVertex(Vec3f( 1,-1, 0), Vec3f(0, 0, 1), Vec2f(1, 1));
+		msprite.addVertex(Vec3f( 1, 1, 0), Vec3f(0, 0, 1), Vec2f(1, 0));
+		msprite.addVertex(Vec3f(-1, 1, 0), Vec3f(0, 0, 1), Vec2f(0, 0));
+		msprite.addMesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)]);
+		msprite.upload();
+
+		// Cube (in as little code as possible :)
+		mcube = new Model();
+		mcube.addMesh(null, null);
+		for (int x=-1; x<=1; x+=2)
+		{	for (int y=-1; y<=1; y+=2)
+			{	for (int z=-1; z<=1; z+=2)
+				{	mcube.addVertex(Vec3f(x, y, z), Vec3f(x, 0, 0), Vec2f(y*.5+.5, z*.5+.5));	// +-x
+					mcube.addVertex(Vec3f(x, y, z), Vec3f(0, y, 0), Vec2f(x*.5+.5, z*.5+.5));	// +-y
+					mcube.addVertex(Vec3f(x, y, z), Vec3f(0, 0, z), Vec2f(x*.5+.5, y*.5+.5));	// +-z
+		}	}	}
+		mcube.getMesh(0).addTriangle(Vec3i(0, 6, 9));
+		mcube.getMesh(0).addTriangle(Vec3i(9, 3, 0));
+		mcube.getMesh(0).addTriangle(Vec3i(1, 4, 16));
+		mcube.getMesh(0).addTriangle(Vec3i(16, 13, 1));
+		mcube.getMesh(0).addTriangle(Vec3i(2, 14, 20));
+		mcube.getMesh(0).addTriangle(Vec3i(20, 8, 2));
+		mcube.getMesh(0).addTriangle(Vec3i(12, 15, 21));
+		mcube.getMesh(0).addTriangle(Vec3i(21, 18, 12));
+		mcube.getMesh(0).addTriangle(Vec3i(7, 19, 22));
+		mcube.getMesh(0).addTriangle(Vec3i(22, 10, 7));
+		mcube.getMesh(0).addTriangle(Vec3i(5, 11, 23));
+		mcube.getMesh(0).addTriangle(Vec3i(23, 17, 5));
+		mcube.upload();
+		models_generated = true;
+	}
 }

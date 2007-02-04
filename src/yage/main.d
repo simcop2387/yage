@@ -60,12 +60,13 @@ void main()
 	LightNode l1 = new LightNode(scene);
 	l1.setPosition(0, 0, -40);
 	l1.setDiffuse(1, .85, .7);
-	l1.setLightRadius(4800);
+	l1.setLightRadius(5000);
+	l1.setVisible(true);
 
 	// Star
 	SpriteNode star = new SpriteNode(l1);
 	star.setMaterial("space/star.xml");
-	star.setScale(160);
+	star.setScale(400);
 	star.setPosition(100, 0, 0);
 
 	// Ship
@@ -75,11 +76,11 @@ void main()
 	camera.setParent(ship.getCameraSpot());
 
 	// Universe
-	scene.generate(400, 2000);
+	asteroidBelt(2000, 4000, scene);
 
 	void doSomething()
 	{	// Why do some functions work and others cause access violations?
-		star.setVelocity(1, 2, 3);
+		star.setVelocity(Vec3f(1, 2, 3));
 		star.setVisible(true);		// causes access violation
 	}
 	star.onUpdate(&doSomething);
@@ -117,7 +118,7 @@ void main()
 			{	SpriteNode s = new SpriteNode(scene);
 				s.setMaterial("fx/flare1.xml");
 				s.setPosition(0, 0, 0);
-				s.setVelocity(random(-1, 1)*500, random(-1, 1)*500, random(-1, 1)*500);
+				s.setVelocity(Vec3f(random(-1, 1)*500, random(-1, 1)*500, random(-1, 1)*500));
 				s.setLifetime(random(8, 20));
 				s.setScale(12);
 			}

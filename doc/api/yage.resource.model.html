@@ -91,106 +91,6 @@ Eric Poggel
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">class 
-<span class="currsymbol">Mesh</span>
-<script type="text/javascript">explorer.outline.addDecl('Mesh');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Texture coordinates for each vertex
-<br><br>
-A Model is divided into one or more meshes.
-  Each mesh has its own material and an array of triangle indices. 
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Material 
-<span class="currsymbol">getMaterial</span>
-<script type="text/javascript">explorer.outline.addDecl('getMaterial');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the mesh material.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setMaterial</span>
-<script type="text/javascript">explorer.outline.addDecl('setMaterial');</script>
-(Material <span class="funcparam">matl</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setMaterial</span>
-<script type="text/javascript">explorer.outline.addDecl('setMaterial');</script>
-(char[] <span class="funcparam">filename</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec!(int,3) [] 
-<span class="currsymbol">getTriangles</span>
-<script type="text/javascript">explorer.outline.addDecl('getTriangles');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">getTrianglesVBO</span>
-<script type="text/javascript">explorer.outline.addDecl('getTrianglesVBO');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the OpenGL Vertex Buffer Object index for the triangles indices.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">addTriangle</span>
-<script type="text/javascript">explorer.outline.addDecl('addTriangle');</script>
-(Vec!(int,3) <span class="funcparam">t</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
 <span class="currsymbol">Model</span>
 <script type="text/javascript">explorer.outline.addDecl('Model');</script>
 ;
@@ -234,14 +134,16 @@ A Model is divided into one or more meshes.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">addVertex</span>
-<script type="text/javascript">explorer.outline.addDecl('addVertex');</script>
-(Vec3f <span class="funcparam">vert</span>, Vec3f <span class="funcparam">norm</span>, Vec!(float,2) <span class="funcparam">tex</span>);
+<dt><span class="decl">char[] 
+<span class="currsymbol">getSource</span>
+<script type="text/javascript">explorer.outline.addDecl('getSource');</script>
+();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get the path to the file where the model was loaded.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -256,16 +158,51 @@ A Model is divided into one or more meshes.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">getSource</span>
-<script type="text/javascript">explorer.outline.addDecl('getSource');</script>
+<dt><span class="decl">int 
+<span class="currsymbol">addVertex</span>
+<script type="text/javascript">explorer.outline.addDecl('addVertex');</script>
+(Vec3f <span class="funcparam">vert</span>, Vec3f <span class="funcparam">norm</span>, Vec!(float,2) <span class="funcparam">tex</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>This can only be called before upload()
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">bind</span>
+<script type="text/javascript">explorer.outline.addDecl('bind');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the path to the file where the model was loaded.
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">calcRadius</span>
+<script type="text/javascript">explorer.outline.addDecl('calcRadius');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Mesh 
+<span class="currsymbol">getMesh</span>
+<script type="text/javascript">explorer.outline.addDecl('getMesh');</script>
+(int <span class="funcparam">index</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -384,19 +321,6 @@ A Model is divided into one or more meshes.
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">calcRadius</span>
-<script type="text/javascript">explorer.outline.addDecl('calcRadius');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
 <span class="currsymbol">loadMs3d</span>
 <script type="text/javascript">explorer.outline.addDecl('loadMs3d');</script>
 (char[] <span class="funcparam">filename</span>);
@@ -459,7 +383,7 @@ A Model is divided into one or more meshes.
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 27 13:55:27 2007
+		on Sun Feb  4 00:19:18 2007
 
 	</div>
 	
@@ -506,6 +430,8 @@ A Model is divided into one or more meshes.
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
+	explorer.packageExplorer.addModule("yage.node.moveable");
+
 	explorer.packageExplorer.addModule("yage.node.node");
 
 	explorer.packageExplorer.addModule("yage.node.scene");
@@ -521,6 +447,8 @@ A Model is divided into one or more meshes.
 	explorer.packageExplorer.addModule("yage.resource.layer");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 

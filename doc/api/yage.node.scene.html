@@ -140,33 +140,6 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Scene 
-<span class="currsymbol">getSkybox</span>
-<script type="text/javascript">explorer.outline.addDecl('getSkybox');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the Scene that is used as the skybox.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setSkybox</span>
-<script type="text/javascript">explorer.outline.addDecl('setSkybox');</script>
-(Scene <span class="funcparam">_skybox</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>A Scene can have another heirarchy of nodes that will be
-  rendered as a skybox by any camera. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">LightNode[] 
 <span class="currsymbol">getLights</span>
 <script type="text/javascript">explorer.outline.addDecl('getLights');</script>
@@ -177,6 +150,17 @@ Eric Poggel
 <dd>Get an array that contains all lights that are children of this Scene.
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec!(float,4)  
+<span class="currsymbol">getClearColor</span>
+<script type="text/javascript">explorer.outline.addDecl('getClearColor');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -194,64 +178,9 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Vec!(float,4)  
-<span class="currsymbol">getClearColor</span>
-<script type="text/javascript">explorer.outline.addDecl('getClearColor');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setClearColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setClearColor');</script>
-(Vec!(float,4) <span class="funcparam">color</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setClearColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setClearColor');</script>
-(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec!(float,4)  
 <span class="currsymbol">getFogColor</span>
 <script type="text/javascript">explorer.outline.addDecl('getFogColor');</script>
 ();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setFogColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setFogColor');</script>
-(Vec!(float,4) <span class="funcparam">fog_color</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setFogColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setFogColor');</script>
-(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -270,32 +199,10 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setFogDensity</span>
-<script type="text/javascript">explorer.outline.addDecl('setFogDensity');</script>
-(float <span class="funcparam">density</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">bool 
 <span class="currsymbol">getFogEnabled</span>
 <script type="text/javascript">explorer.outline.addDecl('getFogEnabled');</script>
 ();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">enableFog</span>
-<script type="text/javascript">explorer.outline.addDecl('enableFog');</script>
-(bool <span class="funcparam">enabled</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -314,25 +221,16 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setGlobalAmbient</span>
-<script type="text/javascript">explorer.outline.addDecl('setGlobalAmbient');</script>
-(Vec!(float,4) <span class="funcparam">ambient</span>);
+<dt><span class="decl">Scene 
+<span class="currsymbol">getSkybox</span>
+<script type="text/javascript">explorer.outline.addDecl('getSkybox');</script>
+();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
+<dd>Get the Scene that is used as the skybox.
+<br><br>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setGlobalAmbient</span>
-<script type="text/javascript">explorer.outline.addDecl('setGlobalAmbient');</script>
-(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -348,13 +246,110 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
+<span class="currsymbol">setClearColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setClearColor');</script>
+(Vec!(float,4) <span class="funcparam">color</span>);
+<br>void 
+<span class="currsymbol">setClearColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setClearColor');</script>
+(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the background <span class="funcparam">color</span> when no skybox is specified.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setFogColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setFogColor');</script>
+(Vec!(float,4) <span class="funcparam">fog_color</span>);
+<br>void 
+<span class="currsymbol">setFogColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setFogColor');</script>
+(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the color of fog, when fog is enabled.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setFogDensity</span>
+<script type="text/javascript">explorer.outline.addDecl('setFogDensity');</script>
+(float <span class="funcparam">density</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the thickness (<span class="funcparam">density</span>) of the Scene's global fog, when fog is enabled.
+ Depending on the scale of your scene, decent values range between .001 and .1.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setFogEnabled</span>
+<script type="text/javascript">explorer.outline.addDecl('setFogEnabled');</script>
+(bool <span class="funcparam">enabled</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Enable global distance fog for this scene.
+ For best results, use no skybox and set the clear color the same as the fog color.
+ For improved performance, set the cameras' max view distance to just beyond
+ where objects become completely obscured by the fog. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setGlobalAmbient</span>
+<script type="text/javascript">explorer.outline.addDecl('setGlobalAmbient');</script>
+(Vec!(float,4) <span class="funcparam">ambient</span>);
+<br>void 
+<span class="currsymbol">setGlobalAmbient</span>
+<script type="text/javascript">explorer.outline.addDecl('setGlobalAmbient');</script>
+(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the color of the scene's global <span class="funcparam">ambient</span> light.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setSkybox</span>
+<script type="text/javascript">explorer.outline.addDecl('setSkybox');</script>
+(Scene <span class="funcparam">_skybox</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>A Scene can have another heirarchy of nodes that will be
+ rendered as a skybox by any camera. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
 <span class="currsymbol">setSpeedOfSound</span>
 <script type="text/javascript">explorer.outline.addDecl('setSpeedOfSound');</script>
 (float <span class="funcparam">speed</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Set the <span class="funcparam">speed</span> of sound variable that will be passed to OpenAL.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -365,7 +360,12 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Update all Nodes by the time that has passed since 
+<span class="currsymbol">update</span>
+<script type="text/javascript">explorer.outline.addDecl('update');</script>
+() was last called.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -376,7 +376,9 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Update all Nodes in the scene by <span class="funcparam">delta</span> seconds.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -387,38 +389,8 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Apply OpenGL options specific to this Scene.
-  This function is used internally by the engine and should not be called manually or exported.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">addLight</span>
-<script type="text/javascript">explorer.outline.addDecl('addLight');</script>
-(LightNode <span class="funcparam">light</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Add a <span class="funcparam">light</span> to this Scene's list of lights.
-  Only add lights that already exist as one of this node's children.
-  A list of lights in the scene are mainained here only for faster lookups.
-  This function is used internally by the engine and should not be called manually or exported.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">synchronized void 
-<span class="currsymbol">removeLight</span>
-<script type="text/javascript">explorer.outline.addDecl('removeLight');</script>
-(int <span class="funcparam">light_index</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Remove the light with the given light index.
-  This function is used internally by the engine and should not be called manually or exported.
+<dd>Apply OpenGL options specific to this Scene.  This function is used internally by
+ the engine and doesn't normally need to be called.
 <br><br>
 
 </dd>
@@ -441,7 +413,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 27 13:55:26 2007
+		on Sun Feb  4 00:19:17 2007
 
 	</div>
 	
@@ -488,6 +460,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
+	explorer.packageExplorer.addModule("yage.node.moveable");
+
 	explorer.packageExplorer.addModule("yage.node.node");
 
 	explorer.packageExplorer.addModule("yage.node.scene");
@@ -503,6 +477,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.resource.layer");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 

@@ -176,11 +176,12 @@ abstract class BaseNode
 		// is moved over the current item when removing from a Horde.
 		lifetime-= delta;
 		int i = children.length-1;
+		Node c[] = children.array();
 		while (i>=0)
-		{	if (children[i].lifetime<=0)
-				children[i].remove();
+		{	if (c[i].lifetime<=0)
+				c[i].remove();
 			else
-				children[i].update(delta); //may as well update it in the same loop
+				c[i].update(delta); //may as well update it in the same loop
 			i--;
 		}
 	}

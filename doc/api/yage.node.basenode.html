@@ -206,6 +206,19 @@ A self reference.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">getLifetime</span>
+<script type="text/javascript">explorer.outline.addDecl('getLifetime');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the time before the Node will be removed.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">setLifetime</span>
 <script type="text/javascript">explorer.outline.addDecl('setLifetime');</script>
@@ -227,30 +240,36 @@ A self reference.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">getLifetime</span>
-<script type="text/javascript">explorer.outline.addDecl('getLifetime');</script>
-();
+<dt><span class="decl">void 
+<span class="currsymbol">onUpdate</span>
+<script type="text/javascript">explorer.outline.addDecl('onUpdate');</script>
+(void delegate() <span class="funcparam">on_update</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the time before the Node will be removed.
+<dd>Set a function that will be called every time this Node is updated.
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">void delegate() <span class="funcparam">on_update</span></td>
 
-</dd>
+               
+<td>the function that will be called.  Use null
+ as an argument to clear
+ the function.</td></tr>
+</table><br>
+<font color=red>BUGS:</font><br>
+Certain Node methods cause access violations.  Perhaps this is a dmd bug?
+<br><br>
+<b>Example:</b><br>
+<pre class="d_code"> Node a = <font color=blue>new</font> Node(scene);
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected synchronized void 
-<span class="currsymbol">calcTransform</span>
-<script type="text/javascript">explorer.outline.addDecl('calcTransform');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Calculate and store the absolute transformation matrices of this Node up to the first node
- that has a correct absolute transformation matrix.
- This is called automatically when the absolute transformation matrix of a node is needed.
- Remember that rotating a Node's parent will change the Node's velocity. 
+ <font color=blue>void</font> doSomething()
+ {	self.setScale(a.getLifetime()); <font color=green>// Get smaller over time
+</font> }
+ a.setLifetime(5);
+ a.<b>onUpdate</b>(&amp;doSomething);
+</pre>
 <br><br>
 
 </dd>
@@ -300,6 +319,22 @@ A self reference.
 <br><br>
 
 </dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">protected synchronized void 
+<span class="currsymbol">calcTransform</span>
+<script type="text/javascript">explorer.outline.addDecl('calcTransform');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Calculate and store the absolute transformation matrices of this Node up to the first node
+ that has a correct absolute transformation matrix.
+ This is called automatically when the absolute transformation matrix of a node is needed.
+ Remember that rotating a Node's parent will change the Node's velocity. 
+<br><br>
+
+</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -319,7 +354,7 @@ A self reference.
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 27 13:55:26 2007
+		on Sun Feb  4 00:19:17 2007
 
 	</div>
 	
@@ -366,6 +401,8 @@ A self reference.
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
+	explorer.packageExplorer.addModule("yage.node.moveable");
+
 	explorer.packageExplorer.addModule("yage.node.node");
 
 	explorer.packageExplorer.addModule("yage.node.scene");
@@ -381,6 +418,8 @@ A self reference.
 	explorer.packageExplorer.addModule("yage.resource.layer");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 

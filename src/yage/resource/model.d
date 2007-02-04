@@ -14,6 +14,7 @@ import derelict.opengl.glext;
 import yage.core.vector;
 
 import yage.resource.material;
+import yage.resource.mesh;
 import yage.resource.resource;
 import yage.node.node;
 import yage.system.constant;
@@ -22,57 +23,6 @@ import yage.system.log;
 
 extern (C) void *memcpy(void *, void *, uint);
 
-/// Texture coordinates for each vertex
-
-/** A Model is divided into one or more meshes.
- *  Each mesh has its own material and an array of triangle indices. */
-class Mesh
-{	/*protected*/ Vec3i[]	triangles;
-	protected uint		vbo_triangles;
-	protected Material	material;
-
-	///
-	this()
-	{	if (Device.getSupport(DEVICE_VBO))
-			glGenBuffersARB(1, &vbo_triangles);
-	}
-
-	///
-	~this()
-	{	if (Device.getSupport(DEVICE_VBO))
-			glDeleteBuffersARB(triangles.length*Vec3i.sizeof, &vbo_triangles);
-	}
-
-	/// Get the mesh material.
-	Material getMaterial()
-	{	return material;
-	}
-
-	///
-	void setMaterial(Material matl)
-	{	this.material = matl;
-	}
-
-	///
-	void setMaterial(char[] filename)
-	{	this.material = Resource.material(filename);
-	}
-
-	///
-	Vec3i[] getTriangles()
-	{	return triangles;
-	}
-
-	/// Get the OpenGL Vertex Buffer Object index for the triangles indices.
-	uint getTrianglesVBO()
-	{	return vbo_triangles;
-	}
-
-	///
-	void addTriangle(Vec3i t)
-	{	triangles ~= t;
-	}
-}
 
 /** A Model is a 3D object, typically loaded from a file.
  *  A model contains an array of vertices, texture coordinates, and normals.
@@ -90,12 +40,11 @@ class Model
 	Vec3f[] normals;
 	Vec2f[]	texcoords;
 
-	protected:
-	uint 	vbo_vertices;	// OpenGL index of hardware vertex array
-	uint 	vbo_texcoords;	// OpenGL index of hardware texture coordinate array
-	uint 	vbo_normals;	// OpenGL index of hardware normal array
+	protected uint vbo_vertices;	// OpenGL index of hardware vertex array
+	protected uint vbo_texcoords;	// OpenGL index of hardware texture coordinate array
+	protected uint vbo_normals;		// OpenGL index of hardware normal array
 
-	public:
+
 	/// Generate buffers in video memory for the vertex data.
 	this()
 	{	if (Device.getSupport(DEVICE_VBO))
@@ -123,12 +72,9 @@ class Model
 		}
 	}
 
-	///
-	int addVertex(Vec3f vert, Vec3f norm, Vec2f tex)
-	{	vertices ~= vert;
-		normals ~= norm;
-		texcoords ~= tex;
-		return vertices.length-1;
+	/// Get the path to the file where the model was loaded.
+	char[] getSource()
+	{	return source;
 	}
 
 	///
@@ -140,11 +86,44 @@ class Model
 		return meshes.length-1;
 	}
 
-	/// Get the path to the file where the model was loaded.
-	char[] getSource()
-	{	return source;
+	/// This can only be called before upload()
+	int addVertex(Vec3f vert, Vec3f norm, Vec2f tex)
+	{	vertices ~= vert;
+		normals ~= norm;
+		texcoords ~= tex;
+		return vertices.length-1;
 	}
 
+
+	///
+	void bind()
+	{	// Use the VBO Extension
+		if (cached)
+		{	glBindBufferARB(GL_ARRAY_BUFFER, getVerticesVBO());
+			glVertexPointer(3, GL_FLOAT, 0, null);
+			glBindBufferARB(GL_ARRAY_BUFFER, getTexCoordsVBO());
+			glTexCoordPointer(2, GL_FLOAT, 0, null);
+			glBindBufferARB(GL_ARRAY_BUFFER, getNormalsVBO());
+			glNormalPointer(GL_FLOAT, 0, null);
+			glBindBufferARB(GL_ARRAY_BUFFER, 0);
+		}
+		else// Don't cache the model in video memory
+		{	glVertexPointer(3, GL_FLOAT, 0, getVertices().ptr);
+			glTexCoordPointer(2, GL_FLOAT, 0, getTexCoords().ptr);
+			glNormalPointer(GL_FLOAT, 0, getNormals().ptr);
+		}
+	}
+
+	/// Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
+	void calcRadius()
+	{	for (int v=0; v<vertices.length; v++)
+		{	float max = vertices[v].length();
+			if (max > radius)
+				radius = max;
+		}
+	}
+
+	///
 	Mesh getMesh(int index)
 	{	return meshes[index];
 	}
@@ -197,14 +176,6 @@ class Model
 	{	return radius;
 	}
 
-	/// Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
-	void calcRadius()
-	{	for (int v=0; v<vertices.length; v++)
-		{	float max = vertices[v].length();
-			if (max > radius)
-				radius = max;
-		}
-	}
 
 	/** Load a model from a Milkshape3D model file.
 	 *  All materials, etc. referenced by this model are loaded through the Resource
@@ -339,18 +310,19 @@ class Model
 
 				char[] name = mmaterials[mgroups[m].materialIndex].name;
 				if (exists(path~name))
-					meshes[m].material = Resource.material(path~name);
+					meshes[m].setMaterial(path~name);
 				else // create new material
-				{	meshes[m].material = new Material();
-					meshes[m].material.addLayer(new Layer());
+				{	Material matl = new Material();
+					matl.addLayer(new Layer());
 
 					mMaterial *cur_material = &mmaterials[mgroups[m].materialIndex];
 
-					memcpy(&meshes[m].material.getLayer(0).ambient, cur_material.ambient.ptr, 16);
-					memcpy(&meshes[m].material.getLayer(0).diffuse, cur_material.diffuse.ptr, 16);
-					memcpy(&meshes[m].material.getLayer(0).specular, cur_material.specular.ptr, 16);
-					memcpy(&meshes[m].material.getLayer(0).emissive, cur_material.emissive.ptr, 16);
-					meshes[m].material.getLayer(0).specularity = cur_material.shininess;
+					memcpy(&matl.getLayer(0).ambient, cur_material.ambient.ptr, 16);
+					memcpy(&matl.getLayer(0).diffuse, cur_material.diffuse.ptr, 16);
+					memcpy(&matl.getLayer(0).specular, cur_material.specular.ptr, 16);
+					memcpy(&matl.getLayer(0).emissive, cur_material.emissive.ptr, 16);
+					matl.getLayer(0).specularity = cur_material.shininess;
+					meshes[m].setMaterial(matl);
 
 					// Load textures
 					// Ms3d stores a texture map and an alpha map for every material
@@ -358,10 +330,10 @@ class Model
 					if (texfile.length)
 					{	if (icmp(texfile[0..2], ".\\")==0) // linux fails with .\ in a path.
 							texfile = texfile[2..length];
-						meshes[m].material.getLayer(0).addTexture(Resource.texture(path ~ texfile));
+						meshes[m].getMaterial().getLayer(0).addTexture(Resource.texture(path ~ texfile));
 					}
 					if (cur_material.alphamap[0])
-						meshes[m].material.getLayer(0).addTexture(Resource.texture(path ~ cur_material.alphamap));
+						meshes[m].getMaterial().getLayer(0).addTexture(Resource.texture(path ~ cur_material.alphamap));
 				}
 			}
 
@@ -448,8 +420,8 @@ class Model
 
 			// Find meshes with material of -1 (no material) and assign them the default material
 			if (mgroups[m].materialIndex==-1)
-			{	meshes[m].material = new Material();
-				meshes[m].material.addLayer(new Layer());	// should be init'd to defaults
+			{	meshes[m].setMaterial(new Material());
+				meshes[m].getMaterial().addLayer(new Layer());	// should be init'd to defaults
 			}
 		}
 
@@ -501,14 +473,17 @@ class Model
 			// bind and upload normals
 			glBindBufferARB(GL_ARRAY_BUFFER, vbo_normals);
 			glBufferDataARB(GL_ARRAY_BUFFER, normals.length*Vec3f.sizeof, normals.ptr, GL_STATIC_DRAW);
-			glBindBufferARB(GL_ARRAY_BUFFER, 0);	// and set back to default buffer
 
 			// bind and upload the triangle indices
 			foreach (Mesh m; meshes)
-			{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, m.vbo_triangles);
-				glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, m.triangles.length*Vec3i.sizeof, m.triangles.ptr, GL_STATIC_DRAW);
-				glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+			{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, m.getTrianglesVBO());
+				glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, m.getTriangles().length*Vec3i.sizeof, m.getTriangles().ptr, GL_STATIC_DRAW);
 			}
+
+			// and set back to default buffers
+			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindBufferARB(GL_ARRAY_BUFFER, 0);
+
 			cached = true;
 		}
 	}

@@ -18,6 +18,7 @@ import yage.node.all;
 import yage.node.scene;
 import yage.node.light;
 import yage.node.basenode;
+import yage.node.moveable;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.input;
@@ -31,7 +32,13 @@ import yage.system.input;
  * Likewise, setting the position or rotation of a node does so relative
  * to its parent.  Rendering is done recursively from the Scene down
  * through every child node.  Likewise, updating of position and rotation
- * occurs recusively from Scene's update() function.
+ * occurs recusively from Scene's update() method.  All Node methods that deal
+ * with position or velocity are separated into yage.node.moveable to keep things
+ * tidier.
+ *
+ * See_Also:
+ * yage.node.Moveable
+ * yage.node.BaseNode
  *
  * Example:
  * --------------------------------
@@ -49,14 +56,14 @@ import yage.system.input;
  *                            //to 0, 0, 0, instead of a.
  * --------------------------------
  */
-class Node : BaseNode
+class Node : MoveableNode
 {
-	protected bool 	onscreen = true;		// used internally by cameras to mark if they can see this node.
+	private bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
 	protected bool 	visible = true;
 	protected Vec3f	scale;
-	protected Vec4f color;					// RGBA, used for glColor4f()
+	protected Vec4f color;				// RGBA, used for glColor4f()
 
-	protected LightNode[] lights;			// Lights that affect this Node
+	protected LightNode[] lights;		// Lights that affect this Node
 	protected float[]     intensities;	// stores the brightness of each light on this Node.
 
 	/// Construct this Node as a child of parent.
@@ -65,6 +72,7 @@ class Node : BaseNode
 		super();
 		visible = false;
 		scale = Vec3f(1);
+		color = Vec4f(1, 1, 1, 1);
 		setParent(parent);
 	}
 
@@ -102,7 +110,7 @@ class Node : BaseNode
 		}
 	}
 
-	/// Hopefully a less volatile version of the destructor.
+	/// Remove this Node.  This function should be used instead of delete.
 	void remove()
 	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
 		if (index != -1)
@@ -137,12 +145,40 @@ class Node : BaseNode
 		return this;
 	}
 
+	/// Get the color of the Node.
 	Vec4f getColor()
 	{	return color;
 	}
 
+	/**
+	 * Set the color of the Node, multiplied with the material properties.
+	 * This is equivalent to glColor4f(). If the materials of any meshes have
+	 * blending enabled, their alpha value can be set via the fourth parameter.
+	 * Default color is white (all 1's).*/
+	void setColor(float r, float g, float b, float a=1)
+	{	color.set(r, g, b, a);
+	}
+	/// Ditto
 	void setColor(Vec4f color)
 	{	this.color = color;
+	}
+
+
+	/// Get an array of lights that were enabled in the last call to enableLights().
+	LightNode[] getLights()
+	{	return lights;
+	}
+
+	/** Get whether this node is inside the view frustum and large enough to be drawn by
+	 *  the last camera that rendered it. */
+	bool getOnscreen()
+	{	return onscreen;
+	}
+
+	/** Set whether this node is inside the current camera's view frustum.
+	 *  This function is used internally by the engine and should not be called manually or exported. */
+	void setOnscreen(bool onscreen)
+	{	this.onscreen = onscreen;
 	}
 
 	/// Get the radius of this Node's culling sphere.
@@ -176,315 +212,7 @@ class Node : BaseNode
 	/** Set whether this Node will be renered.  This has nothing to do with frustum culling.
 	 *  Setting a Node as invisible will not make its children invisible also. */
 	void setVisible(bool visible)
-	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
-		this.visible = visible;
-	}
-
-	/** Get whether this node is inside the view frustum and large enough to be drawn by
-	 *  the last camera that rendered it. */
-	bool getOnscreen()
-	{	return onscreen;
-	}
-
-	/** Set whether this node is inside the current camera's view frustum.
-	 *  This function is used internally by the engine and should not be called manually or exported. */
-	void setOnscreen(bool onscreen)
-	{	this.onscreen = onscreen;
-	}
-
-	/// Return a pointer to the transformation Matrix of this Node.  This is faster than returning a copy.
-	Matrix *getTransformPtr()
-	{	return &transform;
-	}
-
-	/// Return a pointer to the linear velocity Vector of this node.
-	Vec3f *getVelocityPtr()
-	{	return &linear_velocity;
-	}
-
-	/**
-	 * Return the relative transformation Matrix of this Node.  This Matrix stores the position
-	 * and rotation relative to its parent. */
-	Matrix getTransform()
-	{	return transform;
-	}
-	/// Get the absolute transformation Matrix of this Node, calculating it if necessary.
-	Matrix getAbsoluteTransform()
-	{	if (transform_dirty)
-			calcTransform();
-		return transform_abs;
-	}
-
-
-	/**
-	 * Get the position of this Node relative to its parent's location.
-	 * Note that changing the values of the return vector will not affect the Node's position. */
-	Vec3f getPosition()
-	{	return Vec3f(transform.v[12..15]);
-	}
-	/**
-	 * Get the absolute position of this Node, calculating it if necessary.
-	 * Note that changing the values of the return vector will not affect the Node's position. */
-	Vec3f getAbsolutePosition()
-	{	return Vec3f(getAbsoluteTransform().v[12..15]);
-	}
-
-
-	/**
-	 * Get the rotation of this Node relative to its parent's rotation.
-	 * Note that changing the values of the return vector will not affect the Node's rotation. */
-	Vec3f getRotation()
-	{	return transform.toAxis();
-	}
-	/**
-	 * Get the absolute rotation of this Node, calculating it if necessary.
-	 * Note that changing the values of the return vector will not affect the Node's rotation. */
-	Vec3f getAbsoluteRotation()
-	{	return getAbsoluteTransform().toAxis();
-	}
-
-
-	/// Set this Node's relative transformation Matrix.
-	void setTransform(Matrix transform)
-	{	this.transform = transform;
-		setTransformDirty();
-	}
-
-
-	/// Set the position of this node relative to its parent's position and rotation.
-	void setPosition(float x, float y, float z)
-	{	transform.v[12]=x;
-		transform.v[13]=y;
-		transform.v[14]=z;
-		setTransformDirty();
-	}
-	/// Set the position of this Node relative to its parent's position and rotation.
-	void setPosition(Vec3f position)
-	{	setPosition(position.x, position.y, position.z);
-	}
-
-
-	/// Set the rotation of this Node relative to its parent's rotation, using an axis angle.
-	void setRotation(float x, float y, float z)
-	{	setRotation(Vec3f(x, y, z));
-	}
-	/// Set the rotation of this Node relative to its parent's rotation, using an axis angle.
-	void setRotation(Vec3f axis)
-	{	transform.set(axis);
-		setTransformDirty();
-	}
-	/// Set the rotation of this Node relative to its parent's rotation, using a Quaternion.
-	void setRotation(Quatrn rotation)
-	{	transform.set(rotation);
-		setTransformDirty();
-	}
-
-
-	/**
-	 * Move and rotate by the transformation Matrix.
-	 * In other words, apply t as a transformation Matrix. */
-	void transformation(Matrix t)
-	{	transform.postMultiply(t);
-		setTransformDirty();
-	}
-
-
-	/// Move this Node relative to its current position and its parent.
-	void move(float x, float y, float z)
-	{	transform.v[12]+=x;
-		transform.v[13]+=y;
-		transform.v[14]+=z;
-		setTransformDirty();
-	}
-	/// Move this Node relative to its parent.
-	void move(Vec3f pos)
-	{	transform.v[12]+=pos.x;
-		transform.v[13]+=pos.y;
-		transform.v[14]+=pos.z;
-		setTransformDirty();
-	}
-
-
-	/// Move this Node relative to the direction it's pointing (relative to its rotation).
-	void moveRelative(float x, float y, float z)
-	{	moveRelative(Vec3f(x, y, z));
-	}
-	/// Move this Node relative to the direction it's pointing (relative to its rotation).
-	void moveRelative(Vec3f direction)
-	{	transform = transform.moveRelative(direction);
-		setTransformDirty();
-	}
-
-
-	/// Rotate this Node relative to its current rotation axis, using an axis angle
-	void rotate(float x, float y, float z)
-	{	rotate(Vec3f(x, y, z));
-	}
-	/// Rotate this Node relative to its current rotation axis, using an axis angle
-	void rotate(Vec3f axis)
-	{	transform = transform.rotate(axis);
-		setTransformDirty();
-	}
-	/// Rotate this Node relative to its current rotation axis, using a Quaternion
-	void rotate(Quatrn rotation)
-	{	transform = transform.rotate(rotation);
-		setTransformDirty();
-	}
-
-
-	/// Rotate this Node around the absolute worldspace axis, using an axis angle.
-	void rotateAbsolute(float x, float y, float z)
-	{	rotateAbsolute(Vec3f(x, y, z));
-	}
-	/// Rotate this Node around the absolute worldspace axis, using an axis angle.
-	void rotateAbsolute(Vec3f axis)
-	{	transform = transform.rotateAbsolute(axis);
-		setTransformDirty();
-	}
-	/// Rotate this Node around the absolute worldspace axis, using a Quaternion.
-	void rotateAbsolute(Quatrn rotation)
-	{	transform = transform.rotateAbsolute(rotation);
-		setTransformDirty();
-	}
-
-
-	/// Get the velocity of this Node relative to its parent.
-	Vec3f getVelocity()
-	{	return linear_velocity;
-	}
-
-	/// Get the absolute velocity of this Node. TODO: this can be incorrect.
-	Vec3f getAbsoluteVelocity()
-	{	if (transform_dirty)
-			calcTransform();
-		return linear_velocity_abs;
-	}
-
-
-	/// Set the velocity of this node relative to its parent's linear and angular velocity.
-	void setVelocity(float x, float y, float z)
-	{	linear_velocity.set(x, y, z);
-	}
-	/// Set the velocity of this Node relative to its parent's linear and angular velocity.
-	void setVelocity(Vec3f velocity)
-	{	linear_velocity = velocity;
-	}
-
-	/**
-	 * Return the angular velocity axis; the Node rotates around this axis and
-	 * the length of this is the rotations per second in radians. */
-	Vec3f getAngularVelocity()
-	{	return angular_velocity;
-	}
-	/// Set the angular velocity axis relative to this Node's current rotation.
-	void setAngularVelocity(float x, float y, float z)
-	{	angular_velocity.set(x, y, z);
-	}
-	/// Set the angular velocity axis relative to this Node's current rotation.
-	void setAngularVelocity(Vec3f axis)
-	{	angular_velocity = axis;
-	}
-	/**
-	 * Set the rate of rotation of this Node relative to its parent's rate of rotation, using a Quaternion.
-	 * Note that a Quaternion can only store angular values between -2pi and 2pi. */
-	void setAngularVelocity(Quatrn rotation)
-	{	angular_velocity = rotation.toAxis();
-	}
-
-	/*
-	/// Set the angular velocity axis relative to the absolute worldspace.
-	void setAngularVelocityAbsolute(float x, float y, float z)
-	{	setAngularVelocityAbsolute(Vec3f(x, y, z));
-	}
-	*/
-
-	/// Accelerate the Node in this direction.
-	void accelerate(float x, float y, float z)
-	{	linear_velocity+=Vec3f(x, y, z);
-	}
-	/// Accelerate the Node in this direction.
-	void accelerate(Vec3f v)
-	{	linear_velocity += v;
-	}
-
-
-	/// Accelerate relative to the way this Node is rotated (pointed).
-	void accelerateRelative(float x, float y, float z)
-	{	accelerateRelative(Vec3f(x, y, z));
-	}
-	/// Accelerate relative to the way this Node is rotated (pointed).
-	void accelerateRelative(Vec3f v)
-	{	linear_velocity += v.rotate(transform);
-	}
-
-
-	/// Accelerate the angular velocity of the Node by this axis.
-	void angularAccelerate(float x, float y, float z)
-	{	angular_velocity += Vec3f(x, y, z);
-	}
-	/// Accelerate the angular velocity of the Node by this axis.
-	void angularAccelerate(Vec3f axis)
-	{	angular_velocity += axis;
-	}
-	/**
-	 * Accelerate the angular velocity of the Node by this rotation Quaternion.
-	 * Note that a Quaternion can only store angular values between -2pi and 2pi. */
-	void angularAccelerate(Quatrn rotation)
-	{	angular_velocity += rotation.toAxis();
-	}
-
-
-	/**
-	 * Accelerate the rotation of this Node, interpreting the acceleration axis
-	 * in terms of absolute worldspace coordinates. */
-	void angularAccelerateAbsolute(float x, float y, float z)
-	{	angularAccelerateAbsolute(Vec3f(x, y, z));
-	}
-	/**
-	 * Accelerate the rotation of this Node, interpreting the acceleration axis
-	 * in terms of absolute worldspace coordinates. */
-	void angularAccelerateAbsolute(Vec3f axis)
-	{	angular_velocity += axis.rotate(getAbsoluteTransform().inverse());
-	}
-
-
-
-	/**
-	 * Render this Node as a cube.  Note that this Node type is invisible by default.
-	 * This function is called automatically as needed by camera.toTexture().*/
-	void render()
-	{
-		// Front Face
-		glTexCoord2f(0, 1); glVertex3f(-1, -1, 1);
-		glTexCoord2f(1, 1); glVertex3f( 1, -1, 1);
-		glTexCoord2f(1, 0); glVertex3f( 1,  1, 1);
-		glTexCoord2f(0, 0); glVertex3f(-1,  1, 1);
-		// Back Face
-		glTexCoord2f(1, 1); glVertex3f(-1, -1, -1);
-		glTexCoord2f(1, 0); glVertex3f(-1,  1, -1);
-		glTexCoord2f(0, 0); glVertex3f( 1,  1, -1);
-		glTexCoord2f(0, 1); glVertex3f( 1, -1, -1);
-		// Top Face
-		glTexCoord2f(1, 1); glVertex3f(-1,  1, -1);
-		glTexCoord2f(1, 0); glVertex3f(-1,  1,  1);
-		glTexCoord2f(0, 0); glVertex3f( 1,  1,  1);
-		glTexCoord2f(0, 1); glVertex3f( 1,  1, -1);
-		// Bottom Face
-		glTexCoord2f(0, 1); glVertex3f(-1, -1, -1);
-		glTexCoord2f(1, 1); glVertex3f( 1, -1, -1);
-		glTexCoord2f(1, 0); glVertex3f( 1, -1,  1);
-		glTexCoord2f(0, 0); glVertex3f(-1, -1,  1);
-		// Right face
-		glTexCoord2f(1, 1); glVertex3f(1, -1, -1);
-		glTexCoord2f(1, 0); glVertex3f(1,  1, -1);
-		glTexCoord2f(0, 0); glVertex3f(1,  1,  1);
-		glTexCoord2f(0, 1); glVertex3f(1, -1,  1);
-		// Left Face
-		glTexCoord2f(0, 1); glVertex3f(-1, -1, -1);
-		glTexCoord2f(1, 1); glVertex3f(-1, -1,  1);
-		glTexCoord2f(1, 0); glVertex3f(-1,  1,  1);
-		glTexCoord2f(0, 0); glVertex3f(-1,  1, -1);
-		glEnd();
+	{	this.visible = visible;
 	}
 
 	/**
@@ -506,28 +234,14 @@ class Node : BaseNode
 	}
 
 
-	/** Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
-	 *  This should be called whenever a Node is moved or rotated
-	 *  This function is used internally by the engine and normally doesn't need to be called. */
-	void setTransformDirty()
-	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
-
-		if (!transform_dirty)
-		{	transform_dirty=true;
-			Node[] a = children.array();
-			foreach(Node c; children.array())
-				c.setTransformDirty();
-		}
-	}
-
-
-	/** Enable the lights that most affect this Node.
-	 *  All lights that affect this Node can't be enabled, due to hardware and performance
-	 *  reasons, so only the lights that affect the node the most are enabled.
-	 *  This function is used internally by the engine and should not be called manually or exported.
+	/**
+	 * Enable the lights that most affect this Node.
+	 * All lights that affect this Node can't always be enabled, due to hardware and performance
+	 * reasons, so only the lights that affect the node the most are enabled.
+	 * This function is used internally by the engine and should not be called manually or exported.
 	 *
-	 *  TODO: Take into account a spotlight inside a Node that shines outward but doesn't shine
-	 *  on the Node's center.  Need to test to see if this is even broken.
+	 * TODO: Take into account a spotlight inside a Node that shines outward but doesn't shine
+	 * on the Node's center.  Need to test to see if this is even broken.
 	 * Also perhaps use axis sorting for faster calculations. */
 	synchronized void enableLights(ubyte number=8)
 	{

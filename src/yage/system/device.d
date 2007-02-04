@@ -49,8 +49,6 @@ abstract class Device
 
 	// Misc
 	static bool initialized=0;			// true if init() has been called
-	static CameraNode current_camera;	// the current camera (used internally)
-
 
 	// The texture that is rendered to the screen.
 	static CameraTexture texture;
@@ -150,6 +148,7 @@ abstract class Device
 		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, true); // [below] Specular highlights w/ textures.
 		glLightModeli(LIGHT_MODEL_COLOR_CONTROL_EXT, SEPARATE_SPECULAR_COLOR_EXT);
 
+		glEnable(GL_LIGHTING);
 		glFogi(GL_FOG_MODE, GL_EXP); // Most realistic?
 
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -339,18 +338,5 @@ abstract class Device
 				throw new Exception("Failed to resize the window!");
 		}
 	}
-
-	/** Get the current camera that is rendering the scene.  Only one camera can render at a time.
-	 *  This function is used internally by the engine and should not be called manually or exported. */
-	static CameraNode getCurrentCamera()
-	{	return current_camera;
-	}
-
-	/** Set the current camera that is rendering the scene.
-	 *  This function is used internally by the engine and should not be called manually or exported. */
-	static void setCurrentCamera(CameraNode camera)
-	{	current_camera = camera;
-	}
-
 }
 

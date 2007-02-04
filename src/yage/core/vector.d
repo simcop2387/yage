@@ -52,14 +52,14 @@ struct Vec(T, int K)
 	}
 
 	/// Create a new vector with the values s0, s1, s2, ...
-	static Vec!(T, K) opCall(T[] s ...)
+	static Vec!(T, K) opCall(T[K] s ...)
 	{	assert(s.length==K);
 		Vec!(T, K) res;
 		res.v[0..K] = s[0..K];
 		return res;
 	}
 
-	/// Create a new vector with the values of s; s must be at least of length 3.
+	/// Create a new vector with the values of s; s must be at least of length K.
 	static Vec!(T, K) opCall(T[] s)
 	{	assert(s.length>=K);
 		Vec!(T, K) res;
@@ -113,6 +113,13 @@ struct Vec(T, int K)
 	{	Vec!(T, K) res = *this;
 		for (int i=0; i<v.length; i++)
 			res.v[i] *= s;
+		return res;
+	}
+
+	Vec!(T, K) scale(Vec!(T, K) s)
+	{	Vec!(T, K) res = *this;
+		for (int i=0; i<v.length; i++)
+			res.v[i] *= s.v[i];
 		return res;
 	}
 
@@ -380,9 +387,9 @@ struct Vec3f
 		return *this;
 	}
 
-	/// Print the x, y, z values of the vector to the standard output.
-	void print()
-	{	writefln("Vec3f: "~toString());
+	///
+	void *ptr()
+	{	return v.ptr;
 	}
 
 	/**

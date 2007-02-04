@@ -21,8 +21,8 @@ import yage.system.render;
  * It is useful for special effects such as dust and flares. */
 class SpriteNode : Node
 {
-	static Model model;
-	Material material;
+	protected static Model model;
+	protected Material material;
 
 	/// Create this Node as a child of parent.
 	this(BaseNode parent)
@@ -47,6 +47,10 @@ class SpriteNode : Node
 	{	return 1.414213562*scale.max();
 	}
 
+	Material getMaterial()
+	{	return material;
+	}
+
 	/// Set the Material of the SpriteNode.
 	void setMaterial(Material material)
 	{	this.material=material;
@@ -59,6 +63,7 @@ class SpriteNode : Node
 	{	setMaterial(Resource.material(filename));
 	}
 
+/*
 	/// Render the SpriteNode.  This is used internally.
 	void render()
 	{
@@ -85,4 +90,5 @@ class SpriteNode : Node
 
 		Render.addModel(m, model, material, lights);
 	}
+	*/
 }

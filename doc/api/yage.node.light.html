@@ -206,11 +206,11 @@ All color values are floating point in the range from 0 to 1 and in the order
 <dt><span class="decl">void 
 <span class="currsymbol">setAmbient</span>
 <script type="text/javascript">explorer.outline.addDecl('setAmbient');</script>
-(Vec!(float,4) <span class="funcparam">_ambient</span>);
+(Vec!(float,4) <span class="funcparam">ambient</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the ambient color of the light.
+<dd>Set the <span class="funcparam">ambient</span> color of the light.
 <br><br>
 
 </dd>
@@ -245,11 +245,11 @@ All color values are floating point in the range from 0 to 1 and in the order
 <dt><span class="decl">void 
 <span class="currsymbol">setDiffuse</span>
 <script type="text/javascript">explorer.outline.addDecl('setDiffuse');</script>
-(Vec!(float,4) <span class="funcparam">_diffuse</span>);
+(Vec!(float,4) <span class="funcparam">diffuse</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the diffuse color of the light.
+<dd>Set the <span class="funcparam">diffuse</span> color of the light.
 <br><br>
 
 </dd>
@@ -284,11 +284,11 @@ All color values are floating point in the range from 0 to 1 and in the order
 <dt><span class="decl">void 
 <span class="currsymbol">setSpecular</span>
 <script type="text/javascript">explorer.outline.addDecl('setSpecular');</script>
-(Vec!(float,4) <span class="funcparam">_specular</span>);
+(Vec!(float,4) <span class="funcparam">specular</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the specular color of the light.
+<dd>Set the <span class="funcparam">specular</span> color of the light.
 <br><br>
 
 </dd>
@@ -467,7 +467,7 @@ RGB color value in a Vec3f of floats from 0 to 1.
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 27 13:55:26 2007
+		on Sun Feb  4 00:19:17 2007
 
 	</div>
 	
@@ -514,6 +514,8 @@ RGB color value in a Vec3f of floats from 0 to 1.
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
+	explorer.packageExplorer.addModule("yage.node.moveable");
+
 	explorer.packageExplorer.addModule("yage.node.node");
 
 	explorer.packageExplorer.addModule("yage.node.scene");
@@ -529,6 +531,8 @@ RGB color value in a Vec3f of floats from 0 to 1.
 	explorer.packageExplorer.addModule("yage.resource.layer");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 

@@ -58,20 +58,15 @@ class Scene : BaseNode
 	}
 
 
-	/// Get the Scene that is used as the skybox.
-	Scene getSkybox()
-	{	return skybox;
-	}
-	/** A Scene can have another heirarchy of nodes that will be
-	 *  rendered as a skybox by any camera. */
-	void setSkybox(Scene _skybox)
-	{	skybox = _skybox;
-	}
-
 
 	/// Get an array that contains all lights that are children of this Scene.
 	LightNode[] getLights()
 	{	return cast(LightNode[])lights.array();
+	}
+
+	///
+	Vec4f getClearColor()
+	{	return color;
 	}
 
 	/// Return the amount of time since the last time update() was called for this Scene.
@@ -80,85 +75,105 @@ class Scene : BaseNode
 	}
 
 	///
-	Vec4f getClearColor()
-	{	return color;
-	}
-	///
-	void setClearColor(Vec4f color)
-	{	this.color = color;
-	}
-	///
-	void setClearColor(float r, float g, float b)
-	{	color = Vec4f(r, g, b, 1);
-	}
-
-	///
 	Vec4f getFogColor()
 	{	return fog_color;
-	}
-	///
-	void setFogColor(Vec4f fog_color)
-	{	this.fog_color = fog_color;
-	}
-	///
-	void setFogColor(float r, float g, float b)
-	{	fog_color = Vec4f(r, g, b, 1);
 	}
 
 	///
 	float getFogDensity()
 	{	return fog_density;
 	}
-	///
-	void setFogDensity(float density)
-	{	fog_density = density;
-	}
 
 	///
 	bool getFogEnabled()
 	{	return fog_enabled;
-	}
-	///
-	void enableFog(bool enabled)
-	{	fog_enabled = enabled;
 	}
 
 	///
 	Vec4f getGlobalAmbient()
 	{	return ambient;
 	}
-	///
-	void setGlobalAmbient(Vec4f ambient)
-	{	this.ambient = ambient;
-	}
-	///
-	void setGlobalAmbient(float r, float g, float b)
-	{	ambient = Vec4f(r, g, b, 1);
+
+	/// Get the Scene that is used as the skybox.
+	Scene getSkybox()
+	{	return skybox;
 	}
 
 	///
 	float getSpeedOfSound()
 	{	return speed_of_sound;
 	}
-	///
+
+
+	/// Set the background color when no skybox is specified.
+	void setClearColor(Vec4f color)
+	{	this.color = color;
+	}
+	/// Ditto
+	void setClearColor(float r, float g, float b)
+	{	color = Vec4f(r, g, b, 1);
+	}
+
+	/// Set the color of fog, when fog is enabled.
+	void setFogColor(Vec4f fog_color)
+	{	this.fog_color = fog_color;
+	}
+	/// Ditto
+	void setFogColor(float r, float g, float b)
+	{	fog_color = Vec4f(r, g, b, 1);
+	}
+
+	/**
+	 * Set the thickness (density) of the Scene's global fog, when fog is enabled.
+	 * Depending on the scale of your scene, decent values range between .001 and .1.*/
+	void setFogDensity(float density)
+	{	fog_density = density;
+	}
+
+	/**
+	 * Enable global distance fog for this scene.
+	 * For best results, use no skybox and set the clear color the same as the fog color.
+	 * For improved performance, set the cameras' max view distance to just beyond
+	 * where objects become completely obscured by the fog. */
+	void setFogEnabled(bool enabled)
+	{	fog_enabled = enabled;
+	}
+
+	/// Set the color of the scene's global ambient light.
+	void setGlobalAmbient(Vec4f ambient)
+	{	this.ambient = ambient;
+	}
+	/// Ditto
+	void setGlobalAmbient(float r, float g, float b)
+	{	ambient = Vec4f(r, g, b, 1);
+	}
+
+	/**
+	 * A Scene can have another heirarchy of nodes that will be
+	 * rendered as a skybox by any camera. */
+	void setSkybox(Scene _skybox)
+	{	skybox = _skybox;
+	}
+
+	/// Set the speed of sound variable that will be passed to OpenAL.
 	void setSpeedOfSound(float speed)
 	{	speed_of_sound = speed;
 		alDopplerVelocity(speed/343.3);
 	}
 
-	///
+	/// Update all Nodes by the time that has passed since update() was last called.
 	void update()
 	{	super.update(delta.get());
 		delta.reset();
 	}
-	///
+	/// Update all Nodes in the scene by delta seconds.
 	void update(float delta)
 	{	super.update(delta);
 	}
 
-
-	/** Apply OpenGL options specific to this Scene.
-	 *  This function is used internally by the engine and should not be called manually or exported.*/
+	/**
+	 * Apply OpenGL options specific to this Scene.  This function is used internally by
+	 * the engine and doesn't normally need to be called.*/
 	void apply()
 	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.v.ptr);
 		glClearColor(color.a, color.b, color.c, color.d);
@@ -171,16 +186,18 @@ class Scene : BaseNode
 			glDisable(GL_FOG);
 	}
 
-	/** Add a light to this Scene's list of lights.
-	 *  Only add lights that already exist as one of this node's children.
-	 *  A list of lights in the scene are mainained here only for faster lookups.
-	 *  This function is used internally by the engine and should not be called manually or exported.*/
+	/*
+	 * Add a light to this Scene's list of lights.
+	 * Only add lights that already exist as one of this node's children.
+	 * A list of lights in the scene are mainained here only for faster lookups.
+	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	void addLight(LightNode light)
 	{	light.setLightIndex(lights.add(light));
 	}
 
-	/** Remove the light with the given light index.
-	 *  This function is used internally by the engine and should not be called manually or exported.*/
+	/*
+	 * Remove the light with the given light index.
+	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	synchronized void removeLight(int light_index)
 	{
 		lights.remove(light_index);

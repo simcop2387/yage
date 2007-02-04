@@ -145,16 +145,28 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">CameraTexture 
-<span class="currsymbol">getTexture</span>
-<script type="text/javascript">explorer.outline.addDecl('getTexture');</script>
+<dt><span class="decl">protected void 
+<span class="currsymbol">buildFrustum</span>
+<script type="text/javascript">explorer.outline.addDecl('buildFrustum');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the Texture that the camera renders to.
+<dd>Build a 6-plane view frutum based on the orientation of the camera and
+ the parameters passed to setView(). 
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Plane [] 
+<span class="currsymbol">getFrustum</span>
+<script type="text/javascript">explorer.outline.addDecl('getFrustum');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -166,32 +178,6 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the inverse of the camera's absolute matrix.  This is pre-calculated per call to .toTexture().
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">getNodeCount</span>
-<script type="text/javascript">explorer.outline.addDecl('getNodeCount');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the number of Nodes on-screen after the last call to .toTexture().
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">getWorldCoordinate</span>
-<script type="text/javascript">explorer.outline.addDecl('getWorldCoordinate');</script>
-(int <span class="funcparam">x</span>, int <span class="funcparam">y</span>, float <span class="funcparam">z</span>, Vec3f <span class="funcparam">result</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><span class="funcparam">x</span> and <span class="funcparam">y</span> in screen coordinates, <span class="funcparam">z</span> is distance from camera. Unfinished
 <br><br>
 
 </dd>
@@ -213,22 +199,49 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setView</span>
-<script type="text/javascript">explorer.outline.addDecl('setView');</script>
-(float <span class="funcparam">near</span> = cast(float)1, float <span class="funcparam">far</span> = cast(float)100000, float <span class="funcparam">fov</span> = cast(float)45, float <span class="funcparam">aspect</span> = cast(float)0, float <span class="funcparam">threshold</span> = 0.667F);
+<dt><span class="decl">int 
+<span class="currsymbol">getNodeCount</span>
+<script type="text/javascript">explorer.outline.addDecl('getNodeCount');</script>
+();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set multiple variables that affect the camera's view when .toTexture() is called.
- \param <span class="funcparam">near</span> Nothing closer than this will be rendered.  The default is 1.
- \param <span class="funcparam">far</span> Nothing further away than this will be rendered.  The default is 100,000.
- \param <span class="funcparam">fov</span> The field of view of the camera, in degrees.  The default is 45.
- \param apsect The <span class="funcparam">aspect</span> ratio of the camera.  A special value of zero allows for
- it to be set automatically by the size of the window (Device.getWidth() /
- Device.getHeight()).  Zero is also the default value.
- \param <span class="funcparam">threshold</span> Minimum size of a node in pixels before it's rendered.  The default
- is 0.667 (2/3rds of a pixel).
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec!(int,2)  
+<span class="currsymbol">getResolution</span>
+<script type="text/javascript">explorer.outline.addDecl('getResolution');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">CameraTexture 
+<span class="currsymbol">getTexture</span>
+<script type="text/javascript">explorer.outline.addDecl('getTexture');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the Texture that the camera renders to.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">getWorldCoordinate</span>
+<script type="text/javascript">explorer.outline.addDecl('getWorldCoordinate');</script>
+(int <span class="funcparam">x</span>, int <span class="funcparam">y</span>, float <span class="funcparam">z</span>, Vec3f <span class="funcparam">result</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><span class="funcparam">x</span> and <span class="funcparam">y</span> in screen coordinates, <span class="funcparam">z</span> is distance from camera. Unfinished
 <br><br>
 
 </dd>
@@ -248,29 +261,45 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected void 
-<span class="currsymbol">buildFrustum</span>
-<script type="text/javascript">explorer.outline.addDecl('buildFrustum');</script>
-();
+<dt><span class="decl">void 
+<span class="currsymbol">setView</span>
+<script type="text/javascript">explorer.outline.addDecl('setView');</script>
+(float <span class="funcparam">near</span> = cast(float)1, float <span class="funcparam">far</span> = cast(float)100000, float <span class="funcparam">fov</span> = cast(float)45, float <span class="funcparam">aspect</span> = cast(float)0, float <span class="funcparam">threshold</span> = 0.667F);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Build a 6-plane view frutum based on the orientation of the camera and
- the parameters passed to setView(). 
+<dd>Set multiple variables that affect the camera's view when .toTexture() is called.
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">near</span></td>
 
-</dd>
+               
+<td>Nothing closer than this will be rendered.  The default is 1.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">far</span></td>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected void 
-<span class="currsymbol">renderScene</span>
-<script type="text/javascript">explorer.outline.addDecl('renderScene');</script>
-(Node <span class="funcparam">node</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+               
+<td>Nothing further away than this will be rendered.  The default is 100,000.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">fov</span></td>
 
-<dd>Render <span class="funcparam">node</span> and recursively every child Node to the framebuffer.
-<br><br>
+               
+<td>The field of view of the camera, in degrees.  The default is 45.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">apsect</td>
+
+               
+<td>The <span class="funcparam">aspect</span> ratio of the camera.  A special value of zero allows for
+ it to be set automatically by the size of the window (Device.getWidth() /
+ Device.getHeight()).  Zero is also the default value.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">threshold</span></td>
+
+               
+<td>Minimum size of a node in pixels before it's rendered.  The default
+ is 0.667 (2/3rds of a pixel).</td></tr>
+</table><br>
 
 </dd>
 
@@ -305,6 +334,23 @@ Should setTransformDirty() be overridden instead?
 <br><br>
 
 </dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">protected void 
+<span class="currsymbol">addNodesToRender</span>
+<script type="text/javascript">explorer.outline.addDecl('addNodesToRender');</script>
+(Scene <span class="funcparam">node</span>);
+<br>protected void 
+<span class="currsymbol">addNodesToRender</span>
+<script type="text/javascript">explorer.outline.addDecl('addNodesToRender');</script>
+(Node <span class="funcparam">node</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Add the <span class="funcparam">node</span> and all child Nodes to the framebuffer, if onscreen.
+<br><br>
+
+</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -324,7 +370,7 @@ Should setTransformDirty() be overridden instead?
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 27 13:55:26 2007
+		on Sun Feb  4 00:19:17 2007
 
 	</div>
 	
@@ -371,6 +417,8 @@ Should setTransformDirty() be overridden instead?
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
+	explorer.packageExplorer.addModule("yage.node.moveable");
+
 	explorer.packageExplorer.addModule("yage.node.node");
 
 	explorer.packageExplorer.addModule("yage.node.scene");
@@ -386,6 +434,8 @@ Should setTransformDirty() be overridden instead?
 	explorer.packageExplorer.addModule("yage.resource.layer");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 

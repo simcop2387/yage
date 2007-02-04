@@ -18,6 +18,7 @@ import yage.core.vector;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
+import yage.system.render;
 import yage.resource.texture;
 import yage.resource.resource;
 import yage.resource.shader;
@@ -191,21 +192,26 @@ class Layer
 	 * Params:
 	 * lights = An array containing the LightNodes that affect this material,
 	 * passed to the shader through uniform variables (unfinished).*/
-	void apply(LightNode[] lights = null)
+	void apply(LightNode[] lights = null, Vec4f color = Vec4f(1))
 	{
-		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.v.ptr);
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse.v.ptr);
+
+		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.scale(color).v.ptr);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse.scale(color).v.ptr);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, specular.v.ptr);
-		glMaterialfv(GL_FRONT, GL_EMISSION, emissive.v.ptr);
+		glMaterialfv(GL_FRONT, GL_EMISSION, emissive.scale(color).v.ptr);
 		glMaterialfv(GL_FRONT, GL_SHININESS, &specularity);
 
-		// Enable the first texture if it exists
-		if (textures.length && textures[0])
-		{	glEnable(GL_TEXTURE_2D);
-			textures[0].bind(clamp, filter);
+		// Blending
+		if (blend==LAYER_BLEND_AVERAGE)
+		{	glEnable(GL_BLEND);
+			glDepthMask(false);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
-		else
-			glDisable(GL_TEXTURE_2D);
+		if (blend==LAYER_BLEND_ADD)
+		{	glEnable(GL_BLEND);
+			glDepthMask(false);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		}
 
 		// Cull
 		if (cull == LAYER_CULL_BACK)
@@ -227,17 +233,13 @@ class Layer
 				break;
 		}
 
-		// Blending
-		if (blend==LAYER_BLEND_AVERAGE)
-		{	glEnable(GL_BLEND);
-			glDepthMask(false);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		// Enable the first texture if it exists
+		if (textures.length && textures[0])
+		{	glEnable(GL_TEXTURE_2D);
+			textures[0].bind(clamp, filter);
 		}
-		if (blend==LAYER_BLEND_ADD)
-		{	glEnable(GL_BLEND);
-			glDepthMask(false);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		}
+		else
+			glDisable(GL_TEXTURE_2D);
 
 		// Shader
 		if (program != 0)
@@ -247,24 +249,32 @@ class Layer
 				setUniform("light_number", lights.length);
 			} catch{}
 			try {
-				setUniform("fog_enabled", cast(float)Device.getCurrentCamera().getScene().getFogEnabled());
+				setUniform("fog_enabled", cast(float)Render.getCurrentCamera().getScene().getFogEnabled());
 			} catch{}
 		}
 	}
 
 	/// Reset the OpenGL state to the defaults.
 	void unApply()
-	{	glDisable(GL_TEXTURE_2D);
+	{
+		float s=0;
+		glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, Vec4f().v.ptr);
+		glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
+		glMaterialfv(GL_FRONT, GL_SHININESS, &s);
+
 		glDisable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glCullFace(GL_FRONT);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glDisable(GL_TEXTURE_2D);
 		glDepthMask(true);
-
 		if (program != 0)
 		{	glUseProgramObjectARB(0);
 			current_program = 0;
 		}
 	}
-
 
 	/// Return a string of xml for this layer.
 	char[] toString()

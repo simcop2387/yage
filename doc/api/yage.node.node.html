@@ -93,7 +93,7 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">Node</span>
 <script type="text/javascript">explorer.outline.addDecl('Node');</script>
-: yage.node.basenode.BaseNode;
+: yage.node.moveable.MoveableNode;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -108,7 +108,17 @@ Eric Poggel
  Likewise, setting the position or rotation of a node does so relative
  to its parent.  Rendering is done recursively from the Scene down
  through every child node.  Likewise, updating of position and rotation
- occurs recusively from Scene's update() function.
+ occurs recusively from Scene's update() method.  All 
+<span class="currsymbol">Node</span>
+<script type="text/javascript">explorer.outline.addDecl('Node');</script>
+ methods that deal
+ with position or velocity are separated into yage.node.moveable to keep things
+ tidier.
+<br><br>
+<b>See Also:</b><br>
+yage.node.Moveable
+ yage.node.BaseNode
+
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> Scene s = <font color=blue>new</font> Scene();
@@ -170,7 +180,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Hopefully a less volatile version of the destructor.
+<dd>Remove this Node.  This function should be used instead of delete.
 <br><br>
 
 </dd>
@@ -188,6 +198,80 @@ Eric Poggel
 <br><br>
 <b>Returns:</b><br>
 A self reference.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec!(float,4)  
+<span class="currsymbol">getColor</span>
+<script type="text/javascript">explorer.outline.addDecl('getColor');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the color of the Node.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
+(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
+<br>void 
+<span class="currsymbol">setColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
+(Vec!(float,4) <span class="funcparam">color</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the color of the Node, multiplied with the material properties.
+ This is equivalent to glColor4f(). If the materials of any meshes have
+ blending enabled, their alpha value can be set via the fourth parameter.
+ Default color is white (all 1's).
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">LightNode[] 
+<span class="currsymbol">getLights</span>
+<script type="text/javascript">explorer.outline.addDecl('getLights');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get an array of lights that were enabled in the last call to enableLights().
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">getOnscreen</span>
+<script type="text/javascript">explorer.outline.addDecl('getOnscreen');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get whether this node is inside the view frustum and large enough to be drawn by
+  the last camera that rendered it. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setOnscreen</span>
+<script type="text/javascript">explorer.outline.addDecl('setOnscreen');</script>
+(bool <span class="funcparam">onscreen</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set whether this node is inside the current camera's view frustum.
+  This function is used internally by the engine and should not be called manually or exported. 
 <br><br>
 
 </dd>
@@ -248,33 +332,6 @@ A self reference.
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">bool 
-<span class="currsymbol">getLit</span>
-<script type="text/javascript">explorer.outline.addDecl('getLit');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Is this node affected by lighting?
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setLit</span>
-<script type="text/javascript">explorer.outline.addDecl('setLit');</script>
-(bool <span class="funcparam">lit</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set whether this Node is affected by lighting.
- If unlit, it will appear at full brightness unless affected by a shader. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
 <span class="currsymbol">getVisible</span>
 <script type="text/javascript">explorer.outline.addDecl('getVisible');</script>
 ();
@@ -301,637 +358,6 @@ A self reference.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">getOnscreen</span>
-<script type="text/javascript">explorer.outline.addDecl('getOnscreen');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get whether this node is inside the view frustum and large enough to be drawn by
-  the last camera that rendered it. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setOnscreen</span>
-<script type="text/javascript">explorer.outline.addDecl('setOnscreen');</script>
-(bool <span class="funcparam">onscreen</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set whether this node is inside the current camera's view frustum.
-  This function is used internally by the engine and should not be called manually or exported. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix * 
-<span class="currsymbol">getTransformPtr</span>
-<script type="text/javascript">explorer.outline.addDecl('getTransformPtr');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a pointer to the transformation Matrix of this Node.  This is faster than returning a copy.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f * 
-<span class="currsymbol">getVelocityPtr</span>
-<script type="text/javascript">explorer.outline.addDecl('getVelocityPtr');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a pointer to the linear velocity Vector of this node.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix  
-<span class="currsymbol">getTransform</span>
-<script type="text/javascript">explorer.outline.addDecl('getTransform');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return the relative transformation Matrix of this Node.  This Matrix stores the position
- and rotation relative to its parent. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix  
-<span class="currsymbol">getAbsoluteTransform</span>
-<script type="text/javascript">explorer.outline.addDecl('getAbsoluteTransform');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the absolute transformation Matrix of this Node, calculating it if necessary.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
-<span class="currsymbol">getPosition</span>
-<script type="text/javascript">explorer.outline.addDecl('getPosition');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the position of this Node relative to its parent's location.
- Note that changing the values of the return vector will not affect the Node's position. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
-<span class="currsymbol">getAbsolutePosition</span>
-<script type="text/javascript">explorer.outline.addDecl('getAbsolutePosition');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the absolute position of this Node, calculating it if necessary.
- Note that changing the values of the return vector will not affect the Node's position. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
-<span class="currsymbol">getRotation</span>
-<script type="text/javascript">explorer.outline.addDecl('getRotation');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the rotation of this Node relative to its parent's rotation.
- Note that changing the values of the return vector will not affect the Node's rotation. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
-<span class="currsymbol">getAbsoluteRotation</span>
-<script type="text/javascript">explorer.outline.addDecl('getAbsoluteRotation');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the absolute rotation of this Node, calculating it if necessary.
- Note that changing the values of the return vector will not affect the Node's rotation. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setTransform</span>
-<script type="text/javascript">explorer.outline.addDecl('setTransform');</script>
-(Matrix <span class="funcparam">transform</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set this Node's relative transformation Matrix.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setPosition</span>
-<script type="text/javascript">explorer.outline.addDecl('setPosition');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the position of this node relative to its parent's position and rotation.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setPosition</span>
-<script type="text/javascript">explorer.outline.addDecl('setPosition');</script>
-(Vec3f <span class="funcparam">position</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">position</span> of this Node relative to its parent's <span class="funcparam">position</span> and rotation.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setRotation</span>
-<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the rotation of this Node relative to its parent's rotation, using an axis angle.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setRotation</span>
-<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the rotation of this Node relative to its parent's rotation, using an <span class="funcparam">axis</span> angle.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setRotation</span>
-<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
-(Quatrn <span class="funcparam">rotation</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">rotation</span> of this Node relative to its parent's <span class="funcparam">rotation</span>, using a Quaternion.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">transformation</span>
-<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
-(Matrix <span class="funcparam">t</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Move and rotate by the 
-<span class="currsymbol">transformation</span>
-<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
- Matrix.
- In other words, apply <span class="funcparam">t</span> as a 
-<span class="currsymbol">transformation</span>
-<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
- Matrix. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">move</span>
-<script type="text/javascript">explorer.outline.addDecl('move');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Move this Node relative to its current position and its parent.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">move</span>
-<script type="text/javascript">explorer.outline.addDecl('move');</script>
-(Vec3f <span class="funcparam">pos</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Move this Node relative to its parent.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">moveRelative</span>
-<script type="text/javascript">explorer.outline.addDecl('moveRelative');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Move this Node relative to the direction it's pointing (relative to its rotation).
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">moveRelative</span>
-<script type="text/javascript">explorer.outline.addDecl('moveRelative');</script>
-(Vec3f <span class="funcparam">direction</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Move this Node relative to the <span class="funcparam">direction</span> it's pointing (relative to its rotation).
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rotate</span>
-<script type="text/javascript">explorer.outline.addDecl('rotate');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Rotate this Node relative to its current rotation axis, using an axis angle
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rotate</span>
-<script type="text/javascript">explorer.outline.addDecl('rotate');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Rotate this Node relative to its current rotation <span class="funcparam">axis</span>, using an <span class="funcparam">axis</span> angle
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rotate</span>
-<script type="text/javascript">explorer.outline.addDecl('rotate');</script>
-(Quatrn <span class="funcparam">rotation</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Rotate this Node relative to its current <span class="funcparam">rotation</span> axis, using a Quaternion
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rotateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Rotate this Node around the absolute worldspace axis, using an axis angle.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rotateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Rotate this Node around the absolute worldspace <span class="funcparam">axis</span>, using an <span class="funcparam">axis</span> angle.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rotateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
-(Quatrn <span class="funcparam">rotation</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Rotate this Node around the absolute worldspace axis, using a Quaternion.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
-<span class="currsymbol">getVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('getVelocity');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the velocity of this Node relative to its parent.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
-<span class="currsymbol">getAbsoluteVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('getAbsoluteVelocity');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the absolute velocity of this Node. (TODO: what about velicity_dirty ?)
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('setVelocity');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the velocity of this node relative to its parent's linear and angular velocity.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('setVelocity');</script>
-(Vec3f <span class="funcparam">velocity</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">velocity</span> of this Node relative to its parent's linear and angular <span class="funcparam">velocity</span>.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
-<span class="currsymbol">getAngularVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('getAngularVelocity');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return the angular velocity axis; the Node rotates around this axis and
- the length of this is the rotations per second in radians. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setAngularVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('setAngularVelocity');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the angular velocity axis relative to this Node's current rotation.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setAngularVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('setAngularVelocity');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the angular velocity <span class="funcparam">axis</span> relative to this Node's current rotation.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setAngularVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('setAngularVelocity');</script>
-(Quatrn <span class="funcparam">rotation</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the rate of <span class="funcparam">rotation</span> of this Node relative to its parent's rate of <span class="funcparam">rotation</span>, using a Quaternion.
- Note that a Quaternion can only store angular values between -2pi and 2pi. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setAngularVelocityAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('setAngularVelocityAbsolute');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the angular velocity axis relative to the absolute worldspace.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setAngularVelocityAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('setAngularVelocityAbsolute');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the angular velocity <span class="funcparam">axis</span> relative to the absolute worldspace.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">accelerate</span>
-<script type="text/javascript">explorer.outline.addDecl('accelerate');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate the Node in this direction.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">accelerate</span>
-<script type="text/javascript">explorer.outline.addDecl('accelerate');</script>
-(Vec3f <span class="funcparam">v</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate the Node in this direction.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">accelerateRelative</span>
-<script type="text/javascript">explorer.outline.addDecl('accelerateRelative');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate relative to the way this Node is rotated (pointed).
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">accelerateRelative</span>
-<script type="text/javascript">explorer.outline.addDecl('accelerateRelative');</script>
-(Vec3f <span class="funcparam">v</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate relative to the way this Node is rotated (pointed).
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">angularAccelerate</span>
-<script type="text/javascript">explorer.outline.addDecl('angularAccelerate');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate the angular velocity of the Node by this axis.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">angularAccelerate</span>
-<script type="text/javascript">explorer.outline.addDecl('angularAccelerate');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate the angular velocity of the Node by this <span class="funcparam">axis</span>.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">angularAccelerate</span>
-<script type="text/javascript">explorer.outline.addDecl('angularAccelerate');</script>
-(Quatrn <span class="funcparam">rotation</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate the angular velocity of the Node by this <span class="funcparam">rotation</span> Quaternion.
- Note that a Quaternion can only store angular values between -2pi and 2pi. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">angularAccelerateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('angularAccelerateAbsolute');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate the rotation of this Node, interpreting the acceleration axis
- in terms of absolute worldspace coordinates. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">angularAccelerateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('angularAccelerateAbsolute');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Accelerate the rotation of this Node, interpreting the acceleration <span class="funcparam">axis</span>
- in terms of absolute worldspace coordinates. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">render</span>
-<script type="text/javascript">explorer.outline.addDecl('render');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Render this Node as a cube.  Note that this Node type is invisible by default.
- This function is called automatically as needed by camera.toTexture().
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">update</span>
 <script type="text/javascript">explorer.outline.addDecl('update');</script>
@@ -949,21 +375,6 @@ A self reference.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setTransformDirty</span>
-<script type="text/javascript">explorer.outline.addDecl('setTransformDirty');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
-  This should be called whenever a Node is moved or rotated
-  This function is used internally by the engine and normally doesn't need to be called. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">synchronized void 
 <span class="currsymbol">enableLights</span>
 <script type="text/javascript">explorer.outline.addDecl('enableLights');</script>
@@ -972,13 +383,13 @@ A self reference.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Enable the lights that most affect this Node.
-  All lights that affect this Node can't be enabled, due to hardware and performance
-  reasons, so only the lights that affect the node the most are enabled.
-  This function is used internally by the engine and should not be called manually or exported.
+ All lights that affect this Node can't always be enabled, due to hardware and performance
+ reasons, so only the lights that affect the node the most are enabled.
+ This function is used internally by the engine and should not be called manually or exported.
 <br><br>
 <b>TODO:</b><br>
 Take into account a spotlight inside a Node that shines outward but doesn't shine
-  on the Node's center.  Need to test to see if this is even broken.
+ on the Node's center.  Need to test to see if this is even broken.
  Also perhaps use axis sorting for faster calculations. 
 <br><br>
 
@@ -1002,7 +413,7 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jan 27 13:55:26 2007
+		on Sun Feb  4 00:19:17 2007
 
 	</div>
 	
@@ -1049,6 +460,8 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
+	explorer.packageExplorer.addModule("yage.node.moveable");
+
 	explorer.packageExplorer.addModule("yage.node.node");
 
 	explorer.packageExplorer.addModule("yage.node.scene");
@@ -1064,6 +477,8 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 	explorer.packageExplorer.addModule("yage.resource.layer");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 
