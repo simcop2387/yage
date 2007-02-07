@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -21,4 +21,5 @@ public
 	import yage.node.scene;
 	import yage.node.sprite;
 	import yage.node.sound;
+	import yage.node.terrain;
 }

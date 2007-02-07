@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -25,7 +25,6 @@ class ModelNode : Node
 	/// Construct this Node as a child of parent.
 	this(BaseNode parent)
 	{	super(parent);
-		scale = Vec3f(1);
 		setVisible(true);
 	}
 
@@ -47,7 +46,7 @@ class ModelNode : Node
 	/// Set the 3D model used by this Node.
 	void setModel(Model model)
 	{	this.model = model;
-		radius = model.getRadius()*scale.max();
+		radius = model.getDimensions().scale(scale).max();
 	}
 
 	/**
@@ -58,18 +57,21 @@ class ModelNode : Node
 	{	setModel(Resource.model(filename));
 	}
 
-	/// Overridden to cache new radius
+	/// Overridden to cache the radius if changed by the scale.
 	void setScale(Vec3f scale)
 	{	super.setScale(scale);
 		if (model)
-			radius = model.getRadius()*scale.max();
+			radius = model.getDimensions().scale(scale).max();
 	}
 
-	/// Ditto.
+	/// ditto
+	void setScale(float x, float y, float z)
+	{	setScale(Vec3f(x, y, z));
+	}
+
+	/// ditto
 	void setScale(float scale)
-	{	super.setScale(scale);
-		if (model)
-			radius = model.getRadius()*scale;
+	{	setScale(Vec3f(scale, scale, scale));
 	}
 
 	/**

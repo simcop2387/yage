@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -213,7 +213,7 @@ abstract class Device
 
 	/**
 	 * Get whether the given opengl feature is supported by the hardware.
-	 * Params: constant is a DEVICE constant defined in yage.device.constant.*/
+	 * Params: constant is a DEVICE_* constant defined in yage.device.constant.*/
 	static bool getSupport(int constant)
 	{	switch (constant)
 		{	case DEVICE_SHADER:

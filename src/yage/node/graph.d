@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -21,7 +21,8 @@ import yage.node.basenode;
 
 /**
  * A GraphNode can be set to an arboolrary parametric equation of two variables
- * and rendered as a triangle mesh (a 3D graph), complete with a material and lighting.
+ * and rendered as a triangle mesh (a 3D graph), complete with a material and
+ * normals for lighting.
  * Example:
  * --------------------------------
  * GraphNode plot = new GraphNode(scene);
@@ -45,7 +46,6 @@ class GraphNode : Node
 	this(BaseNode parent)
 	{	super(parent);
 		setVisible(true);
-		scale = Vec3f(1, 1, 1);
 		setWindow(-10, 10, -10, 10);
 
 		model = new Model();
@@ -73,13 +73,14 @@ class GraphNode : Node
 		regenerate();
 	}
 
+	/// Return the Model generated from setFunction() and setMaterial().
 	Model getModel()
 	{	return model;
 	}
 
-	/// Get the distance to the furthest point, afer scaling.
+	/// Return the distance to the furthest point, afer scaling.
 	float getRadius()
-	{	return radius*scale.max();
+	{	return radius;
 	}
 
 	/// Set a parametric graph
@@ -87,21 +88,38 @@ class GraphNode : Node
 	{	this.func = func;
 	}
 
-	/// Set a function of two variables to generate texture coordinates.
-	void setTextureFunction(Vec2f delegate(float r, float s) texfunc)
-	{	this.texfunc = texfunc;
-	}
-
 	/// Set the Material of the GraphNode.
 	void setMaterial(Material material)
 	{	model.meshes[0].setMaterial(material);
 	}
 
-	/** Set the Material of the GraphNode, using the Resource Manager
-	 *  to ensure that no Material is loaded twice.
-	 *  Equivalent of setMaterial(Resource.material(filename)); */
-	void setMaterial(char[] filename)
-	{	model.meshes[0].setMaterial(Resource.material(filename));
+	/**
+	 * Set the Material of the GraphNode, using the Resource Manager
+	 * to ensure that no Material is loaded twice.
+	 * Equivalent of setMaterial(Resource.material(filename)); */
+	void setMaterial(char[] material_file)
+	{	model.meshes[0].setMaterial(Resource.material(material_file));
+	}
+
+	/// Overridden to cache the radius if changed by the scale.
+	void setScale(Vec3f scale)
+	{	super.setScale(scale);
+		radius = model.getDimensions().scale(scale).max();
+	}
+
+	/// ditto
+	void setScale(float x, float y, float z)
+	{	setScale(Vec3f(x, y, z));
+	}
+
+	/// ditto
+	void setScale(float scale)
+	{	setScale(Vec3f(scale, scale, scale));
+	}
+
+	/// Set a function of two variables to generate texture coordinates.
+	void setTextureFunction(Vec2f delegate(float r, float s) texfunc)
+	{	this.texfunc = texfunc;
 	}
 
 	/// Set the range of values for the GraphNode.
@@ -143,7 +161,6 @@ class GraphNode : Node
 		for (int i=0; i<vsize; i++)
 			model.normals[i].set(0);
 
-
 		// Create vertices
 		int i=0;
 		for (int s=0; s<ssize; s++)
@@ -157,9 +174,6 @@ class GraphNode : Node
 				if (rt>tmax-step_t) rt = tmax;	// up to the graph max
 
 				model.vertices[c] = func(rs, rt);
-				float m = model.vertices[c].abs().max();
-				if (m > radius)
-					radius = m;
 
 				// Texture coordinates
 				if (texfunc !is null)
@@ -206,6 +220,8 @@ class GraphNode : Node
 		// Normalize all normals
 		foreach (inout Vec3f n; model.normals)
 			n = n.normalize();
+
+		radius = model.getDimensions().scale(scale).max();
 
 		// Cache model in video memory
 		model.upload();

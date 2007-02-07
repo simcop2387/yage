@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -220,7 +220,7 @@ template maxType(T)
 	}
 }
 
-/// Return the maximum of an the array.
+/// Return the maximum of an array.
 int maxi(int[] a ...)
 {	return maxType!(int).max(a);
 }
@@ -249,7 +249,7 @@ template minType(T)
 	}
 }
 
-/// Return the minimum of an the array.
+/// Return the minimum of an array.
 int mini(int[] a ...)
 {	return minType!(int).min(a);
 }

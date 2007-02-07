@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -83,20 +83,9 @@ class Layer
 	{	return textures.array();
 	}
 
-	/** Set the given index in the Textures array to texture.
-	 *  The index must be valid.  Use addTexture() to add more textures. */
-	void setTexture(uint index, Texture texture)
-	{	textures[index] = texture;
-	}
-
 	/// Add a new texture to this layer and return it.
 	int addTexture(Texture texture)
 	{	return textures.add(texture);
-	}
-
-	/// Remove the texture with the given index from this layer.
-	void removeTexture(uint index)
-	{	textures.remove(index);
 	}
 
 	/**

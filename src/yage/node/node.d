@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -145,95 +145,6 @@ class Node : MoveableNode
 		return this;
 	}
 
-	/// Get the color of the Node.
-	Vec4f getColor()
-	{	return color;
-	}
-
-	/**
-	 * Set the color of the Node, multiplied with the material properties.
-	 * This is equivalent to glColor4f(). If the materials of any meshes have
-	 * blending enabled, their alpha value can be set via the fourth parameter.
-	 * Default color is white (all 1's).*/
-	void setColor(float r, float g, float b, float a=1)
-	{	color.set(r, g, b, a);
-	}
-	/// Ditto
-	void setColor(Vec4f color)
-	{	this.color = color;
-	}
-
-
-	/// Get an array of lights that were enabled in the last call to enableLights().
-	LightNode[] getLights()
-	{	return lights;
-	}
-
-	/** Get whether this node is inside the view frustum and large enough to be drawn by
-	 *  the last camera that rendered it. */
-	bool getOnscreen()
-	{	return onscreen;
-	}
-
-	/** Set whether this node is inside the current camera's view frustum.
-	 *  This function is used internally by the engine and should not be called manually or exported. */
-	void setOnscreen(bool onscreen)
-	{	this.onscreen = onscreen;
-	}
-
-	/// Get the radius of this Node's culling sphere.
-	float getRadius()
-	{	return 1.414213562*scale.max();	// a value of zero would not be rendered since it's always smaller than the pixel threshold.
-	}									// This is the radius of a 1x1x1 cube
-
-	/// Get the scale of the Node.
-	Vec3f getScale()
-	{	return scale;
-	}
-	/**
-	 * Set the scale of this Node in the x, y, and z directions.
-	 * The default is (1, 1, 1) */
-	void setScale(Vec3f scale)
-	{	this.scale = scale;
-	}
-	/**
-	 * Set the scale of this Node in the x, y, and z directions.
-	 * The default is (1, 1, 1) */
-	void setScale(float scale)
-	{	this.scale.set(scale);
-	}
-
-
-	/// Is rendering enabled for this node?
-	bool getVisible()
-	{	return visible;
-	}
-
-	/** Set whether this Node will be renered.  This has nothing to do with frustum culling.
-	 *  Setting a Node as invisible will not make its children invisible also. */
-	void setVisible(bool visible)
-	{	this.visible = visible;
-	}
-
-	/**
-	 * Update the position and rotation of this node based on its velocity and angular velocity.
-	 * This function is called automatically as a Scene's update() function recurses through Nodes. */
-	void update(float delta)
-	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
-
-		// Move by linear velocity if not zero.
-		if (linear_velocity.length2() != 0)
-			move(linear_velocity*delta);
-
-		// Rotate if angular velocity is not zero.
-		if (angular_velocity.length2() !=0)
-			rotate(angular_velocity*delta);
-
-		// Recurse through children
-		super.update(delta);
-	}
-
-
 	/**
 	 * Enable the lights that most affect this Node.
 	 * All lights that affect this Node can't always be enabled, due to hardware and performance
@@ -291,5 +202,97 @@ class Node : MoveableNode
 			{	lights.length = i;
 				break;
 		}	}
+	}
+
+	/// Get the color of the Node.
+	Vec4f getColor()
+	{	return color;
+	}
+
+	/// Get an array of lights that were enabled in the last call to enableLights().
+	LightNode[] getLights()
+	{	return lights;
+	}
+
+	/**
+	 * Get whether this node is inside the view frustum and large enough to be drawn by
+	 * the last camera that rendered it. */
+	bool getOnscreen()
+	{	return onscreen;
+	}
+
+	/// Get the radius of this Node's culling sphere.
+	float getRadius()
+	{	return 1.732050807*scale.max();	// a value of zero would not be rendered since it's always smaller than the pixel threshold.
+	}									// This is the radius of a 1x1x1 cube
+
+	/// Get the scale of the Node.
+	Vec3f getScale()
+	{	return scale;
+	}
+
+	/// Is rendering enabled for this node?
+	bool getVisible()
+	{	return visible;
+	}
+
+	/**
+	 * Set the color of the Node, multiplied with the material properties.
+	 * This is equivalent to glColor4f(). If the materials of any meshes have
+	 * blending enabled, their alpha value can be set via the fourth parameter.
+	 * Default color is white (all 1's).*/
+	void setColor(float r, float g, float b, float a=1)
+	{	color.set(r, g, b, a);
+	}
+	/// Ditto
+	void setColor(Vec4f color)
+	{	this.color = color;
+	}
+
+	/** Set whether this node is inside the current camera's view frustum.
+	 *  This function is used internally by the engine and should not be called manually or exported. */
+	void setOnscreen(bool onscreen)
+	{	this.onscreen = onscreen;
+	}
+
+	/**
+	 * Set the scale of this Node in the x, y, and z directions.
+	 * The default is (1, 1, 1) */
+	void setScale(Vec3f scale)
+	{	this.scale = scale;
+	}
+
+	/// ditto
+	void setScale(float x, float y, float z)
+	{	scale.set(x, y, z);
+	}
+
+	/// ditto
+	void setScale(float scale)
+	{	this.scale.set(scale);
+	}
+
+	/** Set whether this Node will be renered.  This has nothing to do with frustum culling.
+	 *  Setting a Node as invisible will not make its children invisible also. */
+	void setVisible(bool visible)
+	{	this.visible = visible;
+	}
+
+	/**
+	 * Update the position and rotation of this node based on its velocity and angular velocity.
+	 * This function is called automatically as a Scene's update() function recurses through Nodes. */
+	void update(float delta)
+	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+
+		// Move by linear velocity if not zero.
+		if (linear_velocity.length2() != 0)
+			move(linear_velocity*delta);
+
+		// Rotate if angular velocity is not zero.
+		if (angular_velocity.length2() !=0)
+			rotate(angular_velocity*delta);
+
+		// Recurse through children
+		super.update(delta);
 	}
 }

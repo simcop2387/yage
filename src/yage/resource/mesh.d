@@ -1,11 +1,12 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
 module yage.resource.mesh;
 
+import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.vector;
@@ -28,6 +29,13 @@ class Mesh
 	this()
 	{	if (Device.getSupport(DEVICE_VBO))
 			glGenBuffersARB(1, &vbo_triangles);
+	}
+
+	///
+	this(Material matl, Vec3i[] triangles)
+	{	this();
+		setMaterial(matl);
+		this.triangles = triangles;
 	}
 
 	/// Cleanup Opengl buffer if necessary.
@@ -63,5 +71,25 @@ class Mesh
 	/// Ditto
 	void setMaterial(char[] filename)
 	{	this.material = Resource.material(filename);
+	}
+
+	/**
+	 * Set the triangles of this mesh.  Each triangle contains
+	 * three vertex indicies from the vertex arrays in the containing Model.*/
+	void setTriangles(Vec3i[] triangles)
+	{	this.triangles = triangles;
+	}
+
+	/// Return a string representation of this Mesh and its data.
+	char[] toString()
+	{	char[] result;
+		result ~= "Mesh\n";
+		result ~= "Material: '"~material.getSource()~"'";
+
+		result ~= .toString(triangles.length)~" triangles\n";
+		foreach (Vec3i t; triangles)
+			result ~= t.toString();
+
+		return result;
 	}
 }

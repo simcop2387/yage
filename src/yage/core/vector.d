@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -37,6 +37,11 @@ struct Vec(T, int K)
 		}
 	}
 
+	invariant
+	{	foreach (T t; v)
+			assert(t != float.nan);
+	}
+
 	/// Create a zero vector
 	static Vec!(T, K) opCall()
 	{	Vec!(T, K) res;
@@ -64,6 +69,14 @@ struct Vec(T, int K)
 	{	assert(s.length>=K);
 		Vec!(T, K) res;
 		res.v[0..K] = s[0..K];
+		return res;
+	}
+
+	///
+	Vec!(T, K) add(Vec!(T, K) s)
+	{	Vec!(T, K) res;
+		for (int i=0; i<v.length; i++)
+			res.v[i] = v[i]+s.v[i];
 		return res;
 	}
 

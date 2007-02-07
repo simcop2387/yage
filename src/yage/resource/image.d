@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -18,7 +18,12 @@ import yage.system.constant;
 import yage.system.log;
 
 
-/// A class for loading and manipulating images.
+/**
+ * A class for loading and manipulating images.
+ * Supports loading images from any format supported by SDL_Image.
+ * Currently supports grayscale, RGB, and RGBA image data.
+ * Bugs:
+ * An RGB image will often be returned when loading grayscale images.  Use setFormat() to correct this.*/
 class Image
 {
 	protected char[] source;
@@ -31,7 +36,13 @@ class Image
 	{	load(filename);
 	}
 
-	/// Construct from image data in memory
+	/**
+	 * Construct from image data in memory
+	 * Params:
+	 * image = a 1-dimensional array of raw image data
+	 * width = height in pixels
+	 * height = height in pixels
+	 * format = one of the IMAGE_FORMAT_* constants from yage.system.constant*/
 	this (ubyte[] image, uint width, uint height, int format)
 	{	data = image;
 		this.width = width;
@@ -39,7 +50,10 @@ class Image
 		this.format = format;
 	}
 
-	/// Get the raw image data.
+	/**
+	 * Return the raw image data.
+	 * Row-major order is used.  This means that the array contains all of row 1's
+	 * pixels, followed by row 2's pixels, etc.*/
 	ubyte[] get()
 	{	return data;
 	}
@@ -67,6 +81,21 @@ class Image
 	{	return width;
 	}
 
+	/// Get the ith pixel in the image.
+	ubyte[] opIndex(size_t i)
+	in { assert(i<width*height); }
+	body
+	{	return data[i*format..i*format+format];
+	}
+
+	/// Get the pixel at the given coordinates.
+	ubyte[] opIndex(size_t x, size_t y)
+	in { assert(x<width && y<height); }
+	body
+	{	int i = y*width+x;
+		return data[i*format..i*format+format];
+	}
+
 	/// Resize the image via glu.
 	void resize(int new_width, int new_height)
 	{
@@ -87,6 +116,56 @@ class Image
 		data = image2;
 		width = new_width;
 		height = new_height;
+	}
+
+	/**
+	 * Set the format of the image data.
+	 * This is an in-place operation.
+	 * Params:
+	 * format = one of the IMAGE_FORMAT_* constants from yage.system.constant */
+	void setFormat(int format)
+	{	if (format == this.format)
+			return;
+
+		int bpp = this.format;
+		ubyte[] result;
+
+		switch (format)
+		{
+			case IMAGE_FORMAT_GRAYSCALE:
+				// Set each pixel to the average of RGB, dropping alpha if present
+				for (int i=0; i<data.length-2; i+=bpp)
+					data[i/bpp] = (data[i] + data[i+1] + data[i+2]) / 3;
+				data.length = width*height;
+				break;
+			case IMAGE_FORMAT_RGB:
+				// Copy gray channel into RGB
+				if (this.format == IMAGE_FORMAT_GRAYSCALE)
+				{	ubyte[] temp = new ubyte[data.length];
+					temp[0..length] = data[0..length];	// temp is copy of existing grayscale
+					data.length = width*height*3;
+					for (int i=0; i<temp.length; i++)
+					{	data[i*3]   = 	// copy temp into all
+						data[i*3+1] = 	// 3 channels of data
+						data[i*3+2] = temp[i];
+					}
+					delete temp;
+				}
+				// Drop alpha channel (untested)
+				if (this.format == IMAGE_FORMAT_RGBA)
+					for (int i=0; i<data.length; i+=4)
+					{	data[i*3/4] = data[i];
+						data.length = width*height*3;
+					}
+				break;
+			case IMAGE_FORMAT_RGBA:
+				throw new Exception("Not implemented yet :)");
+				break;
+			default:
+				throw new Exception("Unrecognized image format.");
+
+		}
+		this.format = format;
 	}
 
 	/**
@@ -111,9 +190,10 @@ class Image
 			translate[3] = IMAGE_FORMAT_RGB;
 			translate[4] = IMAGE_FORMAT_RGBA;
 			format = translate[sdl_image.format.BytesPerPixel];
+
 			data.length = sdl_image.pitch*height;
-			// Swap Red and Blue if boolmap image
-			if(tolower(source[length-4..length])==".bmp")
+			// Swap Red and Blue if RGB bitmap image
+			if(tolower(source[length-4..length])==".bmp" && format == IMAGE_FORMAT_RGB)
 				for (int i=0; i<data.length; i+=3)
 				{	data[i]   = pixels[i+2];
 					data[i+1] = pixels[i+1];

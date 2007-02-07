@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -21,13 +21,11 @@ import yage.system.render;
  * It is useful for special effects such as dust and flares. */
 class SpriteNode : Node
 {
-	protected static Model model;
 	protected Material material;
 
 	/// Create this Node as a child of parent.
 	this(BaseNode parent)
 	{	super(parent);
-		scale = Vec3f(1);
 		setVisible(true);
 	}
 
@@ -38,17 +36,17 @@ class SpriteNode : Node
 	 * original = This Node will be an exact copy of original.*/
 	this (BaseNode parent, SpriteNode original)
 	{	super(parent, original);
-		model = original.model;
 		material = original.material;
+	}
+
+	/// Return the Material assigned to the SpriteNode.
+	Material getMaterial()
+	{	return material;
 	}
 
 	/// Return the distance to the furthest point of the SpriteNode.
 	float getRadius()
 	{	return 1.414213562*scale.max();
-	}
-
-	Material getMaterial()
-	{	return material;
 	}
 
 	/// Set the Material of the SpriteNode.
@@ -59,36 +57,7 @@ class SpriteNode : Node
 	/** Set the Material of the SpriteNode, using the Resource Manager
 	 *  to ensure that no Material is loaded twice.
 	 *  Equivalent of setMaterial(Resource.material(filename)); */
-	void setMaterial(char[] filename)
-	{	setMaterial(Resource.material(filename));
+	void setMaterial(char[] material_file)
+	{	setMaterial(Resource.material(material_file));
 	}
-
-/*
-	/// Render the SpriteNode.  This is used internally.
-	void render()
-	{
-		Vec3f axis = Device.getCurrentCamera().getAbsoluteRotation()-getAbsoluteRotation();
-		float angle = axis.length();
-		axis = axis.scale(1/angle);
-		glRotatef(angle*57.295, axis.x, axis.y, axis.z);
-
-		Matrix m;
-		glGetFloatv(GL_MODELVIEW_MATRIX, m.v.ptr);
-
-		enableLights();
-
-		/// A quad for the sprite's texture
-		if (model is null)
-		{	model = new Model();
-			model.addVertex(Vec3f(-1,-1, 0), Vec3f(0, 0, 1), Vec2f(0, 1));
-			model.addVertex(Vec3f( 1,-1, 0), Vec3f(0, 0, 1), Vec2f(1, 1));
-			model.addVertex(Vec3f( 1, 1, 0), Vec3f(0, 0, 1), Vec2f(1, 0));
-			model.addVertex(Vec3f(-1, 1, 0), Vec3f(0, 0, 1), Vec2f(0, 0));
-			model.addMesh(material, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)]);
-			model.upload();
-		}
-
-		Render.addModel(m, model, material, lights);
-	}
-	*/
 }

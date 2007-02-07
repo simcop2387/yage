@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -83,6 +83,13 @@ class Render
 				case "yage.node.graph.GraphNode":
 					model((cast(GraphNode)n).getModel(), n.getLights(), n.getColor());
 					break;
+				case "yage.node.terrain.TerrainNode":
+					model((cast(TerrainNode)n).getModel(), n.getLights(), n.getColor());
+					break;
+				case "yage.node.terrain.LightNode":
+					// render cube as the color of the light
+					cube((cast(LightNode)n).getDiffuse().add((cast(LightNode)n).getAmbient()));
+					break;
 				default:
 					cube(n.getColor());
 			}
@@ -119,7 +126,7 @@ class Render
 		{
 			// Bind and draw the triangles
 			void draw()
-			{	if (model.cached)
+			{	if (model.getCached())
 				{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, m.getTrianglesVBO());
 					glDrawElements(GL_TRIANGLES, m.getTriangles().length*3, GL_UNSIGNED_INT, null);
 					// glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -133,6 +140,7 @@ class Render
 				foreach (Layer l; matl.getLayers().array())
 				{
 					// If not translucent
+					//if (l.
 						l.apply(lights, color);
 						draw();
 						l.unApply();
@@ -154,7 +162,7 @@ class Render
 		glRotatef(angle*57.295779513, axis.x, axis.y, axis.z);
 
 		// Set material and draw as model
-		msprite.getMesh(0).setMaterial(material);
+		msprite.getMeshes()[0].setMaterial(material);
 		model(msprite, lights, color);
 	}
 
@@ -168,12 +176,12 @@ class Render
 		msprite.addVertex(Vec3f( 1,-1, 0), Vec3f(0, 0, 1), Vec2f(1, 1));
 		msprite.addVertex(Vec3f( 1, 1, 0), Vec3f(0, 0, 1), Vec2f(1, 0));
 		msprite.addVertex(Vec3f(-1, 1, 0), Vec3f(0, 0, 1), Vec2f(0, 0));
-		msprite.addMesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)]);
+		msprite.addMesh(new Mesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)]));
 		msprite.upload();
 
 		// Cube (in as little code as possible :)
 		mcube = new Model();
-		mcube.addMesh(null, null);
+		mcube.addMesh(new Mesh());
 		for (int x=-1; x<=1; x+=2)
 		{	for (int y=-1; y<=1; y+=2)
 			{	for (int z=-1; z<=1; z+=2)

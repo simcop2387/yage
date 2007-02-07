@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -44,6 +44,7 @@ void main()
 	sky.setModel("sky/sanctuary.ms3d");
 	Universe scene = new Universe();
 	scene.setSkybox(skybox);
+	scene.setGlobalAmbient(Vec4f(.3));
 
 	// Camera
 	CameraNode camera = new CameraNode(scene);
@@ -61,13 +62,11 @@ void main()
 	l1.setPosition(0, 0, -40);
 	l1.setDiffuse(1, .85, .7);
 	l1.setLightRadius(5000);
-	l1.setVisible(true);
 
 	// Star
 	SpriteNode star = new SpriteNode(l1);
 	star.setMaterial("space/star.xml");
 	star.setScale(400);
-	star.setPosition(100, 0, 0);
 
 	// Ship
 	Ship ship = new Ship(scene);
@@ -76,7 +75,8 @@ void main()
 	camera.setParent(ship.getCameraSpot());
 
 	// Universe
-	asteroidBelt(2000, 4000, scene);
+	asteroidBelt(1000, 4000, scene);
+
 
 	void doSomething()
 	{	// Why do some functions work and others cause access violations?

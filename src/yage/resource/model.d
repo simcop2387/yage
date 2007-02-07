@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006 Eric Poggel
+ * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -9,6 +9,7 @@ module yage.resource.model;
 import std.string;
 import std.file;
 import std.math;
+import std.path;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.vector;
@@ -30,11 +31,12 @@ extern (C) void *memcpy(void *, void *, uint);
  *  and an array of triangle indices that correspond to vertices in the Model's
  *  vertex array.  ModelNodes can be used to create 3D models in a scene.*/
 class Model
-{	/*protected:*/
+{	protected:
 	char[]	source;
 	bool	cached = false;
-	float	radius=0;			// the distance of the furthest vertex from the origin.
+	deprecated float	radius=0;			// the distance of the furthest vertex from the origin.
 
+	public: // for now
 	Mesh[]	meshes;
 	Vec3f[] vertices;
 	Vec3f[] normals;
@@ -57,7 +59,7 @@ class Model
 	/// Generate buffers and load and upload the given model file.
 	this (char[] filename)
 	{	this();
-		loadMs3d(filename);
+		load(filename);
 		upload();
 	}
 
@@ -72,17 +74,25 @@ class Model
 		}
 	}
 
-	/// Get the path to the file where the model was loaded.
-	char[] getSource()
-	{	return source;
+	/// Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
+	deprecated void calcRadius()
+	{	for (int v=0; v<vertices.length; v++)
+		{	float max = vertices[v].length();
+			if (max > radius)
+				radius = max;
+		}
+	}
+
+	/** Get the radius of this model in world units.
+	 *  This is the distance from the center of the model to the most distant Vertex,
+	 *  before any scaling is performed. */
+	deprecated float getRadius()
+	{	return radius;
 	}
 
 	///
-	int addMesh(Material matl=null, Vec3i[] triangles=null)
-	{	Mesh a = new Mesh();
-		a.setMaterial(matl);
-		a.triangles = triangles;
-		meshes ~= a;
+	int addMesh(Mesh m)
+	{	meshes ~= m;
 		return meshes.length-1;
 	}
 
@@ -94,8 +104,7 @@ class Model
 		return vertices.length-1;
 	}
 
-
-	///
+	/// Bind the Vertex, Texture, and Normal VBO's for use.
 	void bind()
 	{	// Use the VBO Extension
 		if (cached)
@@ -114,13 +123,20 @@ class Model
 		}
 	}
 
-	/// Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
-	void calcRadius()
-	{	for (int v=0; v<vertices.length; v++)
-		{	float max = vertices[v].length();
-			if (max > radius)
-				radius = max;
+	/// Return true if the model data has been cached in video memory.
+	bool getCached()
+	{	return cached;
+	}
+
+	/// Get the dimensions of a box, centered at the origin, that can contain this Model.
+	Vec3f getDimensions()
+	{	Vec3f result;
+		foreach (Vec3f v; vertices)
+		{	if (abs(v.x) > result.x) result.x=v.x;
+			if (abs(v.y) > result.y) result.y=v.y;
+			if (abs(v.z) > result.z) result.z=v.z;
 		}
+		return result;
 	}
 
 	///
@@ -133,9 +149,9 @@ class Model
 	{	return meshes;
 	}
 
-	///
-	Vec3f[] getVertices()
-	{	return vertices;
+	/// Get the path to the file where the model was loaded.
+	char[] getSource()
+	{	return source;
 	}
 
 	///
@@ -143,15 +159,14 @@ class Model
 	{	return normals;
 	}
 
+	/// Get the OpenGL Vertex Buffer Object index for the vertex normals.
+	uint getNormalsVBO()
+	{	return vbo_normals;
+	}
+
 	///
 	Vec2f[] getTexCoords()
 	{	return texcoords;
-	}
-
-
-	/// Get the OpenGL Vertex Buffer Object index for the vertices.
-	uint getVerticesVBO()
-	{	return vbo_vertices;
 	}
 
 	/// Get the OpenGL Vertex Buffer Object index for the vertex texture coordinates.
@@ -159,21 +174,107 @@ class Model
 	{	return vbo_texcoords;
 	}
 
-	/// Get the OpenGL Vertex Buffer Object index for the vertex normals.
-	uint getNormalsVBO()
-	{	return vbo_normals;
+	///
+	Vec3f[] getVertices()
+	{	return vertices;
 	}
 
-	/// Return true if the model data has been cached in video memory.
-	bool getCached()
-	{	return cached;
+	/// Get the OpenGL Vertex Buffer Object index for the vertices.
+	uint getVerticesVBO()
+	{	return vbo_vertices;
 	}
 
-	/** Get the radius of this model in world units.
-	 *  This is the distance from the center of the model to the most distant Vertex,
-	 *  before any scaling is performed. */
-	float getRadius()
-	{	return radius;
+	/// Load vertex, mesh, and material data from a 3D model file.
+	void load(char[] filename)
+	{	char[] ext = getExt(filename);
+		switch (tolower(ext))
+		{	case "ms3d":
+				loadMs3d(filename);
+				break;
+			default:
+				throw new Exception("Unrecognized file format '"~ext~"'.");
+		}
+	}
+
+	/**
+	 * Set the vertices used by this Model.
+	 * The triangle arrays of this Model's meshes will index into these arrays.
+	 * upload() should be called after this method to update changes in video memory.
+	 * Params:
+	 * verts = vertex coordinate vectors (xyz).
+	 * norms = normal coordinate vectors; need to be of length 1.
+	 * texs = texure coordinates for each vertex. */
+	void setVertices(Vec3f[] vertices, Vec3f[] normals, Vec2f[] texcoords)
+	in
+	{	assert(vertices.length==normals.length && vertices.length==texcoords.length); }
+	body
+	{	this.vertices = vertices;
+		this.normals = normals;
+		this.texcoords = texcoords;
+	}
+
+	/**
+	 * Set the Meshes used by this model. */
+	void setMeshes(Mesh[] meshes)
+	{	this.meshes = meshes;
+	}
+
+	/**
+	 * Return a string representation of this Model and all of its data. */
+	char[] toString()
+	{	char[] result;
+		result ~= "Model:  '"~source~"'\n";
+
+		result ~= .toString(vertices.length)~" vertices\n";
+		foreach (Vec3f v; vertices)
+			result ~= v.toString();
+/*
+		result ~= .toString(texcoords.length)~" texcoords\n";
+		foreach (Vec2f t; texcoords)
+			result ~= t.toString();
+
+		result ~= .toString(normals.length)~" normals\n";
+		foreach (Vec3f n; normals)
+			result ~= n.toString();
+
+		result ~= .toString(meshes.length)~" meshes\n";
+		foreach (Mesh m; meshes)
+			result ~= m.toString();
+*/
+		return result;
+	}
+
+	/** Upload the triangle and vertex data of this model to video memory.
+	 *  Vertex buffer objects are used.  I still need to figure out the best
+	 *  method to handle bone data */
+	void upload()
+	{
+		if (Device.getSupport(DEVICE_VBO))
+		{
+			// bind and upload vertices
+			glBindBufferARB(GL_ARRAY_BUFFER, vbo_vertices);
+			glBufferDataARB(GL_ARRAY_BUFFER, vertices.length*Vec3f.sizeof, vertices.ptr, GL_STATIC_DRAW);
+
+			// bind and upload texture coordinates
+			glBindBufferARB(GL_ARRAY_BUFFER, vbo_texcoords);
+			glBufferDataARB(GL_ARRAY_BUFFER, texcoords.length*Vec2i.sizeof, texcoords.ptr, GL_STATIC_DRAW);
+
+			// bind and upload normals
+			glBindBufferARB(GL_ARRAY_BUFFER, vbo_normals);
+			glBufferDataARB(GL_ARRAY_BUFFER, normals.length*Vec3f.sizeof, normals.ptr, GL_STATIC_DRAW);
+
+			// bind and upload the triangle indices
+			foreach (Mesh m; meshes)
+			{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, m.getTrianglesVBO());
+				glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, m.getTriangles().length*Vec3i.sizeof, m.getTriangles().ptr, GL_STATIC_DRAW);
+			}
+
+			// and set back to default buffers
+			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindBufferARB(GL_ARRAY_BUFFER, 0);
+
+			cached = true;
+		}
 	}
 
 
@@ -182,7 +283,7 @@ class Model
 	 *  manager to avoid duplicates.  Meshes without a material are assigned a default material.
 	 *  Uploading vertex data to video memory must be done manually by calling Upload().
 	 *  This function needs to be tested on big-endian systems. */
-	void loadMs3d(char[] filename)
+	private void loadMs3d(char[] filename)
 	{	source = Resource.resolvePath(filename);
 		Log.write("Loading Milkshape 3D model '" ~ source ~ "'.");
 
@@ -296,7 +397,7 @@ class Model
 			vertices[v].y = mvertices[v].vertex[1];
 			vertices[v].z = mvertices[v].vertex[2];
 		}
-		calcRadius();
+		//calcRadius();
 
 		// Meshes
 		meshes.length = mgroups.length;
@@ -431,60 +532,5 @@ class Model
 		delete mmaterials;
 		delete file;
 		delete path;
-	}
-
-
-	/** Print out the vertex, texture, normal, etc. coordinates of a model
-	 *  This is useful for debugging purposes. */
-	void print()
-	{	printf("Model:  '%.*s'\n", source);
-		printf("\n%d vertices\n", vertices.length);
-		foreach (Vec3f v; vertices)
-			printf ("%f, %f, %f\n", v.x, v.y, v.z);
-		printf("\n%d texcoords\n", texcoords.length);
-		foreach (Vec2f t; texcoords)
-			printf ("%f, %f, %f\n", t.x, t.y);
-		printf("\n%d normals\n", normals.length);
-		foreach (Vec3f n; normals)
-			printf ("%f, %f, %f\n", n.x, n.y, n.z);
-		foreach (Mesh m; meshes)
-		{	printf("\n%d triangles\n", m.triangles.length);
-			for (int t=0; t<m.triangles.length; t++)
-				printf ("%d, %d, %d\n", m.triangles[t].a, m.triangles[t].b, m.triangles[t].c);
-		}
-	}
-
-
-	/** Upload the triangle and vertex data of this model to video memory.
-	 *  Vertex buffer objects are used.  I still need to figure out the best
-	 *  method to handle bone data */
-	void upload()
-	{
-		if (Device.getSupport(DEVICE_VBO))
-		{
-			// bind and upload vertices
-			glBindBufferARB(GL_ARRAY_BUFFER, vbo_vertices);
-			glBufferDataARB(GL_ARRAY_BUFFER, vertices.length*Vec3f.sizeof, vertices.ptr, GL_STATIC_DRAW);
-
-			// bind and upload texture coordinates
-			glBindBufferARB(GL_ARRAY_BUFFER, vbo_texcoords);
-			glBufferDataARB(GL_ARRAY_BUFFER, texcoords.length*Vec2i.sizeof, texcoords.ptr, GL_STATIC_DRAW);
-
-			// bind and upload normals
-			glBindBufferARB(GL_ARRAY_BUFFER, vbo_normals);
-			glBufferDataARB(GL_ARRAY_BUFFER, normals.length*Vec3f.sizeof, normals.ptr, GL_STATIC_DRAW);
-
-			// bind and upload the triangle indices
-			foreach (Mesh m; meshes)
-			{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, m.getTrianglesVBO());
-				glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, m.getTriangles().length*Vec3i.sizeof, m.getTriangles().ptr, GL_STATIC_DRAW);
-			}
-
-			// and set back to default buffers
-			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
-			glBindBufferARB(GL_ARRAY_BUFFER, 0);
-
-			cached = true;
-		}
 	}
 }
