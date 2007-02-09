@@ -8,7 +8,7 @@
 
 module yage.main;
 
-
+import std.bind;
 import std.string;
 import std.math;
 import std.stdio;
@@ -21,7 +21,7 @@ import yage.universe;
 import yage.ship;
 
 /// Current program entry point.  This may change in the future.
-void main()
+int main()
 {
 	// Variables
 	float dtime=0;
@@ -44,7 +44,7 @@ void main()
 	sky.setModel("sky/sanctuary.ms3d");
 	Universe scene = new Universe();
 	scene.setSkybox(skybox);
-	scene.setGlobalAmbient(Vec4f(.3));
+	scene.setGlobalAmbient(Vec4f(.5));
 
 	// Camera
 	CameraNode camera = new CameraNode(scene);
@@ -70,20 +70,12 @@ void main()
 
 	// Ship
 	Ship ship = new Ship(scene);
-	ship.setPosition(Vec3f(0, 1000, 1300));
-	ship.getCameraSpot().setPosition(0, 1000, 1300);
+	ship.setPosition(Vec3f(0, 500, 1300));
+	ship.getCameraSpot().setPosition(0, 1000, 3000);
 	camera.setParent(ship.getCameraSpot());
 
 	// Universe
-	asteroidBelt(1000, 4000, scene);
-
-
-	void doSomething()
-	{	// Why do some functions work and others cause access violations?
-		star.setVelocity(Vec3f(1, 2, 3));
-		star.setVisible(true);		// causes access violation
-	}
-	star.onUpdate(&doSomething);
+	asteroidBelt(1000, 1800, scene);
 
 	// main loop
 	Log.write("Beginning rendering loop" ~"");
@@ -114,16 +106,22 @@ void main()
 		// Create Explosion
 		if (Input.keydown[SDLK_LSHIFT])
 		{
-			for (int i=0; i<40; i++)
+			for (int i=0; i<10; i++)
 			{	SpriteNode s = new SpriteNode(scene);
 				s.setMaterial("fx/flare1.xml");
 				s.setPosition(0, 0, 0);
 				s.setVelocity(Vec3f(random(-1, 1)*500, random(-1, 1)*500, random(-1, 1)*500));
-				s.setLifetime(random(8, 20));
+				s.setLifetime(random(3, 4));
 				s.setScale(12);
+
+				void recolor(BaseNode self)
+				{	(cast(SpriteNode)self).setColor(1, 1, 1, self.getLifetime()/3);
+				}
+				s.onUpdate(&recolor);
 			}
 		}
 		//star.setPosition(0, dtime*10000, 0);
+
 
 		Input.processInput();
 		ship.getSpring().update(dtime);
@@ -147,4 +145,6 @@ void main()
 			fps = 0;
 		}
 	}
+
+	return 0;
 }

@@ -86,8 +86,9 @@ Eric Poggel
  
 <br><br>
 
-$(DDOC_MODULE_MEMBERS 
 
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">class 
 <span class="currsymbol">Render</span>
@@ -161,7 +162,7 @@ $(DDOC_MODULE_MEMBERS
 <dt><span class="decl">protected static void 
 <span class="currsymbol">cube</span>
 <script type="text/javascript">explorer.outline.addDecl('cube');</script>
-(Vec!(float,4) <span class="funcparam">color</span>);
+(Node <span class="funcparam">node</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -180,7 +181,7 @@ $(DDOC_MODULE_MEMBERS
 (Model 
 <span class="currsymbol">model</span>
 <script type="text/javascript">explorer.outline.addDecl('model');</script>
-, LightNode[] <span class="funcparam">lights</span>, Vec!(float,4) <span class="funcparam">color</span>);
+, Node <span class="funcparam">node</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -194,7 +195,7 @@ $(DDOC_MODULE_MEMBERS
 <dt><span class="decl">protected static void 
 <span class="currsymbol">sprite</span>
 <script type="text/javascript">explorer.outline.addDecl('sprite');</script>
-(Material <span class="funcparam">material</span>, LightNode[] <span class="funcparam">lights</span>, Vec!(float,4) <span class="funcparam">color</span>);
+(Material <span class="funcparam">material</span>, Node <span class="funcparam">node</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -214,8 +215,7 @@ $(DDOC_MODULE_MEMBERS
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Generate models used for various Nodes (like the quad for SpriteNodes. 
-)
+<dd>Generate models used for various Nodes (like the quad for SpriteNodes). 
 <br><br>
 
 </dd>
@@ -224,6 +224,10 @@ $(DDOC_MODULE_MEMBERS
 
 
 </dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
 </td></tr>
 				</table>
 			</div>
@@ -234,7 +238,7 @@ $(DDOC_MODULE_MEMBERS
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:19 2007
+		on Fri Feb  9 17:18:55 2007
 
 	</div>
 	
@@ -290,6 +294,8 @@ $(DDOC_MODULE_MEMBERS
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

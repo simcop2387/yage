@@ -36,6 +36,7 @@ class ModelNode : Node
 	this (BaseNode parent, ModelNode original)
 	{	super(parent, original);
 		model = original.model;
+		radius = original.radius;
 	}
 
 	/// Get the 3D model that is being used by this Node.
@@ -58,20 +59,20 @@ class ModelNode : Node
 	}
 
 	/// Overridden to cache the radius if changed by the scale.
-	void setScale(Vec3f scale)
-	{	super.setScale(scale);
+	void setScale(float x, float y, float z)
+	{	super.setScale(x, y, z);
 		if (model)
 			radius = model.getDimensions().scale(scale).max();
 	}
 
 	/// ditto
-	void setScale(float x, float y, float z)
-	{	setScale(Vec3f(x, y, z));
+	void setScale(Vec3f scale)
+	{	setScale(scale.x, scale.y, scale.z);
 	}
 
 	/// ditto
 	void setScale(float scale)
-	{	setScale(Vec3f(scale, scale, scale));
+	{	setScale(scale, scale, scale);
 	}
 
 	/**

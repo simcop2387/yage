@@ -10,6 +10,7 @@ module yage.gameobj;
 
 import std.math;
 import std.stdio;
+import yage.core.timer;
 import yage.node.basenode;
 import yage.node.node;
 import yage.resource.resource;
@@ -63,6 +64,9 @@ class Asteroid : GravityObject
 
 class Flare : GameObject
 {
+	static Timer timer;
+
+
 	this (BaseNode parent)
 	{	super(parent);
 		this.setLifetime(5);
@@ -71,8 +75,15 @@ class Flare : GameObject
 		flare.setMaterial("fx/flare1.xml");
 		flare.setScale(2);
 
-		LightNode light = new LightNode(this);
-		light.setDiffuse(1, .5, 0);
-		light.setLightRadius(256);
+		if (timer is null)
+			timer = new Timer();
+
+		// don't create a new light more than 5 times per second
+		if (timer.get() > .2)
+		{	timer.reset();
+			LightNode light = new LightNode(this);
+			light.setDiffuse(1, .5, 0);
+			light.setLightRadius(256);
+		}
 	}
 }

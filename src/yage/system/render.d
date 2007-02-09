@@ -27,9 +27,18 @@ import yage.node.light;
 import yage.node.scene;
 
 
-struct AlphaTriangle
-{	Vec3f[3] vertices;
-	Material material;
+/// Used for translucent polygon rendering
+private struct AlphaTriangle
+{	Vec3f[3] vertices;	// in worldspace coordinates
+	Vec3f*[3] normals;	// store pointers to these since the values aren't transformed
+	Vec2f*[3] texcoords;// by the world coordinates, helps reduce size.
+	Layer layer;
+	LightNode[] lights;
+	Vec4f color;
+	int order;	// order to draw if the same distance as another polygon
+				// this is commonly needed for polygons from different layers of the same mesh.
+				// Useless, since they should already be in the order they're added and
+				// because radix preserves order
 }
 
 /**
@@ -41,7 +50,7 @@ class Render
 {
 
 	protected static Node[] nodes;			// Linking errors when created as a Horde :(
-	protected static Horde!(Mesh) translucent;
+	protected static Horde!(AlphaTriangle) alpha;
 
 	// Basic shapes
 	protected static Model mcube;
@@ -55,6 +64,8 @@ class Render
 	static void add(Node node)
 	{	//if (nodes is null)
 		//	nodes = new Horde!(Node);
+		if (alpha is null)
+			 alpha = new Horde!(AlphaTriangle);
 		nodes ~= node;
 	}
 
@@ -64,38 +75,63 @@ class Render
 		if (!models_generated)
 			generate();
 
-		// Loop through all nodes in the queue
+		// Loop through all nodes in the queue and render them
 		foreach (Node n; nodes)
 		{
 			glPushMatrix();
 			glMultMatrixf(n.getAbsoluteTransformPtr().v.ptr);
 			glScalef(n.getScale().x, n.getScale().y, n.getScale().z);
-			glColor4fv(n.getColor().v.ptr);
 			n.enableLights();
 
 			switch(n.getType())
 			{	case "yage.node.model.ModelNode":
-					model((cast(ModelNode)n).getModel(), n.getLights(), n.getColor());
+					model((cast(ModelNode)n).getModel(), n);
 					break;
 				case "yage.node.sprite.SpriteNode":
-					sprite((cast(SpriteNode)n).getMaterial(), n.getLights(), n.getColor());
+					sprite((cast(SpriteNode)n).getMaterial(), n);
 					break;
 				case "yage.node.graph.GraphNode":
-					model((cast(GraphNode)n).getModel(), n.getLights(), n.getColor());
+					model((cast(GraphNode)n).getModel(), n);
 					break;
 				case "yage.node.terrain.TerrainNode":
-					model((cast(TerrainNode)n).getModel(), n.getLights(), n.getColor());
+					model((cast(TerrainNode)n).getModel(), n);
 					break;
 				case "yage.node.terrain.LightNode":
-					// render cube as the color of the light
-					cube((cast(LightNode)n).getDiffuse().add((cast(LightNode)n).getAmbient()));
+					cube(n);	// todo: render as color of light?
 					break;
 				default:
-					cube(n.getColor());
+					cube(n);
 			}
 			glPopMatrix();
 		}
+
+		// Sort alpha (translucent) triangles
+		Vec3f camera = getCurrentCamera().getAbsolutePosition();
+		float triSort(AlphaTriangle a)
+		{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(.33333333333);
+			return -camera.distance2(center); // distance squared is faster and values still compare the same
+		}
+		alpha.sortType!(float).radix(&triSort, true, true);
+
+		// Render alpha triangles
+		foreach (AlphaTriangle a; alpha.array())
+		{	a.layer.apply(a.lights, a.color);
+
+			glBegin(GL_TRIANGLES);
+				for (int i=0; i<3; i++)
+				{	glTexCoord2fv(a.texcoords[i].v.ptr);
+					glNormal3fv(a.normals[i].ptr);
+					glVertex3fv(a.vertices[i].ptr);
+				}
+
+			glEnd();
+			a.layer.unApply();
+		}
+
 		nodes.length = 0;
+		alpha.reserve(alpha.length);
+		alpha.length = 0;
+
 	}
 
 
@@ -110,65 +146,99 @@ class Render
 	}
 
 	/// Render a cube
-	protected static void cube(Vec4f color)
-	{	model(mcube, null, color);
+	protected static void cube(Node node)
+	{	model(mcube, node);
+		// (cast(LightNode)n).getDiffuse().add((cast(LightNode)n).getAmbient())
 	}
 
 	/**
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes. */
-	protected static void model(Model model, LightNode[] lights, Vec4f color)
+	protected static void model(Model model, Node node)
 	{
 		model.bind();
+		Vec3f[] v = model.getVertices();
+		Vec3f[] n = model.getNormals();
+		Vec2f[] t = model.getTexCoords();
+		Matrix abs_transform = node.getAbsoluteTransform();
 
 		// Loop through the meshes
-		foreach (Mesh m; model.getMeshes())
+		foreach (Mesh mesh; model.getMeshes())
 		{
 			// Bind and draw the triangles
 			void draw()
 			{	if (model.getCached())
-				{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, m.getTrianglesVBO());
-					glDrawElements(GL_TRIANGLES, m.getTriangles().length*3, GL_UNSIGNED_INT, null);
+				{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTrianglesVBO());
+					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, null);
 					// glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 				}else
-					glDrawElements(GL_TRIANGLES, m.getTriangles().length*3, GL_UNSIGNED_INT, m.getTriangles().ptr);
+					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, mesh.getTriangles().ptr);
 			}
 
-			Material matl = m.getMaterial();
+			Material matl = mesh.getMaterial();
 			if (matl !is null)
+			{	bool sort = false;
+
 				// Loop through each layer
 				foreach (Layer l; matl.getLayers().array())
 				{
+					// Sort every l including and after the first blended one.
+					if (l.blend != LAYER_BLEND_NONE)
+						sort = true;
+
 					// If not translucent
-					//if (l.
-						l.apply(lights, color);
+					if (!sort)
+					{	l.apply(node.getLights(), node.getColor());
 						draw();
 						l.unApply();
+					} else
+					{	//l.apply(lights, color);
+						//draw();
+						//l.unApply();
+
+						foreach (Vec3i tri; mesh.getTriangles())
+						// Add to translucent
+						{	AlphaTriangle at;
+							for (int i=0; i<3; i++)
+							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getScale());
+								at.texcoords[i] = &t[tri.v[i]];
+								at.normals[i] = &n[tri.v[i]];
+							}
+							at.layer = l;
+							at.color = node.getColor();
+							alpha.add(at);
+						}
+					}
 				}
-			else
+			}
+			else // render with no material
 				draw();
 		}
 	}
 
 	/// Render a sprite
-	protected static void sprite(Material material, LightNode[] lights, Vec4f color)
+	protected static void sprite(Material material, Node node)
 	{
 		// Rotate so that sprite always faces camera
-		Matrix m;
-		glGetFloatv(GL_MODELVIEW_MATRIX, m.v.ptr);
 		Vec3f axis = current_camera.getAbsoluteRotation();
 		float angle = axis.length();
 		axis = axis.scale(1/angle);
 		glRotatef(angle*57.295779513, axis.x, axis.y, axis.z);
 
+		//Matrix m = node.getAbsoluteTransform();
+		node.rotate(current_camera.getAbsoluteRotation());
+
 		// Set material and draw as model
 		msprite.getMeshes()[0].setMaterial(material);
-		model(msprite, lights, color);
+		model(msprite, node);
+
+		node.rotate(-current_camera.getAbsoluteRotation());
+
 	}
 
 
 	/**
-	 * Generate models used for various Nodes (like the quad for SpriteNodes. */
+	 * Generate models used for various Nodes (like the quad for SpriteNodes). */
 	protected static void generate()
 	{	// Sprite
 		msprite = new Model();

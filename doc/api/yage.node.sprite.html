@@ -140,6 +140,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Material 
+<span class="currsymbol">getMaterial</span>
+<script type="text/javascript">explorer.outline.addDecl('getMaterial');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return the Material assigned to the SpriteNode.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
 <span class="currsymbol">getRadius</span>
 <script type="text/javascript">explorer.outline.addDecl('getRadius');</script>
@@ -169,7 +182,7 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">setMaterial</span>
 <script type="text/javascript">explorer.outline.addDecl('setMaterial');</script>
-(char[] <span class="funcparam">filename</span>);
+(char[] <span class="funcparam">material_file</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -178,7 +191,7 @@ Eric Poggel
   Equivalent of 
 <span class="currsymbol">setMaterial</span>
 <script type="text/javascript">explorer.outline.addDecl('setMaterial');</script>
-(Resource.material(<span class="funcparam">filename</span>)); 
+(Resource.material(filename)); 
 <br><br>
 
 </dd>
@@ -201,7 +214,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:17 2007
+		on Fri Feb  9 17:18:54 2007
 
 	</div>
 	
@@ -257,6 +270,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

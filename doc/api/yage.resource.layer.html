@@ -243,20 +243,6 @@ When an xml Material file is loaded, this class is used to represent each
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setTexture</span>
-<script type="text/javascript">explorer.outline.addDecl('setTexture');</script>
-(uint <span class="funcparam">index</span>, Texture <span class="funcparam">texture</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the given <span class="funcparam">index</span> in the Textures array to <span class="funcparam">texture</span>.
-  The <span class="funcparam">index</span> must be valid.  Use addTexture() to add more textures. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">int 
 <span class="currsymbol">addTexture</span>
 <script type="text/javascript">explorer.outline.addDecl('addTexture');</script>
@@ -265,19 +251,6 @@ When an xml Material file is loaded, this class is used to represent each
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Add a new <span class="funcparam">texture</span> to this layer and return it.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">removeTexture</span>
-<script type="text/javascript">explorer.outline.addDecl('removeTexture');</script>
-(uint <span class="funcparam">index</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Remove the texture with the given <span class="funcparam">index</span> from this layer.
 <br><br>
 
 </dd>
@@ -449,7 +422,7 @@ the index of the new Shader in the Shader array.
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:18 2007
+		on Fri Feb  9 17:18:54 2007
 
 	</div>
 	
@@ -505,6 +478,8 @@ the index of the new Shader in the Shader array.
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

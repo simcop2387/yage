@@ -8,6 +8,7 @@ module yage.node.basenode;
 
 import std.stdio;
 import std.traits;
+import std.bind;
 import yage.core.horde;
 import yage.core.misc;
 import yage.node.node;
@@ -42,7 +43,7 @@ abstract class BaseNode
 	float lifetime = float.infinity;	// in seconds
 	BaseNode[] path;					// used in calcTransform
 
-	void delegate() on_update = null;	// called on update
+	void delegate(BaseNode self) on_update = null;	// called on update
 
 	public:
 
@@ -79,6 +80,11 @@ abstract class BaseNode
 	{	return index;
 	}
 
+	/// Get the time before the Node will be removed.
+	float getLifetime()
+	{	return lifetime;
+	}
+
 	/// Return this Node's parent.
 	BaseNode getParent()
 	{	return parent;
@@ -89,22 +95,9 @@ abstract class BaseNode
 	{	return scene;
 	}
 
-	/// Get the type of this Node as a string; i.e. "Node", "ModelNode", etc.
+	/// Get the type of this Node as a string; i.e. "yage.node.node.ModelNode".
 	char[] getType()
 	{	return this.classinfo.name;
-	}
-
-	/// Get the time before the Node will be removed.
-	float getLifetime()
-	{	return lifetime;
-	}
-	/**
-	 * The Node will be removed (along with all of its children) after a given time.
-	 * Params:
-	 * seconds = The number of seconds before the Node will be removed.
-	 * Set to float.infinity to make the Node last forever (the default behavior).*/
-	void setLifetime(float seconds)
-	{	lifetime = seconds;
 	}
 
 	/**
@@ -116,16 +109,27 @@ abstract class BaseNode
 	 * Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 	 * Example:
 	 * --------------------------------
-	 * Node a = new Node(scene);
+	 * SpriteNode s = new SpriteNode(scene);
+	 * s.setMaterial("something.xml");
 	 *
-	 * void doSomething()
-	 * {	self.setScale(a.getLifetime()); // Get smaller over time
+	 * // Gradually fade to transparent as lifetime decreases.
+	 * void recolor(BaseNode self)
+	 * {   (cast(SpriteNode)self).setColor(1, 1, 1, self.getLifetime()/5);
 	 * }
-	 * a.setLifetime(5);
-	 * a.onUpdate(&doSomething);
+	 * s.setLifetime(5);
+	 * s.onUpdate(&doSomething);
 	 * --------------------------------*/
-	void onUpdate(void delegate() on_update)
+	void onUpdate(void delegate(BaseNode self) on_update)
 	{	this.on_update = on_update;
+	}
+
+	/**
+	 * The Node will be removed (along with all of its children) after a given time.
+	 * Params:
+	 * seconds = The number of seconds before the Node will be removed.
+	 * Set to float.infinity to make the Node last forever (the default behavior).*/
+	void setLifetime(float seconds)
+	{	lifetime = seconds;
 	}
 
 	/// Return a string representation of this Node for human reading.
@@ -169,7 +173,7 @@ abstract class BaseNode
 
 		// Call the onUpdate() function
 		if (on_update !is null)
-			on_update();
+			on_update(this);
 
 		// Decrement lifetime and remove children with < 0 lifetime.
 		// We iterate in reverse to ensure we hit all of them, since the last item

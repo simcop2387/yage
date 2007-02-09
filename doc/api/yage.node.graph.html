@@ -101,7 +101,8 @@ Eric Poggel
 <span class="currsymbol">GraphNode</span>
 <script type="text/javascript">explorer.outline.addDecl('GraphNode');</script>
  can be set to an arboolrary parametric equation of two variables
- and rendered as a triangle mesh (a 3D graph), complete with a material and lighting.
+ and rendered as a triangle mesh (a 3D graph), complete with a material and
+ normals for lighting.
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> <b>GraphNode</b> plot = <font color=blue>new</font> <b>GraphNode</b>(scene);
@@ -150,6 +151,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Model 
+<span class="currsymbol">getModel</span>
+<script type="text/javascript">explorer.outline.addDecl('getModel');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return the Model generated from setFunction() and setMaterial().
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
 <span class="currsymbol">getRadius</span>
 <script type="text/javascript">explorer.outline.addDecl('getRadius');</script>
@@ -157,7 +171,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the distance to the furthest point, afer scaling.
+<dd>Return the distance to the furthest point, afer scaling.
 <br><br>
 
 </dd>
@@ -171,19 +185,6 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Set a parametric graph
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setTextureFunction</span>
-<script type="text/javascript">explorer.outline.addDecl('setTextureFunction');</script>
-(Vec!(float,2)  delegate(float r, float s) <span class="funcparam">texfunc</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set a function of two variables to generate texture coordinates.
 <br><br>
 
 </dd>
@@ -205,16 +206,50 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">setMaterial</span>
 <script type="text/javascript">explorer.outline.addDecl('setMaterial');</script>
-(char[] <span class="funcparam">filename</span>);
+(char[] <span class="funcparam">material_file</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Set the Material of the GraphNode, using the Resource Manager
-  to ensure that no Material is loaded twice.
-  Equivalent of 
+ to ensure that no Material is loaded twice.
+ Equivalent of 
 <span class="currsymbol">setMaterial</span>
 <script type="text/javascript">explorer.outline.addDecl('setMaterial');</script>
-(Resource.material(<span class="funcparam">filename</span>)); 
+(Resource.material(filename)); 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
+<br>void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(Vec3f <span class="funcparam">scale</span>);
+<br>void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(float <span class="funcparam">scale</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Overridden to cache the radius if changed by the scale.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setTextureFunction</span>
+<script type="text/javascript">explorer.outline.addDecl('setTextureFunction');</script>
+(Vec!(float,2)  delegate(float r, float s) <span class="funcparam">texfunc</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set a function of two variables to generate texture coordinates.
 <br><br>
 
 </dd>
@@ -277,7 +312,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:17 2007
+		on Fri Feb  9 17:18:54 2007
 
 	</div>
 	
@@ -333,6 +368,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

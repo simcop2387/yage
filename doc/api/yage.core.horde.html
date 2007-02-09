@@ -373,6 +373,22 @@ the index of <span class="funcparam">element</span> in the Horde.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">uint 
+<span class="currsymbol">length</span>
+<script type="text/javascript">explorer.outline.addDecl('length');</script>
+(size_t <span class="funcparam">l</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the 
+<span class="currsymbol">length</span>
+<script type="text/javascript">explorer.outline.addDecl('length');</script>
+ of the Horde
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">print</span>
 <script type="text/javascript">explorer.outline.addDecl('print');</script>
@@ -479,7 +495,7 @@ the index of <span class="funcparam">element</span> in the Horde.
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> Horde!(Vec3f) a = <font color=blue>new</font> Horde!(Vec3f);
- a.<b>sortType</b>!(<font color=blue>float</font>).radix( (Vec3f v) { <font color=blue>return</font> v.x }, <font color=blue>true</font>, <font color=blue>true</font>)
+ a.<b>sortType</b>!(<font color=blue>float</font>).radix( (Vec3f v) { <font color=blue>return</font> v.x; }, <font color=blue>true</font>, <font color=blue>true</font>)
 </pre>
 <br><br>
 
@@ -549,7 +565,7 @@ the index of <span class="funcparam">element</span> in the Horde.
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:17 2007
+		on Fri Feb  9 17:18:53 2007
 
 	</div>
 	
@@ -605,6 +621,8 @@ the index of <span class="funcparam">element</span> in the Horde.
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

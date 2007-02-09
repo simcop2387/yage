@@ -203,9 +203,7 @@ class Layer
 		}
 
 		// Cull
-		if (cull == LAYER_CULL_BACK)
-			glCullFace(GL_BACK);
-		else
+		if (cull == LAYER_CULL_FRONT)
 			glCullFace(GL_FRONT);
 
 		// Polygon
@@ -227,8 +225,6 @@ class Layer
 		{	glEnable(GL_TEXTURE_2D);
 			textures[0].bind(clamp, filter);
 		}
-		else
-			glDisable(GL_TEXTURE_2D);
 
 		// Shader
 		if (program != 0)
@@ -255,7 +251,7 @@ class Layer
 
 		glDisable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glCullFace(GL_FRONT);
+		glCullFace(GL_BACK);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDisable(GL_TEXTURE_2D);
 		glDepthMask(true);

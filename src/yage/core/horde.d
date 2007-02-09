@@ -181,6 +181,11 @@ class Horde(T)
 	{	return count;
 	}
 
+	/// Set the length of the Horde
+	uint length(size_t l)
+	{	return count = l;
+	}
+
 	/// Print useful information to stdout.
 	void print()
 	{	printf("Horde: <length=%d, capacity=%d, reserve=%d>\n", count, elements.length, _reserve);
@@ -258,7 +263,7 @@ class Horde(T)
 	 * Example:
 	 * --------------------------------
 	 * Horde!(Vec3f) a = new Horde!(Vec3f);
-	 * a.sortType!(float).radix( (Vec3f v) { return v.x }, true, true)
+	 * a.sortType!(float).radix( (Vec3f v) { return v.x; }, true, true)
 	 * --------------------------------*/
 	template sortType(K)
 	{

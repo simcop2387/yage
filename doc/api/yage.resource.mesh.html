@@ -116,6 +116,14 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this(Material <span class="funcparam">matl</span>, Vec!(int,3) [] <span class="funcparam">triangles</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">addTriangle</span>
 <script type="text/javascript">explorer.outline.addDecl('addTriangle');</script>
@@ -183,6 +191,33 @@ Eric Poggel
 <br><br>
 
 </dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setTriangles</span>
+<script type="text/javascript">explorer.outline.addDecl('setTriangles');</script>
+(Vec!(int,3) [] <span class="funcparam">triangles</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the <span class="funcparam">triangles</span> of this mesh.  Each triangle contains
+ three vertex indicies from the vertex arrays in the containing Model.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return a string representation of this Mesh and its data.
+<br><br>
+
+</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -202,7 +237,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:18 2007
+		on Fri Feb  9 17:18:54 2007
 
 	</div>
 	
@@ -258,6 +293,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

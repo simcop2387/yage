@@ -209,7 +209,8 @@ struct Matrix
 	}
 
 	/**
-	 * Multiply this matrix by the 3-component Vec3f; assumes the 4th Vec3f component is 1.*/
+	 * Multiply this matrix by the 3-component Vec3f; assumes the 4th Vec3f component is 1.
+	 * This is the equivalent of transforming the Vector by this Matrix. */
 	Vec3f opMul(Vec3f vec)
 	{	Vec3f res=void;
 		res.x = vec.x*v[0] + vec.y*v[4] + vec.z*v[8]  + v[12];

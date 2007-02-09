@@ -96,7 +96,15 @@ class Image
 		return data[i*format..i*format+format];
 	}
 
-	/// Resize the image via glu.
+	///
+	void *ptr()
+	{	return data.ptr;
+	}
+
+	/**
+	 * Resize the image via glu.
+	 * Bugs:
+	 * This function often fails if new_width is not a multiple of 4. */
 	void resize(int new_width, int new_height)
 	{
 		// Return if nothing to do
@@ -113,6 +121,8 @@ class Image
 		// Resize the image.
 		ubyte[] image2 = new ubyte[new_width*new_height*format];
 		gluScaleImage(glformat, width, height, GL_UNSIGNED_BYTE, data.ptr, new_width, new_height, GL_UNSIGNED_BYTE, image2.ptr);
+
+		delete data;
 		data = image2;
 		width = new_width;
 		height = new_height;

@@ -20,9 +20,9 @@
 
 1170820590 c:\myfiles\eric\current\yage\src\yage\core\freelist.d
 
-1170820591 c:\myfiles\eric\current\yage\src\yage\core\horde.d
+1170911876 c:\myfiles\eric\current\yage\src\yage\core\horde.d
 
-1170820592 c:\myfiles\eric\current\yage\src\yage\core\matrix.d
+1170913328 c:\myfiles\eric\current\yage\src\yage\core\matrix.d
 
 1170820592 c:\myfiles\eric\current\yage\src\yage\core\misc.d
 
@@ -34,7 +34,7 @@
 
 1170820595 c:\myfiles\eric\current\yage\src\yage\core\tree.d
 
-1170820595 c:\myfiles\eric\current\yage\src\yage\core\vector.d
+1170912666 c:\myfiles\eric\current\yage\src\yage\core\vector.d
 
 1170820596 c:\myfiles\eric\current\yage\src\yage\core\xml.d
 
@@ -47,12 +47,12 @@
 	<yage/resource/sound.d>
 	<yage/resource/texture.d>
 
-1170820619 c:\myfiles\eric\current\yage\src\yage\resource\image.d
+1170888530 c:\myfiles\eric\current\yage\src\yage\resource\image.d
 
-1170820374 c:\myfiles\eric\current\yage\src\yage\resource\material.d
+1171050440 c:\myfiles\eric\current\yage\src\yage\resource\material.d
 	<yage/resource/layer.d>
 
-1170820373 c:\myfiles\eric\current\yage\src\yage\resource\layer.d
+1170890064 c:\myfiles\eric\current\yage\src\yage\resource\layer.d
 
 1170820375 c:\myfiles\eric\current\yage\src\yage\resource\model.d
 
@@ -76,17 +76,17 @@
 	<yage/node/sound.d>
 	<yage/node/terrain.d>
 
-1170820598 c:\myfiles\eric\current\yage\src\yage\node\basenode.d
+1171056257 c:\myfiles\eric\current\yage\src\yage\node\basenode.d
 
 1170820599 c:\myfiles\eric\current\yage\src\yage\node\camera.d
 
-1170826439 c:\myfiles\eric\current\yage\src\yage\node\graph.d
+1171051155 c:\myfiles\eric\current\yage\src\yage\node\graph.d
 
 1170820599 c:\myfiles\eric\current\yage\src\yage\node\light.d
 
-1170826365 c:\myfiles\eric\current\yage\src\yage\node\model.d
+1171051075 c:\myfiles\eric\current\yage\src\yage\node\model.d
 
-1170826325 c:\myfiles\eric\current\yage\src\yage\node\node.d
+1171050991 c:\myfiles\eric\current\yage\src\yage\node\node.d
 
 1170820614 c:\myfiles\eric\current\yage\src\yage\node\scene.d
 
@@ -104,7 +104,7 @@
 
 1170820250 c:\myfiles\eric\current\yage\src\yage\util\spring.d
 
-1170820383 c:\myfiles\eric\current\yage\src\yage\util\misc.d
+1171055337 c:\myfiles\eric\current\yage\src\yage\util\misc.d
 
 1170820386 c:\myfiles\eric\current\yage\src\yage\util\repeater.d
 
@@ -116,7 +116,7 @@
 
 1170820379 c:\myfiles\eric\current\yage\src\yage\system\constant.d
 
-1170820379 c:\myfiles\eric\current\yage\src\yage\system\device.d
+1170866214 c:\myfiles\eric\current\yage\src\yage\system\device.d
 
 1170820380 c:\myfiles\eric\current\yage\src\yage\system\input.d
 	<derelict/sdl/sdl.d>
@@ -176,7 +176,7 @@
 
 1147976880 c:\myfiles\eric\current\yage\src\derelict\sdl\sdlversion.d
 
-1147976880 c:\myfiles\eric\current\yage\src\derelict\sdl\syswm.d
+1169816820 c:\myfiles\eric\current\yage\src\derelict\sdl\syswm.d
 
 1145572740 c:\myfiles\eric\current\yage\src\derelict\sdl\thread.d
 
@@ -204,11 +204,11 @@
 	<std/c/stdlib.d>
 	<std/gc.d>
 
-1170820591 source:c:\myfiles\eric\current\yage\src\yage\core\horde.d
+1170911876 source:c:\myfiles\eric\current\yage\src\yage\core\horde.d
 	<std/stdio.d>
 	<yage/core/misc.d>
 
-1170820592 source:c:\myfiles\eric\current\yage\src\yage\core\matrix.d
+1170913328 source:c:\myfiles\eric\current\yage\src\yage\core\matrix.d
 	<std/math.d>
 	<std/stdio.d>
 	<std/random.d>
@@ -248,7 +248,7 @@
 	<yage/core/misc.d>
 	<yage/core/horde.d>
 
-1170820595 source:c:\myfiles\eric\current\yage\src\yage\core\vector.d
+1170912666 source:c:\myfiles\eric\current\yage\src\yage\core\vector.d
 	<std/math.d>
 	<std/stdio.d>
 	<yage/core/matrix.d>
@@ -262,7 +262,8 @@
 	<std/stdio.d>
 	<yage/core/misc.d>
 
-1170829386 source:c:\myfiles\eric\current\yage\src\yage\main.d
+1171056438 source:c:\myfiles\eric\current\yage\src\yage\main.d
+	<std/bind.d>
 	<std/string.d>
 	<std/math.d>
 	<std/stdio.d>
@@ -296,9 +297,10 @@
 	<yage/node/sound.d>
 	<yage/node/terrain.d>
 
-1170820598 source:c:\myfiles\eric\current\yage\src\yage\node\basenode.d
+1171056257 source:c:\myfiles\eric\current\yage\src\yage\node\basenode.d
 	<std/stdio.d>
 	<std/traits.d>
+	<std/bind.d>
 	<yage/core/horde.d>
 	<yage/core/misc.d>
 	<yage/node/node.d>
@@ -538,9 +540,9 @@
 
 1168491950 c:\myfiles\eric\current\yage\src\derelict\openal\almanual.d
 
-1170820381 c:\myfiles\eric\current\yage\src\yage\system\render.d
+1171051266 c:\myfiles\eric\current\yage\src\yage\system\render.d
 
-1170826439 source:c:\myfiles\eric\current\yage\src\yage\node\graph.d
+1171051155 source:c:\myfiles\eric\current\yage\src\yage\node\graph.d
 	<std/stdio.d>
 	<std/math.d>
 	<yage/core/vector.d>
@@ -569,7 +571,7 @@
 	<yage/system/constant.d>
 	<yage/system/render.d>
 
-1170826365 source:c:\myfiles\eric\current\yage\src\yage\node\model.d
+1171051075 source:c:\myfiles\eric\current\yage\src\yage\node\model.d
 	<yage/core/vector.d>
 	<yage/system/device.d>
 	<yage/system/log.d>
@@ -579,7 +581,7 @@
 	<yage/node/node.d>
 	<yage/node/basenode.d>
 
-1170826325 source:c:\myfiles\eric\current\yage\src\yage\node\node.d
+1171050991 source:c:\myfiles\eric\current\yage\src\yage\node\node.d
 	<std/math.d>
 	<std/stdio.d>
 	<std/traits.d>
@@ -638,7 +640,7 @@
 	<yage/resource/sound.d>
 	<yage/resource/texture.d>
 
-1170820619 source:c:\myfiles\eric\current\yage\src\yage\resource\image.d
+1170888530 source:c:\myfiles\eric\current\yage\src\yage\resource\image.d
 	<derelict/sdl/sdl.d>
 	<derelict/sdl/image.d>
 	<std/string.d>
@@ -652,7 +654,7 @@
 
 1151632200 c:\myfiles\eric\current\yage\src\derelict\sdl\image.d
 
-1170820373 source:c:\myfiles\eric\current\yage\src\yage\resource\layer.d
+1170890064 source:c:\myfiles\eric\current\yage\src\yage\resource\layer.d
 	<std/math.d>
 	<std/stdio.d>
 	<std/string.d>
@@ -671,7 +673,7 @@
 	<yage/resource/shader.d>
 	<yage/node/light.d>
 
-1170820374 source:c:\myfiles\eric\current\yage\src\yage\resource\material.d
+1171050440 source:c:\myfiles\eric\current\yage\src\yage\resource\material.d
 	<std/conv.d>
 	<std/file.d>
 	<std/path.d>
@@ -792,7 +794,7 @@
 1170820380 source:c:\myfiles\eric\current\yage\src\yage\system\log.d
 	<std/stdio.d>
 
-1170820381 source:c:\myfiles\eric\current\yage\src\yage\system\render.d
+1171051266 source:c:\myfiles\eric\current\yage\src\yage\system\render.d
 	<derelict/opengl/gl.d>
 	<derelict/opengl/glext.d>
 	<std/stdio.d>
@@ -839,7 +841,7 @@
 	<yage/core/all.d>
 	<yage/node/all.d>
 
-1170820383 source:c:\myfiles\eric\current\yage\src\yage\util\misc.d
+1171055337 source:c:\myfiles\eric\current\yage\src\yage\util\misc.d
 	<std/math.d>
 	<std/random.d>
 	<yage/resource/resource.d>
@@ -857,7 +859,7 @@
 	<yage/core/all.d>
 	<yage/node/all.d>
 
-1170820379 source:c:\myfiles\eric\current\yage\src\yage\system\device.d
+1170866214 source:c:\myfiles\eric\current\yage\src\yage\system\device.d
 	<std/stdio.d>
 	<std/string.d>
 	<derelict/openal/al.d>
@@ -869,9 +871,7 @@
 	<derelict/sdl/image.d>
 	<derelict/ogg/vorbis.d>
 	<derelict/ogg/vorbisfile.d>
-	<yage/core/horde.d>
 	<yage/resource/texture.d>
-	<yage/node/camera.d>
 	<yage/system/log.d>
 	<yage/system/constant.d>
 
@@ -1067,9 +1067,10 @@
 
 1167043260 c:\myfiles\eric\current\yage\src\derelict\openal\alfuncs.d
 
-1170820596 source:c:\myfiles\eric\current\yage\src\yage\gameobj.d
+1171056608 source:c:\myfiles\eric\current\yage\src\yage\gameobj.d
 	<std/math.d>
 	<std/stdio.d>
+	<yage/core/timer.d>
 	<yage/node/basenode.d>
 	<yage/node/node.d>
 	<yage/resource/resource.d>
@@ -1080,7 +1081,7 @@
 	<yage/node/light.d>
 	<yage/universe.d>
 
-1170820596 c:\myfiles\eric\current\yage\src\yage\gameobj.d
+1171056648 c:\myfiles\eric\current\yage\src\yage\gameobj.d
 
 1170820375 c:\myfiles\eric\current\yage\src\yage\resource\mesh.d
 
@@ -1103,9 +1104,9 @@
 
 1170820600 c:\myfiles\eric\current\yage\src\yage\node\moveable.d
 
-1170829859 c:\myfiles\eric\current\yage\src\yage\node\terrain.d
+1171051102 c:\myfiles\eric\current\yage\src\yage\node\terrain.d
 
-1170829859 source:c:\myfiles\eric\current\yage\src\yage\node\terrain.d
+1171051102 source:c:\myfiles\eric\current\yage\src\yage\node\terrain.d
 	<std/conv.d>
 	<std/file.d>
 	<std/stdio.d>

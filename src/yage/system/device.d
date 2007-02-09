@@ -18,9 +18,7 @@ import derelict.sdl.sdl;
 import derelict.sdl.image;
 import derelict.ogg.vorbis;
 import derelict.ogg.vorbisfile;
-import yage.core.horde;
 import yage.resource.texture;
-import yage.node.camera;
 import yage.system.log;
 import yage.system.constant;
 
@@ -217,9 +215,9 @@ abstract class Device
 	static bool getSupport(int constant)
 	{	switch (constant)
 		{	case DEVICE_SHADER:
-				version(linux)	// Shaders often fail on linux due to poor driver support!  :(
-				{	return false;
-				}
+				version(linux)		// Shaders often fail on linux due to poor driver support!  :(
+				{	return false;	// ATI drivers will claim shader support but fail on shader compile.
+				}					// I'll eventually write a better workaround.
 				static int s = -1;
 				if (s==-1)
 					s = checkExtension("GL_ARB_shader_objects");

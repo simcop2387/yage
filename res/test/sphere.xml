@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<material>
+  <layer blend="average" ambient="CCCCCC" emissive="888888">
+  	<texture src="earth-clouds.png" />
+  </layer>
+</material>

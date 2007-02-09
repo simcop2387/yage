@@ -77,7 +77,12 @@ class Material
 		char[] path = source[0 .. rfind(source, "/") + 1]; // should be replace with getDirName(absolute(path))
 
 		// Load xml file
-		XmlNode xml = readDocument(source);
+		XmlNode xml;
+		try
+		{	xml = readDocument(source);
+		} catch
+		{	throw new Exception("Unable to parse xml material file '"~source~"'.");
+		}
 
 		// Load material attributes
 		try

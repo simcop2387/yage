@@ -90,8 +90,8 @@ class TerrainNode : Node
 				vertices[z*w+x].set(cast(float)x/w-.5, (grayscale[z*w+x])[0]/256.0-.5, cast(float)z/h-.5);
 				texcoords[z*w+x].set(cast(float)x/w*repeat, cast(float)z/h*repeat);
 
-				// Triangless
-				if (x+1<h && z+1<w)
+				// Triangles
+				if (x+1<w && z+1<h)
 				{	triangles[i  ].set((z+1)*w+x, z*w+x+1, z*w+x);
 					triangles[i+1].set((z+1)*w+x, (z+1)*w+x+1, z*w+x+1);
 				}
@@ -126,22 +126,23 @@ class TerrainNode : Node
 	}
 
 	/// Overridden to cache the radius if changed by the scale.
-	void setScale(Vec3f scale)
-	{	super.setScale(scale);
+	void setScale(float x, float y, float z)
+	{	super.setScale(x, y, z);
 		if (width != 0) // if heightmap loaded
 			regenerate();
 		radius = model.getDimensions().scale(scale).max();
 	}
 
 	/// ditto
-	void setScale(float x, float y, float z)
-	{	setScale(Vec3f(x, y, z));
+	void setScale(Vec3f scale)
+	{	setScale(scale.x, scale.y, scale.z);
 	}
 
 	/// ditto
 	void setScale(float scale)
-	{	setScale(Vec3f(scale, scale, scale));
+	{	setScale(scale, scale, scale);
 	}
+
 
 	/**
 	 * Recalculate the terrain's normals and culling sphere radius.*/

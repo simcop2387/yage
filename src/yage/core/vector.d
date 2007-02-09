@@ -401,7 +401,7 @@ struct Vec3f
 	}
 
 	///
-	void *ptr()
+	float *ptr()
 	{	return v.ptr;
 	}
 

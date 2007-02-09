@@ -203,6 +203,27 @@ A self reference.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">synchronized void 
+<span class="currsymbol">enableLights</span>
+<script type="text/javascript">explorer.outline.addDecl('enableLights');</script>
+(ubyte <span class="funcparam">number</span> = cast(ubyte)8);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Enable the lights that most affect this Node.
+ All lights that affect this Node can't always be enabled, due to hardware and performance
+ reasons, so only the lights that affect the node the most are enabled.
+ This function is used internally by the engine and should not be called manually or exported.
+<br><br>
+<b>TODO:</b><br>
+Take into account a spotlight inside a Node that shines outward but doesn't shine
+ on the Node's center.  Need to test to see if this is even broken.
+ Also perhaps use axis sorting for faster calculations. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Vec!(float,4)  
 <span class="currsymbol">getColor</span>
 <script type="text/javascript">explorer.outline.addDecl('getColor');</script>
@@ -211,26 +232,6 @@ A self reference.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the color of the Node.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
-(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
-<br>void 
-<span class="currsymbol">setColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
-(Vec!(float,4) <span class="funcparam">color</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the color of the Node, multiplied with the material properties.
- This is equivalent to glColor4f(). If the materials of any meshes have
- blending enabled, their alpha value can be set via the fourth parameter.
- Default color is white (all 1's).
 <br><br>
 
 </dd>
@@ -257,21 +258,7 @@ A self reference.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get whether this node is inside the view frustum and large enough to be drawn by
-  the last camera that rendered it. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setOnscreen</span>
-<script type="text/javascript">explorer.outline.addDecl('setOnscreen');</script>
-(bool <span class="funcparam">onscreen</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set whether this node is inside the current camera's view frustum.
-  This function is used internally by the engine and should not be called manually or exported. 
+ the last camera that rendered it. 
 <br><br>
 
 </dd>
@@ -303,34 +290,6 @@ A self reference.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(Vec3f <span class="funcparam">scale</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">scale</span> of this Node in the x, y, and z directions.
- The default is (1, 1, 1) 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">scale</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">scale</span> of this Node in the x, y, and z directions.
- The default is (1, 1, 1) 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">bool 
 <span class="currsymbol">getVisible</span>
 <script type="text/javascript">explorer.outline.addDecl('getVisible');</script>
@@ -339,6 +298,62 @@ A self reference.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Is rendering enabled for this node?
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
+(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
+<br>void 
+<span class="currsymbol">setColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
+(Vec!(float,4) <span class="funcparam">color</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the color of the Node, multiplied with the material properties.
+ This is equivalent to glColor4f(). If the materials of any meshes have
+ blending enabled, their alpha value can be set via the fourth parameter.
+ Default color is white (all 1's).
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setOnscreen</span>
+<script type="text/javascript">explorer.outline.addDecl('setOnscreen');</script>
+(bool <span class="funcparam">onscreen</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set whether this node is inside the current camera's view frustum.
+  This function is used internally by the engine and should not be called manually or exported. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
+<br>void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(Vec3f <span class="funcparam">scale</span>);
+<br>void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(float <span class="funcparam">scale</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the scale of this Node in the <span class="funcparam">x</span>, <span class="funcparam">y</span>, and <span class="funcparam">z</span> directions.
+ The default is (1, 1, 1) 
 <br><br>
 
 </dd>
@@ -373,27 +388,6 @@ A self reference.
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">synchronized void 
-<span class="currsymbol">enableLights</span>
-<script type="text/javascript">explorer.outline.addDecl('enableLights');</script>
-(ubyte <span class="funcparam">number</span> = cast(ubyte)8);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Enable the lights that most affect this Node.
- All lights that affect this Node can't always be enabled, due to hardware and performance
- reasons, so only the lights that affect the node the most are enabled.
- This function is used internally by the engine and should not be called manually or exported.
-<br><br>
-<b>TODO:</b><br>
-Take into account a spotlight inside a Node that shines outward but doesn't shine
- on the Node's center.  Need to test to see if this is even broken.
- Also perhaps use axis sorting for faster calculations. 
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -413,7 +407,7 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:17 2007
+		on Fri Feb  9 17:18:54 2007
 
 	</div>
 	
@@ -469,6 +463,8 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

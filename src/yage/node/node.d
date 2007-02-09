@@ -72,7 +72,7 @@ class Node : MoveableNode
 		super();
 		visible = false;
 		scale = Vec3f(1);
-		color = Vec4f(1, 1, 1, 1);
+		color = Vec4f(1);
 		setParent(parent);
 	}
 
@@ -258,18 +258,18 @@ class Node : MoveableNode
 	/**
 	 * Set the scale of this Node in the x, y, and z directions.
 	 * The default is (1, 1, 1) */
-	void setScale(Vec3f scale)
-	{	this.scale = scale;
-	}
-
-	/// ditto
 	void setScale(float x, float y, float z)
 	{	scale.set(x, y, z);
 	}
 
 	/// ditto
+	void setScale(Vec3f scale)
+	{	setScale(scale.x, scale.y, scale.z);
+	}
+
+	/// ditto
 	void setScale(float scale)
-	{	this.scale.set(scale);
+	{	setScale(scale, scale, scale);
 	}
 
 	/** Set whether this Node will be renered.  This has nothing to do with frustum culling.

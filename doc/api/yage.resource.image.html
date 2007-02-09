@@ -98,6 +98,11 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>A class for loading and manipulating images.
+ Supports loading images from any format supported by SDL_Image.
+ Currently supports grayscale, RGB, and RGBA image data.
+<br><br>
+<font color=red>BUGS:</font><br>
+An RGB image will often be returned when loading grayscale images.  Use setFormat() to correct this.
 <br><br>
 
 
@@ -120,6 +125,28 @@ Eric Poggel
 
 <dd>Construct from <span class="funcparam">image</span> data in memory
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">ubyte[] <span class="funcparam">image</span></td>
+
+               
+<td>a 1-dimensional array of raw <span class="funcparam">image</span> data</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">uint <span class="funcparam">width</span></td>
+
+               
+<td><span class="funcparam">height</span> in pixels</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">uint <span class="funcparam">height</span></td>
+
+               
+<td><span class="funcparam">height</span> in pixels</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">format</span></td>
+
+               
+<td>one of the IMAGE_FORMAT_* constants from yage.system.constant</td></tr>
+</table><br>
 
 </dd>
 
@@ -131,7 +158,9 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the raw image data.
+<dd>Return the raw image data.
+ Row-major order is used.  This means that the array contains all of row 1's
+ pixels, followed by row 2's pixels, etc.
 <br><br>
 
 </dd>
@@ -191,6 +220,43 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">ubyte[] 
+<span class="currsymbol">opIndex</span>
+<script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
+(uint <span class="funcparam">i</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the ith pixel in the image.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">ubyte[] 
+<span class="currsymbol">opIndex</span>
+<script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
+(uint <span class="funcparam">x</span>, uint <span class="funcparam">y</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the pixel at the given coordinates.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void* 
+<span class="currsymbol">ptr</span>
+<script type="text/javascript">explorer.outline.addDecl('ptr');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">resize</span>
 <script type="text/javascript">explorer.outline.addDecl('resize');</script>
@@ -200,6 +266,30 @@ Eric Poggel
 
 <dd>Resize the image via glu.
 <br><br>
+<font color=red>BUGS:</font><br>
+This function often fails if <span class="funcparam">new_width</span> is not a multiple of 4. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setFormat</span>
+<script type="text/javascript">explorer.outline.addDecl('setFormat');</script>
+(int <span class="funcparam">format</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the <span class="funcparam">format</span> of the image data.
+ This is an in-place operation.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">format</span></td>
+
+               
+<td>one of the IMAGE_FORMAT_* constants from yage.system.constant </td></tr>
+</table><br>
 
 </dd>
 
@@ -234,7 +324,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:17 2007
+		on Fri Feb  9 17:18:54 2007
 
 	</div>
 	
@@ -290,6 +380,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

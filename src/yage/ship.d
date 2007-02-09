@@ -140,7 +140,7 @@ class Ship : GameObject
 		setAngularVelocity(getAngularVelocity().scale(maxf(1-delta*ydamp, 0.0f)));
 
 		// Update the spring
-		if (spring.getStiffness()<24)
+		if (spring.getStiffness()<40)
 			spring.setStiffness(spring.getStiffness*(delta+1));
 
 		// Fire a flare

@@ -134,14 +134,29 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">getSource</span>
-<script type="text/javascript">explorer.outline.addDecl('getSource');</script>
+<dt><span class="decl">deprecated void 
+<span class="currsymbol">calcRadius</span>
+<script type="text/javascript">explorer.outline.addDecl('calcRadius');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the path to the file where the model was loaded.
+<dd>Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">deprecated float 
+<span class="currsymbol">getRadius</span>
+<script type="text/javascript">explorer.outline.addDecl('getRadius');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the radius of this model in world units.
+  This is the distance from the center of the model to the most distant Vertex,
+  before any scaling is performed. 
 <br><br>
 
 </dd>
@@ -150,7 +165,7 @@ Eric Poggel
 <dt><span class="decl">int 
 <span class="currsymbol">addMesh</span>
 <script type="text/javascript">explorer.outline.addDecl('addMesh');</script>
-(Material <span class="funcparam">matl</span> = cast(Material)null, Vec!(int,3) [] <span class="funcparam">triangles</span> = null);
+(Mesh <span class="funcparam">m</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -178,18 +193,34 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Bind the Vertex, Texture, and Normal VBO's for use.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">calcRadius</span>
-<script type="text/javascript">explorer.outline.addDecl('calcRadius');</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">getCached</span>
+<script type="text/javascript">explorer.outline.addDecl('getCached');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
+<dd>Return true
+ if the model data has been cached in video memory.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f  
+<span class="currsymbol">getDimensions</span>
+<script type="text/javascript">explorer.outline.addDecl('getDimensions');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the dimensions of a box, centered at the origin, that can contain this Model.
 <br><br>
 
 </dd>
@@ -219,14 +250,16 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f [] 
-<span class="currsymbol">getVertices</span>
-<script type="text/javascript">explorer.outline.addDecl('getVertices');</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">getSource</span>
+<script type="text/javascript">explorer.outline.addDecl('getSource');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get the path to the file where the model was loaded.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -241,9 +274,46 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">uint 
+<span class="currsymbol">getNormalsVBO</span>
+<script type="text/javascript">explorer.outline.addDecl('getNormalsVBO');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the OpenGL Vertex Buffer Object index for the vertex normals.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Vec!(float,2) [] 
 <span class="currsymbol">getTexCoords</span>
 <script type="text/javascript">explorer.outline.addDecl('getTexCoords');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">uint 
+<span class="currsymbol">getTexCoordsVBO</span>
+<script type="text/javascript">explorer.outline.addDecl('getTexCoordsVBO');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the OpenGL Vertex Buffer Object index for the vertex texture coordinates.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f [] 
+<span class="currsymbol">getVertices</span>
+<script type="text/javascript">explorer.outline.addDecl('getVertices');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -265,87 +335,72 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">getTexCoordsVBO</span>
-<script type="text/javascript">explorer.outline.addDecl('getTexCoordsVBO');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the OpenGL Vertex Buffer Object index for the vertex texture coordinates.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">getNormalsVBO</span>
-<script type="text/javascript">explorer.outline.addDecl('getNormalsVBO');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the OpenGL Vertex Buffer Object index for the vertex normals.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">getCached</span>
-<script type="text/javascript">explorer.outline.addDecl('getCached');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return true
- if the model data has been cached in video memory.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">getRadius</span>
-<script type="text/javascript">explorer.outline.addDecl('getRadius');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the radius of this model in world units.
-  This is the distance from the center of the model to the most distant Vertex,
-  before any scaling is performed. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">loadMs3d</span>
-<script type="text/javascript">explorer.outline.addDecl('loadMs3d');</script>
+<span class="currsymbol">load</span>
+<script type="text/javascript">explorer.outline.addDecl('load');</script>
 (char[] <span class="funcparam">filename</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Load a model from a Milkshape3D model file.
-  All materials, etc. referenced by this model are loaded through the Resource
-  manager to avoid duplicates.  Meshes without a material are assigned a default material.
-  Uploading vertex data to video memory must be done manually by calling Upload().
-  This function needs to be tested on big-endian systems. 
+<dd>Load vertex, mesh, and material data from a 3D model file.
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">print</span>
-<script type="text/javascript">explorer.outline.addDecl('print');</script>
+<span class="currsymbol">setVertices</span>
+<script type="text/javascript">explorer.outline.addDecl('setVertices');</script>
+(Vec3f [] <span class="funcparam">vertices</span>, Vec3f [] <span class="funcparam">normals</span>, Vec!(float,2) [] <span class="funcparam">texcoords</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the <span class="funcparam">vertices</span> used by this Model.
+ The triangle arrays of this Model's meshes will index into these arrays.
+ upload() should be called after this method to update changes in video memory.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">verts</td>
+
+               
+<td>vertex coordinate vectors (xyz).</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">norms</td>
+
+               
+<td>normal coordinate vectors; need to be of length 1.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">texs</td>
+
+               
+<td>texure coordinates for each vertex. </td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setMeshes</span>
+<script type="text/javascript">explorer.outline.addDecl('setMeshes');</script>
+(Mesh[] <span class="funcparam">meshes</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the Meshes used by this model. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Print out the vertex, texture, normal, etc. coordinates of a model
-  This is useful for debugging purposes. 
+<dd>Return a string representation of this Model and all of its data. 
 <br><br>
 
 </dd>
@@ -383,7 +438,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:18 2007
+		on Fri Feb  9 17:18:55 2007
 
 	</div>
 	
@@ -439,6 +494,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

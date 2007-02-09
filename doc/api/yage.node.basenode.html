@@ -167,6 +167,19 @@ A self reference.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">getLifetime</span>
+<script type="text/javascript">explorer.outline.addDecl('getLifetime');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the time before the Node will be removed.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">BaseNode 
 <span class="currsymbol">getParent</span>
 <script type="text/javascript">explorer.outline.addDecl('getParent');</script>
@@ -200,20 +213,44 @@ A self reference.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the type of this Node as a string; i.e. "Node", "ModelNode", etc.
+<dd>Get the type of this Node as a string; i.e. "yage.node.node.ModelNode".
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">getLifetime</span>
-<script type="text/javascript">explorer.outline.addDecl('getLifetime');</script>
-();
+<dt><span class="decl">void 
+<span class="currsymbol">onUpdate</span>
+<script type="text/javascript">explorer.outline.addDecl('onUpdate');</script>
+(void delegate(BaseNode self) <span class="funcparam">on_update</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the time before the Node will be removed.
+<dd>Set a function that will be called every time this Node is updated.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">void delegate(BaseNode self) <span class="funcparam">on_update</span></td>
+
+               
+<td>the function that will be called.  Use null
+ as an argument to clear
+ the function.</td></tr>
+</table><br>
+<font color=red>BUGS:</font><br>
+Certain Node methods cause access violations.  Perhaps this is a dmd bug?
+<br><br>
+<b>Example:</b><br>
+<pre class="d_code"> SpriteNode s = <font color=blue>new</font> SpriteNode(scene);
+ s.setMaterial(<span style="color: purple">"something.xml"</span>);
+
+ <font color=green>// Gradually fade to transparent as lifetime decreases.
+</font> <font color=blue>void</font> recolor(BaseNode self)
+ {   (<font color=blue>cast</font>(SpriteNode)self).setColor(1, 1, 1, self.getLifetime()/5);
+ }
+ s.setLifetime(5);
+ s.<b>onUpdate</b>(&amp;doSomething);
+</pre>
 <br><br>
 
 </dd>
@@ -236,41 +273,6 @@ A self reference.
 <td>The number of <span class="funcparam">seconds</span> before the Node will be removed.
  Set to float.infinity to make the Node last forever (the default behavior).</td></tr>
 </table><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">onUpdate</span>
-<script type="text/javascript">explorer.outline.addDecl('onUpdate');</script>
-(void delegate() <span class="funcparam">on_update</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set a function that will be called every time this Node is updated.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">void delegate() <span class="funcparam">on_update</span></td>
-
-               
-<td>the function that will be called.  Use null
- as an argument to clear
- the function.</td></tr>
-</table><br>
-<font color=red>BUGS:</font><br>
-Certain Node methods cause access violations.  Perhaps this is a dmd bug?
-<br><br>
-<b>Example:</b><br>
-<pre class="d_code"> Node a = <font color=blue>new</font> Node(scene);
-
- <font color=blue>void</font> doSomething()
- {	self.setScale(a.getLifetime()); <font color=green>// Get smaller over time
-</font> }
- a.setLifetime(5);
- a.<b>onUpdate</b>(&amp;doSomething);
-</pre>
-<br><br>
 
 </dd>
 
@@ -354,7 +356,7 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Feb  4 00:19:17 2007
+		on Fri Feb  9 17:18:53 2007
 
 	</div>
 	
@@ -410,6 +412,8 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 	explorer.packageExplorer.addModule("yage.node.sound");
 
 	explorer.packageExplorer.addModule("yage.node.sprite");
+
+	explorer.packageExplorer.addModule("yage.node.terrain");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
