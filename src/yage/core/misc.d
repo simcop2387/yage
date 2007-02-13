@@ -305,6 +305,16 @@ char[] boolToString(bool a)
 	return "false";
 }
 
+long getCPUCount()
+{	uint loword, hiword;
+	asm
+	{	rdtsc;
+		mov hiword, EDX;
+		mov loword, EAX;
+	}
+	return ((cast(long)hiword) << 32) + loword;
+}
+
 
 /// Print out the bools that make a 32-bool number
 void printBits(void* a)

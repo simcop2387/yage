@@ -148,7 +148,7 @@ class Ship : GameObject
 		{
 			Flare flare = new Flare(ship.getScene());
 			flare.setPosition(ship.getAbsolutePosition());
-			flare.setVelocity(Vec3f(0, 0, -400).rotate(ship.getAbsoluteTransform())+getVelocity());
+			flare.setVelocity(Vec3f(0, 0, -1200).rotate(ship.getAbsoluteTransform())+getVelocity());
 
 			SoundNode zap = new SoundNode(ship);
 			zap.setSound("sound/laser.wav");

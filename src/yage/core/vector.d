@@ -58,8 +58,7 @@ struct Vec(T, int K)
 
 	/// Create a new vector with the values s0, s1, s2, ...
 	static Vec!(T, K) opCall(T[K] s ...)
-	{	assert(s.length==K);
-		Vec!(T, K) res;
+	{	Vec!(T, K) res;
 		res.v[0..K] = s[0..K];
 		return res;
 	}
@@ -121,14 +120,14 @@ struct Vec(T, int K)
 	{	return s.scale(dot(s)/s.length2());
 	}
 
-	/// Scale this vector by the values of another vector.
+	/// Scale (multiply) this vector.
 	Vec!(T, K) scale(float s)
 	{	Vec!(T, K) res = *this;
 		for (int i=0; i<v.length; i++)
 			res.v[i] *= s;
 		return res;
 	}
-
+	/// ditto
 	Vec!(T, K) scale(Vec!(T, K) s)
 	{	Vec!(T, K) res = *this;
 		for (int i=0; i<v.length; i++)
@@ -136,14 +135,19 @@ struct Vec(T, int K)
 		return res;
 	}
 
+	/// Set the values of the Vector.
+	void set(T s)
+	{	foreach(inout T e; v)
+			e = s;
+	}
+	/// ditto
 	void set(Vec!(T, K) s)
 	{	v[0..K] = s.v[0..K];
 	}
 
-	/// Create a new vector with the values s0, s1, s2, ...
-	void set(T[] s ...)
-	{	assert(s.length==K);
-		v[0..K] = s[0..K];
+	/// ditto
+	void set(T[K] s ...)
+	{	v[0..K] = s[0..K];
 	}
 
 	/// Return a string representation of this vector for human reading.
@@ -218,11 +222,11 @@ struct Vec3f
 
 			// Rotate every vector by every other and then reverse, in 3 different ways.
 			foreach (Vec3f d; v)
-			{	test("Rotate Axis", c.rotate(d).rotate(d.inverse()), c, d);
+			{	test("Rotate Axis", c.rotate(d).rotate(d.negate()), c, d);
 				test("Rotate Matrix", c.rotate(d.toMatrix()).rotate(d.toMatrix().inverse()), c, d);
 				test("Rotate Quatrn", c.rotate(d.toQuatrn()).rotate(d.toQuatrn().inverse()), c, d);
 				test("Add & Subtract", (c+d-d).add(d).subtract(d), c, d);
-				test("Cross Product", c.cross(d), d.inverse().cross(c), c, d);
+				test("Cross Product", c.cross(d), d.negate().cross(c), c, d);
 				test("Dot Product", c.scale(c.dot(d)), c.scale(c.x*d.x+c.y*d.y+c.z*d.z));
 				test("Distance", c.scale(c.distance(d)), c.scale(sqrt((c.x-d.x)*(c.x-d.x) + (c.y-d.y)*(c.y-d.y) + (c.z-d.z)*(c.z-d.z))));
 			}
@@ -303,9 +307,9 @@ struct Vec3f
 	{	return (x-s.x)*(x-s.x) + (y-s.y)*(y-s.y) + (z-s.z)*(z-s.z);
 	}
 
-	/// Return a vector with every value of this Vec3f negated.
+	///
 	Vec3f inverse()
-	{	return Vec3f(-x, -y, -z);
+	{	return Vec3f(1/x, 1/y, 1/z);
 	}
 
 	/// Return the length of the vector (the magnitude).
@@ -330,6 +334,11 @@ struct Vec3f
 	{	if (x>=y && x>=z) return x;
 		if (y>=z) return y;
 		return z;
+	}
+
+	/// Return a vector with every value of this Vec3f negated.
+	Vec3f negate()
+	{	return Vec3f(-x, -y, -z);
 	}
 
 	/// Return a normalized copy of this vector.
@@ -403,6 +412,13 @@ struct Vec3f
 	///
 	float *ptr()
 	{	return v.ptr;
+	}
+
+	/// Return a vector in a random direction between length -r and r.
+	static Vec3f random(float r = 1)
+	{	float a = .random(0, 6.283185307);
+		float b = .random(0, 6.283185307);
+		return Vec3f(sin(a)*cos(b)*r, sin(a)*sin(b)*r, cos(b)*r);
 	}
 
 	/**

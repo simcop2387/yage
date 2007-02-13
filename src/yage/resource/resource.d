@@ -39,8 +39,7 @@ abstract class Resource
 
 	/// Initialize
 	static this()
-	{	paths = new Horde!(char[]);
-		paths.add("");
+	{	paths.add("");
 	}
 
 	/// Get the array of path strings

@@ -67,7 +67,7 @@ class TerrainNode : Node
 	 * Params:
 	 * grayscale = An image to load.  It will be converted to a grayscale image
 	 * if necessary.  Whiter regions will be higher altitudes.
-	 * repeat = The material texture will be repeated this many times. */
+	 * repeat = The material texture coordinates will be repeated this many times. */
 	void setHeightMap(Image grayscale, float repeat=1)
 	{	// just to be sure
 		grayscale.setFormat(IMAGE_FORMAT_GRAYSCALE);
@@ -129,8 +129,7 @@ class TerrainNode : Node
 	void setScale(float x, float y, float z)
 	{	super.setScale(x, y, z);
 		if (width != 0) // if heightmap loaded
-			regenerate();
-		radius = model.getDimensions().scale(scale).max();
+			radius = model.getDimensions().scale(scale).length();
 	}
 
 	/// ditto
@@ -174,10 +173,10 @@ class TerrainNode : Node
 
 				// Cross product for the win!
 				//  Actually, I'm not too sure about this
-				Vec3f tx = Vec3f(1/scale.x, dx/scale.y, 0).normalize();
-				Vec3f tz = Vec3f(0, dz/scale.y, 1/scale.z).normalize();
-				normals[z*width+x] = (tz.cross(tx));
+				Vec3f tx = Vec3f(1.0/width, dx, 0);
+				Vec3f tz = Vec3f(0, dz, 1.0/height);
+				normals[z*width+x] = -(tx.cross(tz)).normalize();
 			}
-		radius =  model.getDimensions().scale(scale).max();
+		radius = model.getDimensions().scale(scale).length();
 	}
 }

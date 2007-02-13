@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2006 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -9,6 +9,8 @@ module yage.core.horde;
 import std.stdio;
 import yage.core.misc;
 
+// For unit tests
+import yage.core.vector;
 
 
 /**
@@ -29,11 +31,15 @@ import yage.core.misc;
  * a.sort((Vec3f v) { return v.y; });       // Sort by the y value of each Vec3f.
  * --------------------------------
  **/
-class Horde(T)
+struct Horde(T)
 {
 	protected T[] elements;		// An array of all elements in the Horde, + extra length in reserve for new elements
-	protected uint count;		// number of elements currently in the horde.
-	protected uint _reserve;	// reserve at least this much space in the array.
+	protected uint count=0;		// number of elements currently in the horde.
+	protected uint _reserve=0;	// reserve at least this much space in the array.
+
+	// used in unit tests
+	alias Horde!(real) hr;
+	alias Horde!(Vec3f) hv;
 
 	unittest
 	{/*
@@ -44,108 +50,168 @@ class Horde(T)
 		a.add(Vec3f(3, 2, 1));
 		a.sort((Vec3f v) { return v.y; });		// Sort by the y value of each Vec3f.
 	*/
+		//hv a = hv([Vec3f(1, 2, 3), Vec3f(6, 5, 4)]);
+		//assert(a[0] == Vec3f(1, 2, 3));
+		//assert(a[1] == Vec3f(6, 5, 4));
+
 	}
 
-	/// Constructor
-	this()
-	{	this(0); // arboolrary
+	/// Construct
+	static Horde!(T) opCall()
+	{	Horde!(T) res;
+		return res;
 	}
 
 	/// Construct and reserve size
-	this(uint size)
-	{	elements.length = size;
-		count=0;
-		_reserve = size;
+	static Horde!(T) opCall(uint size)
+	{	Horde!(T) res;
+		res.elements.length = size;
+		res.reserve = size;
+		return res;
 	}
 
-	/// Construct from an existing array.
-	this (T[] array)
-	{	elements = array;
-		count = elements.length;
-		_reserve = 0;
+	/// Construct from an existing array or Horde.
+	static Horde!(T) opCall(T[] array)
+	{	Horde!(T) res;
+		res.elements = array;
+		res.count = array.length;
+		return res;
+	}
+	/// ditto
+	static Horde!(T) opCall(Horde!(T) horde)
+	{	return opCall(horde.array);
 	}
 
-	private synchronized void sizeup()
+	// Reserve more space
+	private void sizeup()
 	{	if (count==elements.length)
 		{	int newsize = (elements.length*2+1 > _reserve ? elements.length*2+1 : _reserve);
 			elements.length = newsize;
 		}
 	}
 
-	private synchronized void sizedown()
+	// Reserve less space
+	private void sizedown()
 	{	if ((count < elements.length/3) && (elements.length/2 >= _reserve))
 			elements.length = elements.length/2;
 	}
-/*
-	/// Allow to be used in foreach as array argument.  This may be broken.
-	int opApply(int delegate(inout T x) dg)
-	{	int result=0;
-		foreach(inout T x; elements[0..count])
-		{	result=dg(x);
-			if(result)
-				break;
+
+	/// Allow Horde to be used in foreach
+	int opApply(int delegate(inout T) dg)
+	{   int result = 0;
+		for (int i = 0; i < count; i++)
+		{	result = dg(elements[i]);
+			if (result)
+			break;
 		}
 		return result;
 	}
-*/
-	/// Cast the Horde as an array of type T
-	T[] opCast()
-	{	return elements[0..count];
+
+	/// Cast the Horde as an array of type T.
+//	T[] opCast()
+//	{	return elements[0..count];
+//	}
+
+	/// Create a new Horde by concatenating other elements.
+	Horde!(T) opCat(T elem)
+	{	return Horde!(T)(this.elements[0..count]~elem);
+	}
+	/// ditto
+	Horde!(T) opCat(T[] array)
+	{	return Horde!(T)(this.elements[0..count]~array);
+	}
+	/// ditto
+	Horde!(T) opCat(Horde!(T) rhs)
+	{	return Horde!(T)(this.elements[0..count]~rhs.array);
 	}
 
-	/// Overload operator[i] to return index i of type T.
+	/// Concatenate values onto the Horde.
+	Horde!(T) opCatAssign(T elem)
+	{	add(elem);
+		return *this;
+	}
+	/// ditto
+	Horde!(T) opCatAssign(T[] array)
+	{	add(array);
+		return *this;
+	}
+	/// ditto
+	Horde!(T) opCatAssign(Horde!(T) rhs)
+	{	add(rhs);
+		return *this;
+	}
+
+	/// Get the element at index from the Horde.
 	T opIndex(uint index)
 	in{ assert (index<count); }
 	body
 	{	return elements[index];
 	}
 
-	/// Overload operator[i]= to assign a type T into index i.
+	/// Assign to the element at index in the Horde.
 	T opIndexAssign(T rhs, uint index)
 	{	return elements[index] = rhs;
 	}
 
-	/// Overload operator[] to return an array of type T[].
+	/// Get the Horde as an array.
 	T[] opSlice()
 	{	return elements[0..count];
 	}
 
-	/// Overload operator a[]= to set the entire Horde to the values of an array.
-	synchronized T[] opSliceAssign(T[] rhs)
-	{	elements[] = rhs;
-		count = rhs.length;
-		return elements[0..count];
-	}
-
-	/// Overload operator[i..j] to return an array of type T[i..j].
+	/// Return an array of T[i..j].
 	T[] opSlice(uint start, uint end)
 	in{ assert (start<count && end<count && start<=end); }
 	body
 	{	return elements[start..end];
 	}
 
-	/// Overload operator[i..j]= to set the range of values from i to j.
-	synchronized T[] opSliceAssign(T[] rhs, uint start, uint end)
+	/// Overwrite the values in the Horde.
+	T[] opSliceAssign(T[] rhs)
+	{	elements[] = rhs;
+		count = rhs.length;
+		return elements[0..count];
+	}
+	/// ditto
+	T[] opSliceAssign(Horde!(T) rhs)
+	{	return opSliceAssign(rhs.array);
+	}
+
+	/// Assign to the range of values from i to j.
+	T[] opSliceAssign(T[] rhs, uint start, uint end)
+	in{ assert (start<count && end<count && start<=end); }
+	body
 	{	return elements[start..end] = rhs;
+	}
+	/// ditto
+	T[] opSliceAssign(Horde!(T) rhs, uint start, uint end)
+	{	return opSliceAssign(rhs.array, start, length);
 	}
 
 	/**
-	 * Add an element to the Horde.  Elements are added by value,
+	 * Add one or more elements to the Horde.  Elements are added by value,
 	 * So if you add pointer-based element twice (like a class),
 	 * both indexes in the horde will point to the same element.
 	 * Returns: the index of element in the Horde. */
-	synchronized uint add(T element)
+	uint add(T element)
 	{	sizeup();
 		elements[count] = element;
 		count++;
 		return count-1;
 	}
 
-	/// Same as above but adds an array of elements.
-	void add(T[] elements)
-	{	// Inefficient
-		foreach (T e; elements)
-			add(e);
+	/// ditto
+	void add(T[] elems)
+	{	int old_count = count;
+		count = elements.length+elems.length;
+		sizeup();
+		elements.length = old_count;	// sizedown
+		elements ~= elems;				// append
+		elements.length = maxi(old_count, elements.length);
+	}
+
+	/// ditto
+	void add(Horde!(T) elems)
+	{	add(elems.array());
 	}
 
 	/**
@@ -156,39 +222,21 @@ class Horde(T)
 	}
 
 	/**
-	 * Return an array of type T[] from the Horde from start to end.
-	 * Params:
-	 * start = Index of the first element to include.
-	 * end = Index of the first element not to include. */
-	T[] array(uint start, uint end)
-	{	return opSlice[start..end];
-	}
-
-	/** Return the size of the Horde, including reserved space for new elements.
-	 *  When length() > capacity(), the Horde is resized larger to make room for new elements.
-	 *  When length() < capacity()/3, the Horde is resized smaller to free memory. */
+	 * Return the size of the Horde, including reserved space for new elements.
+	 * When length() > capacity(), the Horde is resized larger to make room for new elements.
+	 * When length() < capacity()/3, the Horde is resized smaller to free memory. */
 	uint capacity()
 	{	return elements.length;
 	}
 
-	/// Remove every element from the Horde
-	void clear()
-	{	count = 0;
-	}
-
-	/// Returns the number of elements in the Horde
+	/// Get and set the length of the Horde via this property, just like an array.
 	uint length()
 	{	return count;
 	}
 
-	/// Set the length of the Horde
-	uint length(size_t l)
+	/// ditto
+	uint length(uint l)
 	{	return count = l;
-	}
-
-	/// Print useful information to stdout.
-	void print()
-	{	printf("Horde: <length=%d, capacity=%d, reserve=%d>\n", count, elements.length, _reserve);
 	}
 
 	/**
@@ -197,12 +245,8 @@ class Horde(T)
 	 * Params:
 	 * index = Index of the element to remove.
 	 * preserve_order = Keep all elements in the same order, at the cost of performane. */
-	synchronized T remove(uint index, bool preserve_order=false)
-	in{
-		if (index>=count)
-		{	printf("%d %d\n", index, count);
-			assert(false);
-	}	}
+	T remove(uint index, bool preserve_order=false)
+	in{	assert(index<count); }
 	body
 	{	T result =  elements[index];
 		if (index < count-1)
@@ -216,15 +260,15 @@ class Horde(T)
 		return result;
 	}
 
-	/// Get the reserve size of the Horde.
+	/**
+	 * Get and set the reserve size of the Horde via this property.
+	 * Room for at least this many elements will always be reserved.
+	 * When the number of elements exceeds the reserve size, memory has to be reallocated. */
 	uint reserve()
 	{	return _reserve;
 	}
 
-	/**
-	 * Set the reserve size of the Horde.
-	 * Room for at least this many elements will always be reserved.
-	 * When the number of elements exceeds the reserve size, memory has to be reallocated. */
+	/// ditto
 	void reserve(uint size)
 	{	_reserve = size;
 		sizeup();
@@ -234,6 +278,17 @@ class Horde(T)
 	void reset()
 	{	count = _reserve = 0;
 		sizedown();
+	}
+
+	/// Broken
+	char[] toString()
+	{	char[] result;
+	//	result = "Horde: <length="~.toString(count)~", capacity="~.toString(elements.length)~", reserve="~.toString(_reserve)~">\n";
+		result ~= "[";
+		//foreach (T; elements)
+		//	result ~= .toString(T);
+		result ~= "]";
+		return result;
 	}
 
 	/*
@@ -263,7 +318,7 @@ class Horde(T)
 	 * Example:
 	 * --------------------------------
 	 * Horde!(Vec3f) a = new Horde!(Vec3f);
-	 * a.sortType!(float).radix( (Vec3f v) { return v.x; }, true, true)
+	 * a.sortType!(float).radix( (Vec3f v) { return v.x }, true, true)
 	 * --------------------------------*/
 	template sortType(K)
 	{

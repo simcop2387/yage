@@ -11,7 +11,6 @@ import std.string;
 
 import derelict.sdl.sdl;
 
-
 // The accuracy of timer is questionable, so this is an alternate to test.
 class Timer2
 {

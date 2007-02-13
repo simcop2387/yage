@@ -104,7 +104,7 @@ class GraphNode : Node
 	/// Overridden to cache the radius if changed by the scale.
 	void setScale(float x, float y, float z)
 	{	super.setScale(x, y, z);
-		radius = model.getDimensions().scale(scale).max();
+		radius = model.getDimensions().scale(scale).length();
 	}
 
 	/// ditto

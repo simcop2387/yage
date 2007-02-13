@@ -47,7 +47,7 @@ class ModelNode : Node
 	/// Set the 3D model used by this Node.
 	void setModel(Model model)
 	{	this.model = model;
-		radius = model.getDimensions().scale(scale).max();
+		radius = model.getDimensions().scale(scale).length();
 	}
 
 	/**

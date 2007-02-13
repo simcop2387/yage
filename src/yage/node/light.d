@@ -220,7 +220,7 @@ class LightNode : Node
 
 			// Extra spotlight angle (in radians) to satisfy margin distance
 			float m2 = margin>0 ? atan2(margin, d) : 0;
-			//writefln(spotDot);
+
 			if (spotDot > cos(spot_angle*0.017453292 + m2)) // 0.017453292 = pi/180
 				intensity *= pow(spotDot, spot_exponent);
 			else

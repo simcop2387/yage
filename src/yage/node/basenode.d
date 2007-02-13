@@ -50,7 +50,6 @@ abstract class BaseNode
 	/// Construct.
 	this()
 	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
-		children = new Horde!(Node);
 	}
 
 	delete(void* p)
@@ -182,10 +181,9 @@ abstract class BaseNode
 		int i = children.length-1;
 		Node c[] = children.array();
 		while (i>=0)
-		{	if (c[i].lifetime<=0)
+		{	c[i].update(delta); //may as well update it in the same loop
+			if (c[i].lifetime<=0)
 				c[i].remove();
-			else
-				c[i].update(delta); //may as well update it in the same loop
 			i--;
 		}
 	}

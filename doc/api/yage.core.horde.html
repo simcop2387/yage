@@ -89,7 +89,7 @@ Eric Poggel
 $(DDOC_MODULE_MEMBERS 
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
+<dt><span class="decl">struct 
 <span class="currsymbol">Horde</span>
 <script type="text/javascript">explorer.outline.addDecl('Horde');</script>
 (T);
@@ -126,44 +126,101 @@ $(DDOC_MODULE_MEMBERS
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Constructor
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(uint size);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Construct and reserve size
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(T[] array);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Construct from an existing array.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">T[] 
-<span class="currsymbol">opCast</span>
-<script type="text/javascript">explorer.outline.addDecl('opCast');</script>
+<dt><span class="decl">Horde!(T) 
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Cast the Horde as an array of type T
+<dd>Construct
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Horde!(T) 
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(uint <span class="funcparam">size</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Construct and reserve <span class="funcparam">size</span>
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Horde!(T) 
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(T[] <span class="funcparam">array</span>);
+<br>Horde!(T) 
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(Horde!(T) <span class="funcparam">horde</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Construct from an existing <span class="funcparam">array</span> or Horde.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">opApply</span>
+<script type="text/javascript">explorer.outline.addDecl('opApply');</script>
+(int delegate(inout T) <span class="funcparam">dg</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Allow Horde to be used in foreach
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Horde!(T) 
+<span class="currsymbol">opCat</span>
+<script type="text/javascript">explorer.outline.addDecl('opCat');</script>
+(T <span class="funcparam">elem</span>);
+<br>Horde!(T) 
+<span class="currsymbol">opCat</span>
+<script type="text/javascript">explorer.outline.addDecl('opCat');</script>
+(T[] <span class="funcparam">array</span>);
+<br>Horde!(T) 
+<span class="currsymbol">opCat</span>
+<script type="text/javascript">explorer.outline.addDecl('opCat');</script>
+(Horde!(T) <span class="funcparam">rhs</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Cast the Horde as an array of type T.
+<br><br>
+Create a new Horde by concatenating other elements.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Horde!(T) 
+<span class="currsymbol">opCatAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opCatAssign');</script>
+(T <span class="funcparam">elem</span>);
+<br>Horde!(T) 
+<span class="currsymbol">opCatAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opCatAssign');</script>
+(T[] <span class="funcparam">array</span>);
+<br>Horde!(T) 
+<span class="currsymbol">opCatAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opCatAssign');</script>
+(Horde!(T) <span class="funcparam">rhs</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Concatenate values onto the Horde.
 <br><br>
 
 </dd>
@@ -176,7 +233,7 @@ $(DDOC_MODULE_MEMBERS
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Overload operator[i] to return <span class="funcparam">index</span> i of type T.
+<dd>Get the element at <span class="funcparam">index</span> from the Horde.
 <br><br>
 
 </dd>
@@ -189,7 +246,7 @@ $(DDOC_MODULE_MEMBERS
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Overload operator[i]= to assign a type T into <span class="funcparam">index</span> i.
+<dd>Assign to the element at <span class="funcparam">index</span> in the Horde.
 <br><br>
 
 </dd>
@@ -202,20 +259,7 @@ $(DDOC_MODULE_MEMBERS
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Overload operator[] to return an array of type T[].
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">T[] 
-<span class="currsymbol">opSliceAssign</span>
-<script type="text/javascript">explorer.outline.addDecl('opSliceAssign');</script>
-(T[] <span class="funcparam">rhs</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Overload operator a[]= to set the entire Horde to the values of an array.
+<dd>Get the Horde as an array.
 <br><br>
 
 </dd>
@@ -228,7 +272,24 @@ $(DDOC_MODULE_MEMBERS
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Overload operator[i..j] to return an array of type T[i..j].
+<dd>Return an array of T[i..j].
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">T[] 
+<span class="currsymbol">opSliceAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opSliceAssign');</script>
+(T[] <span class="funcparam">rhs</span>);
+<br>T[] 
+<span class="currsymbol">opSliceAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opSliceAssign');</script>
+(Horde!(T) <span class="funcparam">rhs</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Overwrite the values in the Horde.
 <br><br>
 
 </dd>
@@ -238,10 +299,14 @@ $(DDOC_MODULE_MEMBERS
 <span class="currsymbol">opSliceAssign</span>
 <script type="text/javascript">explorer.outline.addDecl('opSliceAssign');</script>
 (T[] <span class="funcparam">rhs</span>, uint <span class="funcparam">start</span>, uint <span class="funcparam">end</span>);
+<br>T[] 
+<span class="currsymbol">opSliceAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opSliceAssign');</script>
+(Horde!(T) <span class="funcparam">rhs</span>, uint <span class="funcparam">start</span>, uint <span class="funcparam">end</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Overload operator[i..j]= to set the range of values from i to j.
+<dd>Assign to the range of values from i to j.
 <br><br>
 
 </dd>
@@ -251,10 +316,18 @@ $(DDOC_MODULE_MEMBERS
 <span class="currsymbol">add</span>
 <script type="text/javascript">explorer.outline.addDecl('add');</script>
 (T <span class="funcparam">element</span>);
+<br>void 
+<span class="currsymbol">add</span>
+<script type="text/javascript">explorer.outline.addDecl('add');</script>
+(T[] <span class="funcparam">elems</span>);
+<br>void 
+<span class="currsymbol">add</span>
+<script type="text/javascript">explorer.outline.addDecl('add');</script>
+(Horde!(T) <span class="funcparam">elems</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Add an <span class="funcparam">element</span> to the Horde.  Elements are added by value,
+<dd>Add one or more elements to the Horde.  Elements are added by value,
  So if you 
 <span class="currsymbol">add</span>
 <script type="text/javascript">explorer.outline.addDecl('add');</script>
@@ -263,19 +336,6 @@ $(DDOC_MODULE_MEMBERS
 <br><br>
 <b>Returns:</b><br>
 the index of <span class="funcparam">element</span> in the Horde. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">add</span>
-<script type="text/javascript">explorer.outline.addDecl('add');</script>
-(T[] <span class="funcparam">elements</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Same as above but adds an array of <span class="funcparam">elements</span>.
 <br><br>
 
 </dd>
@@ -298,34 +358,6 @@ the index of <span class="funcparam">element</span> in the Horde.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">T[] 
-<span class="currsymbol">array</span>
-<script type="text/javascript">explorer.outline.addDecl('array');</script>
-(uint <span class="funcparam">start</span>, uint <span class="funcparam">end</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return an 
-<span class="currsymbol">array</span>
-<script type="text/javascript">explorer.outline.addDecl('array');</script>
- of type T[] from the Horde from <span class="funcparam">start</span> to <span class="funcparam">end</span>.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">uint <span class="funcparam">start</span></td>
-
-               
-<td>Index of the first element to include.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">uint <span class="funcparam">end</span></td>
-
-               
-<td>Index of the first element not to include. </td></tr>
-</table><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">uint 
 <span class="currsymbol">capacity</span>
 <script type="text/javascript">explorer.outline.addDecl('capacity');</script>
@@ -334,11 +366,11 @@ the index of <span class="funcparam">element</span> in the Horde.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Return the size of the Horde, including reserved space for new elements.
-  When length() &gt; 
+ When length() &gt; 
 <span class="currsymbol">capacity</span>
 <script type="text/javascript">explorer.outline.addDecl('capacity');</script>
 (), the Horde is resized larger to make room for new elements.
-  When length() &lt; 
+ When length() &lt; 
 <span class="currsymbol">capacity</span>
 <script type="text/javascript">explorer.outline.addDecl('capacity');</script>
 ()/3, the Horde is resized smaller to free memory. 
@@ -347,56 +379,21 @@ the index of <span class="funcparam">element</span> in the Horde.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">clear</span>
-<script type="text/javascript">explorer.outline.addDecl('clear');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Remove every element from the Horde
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">uint 
 <span class="currsymbol">length</span>
 <script type="text/javascript">explorer.outline.addDecl('length');</script>
 ();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Returns the number of elements in the Horde
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
+<br>uint 
 <span class="currsymbol">length</span>
 <script type="text/javascript">explorer.outline.addDecl('length');</script>
-(size_t <span class="funcparam">l</span>);
+(uint <span class="funcparam">l</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the 
+<dd>Get and set the 
 <span class="currsymbol">length</span>
 <script type="text/javascript">explorer.outline.addDecl('length');</script>
- of the Horde
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">print</span>
-<script type="text/javascript">explorer.outline.addDecl('print');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Print useful information to stdout.
+ of the Horde via this property, just like an array.
 <br><br>
 
 </dd>
@@ -436,34 +433,22 @@ the index of <span class="funcparam">element</span> in the Horde.
 <span class="currsymbol">reserve</span>
 <script type="text/javascript">explorer.outline.addDecl('reserve');</script>
 ();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the 
-<span class="currsymbol">reserve</span>
-<script type="text/javascript">explorer.outline.addDecl('reserve');</script>
- size of the Horde.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
+<br>void 
 <span class="currsymbol">reserve</span>
 <script type="text/javascript">explorer.outline.addDecl('reserve');</script>
 (uint <span class="funcparam">size</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the 
+<dd>Get and set the 
 <span class="currsymbol">reserve</span>
 <script type="text/javascript">explorer.outline.addDecl('reserve');</script>
- <span class="funcparam">size</span> of the Horde.
+ size of the Horde via this property.
  Room for at least this many elements will always be reserved.
  When the number of elements exceeds the 
 <span class="currsymbol">reserve</span>
 <script type="text/javascript">explorer.outline.addDecl('reserve');</script>
- <span class="funcparam">size</span>, memory has to be reallocated. 
+ size, memory has to be reallocated. 
 <br><br>
 
 </dd>
@@ -485,6 +470,19 @@ the index of <span class="funcparam">element</span> in the Horde.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Broken
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">template 
 <span class="currsymbol">sortType</span>
 <script type="text/javascript">explorer.outline.addDecl('sortType');</script>
@@ -495,7 +493,7 @@ the index of <span class="funcparam">element</span> in the Horde.
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> Horde!(Vec3f) a = <font color=blue>new</font> Horde!(Vec3f);
- a.<b>sortType</b>!(<font color=blue>float</font>).radix( (Vec3f v) { <font color=blue>return</font> v.x; }, <font color=blue>true</font>, <font color=blue>true</font>)
+ a.<b>sortType</b>!(<font color=blue>float</font>).radix( (Vec3f v) { <font color=blue>return</font> v.x }, <font color=blue>true</font>, <font color=blue>true</font>)
 </pre>
 <br><br>
 
@@ -565,7 +563,7 @@ the index of <span class="funcparam">element</span> in the Horde.
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb  9 17:18:53 2007
+		on Mon Feb 12 19:47:09 2007
 
 	</div>
 	

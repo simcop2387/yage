@@ -271,10 +271,14 @@ Eric Poggel
 <span class="currsymbol">scale</span>
 <script type="text/javascript">explorer.outline.addDecl('scale');</script>
 (float <span class="funcparam">s</span>);
+<br>Vec!(T,K) 
+<span class="currsymbol">scale</span>
+<script type="text/javascript">explorer.outline.addDecl('scale');</script>
+(Vec!(T,K) <span class="funcparam">s</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Scale this vector by the values of another vector.
+<dd>Scale (multiply) this vector.
 <br><br>
 
 </dd>
@@ -283,11 +287,19 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">set</span>
 <script type="text/javascript">explorer.outline.addDecl('set');</script>
-(T[] <span class="funcparam">s</span>...);
+(T <span class="funcparam">s</span>);
+<br>void 
+<span class="currsymbol">set</span>
+<script type="text/javascript">explorer.outline.addDecl('set');</script>
+(Vec!(T,K) <span class="funcparam">s</span>);
+<br>void 
+<span class="currsymbol">set</span>
+<script type="text/javascript">explorer.outline.addDecl('set');</script>
+(T[K] <span class="funcparam">s</span>...);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Create a new vector with the values s0, s1, s2, ...
+<dd>Set the values of the Vector.
 <br><br>
 
 </dd>
@@ -579,9 +591,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return a vector with every value of this Vec3f negated.
-<br><br>
-
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -638,6 +648,19 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Return the maximum value of the vector components
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f  
+<span class="currsymbol">negate</span>
+<script type="text/javascript">explorer.outline.addDecl('negate');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return a vector with every value of this Vec3f negated.
 <br><br>
 
 </dd>
@@ -807,6 +830,22 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Vec3f  
+<span class="currsymbol">random</span>
+<script type="text/javascript">explorer.outline.addDecl('random');</script>
+(float <span class="funcparam">r</span> = cast(float)1);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return a vector in a 
+<span class="currsymbol">random</span>
+<script type="text/javascript">explorer.outline.addDecl('random');</script>
+ direction between length -<span class="funcparam">r</span> and <span class="funcparam">r</span>.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -1029,7 +1068,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb  9 17:18:53 2007
+		on Mon Feb 12 19:47:09 2007
 
 	</div>
 	

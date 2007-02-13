@@ -23,7 +23,8 @@ import yage.system.log;
  * Supports loading images from any format supported by SDL_Image.
  * Currently supports grayscale, RGB, and RGBA image data.
  * Bugs:
- * An RGB image will often be returned when loading grayscale images.  Use setFormat() to correct this.*/
+ * An RGB image will often be returned when loading grayscale images.  Use setFormat(IMAGE_FORMAT_GRAYSCALE) to correct this.
+ * The load and resize functions seem to have images with widths that aren't a multiple of 4.*/
 class Image
 {
 	protected char[] source;

@@ -63,9 +63,7 @@ class Layer
 
 	/// Set material properties to default values.
 	this()
-	{	diffuse.set(1, 1, 1, 1);
-		textures = new Horde!(Texture);
-		shaders = new Horde!(Shader);
+	{	diffuse.set(1);
 	}
 
 	~this()

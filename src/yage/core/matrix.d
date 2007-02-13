@@ -81,10 +81,10 @@ struct Matrix
 
 			foreach (Matrix d; m)
 			{	test("Multiply & Inverse", c, c*d*d.inverse(), d);
-				test("MoveRelative", c, c.moveRelative(d.toAxis()).moveRelative(d.toAxis().inverse()), d);
+				test("MoveRelative", c, c.moveRelative(d.toAxis()).moveRelative(d.toAxis().negate()), d);
 				test("Rotate Matrix", c, c.rotate(d).rotate(d.inverse()), d);
 				test("Rotate Quatrn", c, c.rotate(d.toQuatrn()).rotate(d.toQuatrn().inverse()), d);
-				test("Rotate Axis", c, c.rotate(d.toAxis()).rotate(d.toAxis().inverse()), d);
+				test("Rotate Axis", c, c.rotate(d.toAxis()).rotate(d.toAxis().negate()), d);
 
 				// These don't pass for Matrices 7, 8, and 9
 				//test("Rotate Absolute Matrix", c, c.rotateAbsolute(d).rotateAbsolute(d.inverse()), d);

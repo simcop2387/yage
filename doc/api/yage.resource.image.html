@@ -102,7 +102,8 @@ Eric Poggel
  Currently supports grayscale, RGB, and RGBA image data.
 <br><br>
 <font color=red>BUGS:</font><br>
-An RGB image will often be returned when loading grayscale images.  Use setFormat() to correct this.
+An RGB image will often be returned when loading grayscale images.  Use setFormat(IMAGE_FORMAT_GRAYSCALE) to correct this.
+ The load and resize functions seem to have images with widths that aren't a multiple of 4.
 <br><br>
 
 
@@ -324,7 +325,7 @@ This function often fails if <span class="funcparam">new_width</span> is not a m
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb  9 17:18:54 2007
+		on Mon Feb 12 19:47:10 2007
 
 	</div>
 	

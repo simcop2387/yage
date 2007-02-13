@@ -162,20 +162,24 @@ class Node : MoveableNode
 		LightNode[] all_lights = scene.getLights();
 		lights.length = maxi(number, all_lights.length);
 		intensities.length = maxi(number, all_lights.length);
+
+		// clear out old values
 		for (int i=0; i<lights.length; i++)
-		{	lights[i] = null;	// clear out old values
+		{	lights[i] = null;
 			intensities[i] = 0;
 		}
 
 		// Calculate the intensity of all lights on this node
-		Vec3f position;
-
 		for (int i=0; i<all_lights.length; i++)
 		{	LightNode l = all_lights[i];
 
 			// Add to the array of limited lights if bright enough
+			Vec3f position;
 			position.set(transform_abs);
 			float intensity = l.getBrightness(position, getRadius()).average();
+			//if (getType() == "yage.node.terrain.TerrainNode")
+			//	writefln(intensity);
+
 			intensities[i] = intensity;
 			if (intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
 			{	for (int j=0; j<number; j++)
@@ -192,6 +196,8 @@ class Node : MoveableNode
 							break;
 		}	}	}	}	}
 
+
+
 		// Enable the apropriate lights
 		for (int i=0; i<number; i++)
 			glDisable(GL_LIGHT0+i);
@@ -202,6 +208,8 @@ class Node : MoveableNode
 			{	lights.length = i;
 				break;
 		}	}
+
+
 	}
 
 	/// Get the color of the Node.

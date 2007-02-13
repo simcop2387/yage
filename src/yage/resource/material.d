@@ -35,8 +35,7 @@ class Material
 
 	/// Construct an empty material.
 	this()
-	{	layers = new Horde!(Layer);
-	}
+	{	}
 
 	/// Create this material from an xml material file.
 	this(char[] filename)
@@ -92,7 +91,7 @@ class Material
 		}
 
 		// Loop through each xml layer node
-		layers.clear();
+		layers.length = 0;
 		foreach (XmlNode xml_layer; xml.getChildren())
 		{	// Skip all nodes that aren't layers
 			if(tolower(xml_layer.getName()) != "layer")

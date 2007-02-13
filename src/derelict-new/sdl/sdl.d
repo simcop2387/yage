@@ -166,7 +166,7 @@ private void load(SharedLib lib)
     // keyboard.d
     bindFunc(SDL_EnableUNICODE)("SDL_EnableUNICODE", lib);
     bindFunc(SDL_EnableKeyRepeat)("SDL_EnableKeyRepeat", lib);
-    bindFunc(SDL_GetKeyRepeat)("SDL_GetKeyRepeat", lib);
+   // bindFunc(SDL_GetKeyRepeat)("SDL_GetKeyRepeat", lib);
     bindFunc(SDL_GetKeyState)("SDL_GetKeyState", lib);
     bindFunc(SDL_GetModState)("SDL_GetModState", lib);
     bindFunc(SDL_SetModState)("SDL_SetModState", lib);

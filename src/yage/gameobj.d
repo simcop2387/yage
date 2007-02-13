@@ -69,14 +69,16 @@ class Flare : GameObject
 
 	this (BaseNode parent)
 	{	super(parent);
-		this.setLifetime(5);
+		this.setLifetime(4);
 
 		SpriteNode flare = new SpriteNode(this);
 		flare.setMaterial("fx/flare1.xml");
 		flare.setScale(2);
 
 		if (timer is null)
-			timer = new Timer();
+		{	timer = new Timer();
+			timer.set(1);
+		}
 
 		// don't create a new light more than 5 times per second
 		if (timer.get() > .2)

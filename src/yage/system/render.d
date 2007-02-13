@@ -64,8 +64,6 @@ class Render
 	static void add(Node node)
 	{	//if (nodes is null)
 		//	nodes = new Horde!(Node);
-		if (alpha is null)
-			 alpha = new Horde!(AlphaTriangle);
 		nodes ~= node;
 	}
 
@@ -116,14 +114,12 @@ class Render
 		// Render alpha triangles
 		foreach (AlphaTriangle a; alpha.array())
 		{	a.layer.apply(a.lights, a.color);
-
 			glBegin(GL_TRIANGLES);
 				for (int i=0; i<3; i++)
 				{	glTexCoord2fv(a.texcoords[i].v.ptr);
 					glNormal3fv(a.normals[i].ptr);
 					glVertex3fv(a.vertices[i].ptr);
 				}
-
 			glEnd();
 			a.layer.unApply();
 		}
@@ -191,11 +187,9 @@ class Render
 					{	l.apply(node.getLights(), node.getColor());
 						draw();
 						l.unApply();
-					} else
-					{	//l.apply(lights, color);
-						//draw();
-						//l.unApply();
 
+					} else
+					{
 						foreach (Vec3i tri; mesh.getTriangles())
 						// Add to translucent
 						{	AlphaTriangle at;
@@ -210,6 +204,26 @@ class Render
 						}
 					}
 				}
+
+
+				/*
+				// Draw normals
+				foreach (Vec3i tri; mesh.getTriangles())
+				// Add to translucent
+				{	AlphaTriangle at;
+					for (int i=0; i<3; i++)
+					{	Vec3f vertex = v[tri.v[i]];
+						Vec3f normal = n[tri.v[i]];
+						glColor3f(0, 1, 1);
+						glDisable(GL_LIGHTING);
+						glBegin(GL_LINES);
+							glVertex3fv(vertex.ptr);
+							glVertex3fv((vertex+normal.scale(.01)).ptr);
+						glEnd();
+						glEnable(GL_LIGHTING);
+						glColor3f(1, 1, 1);
+					}
+				}*/
 			}
 			else // render with no material
 				draw();

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright:  (c) 2006-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
@@ -25,7 +25,7 @@ int main()
 {
 	// Variables
 	float dtime=0;
-  	float step = .1;
+  	float step = .2;
 
   	// Init
 	Device.init(800, 600, 32, false);
@@ -46,10 +46,15 @@ int main()
 	scene.setSkybox(skybox);
 	scene.setGlobalAmbient(Vec4f(.5));
 
+	scene.setClearColor(.5, .5, .5);
+	scene.setFogColor(.5, .5, .5);
+	//scene.setFogEnabled(true);
+	scene.setFogDensity(.0001);
+
 	// Camera
 	CameraNode camera = new CameraNode(scene);
 	Device.texture = camera.getTexture();
-	camera.setView(.1, 100000, 60, 0, 1);	// wide angle view
+	camera.setView(1, 150000, 60, 0, 1);	// wide angle view
 
 	// Music
 	SoundNode music = new SoundNode(camera);
@@ -59,9 +64,10 @@ int main()
 
 	// Lights
 	LightNode l1 = new LightNode(scene);
-	l1.setPosition(0, 0, -40);
+	l1.setPosition(0, 1, 1);
 	l1.setDiffuse(1, .85, .7);
-	l1.setLightRadius(5000);
+	l1.setLightRadius(200000);
+	l1.setLightType(LIGHT_DIRECTIONAL);
 
 	// Star
 	SpriteNode star = new SpriteNode(l1);
@@ -85,8 +91,13 @@ int main()
 
 	int fps = 0;
 	//Input.setGrabMouse(true);
+	long last_count = 0;
 	while(!Input.exit)
 	{
+		//long count = getCPUCount();
+		//writefln(dtime);
+		//last_count = count;
+
 		dtime = delta.get();
 		delta.reset();
 		//dtime = 0.03;

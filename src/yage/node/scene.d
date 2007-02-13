@@ -35,7 +35,6 @@ class Scene : BaseNode
 	/// Constructor.
 	this()
 	{	delta	= new Timer();
-		lights 	= new Horde!(LightNode);
 		scene	= this;
 		ambient	= Vec4f(.2, .2, .2, 1); // OpenGL default global ambient light.
 		color   = Vec4f(0, 0, 0, 1);	// OpenGL default clear color
