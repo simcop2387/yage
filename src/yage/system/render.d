@@ -48,7 +48,6 @@ private struct AlphaTriangle
  * and rendered in a second pass. */
 class Render
 {
-
 	protected static Node[] nodes;			// Linking errors when created as a Horde :(
 	protected static Horde!(AlphaTriangle) alpha;
 
@@ -59,6 +58,10 @@ class Render
 	protected static bool models_generated = false;
 	protected static CameraNode current_camera;
 
+	// Stats
+	protected static uint poly_count;
+	protected static uint vertex_count;
+
 
 	/// Add a node to the queue for rendering.
 	static void add(Node node)
@@ -68,8 +71,11 @@ class Render
 	}
 
 	/// Render everything in the queue
-	static void all()
+	static void all(inout uint poly_count, inout uint vertex_count)
 	{
+		this.poly_count = poly_count;
+		this.vertex_count = vertex_count;
+
 		if (!models_generated)
 			generate();
 
@@ -77,7 +83,7 @@ class Render
 		foreach (Node n; nodes)
 		{
 			glPushMatrix();
-			glMultMatrixf(n.getAbsoluteTransformPtr().v.ptr);
+			glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
 			glScalef(n.getScale().x, n.getScale().y, n.getScale().z);
 			n.enableLights();
 
@@ -104,7 +110,7 @@ class Render
 		}
 
 		// Sort alpha (translucent) triangles
-		Vec3f camera = getCurrentCamera().getAbsolutePosition();
+		Vec3f camera = Vec3f(getCurrentCamera().getAbsoluteTransform(true).v[12..15]);
 		float triSort(AlphaTriangle a)
 		{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(.33333333333);
 			return -camera.distance2(center); // distance squared is faster and values still compare the same
@@ -128,6 +134,8 @@ class Render
 		alpha.reserve(alpha.length);
 		alpha.length = 0;
 
+		poly_count = this.poly_count;
+		vertex_count = this.vertex_count;
 	}
 
 
@@ -149,14 +157,22 @@ class Render
 
 	/**
 	 * Render the meshes with opaque materials and pass any meshes with materials
-	 * that require blending to the queue of translucent meshes. */
-	protected static void model(Model model, Node node)
+	 * that require blending to the queue of translucent meshes.
+	 * Rotation can optionally be supplied to rotate sprites so they face the camera. */
+	protected static void model(Model model, Node node, Vec3f rotation = Vec3f(0))
 	{
 		model.bind();
 		Vec3f[] v = model.getVertices();
 		Vec3f[] n = model.getNormals();
 		Vec2f[] t = model.getTexCoords();
-		Matrix abs_transform = node.getAbsoluteTransform();
+		Matrix abs_transform = node.getAbsoluteTransform(true);
+		vertex_count += model.getVertices().length;
+
+		// Rotate by rotation, if nonzero
+		if (rotation.length2())
+		{	abs_transform = abs_transform.rotate(rotation);
+			glRotatef(rotation.length()*57.295779513, rotation.x, rotation.y, rotation.z);
+		}
 
 		// Loop through the meshes
 		foreach (Mesh mesh; model.getMeshes())
@@ -166,20 +182,24 @@ class Render
 			{	if (model.getCached())
 				{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTrianglesVBO());
 					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, null);
-					// glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 				}else
 					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, mesh.getTriangles().ptr);
 			}
 
+			poly_count += mesh.getTriangles().length;
 			Material matl = mesh.getMaterial();
 			if (matl !is null)
-			{	bool sort = false;
-
+			{
 				// Loop through each layer
-				foreach (Layer l; matl.getLayers().array())
+				int num=0;
+				bool sort = false;
+				foreach (Layer l; matl.getLayers())
 				{
-					// Sort every l including and after the first blended one.
-					if (l.blend != LAYER_BLEND_NONE)
+					// Sorting rules:
+					// If the first layer has blending, sort it and every layer
+					// otherwise, sort none of them
+					if (l.blend != LAYER_BLEND_NONE && num==0)
 						sort = true;
 
 					// If not translucent
@@ -203,8 +223,8 @@ class Render
 							alpha.add(at);
 						}
 					}
+					num++;
 				}
-
 
 				/*
 				// Draw normals
@@ -232,22 +252,8 @@ class Render
 
 	/// Render a sprite
 	protected static void sprite(Material material, Node node)
-	{
-		// Rotate so that sprite always faces camera
-		Vec3f axis = current_camera.getAbsoluteRotation();
-		float angle = axis.length();
-		axis = axis.scale(1/angle);
-		glRotatef(angle*57.295779513, axis.x, axis.y, axis.z);
-
-		//Matrix m = node.getAbsoluteTransform();
-		node.rotate(current_camera.getAbsoluteRotation());
-
-		// Set material and draw as model
-		msprite.getMeshes()[0].setMaterial(material);
-		model(msprite, node);
-
-		node.rotate(-current_camera.getAbsoluteRotation());
-
+	{	msprite.getMeshes()[0].setMaterial(material);
+		model(msprite, node, current_camera.getAbsoluteTransform(true).toAxis());
 	}
 
 

@@ -8,8 +8,10 @@ module yage.util.flyer;
 
 import yage.core.all;
 import yage.node.all;
+import yage.system.input;
 
-///
+/**
+ * A class to quickly allow a camera to navigate a scene via keyboard and mouse input. */
 class Flyer
 {
 
@@ -21,8 +23,8 @@ class Flyer
 	this(BaseNode parent)
 	{	base = new Node(parent);
 		pivot = new Node(base);
-		ldamp = 1;
-		xdamp = ydamp = 1;
+		ldamp = 16;
+		xdamp = ydamp = 24;
 	}
 
 	void setBase(Node base)
@@ -77,11 +79,28 @@ class Flyer
 		ydamp = ypercent;
 	}
 
-	/// Apply dampening to the FloatingCamera.
+	/// Accept input and apply dampening to the FloatingCamera.
 	void update(float delta)
-	{	base.setVelocity(base.getVelocity().scale(maxf(1-delta*ldamp, 0.0f)));
+	{
+		base.setVelocity(base.getVelocity().scale(maxf(1-delta*ldamp, 0.0f)));
 		pivot.setAngularVelocity(pivot.getAngularVelocity().scale(maxf(1-delta*xdamp, 0.0f)));
 		base.setAngularVelocity(base.getAngularVelocity().scale(maxf(1-delta*ydamp, 0.0f)));
+
+		float speed = 2000*delta;
+
+		if (Input.keydown[SDLK_w] || Input.keydown[SDLK_UP])
+			accelerate(0, 0, -speed);
+		if (Input.keydown[SDLK_s] || Input.keydown[SDLK_DOWN])
+			accelerate(0, 0, speed);
+		if (Input.keydown[SDLK_a] || Input.keydown[SDLK_LEFT])
+			accelerate(-speed, 0, 0);
+		if (Input.keydown[SDLK_d] || Input.keydown[SDLK_RIGHT])
+			accelerate(speed, 0, 0);
+
+		if (Input.getGrabMouse())
+		{	Vec2f movement = Input.getMouseDelta();
+			angularAccelerate(-movement.x/12.0, movement.y/16.0);
+		}
 	}
 
 }

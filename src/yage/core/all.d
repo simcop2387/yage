@@ -22,8 +22,8 @@ public
 	import yage.core.misc;
 	import yage.core.plane;
 	import yage.core.quatrn;
+	import yage.core.repeater;
 	import yage.core.timer;
-	import yage.core.tree;
 	import yage.core.vector;
 	import yage.core.xml;
 }

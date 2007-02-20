@@ -10,7 +10,7 @@ import derelict.opengl.gl;
 import yage.resource.resource;
 import yage.resource.material;
 import yage.resource.model;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.node;
 import yage.core.all;
 import yage.system.device;

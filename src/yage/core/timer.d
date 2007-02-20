@@ -83,12 +83,12 @@ class Timer
 	}
 
 	/// Return the Timer's time in seconds
-	synchronized double get()
+	synchronized real get()
 	{	// Update our microsecond counter
 		if (!paused)
 		{	hpc.stop();
 			us +=  hpc.microseconds();
-			double result = us*0.000001;
+			real result = us*0.000001;
 			hpc.start();
 		}
 		return us*0.000001;

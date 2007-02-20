@@ -15,7 +15,7 @@ license unless otherwise noted.
 
 
 [Resource]					[Author / License]
-fx/flare1.xml				Eric Poggel, public domain
+fx/flare*.xml				Eric Poggel, public domain
 fx/smoke.xml				Eric Poggel, public domain
 medieval/house.ms3d			Eric Poggel, public domain, textures by Nvidia
 music/celery - pages.ogg	Paul Sweeny and Jeff Stevens

@@ -175,8 +175,9 @@ An RGB image will often be returned when loading grayscale images.  Use setForma
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the format of the image.
- See Also:
- The IMAGE_FORMAT constants in system.constant. 
+<br><br>
+<b>See Also:</b><br>
+The IMAGE_FORMAT_* constants in system.constant. 
 <br><br>
 
 </dd>
@@ -268,7 +269,7 @@ An RGB image will often be returned when loading grayscale images.  Use setForma
 <dd>Resize the image via glu.
 <br><br>
 <font color=red>BUGS:</font><br>
-This function often fails if <span class="funcparam">new_width</span> is not a multiple of 4. 
+This function often produces weird results if <span class="funcparam">new_width</span> is not a multiple of 4. 
 <br><br>
 
 </dd>
@@ -291,6 +292,22 @@ This function often fails if <span class="funcparam">new_width</span> is not a m
                
 <td>one of the IMAGE_FORMAT_* constants from yage.system.constant </td></tr>
 </table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Image 
+<span class="currsymbol">subImage</span>
+<script type="text/javascript">explorer.outline.addDecl('subImage');</script>
+(int <span class="funcparam">top</span>, int <span class="funcparam">left</span>, int <span class="funcparam">bottom</span>, int <span class="funcparam">right</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return a new image that is a sub-image of this image.
+ The four parameters should be in pixels.
+ The sub-image will start with the pixels including <span class="funcparam">top</span> and <span class="funcparam">left</span>
+ and stop just before pixels specified by <span class="funcparam">bottom</span> and <span class="funcparam">right</span>. 
+<br><br>
 
 </dd>
 
@@ -325,7 +342,7 @@ This function often fails if <span class="funcparam">new_width</span> is not a m
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:10 2007
+		on Tue Feb 20 00:11:25 2007
 
 	</div>
 	
@@ -348,9 +365,9 @@ This function often fails if <span class="funcparam">new_width</span> is not a m
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -362,7 +379,7 @@ This function often fails if <span class="funcparam">new_width</span> is not a m
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -425,8 +442,6 @@ This function often fails if <span class="funcparam">new_width</span> is not a m
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

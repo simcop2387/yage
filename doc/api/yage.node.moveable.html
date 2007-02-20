@@ -93,12 +93,12 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">MoveableNode</span>
 <script type="text/javascript">explorer.outline.addDecl('MoveableNode');</script>
-: yage.node.basenode.BaseNode;
+: yage.node.base.BaseNode;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Nodes have numerous methods for changing position and velocity.
- They are separated into this abstract class.
+ They are separated into this abstract class to keep things better organized.
 <br><br>
 <b>See Also:</b><br>
 yage.node.Node
@@ -135,42 +135,24 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f * 
-<span class="currsymbol">getVelocityPtr</span>
-<script type="text/javascript">explorer.outline.addDecl('getVelocityPtr');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a pointer to the linear velocity Vector of this node.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f * 
-<span class="currsymbol">getAngularVelocityPtr</span>
-<script type="text/javascript">explorer.outline.addDecl('getAngularVelocityPtr');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a pointer to the angular velocity Vector of this node.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Matrix  
 <span class="currsymbol">getTransform</span>
 <script type="text/javascript">explorer.outline.addDecl('getTransform');</script>
-();
+(bool <span class="funcparam">cached</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Return the relative transformation Matrix of this Node.  This Matrix stores the position
- and rotation relative to its parent. 
+ and rotation relative to its parent.
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">cached</span></td>
+
+               
+<td>Get the transformation Matrix <span class="funcparam">cached</span> after the last complete scenegraph update,
+ instead of the current version.  This can be used to avoid working with a half-updated scenegraph.</td></tr>
+</table><br>
 
 </dd>
 
@@ -178,12 +160,20 @@ yage.node.Node
 <dt><span class="decl">Matrix  
 <span class="currsymbol">getAbsoluteTransform</span>
 <script type="text/javascript">explorer.outline.addDecl('getAbsoluteTransform');</script>
-();
+(bool <span class="funcparam">cached</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the absolute transformation Matrix of this Node, calculating it if necessary.
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">cached</span></td>
+
+               
+<td>Get the absolute transformation Matrix <span class="funcparam">cached</span> after the last complete scenegraph update,
+ instead of the current version.  This can be used to avoid working with a half-updated scenegraph.</td></tr>
+</table><br>
 
 </dd>
 
@@ -520,21 +510,6 @@ yage.node.Node
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setTransformDirty</span>
-<script type="text/javascript">explorer.outline.addDecl('setTransformDirty');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
-  This should be called whenever a Node is moved or rotated
-  This function is used internally by the engine usually doesn't need to be called manually. 
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -554,7 +529,7 @@ yage.node.Node
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:10 2007
+		on Tue Feb 20 00:11:25 2007
 
 	</div>
 	
@@ -577,9 +552,9 @@ yage.node.Node
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -591,7 +566,7 @@ yage.node.Node
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -654,8 +629,6 @@ yage.node.Node
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

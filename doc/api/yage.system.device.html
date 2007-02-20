@@ -108,19 +108,42 @@ Eric Poggel
 <dt><span class="decl">static void 
 <span class="currsymbol">init</span>
 <script type="text/javascript">explorer.outline.addDecl('init');</script>
-(int <span class="funcparam">width</span>, int <span class="funcparam">height</span>, ubyte <span class="funcparam">depth</span>, bool <span class="funcparam">fullscreen</span>);
+(int <span class="funcparam">width</span>, int <span class="funcparam">height</span>, ubyte <span class="funcparam">depth</span>, bool <span class="funcparam">fullscreen</span>, ubyte <span class="funcparam">samples</span> = cast(ubyte)1);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>This function creates a window with the specified <span class="funcparam">width</span> and <span class="funcparam">height</span> in pixels.
-  It also initializes an OpenAL context so that audio playback can occur.
-  It must be called before most other code.
-  \param <span class="funcparam">width</span> Width of the window in pixels
-  \param <span class="funcparam">height</span> Height of the window in pixels
-  \param <span class="funcparam">depth</span> Color <span class="funcparam">depth</span> of each pixel (should be 16, 24 or 32)
-  \param <span class="funcparam">fullscreen</span> The window is <span class="funcparam">fullscreen</span> if true
-; windowed otherwise.
+ It also initializes an OpenAL context so that audio playback can occur.
+ It must be called before most other code.
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">width</span></td>
+
+               
+<td>Width of the window in pixels</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">height</span></td>
+
+               
+<td>Height of the window in pixels</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">ubyte <span class="funcparam">depth</span></td>
+
+               
+<td>Color <span class="funcparam">depth</span> of each pixel (should be 16, 24 or 32)</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">fullscreen</span></td>
+
+               
+<td>The window is <span class="funcparam">fullscreen</span> if true
+; windowed otherwise.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">ubyte <span class="funcparam">samples</span></td>
+
+               
+<td>the level of anti-aliasing </td></tr>
+</table><br>
 
 </dd>
 
@@ -280,7 +303,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:11 2007
+		on Tue Feb 20 00:11:26 2007
 
 	</div>
 	
@@ -303,9 +326,9 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -317,7 +340,7 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -380,8 +403,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

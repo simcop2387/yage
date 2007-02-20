@@ -38,26 +38,38 @@ import yage.node.light;
  * defined in the file. */
 class Layer
 {
-	Vec4f	ambient;				/// RGBA ambient color values, default is black.
-	Vec4f	diffuse;				/// RGBA diffuse color values, default is white.
-	Vec4f	specular;				/// RGBA specular color values, default is black (none).
-	Vec4f	emissive;				/// RGBA emissive color values, default is black.
-	float	specularity=0;			/// Shininess exponential value, default is zero.
+	Vec4f	ambient;				/// Property for the RGBA ambient layer color, default is Vec4f(0).
+	Vec4f	diffuse;				/// Property for the RGBA diffuse layer color, default is Vec4f(1).
+	Vec4f	specular;				/// Property for the RGBA specular layer color, default is Vec4f(0).
+	Vec4f	emissive;				/// Property for the RGBA emissive layer color, default is Vec4f(0).
+	float	specularity=0;			/// Shininess exponential value, default is zero (no shininess).
 
-	int		blend = LAYER_BLEND_NONE;/// Type of blending for this Layer
-	bool	sort = false;
+	/// Property to set the blending for this Layer.
+	/// See_Also: the LAYER_BLEND_* constants in yage.system.constant;
+	int		blend = LAYER_BLEND_NONE;
 
+	/// Property to set whether the front or back faces of polygons are culled (invisible).
+	/// See_Also: the LAYER_CULL_* constants in yage.system.constant
 	int		cull = LAYER_CULL_BACK;
+
+	/// Property to set whether the layer is drawn as polygons, lines or points.
+	/// See_Also: the LAYER_DRAW_* constants in yage.system.constant
 	int		draw = LAYER_DRAW_DEFAULT;
+
+	/// Property to set the width of lines and points when the layer is rendered as such.
 	int		width = 1;
 
+	/// Property enable or disable clamping of the textures of this layer.
+	/// See_Also: <a href="http://en.wikipedia.org/wiki/Texel_%28graphics%29">The Wikipedia entry for texel</a>
 	bool 	clamp	=	false;
+
+	/// Property to set the type of filtering used for the textures of this layer.
+	/// See_Also: the TEXTURE_FILTER_* constants in yage.system.constant
 	int 	filter	=	TEXTURE_FILTER_DEFAULT;
 
 	protected Horde!(Texture) textures;
 	protected Horde!(Shader) shaders;
 	protected int program=0;
-
 	static int current_program=0;
 
 
@@ -71,14 +83,11 @@ class Layer
 			glDeleteObjectARB(program);
 	}
 
-	/// Get the texture with the given index from this layer.
-	Texture getTexture(uint index)
-	{	return textures[index];
-	}
-
-	/// Get an array of all the textures of this layer.
-	Texture[] getTextures()
-	{	return textures.array();
+	/**
+	 * Add a Shader to this Layer.  Call linkShaders() to recompile the program.
+	 * Returns: the index of the new Shader in the Shader array. */
+	int addShader(Shader shader)
+	{	return shaders.add(shader);
 	}
 
 	/// Add a new texture to this layer and return it.
@@ -94,16 +103,26 @@ class Layer
 	{	return program;
 	}
 
-	/**
-	 * Add a Shader to this Layer.  Call linkShaders() to recompile the program.
-	 * Returns: the index of the new Shader in the Shader array. */
-	int addShader(Shader shader)
-	{	return shaders.add(shader);
-	}
-
 	/// Return the array of shader obects used by this layer.
 	Shader[] getShaders()
 	{	return shaders.array();
+	}
+
+	/// Get an array of all the textures of this layer.
+	Texture[] getTextures()
+	{	return textures.array();
+	}
+
+	/**
+	 * Get messages from the shader program.*/
+	char[] getShaderProgramLog()
+	{	int len;  char *log;
+		glGetObjectParameterivARB(program, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
+		if (len > 0)
+		{	log = (new char[len]).ptr;
+			glGetInfoLogARB(program, len, &len, log);
+		}
+		return .toString(log);
 	}
 
 	/// Link vertex and fragment shaders together into a vertex program.
@@ -138,18 +157,6 @@ class Layer
 		Log.write("Finished link");
 	}
 
-	/**
-	 * Get messages from the shader program.*/
-	char[] getShaderProgramLog()
-	{	int len;  char *log;
-		glGetObjectParameterivARB(program, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
-		if (len > 0)
-		{	log = (new char[len]).ptr;
-			glGetInfoLogARB(program, len, &len, log);
-		}
-		return .toString(log);
-	}
-
 	/// Set a the value of a uniform variable (or array of uniform variables) in this Layer's Shader program.
 	void setUniform(char[] name, float[] values ...)
 	{	setUniform(name, 1, values);
@@ -171,14 +178,32 @@ class Layer
 	{	setUniform(name, 14, cast(float[])values);
 	}
 
-	/**
+	/// Return a string of xml for this layer.
+	char[] toString()
+	{	char[] result;
+		result = "<layer" ~
+			" ambient=\"" ~ floatToHex(ambient.v[0..3]) ~ "\"" ~
+			" diffuse=\"" ~ floatToHex(diffuse.v[0..3]) ~ "\"" ~
+			" specular=\"" ~ floatToHex(specular.v[0..3]) ~ "\"" ~
+			" emissive=\"" ~ floatToHex(emissive.v[0..3]) ~ "\"" ~
+			" specularity=\"" ~ .toString(specularity) ~ "\"" ~
+			" blend=\"" ~ .toString(blend) ~ "\"" ~
+			" clamp=\"" ~ .toString(clamp) ~ "\"" ~
+			" filter=\"" ~ .toString(filter) ~ "\"" ~
+			">";
+		result~= "</layer>";
+		return result;
+	}
+
+	/*
 	 * Set all of the OpenGL states to the values of this material layer.
 	 * This essentially applies the material.  Call unApply() to reset
 	 * the OpenGL states back to the engine defaults in preparation for
 	 * whatever will be rendered next.
 	 * Params:
 	 * lights = An array containing the LightNodes that affect this material,
-	 * passed to the shader through uniform variables (unfinished).*/
+	 * passed to the shader through uniform variables (unfinished).
+	 * This function is used internally by the engine and doesn't normally need to be called. */
 	void apply(LightNode[] lights = null, Vec4f color = Vec4f(1))
 	{
 
@@ -188,17 +213,21 @@ class Layer
 		glMaterialfv(GL_FRONT, GL_EMISSION, emissive.scale(color).v.ptr);
 		glMaterialfv(GL_FRONT, GL_SHININESS, &specularity);
 
-		// Blending
-		if (blend==LAYER_BLEND_AVERAGE)
+		// Blend
+		if (blend != LAYER_BLEND_NONE)
 		{	glEnable(GL_BLEND);
 			glDepthMask(false);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		}
-		if (blend==LAYER_BLEND_ADD)
-		{	glEnable(GL_BLEND);
-			glDepthMask(false);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		}
+			switch (blend)
+			{	case LAYER_BLEND_ADD:
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					break;
+				case LAYER_BLEND_AVERAGE:
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+				case LAYER_BLEND_MULTIPLY:
+					glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+					break;
+		}	}
 
 		// Cull
 		if (cull == LAYER_CULL_FRONT)
@@ -237,7 +266,9 @@ class Layer
 		}
 	}
 
-	/// Reset the OpenGL state to the defaults.
+	/*
+	 * Reset the OpenGL state to the defaults.
+	 * This function is used internally by the engine and doesn't normally need to be called. */
 	void unApply()
 	{
 		float s=0;
@@ -257,23 +288,6 @@ class Layer
 		{	glUseProgramObjectARB(0);
 			current_program = 0;
 		}
-	}
-
-	/// Return a string of xml for this layer.
-	char[] toString()
-	{	char[] result;
-		result = "<layer" ~
-			" ambient=\"" ~ floatToHex(ambient.v[0..3]) ~ "\"" ~
-			" diffuse=\"" ~ floatToHex(diffuse.v[0..3]) ~ "\"" ~
-			" specular=\"" ~ floatToHex(specular.v[0..3]) ~ "\"" ~
-			" emissive=\"" ~ floatToHex(emissive.v[0..3]) ~ "\"" ~
-			" specularity=\"" ~ .toString(specularity) ~ "\"" ~
-			" blend=\"" ~ .toString(blend) ~ "\"" ~
-			" clamp=\"" ~ .toString(clamp) ~ "\"" ~
-			" filter=\"" ~ .toString(filter) ~ "\"" ~
-			">";
-		result~= "</layer>";
-		return result;
 	}
 
 	// Helper function for the public setUniform() functions.

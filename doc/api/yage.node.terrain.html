@@ -106,8 +106,8 @@ Eric Poggel &amp; Joe (Deformative) Pusdesris
 <b>Example:</b><br>
 <pre class="d_code"> <b>TerrainNode</b> a = <font color=blue>new</font> <b>TerrainNode</b>(scene);  <font color=green>// Child of scene
 </font> a.setScale(1000, 100, 1000);             <font color=green>// Make it a decent size
-</font> a.setMaterial(<span style="color: purple">"landscape.xml"</span>);
- a.setHeightMap(<span style="color: purple">"heightmap.png"</span>);
+</font> a.setMaterial(<span style="color: purple">"terrain/dirt.xml"</span>);
+ a.setHeightMap(<span style="color: purple">"terrain/islands-height.png"</span>);
 </pre>
  
 <br><br>
@@ -122,6 +122,28 @@ Eric Poggel &amp; Joe (Deformative) Pusdesris
 
 <dd>Construct as a child of <span class="funcparam">parent</span>
 <br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this(BaseNode <span class="funcparam">parent</span>, TerrainNode <span class="funcparam">original</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Construct this TerrainNode as a copy of another TerrainNode and recursively copy all children.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">BaseNode <span class="funcparam">parent</span></td>
+
+               
+<td>This TerrainNode will be a child of <span class="funcparam">parent</span>.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">TerrainNode <span class="funcparam">original</span></td>
+
+               
+<td>This TerrainNode will be an exact copy of <span class="funcparam">original</span>.</td></tr>
+</table><br>
 
 </dd>
 
@@ -159,7 +181,7 @@ Eric Poggel &amp; Joe (Deformative) Pusdesris
 <br>void 
 <span class="currsymbol">setHeightMap</span>
 <script type="text/javascript">explorer.outline.addDecl('setHeightMap');</script>
-(char[] <span class="funcparam">image_file</span>, float <span class="funcparam">repeat</span> = cast(float)1);
+(char[] <span class="funcparam">image_file</span>, float <span class="funcparam">repeat</span> = 1F);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -213,40 +235,6 @@ Eric Poggel &amp; Joe (Deformative) Pusdesris
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(Vec3f <span class="funcparam">scale</span>);
-<br>void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">scale</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Overridden to cache the radius if changed by the scale.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected void 
-<span class="currsymbol">regenerate</span>
-<script type="text/javascript">explorer.outline.addDecl('regenerate');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Recalculate the terrain's normals and culling sphere radius.
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -266,7 +254,7 @@ Eric Poggel &amp; Joe (Deformative) Pusdesris
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:10 2007
+		on Tue Feb 20 00:11:25 2007
 
 	</div>
 	
@@ -289,9 +277,9 @@ Eric Poggel &amp; Joe (Deformative) Pusdesris
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -303,7 +291,7 @@ Eric Poggel &amp; Joe (Deformative) Pusdesris
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -366,8 +354,6 @@ Eric Poggel &amp; Joe (Deformative) Pusdesris
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

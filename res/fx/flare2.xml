@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<material>
+  <layer blend="add" emissive="FFFFFF">
+	<texture src="flare2.jpg" />
+  </layer>
+</material>

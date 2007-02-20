@@ -14,7 +14,7 @@ import derelict.opengl.gl;
 import yage.core.all;
 import yage.resource.resource;
 import yage.resource.sound;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.node;
 import yage.node.scene;
 

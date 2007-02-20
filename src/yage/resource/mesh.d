@@ -31,6 +31,13 @@ class Mesh
 			glGenBuffersARB(1, &vbo_triangles);
 	}
 
+	/// Create as an exact duplicate of another Model.
+	this(Mesh mesh)
+	{	this();
+		triangles = mesh.triangles.dup;
+		material = mesh.material;
+	}
+
 	///
 	this(Material matl, Vec3i[] triangles)
 	{	this();

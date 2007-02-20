@@ -13,7 +13,7 @@ import derelict.opengl.glext;
 import yage.core.vector;
 import yage.core.misc;
 import yage.resource.material;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.node;
 import yage.node.scene;
 import yage.system.device;

@@ -116,7 +116,7 @@ Eric Poggel
  tidier.
 <br><br>
 <b>See Also:</b><br>
-yage.node.Moveable
+yage.node.MoveableNode
  yage.node.BaseNode
 
 <br><br>
@@ -173,57 +173,6 @@ yage.node.Moveable
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">remove</span>
-<script type="text/javascript">explorer.outline.addDecl('remove');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Remove this Node.  This function should be used instead of delete.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Node 
-<span class="currsymbol">setParent</span>
-<script type="text/javascript">explorer.outline.addDecl('setParent');</script>
-(BaseNode <span class="funcparam">_parent</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the parent of this Node (what it's attached to) and remove
- it from its previous parent.
-<br><br>
-<b>Returns:</b><br>
-A self reference.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">synchronized void 
-<span class="currsymbol">enableLights</span>
-<script type="text/javascript">explorer.outline.addDecl('enableLights');</script>
-(ubyte <span class="funcparam">number</span> = cast(ubyte)8);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Enable the lights that most affect this Node.
- All lights that affect this Node can't always be enabled, due to hardware and performance
- reasons, so only the lights that affect the node the most are enabled.
- This function is used internally by the engine and should not be called manually or exported.
-<br><br>
-<b>TODO:</b><br>
-Take into account a spotlight inside a Node that shines outward but doesn't shine
- on the Node's center.  Need to test to see if this is even broken.
- Also perhaps use axis sorting for faster calculations. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Vec!(float,4)  
 <span class="currsymbol">getColor</span>
 <script type="text/javascript">explorer.outline.addDecl('getColor');</script>
@@ -232,6 +181,19 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the color of the Node.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">getLifetime</span>
+<script type="text/javascript">explorer.outline.addDecl('getLifetime');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the time before the Node will be removed.
 <br><br>
 
 </dd>
@@ -304,6 +266,19 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
+<span class="currsymbol">remove</span>
+<script type="text/javascript">explorer.outline.addDecl('remove');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Remove this Node.  This function should be used instead of delete.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
 <span class="currsymbol">setColor</span>
 <script type="text/javascript">explorer.outline.addDecl('setColor');</script>
 (float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
@@ -324,14 +299,38 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">setOnscreen</span>
-<script type="text/javascript">explorer.outline.addDecl('setOnscreen');</script>
-(bool <span class="funcparam">onscreen</span>);
+<span class="currsymbol">setLifetime</span>
+<script type="text/javascript">explorer.outline.addDecl('setLifetime');</script>
+(float <span class="funcparam">seconds</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set whether this node is inside the current camera's view frustum.
-  This function is used internally by the engine and should not be called manually or exported. 
+<dd>The Node will be removed (along with all of its children) after a given time.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">seconds</span></td>
+
+               
+<td>The number of <span class="funcparam">seconds</span> before the Node will be removed.
+ Set to float.infinity to make the Node last forever (the default behavior).</td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Node 
+<span class="currsymbol">setParent</span>
+<script type="text/javascript">explorer.outline.addDecl('setParent');</script>
+(BaseNode <span class="funcparam">_parent</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the parent of this Node (what it's attached to) and remove
+ it from its previous parent.
+<br><br>
+<b>Returns:</b><br>
+A self reference.
 <br><br>
 
 </dd>
@@ -371,23 +370,6 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">update</span>
-<script type="text/javascript">explorer.outline.addDecl('update');</script>
-(float <span class="funcparam">delta</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Update the position and rotation of this node based on its velocity and angular velocity.
- This function is called automatically as a Scene's 
-<span class="currsymbol">update</span>
-<script type="text/javascript">explorer.outline.addDecl('update');</script>
-() function recurses through Nodes. 
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -407,7 +389,7 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:10 2007
+		on Tue Feb 20 00:11:25 2007
 
 	</div>
 	
@@ -430,9 +412,9 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -444,7 +426,7 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -507,8 +489,6 @@ Take into account a spotlight inside a Node that shines outward but doesn't shin
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

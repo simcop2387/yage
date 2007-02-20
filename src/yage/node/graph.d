@@ -14,10 +14,9 @@ import yage.resource.resource;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.model;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.node;
 import yage.node.scene;
-import yage.node.basenode;
 
 /**
  * A GraphNode can be set to an arboolrary parametric equation of two variables
@@ -54,10 +53,10 @@ class GraphNode : Node
 	}
 
 	/**
-	 * Construct this Node as a copy of another Node and recursively copy all children.
+	 * Construct this GraphNode as a copy of another GraphNode and recursively copy all children.
 	 * Params:
-	 * parent = This Node will be a child of parent.
-	 * original = This Node will be an exact copy of original.*/
+	 * parent = This GraphNode will be a child of parent.
+	 * original = This GraphNode will be an exact copy of original.*/
 	this (BaseNode parent, GraphNode original)
 	{	super(parent, original);
 

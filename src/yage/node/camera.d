@@ -16,7 +16,7 @@ import yage.core.all;
 import yage.resource.all;
 import yage.resource.texture;
 import yage.node.node;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.scene;
 import yage.system.constant;
 import yage.system.device;
@@ -42,9 +42,14 @@ class CameraNode : Node
 	float threshold = 2.25;		// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
 	CameraTexture capture;		// The camera renders to this Texture
-	uint node_count=0;			// The number of nodes that were rendered.
 	Plane[6] frustum;
 	Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
+
+	// Useful stats
+	uint node_count;			// The number of nodes that were rendered.
+	uint frame_count;
+	uint poly_count;
+	uint vertex_count;
 
 	public:
 	/**
@@ -97,6 +102,11 @@ class CameraNode : Node
 			p = p.normalize();
 	}
 
+	/// Get the number of frames this camera has rendered.
+	int getFrameCount()
+	{	return frame_count;
+	}
+
 	///
 	Plane[] getFrustum()
 	{	return frustum;
@@ -115,9 +125,19 @@ class CameraNode : Node
 	{	return null;
 	}
 
-	///
+	/// Get the number of Nodes onscreen and rendered in the last call to toTexture().
 	int getNodeCount()
 	{	return node_count;
+	}
+
+	/// Get the number of polygons rendered in the last call to ToTexture().
+	int getPolyCount()
+	{	return poly_count;
+	}
+
+	/// Get the number of vertices rendered in the last call to ToTexture().
+	int getVertexCount()
+	{	return vertex_count;
 	}
 
 	///
@@ -176,47 +196,48 @@ class CameraNode : Node
 	 * Render everything seen by the camera to its own Texture.  The Texture can then be
 	 * added to a material or used for any other purpose by using getTexture(). */
 	void toTexture()
-	{	node_count = 0;
+	{	node_count = poly_count = vertex_count = 0;
 		Render.setCurrentCamera(this);
 
 		// Precalculate the inverse of the Camera's absolute transformation Matrix.
-		calcTransform();
-		inverse_absolute = transform_abs.inverse();
+		Matrix xform = getAbsoluteTransform(true);
+		inverse_absolute = xform.inverse();
 
 		// Resize viewport
 		Device.resizeViewport(xres, yres, near, far, fov, aspect);
 
 		// Rotate in reverse
-		Quatrn rot = transform_abs.toQuatrn();
-		Vec3f axis = rot.toAxis();
-		float angle = axis.length();
-		axis = axis.normalize();
-		glRotatef(angle*57.295779513, -axis.x, -axis.y, -axis.z);
+		Vec3f axis = xform.toAxis();
+		glRotatef(-axis.length()*57.295779513, axis.x, axis.y, axis.z);
 
 		// Draw the skybox
 		if (scene.getSkybox() !is null)
 		{	glClear(GL_DEPTH_BUFFER_BIT);
+
 			// Reset the position to the origin for skybox rendering.
-			float[3] push = transform_abs.v[12..15];
-			transform_abs.v[12..15] = 0;
+			// Need to reset coordinates of cached version instead of original.
+			//float[3] push = xform.v[12..15];
+			//transform_abs_cache[transform_read].v[12..15] = 0; // read buffer
+
 			buildFrustum(); // temporary frustum exclusively for skybox rendering.
 			scene.getSkybox().apply();
 			addNodesToRender(scene.getSkybox());
-			Render.all();
+			Render.all(poly_count, vertex_count);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			transform_abs.v[12..15] = push[0..3]; // restore position
+
+			//transform_abs_cache[transform_read].v[12..15] = push[0..3]; // restore position
 		}
 		else
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Translate in reverse
-		glTranslatef(-transform_abs.v[12], -transform_abs.v[13], -transform_abs.v[14]);
+		glTranslatef(-xform.v[12], -xform.v[13], -xform.v[14]);
 
 		// Build view frustum, cull, and render
 		buildFrustum();
 		scene.apply();
 		addNodesToRender(scene);
-		Render.all();
+		Render.all(poly_count, vertex_count);
 
 
 		// Copy framebuffer to our texture.
@@ -233,11 +254,14 @@ class CameraNode : Node
 		if (modified_yres ==0) modified_yres=Device.getHeight();
 
 		capture.loadFrameBuffer(modified_xres, modified_yres);
+
+		frame_count++;
 	}
 
-	/// Give the new position and velocity of the camera to OpenAL
-	/// Should setTransformDirty() be overridden instead?
-	/// TODO--Allow only one camera to play sound.
+	/**
+	 * Give the new position and velocity of the camera to OpenAL
+	 * Should setTransformDirty() be overridden instead?
+	 * TODO--Allow only one camera to play sound. */
 	void update(float delta)
 	{
 		super.update(delta);
@@ -257,21 +281,22 @@ class CameraNode : Node
 	}
 
 
-	/// Add the node and all child Nodes to the framebuffer, if onscreen.
+	// Add the node and all child Nodes to the framebuffer, if onscreen.
 	protected void addNodesToRender(Scene node)
 	{	// Recurse through and render children.
 		foreach (Node c; node.getChildren())
 			addNodesToRender(c);
 	}
 
-	/// Ditto
+	// Ditto
 	protected void addNodesToRender(Node node)
 	{
 		if (node.getVisible())
 		{	node.setOnscreen(true);
 
 			float r = -node.getRadius();
-			Matrix *node_abs = node.getAbsoluteTransformPtr();
+			Matrix cam_abs  = getAbsoluteTransform(true);
+			Matrix node_abs = node.getAbsoluteTransform(true);
 			// Cull nodes that are not inside the frustum
 			for (int i=0; i<frustum.length; i++)
 			{	// formula for the plane distance-to-point function, expanded in-line.
@@ -283,9 +308,9 @@ class CameraNode : Node
 
 			// cull nodes that are too small to see.
 			if (node.getOnscreen())
-			{	float x = transform_abs.v[12]-node_abs.v[12];
-				float y = transform_abs.v[13]-node_abs.v[13];
-				float z = transform_abs.v[14]-node_abs.v[14];
+			{	float x = cam_abs.v[12]-node_abs.v[12];
+				float y = cam_abs.v[13]-node_abs.v[13];
+				float z = cam_abs.v[14]-node_abs.v[14];
 
 				float height = yres;
 				if (height==0)
@@ -294,6 +319,8 @@ class CameraNode : Node
 					node.setOnscreen(false);
 				else // Onscreen and big enough to draw
 				{	Render.add(node);
+
+					// Statistics
 					node_count++;
 				}
 			}

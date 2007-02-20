@@ -21,6 +21,7 @@ import derelict.ogg.vorbisfile;
 import yage.resource.texture;
 import yage.system.log;
 import yage.system.constant;
+import yage.system.input;
 
 // Enable specular highlights with textures.
 const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
@@ -65,14 +66,17 @@ abstract class Device
 		}
 	}
 
-	/** This function creates a window with the specified width and height in pixels.
-	 *  It also initializes an OpenAL context so that audio playback can occur.
-	 *  It must be called before most other code.
-	 *  \param width Width of the window in pixels
-	 *  \param height Height of the window in pixels
-	 *  \param depth Color depth of each pixel (should be 16, 24 or 32)
-	 *  \param fullscreen The window is fullscreen if true; windowed otherwise.*/
-	static void init(int width, int height, ubyte depth, bool fullscreen)
+	/**
+	 * This function creates a window with the specified width and height in pixels.
+	 * It also initializes an OpenAL context so that audio playback can occur.
+	 * It must be called before most other code.
+	 * Params:
+	 * width = Width of the window in pixels
+	 * height = Height of the window in pixels
+	 * depth = Color depth of each pixel (should be 16, 24 or 32)
+	 * fullscreen = The window is fullscreen if true; windowed otherwise.
+	 * samples = the level of anti-aliasing */
+	static void init(int width, int height, ubyte depth, bool fullscreen, ubyte samples=1)
 	in
 	{	assert(depth==16 || depth==24 || depth==32);
 		assert(width>0 && height>0);
@@ -98,6 +102,12 @@ abstract class Device
 		if(SDL_Init(SDL_INIT_VIDEO) < 0)
 			throw new Exception ("Unable to initialize SDL: "~ .toString(SDL_GetError()));
 
+		// Anti-aliasing
+		if (samples > 1)
+		{	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+		}
+
 		// Create the screen surface (window)
 		uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
 		if (fullscreen) flags |= SDL_FULLSCREEN;
@@ -106,6 +116,8 @@ abstract class Device
 			throw new Exception ("Unable to set " ~ .toString(width) ~ "x" ~ .toString(height) ~
 			" video mode: : " ~ .toString(SDL_GetError()));
 		SDL_LockSurface(sdl_surface);
+
+		Input.setGrabMouse(true);
 
 		// Load functions for OpenGL past 1.1 as far as possible
 		// Perhaps only load 1.1 and only load what's needed manually?
@@ -252,24 +264,31 @@ abstract class Device
 		glOrtho(0, 1, 1, 0, -1, 1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glEnable(GL_TEXTURE_2D);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
 
-		// If our texture is larger than the viewport, set the size of the quad to adjust.
+		glDisable(GL_DEPTH_TEST);
+
+		// If a texture to render
+		float x, y;
 		if (texture !is null)
-		{	float x = texture.requested_width/cast(float)texture.getWidth();
-			float y = texture.requested_height/cast(float)texture.getHeight();
+		{	glEnable(GL_TEXTURE_2D);
+			glDisable(GL_LIGHTING);
+
+			// If our texture is larger than the viewport, set the size of the quad to adjust.
+			x = texture.requested_width/cast(float)texture.getWidth();
+			y = texture.requested_height/cast(float)texture.getHeight();
 
 			// Draw a textured quad of our current material
 			texture.bind(true, TEXTURE_FILTER_BILINEAR);
-			glBegin(GL_QUADS);
-			glTexCoord2f(0, 0); glVertex2f(0, 1);
-			glTexCoord2f(x, 0); glVertex2f(1, 1);
-			glTexCoord2f(x, y); glVertex2f(1, 0);
-			glTexCoord2f(0, y); glVertex2f(0, 0);
-			glEnd();
 		}
+		else // black screen (because of lighting enabled
+			glDisable(GL_TEXTURE_2D);
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0); glVertex2f(0, 1);
+		glTexCoord2f(x, 0); glVertex2f(1, 1);
+		glTexCoord2f(x, y); glVertex2f(1, 0);
+		glTexCoord2f(0, y); glVertex2f(0, 0);
+		glEnd();
 
 		SDL_GL_SwapBuffers();
 		glPopAttrib();

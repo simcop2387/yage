@@ -12,5 +12,4 @@ public
 {	import yage.util.flyer;
 	import yage.util.spring;
 	import yage.util.misc;
-	import yage.util.repeater;
 }

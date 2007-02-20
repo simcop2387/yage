@@ -11,7 +11,7 @@ module yage.gameobj;
 import std.math;
 import std.stdio;
 import yage.core.timer;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.node;
 import yage.resource.resource;
 import yage.resource.model;

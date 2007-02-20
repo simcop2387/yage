@@ -48,19 +48,9 @@ class Material
 	{	return layers.add(l);
 	}
 
-	/// Get the layer with the given index from this material.
-	Layer getLayer(uint index)
-	{	return layers[index];
-	}
-
-	/// Get all Layers as a Horde of Layers.
-	Horde!(Layer) getLayers()
-	{	return layers;
-	}
-
-	/// Remove the layer with the given index from this material.
-	void removeLayer(uint index)
-	{	layers.remove(index);
+	/// Get all Layers as an array.
+	Layer[] getLayers()
+	{	return layers.array;
 	}
 
 	/// Return the path and filename from where this material was loaded.
@@ -134,10 +124,8 @@ class Material
 						case "multiply"	: layer.blend = LAYER_BLEND_MULTIPLY;  break;
 						case "avg"		:
 						case "average"	: layer.blend = LAYER_BLEND_AVERAGE;  break;
-						default: throw new Exception("Unknown blend value '" ~ blend ~"'.");
+						default: throw new Exception("Invalid blend value '" ~ blend ~"'.");
 				}	}
-				if(xml_layer.hasAttribute("sort"))
-					layer.sort = strToBool(xml_layer.getAttribute("sort"));
 
 				// Cull, mode, width
 				if(xml_layer.hasAttribute("cull"))
@@ -145,7 +133,7 @@ class Material
 					switch (cull)
 					{	case "front"	: layer.cull = LAYER_CULL_FRONT;  break;
 						case "back"		: layer.cull = LAYER_CULL_FRONT;  break;
-						default: throw new Exception("Unknown cull value '" ~ cull ~"'.");
+						default: throw new Exception("Invalid cull value '" ~ cull ~"'.");
 				}	}
 				if(xml_layer.hasAttribute("draw"))
 				{	char[] draw = tolower(xml_layer.getAttribute("draw"));
@@ -157,7 +145,7 @@ class Material
 						case "lines"	: layer.draw = LAYER_DRAW_LINES;  break;
 						case "point"	:
 						case "points"	: layer.draw = LAYER_DRAW_POINTS;  break;
-						default: throw new Exception("Unknown draw value '" ~ draw~"'.");
+						default: throw new Exception("Invalid draw value '" ~ draw~"'.");
 				}	}
 				if(xml_layer.hasAttribute("width"))
 					layer.width = atoi(xml_layer.getAttribute("width"));
@@ -173,7 +161,7 @@ class Material
 						case "nearest"	: layer.filter = TEXTURE_FILTER_NONE; break;
 						case "bilinear"	: layer.filter = TEXTURE_FILTER_BILINEAR; break;
 						case "trilinear": layer.filter = TEXTURE_FILTER_TRILINEAR; break;
-						default: throw new Exception("Unknown filter value '" ~ filter ~"'.");
+						default: throw new Exception("Invalid filter value '" ~ filter ~"'.");
 				}	}
 
 			}catch (Exception e)
@@ -229,6 +217,11 @@ class Material
 			if (layer.getShaders().length)
 				layer.linkShaders();
 		}
+	}
+
+	/// Remove the layer with the given index from this material.
+	void removeLayer(uint index)
+	{	layers.remove(index, true);
 	}
 
 	/// Return a string of xml for this material along with all layers.

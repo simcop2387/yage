@@ -351,6 +351,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">floatToHex</span>
+<script type="text/javascript">explorer.outline.addDecl('floatToHex');</script>
+(float[] <span class="funcparam">vec</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Convert an array of float color values (0-1) to hexadecimal. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">uint 
 <span class="currsymbol">hexToUint</span>
 <script type="text/javascript">explorer.outline.addDecl('hexToUint');</script>
@@ -362,19 +375,6 @@ Eric Poggel
 <br><br>
 <b>Throws:</b><br>
 Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal character. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">floatToHex</span>
-<script type="text/javascript">explorer.outline.addDecl('floatToHex');</script>
-(float[] <span class="funcparam">vec</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert an array of float color values (0-1) to hexadecimal. 
 <br><br>
 
 </dd>
@@ -608,7 +608,7 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:09 2007
+		on Tue Feb 20 00:11:24 2007
 
 	</div>
 	
@@ -631,9 +631,9 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -645,7 +645,7 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -708,8 +708,6 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

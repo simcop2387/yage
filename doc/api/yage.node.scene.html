@@ -93,7 +93,7 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">Scene</span>
 <script type="text/javascript">explorer.outline.addDecl('Scene');</script>
-: yage.node.basenode.BaseNode;
+: yage.node.base.BaseNode;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -112,7 +112,26 @@ Eric Poggel
 <span class="currsymbol">Scene</span>
 <script type="text/javascript">explorer.outline.addDecl('Scene');</script>
 .  Examples include global ambient lighting and the speed of sound.
- Scenes also maintain a Horde (array) of all lights in them. 
+ Scenes also maintain a Horde (array) of all lights in them.
+<br><br>
+Each 
+<span class="currsymbol">Scene</span>
+<script type="text/javascript">explorer.outline.addDecl('Scene');</script>
+ can also be thought to exist in its own thread.  start() and stop()
+ control the updating of all child nodes at a fixed frequency.
+
+<br><br>
+<b>Example:</b><br>
+<pre class="d_code"> <b>Scene</b> scene = <font color=blue>new</font> <b>Scene</b>();
+ scene.start(90);                       <font color=green>// Start the scene updater at 90 times per second.
+</font> <font color=blue>scope</font>(exit)scene.stop();               <font color=green>// Ensure it stops later.
+</font>
+ <b>Scene</b> skybox = <font color=blue>new</font> <b>Scene</b>();            <font color=green>// Create a skybox for the scene.
+</font> ModelNode sky = <font color=blue>new</font> ModelNode(skybox); <font color=green>// A model with all faces pointing inward.
+</font> sky.setModel(<span style="color: purple">"sky/sanctuary.ms3d"</span>);    <font color=green>// Use this 3D model as geometry for the skybox.
+</font> scene.setSkybox(skybox);
+</pre>
+ 
 <br><br>
 
 
@@ -123,18 +142,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Constructor.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Scene <span class="funcparam">original</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Construct this Scene as an exact copy <span class="funcparam">original</span> and make copies of all
- children.
+<dd>Construct an empty Scene.
 <br><br>
 
 </dd>
@@ -245,6 +253,32 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">real 
+<span class="currsymbol">getStartTime</span>
+<script type="text/javascript">explorer.outline.addDecl('getStartTime');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the the number of seconds since the last time start() was called.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">getUpdateCount</span>
+<script type="text/javascript">explorer.outline.addDecl('getUpdateCount');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the number of times the Scene has been updated since start() was called.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">setClearColor</span>
 <script type="text/javascript">explorer.outline.addDecl('setClearColor');</script>
@@ -316,7 +350,7 @@ Eric Poggel
 <br>void 
 <span class="currsymbol">setGlobalAmbient</span>
 <script type="text/javascript">explorer.outline.addDecl('setGlobalAmbient');</script>
-(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>);
+(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -354,6 +388,85 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
+<span class="currsymbol">setUpdateCount</span>
+<script type="text/javascript">explorer.outline.addDecl('setUpdateCount');</script>
+(int <span class="funcparam">count</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the target for update the number of updates.
+ A number higher than the current <span class="funcparam">count</span> will cause the Updater to pause until
+ enough time has passed that the update counter should be at that <span class="funcparam">count</span>.
+ A number smaller than the current <span class="funcparam">count</span> will cause the updater to repeatedly
+ update until the <span class="funcparam">count</span> is back to what it should be. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">synchronized void 
+<span class="currsymbol">start</span>
+<script type="text/javascript">explorer.outline.addDecl('start');</script>
+(float <span class="funcparam">frequency</span> = cast(float)90);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Start updating the positions and rotations of all Nodes in this Scene.
+ Each Scene is updated in its own thread.  If the updating thread
+ gets behind, it will always attempt to catch up.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">frequency</span></td>
+
+               
+<td>The scene will be updated this many times per second.</td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">synchronized void 
+<span class="currsymbol">stop</span>
+<script type="text/javascript">explorer.outline.addDecl('stop');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Stop updating the Scene.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">synchronized void 
+<span class="currsymbol">swapTransformRead</span>
+<script type="text/javascript">explorer.outline.addDecl('swapTransformRead');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Swap the transform buffer cache for each Node to the latest that's not currently
+ being written to.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">synchronized void 
+<span class="currsymbol">swapTransformWrite</span>
+<script type="text/javascript">explorer.outline.addDecl('swapTransformWrite');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Start writing to the transform buffer cache that's not currently being read.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
 <span class="currsymbol">update</span>
 <script type="text/javascript">explorer.outline.addDecl('update');</script>
 ();
@@ -380,20 +493,6 @@ Eric Poggel
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">apply</span>
-<script type="text/javascript">explorer.outline.addDecl('apply');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Apply OpenGL options specific to this Scene.  This function is used internally by
- the engine and doesn't normally need to be called.
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -413,7 +512,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:10 2007
+		on Tue Feb 20 00:11:25 2007
 
 	</div>
 	
@@ -436,9 +535,9 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -450,7 +549,7 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -513,8 +612,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

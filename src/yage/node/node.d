@@ -17,7 +17,7 @@ import yage.core.all;
 import yage.node.all;
 import yage.node.scene;
 import yage.node.light;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.moveable;
 import yage.system.constant;
 import yage.system.device;
@@ -37,7 +37,7 @@ import yage.system.input;
  * tidier.
  *
  * See_Also:
- * yage.node.Moveable
+ * yage.node.MoveableNode
  * yage.node.BaseNode
  *
  * Example:
@@ -58,18 +58,18 @@ import yage.system.input;
  */
 class Node : MoveableNode
 {
-	private bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
+	protected bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
 	protected bool 	visible = true;
 	protected Vec3f	scale;
 	protected Vec4f color;				// RGBA, used for glColor4f()
+	protected float lifetime = float.infinity;	// in seconds
 
 	protected LightNode[] lights;		// Lights that affect this Node
 	protected float[]     intensities;	// stores the brightness of each light on this Node.
 
 	/// Construct this Node as a child of parent.
 	this(BaseNode parent)
-	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
-		super();
+	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
 		visible = false;
 		scale = Vec3f(1);
 		color = Vec4f(1);
@@ -83,15 +83,21 @@ class Node : MoveableNode
 	 * original = This Node will be an exact copy of original.*/
 	this(BaseNode parent, Node original)
 	{
-		debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+		debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
 		this(parent);
-		setVisible(original.visible);
 
+		visible = original.visible;
+		scale = original.scale;
+		color = original.color;
+		lifetime = original.lifetime;
+
+		// From MoveableNode
 		transform = original.transform;
 		linear_velocity = original.linear_velocity;
 		angular_velocity = original.angular_velocity;
-
-		scale = original.scale;
+		cache[0] = original.cache[0];	// in case of
+		cache[1] = original.cache[1];	// a = new Node(scene, a);
+		cache[2] = original.cache[2];
 
 		// Also recursively copy every child
 		foreach (inout Node c; original.children.array())
@@ -100,121 +106,25 @@ class Node : MoveableNode
 			switch (c.getType())
 			{	case "yage.node.node.Node": new Node(this, cast(Node)c); break;
 				case "yage.node.camera.CameraNode": new CameraNode(this, cast(CameraNode)c); break;
-				case "yage.node.graph.GraphNode": new GraphNode(this, cast(GraphNode)c); break;
+				case "yage.node.graph.GraphNode": new typeof(c)(this, cast(GraphNode)c); break;
 				case "yage.node.light.LightNode": new LightNode(this, cast(LightNode)c); break;
 				case "yage.node.model.ModelNode": new ModelNode(this, cast(ModelNode)c); break;
 				case "yage.node.sound.SoundNode": new SoundNode(this, cast(SoundNode)c); break;
 				case "yage.node.sprite.SpriteNode": new SpriteNode(this, cast(SpriteNode)c); break;
+				case "yage.node.terrain.TerrainNode": new TerrainNode(this, cast(TerrainNode)c); break;
 				default:
 			}
 		}
 	}
 
-	/// Remove this Node.  This function should be used instead of delete.
-	void remove()
-	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
-		if (index != -1)
-		{	parent.children.remove(index);
-			if (index < parent.children.length)
-				parent.children[index].index = index;
-		}
-
-		// this needs to happen because some children may need to do more in their remove() function.
-		foreach(Node c; children.array())
-			c.remove();
-	}
-
-	/**
-	 * Set the parent of this Node (what it's attached to) and remove
-	 * it from its previous parent.
-	 * Returns: A self reference.*/
-	Node setParent(BaseNode _parent)
-	in { assert(_parent !is null);
-	}body
-	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
-
-		if (index!=-1)
-		{	parent.children.remove(index);
-			if (index < parent.children.length) // if not removed from the end.
-				parent.children[index].index = index; // update external index.
-		}// Add to new parent
-		parent = _parent;
-		index = parent.children.add(this);
-		scene = parent.scene;
-		setTransformDirty();
-		return this;
-	}
-
-	/**
-	 * Enable the lights that most affect this Node.
-	 * All lights that affect this Node can't always be enabled, due to hardware and performance
-	 * reasons, so only the lights that affect the node the most are enabled.
-	 * This function is used internally by the engine and should not be called manually or exported.
-	 *
-	 * TODO: Take into account a spotlight inside a Node that shines outward but doesn't shine
-	 * on the Node's center.  Need to test to see if this is even broken.
-	 * Also perhaps use axis sorting for faster calculations. */
-	synchronized void enableLights(ubyte number=8)
-	{
-		if (number>Device.getLimit(DEVICE_MAX_LIGHTS))
-			number = Device.getLimit(DEVICE_MAX_LIGHTS);
-
-		LightNode[] all_lights = scene.getLights();
-		lights.length = maxi(number, all_lights.length);
-		intensities.length = maxi(number, all_lights.length);
-
-		// clear out old values
-		for (int i=0; i<lights.length; i++)
-		{	lights[i] = null;
-			intensities[i] = 0;
-		}
-
-		// Calculate the intensity of all lights on this node
-		for (int i=0; i<all_lights.length; i++)
-		{	LightNode l = all_lights[i];
-
-			// Add to the array of limited lights if bright enough
-			Vec3f position;
-			position.set(transform_abs);
-			float intensity = l.getBrightness(position, getRadius()).average();
-			//if (getType() == "yage.node.terrain.TerrainNode")
-			//	writefln(intensity);
-
-			intensities[i] = intensity;
-			if (intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
-			{	for (int j=0; j<number; j++)
-				{	// If first light
-					if (lights[j] is null)
-					{	lights[j] = l;
-						break;
-					}else
-					{	if (intensities[j] < intensity)
-						{	// put this light at this spot in the array and shift the others
-							for (int n=number-2; n>=j; n--)
-								lights[n+1] = lights[n];
-							lights[j] = l;
-							break;
-		}	}	}	}	}
-
-
-
-		// Enable the apropriate lights
-		for (int i=0; i<number; i++)
-			glDisable(GL_LIGHT0+i);
-		for (int i=0; i<number; i++)
-		{	if (lights[i] !is null)
-				lights[i].apply(i);
-			else	// Make lights array just as long as it needs to be and no more.
-			{	lights.length = i;
-				break;
-		}	}
-
-
-	}
-
 	/// Get the color of the Node.
 	Vec4f getColor()
 	{	return color;
+	}
+
+	/// Get the time before the Node will be removed.
+	float getLifetime()
+	{	return lifetime;
 	}
 
 	/// Get an array of lights that were enabled in the last call to enableLights().
@@ -244,6 +154,23 @@ class Node : MoveableNode
 	{	return visible;
 	}
 
+
+
+	/// Remove this Node.  This function should be used instead of delete.
+	void remove()
+	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+
+		if (index != -1)
+		{	parent.children.remove(index);
+			if (index < parent.children.length)
+				parent.children[index].index = index;
+			index = -1; // so remove can't be called twice.
+		}
+		// this needs to happen because some children (like lights) may need to do more in their remove() function.
+		foreach(Node c; children.array())
+			c.remove();
+	}
+
 	/**
 	 * Set the color of the Node, multiplied with the material properties.
 	 * This is equivalent to glColor4f(). If the materials of any meshes have
@@ -257,10 +184,34 @@ class Node : MoveableNode
 	{	this.color = color;
 	}
 
-	/** Set whether this node is inside the current camera's view frustum.
-	 *  This function is used internally by the engine and should not be called manually or exported. */
-	void setOnscreen(bool onscreen)
-	{	this.onscreen = onscreen;
+	/**
+	 * The Node will be removed (along with all of its children) after a given time.
+	 * Params:
+	 * seconds = The number of seconds before the Node will be removed.
+	 * Set to float.infinity to make the Node last forever (the default behavior).*/
+	void setLifetime(float seconds)
+	{	lifetime = seconds;
+	}
+
+	/**
+	 * Set the parent of this Node (what it's attached to) and remove
+	 * it from its previous parent.
+	 * Returns: A self reference.*/
+	Node setParent(BaseNode _parent)
+	in { assert(_parent !is null);
+	}body
+	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+
+		if (index!=-1)
+		{	parent.children.remove(index);
+			if (index < parent.children.length) // if not removed from the end.
+				parent.children[index].index = index; // update external index.
+		}// Add to new parent
+		parent = _parent;
+		index = parent.children.add(this);
+		scene = parent.scene;
+		setTransformDirty();
+		return this;
 	}
 
 	/**
@@ -286,11 +237,17 @@ class Node : MoveableNode
 	{	this.visible = visible;
 	}
 
-	/**
+
+
+
+	/*
 	 * Update the position and rotation of this node based on its velocity and angular velocity.
-	 * This function is called automatically as a Scene's update() function recurses through Nodes. */
+	 * This function is called automatically as a Scene's update() function recurses through Nodes.
+	 * It normally doesn't need to be called manually.*/
 	void update(float delta)
 	{	debug scope( failure ) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+
+		lifetime-= delta;
 
 		// Move by linear velocity if not zero.
 		if (linear_velocity.length2() != 0)
@@ -302,5 +259,77 @@ class Node : MoveableNode
 
 		// Recurse through children
 		super.update(delta);
+
+		if (lifetime <= 0)
+			remove();
 	}
+
+	/*
+	 * Enable the lights that most affect this Node.
+	 * All lights that affect this Node can't always be enabled, due to hardware and performance
+	 * reasons, so only the lights that affect the node the most are enabled.
+	 * This function is used internally by the engine and should not be called manually or exported.
+	 *
+	 * TODO: Take into account a spotlight inside a Node that shines outward but doesn't shine
+	 * on the Node's center.  Need to test to see if this is even broken.
+	 * Also perhaps use axis sorting for faster calculations. */
+	void enableLights(ubyte number=8)
+	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+
+		if (number>Device.getLimit(DEVICE_MAX_LIGHTS))
+			number = Device.getLimit(DEVICE_MAX_LIGHTS);
+
+		LightNode[] all_lights = scene.getLights();
+		lights.length = maxi(number, all_lights.length);
+		intensities.length = maxi(number, all_lights.length);
+
+		// clear out old values
+		for (int i=0; i<lights.length; i++)
+		{	lights[i] = null;
+			intensities[i] = 0;
+		}
+
+		// Calculate the intensity of all lights on this node
+		Vec3f position;
+		position.set(getAbsoluteTransform(true));
+		for (int i=0; i<all_lights.length; i++)
+		{	LightNode l = all_lights[i];
+
+			// Add to the array of limited lights if bright enough
+			float intensity = l.getBrightness(position, getRadius()).average();
+			intensities[i] = intensity;
+			if (intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
+			{	for (int j=0; j<number; j++)
+				{	// If first light
+					if (lights[j] is null)
+					{	lights[j] = l;
+						break;
+					}else // add to array of lights and shift others
+					{	if (intensities[j] < intensity)
+						{	// put this light at this spot in the array and shift the others
+							for (int n=number-2; n>=j; n--)
+								lights[n+1] = lights[n];
+							lights[j] = l;
+							break;
+		}	}	}	}	}
+
+		// Enable the apropriate lights
+		for (int i=0; i<number; i++)
+			glDisable(GL_LIGHT0+i);
+		for (int i=0; i<number; i++)
+		{	if (lights[i] !is null)
+				lights[i].apply(i);
+			else	// Make lights array just as long as it needs to be and no more.
+			{	lights.length = i;
+				break;
+		}	}
+	}
+
+	/*
+	 * Set whether this node is inside the current camera's view frustum.
+	 * This function is used internally by the engine and doesn't normally need to be called manually. */
+	void setOnscreen(bool onscreen)
+	{	this.onscreen = onscreen;
+	}
+
 }

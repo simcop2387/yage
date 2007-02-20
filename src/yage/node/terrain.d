@@ -17,7 +17,7 @@ import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
 import yage.resource.image;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.node;
 import yage.core.all;
 import yage.system.constant;
@@ -32,8 +32,8 @@ import yage.system.log;
  * --------------------------------
  * TerrainNode a = new TerrainNode(scene);  // Child of scene
  * a.setScale(1000, 100, 1000);             // Make it a decent size
- * a.setMaterial("landscape.xml");
- * a.setHeightMap("heightmap.png");
+ * a.setMaterial("terrain/dirt.xml");
+ * a.setHeightMap("terrain/islands-height.png");
  * --------------------------------
  */
 class TerrainNode : Node
@@ -48,6 +48,20 @@ class TerrainNode : Node
 		model = new Model();
 		model.addMesh(new Mesh());
 		setVisible(true);
+	}
+
+
+	/**
+	 * Construct this TerrainNode as a copy of another TerrainNode and recursively copy all children.
+	 * Params:
+	 * parent = This TerrainNode will be a child of parent.
+	 * original = This TerrainNode will be an exact copy of original.*/
+	this (BaseNode parent, TerrainNode original)
+	{	super(parent, original);
+
+		model = new Model(original.model);
+		radius = original.radius;
+		width = original.width;
 	}
 
 	/// Get the model generated from setHeightMap().
@@ -87,8 +101,8 @@ class TerrainNode : Node
 			for (int x=0; x<w; x++) // through columns
 			{
 				// Vertices and tex coords
-				vertices[z*w+x].set(cast(float)x/w-.5, (grayscale[z*w+x])[0]/256.0-.5, cast(float)z/h-.5);
-				texcoords[z*w+x].set(cast(float)x/w*repeat, cast(float)z/h*repeat);
+				vertices[z*w+x].set(cast(float)x/(w-1)-.5, (grayscale[z*w+x])[0]/256.0-.5, cast(float)z/(h-1)-.5);
+				texcoords[z*w+x].set(cast(float)x/(w-1)*repeat, cast(float)z/(h-1)*repeat);
 
 				// Triangles
 				if (x+1<w && z+1<h)
@@ -108,7 +122,7 @@ class TerrainNode : Node
 	}
 
 	/// ditto
-	void setHeightMap(char[] image_file, float repeat=1)
+	void setHeightMap(char[] image_file, float repeat=1.0)
 	{	setHeightMap(new Image(image_file), repeat);
 	}
 
@@ -125,25 +139,25 @@ class TerrainNode : Node
 	{	setMaterial(Resource.material(material_file));
 	}
 
-	/// Overridden to cache the radius if changed by the scale.
+
+	// Overridden to cache the radius if changed by the scale.
 	void setScale(float x, float y, float z)
 	{	super.setScale(x, y, z);
 		if (width != 0) // if heightmap loaded
 			radius = model.getDimensions().scale(scale).length();
 	}
 
-	/// ditto
+	// ditto
 	void setScale(Vec3f scale)
 	{	setScale(scale.x, scale.y, scale.z);
 	}
 
-	/// ditto
+	// ditto
 	void setScale(float scale)
 	{	setScale(scale, scale, scale);
 	}
 
-
-	/**
+	/*
 	 * Recalculate the terrain's normals and culling sphere radius.*/
 	protected void regenerate()
 	{

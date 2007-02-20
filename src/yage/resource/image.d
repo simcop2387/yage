@@ -61,8 +61,8 @@ class Image
 
 	/**
 	 * Get the format of the image.
-	 * See Also:
-	 * The IMAGE_FORMAT constants in system.constant. */
+	 * See_Also:
+	 * The IMAGE_FORMAT_* constants in system.constant. */
 	int getFormat()
 	{	return format;
 	}
@@ -105,7 +105,7 @@ class Image
 	/**
 	 * Resize the image via glu.
 	 * Bugs:
-	 * This function often fails if new_width is not a multiple of 4. */
+	 * This function often produces weird results if new_width is not a multiple of 4. */
 	void resize(int new_width, int new_height)
 	{
 		// Return if nothing to do
@@ -177,6 +177,31 @@ class Image
 
 		}
 		this.format = format;
+	}
+
+	/**
+	 * Return a new image that is a sub-image of this image.
+	 * The four parameters should be in pixels.
+	 * The sub-image will start with the pixels including top and left
+	 * and stop just before pixels specified by bottom and right. */
+	Image subImage(int top, int left, int bottom, int right)
+	in	// check dimensions
+	{	assert(top<bottom && left<right);
+		assert(0<=top && 0<= left);
+		assert(right <= width && bottom<=height);
+	}body
+	{	int res_width = right-left;
+		int res_height= bottom-top;
+		ubyte[] res_data = new ubyte[res_width*res_height*format];
+		Image result = new Image(res_data, res_width, res_height, format);
+
+		for (int y=top; y<bottom; y++)
+			for (int x=left; x<right; x++)
+			{	int src 	= (y*width+x)*format;
+				int dest	= ((y-top)*res_width+(x-left))*format;
+				res_data[dest..dest+format] = data[src..src+format];
+			}
+		return result;
 	}
 
 	/**

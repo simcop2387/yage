@@ -107,6 +107,17 @@ struct Horde(T)
 		return result;
 	}
 
+	// Allow Horde to be used in foreach
+	int opApplyReverse(int delegate(inout T) dg)
+	{   int result = 0;
+		for (int i = count-1; i >=0; i--)
+		{	result = dg(elements[i]);
+			if (result)
+			break;
+		}
+		return result;
+	}
+
 	/// Cast the Horde as an array of type T.
 //	T[] opCast()
 //	{	return elements[0..count];

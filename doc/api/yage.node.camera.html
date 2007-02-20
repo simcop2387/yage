@@ -159,6 +159,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">getFrameCount</span>
+<script type="text/javascript">explorer.outline.addDecl('getFrameCount');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the number of frames this camera has rendered.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Plane [] 
 <span class="currsymbol">getFrustum</span>
 <script type="text/javascript">explorer.outline.addDecl('getFrustum');</script>
@@ -206,7 +219,35 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get the number of Nodes onscreen and rendered in the last call to toTexture().
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">getPolyCount</span>
+<script type="text/javascript">explorer.outline.addDecl('getPolyCount');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the number of polygons rendered in the last call to ToTexture().
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">getVertexCount</span>
+<script type="text/javascript">explorer.outline.addDecl('getVertexCount');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the number of vertices rendered in the last call to ToTexture().
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -326,28 +367,8 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Give the new position and velocity of the camera to OpenAL
-<br><br>
-Should setTransformDirty() be overridden instead?
-<br><br>
-
- TODO--Allow only one camera to play sound.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected void 
-<span class="currsymbol">addNodesToRender</span>
-<script type="text/javascript">explorer.outline.addDecl('addNodesToRender');</script>
-(Scene <span class="funcparam">node</span>);
-<br>protected void 
-<span class="currsymbol">addNodesToRender</span>
-<script type="text/javascript">explorer.outline.addDecl('addNodesToRender');</script>
-(Node <span class="funcparam">node</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Add the <span class="funcparam">node</span> and all child Nodes to the framebuffer, if onscreen.
+ Should setTransformDirty() be overridden instead?
+ TODO--Allow only one camera to play sound. 
 <br><br>
 
 </dd>
@@ -370,7 +391,7 @@ Should setTransformDirty() be overridden instead?
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:10 2007
+		on Tue Feb 20 00:11:25 2007
 
 	</div>
 	
@@ -393,9 +414,9 @@ Should setTransformDirty() be overridden instead?
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -407,7 +428,7 @@ Should setTransformDirty() be overridden instead?
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -470,8 +491,6 @@ Should setTransformDirty() be overridden instead?
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

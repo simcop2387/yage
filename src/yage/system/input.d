@@ -9,6 +9,7 @@ module yage.system.input;
 public import derelict.sdl.sdl;
 
 import std.stdio;
+import yage.core.vector;
 import yage.system.device;
 
 
@@ -48,10 +49,9 @@ class Input
 	{
 		//SDL_EnableKeyRepeat(100, 100);	// why doesn't this work? Need to try again since I have the latest version of SDL
 
-		mousedx = mousedy = 0;
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
-		{	//writefln("polling");
+		{
 			switch(event.type)
 			{
 				// Standard keyboard
@@ -67,7 +67,6 @@ class Input
 				case SDL_KEYUP:
     				keyup[event.key.keysym.sym] = true;
     				keydown[event.key.keysym.sym] = false;
-					//printf("key '%s' up\n", SDL_GetKeyName(event.key.keysym.sym));
 					break;
 
 				// Mouse
@@ -76,25 +75,22 @@ class Input
 					button[event.button.button].up = false;
 					button[event.button.button].xdown = mousex;
 					button[event.button.button].ydown = mousey;
-					//printf("mouse button '%d' down\n", event.button.button);
 					break;
 				case SDL_MOUSEBUTTONUP:
 					button[event.button.button].down = false;
 					button[event.button.button].up = true;
 					button[event.button.button].xup = mousex;
 					button[event.button.button].yup = mousey;
-					//printf("mouse button '%d' up\n", event.button.button);
 					break;
 				case SDL_MOUSEMOTION:
 					if (resetmouse)
 					{	resetmouse = false;
 						event.motion.xrel = event.motion.yrel = 0;
 					}
-					mousedx = event.motion.xrel;	// these seem to behave differently on linux
-					mousedy = event.motion.yrel;	// than on win32.  Testing should be done.
+					mousedx += event.motion.xrel;	// these seem to behave differently on linux
+					mousedy += event.motion.yrel;	// than on win32.  Testing should be done.
 					mousex = event.motion.x;
 					mousey = event.motion.y;
-					//printf("mouse location (%d, %d), a change of (%d, %d)\n", mousex, mousey, mousedx, mousedy);
 					break;
 
 				// System
@@ -111,14 +107,14 @@ class Input
 			}
 		}
 	}
-/*
-	/// Return the current text stream and then clear that stream.
-	static wchar[] getStream()
-	{	wchar[] result = stream;
-		stream = null;
+
+	/// Get the number of pixels the mouse has moved since the last time this function was called.
+	static Vec2f getMouseDelta()
+	{	Vec2f result = Vec2f(mousedx, mousedy);
+		mousedx = mousedy = 0;
 		return result;
 	}
-*/
+
 	/** If enabled, the mousecursor will be hidden and grabbed by the application.
 	 *  This also allows for mouse position changes to be registered in a relative fashion,
 	 *  i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching

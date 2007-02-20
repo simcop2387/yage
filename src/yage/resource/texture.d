@@ -86,7 +86,7 @@ class Texture
 
 	/**
 	 * Get the format of the Texture.
-	 * See: yage.system.constant */
+	 * See_Also: yage.system.constant */
 	uint getFormat() { return format; }
 
 	/// What is the OpenGL index of this texture?

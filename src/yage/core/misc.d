@@ -166,6 +166,14 @@ char[] formatString(...)
     return res;
 }
 
+/**
+ * Convert an array of float color values (0-1) to hexadecimal. */
+char[] floatToHex(float[] vec)
+{	char[] result;
+	foreach (float v; vec)
+		result ~= formatString("%.2X", cast(ubyte)(v*255));
+	return result;
+}
 
 /**
  * Convert a hexadecimal string to an unsigned int.
@@ -188,14 +196,6 @@ uint hexToUint(char[] hex)
 	return result;
 }
 
-/**
- * Convert an array of float color values (0-1) to hexadecimal. */
-char[] floatToHex(float[] vec)
-{	char[] result;
-	foreach (float v; vec)
-		result ~= formatString("%.2X", cast(ubyte)(v*255));
-	return result;
-}
 /**
  * Returns the first integer n such that 2^n >= abs(x).
  * input of 9 returns 16 */

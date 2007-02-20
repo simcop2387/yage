@@ -13,7 +13,7 @@ import yage.resource.resource;
 import yage.resource.model;
 import yage.resource.material;
 import yage.node.node;
-import yage.node.basenode;
+import yage.node.base;
 
 
 /// A node used for rendering a 3D model.

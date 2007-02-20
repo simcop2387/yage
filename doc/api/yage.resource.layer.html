@@ -124,10 +124,10 @@ When an xml Material file is loaded, this class is used to represent each
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>RGBA 
+<dd>Property for the RGBA 
 <span class="currsymbol">ambient</span>
 <script type="text/javascript">explorer.outline.addDecl('ambient');</script>
- color values, default is black.
+ layer color, default is Vec4f(0).
 <br><br>
 
 </dd>
@@ -140,10 +140,10 @@ When an xml Material file is loaded, this class is used to represent each
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>RGBA 
+<dd>Property for the RGBA 
 <span class="currsymbol">diffuse</span>
 <script type="text/javascript">explorer.outline.addDecl('diffuse');</script>
- color values, default is white.
+ layer color, default is Vec4f(1).
 <br><br>
 
 </dd>
@@ -156,10 +156,10 @@ When an xml Material file is loaded, this class is used to represent each
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>RGBA 
+<dd>Property for the RGBA 
 <span class="currsymbol">specular</span>
 <script type="text/javascript">explorer.outline.addDecl('specular');</script>
- color values, default is black (none).
+ layer color, default is Vec4f(0).
 <br><br>
 
 </dd>
@@ -172,10 +172,10 @@ When an xml Material file is loaded, this class is used to represent each
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>RGBA 
+<dd>Property for the RGBA 
 <span class="currsymbol">emissive</span>
 <script type="text/javascript">explorer.outline.addDecl('emissive');</script>
- color values, default is black.
+ layer color, default is Vec4f(0).
 <br><br>
 
 </dd>
@@ -188,7 +188,7 @@ When an xml Material file is loaded, this class is used to represent each
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Shininess exponential value, default is zero.
+<dd>Shininess exponential value, default is zero (no shininess).
 <br><br>
 
 </dd>
@@ -201,7 +201,90 @@ When an xml Material file is loaded, this class is used to represent each
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Type of blending for this Layer
+<dd>Property to set the blending for this Layer.
+<br><br>
+<b>See Also:</b><br>
+the LAYER_BLEND_* constants in yage.system.constant;
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">cull</span>
+<script type="text/javascript">explorer.outline.addDecl('cull');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Property to set whether the front or back faces of polygons are culled (invisible).
+<br><br>
+<b>See Also:</b><br>
+the LAYER_CULL_* constants in yage.system.constant
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">draw</span>
+<script type="text/javascript">explorer.outline.addDecl('draw');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Property to set whether the layer is drawn as polygons, lines or points.
+<br><br>
+<b>See Also:</b><br>
+the LAYER_DRAW_* constants in yage.system.constant
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">width</span>
+<script type="text/javascript">explorer.outline.addDecl('width');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Property to set the 
+<span class="currsymbol">width</span>
+<script type="text/javascript">explorer.outline.addDecl('width');</script>
+ of lines and points when the layer is rendered as such.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">clamp</span>
+<script type="text/javascript">explorer.outline.addDecl('clamp');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Property enable or disable clamping of the textures of this layer.
+<br><br>
+<b>See Also:</b><br>
+<a href="http://en.wikipedia.org/wiki/Texel_%28graphics%29">The Wikipedia entry for texel</a>
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">filter</span>
+<script type="text/javascript">explorer.outline.addDecl('filter');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Property to set the type of filtering used for the textures of this layer.
+<br><br>
+<b>See Also:</b><br>
+the TEXTURE_FILTER_* constants in yage.system.constant
 <br><br>
 
 </dd>
@@ -217,27 +300,17 @@ When an xml Material file is loaded, this class is used to represent each
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Texture 
-<span class="currsymbol">getTexture</span>
-<script type="text/javascript">explorer.outline.addDecl('getTexture');</script>
-(uint <span class="funcparam">index</span>);
+<dt><span class="decl">int 
+<span class="currsymbol">addShader</span>
+<script type="text/javascript">explorer.outline.addDecl('addShader');</script>
+(Shader <span class="funcparam">shader</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the texture with the given <span class="funcparam">index</span> from this layer.
+<dd>Add a Shader to this Layer.  Call linkShaders() to recompile the program.
 <br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Texture[] 
-<span class="currsymbol">getTextures</span>
-<script type="text/javascript">explorer.outline.addDecl('getTextures');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get an array of all the textures of this layer.
+<b>Returns:</b><br>
+the index of the new Shader in the Shader array. 
 <br><br>
 
 </dd>
@@ -271,22 +344,6 @@ When an xml Material file is loaded, this class is used to represent each
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">addShader</span>
-<script type="text/javascript">explorer.outline.addDecl('addShader');</script>
-(Shader <span class="funcparam">shader</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Add a Shader to this Layer.  Call linkShaders() to recompile the program.
-<br><br>
-<b>Returns:</b><br>
-the index of the new Shader in the Shader array. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Shader[] 
 <span class="currsymbol">getShaders</span>
 <script type="text/javascript">explorer.outline.addDecl('getShaders');</script>
@@ -300,14 +357,14 @@ the index of the new Shader in the Shader array.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">linkShaders</span>
-<script type="text/javascript">explorer.outline.addDecl('linkShaders');</script>
+<dt><span class="decl">Texture[] 
+<span class="currsymbol">getTextures</span>
+<script type="text/javascript">explorer.outline.addDecl('getTextures');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Link vertex and fragment shaders together into a vertex program.
+<dd>Get an array of all the textures of this layer.
 <br><br>
 
 </dd>
@@ -321,6 +378,19 @@ the index of the new Shader in the Shader array.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get messages from the shader program.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">linkShaders</span>
+<script type="text/javascript">explorer.outline.addDecl('linkShaders');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Link vertex and fragment shaders together into a vertex program.
 <br><br>
 
 </dd>
@@ -350,43 +420,6 @@ the index of the new Shader in the Shader array.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Set a the value of a uniform variable (or array of uniform variables) in this Layer's Shader program.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">apply</span>
-<script type="text/javascript">explorer.outline.addDecl('apply');</script>
-(LightNode[] <span class="funcparam">lights</span> = null, Vec!(float,4) <span class="funcparam">color</span> = (opCall)(1F));
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set all of the OpenGL states to the values of this material layer.
- This essentially applies the material.  Call unApply() to reset
- the OpenGL states back to the engine defaults in preparation for
- whatever will be rendered next.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">LightNode[] <span class="funcparam">lights</span></td>
-
-               
-<td>An array containing the LightNodes that affect this material,
- passed to the shader through uniform variables (unfinished).</td></tr>
-</table><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">unApply</span>
-<script type="text/javascript">explorer.outline.addDecl('unApply');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Reset the OpenGL state to the defaults.
 <br><br>
 
 </dd>
@@ -422,7 +455,7 @@ the index of the new Shader in the Shader array.
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon Feb 12 19:47:10 2007
+		on Tue Feb 20 00:11:25 2007
 
 	</div>
 	
@@ -445,9 +478,9 @@ the index of the new Shader in the Shader array.
 
 	explorer.packageExplorer.addModule("yage.core.quatrn");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
 
@@ -459,7 +492,7 @@ the index of the new Shader in the Shader array.
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.basenode");
+	explorer.packageExplorer.addModule("yage.node.base");
 
 	explorer.packageExplorer.addModule("yage.node.camera");
 
@@ -522,8 +555,6 @@ the index of the new Shader in the Shader array.
 	explorer.packageExplorer.addModule("yage.util.flyer");
 
 	explorer.packageExplorer.addModule("yage.util.misc");
-
-	explorer.packageExplorer.addModule("yage.util.repeater");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 

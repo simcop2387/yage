@@ -14,7 +14,7 @@ import std.stdio;
 import yage.core.horde;
 import yage.core.misc;
 import yage.core.vector;
-import yage.node.basenode;
+import yage.node.base;
 import yage.node.node;
 import yage.resource.resource;
 import yage.resource.model;

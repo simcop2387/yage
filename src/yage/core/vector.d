@@ -418,7 +418,7 @@ struct Vec3f
 	static Vec3f random(float r = 1)
 	{	float a = .random(0, 6.283185307);
 		float b = .random(0, 6.283185307);
-		return Vec3f(sin(a)*cos(b)*r, sin(a)*sin(b)*r, cos(b)*r);
+		return Vec3f(sin(a)*cos(b)*r, sin(a)*sin(b)*r, cos(a)*r);
 	}
 
 	/**

@@ -31,10 +31,8 @@ extern (C) void *memcpy(void *, void *, uint);
  *  and an array of triangle indices that correspond to vertices in the Model's
  *  vertex array.  ModelNodes can be used to create 3D models in a scene.*/
 class Model
-{	protected:
-	char[]	source;
-	bool	cached = false;
-	deprecated float	radius=0;			// the distance of the furthest vertex from the origin.
+{	protected char[]	source;
+	protected bool	cached = false;
 
 	public: // for now
 	Mesh[]	meshes;
@@ -45,7 +43,6 @@ class Model
 	protected uint vbo_vertices;	// OpenGL index of hardware vertex array
 	protected uint vbo_texcoords;	// OpenGL index of hardware texture coordinate array
 	protected uint vbo_normals;		// OpenGL index of hardware normal array
-
 
 	/// Generate buffers in video memory for the vertex data.
 	this()
@@ -63,6 +60,18 @@ class Model
 		upload();
 	}
 
+	/// Create as an exact duplicate of another Model.
+	this (Model model)
+	{	this();
+		vertices = model.vertices.dup;
+		normals = model.normals.dup;
+		texcoords = model.texcoords.dup;
+		source = model.source.dup;
+		foreach (Mesh m; model.getMeshes)
+			addMesh(new Mesh(m));
+		upload();
+	}
+
 	/// Remove the model's vertex data from video memory.
 	~this()
 	{	if (source.length)
@@ -72,22 +81,6 @@ class Model
 			glDeleteBuffersARB(1, &vbo_normals);
 			glDeleteBuffersARB(1, &vbo_texcoords);
 		}
-	}
-
-	/// Calculate the radius of the model, which is the distance of the furthest vertex from the origin.
-	deprecated void calcRadius()
-	{	for (int v=0; v<vertices.length; v++)
-		{	float max = vertices[v].length();
-			if (max > radius)
-				radius = max;
-		}
-	}
-
-	/** Get the radius of this model in world units.
-	 *  This is the distance from the center of the model to the most distant Vertex,
-	 *  before any scaling is performed. */
-	deprecated float getRadius()
-	{	return radius;
 	}
 
 	///
@@ -244,9 +237,12 @@ class Model
 		return result;
 	}
 
-	/** Upload the triangle and vertex data of this model to video memory.
-	 *  Vertex buffer objects are used.  I still need to figure out the best
-	 *  method to handle bone data */
+
+
+	/*
+	 * Upload the triangle and vertex data of this model to video memory.
+	 * Vertex buffer objects are used.  I still need to figure out the best
+	 * method to handle bone data */
 	void upload()
 	{
 		if (Device.getSupport(DEVICE_VBO))
@@ -277,12 +273,12 @@ class Model
 		}
 	}
 
-
-	/** Load a model from a Milkshape3D model file.
-	 *  All materials, etc. referenced by this model are loaded through the Resource
-	 *  manager to avoid duplicates.  Meshes without a material are assigned a default material.
-	 *  Uploading vertex data to video memory must be done manually by calling Upload().
-	 *  This function needs to be tested on big-endian systems. */
+	/*
+	 * Load a model from a Milkshape3D model file.
+	 * All materials, etc. referenced by this model are loaded through the Resource
+	 * manager to avoid duplicates.  Meshes without a material are assigned a default material.
+	 * Uploading vertex data to video memory must be done manually by calling Upload().
+	 * This function needs to be tested on big-endian systems. */
 	private void loadMs3d(char[] filename)
 	{	source = Resource.resolvePath(filename);
 		Log.write("Loading Milkshape 3D model '" ~ source ~ "'.");
@@ -418,11 +414,11 @@ class Model
 
 					mMaterial *cur_material = &mmaterials[mgroups[m].materialIndex];
 
-					memcpy(&matl.getLayer(0).ambient, cur_material.ambient.ptr, 16);
-					memcpy(&matl.getLayer(0).diffuse, cur_material.diffuse.ptr, 16);
-					memcpy(&matl.getLayer(0).specular, cur_material.specular.ptr, 16);
-					memcpy(&matl.getLayer(0).emissive, cur_material.emissive.ptr, 16);
-					matl.getLayer(0).specularity = cur_material.shininess;
+					memcpy(&matl.getLayers()[0].ambient, cur_material.ambient.ptr, 16);
+					memcpy(&matl.getLayers()[0].diffuse, cur_material.diffuse.ptr, 16);
+					memcpy(&matl.getLayers()[0].specular, cur_material.specular.ptr, 16);
+					memcpy(&matl.getLayers()[0].emissive, cur_material.emissive.ptr, 16);
+					matl.getLayers()[0].specularity = cur_material.shininess;
 					meshes[m].setMaterial(matl);
 
 					// Load textures
@@ -431,10 +427,10 @@ class Model
 					if (texfile.length)
 					{	if (icmp(texfile[0..2], ".\\")==0) // linux fails with .\ in a path.
 							texfile = texfile[2..length];
-						meshes[m].getMaterial().getLayer(0).addTexture(Resource.texture(path ~ texfile));
+						meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ texfile));
 					}
 					if (cur_material.alphamap[0])
-						meshes[m].getMaterial().getLayer(0).addTexture(Resource.texture(path ~ cur_material.alphamap));
+						meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ cur_material.alphamap));
 				}
 			}
 
