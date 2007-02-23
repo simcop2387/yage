@@ -118,11 +118,6 @@ struct Horde(T)
 		return result;
 	}
 
-	/// Cast the Horde as an array of type T.
-//	T[] opCast()
-//	{	return elements[0..count];
-//	}
-
 	/// Create a new Horde by concatenating other elements.
 	Horde!(T) opCat(T elem)
 	{	return Horde!(T)(this.elements[0..count]~elem);

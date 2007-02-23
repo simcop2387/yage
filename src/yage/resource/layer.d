@@ -19,6 +19,7 @@ import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
 import yage.system.render;
+import yage.resource.model;
 import yage.resource.texture;
 import yage.resource.resource;
 import yage.resource.shader;
@@ -67,10 +68,11 @@ class Layer
 	/// See_Also: the TEXTURE_FILTER_* constants in yage.system.constant
 	int 	filter	=	TEXTURE_FILTER_DEFAULT;
 
+	// private
 	protected Horde!(Texture) textures;
 	protected Horde!(Shader) shaders;
 	protected int program=0;
-	static int current_program=0;
+	protected static int current_program=0;
 
 
 	/// Set material properties to default values.
@@ -203,8 +205,10 @@ class Layer
 	 * Params:
 	 * lights = An array containing the LightNodes that affect this material,
 	 * passed to the shader through uniform variables (unfinished).
-	 * This function is used internally by the engine and doesn't normally need to be called. */
-	void apply(LightNode[] lights = null, Vec4f color = Vec4f(1))
+	 * This function is used internally by the engine and doesn't normally need to be called.
+	 * color = Used to set color on a per-instance basis, combined with existing material colors.
+	 * Model = Used to retrieve texture coordinates for multitexturing. */
+	void apply(LightNode[] lights = null, Vec4f color = Vec4f(1), Model model=null)
 	{
 
 		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.scale(color).v.ptr);
@@ -248,9 +252,42 @@ class Layer
 		}
 
 		// Enable the first texture if it exists
-		if (textures.length && textures[0])
+		if (textures.length==1)
 		{	glEnable(GL_TEXTURE_2D);
 			textures[0].bind(clamp, filter);
+		}
+		if (textures.length==2)
+		{
+			//FIRST TEX
+			glActiveTextureARB(GL_TEXTURE0_ARB);
+			glEnable(GL_TEXTURE_2D);
+
+			glClientActiveTextureARB(GL_TEXTURE0_ARB);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glBindBufferARB(GL_ARRAY_BUFFER, model.getTexCoordsVBO());
+			glTexCoordPointer(2, GL_FLOAT, 0, null);
+
+			textures[0].bind(clamp, filter);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+			//SECOND TEX
+			glActiveTextureARB(GL_TEXTURE1_ARB);
+			glEnable(GL_TEXTURE_2D);
+
+			// Scale
+			glMatrixMode(GL_TEXTURE);
+			glPushMatrix();
+			glScalef(20, 20, 1);
+			glMatrixMode(GL_MODELVIEW);
+
+			glClientActiveTextureARB(GL_TEXTURE1_ARB);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glBindBufferARB(GL_ARRAY_BUFFER, model.getTexCoordsVBO());
+			glTexCoordPointer(2, GL_FLOAT, 0, null);
+
+			textures[1].bind(clamp, filter);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
 		}
 
 		// Shader
@@ -278,8 +315,26 @@ class Layer
 		glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
 		glMaterialfv(GL_FRONT, GL_SHININESS, &s);
 
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+
+		// Disable texture 1
+		glActiveTextureARB(GL_TEXTURE1_ARB);
+		glDisable(GL_TEXTURE_2D);
+
+		// Disable clientside texture 1
+		glClientActiveTextureARB(GL_TEXTURE1_ARB);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+		// back to texture 0
+		glActiveTextureARB(GL_TEXTURE0_ARB);
+		glClientActiveTextureARB(GL_TEXTURE0_ARB);
+
+
+
+
 		glDisable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glCullFace(GL_BACK);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDisable(GL_TEXTURE_2D);

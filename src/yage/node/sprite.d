@@ -13,7 +13,6 @@ import yage.resource.model;
 import yage.node.base;
 import yage.node.node;
 import yage.core.all;
-import yage.system.device;
 import yage.system.render;
 
 /**

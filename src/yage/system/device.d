@@ -123,6 +123,14 @@ abstract class Device
 		// Perhaps only load 1.1 and only load what's needed manually?
 		GLVersion glv = DerelictGL.availableVersion();
 
+		// Attempt to load multitexturing
+		if (getSupport(DEVICE_MULTITEXTURE))
+		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
+				throw new Exception("GL_ARB_multitexture extension detected but it could not be loaded.");
+			Log.write("GL_ARB_multitexture support enabled.");
+		}else
+			Log.write("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
+
 		// Attempt to load vertex buffer object
 		if (getSupport(DEVICE_SHADER))
 		{	if (!ARBShaderObjects.load("GL_ARB_shader_objects"))
@@ -238,6 +246,11 @@ abstract class Device
 				static int s = -1;
 				if (s==-1)
 					s = checkExtension("GL_ARB_vertex_buffer_object");
+				return cast(bool)s;
+			case DEVICE_MULTITEXTURE:
+				static int s = -1;
+				if (s==-1)
+					s = checkExtension("GL_ARB_multitexture");
 				return cast(bool)s;
 			case DEVICE_NON_2_TEXTURE:
 				static int s = -1;

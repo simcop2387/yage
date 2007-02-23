@@ -1,2 +1,0 @@
-#linux
-bud -op yage/main.d dl.a

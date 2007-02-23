@@ -204,7 +204,7 @@ class Render
 
 					// If not translucent
 					if (!sort)
-					{	l.apply(node.getLights(), node.getColor());
+					{	l.apply(node.getLights(), node.getColor(), model);
 						draw();
 						l.unApply();
 

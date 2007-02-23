@@ -78,25 +78,6 @@ class Texture
 		catch {}
 	}
 
-	/// Is texture compression used in video memory?
-	bool getCompressed() { return compress; }
-
-	/// Are mipmaps used?
-	bool getMipmapped() { return mipmap; }
-
-	/**
-	 * Get the format of the Texture.
-	 * See_Also: yage.system.constant */
-	uint getFormat() { return format; }
-
-	/// What is the OpenGL index of this texture?
-	uint getIndex() { return gl_index; }
-
-	/// Return the width of the Texture in pixels.
-	uint getWidth() { return width; }
-
-	/// Return the height of the Texture in pixels.
-	uint getHeight() { return height; }
 
 	/// Bind this Texture as the current OpenGL texture
 	void bind(bool clamp=false, int filter=TEXTURE_FILTER_TRILINEAR)
@@ -135,6 +116,31 @@ class Texture
 		{	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
+	}
+
+	/// Is texture compression used in video memory?
+	bool getCompressed() { return compress; }
+
+	/// Are mipmaps used?
+	bool getMipmapped() { return mipmap; }
+
+	/**
+	 * Get the format of the Texture.
+	 * See_Also: yage.system.constant */
+	uint getFormat() { return format; }
+
+	/// What is the OpenGL index of this texture?
+	uint getIndex() { return gl_index; }
+
+	/// Return the height of the Texture in pixels.
+	uint getHeight() { return height; }
+
+	/// Return the width of the Texture in pixels.
+	uint getWidth() { return width; }
+
+	///
+	char[] getSource()
+	{	return source;
 	}
 
 	/**

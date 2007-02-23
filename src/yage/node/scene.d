@@ -8,7 +8,11 @@ module yage.node.scene;
 
 import derelict.opengl.gl;
 import derelict.openal.al;
-import yage.core.all;
+import yage.core.horde;
+import yage.core.misc;
+import yage.core.repeater;
+import yage.core.timer;
+import yage.core.vector;
 import yage.node.node;
 import yage.node.light;
 import yage.node.base;

@@ -204,7 +204,7 @@ class Image
 		return result;
 	}
 
-	/**
+	/*
 	 * Load an image from a file via SDL_Image. */
 	protected void load(char[] filename)
 	{

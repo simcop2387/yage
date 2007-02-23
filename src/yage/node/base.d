@@ -89,11 +89,12 @@ abstract class BaseNode
 	 * s.setMaterial("something.xml");
 	 *
 	 * // Gradually fade to transparent as lifetime decreases.
-	 * void recolor(BaseNode self)
-	 * {   (cast(SpriteNode)self).setColor(1, 1, 1, self.getLifetime()/5);
+	 * void fade(BaseNode self)
+	 * {   SpriteNode node = cast(SpriteNode)self;
+	 *     node.setColor(1, 1, 1, node.getLifetime()/5);
 	 * }
 	 * s.setLifetime(5);
-	 * s.onUpdate(&doSomething);
+	 * s.onUpdate(&fade);
 	 * --------------------------------*/
 	void onUpdate(void delegate(typeof(this) self) on_update)
 	{	this.on_update = on_update;

@@ -134,6 +134,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">bind</span>
+<script type="text/javascript">explorer.outline.addDecl('bind');</script>
+(bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 303);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Bind this Texture as the current OpenGL texture
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">bool 
 <span class="currsymbol">getCompressed</span>
 <script type="text/javascript">explorer.outline.addDecl('getCompressed');</script>
@@ -190,19 +203,6 @@ yage.system.constant
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">uint 
-<span class="currsymbol">getWidth</span>
-<script type="text/javascript">explorer.outline.addDecl('getWidth');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return the width of the Texture in pixels.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
 <span class="currsymbol">getHeight</span>
 <script type="text/javascript">explorer.outline.addDecl('getHeight');</script>
 ();
@@ -215,16 +215,27 @@ yage.system.constant
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">bind</span>
-<script type="text/javascript">explorer.outline.addDecl('bind');</script>
-(bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 303);
+<dt><span class="decl">uint 
+<span class="currsymbol">getWidth</span>
+<script type="text/javascript">explorer.outline.addDecl('getWidth');</script>
+();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Bind this Texture as the current OpenGL texture
+<dd>Return the width of the Texture in pixels.
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">getSource</span>
+<script type="text/javascript">explorer.outline.addDecl('getSource');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -328,7 +339,7 @@ yage.system.constant
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Tue Feb 20 00:11:26 2007
+		on Fri Feb 23 01:12:26 2007
 
 	</div>
 	

@@ -8,9 +8,10 @@
 
 module yage.system.constant;
 
-const int DEVICE_SHADER					= 100;	/// Hardware support for OpenGl Vertex and Fragment Shaders
-const int DEVICE_VBO					= 101;	/// Hardware support for caching vertex data in video memory (Vertex Buffer Object)
-const int DEVICE_NON_2_TEXTURE			= 102;	/// Hardware support for textures of arbitrary size.
+const int DEVICE_MULTITEXTURE			= 100;
+const int DEVICE_NON_2_TEXTURE			= 101;	/// Hardware support for textures of arbitrary size.
+const int DEVICE_SHADER					= 102;	/// Hardware support for OpenGl Vertex and Fragment Shaders
+const int DEVICE_VBO					= 103;	/// Hardware support for caching vertex data in video memory (Vertex Buffer Object)
 
 const int DEVICE_MAX_LIGHTS				= 200;	///
 const int DEVICE_MAX_TEXTURE_SIZE		= 201;	///

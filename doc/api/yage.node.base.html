@@ -225,11 +225,12 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
  s.setMaterial(<span style="color: purple">"something.xml"</span>);
 
  <font color=green>// Gradually fade to transparent as lifetime decreases.
-</font> <font color=blue>void</font> recolor(BaseNode self)
- {   (<font color=blue>cast</font>(SpriteNode)self).setColor(1, 1, 1, self.getLifetime()/5);
+</font> <font color=blue>void</font> fade(BaseNode self)
+ {   SpriteNode node = <font color=blue>cast</font>(SpriteNode)self;
+     node.setColor(1, 1, 1, node.getLifetime()/5);
  }
  s.setLifetime(5);
- s.<b>onUpdate</b>(&amp;doSomething);
+ s.<b>onUpdate</b>(&amp;fade);
 </pre>
 <br><br>
 
@@ -299,7 +300,7 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Tue Feb 20 00:11:25 2007
+		on Fri Feb 23 01:12:24 2007
 
 	</div>
 	

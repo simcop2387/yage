@@ -71,6 +71,16 @@ int main()
 	// Asteroids
 	asteroidBelt(700, 1800, scene);
 
+	/*
+	Image img = new Image("misc/heightmap.bmp");
+	img.resize(256, 256);
+	auto t = new TerrainNode(scene);
+	t.setHeightMap(img);
+	t.setPosition(0, -2000, 0);
+	t.setScale(10000, 2000, 10000);
+	t.setMaterial("misc/test.xml");
+	*/
+
 	// Add to the scene's update loop
 	Input.getMouseDelta();
 	void update(BaseNode self)
