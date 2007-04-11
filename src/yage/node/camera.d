@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -59,7 +59,6 @@ class CameraNode : Node
 	this(BaseNode _parent)
 	{	super(_parent);
 		capture = new CameraTexture();
-		capture.bind(true, TEXTURE_FILTER_BILINEAR);
 		setResolution(xres, yres);
 		setVisible(false);
 	}
@@ -206,6 +205,7 @@ class CameraNode : Node
 
 		// Resize viewport
 		Device.resizeViewport(xres, yres, near, far, fov, aspect);
+		glLoadIdentity();
 
 		// Rotate in reverse
 		Vec3f axis = xform.toAxis();
@@ -217,8 +217,8 @@ class CameraNode : Node
 
 			// Reset the position to the origin for skybox rendering.
 			// Need to reset coordinates of cached version instead of original.
-			//float[3] push = xform.v[12..15];
-			//transform_abs_cache[transform_read].v[12..15] = 0; // read buffer
+			float[3] push = xform.v[12..15];
+			cache[scene.transform_read].transform_abs.v[12..15] = 0; // read buffer
 
 			buildFrustum(); // temporary frustum exclusively for skybox rendering.
 			scene.getSkybox().apply();
@@ -226,7 +226,7 @@ class CameraNode : Node
 			Render.all(poly_count, vertex_count);
 			glClear(GL_DEPTH_BUFFER_BIT);
 
-			//transform_abs_cache[transform_read].v[12..15] = push[0..3]; // restore position
+			cache[scene.transform_read].transform_abs.v[12..15] = push[0..3]; // restore position
 		}
 		else
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

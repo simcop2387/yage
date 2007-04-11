@@ -63,11 +63,12 @@ void main()
 	//	applyLight(gl_LightSource[1]);
 	
 	// Accumulate brigthness
-	vec4 color = min, gl_FrontLightModelProduct.sceneColor + ambient*gl_FrontMaterial.ambient + diffuse*gl_FrontMaterial.diffuse, 1.0);
+	vec4 color = min(gl_FrontLightModelProduct.sceneColor + ambient*gl_FrontMaterial.ambient + diffuse*gl_FrontMaterial.diffuse, 1.0);
 	color = texture2D(tex, gl_TexCoord[0].st)*color + specular*gl_FrontMaterial.specular;
 	
 	// Fog
-	color = vec4(mix(vec3(gl_Fog.color), vec3(color), fog), color.a);
+	//color = vec4(mix(vec3(gl_Fog.color), vec3(color), fog), color.a);
+	color = vec4(mix(vec3(gl_Fog.color), vec3(color), fog), 1.0);
 	
 	gl_FragColor = color;
 }

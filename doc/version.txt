@@ -1,4 +1,6 @@
-A file to track Yage version changes											]
+A file to track older versions of Yage
+Newer versions are at 
+http://dsource.org/projects/yage/log/trunk?verbose=on
 
 [Yage 0.1.2]
 6-17-2006 11:22am

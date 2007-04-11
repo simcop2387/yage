@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -113,10 +113,12 @@ class Image
 			return;
 
 		// Translate format to glformat
-		int[int] translate;
-		translate[IMAGE_FORMAT_GRAYSCALE] = GL_LUMINANCE;
-		translate[IMAGE_FORMAT_RGB] = GL_RGB;
-		translate[IMAGE_FORMAT_RGBA] = GL_RGBA;
+		static int[int] translate;
+		if (!translate.length)
+		{	translate[IMAGE_FORMAT_GRAYSCALE] = GL_LUMINANCE;
+			translate[IMAGE_FORMAT_RGB] = GL_RGB;
+			translate[IMAGE_FORMAT_RGBA] = GL_RGBA;
+		}
 		int glformat = translate[format];
 
 		// Resize the image.

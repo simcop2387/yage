@@ -25,7 +25,7 @@
 		  <ul>
 			<li><a href="http://www.yage3d.net" title="Yage Home"><span>Home</span></a></li>
 			<li><a href="http://www.yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
-			<li><a href="http://dsource.org/forums/viewtopic.php?t=1818" title="Yage Forum"><span>Forum</span></a></li>
+			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
 			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
 		  </ul>
 		</div>
@@ -56,7 +56,7 @@
 				  <input type="hidden" name="oe" value="UTF-8">
 				  <input type="hidden" name="domains" value="www.yage3d.net">
 				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+				  <input type="text" name="q" value="" style="width: 8em;"><span>
 				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
 				</form>
 				<div style="width: 14em; height: 1px;"></div>
@@ -94,13 +94,39 @@ Eric Poggel
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">const int 
+<span class="currsymbol">DEVICE_FBO</span>
+<script type="text/javascript">explorer.outline.addDecl('DEVICE_FBO');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Hardware support for rendering directly to a texture (Frame Buffer Object)
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">const int 
+<span class="currsymbol">DEVICE_MULTITEXTURE</span>
+<script type="text/javascript">explorer.outline.addDecl('DEVICE_MULTITEXTURE');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Hardware support for using multiple textures in a single rendering pass
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">const int 
 <span class="currsymbol">DEVICE_NON_2_TEXTURE</span>
 <script type="text/javascript">explorer.outline.addDecl('DEVICE_NON_2_TEXTURE');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Hardware support for textures of arbitrary size.
+<dd>Hardware support for textures of arbitrary size
 <br><br>
 
 </dd>
@@ -113,7 +139,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Hardware support for OpenGl Vertex and Fragment Shaders
+<dd>Hardware support for openGl vertex and fragment shaders
 <br><br>
 
 </dd>
@@ -139,7 +165,9 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Maximum number of lights that can be used at one time
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -150,18 +178,22 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Maximum allowed size for a texture
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">const int 
-<span class="currsymbol">DEVICE_MAX_TEXTURE_UNITS</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_MAX_TEXTURE_UNITS');</script>
+<span class="currsymbol">DEVICE_MAX_TEXTURES</span>
+<script type="text/javascript">explorer.outline.addDecl('DEVICE_MAX_TEXTURES');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Maximum number of textures that can be used in multitexturing
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -172,7 +204,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A light that shines in one direction through the entire scene.
+<dd>A light that shines in one direction through the entire scene
 <br><br>
 
 </dd>
@@ -185,7 +217,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A light that shines outward in all directions.
+<dd>A light that shines outward in all directions
 <br><br>
 
 </dd>
@@ -198,7 +230,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A light that emits light outward from a point in a single direction.
+<dd>A light that emits light outward from a point in a single direction
 <br><br>
 
 </dd>
@@ -255,7 +287,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A grayscale image.
+<dd>A grayscale image
 <br><br>
 
 </dd>
@@ -268,7 +300,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>An image with red, green, and blue color channels.
+<dd>An image with red, green, and blue color channels
 <br><br>
 
 </dd>
@@ -281,59 +313,59 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>An image with Red, green, blue, and alpha color channels.
+<dd>An image with Red, green, blue, and alpha color channels
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">const int 
-<span class="currsymbol">LAYER_BLEND_NONE</span>
-<script type="text/javascript">explorer.outline.addDecl('LAYER_BLEND_NONE');</script>
+<span class="currsymbol">BLEND_NONE</span>
+<script type="text/javascript">explorer.outline.addDecl('BLEND_NONE');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Draw a layer as completely opaque
+<dd>Draw a layer or texture as completely opaque.
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">const int 
-<span class="currsymbol">LAYER_BLEND_ADD</span>
-<script type="text/javascript">explorer.outline.addDecl('LAYER_BLEND_ADD');</script>
+<span class="currsymbol">BLEND_ADD</span>
+<script type="text/javascript">explorer.outline.addDecl('BLEND_ADD');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Add the color values of a Layer to those behind it.
+<dd>Add the color values of a layer or texture to those behind it.
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">const int 
-<span class="currsymbol">LAYER_BLEND_AVERAGE</span>
-<script type="text/javascript">explorer.outline.addDecl('LAYER_BLEND_AVERAGE');</script>
+<span class="currsymbol">BLEND_AVERAGE</span>
+<script type="text/javascript">explorer.outline.addDecl('BLEND_AVERAGE');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Average the color values of a Layer with those behind it.
+<dd>Average the color values of a layer or texture with those behind it.
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">const int 
-<span class="currsymbol">LAYER_BLEND_MULTIPLY</span>
-<script type="text/javascript">explorer.outline.addDecl('LAYER_BLEND_MULTIPLY');</script>
+<span class="currsymbol">BLEND_MULTIPLY</span>
+<script type="text/javascript">explorer.outline.addDecl('BLEND_MULTIPLY');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Mutiply the color values of a Layer with those behind it.
+<dd>Mutiply the color values of a lyer or texture with those behind it.
 <br><br>
 
 </dd>
@@ -346,7 +378,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Cull the back faces of a Layer and render the front.
+<dd>Cull the back faces of a layer and render the front.
 <br><br>
 
 </dd>
@@ -359,7 +391,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Cull the front faces of a Layer and render the back.
+<dd>Cull the front faces of a layer and render the back.
 <br><br>
 
 </dd>
@@ -372,7 +404,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Draw a Layer as complete filled-in polygons.
+<dd>Draw a layer as complete filled-in polygons.
 <br><br>
 
 </dd>
@@ -385,7 +417,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Draw a Layer as Lines (a wireframe).
+<dd>Draw a layer as Lines (a wireframe).
 <br><br>
 
 </dd>
@@ -398,7 +430,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Draw a Layer as a series of points.
+<dd>Draw a layer as a series of points.
 <br><br>
 
 </dd>
@@ -413,10 +445,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb 23 01:12:26 2007
+		on Tue Apr 10 20:18:54 2007
 
 	</div>
 	
@@ -434,6 +466,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
 	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.plane");
 
@@ -518,8 +552,7 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
-
-<!-- This file is used to create html templates for the generation of documentation from code files --></script>
+</script>
   </body>
 </html>
 

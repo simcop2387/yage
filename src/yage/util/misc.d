@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -18,7 +18,7 @@ import yage.core.all;
 
 void createArray(Node instance, float spacing, float x, float y=1, float z=1)
 {
-	float[3] position = instance.getPosition().v;
+	Vec3f position = instance.getPosition();
 	for(int i=0; i<x; i++)
 		for(int j=0; j<y; j++)
 			for(int k=0; k<z; k++)
@@ -26,7 +26,7 @@ void createArray(Node instance, float spacing, float x, float y=1, float z=1)
 
 				if (instance.getType() == "SoundNode")
 					a = new SoundNode(instance.getParent(), cast(SoundNode)instance);
-				if (instance.getType() == "ModelNode")
+				if (instance.getType() == "yage.node.model.ModelNode")
 					a = new ModelNode(instance.getParent(), cast(ModelNode)instance);
 				if (instance.getType() == "LightNode")
 					a = new LightNode(instance.getParent(), cast(LightNode)instance);
@@ -55,6 +55,7 @@ void asteroidBelt(int number, float radius, BaseNode scene)
 		a.setModel(Resource.model("space/asteroid1.ms3d"));
 		a.setScale(value5*value5*value5*value5*value5*value5*value5*1.1 + .2);
 		a.rotate(Vec3f(value4*12, value2*12, value3*12));
+		a.setAngularVelocity(random(-.5, .5), random(-.5, .5), random(-.5, .5));
 	}
 }
 

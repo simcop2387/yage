@@ -25,7 +25,7 @@
 		  <ul>
 			<li><a href="http://www.yage3d.net" title="Yage Home"><span>Home</span></a></li>
 			<li><a href="http://www.yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
-			<li><a href="http://dsource.org/forums/viewtopic.php?t=1818" title="Yage Forum"><span>Forum</span></a></li>
+			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
 			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
 		  </ul>
 		</div>
@@ -56,7 +56,7 @@
 				  <input type="hidden" name="oe" value="UTF-8">
 				  <input type="hidden" name="domains" value="www.yage3d.net">
 				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+				  <input type="text" name="q" value="" style="width: 8em;"><span>
 				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
 				</form>
 				<div style="width: 14em; height: 1px;"></div>
@@ -181,6 +181,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Attribute [char[]] 
+<span class="currsymbol">getAttributes</span>
+<script type="text/javascript">explorer.outline.addDecl('getAttributes');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get an associative array of all attributes.  The index is the attribute name.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">bool 
 <span class="currsymbol">getCached</span>
 <script type="text/javascript">explorer.outline.addDecl('getCached');</script>
@@ -208,17 +221,6 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Mesh 
-<span class="currsymbol">getMesh</span>
-<script type="text/javascript">explorer.outline.addDecl('getMesh');</script>
-(int <span class="funcparam">index</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Mesh[] 
 <span class="currsymbol">getMeshes</span>
 <script type="text/javascript">explorer.outline.addDecl('getMeshes');</script>
@@ -227,19 +229,6 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the array of meshes that compose this model.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">getSource</span>
-<script type="text/javascript">explorer.outline.addDecl('getSource');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the path to the file where the model was loaded.
 <br><br>
 
 </dd>
@@ -264,6 +253,19 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the OpenGL Vertex Buffer Object index for the vertex normals.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">getSource</span>
+<script type="text/javascript">explorer.outline.addDecl('getSource');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the path to the file where the model was loaded.
 <br><br>
 
 </dd>
@@ -375,6 +377,50 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('setAttribute');</script>
+(char[] <span class="funcparam">name</span>, float[] <span class="funcparam">values</span>);
+<br>void 
+<span class="currsymbol">setAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('setAttribute');</script>
+(char[] <span class="funcparam">name</span>, Vec!(float,2) [] <span class="funcparam">values</span>);
+<br>void 
+<span class="currsymbol">setAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('setAttribute');</script>
+(char[] <span class="funcparam">name</span>, Vec3f [] <span class="funcparam">values</span>);
+<br>void 
+<span class="currsymbol">setAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('setAttribute');</script>
+(char[] <span class="funcparam">name</span>, Vec!(float,4) [] <span class="funcparam">values</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set a per-vertex attribute for this Model.
+ Attributes can be accessed by OpenGl vertex shaders.
+ If an attribute is defined for this model, and a mesh of this model has
+ a material with a shader that has an attribute variable of the same <span class="funcparam">name</span>,
+ the <span class="funcparam">values</span> of the attribute will be bound automaticallyat runtime and can
+ then be accessed by the shader.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">name</span></td>
+
+               
+<td>the <span class="funcparam">name</span> of the attribute, should be the same as the attribute
+ variable <span class="funcparam">name</span> in the vertex shader.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">float[] <span class="funcparam">values</span></td>
+
+               
+<td>an array of <span class="funcparam">values</span>; should be the same length as the number of
+ vertices for the model.</td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">char[] 
 <span class="currsymbol">toString</span>
 <script type="text/javascript">explorer.outline.addDecl('toString');</script>
@@ -383,6 +429,30 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Return a string representation of this Model and all of its data. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec!(float,4) [] 
+<span class="currsymbol">calcTangents</span>
+<script type="text/javascript">explorer.outline.addDecl('calcTangents');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">unsetAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('unsetAttribute');</script>
+(char[] <span class="funcparam">name</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Clear an attribute.
 <br><br>
 
 </dd>
@@ -402,10 +472,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb 23 01:12:26 2007
+		on Tue Apr 10 20:18:54 2007
 
 	</div>
 	
@@ -423,6 +493,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
 	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.plane");
 
@@ -507,8 +579,7 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
-
-<!-- This file is used to create html templates for the generation of documentation from code files --></script>
+</script>
   </body>
 </html>
 

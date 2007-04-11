@@ -25,7 +25,7 @@
 		  <ul>
 			<li><a href="http://www.yage3d.net" title="Yage Home"><span>Home</span></a></li>
 			<li><a href="http://www.yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
-			<li><a href="http://dsource.org/forums/viewtopic.php?t=1818" title="Yage Forum"><span>Forum</span></a></li>
+			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
 			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
 		  </ul>
 		</div>
@@ -56,7 +56,7 @@
 				  <input type="hidden" name="oe" value="UTF-8">
 				  <input type="hidden" name="domains" value="www.yage3d.net">
 				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+				  <input type="text" name="q" value="" style="width: 8em;"><span>
 				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
 				</form>
 				<div style="width: 14em; height: 1px;"></div>
@@ -187,7 +187,7 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Texture[char[]][][] 
+<dt><span class="decl">static GPUTexture[char[]][][] 
 <span class="currsymbol">getTextures</span>
 <script type="text/javascript">explorer.outline.addDecl('getTextures');</script>
 ();
@@ -264,8 +264,14 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
   If not, it will be loaded and uploaded to video memory.
   All associated Materials, Textures, and Shaders will be loaded into
   the resource pool as well.
-  \param <span class="funcparam">source</span> The 3D Model file that will be loaded. 
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">source</span></td>
+
+               
+<td>The 3D Model file that will be loaded. </td></tr>
+</table><br>
 
 </dd>
 
@@ -284,16 +290,22 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
  has already been loaded, the in-memory copy will be returned.
   If not, it will be loaded and stored in the resource pool.  This function
   is called automatically for each of a Model's Materials when loading a Model.
-  \param <span class="funcparam">source</span> The xml Material file that will be loaded. 
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">source</span></td>
+
+               
+<td>The xml Material file that will be loaded. </td></tr>
+</table><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Texture 
+<dt><span class="decl">static Texture  
 <span class="currsymbol">texture</span>
 <script type="text/javascript">explorer.outline.addDecl('texture');</script>
-(char[] <span class="funcparam">source</span>, bool <span class="funcparam">compress</span>, bool <span class="funcparam">mipmap</span>);
+(char[] <span class="funcparam">source</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -305,22 +317,14 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
   copy will be returned.  If not, it will be loaded, uploaded to video memory,
   and stored in the resource pool.  This function is called automatically
   for each of a material's textures when loading a material.
-  \param <span class="funcparam">source</span> The Texture image file that will be loaded. 
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">source</span></td>
 
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Texture 
-<span class="currsymbol">texture</span>
-<script type="text/javascript">explorer.outline.addDecl('texture');</script>
-(char[] <span class="funcparam">source</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Acquire a Texture with default settings
-  \param <span class="funcparam">source</span> The Texture image file that will be loaded. 
-<br><br>
+               
+<td>The Texture image file that will be loaded. </td></tr>
+</table><br>
 
 </dd>
 
@@ -336,14 +340,20 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
   If the Shader has already been loaded, the in-memory copy will be returned.
   If not, it will be loaded and stored in the resource pool.  This function
   is called automatically for each of a Material's Shaders when loading a Material.
-  \param <span class="funcparam">type</span> set to 0 for vertex 
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">type</span></td>
+
+               
+<td>set to 0 for vertex 
 <span class="currsymbol">shader</span>
 <script type="text/javascript">explorer.outline.addDecl('shader');</script>
  or 1 for fragment 
 <span class="currsymbol">shader</span>
 <script type="text/javascript">explorer.outline.addDecl('shader');</script>
-.
-<br><br>
+.</td></tr>
+</table><br>
 
 </dd>
 
@@ -358,11 +368,17 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 <dd>Acquire and return the given Sound.
   If the Sound has already been loaded, the in-memory copy will be returned.
   If not, it will be loaded and stored in the resource pool.
-  \param <span class="funcparam">source</span> The path to the 
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">source</span></td>
+
+               
+<td>The path to the 
 <span class="currsymbol">sound</span>
 <script type="text/javascript">explorer.outline.addDecl('sound');</script>
- file that will be loaded. 
-<br><br>
+ file that will be loaded. </td></tr>
+</table><br>
 
 </dd>
 
@@ -394,10 +410,10 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb 23 01:12:26 2007
+		on Tue Apr 10 20:18:54 2007
 
 	</div>
 	
@@ -415,6 +431,8 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
 	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.plane");
 
@@ -499,8 +517,7 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
-
-<!-- This file is used to create html templates for the generation of documentation from code files --></script>
+</script>
   </body>
 </html>
 

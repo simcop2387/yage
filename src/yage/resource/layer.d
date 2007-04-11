@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -12,8 +12,9 @@ import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.horde;
-import yage.core.misc;
+import yage.core.parse;
 import yage.core.matrix;
+import yage.core.misc;
 import yage.core.vector;
 import yage.system.constant;
 import yage.system.device;
@@ -24,6 +25,10 @@ import yage.resource.texture;
 import yage.resource.resource;
 import yage.resource.shader;
 import yage.node.light;
+
+// Used as default values for function params
+private const Vec2f one = {v:[1.0f, 1.0f]};
+private const Vec2f zero = {v:[0.0f, 0.0f]};
 
 /**
  * Each material is divided into one or more layers.
@@ -47,26 +52,18 @@ class Layer
 
 	/// Property to set the blending for this Layer.
 	/// See_Also: the LAYER_BLEND_* constants in yage.system.constant;
-	int		blend = LAYER_BLEND_NONE;
+	int	blend = BLEND_NONE;
 
 	/// Property to set whether the front or back faces of polygons are culled (invisible).
 	/// See_Also: the LAYER_CULL_* constants in yage.system.constant
-	int		cull = LAYER_CULL_BACK;
+	int	cull = LAYER_CULL_BACK;
 
 	/// Property to set whether the layer is drawn as polygons, lines or points.
 	/// See_Also: the LAYER_DRAW_* constants in yage.system.constant
-	int		draw = LAYER_DRAW_DEFAULT;
+	int	draw = LAYER_DRAW_DEFAULT;
 
 	/// Property to set the width of lines and points when the layer is rendered as such.
-	int		width = 1;
-
-	/// Property enable or disable clamping of the textures of this layer.
-	/// See_Also: <a href="http://en.wikipedia.org/wiki/Texel_%28graphics%29">The Wikipedia entry for texel</a>
-	bool 	clamp	=	false;
-
-	/// Property to set the type of filtering used for the textures of this layer.
-	/// See_Also: the TEXTURE_FILTER_* constants in yage.system.constant
-	int 	filter	=	TEXTURE_FILTER_DEFAULT;
+	int	width = 1;
 
 	// private
 	protected Horde!(Texture) textures;
@@ -75,7 +72,7 @@ class Layer
 	protected static int current_program=0;
 
 
-	/// Set material properties to default values.
+	/// Set layer properties to default values.
 	this()
 	{	diffuse.set(1);
 	}
@@ -93,6 +90,13 @@ class Layer
 	}
 
 	/// Add a new texture to this layer and return it.
+	int addTexture(GPUTexture texture, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT,
+				Vec2f position=zero, float rotation=0, Vec2f scale=one)
+	{
+		Texture a = Texture(texture, clamp, filter, position, rotation, scale);
+		return textures.add(a);
+	}
+	/// ditto
 	int addTexture(Texture texture)
 	{	return textures.add(texture);
 	}
@@ -115,6 +119,11 @@ class Layer
 	{	return textures.array();
 	}
 
+	///
+	int getProgram()
+	{	return program;
+	}
+
 	/**
 	 * Get messages from the shader program.*/
 	char[] getShaderProgramLog()
@@ -127,7 +136,7 @@ class Layer
 		return .toString(log);
 	}
 
-	/// Link vertex and fragment shaders together into a vertex program.
+	/// Link all vertex and fragment shaders together into a shader program.
 	void linkShaders()
 	{
 		if (program != 0)
@@ -141,7 +150,7 @@ class Layer
 		// Add shaders to the program
 		foreach (Shader shader; shaders.array())
 		{	glAttachObjectARB(program, shader.getShader());
-			Log.write("Linking shader " ~ shader.getSource());
+			Log.write("Linking shader ", shader.getSource());
 		}
 
 		// Link the program and check for errors
@@ -154,9 +163,9 @@ class Layer
 		{	Log.write(getShaderProgramLog());
 			throw new Exception("Could not link the shaders.");
 		}
-		glValidateProgram(program);
+		glValidateProgramARB(program);
 		Log.write(getShaderProgramLog());
-		Log.write("Finished link");
+		Log.write("Linking successful.");
 	}
 
 	/// Set a the value of a uniform variable (or array of uniform variables) in this Layer's Shader program.
@@ -190,9 +199,14 @@ class Layer
 			" emissive=\"" ~ floatToHex(emissive.v[0..3]) ~ "\"" ~
 			" specularity=\"" ~ .toString(specularity) ~ "\"" ~
 			" blend=\"" ~ .toString(blend) ~ "\"" ~
-			" clamp=\"" ~ .toString(clamp) ~ "\"" ~
-			" filter=\"" ~ .toString(filter) ~ "\"" ~
-			">";
+			" cull=\"" ~ .toString(cull) ~ "\"" ~
+			" draw=\"" ~ .toString(draw) ~ "\"" ~
+			" width=\"" ~ .toString(width) ~ "\"" ~
+			">\n";
+			foreach (Shader s; shaders)
+				result~= s.toString();
+			//foreach (TextureInstance t; textures)
+			//	result~= t.toString();
 		result~= "</layer>";
 		return result;
 	}
@@ -208,9 +222,9 @@ class Layer
 	 * This function is used internally by the engine and doesn't normally need to be called.
 	 * color = Used to set color on a per-instance basis, combined with existing material colors.
 	 * Model = Used to retrieve texture coordinates for multitexturing. */
-	void apply(LightNode[] lights = null, Vec4f color = Vec4f(1), Model model=null)
+	void bind(LightNode[] lights = null, Vec4f color = Vec4f(1), Model model=null)
 	{
-
+		// Material
 		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.scale(color).v.ptr);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse.scale(color).v.ptr);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, specular.v.ptr);
@@ -218,20 +232,23 @@ class Layer
 		glMaterialfv(GL_FRONT, GL_SHININESS, &specularity);
 
 		// Blend
-		if (blend != LAYER_BLEND_NONE)
+		if (blend != BLEND_NONE)
 		{	glEnable(GL_BLEND);
 			glDepthMask(false);
 			switch (blend)
-			{	case LAYER_BLEND_ADD:
+			{	case BLEND_ADD:
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 					break;
-				case LAYER_BLEND_AVERAGE:
+				case BLEND_AVERAGE:
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 					break;
-				case LAYER_BLEND_MULTIPLY:
+				case BLEND_MULTIPLY:
 					glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 					break;
 		}	}
+		else
+			glEnable(GL_ALPHA_TEST);
+
 
 		// Cull
 		if (cull == LAYER_CULL_FRONT)
@@ -240,7 +257,9 @@ class Layer
 		// Polygon
 		switch (draw)
 		{	default:
-			case LAYER_DRAW_FILL: 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); break;
+			case LAYER_DRAW_FILL:
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				break;
 			case LAYER_DRAW_LINES:
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				glLineWidth(width);
@@ -251,63 +270,116 @@ class Layer
 				break;
 		}
 
-		// Enable the first texture if it exists
-		if (textures.length==1)
+		// Textures
+		if (textures.length>1 && Device.getSupport(DEVICE_MULTITEXTURE))
+		{	int length = mini(textures.length, Device.getLimit(DEVICE_MAX_TEXTURES));
+
+			// Loop through all of Layer's textures up to the maximum allowed.
+			for (int i=0; i<length; i++)
+			{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
+
+				// Activate texture unit and enable texturing
+				glActiveTextureARB(GL_TEXTUREI_ARB);
+				glEnable(GL_TEXTURE_2D);
+				glClientActiveTextureARB(GL_TEXTUREI_ARB);
+
+				// Set texture coordinates
+				if (Device.getSupport(DEVICE_VBO))
+				{	glBindBufferARB(GL_ARRAY_BUFFER, model.getTexCoordsVBO());
+					glTexCoordPointer(2, GL_FLOAT, 0, null);
+				} else
+					glTexCoordPointer(2, GL_FLOAT, 0, model.getTexCoords().ptr);
+
+				// Bind and blend
+				textures[i].bind();
+			}
+		}else
 		{	glEnable(GL_TEXTURE_2D);
-			textures[0].bind(clamp, filter);
-		}
-		if (textures.length==2)
-		{
-			//FIRST TEX
-			glActiveTextureARB(GL_TEXTURE0_ARB);
-			glEnable(GL_TEXTURE_2D);
-
-			glClientActiveTextureARB(GL_TEXTURE0_ARB);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glBindBufferARB(GL_ARRAY_BUFFER, model.getTexCoordsVBO());
-			glTexCoordPointer(2, GL_FLOAT, 0, null);
-
-			textures[0].bind(clamp, filter);
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-			//SECOND TEX
-			glActiveTextureARB(GL_TEXTURE1_ARB);
-			glEnable(GL_TEXTURE_2D);
-
-			// Scale
-			glMatrixMode(GL_TEXTURE);
-			glPushMatrix();
-			glScalef(20, 20, 1);
-			glMatrixMode(GL_MODELVIEW);
-
-			glClientActiveTextureARB(GL_TEXTURE1_ARB);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glBindBufferARB(GL_ARRAY_BUFFER, model.getTexCoordsVBO());
-			glTexCoordPointer(2, GL_FLOAT, 0, null);
-
-			textures[1].bind(clamp, filter);
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
+			textures[0].bind();
 		}
 
 		// Shader
 		if (program != 0)
 		{	glUseProgramObjectARB(program);
 			current_program = program;
+
+			// Try to light and fog variables?
 			try {	// bad for performance?
 				setUniform("light_number", lights.length);
 			} catch{}
 			try {
 				setUniform("fog_enabled", cast(float)Render.getCurrentCamera().getScene().getFogEnabled());
 			} catch{}
+
+			// Enable
+			for (int i=0; i<textures.length; i++)
+			{	if (textures[i].name.length)
+				{	char[256] cname = 0;
+					cname[0..textures[i].name.length]= textures[i].name;
+					int location = glGetUniformLocationARB(program, cname.ptr);
+					if (location == -1)
+					{}//	throw new Exception("Warning:  Unable to set texture sampler: " ~ textures[i].name);
+					else
+						glUniform1iARB(location, i);
+			}	}
+/*
+			// Attributes
+			foreach (name, attrib; model.getAttributes())
+			{	int location = glGetAttribLocation(program, toStringz(name));
+				if (location != -1)
+				{
+
+
+					if (model.getCached())
+					{	// This works as is, don't yet know why
+						//int vbo;
+						//glBindBufferARB(GL_ARRAY_BUFFER, vbo);
+
+						glEnableVertexAttribArray(location);
+						glBindBuffer(GL_ARRAY_BUFFER_ARB, attrib.index);
+						glVertexAttribPointer(location, 4, GL_FLOAT, false, 0, null);
+
+						writefln(1);
+						void **values;
+						glGetVertexAttribPointerARB(location, program, values);
+						writefln(2);
+						//writefln(values[0..attrib.values.length]);
+					}
+					else
+					{	glEnableVertexAttribArray(location);
+						glVertexAttribPointer(location, 4, GL_FLOAT, false, 0, &attrib.values[0]);
+					}
+				}
+
+			}
+*/
+			/*
+			//glBufferDataARB(GL_ARRAY_BUFFER, values.length*Vec3f.sizeof, values.ptr, GL_STATIC_DRAW);
+			//glBindBufferARB( GL_ARRAY_BUFFER_ARB, vbo);
+			//glVertexAttribPointerARB(location, 4, GL_FLOAT, 0, 0, null);
+
+			// Attributes
+			// Apparently attributes have to be used as vbo's if vertices are also
+			foreach (name, values; model.getAttributes())
+			{	int location = glGetAttribLocation(program, toStringz(name));
+
+				if (location != -1)
+				{	int vbo;
+					glBindBufferARB(GL_ARRAY_BUFFER, vbo);
+					glEnableVertexAttribArray(location);
+					glVertexAttribPointer(location, 4, 0x1406, false, 0, &values[0]);
+				}
+			}
+			*/
 		}
 	}
 
 	/*
 	 * Reset the OpenGL state to the defaults.
 	 * This function is used internally by the engine and doesn't normally need to be called. */
-	void unApply()
+	void unbind()
 	{
+		// Material
 		float s=0;
 		glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
@@ -315,33 +387,54 @@ class Layer
 		glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
 		glMaterialfv(GL_FRONT, GL_SHININESS, &s);
 
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
-
-		// Disable texture 1
-		glActiveTextureARB(GL_TEXTURE1_ARB);
-		glDisable(GL_TEXTURE_2D);
-
-		// Disable clientside texture 1
-		glClientActiveTextureARB(GL_TEXTURE1_ARB);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
-		// back to texture 0
-		glActiveTextureARB(GL_TEXTURE0_ARB);
-		glClientActiveTextureARB(GL_TEXTURE0_ARB);
+		// Blend
+		if (blend != BLEND_NONE)
+		{	glDisable(GL_BLEND);
+			glDepthMask(true);
+		}else
+			glDisable(GL_ALPHA_TEST);
 
 
-
-
-		glDisable(GL_BLEND);
+		// Cull, polygon
 		glCullFace(GL_BACK);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDisable(GL_TEXTURE_2D);
-		glDepthMask(true);
+
+		// Textures
+		if (textures.length>1 && Device.getSupport(DEVICE_MULTITEXTURE))
+		{	int length = mini(textures.length, Device.getLimit(DEVICE_MAX_TEXTURES));
+
+			for (int i=length-1; i>=0; i--)
+			{	glActiveTextureARB(GL_TEXTURE0_ARB+i);
+				glDisable(GL_TEXTURE_2D);
+
+				if (textures[i].reflective)
+				{	glDisable(GL_TEXTURE_GEN_S);
+					glDisable(GL_TEXTURE_GEN_T);
+				}
+				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+				textures[i].unbind();
+			}
+			glClientActiveTextureARB(GL_TEXTURE0_ARB);
+		}
+		else
+		{	textures[0].unbind();
+			glDisable(GL_TEXTURE_2D);
+			//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		}
+
+		// Shader
 		if (program != 0)
 		{	glUseProgramObjectARB(0);
 			current_program = 0;
+
+			// Attributes
+			/*
+			glDisableVertexAttribArrayARB(0);
+			glDisableVertexAttribArrayARB(1);
+			glDisableVertexAttribArrayARB(2);
+			glDisableVertexAttribArrayARB(3);
+			glDisableVertexAttribArrayARB(4);
+			*/
 		}
 	}
 
@@ -357,9 +450,9 @@ class Layer
 		// Get the location of name
 		if (program == 0)
 			throw new Exception("Cannot set uniform variable for a layer with no shader program.");
-		char[256] string = 0;
-		std.c.stdio.sprintf(string.ptr, "%.*s", name);
-		int location = glGetUniformLocationARB(program, string.ptr);
+		char[256] cname = 0;
+		cname[0..name.length] = name;
+		int location = glGetUniformLocationARB(program, cname.ptr);
 		if (location == -1)
 			throw new Exception("Unable to set uniform variable: " ~ name);
 

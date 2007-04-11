@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -20,6 +20,7 @@ public
 	import yage.core.horde;
 	import yage.core.matrix;
 	import yage.core.misc;
+	import yage.core.parse;
 	import yage.core.plane;
 	import yage.core.quatrn;
 	import yage.core.repeater;

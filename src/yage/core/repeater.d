@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -97,7 +97,11 @@ class Repeater : Thread
 					callcount++;
 				}
 			}
-			std.c.time.usleep(cast(uint)(1000*1000 / (frequency-a.get()) ));
+			// Because they use different sleep functions.
+			//version(dmd)
+				std.c.time.usleep(cast(uint)(1000*1000 / (frequency-a.get()) ));
+			version(GDC)
+				std.c.time.msleep(cast(uint)(1000 / (frequency-a.get()) ));
 		}
 		return 0;
 	}

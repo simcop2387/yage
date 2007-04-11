@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel & Joe (Deformative) Pusdesris
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -19,7 +19,8 @@ import yage.resource.mesh;
 import yage.resource.image;
 import yage.node.base;
 import yage.node.node;
-import yage.core.all;
+import yage.core.matrix;
+import yage.core.vector;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
@@ -62,6 +63,11 @@ class TerrainNode : Node
 		model = new Model(original.model);
 		radius = original.radius;
 		width = original.width;
+	}
+
+	///
+	Material getMaterial()
+	{	return model.meshes[0].getMaterial();
 	}
 
 	/// Get the model generated from setHeightMap().
@@ -113,12 +119,12 @@ class TerrainNode : Node
 			}
 
 		model.setVertices(vertices, normals, texcoords);
-		model.getMesh(0).setTriangles(triangles);
+		model.getMeshes[0].setTriangles(triangles);
 
 		// Normals and upload
 		width = w;
 		regenerate();
-		model.upload();
+		//model.upload();
 	}
 
 	/// ditto

@@ -1,20 +1,10 @@
 [Ideas for Yage]
 
-Have a scene.dirty flag, and nothing has its absolute matrix calculated unless scene is dirty.
-I could traverse the tree and update every absolute matrix once before rendering.
-But what about an improved, asynchronous update loop?
-
 Add a max lights setting per material
 
 Add a setting for min or max mipmap level per texture at the material level
 
-Separate Texture into Texture and TextureSet?
-
 Add boolean set operations to the Resource manager, to load all resources from a new level and free only those that aren't part of that set.
-
-Create a TreeNode class in the Core library, scenes, nodes and gui elements inherit from it.
-
-Separate out image functionality from Texture into a separate image class.
 
 class Layer
 {
@@ -41,11 +31,6 @@ class Layer
 	
 	setText("Hello <b>World</b>");
 }
-
-Put update in its own thread and synchronize where necessary
-
-Create a copy of all nodes in its tree for camrea->toTexture(), so update can be called multiple times per render.
-Or just have each node have copies of its relative and absolute matrices.  Even better--just set a lock flag for each Node and the camera renderer waits until the Node is unlocked.
 
 Break apart Device.init() into different subsystems, and reduce dependance on dll's to only when they're actually used.
 

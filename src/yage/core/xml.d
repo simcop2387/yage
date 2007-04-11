@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Andy Friesen, Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -22,7 +22,7 @@ import std.stream;
 import std.string;
 import std.regexp;
 import std.stdio;
-import yage.core.misc;
+import yage.core.parse;
 
 /**
  * Read an entire stream into a tree of XmlNodes.
@@ -82,6 +82,7 @@ class XmlNode
     protected XmlNode[]      _children;
     protected static RegExp  _attribRe;
     protected static RegExp  _attribSplitRe;
+    protected static RegExp trim_trailing_quote;
 
     /// A specialialized XmlNode for CData.
 	class CData : XmlNode
@@ -111,7 +112,8 @@ class XmlNode
 	static this()
 	{	// disallowed attribute values are "<>%
 		_attribRe = new RegExp("([a-z0-9]+)\\s*=\\s*\"([^\"^<^>^%]+)\"\\s*", "gim");
-		_attribSplitRe = new RegExp("\"|=\"|\\s", "");
+		_attribSplitRe = new RegExp("\\s*=\\s*\"", ""); // splits so an
+		trim_trailing_quote = new RegExp("\"\\s*");
 	}
 
 	/// Construct an empty XmlNode.
@@ -283,10 +285,10 @@ class XmlNode
 
 			char[][] matches = _attribRe.match(tag[pos..tag.length]);
 			for (int i = 0; i < matches.length; i++)
-			{	// cheap hack.
+			{	// cheap hack (modified by Eric Poggel to support attribute values with spaces).
 				char[][] blah = _attribSplitRe.split(matches[i]);
-				result ~= blah[0];
-				result ~= blah[1];
+				result ~= blah[0];									// attribute name
+				result ~= trim_trailing_quote.replace(blah[1], "");	// attribute value
 			}
 			return result;
 		}

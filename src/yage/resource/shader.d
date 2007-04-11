@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -27,9 +27,6 @@ class Shader
 	protected uint		shader;		// OpenGL handle to the compiled object code
 	protected bool		type;		// 0 for vertex, 1 for fragment shader.
 
-	invariant
-	{	assert(Device.getSupport(DEVICE_SHADER));
-	}
 
 	/**
 	 * Construct this shader and then load and compile the given shader file.
@@ -41,11 +38,11 @@ class Shader
 		// Load
 		source = Resource.resolvePath(filename);
 		this.type = type;
-		Log.write("Loading shader '" ~ filename ~ "'.");
+		Log.write("Loading shader '", filename, "'.");
 		code = cast(char[])read(source);
 
 		// Compile
-		Log.write("Compiling shader '" ~ source ~ "'.");
+		Log.write("Compiling shader '", source, "'.");
 		char** charcode = (new char*[1]).ptr;
 		charcode[0] = (code~"\0").ptr;
 		if (type==0)
@@ -66,7 +63,7 @@ class Shader
 
 	/// Free the shader object from OpenGL memory.
 	~this()
-	{	Log.write("Removing shader '" ~ source ~ "'.");
+	{	Log.write("Removing shader '", source, "'.");
 		glDeleteObjectARB(shader);
 	}
 

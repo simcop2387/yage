@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -202,7 +202,7 @@ class LightNode : Node
 		// Directional lights are easy, since they don't depend on which way the light points
 		// or how far away the light is.
 		if (type==LIGHT_DIRECTIONAL)
-			return Vec3f(ambient.a+diffuse.a, ambient.b+diffuse.b, ambient.c+diffuse.c);
+			return Vec3f(ambient.r+diffuse.r, ambient.g+diffuse.g, ambient.b+diffuse.b);
 
 		// light_direction is vector from light to point
 		Vec3f light_direction = point - Vec3f(getAbsoluteTransform().v[12..15]);
@@ -230,7 +230,7 @@ class LightNode : Node
 
 		// color will store the RGB color values of the intensity.
 		Vec3f color;
-		color.set(diffuse.a*intensity, diffuse.b*intensity, diffuse.c*intensity);
+		color.set(diffuse.r*intensity, diffuse.g*intensity, diffuse.b*intensity);
 		if (add_ambient)
 			color.add(Vec3f(ambient.v));	// diffuse scaled by intensity plus ambient.
 

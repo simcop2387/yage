@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -8,24 +8,30 @@ module yage.system.log;
 
 import std.stdio;
 
+
 /**
  * Log is a class with static members for writing log data to the standard
  * output or a file. */
 abstract class Log
 {
-	/// Write startup string
-//	static this()
-//	{	printf("Starting the Yage Logger.\n");
-//	}
+	/*
+	Stream target;
+
+	void setTarget(Stream target)
+	{	this.target = target;
+	}
+
+	Stream getTarget()
+	{	return target;
+	}
+	*/
 
 	static void credits()
-	{
-		writefln(
+	{	writefln(
 			"The Yage Game Engine uses the following software:\n" ~
 			" * Simple DirectMedia Layer, which is available under the terms of the LGPL.\n"
 
 		);
-
 	}
 
 	/// Write to the log.

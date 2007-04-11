@@ -25,7 +25,7 @@
 		  <ul>
 			<li><a href="http://www.yage3d.net" title="Yage Home"><span>Home</span></a></li>
 			<li><a href="http://www.yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
-			<li><a href="http://dsource.org/forums/viewtopic.php?t=1818" title="Yage Forum"><span>Forum</span></a></li>
+			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
 			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
 		  </ul>
 		</div>
@@ -56,7 +56,7 @@
 				  <input type="hidden" name="oe" value="UTF-8">
 				  <input type="hidden" name="domains" value="www.yage3d.net">
 				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+				  <input type="text" name="q" value="" style="width: 8em;"><span>
 				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
 				</form>
 				<div style="width: 14em; height: 1px;"></div>
@@ -324,6 +324,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">clampf</span>
+<script type="text/javascript">explorer.outline.addDecl('clampf');</script>
+(float <span class="funcparam">v</span>, float <span class="funcparam">lower</span>, float <span class="funcparam">upper</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Clamp <span class="funcparam">v</span> between l and u
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">char[] 
 <span class="currsymbol">cleanPath</span>
 <script type="text/javascript">explorer.outline.addDecl('cleanPath');</script>
@@ -333,48 +346,6 @@ Eric Poggel
 
 <dd>Resolve "../", "./", "//" and other redirections from any <span class="funcparam">path</span>.
  This function also ensures correct use of <span class="funcparam">path</span> separators for the current platform.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">formatString</span>
-<script type="text/javascript">explorer.outline.addDecl('formatString');</script>
-(...);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>An improved, D compatible, scanf()
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">floatToHex</span>
-<script type="text/javascript">explorer.outline.addDecl('floatToHex');</script>
-(float[] <span class="funcparam">vec</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert an array of float color values (0-1) to hexadecimal. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">hexToUint</span>
-<script type="text/javascript">explorer.outline.addDecl('hexToUint');</script>
-(char[] <span class="funcparam">hex</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert a hexadecimal string to an unsigned int.
-<br><br>
-<b>Throws:</b><br>
-Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal character. 
 <br><br>
 
 </dd>
@@ -493,51 +464,14 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">clampf</span>
-<script type="text/javascript">explorer.outline.addDecl('clampf');</script>
-(float <span class="funcparam">v</span>, float <span class="funcparam">lower</span>, float <span class="funcparam">upper</span>);
+<dt><span class="decl">long 
+<span class="currsymbol">getCPUCount</span>
+<script type="text/javascript">explorer.outline.addDecl('getCPUCount');</script>
+();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Clamp <span class="funcparam">v</span> between l and u
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">strToBool</span>
-<script type="text/javascript">explorer.outline.addDecl('strToBool');</script>
-(char[] <span class="funcparam">word</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert a string to 0 or 1.
- "true
-", "yes", "on", "y", "t", and "1" will all return true
-,
- "false
-", "no", "off", "n", "f", and "0" will all return false
-,
- and an Exception is thrown for any other value.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">boolToString</span>
-<script type="text/javascript">explorer.outline.addDecl('boolToString');</script>
-(bool <span class="funcparam">a</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert 1 to "true
-" and 0 to "false
-".
-<br><br>
-
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -568,32 +502,6 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">xmlEncode</span>
-<script type="text/javascript">explorer.outline.addDecl('xmlEncode');</script>
-(char[] <span class="funcparam">src</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Encode characters such as &amp;, &lt;, &gt;, etc. as their xml/html equivalents
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">xmlDecode</span>
-<script type="text/javascript">explorer.outline.addDecl('xmlDecode');</script>
-(char[] <span class="funcparam">src</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert xml-encoded special characters such as &amp;amp; back to &amp;.
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -605,10 +513,10 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb 23 01:12:24 2007
+		on Tue Apr 10 20:18:52 2007
 
 	</div>
 	
@@ -626,6 +534,8 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
 	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.plane");
 
@@ -710,8 +620,7 @@ Exception if <span class="funcparam">hex</span> contains an invalid hexadecimal 
 	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
-
-<!-- This file is used to create html templates for the generation of documentation from code files --></script>
+</script>
   </body>
 </html>
 

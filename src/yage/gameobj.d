@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -85,7 +85,7 @@ class Flare : GameObject
 		{	timer.reset();
 			LightNode light = new LightNode(this);
 			light.setDiffuse(1, .5, 0);
-			light.setLightRadius(256);
+			light.setLightRadius(96);
 		}
 	}
 }

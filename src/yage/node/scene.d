@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -271,7 +271,7 @@ class Scene : BaseNode
 	 * the engine and doesn't normally need to be called.*/
 	void apply()
 	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.v.ptr);
-		glClearColor(color.a, color.b, color.c, color.d);
+		glClearColor(color.r, color.g, color.b, color.a);
 
 		if (fog_enabled)
 		{	glFogfv(GL_FOG_COLOR, fog_color.v.ptr);

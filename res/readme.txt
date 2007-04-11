@@ -29,6 +29,6 @@ space/star.xml				Eric Poggel, public domain
 scifi/fighter.ms3d			http://www.psionic3d.co.uk -- model and textures
 							can be used for freeware, shareware, or commercial
 							games etc.
+terrain/islands.xml			Eric Poggel, public domain
 terrain/dirt.jpg			Eric Poggel, public domain
 terrain/water.jpg			Eric Poggel, public domain
-terrain/island-height.png	Eric Poggel, public domain

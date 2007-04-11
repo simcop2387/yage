@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -114,16 +114,14 @@ class Material
 					throw new Exception("Could not parse layer '" ~ .toString(i) ~
 						"' attributes.  Specularity must be between 0 and 128.\n");
 
-				// Blend, sort
+				// Blend
 				if(xml_layer.hasAttribute("blend"))
 				{	char[] blend = tolower(xml_layer.getAttribute("blend"));
 					switch (blend)
-					{	case "none"		: layer.blend = LAYER_BLEND_NONE;  break;
-						case "add"		: layer.blend = LAYER_BLEND_ADD;  break;
-						case "mul"		:
-						case "multiply"	: layer.blend = LAYER_BLEND_MULTIPLY;  break;
-						case "avg"		:
-						case "average"	: layer.blend = LAYER_BLEND_AVERAGE;  break;
+					{	case "none"		: layer.blend = BLEND_NONE;  break;
+						case "add"		: layer.blend = BLEND_ADD;  break;
+						case "multiply"	: layer.blend = BLEND_MULTIPLY;  break;
+						case "average"	: layer.blend = BLEND_AVERAGE;  break;
 						default: throw new Exception("Invalid blend value '" ~ blend ~"'.");
 				}	}
 
@@ -150,20 +148,6 @@ class Material
 				if(xml_layer.hasAttribute("width"))
 					layer.width = atoi(xml_layer.getAttribute("width"));
 
-
-				// Clamp, filter
-				if (xml_layer.hasAttribute("clamp"))
-					layer.clamp = strToBool(xml_layer.getAttribute("clamp"));
-				if (xml_layer.hasAttribute("filter"))
-				{	char[] filter = xml_layer.getAttribute("filter");
-					switch (filter)
-					{	case "none"		:
-						case "nearest"	: layer.filter = TEXTURE_FILTER_NONE; break;
-						case "bilinear"	: layer.filter = TEXTURE_FILTER_BILINEAR; break;
-						case "trilinear": layer.filter = TEXTURE_FILTER_TRILINEAR; break;
-						default: throw new Exception("Invalid filter value '" ~ filter ~"'.");
-				}	}
-
 			}catch (Exception e)
 			{	throw new Exception("Could not parse layer '" ~ .toString(i) ~"' attributes.\n"
 					~ e.toString());
@@ -179,19 +163,54 @@ class Material
 				{	t++;
 					// Create map and store attributes
 					char[] source;
-					bool compress, mipmap;
+					bool compress=true, mipmap=true;
+					Texture ti;
 					try
-					{	source  = xmap.getAttribute("src");
-						compress= xmap.hasAttribute("compress") ? strToBool(xmap.getAttribute("compress")) : true;
-						mipmap 	= xmap.hasAttribute("mipmap"  ) ? strToBool(xmap.getAttribute("mipmap"  )) : true;
+					{	// Source, name, compress, mipmap, clamp, reflective
+						source = xmap.getAttribute("src"); // required attribute?
+						if (xmap.hasAttribute("name"  ))  ti.name   = xmap.getAttribute("name");
+						if (xmap.hasAttribute("compress")) compress = strToBool(xmap.getAttribute("compress"));
+						if (xmap.hasAttribute("mipmap"  )) mipmap   = strToBool(xmap.getAttribute("mipmap"));
+						if (xmap.hasAttribute("clamp"  ))  ti.clamp = strToBool(xmap.getAttribute("clamp"));
+						if (xmap.hasAttribute("reflective")) ti.reflective = strToBool(xmap.getAttribute("reflective"));
 
-					}catch (Exception e)
+
+						// Blend
+						if(xmap.hasAttribute("blend"))
+						{	char[] blend = tolower(xmap.getAttribute("blend"));
+							switch (blend)
+							{	case "none"		: ti.blend = BLEND_NONE;  break;
+								case "add"		: ti.blend = BLEND_ADD;  break;
+								case "multiply"	: ti.blend = BLEND_MULTIPLY;  break;
+								case "average"	: ti.blend = BLEND_AVERAGE;  break;
+								default: throw new Exception("Invalid blend value '" ~ blend ~"'.");
+						}	}
+
+						// Filter
+						if (xmap.hasAttribute("filter"))
+						{	char[] str = xmap.getAttribute("filter");
+							switch (str)
+							{	case "none"		:
+								case "nearest"	: ti.filter = TEXTURE_FILTER_NONE; break;
+								case "bilinear"	: ti.filter = TEXTURE_FILTER_BILINEAR; break;
+								case "trilinear": ti.filter = TEXTURE_FILTER_TRILINEAR; break;
+								default: throw new Exception("Invalid filter value '" ~ str ~"'.");
+						}	}
+
+						// Position, rotation, scale
+						if (xmap.hasAttribute("position")) ti.position.v[0..2] = csvToFloat(xmap.getAttribute("position"));
+						if (xmap.hasAttribute("rotation")) ti.rotation         =       atof(xmap.getAttribute("rotation"));
+						if (xmap.hasAttribute("scale"   )) ti.scale.v[0..2]    = csvToFloat(xmap.getAttribute("scale"));
+					}
+					catch (Exception e)
 					{	throw new Exception(
 							"Could not parse texture '" ~ .toString(t) ~"' in layer '" ~ .toString(i) ~"'.\n"
 							~ e.toString());
 					}
 
-					layer.addTexture(Resource.texture(Resource.resolvePath(source, path), compress, mipmap));
+					// Add the texture instance to the layer
+					ti.texture = Resource.texture(Resource.resolvePath(source, path), compress, mipmap).texture;
+ 					layer.addTexture(ti);
 				}
 				// If this xml node is a shader
 				else if (name == "shader" && Device.getSupport(DEVICE_SHADER))
@@ -213,6 +232,16 @@ class Material
 					layer.addShader(Resource.shader(Resource.resolvePath(source, path), type));
 				}
 			}
+
+			// Warning for too many textures
+			static int max_textures;
+			if (max_textures==0)
+				max_textures = Device.getLimit(DEVICE_MAX_TEXTURES);
+			if (t>max_textures)
+			{	Log.write("WARNING:  layer '", .toString(i) ,"' has ", .toString(t),
+					" textures, but this hardware only supports ", .toString(max_textures), ".");
+			}
+
 			// Link Shaders
 			if (layer.getShaders().length)
 				layer.linkShaders();

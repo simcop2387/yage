@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -44,6 +44,19 @@ abstract class MoveableNode : BaseNode
 		Matrix transform_abs;
 	}
 	protected Cache cache[3];
+
+	// Incomplete
+	void lookAt(Vec3f target, Vec3f up)
+	{	Vec3f f = target.normalize();
+		up = up.normalize();
+
+		Vec3f s = f.cross(up).normalize();
+		Vec3f u = s.cross(f);
+
+		setRotation(0, 0, 0);
+		rotate(u);
+
+	}
 
 	/// Return a pointer to the transformation Matrix of this Node.  This is faster than returning a copy.
 	Matrix *getTransformPtr()

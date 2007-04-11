@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -9,6 +9,7 @@ module yage.core.plane;
 import std.math;
 import std.stdio;
 import yage.core.vector;
+import yage.core.parse;
 import yage.core.misc;
 
 

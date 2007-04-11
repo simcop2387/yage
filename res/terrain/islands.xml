@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<material>
+  <layer>
+    <texture src="terrain/islands.jpg" />
+  	<texture src="misc/detail1.jpg" scale="25, 25"/>
+  	<texture src="misc/detail1.jpg" scale="250, 250"/>
+  </layer>
+</material>

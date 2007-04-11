@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -90,6 +90,7 @@ class Render
 			switch(n.getType())
 			{	case "yage.node.model.ModelNode":
 					model((cast(ModelNode)n).getModel(), n);
+					//writefln((cast(ModelNode)n).getModel().getSource());
 					break;
 				case "yage.node.sprite.SpriteNode":
 					sprite((cast(SpriteNode)n).getMaterial(), n);
@@ -119,7 +120,7 @@ class Render
 
 		// Render alpha triangles
 		foreach (AlphaTriangle a; alpha.array())
-		{	a.layer.apply(a.lights, a.color);
+		{	a.layer.bind(a.lights, a.color);
 			glBegin(GL_TRIANGLES);
 				for (int i=0; i<3; i++)
 				{	glTexCoord2fv(a.texcoords[i].v.ptr);
@@ -127,7 +128,7 @@ class Render
 					glVertex3fv(a.vertices[i].ptr);
 				}
 			glEnd();
-			a.layer.unApply();
+			a.layer.unbind();
 		}
 
 		nodes.length = 0;
@@ -149,13 +150,13 @@ class Render
 	{	current_camera = camera;
 	}
 
-	/// Render a cube
+	// Render a cube
 	protected static void cube(Node node)
 	{	model(mcube, node);
 		// (cast(LightNode)n).getDiffuse().add((cast(LightNode)n).getAmbient())
 	}
 
-	/**
+	/*
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
 	 * Rotation can optionally be supplied to rotate sprites so they face the camera. */
@@ -199,14 +200,14 @@ class Render
 					// Sorting rules:
 					// If the first layer has blending, sort it and every layer
 					// otherwise, sort none of them
-					if (l.blend != LAYER_BLEND_NONE && num==0)
+					if (l.blend != BLEND_NONE && num==0)
 						sort = true;
 
 					// If not translucent
 					if (!sort)
-					{	l.apply(node.getLights(), node.getColor(), model);
+					{	l.bind(node.getLights(), node.getColor(), model);
 						draw();
-						l.unApply();
+						l.unbind();
 
 					} else
 					{
@@ -250,15 +251,14 @@ class Render
 		}
 	}
 
-	/// Render a sprite
+	// Render a sprite
 	protected static void sprite(Material material, Node node)
 	{	msprite.getMeshes()[0].setMaterial(material);
 		model(msprite, node, current_camera.getAbsoluteTransform(true).toAxis());
 	}
 
 
-	/**
-	 * Generate models used for various Nodes (like the quad for SpriteNodes). */
+	// Generate models used for various Nodes (like the quad for SpriteNodes).
 	protected static void generate()
 	{	// Sprite
 		msprite = new Model();
@@ -267,7 +267,7 @@ class Render
 		msprite.addVertex(Vec3f( 1, 1, 0), Vec3f(0, 0, 1), Vec2f(1, 0));
 		msprite.addVertex(Vec3f(-1, 1, 0), Vec3f(0, 0, 1), Vec2f(0, 0));
 		msprite.addMesh(new Mesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)]));
-		msprite.upload();
+		//msprite.upload();
 
 		// Cube (in as little code as possible :)
 		mcube = new Model();
@@ -279,19 +279,19 @@ class Render
 					mcube.addVertex(Vec3f(x, y, z), Vec3f(0, y, 0), Vec2f(x*.5+.5, z*.5+.5));	// +-y
 					mcube.addVertex(Vec3f(x, y, z), Vec3f(0, 0, z), Vec2f(x*.5+.5, y*.5+.5));	// +-z
 		}	}	}
-		mcube.getMesh(0).addTriangle(Vec3i(0, 6, 9));
-		mcube.getMesh(0).addTriangle(Vec3i(9, 3, 0));
-		mcube.getMesh(0).addTriangle(Vec3i(1, 4, 16));
-		mcube.getMesh(0).addTriangle(Vec3i(16, 13, 1));
-		mcube.getMesh(0).addTriangle(Vec3i(2, 14, 20));
-		mcube.getMesh(0).addTriangle(Vec3i(20, 8, 2));
-		mcube.getMesh(0).addTriangle(Vec3i(12, 15, 21));
-		mcube.getMesh(0).addTriangle(Vec3i(21, 18, 12));
-		mcube.getMesh(0).addTriangle(Vec3i(7, 19, 22));
-		mcube.getMesh(0).addTriangle(Vec3i(22, 10, 7));
-		mcube.getMesh(0).addTriangle(Vec3i(5, 11, 23));
-		mcube.getMesh(0).addTriangle(Vec3i(23, 17, 5));
-		mcube.upload();
+		mcube.getMeshes[0].addTriangle(Vec3i(0, 6, 9));
+		mcube.getMeshes[0].addTriangle(Vec3i(9, 3, 0));
+		mcube.getMeshes[0].addTriangle(Vec3i(1, 4, 16));
+		mcube.getMeshes[0].addTriangle(Vec3i(16, 13, 1));
+		mcube.getMeshes[0].addTriangle(Vec3i(2, 14, 20));
+		mcube.getMeshes[0].addTriangle(Vec3i(20, 8, 2));
+		mcube.getMeshes[0].addTriangle(Vec3i(12, 15, 21));
+		mcube.getMeshes[0].addTriangle(Vec3i(21, 18, 12));
+		mcube.getMeshes[0].addTriangle(Vec3i(7, 19, 22));
+		mcube.getMeshes[0].addTriangle(Vec3i(22, 10, 7));
+		mcube.getMeshes[0].addTriangle(Vec3i(5, 11, 23));
+		mcube.getMeshes[0].addTriangle(Vec3i(23, 17, 5));
+		//mcube.upload();
 		models_generated = true;
 	}
 }

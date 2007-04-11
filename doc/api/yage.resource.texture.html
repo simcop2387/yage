@@ -25,7 +25,7 @@
 		  <ul>
 			<li><a href="http://www.yage3d.net" title="Yage Home"><span>Home</span></a></li>
 			<li><a href="http://www.yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
-			<li><a href="http://dsource.org/forums/viewtopic.php?t=1818" title="Yage Forum"><span>Forum</span></a></li>
+			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
 			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
 		  </ul>
 		</div>
@@ -56,7 +56,7 @@
 				  <input type="hidden" name="oe" value="UTF-8">
 				  <input type="hidden" name="domains" value="www.yage3d.net">
 				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+				  <input type="text" name="q" value="" style="width: 8em;"><span>
 				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
 				</form>
 				<div style="width: 14em; height: 1px;"></div>
@@ -90,29 +90,221 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
+<dt><span class="decl">struct 
 <span class="currsymbol">Texture</span>
 <script type="text/javascript">explorer.outline.addDecl('Texture');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
+<dd>An instance of a 
+<span class="currsymbol">Texture</span>
+<script type="text/javascript">explorer.outline.addDecl('Texture');</script>
+.
+ This allows many options to be set per instance of a 
+<span class="currsymbol">Texture</span>
+<script type="text/javascript">explorer.outline.addDecl('Texture');</script>
+ instead of
+ creating multiple copies of the 
+<span class="currsymbol">Texture</span>
+<script type="text/javascript">explorer.outline.addDecl('Texture');</script>
+ (and consuming valuable memory)
+ just to change filtering, clamping, or relative scale. 
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">blend</span>
+<script type="text/javascript">explorer.outline.addDecl('blend');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set how this texture is blended with others in the same layer.
+<br><br>
+<b>See Also:</b><br>
+the TEXTURE_FILTER_* constants in yage.system.constant
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">clamp</span>
+<script type="text/javascript">explorer.outline.addDecl('clamp');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Property enable or disable clamping of the textures of this layer.
+<br><br>
+<b>See Also:</b><br>
+<a href="http://en.wikipedia.org/wiki/Texel_%28graphics%29">The Wikipedia entry for texel</a>
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">reflective</span>
+<script type="text/javascript">explorer.outline.addDecl('reflective');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">filter</span>
+<script type="text/javascript">explorer.outline.addDecl('filter');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Property to set the type of filtering used for the textures of this layer.
+<br><br>
+<b>See Also:</b><br>
+the TEXTURE_FILTER_* constants in yage.system.constant
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">name</span>
+<script type="text/javascript">explorer.outline.addDecl('name');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Optional, the 
+<span class="currsymbol">name</span>
+<script type="text/javascript">explorer.outline.addDecl('name');</script>
+ of the sampler variable that uses this texture in the shader program.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec!(float,2) 
+<span class="currsymbol">position</span>
+<script type="text/javascript">explorer.outline.addDecl('position');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">rotation</span>
+<script type="text/javascript">explorer.outline.addDecl('rotation');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec!(float,2) 
+<span class="currsymbol">scale</span>
+<script type="text/javascript">explorer.outline.addDecl('scale');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">GPUTexture 
+<span class="currsymbol">texture</span>
+<script type="text/javascript">explorer.outline.addDecl('texture');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>A pointer to the actual Texture used.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Texture  
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(GPUTexture <span class="funcparam">texture</span>, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 300, Vec!(float,2) <span class="funcparam">position</span> = zero, float <span class="funcparam">rotation</span> = cast(float)0, Vec!(float,2) <span class="funcparam">scale</span> = one);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Create a new TextureInstance with the parameters specified.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">bind</span>
+<script type="text/javascript">explorer.outline.addDecl('bind');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Bind the Texture as the current OpenGL texture and apply its properties to the OpenGL state machine.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">unbind</span>
+<script type="text/javascript">explorer.outline.addDecl('unbind');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Undo state changes caused by binding this TextureInstance.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">class 
+<span class="currsymbol">GPUTexture</span>
+<script type="text/javascript">explorer.outline.addDecl('GPUTexture');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
 <dd>A 
-<span class="currsymbol">Texture</span>
-<script type="text/javascript">explorer.outline.addDecl('Texture');</script>
- is a represenation of image data in system and video memory.
- Each 
-<span class="currsymbol">Texture</span>
-<script type="text/javascript">explorer.outline.addDecl('Texture');</script>
- has two main parts, an image stored in system memory
- and an index that is used to reference it in video memory.
- The process of creating a texture involves loading an image
- (PNG, JPG, BMP, PXC, TGA, etc. are all supported), setting various OpenGL
- options such as compression, filtering, mipmapping, etc., and finally
- uploading it to video memory.\n\n
- In addition to support for multiple image formats, this class can store
- and upload images of 8-bool grayscale, 24-bool color, and 32-bool color with
- an alpha channel.  Also, there's no need to be concerned about making
+<span class="currsymbol">GPUTexture</span>
+<script type="text/javascript">explorer.outline.addDecl('GPUTexture');</script>
+ represents image data in video memory.
+<br><br>
+Also, there's no need to be concerned about making
  texture dimensions a power of two, as they're automatically resized up to
  the next highest supported size if the non_power_of_two OpenGL extension
  isn't supported in hardware. 
@@ -122,6 +314,14 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">this(char[] <span class="funcparam">filename</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true);
 <br>this(Image <span class="funcparam">image</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true);
 </span></dt>
@@ -129,19 +329,6 @@ Eric Poggel
 
 <dd>Create a Texture from an image.
  This is equivalent to calling the default constructor followed by upload().
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">bind</span>
-<script type="text/javascript">explorer.outline.addDecl('bind');</script>
-(bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 303);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Bind this Texture as the current OpenGL texture
 <br><br>
 
 </dd>
@@ -292,7 +479,7 @@ yage.system.constant
 <dt><span class="decl">class 
 <span class="currsymbol">CameraTexture</span>
 <script type="text/javascript">explorer.outline.addDecl('CameraTexture');</script>
-: yage.resource.texture.Texture;
+: yage.resource.texture.GPUTexture;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -305,6 +492,14 @@ yage.system.constant
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">loadFrameBuffer</span>
@@ -336,10 +531,10 @@ yage.system.constant
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb 23 01:12:26 2007
+		on Tue Apr 10 20:18:54 2007
 
 	</div>
 	
@@ -357,6 +552,8 @@ yage.system.constant
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
 	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.plane");
 
@@ -441,8 +638,7 @@ yage.system.constant
 	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
-
-<!-- This file is used to create html templates for the generation of documentation from code files --></script>
+</script>
   </body>
 </html>
 

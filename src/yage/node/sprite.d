@@ -1,19 +1,16 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
 module yage.node.sprite;
 
-import derelict.opengl.gl;
 import yage.resource.resource;
 import yage.resource.material;
-import yage.resource.model;
 import yage.node.base;
 import yage.node.node;
-import yage.core.all;
-import yage.system.render;
+
 
 /**
  * A SpriteNode is a rectangle that always faces the camera.

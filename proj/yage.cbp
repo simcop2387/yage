@@ -1,1 +1,117 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?><CodeBlocks_project_file><FileVersion major="1" minor="5" /><Project><Option title="Yage" /><Option pch_mode="2" /><Option default_target="" /><Option compiler="dmd" /><Option virtualFolders="" /><Build><Target title="Normal"><Option output="..\bin\yage.exe" prefix_auto="1" extension_auto="1" /><Option working_dir="..\bin" /><Option object_output="..\bin\obj\" /><Option type="1" /><Option compiler="dmd" /><Compiler><Add option="-unittest" /><Add option="-debug" /></Compiler></Target><Target title="Release"><Option output="..\bin\yage.exe" prefix_auto="1" extension_auto="1" /><Option object_output="..\bin\obj\" /><Option type="1" /><Option compiler="dmd" /><Compiler><Add option="-release" /><Add option="-profile" /><Add option="-O" /></Compiler></Target></Build><Compiler><Add directory="..\src" /></Compiler><Linker><Add library="..\lib\DerelictVorbis.lib" /><Add library="..\lib\derelictAL.lib" /><Add library="..\lib\derelictGL.lib" /><Add library="..\lib\DerelictGLU.lib" /><Add library="..\lib\DerelictOgg.lib" /><Add library="..\lib\DerelictSDL.lib" /><Add library="..\lib\DerelictSDLImage.lib" /><Add library="..\lib\DerelictUtil.lib" /></Linker><Unit filename="..\src\yage\all.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\all.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\freelist.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\horde.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\matrix.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\misc.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\plane.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\quatrn.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\repeater.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\timer.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\vector.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\core\xml.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\gameobj.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\main.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\all.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\base.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\camera.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\graph.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\light.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\model.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\moveable.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\node.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\scene.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\sound.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\sprite.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\node\terrain.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\all.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\image.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\layer.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\material.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\mesh.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\model.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\resource.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\shader.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\sound.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\resource\texture.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\ship.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\system\all.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\system\constant.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\system\device.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\system\input.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\system\log.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\system\render.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\universe.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\util\all.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\util\flyer.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\util\misc.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit><Unit filename="..\src\yage\util\spring.d"><Option compilerVar="CPP" /><Option target="Normal" /><Option target="Release" /></Unit></Project></CodeBlocks_project_file>
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Yage" />
+		<Option pch_mode="2" />
+		<Option compiler="dmd" />
+		<Build>
+			<Target title="Normal">
+				<Option output="..\bin\yage.exe" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="..\bin" />
+				<Option object_output="..\bin\obj\" />
+				<Option type="1" />
+				<Option compiler="dmd" />
+				<Compiler>
+					<Add option="-unittest" />
+					<Add option="-debug" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="..\bin\yage.exe" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="..\bin" />
+				<Option object_output="..\bin\obj\" />
+				<Option type="1" />
+				<Option compiler="dmd" />
+				<Compiler>
+					<Add option="-release" />
+					<Add option="-profile" />
+					<Add option="-O" />
+				</Compiler>
+			</Target>
+			<Target title="gdc">
+				<Option output="..\bin\yage.exe" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="..\bin" />
+				<Option object_output="..\bin\obj\" />
+				<Option type="1" />
+				<Option compiler="gdc" />
+			</Target>
+		</Build>
+		<Compiler>
+			<Add directory="..\src" />
+		</Compiler>
+		<Linker>
+			<Add library="..\lib\derelictAL.lib" />
+			<Add library="..\lib\derelictGL.lib" />
+			<Add library="..\lib\DerelictGLU.lib" />
+			<Add library="..\lib\DerelictOgg.lib" />
+			<Add library="..\lib\DerelictSDL.lib" />
+			<Add library="..\lib\DerelictSDLImage.lib" />
+			<Add library="..\lib\DerelictUtil.lib" />
+			<Add library="..\lib\DerelictVorbis.lib" />
+		</Linker>
+		<Unit filename="..\res\shader\bump_mapping.frag" />
+		<Unit filename="..\res\shader\bump_mapping.vert" />
+		<Unit filename="..\res\shader\diffuse-hdr.frag" />
+		<Unit filename="..\res\shader\diffuse.frag" />
+		<Unit filename="..\res\shader\diffuse.vert" />
+		<Unit filename="..\res\shader\fixed-function.frag" />
+		<Unit filename="..\res\shader\fixed-function.vert" />
+		<Unit filename="..\res\shader\normal.frag" />
+		<Unit filename="..\res\shader\normal.vert" />
+		<Unit filename="..\res\shader\normal_1.frag" />
+		<Unit filename="..\res\shader\normal_1.vert" />
+		<Unit filename="..\src\yage\all.d" />
+		<Unit filename="..\src\yage\core\all.d" />
+		<Unit filename="..\src\yage\core\freelist.d" />
+		<Unit filename="..\src\yage\core\horde.d" />
+		<Unit filename="..\src\yage\core\matrix.d" />
+		<Unit filename="..\src\yage\core\misc.d" />
+		<Unit filename="..\src\yage\core\parse.d" />
+		<Unit filename="..\src\yage\core\plane.d" />
+		<Unit filename="..\src\yage\core\quatrn.d" />
+		<Unit filename="..\src\yage\core\repeater.d" />
+		<Unit filename="..\src\yage\core\timer.d" />
+		<Unit filename="..\src\yage\core\vector.d" />
+		<Unit filename="..\src\yage\core\xml.d" />
+		<Unit filename="..\src\yage\gameobj.d" />
+		<Unit filename="..\src\yage\main.d" />
+		<Unit filename="..\src\yage\node\all.d" />
+		<Unit filename="..\src\yage\node\base.d" />
+		<Unit filename="..\src\yage\node\camera.d" />
+		<Unit filename="..\src\yage\node\graph.d" />
+		<Unit filename="..\src\yage\node\light.d" />
+		<Unit filename="..\src\yage\node\model.d" />
+		<Unit filename="..\src\yage\node\moveable.d" />
+		<Unit filename="..\src\yage\node\node.d" />
+		<Unit filename="..\src\yage\node\scene.d" />
+		<Unit filename="..\src\yage\node\sound.d" />
+		<Unit filename="..\src\yage\node\sprite.d" />
+		<Unit filename="..\src\yage\node\terrain.d" />
+		<Unit filename="..\src\yage\resource\all.d" />
+		<Unit filename="..\src\yage\resource\image.d" />
+		<Unit filename="..\src\yage\resource\layer.d" />
+		<Unit filename="..\src\yage\resource\material.d" />
+		<Unit filename="..\src\yage\resource\mesh.d" />
+		<Unit filename="..\src\yage\resource\model.d" />
+		<Unit filename="..\src\yage\resource\resource.d" />
+		<Unit filename="..\src\yage\resource\shader.d" />
+		<Unit filename="..\src\yage\resource\sound.d" />
+		<Unit filename="..\src\yage\resource\texture.d" />
+		<Unit filename="..\src\yage\ship.d" />
+		<Unit filename="..\src\yage\system\all.d" />
+		<Unit filename="..\src\yage\system\constant.d" />
+		<Unit filename="..\src\yage\system\device.d" />
+		<Unit filename="..\src\yage\system\input.d" />
+		<Unit filename="..\src\yage\system\log.d" />
+		<Unit filename="..\src\yage\system\render.d" />
+		<Unit filename="..\src\yage\universe.d" />
+		<Unit filename="..\src\yage\util\all.d" />
+		<Unit filename="..\src\yage\util\flyer.d" />
+		<Unit filename="..\src\yage\util\misc.d" />
+		<Unit filename="..\src\yage\util\spring.d" />
+		<Extensions>
+			<code_completion />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

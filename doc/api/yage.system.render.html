@@ -25,7 +25,7 @@
 		  <ul>
 			<li><a href="http://www.yage3d.net" title="Yage Home"><span>Home</span></a></li>
 			<li><a href="http://www.yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
-			<li><a href="http://dsource.org/forums/viewtopic.php?t=1818" title="Yage Forum"><span>Forum</span></a></li>
+			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
 			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
 		  </ul>
 		</div>
@@ -56,7 +56,7 @@
 				  <input type="hidden" name="oe" value="UTF-8">
 				  <input type="hidden" name="domains" value="www.yage3d.net">
 				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+				  <input type="text" name="q" value="" style="width: 8em;"><span>
 				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
 				</form>
 				<div style="width: 14em; height: 1px;"></div>
@@ -157,69 +157,6 @@ Eric Poggel
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected static void 
-<span class="currsymbol">cube</span>
-<script type="text/javascript">explorer.outline.addDecl('cube');</script>
-(Node <span class="funcparam">node</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Render a 
-<span class="currsymbol">cube</span>
-<script type="text/javascript">explorer.outline.addDecl('cube');</script>
-
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected static void 
-<span class="currsymbol">model</span>
-<script type="text/javascript">explorer.outline.addDecl('model');</script>
-(Model 
-<span class="currsymbol">model</span>
-<script type="text/javascript">explorer.outline.addDecl('model');</script>
-, Node <span class="funcparam">node</span>, Vec3f <span class="funcparam">rotation</span> = (opCall)(0F));
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Render the meshes with opaque materials and pass any meshes with materials
- that require blending to the queue of translucent meshes.
- Rotation can optionally be supplied to rotate sprites so they face the camera. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected static void 
-<span class="currsymbol">sprite</span>
-<script type="text/javascript">explorer.outline.addDecl('sprite');</script>
-(Material <span class="funcparam">material</span>, Node <span class="funcparam">node</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Render a 
-<span class="currsymbol">sprite</span>
-<script type="text/javascript">explorer.outline.addDecl('sprite');</script>
-
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">protected static void 
-<span class="currsymbol">generate</span>
-<script type="text/javascript">explorer.outline.addDecl('generate');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Generate models used for various Nodes (like the quad for SpriteNodes). 
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -236,10 +173,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb 23 01:12:26 2007
+		on Tue Apr 10 20:18:54 2007
 
 	</div>
 	
@@ -257,6 +194,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
 	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.plane");
 
@@ -341,8 +280,7 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
-
-<!-- This file is used to create html templates for the generation of documentation from code files --></script>
+</script>
   </body>
 </html>
 

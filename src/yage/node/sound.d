@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -10,8 +10,7 @@ import std.math;
 import std.string;
 import std.stdio;
 import derelict.openal.al;
-import derelict.opengl.gl;
-import yage.core.all;
+import yage.core.misc;
 import yage.resource.resource;
 import yage.resource.sound;
 import yage.node.base;

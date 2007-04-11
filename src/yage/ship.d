@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -45,7 +45,7 @@ class Ship : GameObject
 		ship.setScale(.25);
 
 		spring = new Spring(ship);
-		spring.setDistance(Vec3f(0, 2, 6));
+		spring.setDistance(Vec3f(0, 4, 12));
 		spring.setStiffness(1);
 
 		sound = new SoundNode(ship);
@@ -71,7 +71,7 @@ class Ship : GameObject
 		super.update(delta);
 
 		// Set the acceleration speed
-		float speed = 100*delta;
+		float speed = 50*delta;
 		if (Input.keydown[SDLK_q])
 			speed *= 20; // Hyperdrive
 
@@ -139,7 +139,7 @@ class Ship : GameObject
 		{
 			Flare flare = new Flare(ship.getScene());
 			flare.setPosition(ship.getAbsolutePosition());
-			flare.setVelocity(Vec3f(0, 0, -1200).rotate(ship.getAbsoluteTransform())+getVelocity());
+			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getAbsoluteTransform())+getVelocity());
 
 			SoundNode zap = new SoundNode(ship);
 			zap.setSound("sound/laser.wav");

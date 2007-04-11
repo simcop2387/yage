@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -45,7 +45,7 @@ class GraphNode : Node
 	this(BaseNode parent)
 	{	super(parent);
 		setVisible(true);
-		setWindow(-10, 10, -10, 10);
+		setWindow(-1, 1, -1, 1);
 
 		model = new Model();
 		model.meshes.length =1;
@@ -122,7 +122,7 @@ class GraphNode : Node
 	}
 
 	/// Set the range of values for the GraphNode.
-	void setWindow(float smin, float smax, float tmin, float tmax, float step_s=1, float step_t=1)
+	void setWindow(float smin, float smax, float tmin, float tmax, float step_s=.5, float step_t=.5)
 	{	this.smin = smin;
 		this.tmin = tmin;
 		this.smax = smax;
@@ -182,12 +182,12 @@ class GraphNode : Node
 
 				// Triangles
 				if ((twrap || t+1<tsize) && (swrap || s+1<ssize))
-				{	triangles[i].a = (s*tsize+t) % vsize;
-					triangles[i].b = (s*tsize+t+1) % vsize;
-					triangles[i].c = ((s+1)*tsize+t) % vsize;
-					triangles[i+1].a = (s*tsize+t+1) % vsize;
-					triangles[i+1].b = ((s+1)*tsize+t+1) % vsize;
-					triangles[i+1].c = ((s+1)*tsize+t) % vsize;
+				{	triangles[i].x = (s*tsize+t) % vsize;
+					triangles[i].y = (s*tsize+t+1) % vsize;
+					triangles[i].z = ((s+1)*tsize+t) % vsize;
+					triangles[i+1].x = (s*tsize+t+1) % vsize;
+					triangles[i+1].y = ((s+1)*tsize+t+1) % vsize;
+					triangles[i+1].z = ((s+1)*tsize+t) % vsize;
 				}
 				else // don't use these triangles
 				{	triangles[i] = Vec3i(0, 0, 0);
@@ -204,14 +204,14 @@ class GraphNode : Node
 			{	int c = s*tsize+t;
 
 				for (int j=0; j<2; j++)
-				{	Vec3f p1 = model.vertices[triangles[i+j].a];
-					Vec3f p2 = model.vertices[triangles[i+j].b];
-					Vec3f p3 = model.vertices[triangles[i+j].c];
+				{	Vec3f p1 = model.vertices[triangles[i+j].x];
+					Vec3f p2 = model.vertices[triangles[i+j].y];
+					Vec3f p3 = model.vertices[triangles[i+j].z];
 
 					Vec3f n = ((p1-p2).cross(p1-p3)).normalize();	// plane normal
-					model.normals[triangles[i+j].a] += n;
-					model.normals[triangles[i+j].b] += n;
-					model.normals[triangles[i+j].c] += n;
+					model.normals[triangles[i+j].x] += n;
+					model.normals[triangles[i+j].y] += n;
+					model.normals[triangles[i+j].z] += n;
 				}
 				i+=2;
 		}	}
@@ -223,6 +223,6 @@ class GraphNode : Node
 		radius = model.getDimensions().scale(scale).max();
 
 		// Cache model in video memory
-		model.upload();
+		//model.upload();
 	}
 }

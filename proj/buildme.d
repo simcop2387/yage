@@ -10,8 +10,8 @@
  *
  * Examples:
  * ------
- * dmd -run buildme.d -release -clean -run
- * dmd -run buildme.d -release -clean -run
+ * dmd -run buildme.d -release -clean -ddoc -run
+ * dmd -run buildme.d -gdc
  * ------
  *
  * TODO:
@@ -22,10 +22,15 @@ import std.c.process;
 import std.stdio;
 import std.file;
 import std.path;
+import std.perf;
 import std.string;
 
-// Set paths for compilation.
-// These paths are relative to the build script.
+version (Windows)
+{	alias HighPerformanceCounter PerformanceCounter;
+}
+
+// Set options for compilation.
+// Paths are relative to the build script.
 char[] src_path = "../src";			// Path to .d source files
 char[] imp_path = "../src";			// Semicolon delimited list of paths to look for imports
 char[] ign_path = "../src/derelict";// Semicolon delimited list of paths to exclude source files
@@ -37,7 +42,7 @@ char[] doc_path = "../doc/api";	// folder for html documentation, if ddoc flag i
 char[] cur_path;					// Path of this script, set automatically
 
 // Options
-bool _debug, _release, nolink, profile, ddoc, _clean, verbose, run;
+bool _debug, _release, nolink, profile, ddoc, _clean, verbose, run, gdc;
 
 // OS dependant strings
 version (Windows)
@@ -97,7 +102,7 @@ char[] abs_path(char[] rel_path)
 	return result~filename;
 }
 
-// Get all sources, ignoring those in the ignore path
+// Get all source files, ignoring those in the ignore path
 char[][] getSources(bool include_ddoc=false)
 {	// Get sources minus the ignore directory.
 	char[][] all = scan(".", ".d");
@@ -139,30 +144,60 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 	chdir(src_path);
 
 	// Get sources minus the ignore directory.
-	char[][] sources = getSources(true);
+	char[][] sources = getSources(ddoc);
+	char[][] libs = scan(lib_path, lib_ext);
 	char[][] flags;
-	if (_debug)
-	{	flags~="debug";
-		flags~="g";
-		//flags~="gc";
-		
-	}else if (_release)
-	{	flags~="O";
-		flags~="inline";
-		flags~="release";
+	if (gdc)
+	{	if (_debug)
+		{	flags~="fdebug";
+			flags~="g";
+		}
+		else if (_release)
+		{	flags~="O3";
+			flags~="finline";
+			flags~="frelease";
+		}
+		if (profile)
+			flags~="profile";
+		if (ddoc)
+		{	flags~="fdoc";
+			flags~="fdoc-dir"~doc_path;
+		}
+		if (!_release)
+			flags~="funittest";
+		flags~="I"~imp_path;
+		//flags~="od"~obj_path;			// Set the object output directory
+		//flags~="op";					// Preserve path of object files, otherwise duplicate names will overwrite one another!
+		flags~="o"~bin_name~bin_ext;	// output filename
+	
 	}
-	if (profile)
-		flags~="profile";
-	if (ddoc)
-	{	flags~="D";
-		flags~="Dd"~doc_path;
+	else
+	{	if (_debug)
+		{	flags~="debug";
+			flags~="g";
+
+		}
+		else if (_release)
+		{	flags~="O";
+			flags~="inline";
+			flags~="release";
+		}
+		if (profile)
+			flags~="profile";
+		if (ddoc)
+		{	flags~="D";
+			flags~="Dd"~doc_path;
+		}
+		if (!_release)
+			flags~="unittest";
+		flags~="I"~imp_path;
+		flags~="od"~obj_path;	// Set the object output directory
+		flags~="op";			// Preserve path of object files, otherwise duplicate names will !
+		flags~="of"~bin_name~bin_ext;	// output filename
+		flags~="quiet";
 	}
-	if (!_release)
-		flags~="unittest";
-	flags~="I"~imp_path;
-	flags~="od"~obj_path;	// Set the object output directory
-	flags~="op";			// Preserve path of object files, otherwise duplicate names will overwrite one another!
-	flags~="c";				// do not link
+	if (nolink)
+		flags~="c";				// do not link		
 
 	// Create folders for the documentation
 	if (ddoc)
@@ -173,30 +208,12 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 				mkdir(path);
 	}	}
 
-	char[] compile = "dmd -" ~ std.string.join(flags, " -") ~ " " ~std.string.join(sources, " ");
+	char[] compiler = gdc ? "gdc" : "dmd";
+	char[] compile = compiler ~ " -" ~ std.string.join(flags, " -") ~ " " ~ std.string.join(sources, " ") ~ " " ~ std.string.join(libs, " ");
 	if (verbose)
 		writefln(compile);
 		
 	bool success = !system(toStringz(compile));
-	return success;
-}
-
-// Link together objects in obj_path to an executable
-bool link(bool verbose=false)
-{	if (verbose)
-		writefln("[Linking]");
-	chdir(obj_path);
-
-	// Add objects in obj_path and libs in lib_path to the build parameters.
-	char[][] objects = scan(".", "obj");
-	char[][] libs = scan(lib_path, lib_ext);
-	char[] link = "link " ~ std.string.join(objects, "+") ~","~bin_name~bin_ext;
-	if (libs.length)
-		link ~= ","~bin_name~".map,"~std.string.join(libs, "+");
-	if (verbose)
-		writefln(link);
-		
-	bool success = !system(toStringz(link));
 	return success;
 }
 
@@ -257,15 +274,15 @@ int main(char[][] args)
 {	writefln("Building Yage...");
 	writefln("If you're curious, the options are:");
 	writefln("   -clean     Delete all intermediate object files.");
-	writefln("   -ddoc      Generate documentation in doc"~sep~"html.");
+	writefln("   -ddoc      Generate documentation in "~doc_path);
 	writefln("   -debug     Include debugging symbols.");
+	writefln("   -gdc       Compile using gdc instead of dmd (incomplete).");
 	writefln("   -nolink    Compile but do not link.");
 	writefln("   -profile   Compile in profiling code.");
 	writefln("   -release   Optimize, inline expand functions, and remove unit tests and asserts.");
 	writefln("   -run       Run when finished.");
 	writefln("   -verbose   Print all commands as they're being executed.");
 	writefln("Example:  dmd -run buildme.d -clean -release -run");
-	writefln("Note that the linking portion of this script fails on linux.");
 
 	// Create the paths we write to if they don't exist
 	if (!exists(bin_path))	mkdir(bin_path);
@@ -293,10 +310,15 @@ int main(char[][] args)
 			case "-nolink": nolink = true; break;
 			case "-run": run = true; break;
 			case "-verbose": verbose = true; break;
+			case "-gdc": gdc = true; break;
 			default: break;
 		}
 	}
-
+	
+	// Start timing
+	PerformanceCounter hpc = new PerformanceCounter();
+	hpc.start();
+	
 	// Clean
 	clean();
 
@@ -315,17 +337,19 @@ int main(char[][] args)
 		return 1;
 	}
 
-	// Link
+	// Move the output files
 	if (!nolink)
-	{	if (!link(verbose))
-		{	writefln("Link failed.  Please fix the errors and try again.");
-			return 2;
-		}
-		// Move the output file
+	{	// Executable binary
 		char[] target = bin_path~sep~bin_name~bin_ext;
 		if (std.file.exists(target))
-			std.file.remove(target);
-		std.file.rename(obj_path~sep~bin_name~bin_ext, target);
+			std.file.remove(target); // remove old binary
+		std.file.rename(src_path~sep~bin_name~bin_ext, target);
+		
+		// .map
+		target = obj_path~sep~bin_name~".map";
+		if (std.file.exists(target))
+			std.file.remove(target); // remove old binary
+		std.file.rename(src_path~sep~bin_name~".map", target);
 	}
 
 	// Move Docs
@@ -346,10 +370,14 @@ int main(char[][] args)
 		writefln("Error with optional clean step.  Continuing.");
 	}
 
-	writefln("The build completed successfully.");
+	// Completed message and time
+	hpc.stop();
+	float time = hpc.microseconds()/1000000.0f;
+	writefln("The build completed successfully in %.2f seconds.", time);
 	if (!nolink)
 		writefln("`" ~ bin_name ~ bin_ext ~ "' has been placed in '" ~ bin_path ~ "'.");
 
+	// Run
 	if (run)
 	{	chdir(bin_path);
 		system(toStringz(bin_name ~ bin_ext));

@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -8,35 +8,7 @@ module yage.core.timer;
 
 import std.perf;
 import std.string;
-
 import derelict.sdl.sdl;
-
-// The accuracy of timer is questionable, so this is an alternate to test.
-class Timer2
-{
-	int last_count;
-
-	this()
-	{	last_count = SDL_GetTicks();
-	}
-
-	float get()
-	{	return (SDL_GetTicks()-last_count)/1000.0f;
-	}
-
-	void set(double seconds)
-	{	last_count = SDL_GetTicks()-cast(int)(seconds*1000);
-	}
-
-	void reset()
-	{	last_count = SDL_GetTicks();
-	}
-
-	char[] toString()
-	{	return .toString(get());
-	}
-}
-
 
 
 // Because they have different names on Windows and Linux
@@ -50,20 +22,18 @@ version (Windows)
  * Example:
  * --------------------------------
  * Timer a = new Timer();
- * float b = a.get();		// b stores the current time.
+ * real b = a.get();		// b stores the current time.
  * --------------------------------
  */
 class Timer
 {
-	protected:
-	bool 	paused	= false;
-	//real	min		= 0;
-	//real 	max		= real.infinity;
-	//real	speed	= 1.0;
-	ulong	us		= 0;		// microsecond counter
-	PerformanceCounter hpc;
+	protected bool 		paused	= false;
+	//protected real	min		= 0;
+	//protected real 	max		= real.infinity;
+	//protected real	speed	= 1.0;
+	protected ulong		us		= 0;		// microsecond counter
+	protected PerformanceCounter hpc;
 
-	public:
 	/// Initialize and start the Timer.
 	this()
 	{	hpc = new PerformanceCounter();
@@ -77,22 +47,18 @@ class Timer
 		set(rhs.get());
 	}
 
-	// Allow for getting the time with the () syntax (good idea?)
-	double opCall()
-	{	return cast(double)get();
-	}
-
 	/// Return the Timer's time in seconds
-	synchronized real get()
+	real get()
 	{	// Update our microsecond counter
-		if (!paused)
-		{	hpc.stop();
-			us +=  hpc.microseconds();
-			real result = us*0.000001;
-			hpc.start();
-		}
-		return us*0.000001;
-	}
+		synchronized(this)
+		{	if (!paused)
+			{	hpc.stop();
+				us +=  hpc.microseconds();
+				real result = us*0.000001;
+				hpc.start();
+			}
+			return us*0.000001;
+	}	}
 
 	/// Is the Timer paused?
 	bool getPaused()
@@ -100,14 +66,15 @@ class Timer
 	}
 
 	/// Set whether the Timer is paused.
-	synchronized void setPaused(bool paused)
-	{	this.paused = paused;
-		if (paused)
-		{	hpc.stop();
-			us += hpc.microseconds();
-		}else
-			hpc.start();
-	}
+	void setPaused(bool paused)
+	{	synchronized(this)
+		{	this.paused = paused;
+			if (paused)
+			{	hpc.stop();
+				us += hpc.microseconds();
+			}else
+				hpc.start();
+	}	}
 
 	/// Alias of setPaused(true)
 	void pause()
@@ -121,14 +88,17 @@ class Timer
 
 	/// Reset the Timer to zero.
 	void reset()
-	{	hpc.stop();
-		hpc.start();
-		us = 0;
+	{	synchronized(this)
+		{	hpc.stop();
+			if(!paused)
+				hpc.start();
+			us = 0;
+		}
 	}
 
 	/** Set the Timer
 	 *  Params: time = Measured in seconds. */
-	synchronized void set(double time)
+	void set(double time)
 	in { assert(time>=0); }
 	body
 	{	us = cast(ulong)(time*1000000);

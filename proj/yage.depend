@@ -1,0 +1,2258 @@
+# depslib dependency file v1.0
+1174616925 source:c:\myfiles\eric\current\yage\src\yage\system\device.d
+	<std/stdio.d>
+	<std/string.d>
+	<derelict/openal/al.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glu.d>
+	<derelict/opengl/glext.d>
+	<derelict/util/exception.d>
+	<derelict/sdl/sdl.d>
+	<derelict/sdl/image.d>
+	<derelict/ogg/vorbis.d>
+	<derelict/ogg/vorbisfile.d>
+	<yage/resource/texture.d>
+	<yage/system/log.d>
+	<yage/system/constant.d>
+	<yage/system/input.d>
+
+1172213454 c:\myfiles\eric\current\yage\src\derelict\openal\al.d
+	<derelict/openal/altypes.d>
+	<derelict/openal/alctypes.d>
+	<derelict/openal/alfuncs.d>
+
+1172213454 c:\myfiles\eric\current\yage\src\derelict\openal\altypes.d
+
+1172213454 c:\myfiles\eric\current\yage\src\derelict\openal\alctypes.d
+
+1172213454 c:\myfiles\eric\current\yage\src\derelict\openal\alfuncs.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\gl.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/glfuncs.d>
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\gltypes.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\glfuncs.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\glu.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\glext.d
+	<derelict/opengl/extension/arb/pixel_buffer_object.d>
+	<derelict/opengl/extension/arb/texture_float.d>
+	<derelict/opengl/extension/arb/half_float_pixel.d>
+	<derelict/opengl/extension/arb/color_buffer_float.d>
+	<derelict/opengl/extension/arb/texture_rectangle.d>
+	<derelict/opengl/extension/arb/draw_buffers.d>
+	<derelict/opengl/extension/arb/fragment_program_shadow.d>
+	<derelict/opengl/extension/arb/point_sprite.d>
+	<derelict/opengl/extension/arb/texture_non_power_of_two.d>
+	<derelict/opengl/extension/arb/fragment_shader.d>
+	<derelict/opengl/extension/arb/vertex_shader.d>
+	<derelict/opengl/extension/arb/shader_objects.d>
+	<derelict/opengl/extension/arb/occlusion_query.d>
+	<derelict/opengl/extension/arb/vertex_buffer_object.d>
+	<derelict/opengl/extension/arb/fragment_program.d>
+	<derelict/opengl/extension/arb/vertex_program.d>
+	<derelict/opengl/extension/arb/window_pos.d>
+	<derelict/opengl/extension/arb/shadow_ambient.d>
+	<derelict/opengl/extension/arb/shadow.d>
+	<derelict/opengl/extension/arb/depth_texture.d>
+	<derelict/opengl/extension/arb/texture_mirrored_repeat.d>
+	<derelict/opengl/extension/arb/texture_env_crossbar.d>
+	<derelict/opengl/extension/arb/texture_env_combine.d>
+	<derelict/opengl/extension/arb/matrix_palette.d>
+	<derelict/opengl/extension/arb/vertex_blend.d>
+	<derelict/opengl/extension/arb/point_parameters.d>
+	<derelict/opengl/extension/arb/texture_border_clamp.d>
+	<derelict/opengl/extension/arb/texture_compression.d>
+	<derelict/opengl/extension/arb/texture_cube_map.d>
+	<derelict/opengl/extension/arb/texture_env_add.d>
+	<derelict/opengl/extension/arb/multisample.d>
+	<derelict/opengl/extension/arb/transpose_matrix.d>
+	<derelict/opengl/extension/arb/multitexture.d>
+	<derelict/opengl/extension/ext/gpu_program_parameters.d>
+	<derelict/opengl/extension/ext/timer_query.d>
+	<derelict/opengl/extension/ext/framebuffer_multisample.d>
+	<derelict/opengl/extension/ext/framebuffer_blit.d>
+	<derelict/opengl/extension/ext/texture_sRGB.d>
+	<derelict/opengl/extension/ext/stencil_clear_tag.d>
+	<derelict/opengl/extension/ext/packed_depth_stencil.d>
+	<derelict/opengl/extension/ext/framebuffer_object.d>
+	<derelict/opengl/extension/ext/pixel_buffer_object.d>
+	<derelict/opengl/extension/ext/blend_equation_separate.d>
+	<derelict/opengl/extension/ext/texture_mirror_clamp.d>
+	<derelict/opengl/extension/ext/depth_bounds_test.d>
+	<derelict/opengl/extension/ext/stencil_two_side.d>
+	<derelict/opengl/extension/ext/shadow_funcs.d>
+	<derelict/opengl/extension/ext/texture_filter_anisotropic.d>
+	<derelict/opengl/extension/ext/texture_lod_bias.d>
+	<derelict/opengl/extension/ext/texture_env_add.d>
+	<derelict/opengl/extension/ext/stencil_wrap.d>
+	<derelict/opengl/extension/ext/blend_func_separate.d>
+	<derelict/opengl/extension/ext/texture_env_combine.d>
+	<derelict/opengl/extension/ext/fog_coord.d>
+	<derelict/opengl/extension/ext/multi_draw_arrays.d>
+	<derelict/opengl/extension/ext/texture_perturb_normal.d>
+	<derelict/opengl/extension/ext/secondary_color.d>
+	<derelict/opengl/extension/ext/separate_specular_color.d>
+	<derelict/opengl/extension/ext/shared_texture_palette.d>
+	<derelict/opengl/extension/ext/pixel_transform_color_table.d>
+	<derelict/opengl/extension/ext/pixel_transform.d>
+	<derelict/opengl/extension/ext/bgra.d>
+	<derelict/opengl/extension/ext/light_texture.d>
+	<derelict/opengl/extension/ext/draw_range_elements.d>
+	<derelict/opengl/extension/ext/cull_vertex.d>
+	<derelict/opengl/extension/ext/clip_volume_hint.d>
+	<derelict/opengl/extension/ext/paletted_texture.d>
+	<derelict/opengl/extension/ext/color_subtable.d>
+	<derelict/opengl/extension/ext/point_parameters.d>
+	<derelict/opengl/extension/ext/abgr.d>
+	<derelict/opengl/extension/ext/compiled_vertex_array.d>
+	<derelict/opengl/extension/ext/Cg_shader.d>
+	<derelict/opengl/extension/ext/packed_pixels.d>
+	<derelict/opengl/extension/ext/rescale_normal.d>
+	<derelict/opengl/extension/ext/texture_cube_map.d>
+	<derelict/opengl/extension/ext/texture_edge_clamp.d>
+	<derelict/opengl/extension/ext/histogram.d>
+	<derelict/opengl/extension/ext/convolution.d>
+	<derelict/opengl/extension/ext/blend_color.d>
+	<derelict/opengl/extension/ext/blend_minmax.d>
+	<derelict/opengl/extension/ext/blend_subtract.d>
+	<derelict/opengl/extension/ati/element_array.d>
+	<derelict/opengl/extension/ati/map_object_buffer.d>
+	<derelict/opengl/extension/ati/pn_triangles.d>
+	<derelict/opengl/extension/ati/vertex_array_object.d>
+	<derelict/opengl/extension/ati/vertex_attrib_array_object.d>
+	<derelict/opengl/extension/ati/vertex_streams.d>
+	<derelict/opengl/extension/ati/separate_stencil.d>
+	<derelict/opengl/extension/ati/draw_buffers.d>
+	<derelict/opengl/extension/ati/envmap_bumpmap.d>
+	<derelict/opengl/extension/ati/fragment_shader.d>
+	<derelict/opengl/extension/ati/texture_float.d>
+	<derelict/opengl/extension/ati/texture_mirror_once.d>
+	<derelict/opengl/extension/nv/blend_square.d>
+	<derelict/opengl/extension/nv/copy_depth_to_color.d>
+	<derelict/opengl/extension/nv/depth_buffer_float.d>
+	<derelict/opengl/extension/nv/depth_clamp.d>
+	<derelict/opengl/extension/nv/evaluators.d>
+	<derelict/opengl/extension/nv/fence.d>
+	<derelict/opengl/extension/nv/float_buffer.d>
+	<derelict/opengl/extension/nv/fog_distance.d>
+	<derelict/opengl/extension/nv/fragment_program.d>
+	<derelict/opengl/extension/nv/fragment_program_option.d>
+	<derelict/opengl/extension/nv/framebuffer_multisample_coverage.d>
+	<derelict/opengl/extension/nv/half_float.d>
+	<derelict/opengl/extension/nv/light_max_exponent.d>
+	<derelict/opengl/extension/nv/multisample_filter_hint.d>
+	<derelict/opengl/extension/nv/occlusion_query.d>
+	<derelict/opengl/extension/nv/packed_depth_stencil.d>
+	<derelict/opengl/extension/nv/parameter_buffer_object.d>
+	<derelict/opengl/extension/nv/pixel_data_range.d>
+	<derelict/opengl/extension/nv/point_sprite.d>
+	<derelict/opengl/extension/nv/primitive_restart.d>
+	<derelict/opengl/extension/nv/register_combiners.d>
+	<derelict/opengl/extension/nv/texgen_emboss.d>
+	<derelict/opengl/extension/nv/texgen_reflection.d>
+	<derelict/opengl/extension/nv/texture_compression_vtc.d>
+	<derelict/opengl/extension/nv/texture_expand_normal.d>
+	<derelict/opengl/extension/nv/texture_rectangle.d>
+	<derelict/opengl/extension/nv/texture_shader.d>
+	<derelict/opengl/extension/hp/convolution_border_modes.d>
+	<derelict/opengl/extension/sgi/color_matrix.d>
+	<derelict/opengl/extension/sgis/generate_mipmap.d>
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\pixel_buffer_object.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_float.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\half_float_pixel.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\color_buffer_float.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_rectangle.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\draw_buffers.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\fragment_program_shadow.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\point_sprite.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_non_power_of_two.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\fragment_shader.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\vertex_shader.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\shader_objects.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\occlusion_query.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\vertex_buffer_object.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\fragment_program.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\vertex_program.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\window_pos.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\shadow_ambient.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\shadow.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\depth_texture.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_mirrored_repeat.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_env_crossbar.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_env_combine.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\matrix_palette.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\vertex_blend.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\point_parameters.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_border_clamp.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_compression.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_cube_map.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_env_add.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\multisample.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\transpose_matrix.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\multitexture.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\gpu_program_parameters.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\timer_query.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\framebuffer_multisample.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\framebuffer_blit.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_srgb.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\stencil_clear_tag.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\packed_depth_stencil.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\framebuffer_object.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\pixel_buffer_object.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_equation_separate.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_mirror_clamp.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\depth_bounds_test.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\stencil_two_side.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\shadow_funcs.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_filter_anisotropic.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_lod_bias.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_env_add.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\stencil_wrap.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_func_separate.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_env_combine.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\fog_coord.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\multi_draw_arrays.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_perturb_normal.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\secondary_color.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\separate_specular_color.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\shared_texture_palette.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\pixel_transform_color_table.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\pixel_transform.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\bgra.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\light_texture.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\draw_range_elements.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\cull_vertex.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\clip_volume_hint.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\paletted_texture.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\color_subtable.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\point_parameters.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\abgr.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\compiled_vertex_array.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\cg_shader.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\packed_pixels.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\rescale_normal.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_cube_map.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_edge_clamp.d
+
+1172213447 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\histogram.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\convolution.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_color.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_minmax.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_subtract.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\element_array.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\map_object_buffer.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\pn_triangles.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\vertex_array_object.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\vertex_attrib_array_object.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\vertex_streams.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\separate_stencil.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\draw_buffers.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\envmap_bumpmap.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\fragment_shader.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\texture_float.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\texture_mirror_once.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\blend_square.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\copy_depth_to_color.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\depth_buffer_float.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\depth_clamp.d
+
+1172213450 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\evaluators.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fence.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\float_buffer.d
+
+1172213450 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fog_distance.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fragment_program.d
+
+1172213450 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fragment_program_option.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\framebuffer_multisample_coverage.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\half_float.d
+
+1172213450 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\light_max_exponent.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\multisample_filter_hint.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\occlusion_query.d
+
+1172213450 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\packed_depth_stencil.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\parameter_buffer_object.d
+
+1172213450 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\pixel_data_range.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\point_sprite.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\primitive_restart.d
+
+1172213450 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\register_combiners.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texgen_emboss.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texgen_reflection.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_compression_vtc.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_expand_normal.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_rectangle.d
+
+1172213449 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_shader.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\hp\convolution_border_modes.d
+
+1172213448 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\sgi\color_matrix.d
+
+1172213452 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\sgis\generate_mipmap.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\util\exception.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\sdl.d
+	<derelict/sdl/active.d>
+	<derelict/sdl/audio.d>
+	<derelict/sdl/byteorder.d>
+	<derelict/sdl/cdrom.d>
+	<derelict/sdl/cpuinfo.d>
+	<derelict/sdl/endian.d>
+	<derelict/sdl/error.d>
+	<derelict/sdl/events.d>
+	<derelict/sdl/joystick.d>
+	<derelict/sdl/keyboard.d>
+	<derelict/sdl/keysym.d>
+	<derelict/sdl/loadso.d>
+	<derelict/sdl/mouse.d>
+	<derelict/sdl/mutex.d>
+	<derelict/sdl/rwops.d>
+	<derelict/sdl/sdlversion.d>
+	<derelict/sdl/syswm.d>
+	<derelict/sdl/thread.d>
+	<derelict/sdl/timer.d>
+	<derelict/sdl/types.d>
+	<derelict/sdl/video.d>
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\active.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\audio.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\byteorder.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\cdrom.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\cpuinfo.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\endian.d
+
+1172213443 c:\myfiles\eric\current\yage\src\derelict\sdl\error.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\events.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\joystick.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\keyboard.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\keysym.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\loadso.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\mouse.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\mutex.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\rwops.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\sdlversion.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\syswm.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\thread.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\timer.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\types.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\video.d
+
+1172213442 c:\myfiles\eric\current\yage\src\derelict\sdl\image.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\ogg\vorbis.d
+	<derelict/ogg/oggtypes.d>
+	<derelict/ogg/vorbistypes.d>
+	<derelict/ogg/vorbiscodec.d>
+	<derelict/ogg/vorbisfile.d>
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\ogg\oggtypes.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\ogg\vorbistypes.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\ogg\vorbiscodec.d
+
+1172213453 c:\myfiles\eric\current\yage\src\derelict\ogg\vorbisfile.d
+
+1173081050 c:\myfiles\eric\current\yage\src\yage\resource\texture.d
+
+1172463491 c:\myfiles\eric\current\yage\src\yage\system\log.d
+
+1172560399 c:\myfiles\eric\current\yage\src\yage\system\constant.d
+
+1172288462 c:\myfiles\eric\current\yage\src\yage\system\input.d
+	<derelict/sdl/sdl.d>
+
+1172288455 source:c:\myfiles\eric\current\yage\src\yage\all.d
+	<yage/core/all.d>
+	<yage/resource/all.d>
+	<yage/node/all.d>
+	<yage/util/all.d>
+	<yage/system/all.d>
+
+1172374123 c:\myfiles\eric\current\yage\src\yage\core\all.d
+	<yage/core/freelist.d>
+	<yage/core/horde.d>
+	<yage/core/matrix.d>
+	<yage/core/misc.d>
+	<yage/core/parse.d>
+	<yage/core/plane.d>
+	<yage/core/quatrn.d>
+	<yage/core/repeater.d>
+	<yage/core/timer.d>
+	<yage/core/vector.d>
+	<yage/core/xml.d>
+
+1172288456 c:\myfiles\eric\current\yage\src\yage\core\freelist.d
+
+1172294729 c:\myfiles\eric\current\yage\src\yage\core\horde.d
+
+1176247527 c:\myfiles\eric\current\yage\src\yage\core\matrix.d
+
+1172374181 c:\myfiles\eric\current\yage\src\yage\core\misc.d
+
+1172374220 c:\myfiles\eric\current\yage\src\yage\core\plane.d
+
+1176247581 c:\myfiles\eric\current\yage\src\yage\core\quatrn.d
+
+1172444639 c:\myfiles\eric\current\yage\src\yage\core\repeater.d
+
+1172443872 c:\myfiles\eric\current\yage\src\yage\core\timer.d
+
+1176247872 c:\myfiles\eric\current\yage\src\yage\core\vector.d
+
+1172377512 c:\myfiles\eric\current\yage\src\yage\core\xml.d
+
+1172288461 c:\myfiles\eric\current\yage\src\yage\resource\all.d
+	<yage/resource/image.d>
+	<yage/resource/material.d>
+	<yage/resource/model.d>
+	<yage/resource/resource.d>
+	<yage/resource/shader.d>
+	<yage/resource/sound.d>
+	<yage/resource/texture.d>
+
+1172471090 c:\myfiles\eric\current\yage\src\yage\resource\image.d
+
+1173081572 c:\myfiles\eric\current\yage\src\yage\resource\material.d
+	<yage/resource/layer.d>
+
+1175458106 c:\myfiles\eric\current\yage\src\yage\resource\layer.d
+
+1174620750 c:\myfiles\eric\current\yage\src\yage\resource\model.d
+
+1174615281 c:\myfiles\eric\current\yage\src\yage\resource\resource.d
+
+1172557203 c:\myfiles\eric\current\yage\src\yage\resource\shader.d
+
+1172288462 c:\myfiles\eric\current\yage\src\yage\resource\sound.d
+
+1172288461 c:\myfiles\eric\current\yage\src\yage\node\all.d
+	<yage/node/base.d>
+	<yage/node/camera.d>
+	<yage/node/graph.d>
+	<yage/node/light.d>
+	<yage/node/model.d>
+	<yage/node/moveable.d>
+	<yage/node/node.d>
+	<yage/node/scene.d>
+	<yage/node/sprite.d>
+	<yage/node/sound.d>
+	<yage/node/terrain.d>
+
+1172288450 c:\myfiles\eric\current\yage\src\yage\node\base.d
+
+1173553192 c:\myfiles\eric\current\yage\src\yage\node\camera.d
+
+1174538165 c:\myfiles\eric\current\yage\src\yage\node\graph.d
+
+1172363657 c:\myfiles\eric\current\yage\src\yage\node\light.d
+
+1172288461 c:\myfiles\eric\current\yage\src\yage\node\model.d
+
+1172685042 c:\myfiles\eric\current\yage\src\yage\node\moveable.d
+
+1172288461 c:\myfiles\eric\current\yage\src\yage\node\node.d
+
+1172363673 c:\myfiles\eric\current\yage\src\yage\node\scene.d
+
+1172288461 c:\myfiles\eric\current\yage\src\yage\node\sprite.d
+
+1172288461 c:\myfiles\eric\current\yage\src\yage\node\sound.d
+
+1174538174 c:\myfiles\eric\current\yage\src\yage\node\terrain.d
+
+1172288462 c:\myfiles\eric\current\yage\src\yage\util\all.d
+	<yage/util/flyer.d>
+	<yage/util/spring.d>
+	<yage/util/misc.d>
+
+1172288462 c:\myfiles\eric\current\yage\src\yage\util\flyer.d
+
+1172288447 c:\myfiles\eric\current\yage\src\yage\util\spring.d
+
+1173765602 c:\myfiles\eric\current\yage\src\yage\util\misc.d
+
+1172288462 c:\myfiles\eric\current\yage\src\yage\system\all.d
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/input.d>
+	<yage/system/log.d>
+
+1174616925 c:\myfiles\eric\current\yage\src\yage\system\device.d
+
+1172374123 source:c:\myfiles\eric\current\yage\src\yage\core\all.d
+	<yage/core/freelist.d>
+	<yage/core/horde.d>
+	<yage/core/matrix.d>
+	<yage/core/misc.d>
+	<yage/core/parse.d>
+	<yage/core/plane.d>
+	<yage/core/quatrn.d>
+	<yage/core/repeater.d>
+	<yage/core/timer.d>
+	<yage/core/vector.d>
+	<yage/core/xml.d>
+
+1172288456 source:c:\myfiles\eric\current\yage\src\yage\core\freelist.d
+	<std/c/stdlib.d>
+	<std/gc.d>
+
+1172294729 source:c:\myfiles\eric\current\yage\src\yage\core\horde.d
+	<std/stdio.d>
+	<yage/core/misc.d>
+	<yage/core/vector.d>
+
+1176247527 source:c:\myfiles\eric\current\yage\src\yage\core\matrix.d
+	<std/math.d>
+	<std/stdio.d>
+	<std/random.d>
+	<yage/core/vector.d>
+	<yage/core/quatrn.d>
+	<yage/core/misc.d>
+	<yage/core/parse.d>
+
+1172374181 source:c:\myfiles\eric\current\yage\src\yage\core\misc.d
+	<std/file.d>
+	<std/math.d>
+	<std/path.d>
+	<std/random.d>
+	<std/string.d>
+	<std/stdio.d>
+
+1172374220 source:c:\myfiles\eric\current\yage\src\yage\core\plane.d
+	<std/math.d>
+	<std/stdio.d>
+	<yage/core/vector.d>
+	<yage/core/parse.d>
+	<yage/core/misc.d>
+
+1176247581 source:c:\myfiles\eric\current\yage\src\yage\core\quatrn.d
+	<std/math.d>
+	<std/stdio.d>
+	<yage/core/parse.d>
+	<yage/core/vector.d>
+	<yage/core/matrix.d>
+	<yage/core/misc.d>
+
+1172444639 source:c:\myfiles\eric\current\yage\src\yage\core\repeater.d
+	<std/thread.d>
+	<std/c/time.d>
+	<yage/core/timer.d>
+
+1172443872 source:c:\myfiles\eric\current\yage\src\yage\core\timer.d
+	<std/perf.d>
+	<std/string.d>
+	<derelict/sdl/sdl.d>
+
+1176247872 source:c:\myfiles\eric\current\yage\src\yage\core\vector.d
+	<std/math.d>
+	<std/stdio.d>
+	<yage/core/parse.d>
+	<yage/core/matrix.d>
+	<yage/core/quatrn.d>
+	<yage/core/misc.d>
+
+1172377512 source:c:\myfiles\eric\current\yage\src\yage\core\xml.d
+	<std/stream.d>
+	<std/string.d>
+	<std/regexp.d>
+	<std/stdio.d>
+	<yage/core/parse.d>
+
+1174167611 source:c:\myfiles\eric\current\yage\src\yage\gameobj.d
+	<std/math.d>
+	<std/stdio.d>
+	<yage/core/timer.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+	<yage/resource/resource.d>
+	<yage/resource/model.d>
+	<yage/node/scene.d>
+	<yage/node/sprite.d>
+	<yage/node/model.d>
+	<yage/node/light.d>
+	<yage/universe.d>
+
+1172288462 c:\myfiles\eric\current\yage\src\yage\universe.d
+
+1176250408 source:c:\myfiles\eric\current\yage\src\yage\main.d
+	<std/string.d>
+	<std/stdio.d>
+	<derelict/sdl/sdl.d>
+	<yage/all.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glext.d>
+	<yage/ship.d>
+
+1172288455 c:\myfiles\eric\current\yage\src\yage\all.d
+	<yage/core/all.d>
+	<yage/resource/all.d>
+	<yage/node/all.d>
+	<yage/util/all.d>
+	<yage/system/all.d>
+
+1174167622 c:\myfiles\eric\current\yage\src\yage\ship.d
+
+1172288461 source:c:\myfiles\eric\current\yage\src\yage\node\all.d
+	<yage/node/base.d>
+	<yage/node/camera.d>
+	<yage/node/graph.d>
+	<yage/node/light.d>
+	<yage/node/model.d>
+	<yage/node/moveable.d>
+	<yage/node/node.d>
+	<yage/node/scene.d>
+	<yage/node/sprite.d>
+	<yage/node/sound.d>
+	<yage/node/terrain.d>
+
+1172288450 source:c:\myfiles\eric\current\yage\src\yage\node\base.d
+	<std/stdio.d>
+	<std/traits.d>
+	<std/bind.d>
+	<yage/core/horde.d>
+	<yage/core/misc.d>
+	<yage/node/node.d>
+	<yage/node/scene.d>
+	<yage/core/all.d>
+
+1173553192 source:c:\myfiles\eric\current\yage\src\yage\node\camera.d
+	<std/math.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glu.d>
+	<derelict/opengl/glext.d>
+	<derelict/openal/al.d>
+	<derelict/sdl/sdl.d>
+	<yage/core/matrix.d>
+	<yage/core/plane.d>
+	<yage/core/vector.d>
+	<yage/resource/texture.d>
+	<yage/node/node.d>
+	<yage/node/base.d>
+	<yage/node/scene.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/render.d>
+
+1174538186 c:\myfiles\eric\current\yage\src\yage\system\render.d
+
+1174538165 source:c:\myfiles\eric\current\yage\src\yage\node\graph.d
+	<std/stdio.d>
+	<std/math.d>
+	<yage/core/vector.d>
+	<yage/core/misc.d>
+	<yage/resource/resource.d>
+	<yage/resource/material.d>
+	<yage/resource/mesh.d>
+	<yage/resource/model.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+	<yage/node/scene.d>
+
+1172288461 c:\myfiles\eric\current\yage\src\yage\resource\mesh.d
+
+1172363657 source:c:\myfiles\eric\current\yage\src\yage\node\light.d
+	<std/math.d>
+	<std/stdio.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glext.d>
+	<yage/core/vector.d>
+	<yage/core/misc.d>
+	<yage/resource/material.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+	<yage/node/scene.d>
+	<yage/system/device.d>
+	<yage/system/constant.d>
+	<yage/system/render.d>
+
+1172288461 source:c:\myfiles\eric\current\yage\src\yage\node\model.d
+	<yage/core/vector.d>
+	<yage/system/device.d>
+	<yage/system/log.d>
+	<yage/resource/resource.d>
+	<yage/resource/model.d>
+	<yage/resource/material.d>
+	<yage/node/node.d>
+	<yage/node/base.d>
+
+1172685042 source:c:\myfiles\eric\current\yage\src\yage\node\moveable.d
+	<std/stdio.d>
+	<yage/core/matrix.d>
+	<yage/core/vector.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+	<yage/core/misc.d>
+
+1172288461 source:c:\myfiles\eric\current\yage\src\yage\node\node.d
+	<std/math.d>
+	<std/stdio.d>
+	<std/traits.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glu.d>
+	<derelict/opengl/glext.d>
+	<derelict/sdl/sdl.d>
+	<yage/core/vector.d>
+	<yage/core/misc.d>
+	<yage/node/all.d>
+	<yage/node/scene.d>
+	<yage/node/light.d>
+	<yage/node/base.d>
+	<yage/node/moveable.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/input.d>
+
+1172363673 source:c:\myfiles\eric\current\yage\src\yage\node\scene.d
+	<derelict/opengl/gl.d>
+	<derelict/openal/al.d>
+	<yage/core/horde.d>
+	<yage/core/misc.d>
+	<yage/core/repeater.d>
+	<yage/core/timer.d>
+	<yage/core/vector.d>
+	<yage/node/node.d>
+	<yage/node/light.d>
+	<yage/node/base.d>
+
+1172288461 source:c:\myfiles\eric\current\yage\src\yage\node\sound.d
+	<std/math.d>
+	<std/string.d>
+	<std/stdio.d>
+	<derelict/openal/al.d>
+	<yage/core/misc.d>
+	<yage/resource/resource.d>
+	<yage/resource/sound.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+	<yage/node/scene.d>
+
+1172288461 source:c:\myfiles\eric\current\yage\src\yage\node\sprite.d
+	<yage/resource/resource.d>
+	<yage/resource/material.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+
+1174538174 source:c:\myfiles\eric\current\yage\src\yage\node\terrain.d
+	<std/conv.d>
+	<std/file.d>
+	<std/stdio.d>
+	<std/string.d>
+	<std/stream.d>
+	<yage/resource/resource.d>
+	<yage/resource/material.d>
+	<yage/resource/model.d>
+	<yage/resource/mesh.d>
+	<yage/resource/image.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+	<yage/core/matrix.d>
+	<yage/core/vector.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/log.d>
+
+1172288461 source:c:\myfiles\eric\current\yage\src\yage\resource\all.d
+	<yage/resource/image.d>
+	<yage/resource/material.d>
+	<yage/resource/model.d>
+	<yage/resource/resource.d>
+	<yage/resource/shader.d>
+	<yage/resource/sound.d>
+	<yage/resource/texture.d>
+
+1172471090 source:c:\myfiles\eric\current\yage\src\yage\resource\image.d
+	<derelict/sdl/sdl.d>
+	<derelict/sdl/image.d>
+	<std/string.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glu.d>
+	<yage/core/misc.d>
+	<yage/resource/resource.d>
+	<yage/system/device.d>
+	<yage/system/constant.d>
+	<yage/system/log.d>
+
+1175458106 source:c:\myfiles\eric\current\yage\src\yage\resource\layer.d
+	<std/math.d>
+	<std/stdio.d>
+	<std/string.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glext.d>
+	<yage/core/horde.d>
+	<yage/core/parse.d>
+	<yage/core/matrix.d>
+	<yage/core/misc.d>
+	<yage/core/vector.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/log.d>
+	<yage/system/render.d>
+	<yage/resource/model.d>
+	<yage/resource/texture.d>
+	<yage/resource/resource.d>
+	<yage/resource/shader.d>
+	<yage/node/light.d>
+
+1173081572 source:c:\myfiles\eric\current\yage\src\yage\resource\material.d
+	<std/conv.d>
+	<std/file.d>
+	<std/path.d>
+	<std/stream.d>
+	<std/string.d>
+	<std/stdio.d>
+	<yage/core/all.d>
+	<yage/resource/texture.d>
+	<yage/resource/resource.d>
+	<yage/resource/shader.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/log.d>
+	<yage/resource/layer.d>
+
+1172288461 source:c:\myfiles\eric\current\yage\src\yage\resource\mesh.d
+	<std/string.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glext.d>
+	<yage/core/vector.d>
+	<yage/resource/material.d>
+	<yage/resource/resource.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+
+1174620750 source:c:\myfiles\eric\current\yage\src\yage\resource\model.d
+	<std/string.d>
+	<std/file.d>
+	<std/math.d>
+	<std/path.d>
+	<std/stdio.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glext.d>
+	<yage/core/matrix.d>
+	<yage/core/vector.d>
+	<yage/resource/material.d>
+	<yage/resource/mesh.d>
+	<yage/resource/resource.d>
+	<yage/node/node.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/log.d>
+
+1174615281 source:c:\myfiles\eric\current\yage\src\yage\resource\resource.d
+	<std/file.d>
+	<std/path.d>
+	<std/stdio.d>
+	<yage/core/horde.d>
+	<yage/core/misc.d>
+	<yage/resource/model.d>
+	<yage/resource/material.d>
+	<yage/resource/texture.d>
+	<yage/resource/shader.d>
+	<yage/resource/sound.d>
+	<yage/core/timer.d>
+	<yage/system/log.d>
+	<std/string.d>
+
+1172557203 source:c:\myfiles\eric\current\yage\src\yage\resource\shader.d
+	<std/file.d>
+	<std/string.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glext.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/log.d>
+	<yage/resource/resource.d>
+
+1172288462 source:c:\myfiles\eric\current\yage\src\yage\resource\sound.d
+	<std/mmfile.d>
+	<std/c/time.d>
+	<std/c/stdio.d>
+	<std/string.d>
+	<derelict/openal/al.d>
+	<derelict/ogg/vorbistypes.d>
+	<derelict/ogg/vorbisfile.d>
+	<yage/core/timer.d>
+	<yage/resource/resource.d>
+	<yage/system/log.d>
+
+1173081050 source:c:\myfiles\eric\current\yage\src\yage\resource\texture.d
+	<std/string.d>
+	<std/math.d>
+	<std/stdio.d>
+	<derelict/sdl/sdl.d>
+	<derelict/sdl/image.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glu.d>
+	<derelict/opengl/glext.d>
+	<yage/core/misc.d>
+	<yage/core/vector.d>
+	<yage/resource/resource.d>
+	<yage/resource/image.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/log.d>
+
+1174167622 source:c:\myfiles\eric\current\yage\src\yage\ship.d
+	<std/stdio.d>
+	<yage/core/all.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+	<yage/node/model.d>
+	<yage/node/sprite.d>
+	<yage/node/sound.d>
+	<yage/system/input.d>
+	<yage/resource/material.d>
+	<yage/resource/resource.d>
+	<yage/util/flyer.d>
+	<yage/util/spring.d>
+	<yage/universe.d>
+	<yage/gameobj.d>
+
+1174167611 c:\myfiles\eric\current\yage\src\yage\gameobj.d
+
+1172288462 source:c:\myfiles\eric\current\yage\src\yage\system\all.d
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/input.d>
+	<yage/system/log.d>
+
+1172560399 source:c:\myfiles\eric\current\yage\src\yage\system\constant.d
+
+1172288462 source:c:\myfiles\eric\current\yage\src\yage\system\input.d
+	<derelict/sdl/sdl.d>
+	<std/stdio.d>
+	<yage/core/vector.d>
+	<yage/system/device.d>
+
+1172463491 source:c:\myfiles\eric\current\yage\src\yage\system\log.d
+	<std/stdio.d>
+
+1174538186 source:c:\myfiles\eric\current\yage\src\yage\system\render.d
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glext.d>
+	<std/stdio.d>
+	<yage/core/horde.d>
+	<yage/core/matrix.d>
+	<yage/core/vector.d>
+	<yage/core/plane.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/resource/layer.d>
+	<yage/resource/material.d>
+	<yage/resource/model.d>
+	<yage/resource/mesh.d>
+	<yage/node/all.d>
+	<yage/node/camera.d>
+	<yage/node/node.d>
+	<yage/node/light.d>
+	<yage/node/scene.d>
+
+1172288462 source:c:\myfiles\eric\current\yage\src\yage\universe.d
+	<std/math.d>
+	<std/random.d>
+	<std/stdio.d>
+	<yage/core/horde.d>
+	<yage/core/misc.d>
+	<yage/core/vector.d>
+	<yage/node/base.d>
+	<yage/node/node.d>
+	<yage/resource/resource.d>
+	<yage/resource/model.d>
+	<yage/node/scene.d>
+	<yage/node/sprite.d>
+	<yage/node/model.d>
+	<yage/node/light.d>
+	<yage/gameobj.d>
+
+1172288462 source:c:\myfiles\eric\current\yage\src\yage\util\all.d
+	<yage/util/flyer.d>
+	<yage/util/spring.d>
+	<yage/util/misc.d>
+
+1172288462 source:c:\myfiles\eric\current\yage\src\yage\util\flyer.d
+	<yage/core/matrix.d>
+	<yage/core/misc.d>
+	<yage/core/vector.d>
+	<yage/node/base.d>
+	<yage/node/camera.d>
+	<yage/node/node.d>
+	<yage/system/input.d>
+
+1173765602 source:c:\myfiles\eric\current\yage\src\yage\util\misc.d
+	<std/math.d>
+	<std/random.d>
+	<yage/resource/resource.d>
+	<yage/system/input.d>
+	<yage/node/all.d>
+	<yage/core/all.d>
+
+1172288447 source:c:\myfiles\eric\current\yage\src\yage\util\spring.d
+	<std/stdio.d>
+	<yage/core/all.d>
+	<yage/node/all.d>
+
+1172383502 c:\myfiles\eric\current\yage\src\yage\core\parse.d
+
+1172383502 source:c:\myfiles\eric\current\yage\src\yage\core\parse.d
+	<std/math.d>
+	<std/string.d>
+	<std/stdio.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\ogg\ogg.d
+	<derelict/ogg/oggtypes.d>
+	<derelict/util/loader.d>
+
+1172209853 c:\myfiles\eric\current\yage\src\derelict\util\loader.d
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\ogg\oggtypes.d
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\ogg\vorbis.d
+	<derelict/ogg/oggtypes.d>
+	<derelict/ogg/vorbistypes.d>
+	<derelict/ogg/vorbiscodec.d>
+	<derelict/ogg/vorbisfile.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\ogg\vorbiscodec.d
+	<derelict/util/loader.d>
+	<derelict/ogg/oggtypes.d>
+	<derelict/ogg/vorbistypes.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\ogg\vorbisfile.d
+	<std/c/stdio.d>
+	<derelict/util/loader.d>
+	<derelict/ogg/oggtypes.d>
+	<derelict/ogg/vorbistypes.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\ogg\vorbistypes.d
+	<derelict/ogg/oggtypes.d>
+
+1172209854 source:c:\myfiles\eric\current\yage\src\derelict\openal\al.d
+	<derelict/openal/altypes.d>
+	<derelict/openal/alctypes.d>
+	<derelict/openal/alfuncs.d>
+
+1172209854 source:c:\myfiles\eric\current\yage\src\derelict\openal\alctypes.d
+
+1172209854 source:c:\myfiles\eric\current\yage\src\derelict\openal\alfuncs.d
+	<derelict/openal/altypes.d>
+	<derelict/openal/alctypes.d>
+	<derelict/util/loader.d>
+
+1172209854 source:c:\myfiles\eric\current\yage\src\derelict\openal\almanual.d
+	<derelict/openal/altypes.d>
+	<derelict/openal/alctypes.d>
+	<derelict/util/loader.d>
+
+1172209854 source:c:\myfiles\eric\current\yage\src\derelict\openal\alstatic.d
+	<derelict/openal/altypes.d>
+	<derelict/openal/alctypes.d>
+	<derelict/util/loader.d>
+
+1172209854 source:c:\myfiles\eric\current\yage\src\derelict\openal\altypes.d
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\color_buffer_float.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 c:\myfiles\eric\current\yage\src\derelict\opengl\extension\loader.d
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\depth_texture.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\draw_buffers.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\fragment_program.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\fragment_program_shadow.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\fragment_shader.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\half_float_pixel.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\matrix_palette.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\multisample.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\multitexture.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\occlusion_query.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\pixel_buffer_object.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\point_parameters.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\point_sprite.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\shader_objects.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\shading_language_100.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\shadow.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\shadow_ambient.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_border_clamp.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_compression.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_cube_map.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_env_add.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_env_combine.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_env_crossbar.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_env_dot3.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_float.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_mirrored_repeat.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_non_power_of_two.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\texture_rectangle.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\transpose_matrix.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\vertex_blend.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\vertex_buffer_object.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\vertex_program.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\vertex_shader.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\arb\window_pos.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\draw_buffers.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\element_array.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\envmap_bumpmap.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\fragment_shader.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\map_object_buffer.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\pn_triangles.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\separate_stencil.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\texture_env_combine3.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\texture_float.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\texture_mirror_once.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\vertex_array_object.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\vertex_attrib_array_object.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ati\vertex_streams.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\cg_shader.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\abgr.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\bgra.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_color.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_equation_separate.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_func_separate.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_minmax.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\blend_subtract.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\clip_volume_hint.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\color_subtable.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\compiled_vertex_array.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\convolution.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\cull_vertex.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\depth_bounds_test.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\draw_range_elements.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\fog_coord.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\four22_pixels.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\framebuffer_blit.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\framebuffer_multisample.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\framebuffer_object.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\gpu_program_parameters.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\histogram.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\light_texture.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\multi_draw_arrays.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\packed_depth_stencil.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\packed_pixels.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\paletted_texture.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\pixel_buffer_object.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\pixel_transform.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\pixel_transform_color_table.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\point_parameters.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\rescale_normal.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\secondary_color.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\separate_specular_color.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\shadow_funcs.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\shared_texture_palette.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\stencil_clear_tag.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\stencil_two_side.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\stencil_wrap.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture3d.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_compression_s3tc.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_cube_map.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_edge_clamp.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_env_add.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_env_combine.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_env_dot3.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_filter_anisotropic.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_lod_bias.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_mirror_clamp.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_perturb_normal.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\texture_srgb.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209847 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\ext\timer_query.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\hp\convolution_border_modes.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\loader.d
+	<derelict/opengl/wgl.d>
+	<derelict/opengl/glx.d>
+	<std/string.d>
+
+1172209853 c:\myfiles\eric\current\yage\src\derelict\opengl\wgl.d
+
+1172209853 c:\myfiles\eric\current\yage\src\derelict\opengl\glx.d
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\blend_square.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\copy_depth_to_color.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\depth_buffer_float.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\depth_clamp.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209850 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\evaluators.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fence.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\float_buffer.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209850 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fog_distance.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fragment_program.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fragment_program2.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fragment_program4.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209850 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\fragment_program_option.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\framebuffer_multisample_coverage.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\geometry_program4.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\gpu_program4.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\half_float.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209850 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\light_max_exponent.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\multisample_filter_hint.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\occlusion_query.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209850 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\packed_depth_stencil.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\parameter_buffer_object.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209850 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\pixel_data_range.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\point_sprite.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\primitive_restart.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209850 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\register_combiners.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\register_combiners2.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/extension/loader.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texgen_emboss.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texgen_reflection.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_compression_vtc.d
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_env_combine4.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_expand_normal.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_rectangle.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_shader.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_shader2.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209849 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\nv\texture_shader3.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209848 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\sgi\color_matrix.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209852 source:c:\myfiles\eric\current\yage\src\derelict\opengl\extension\sgis\generate_mipmap.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/gl.d>
+	<std/string.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\gl.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/glfuncs.d>
+	<std/string.d>
+	<derelict/util/loader.d>
+	<derelict/util/exception.d>
+	<derelict/opengl/wgl.d>
+	<derelict/opengl/glx.d>
+	<std/c/windows/windows.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\gl12.d
+	<derelict/util/loader.d>
+	<derelict/util/exception.d>
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/wgl.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\gl13.d
+	<derelict/util/loader.d>
+	<derelict/util/exception.d>
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/wgl.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\gl14.d
+	<derelict/util/loader.d>
+	<derelict/util/exception.d>
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/wgl.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\gl15.d
+	<derelict/util/loader.d>
+	<derelict/util/exception.d>
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/wgl.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\gl20.d
+	<derelict/util/loader.d>
+	<derelict/util/exception.d>
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/wgl.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\gl21.d
+	<derelict/util/loader.d>
+	<derelict/util/exception.d>
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/wgl.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\glext.d
+	<derelict/opengl/extension/arb/pixel_buffer_object.d>
+	<derelict/opengl/extension/arb/texture_float.d>
+	<derelict/opengl/extension/arb/half_float_pixel.d>
+	<derelict/opengl/extension/arb/color_buffer_float.d>
+	<derelict/opengl/extension/arb/texture_rectangle.d>
+	<derelict/opengl/extension/arb/draw_buffers.d>
+	<derelict/opengl/extension/arb/fragment_program_shadow.d>
+	<derelict/opengl/extension/arb/point_sprite.d>
+	<derelict/opengl/extension/arb/texture_non_power_of_two.d>
+	<derelict/opengl/extension/arb/fragment_shader.d>
+	<derelict/opengl/extension/arb/vertex_shader.d>
+	<derelict/opengl/extension/arb/shader_objects.d>
+	<derelict/opengl/extension/arb/occlusion_query.d>
+	<derelict/opengl/extension/arb/vertex_buffer_object.d>
+	<derelict/opengl/extension/arb/fragment_program.d>
+	<derelict/opengl/extension/arb/vertex_program.d>
+	<derelict/opengl/extension/arb/window_pos.d>
+	<derelict/opengl/extension/arb/shadow_ambient.d>
+	<derelict/opengl/extension/arb/shadow.d>
+	<derelict/opengl/extension/arb/depth_texture.d>
+	<derelict/opengl/extension/arb/texture_mirrored_repeat.d>
+	<derelict/opengl/extension/arb/texture_env_crossbar.d>
+	<derelict/opengl/extension/arb/texture_env_combine.d>
+	<derelict/opengl/extension/arb/matrix_palette.d>
+	<derelict/opengl/extension/arb/vertex_blend.d>
+	<derelict/opengl/extension/arb/point_parameters.d>
+	<derelict/opengl/extension/arb/texture_border_clamp.d>
+	<derelict/opengl/extension/arb/texture_compression.d>
+	<derelict/opengl/extension/arb/texture_cube_map.d>
+	<derelict/opengl/extension/arb/texture_env_add.d>
+	<derelict/opengl/extension/arb/multisample.d>
+	<derelict/opengl/extension/arb/transpose_matrix.d>
+	<derelict/opengl/extension/arb/multitexture.d>
+	<derelict/opengl/extension/ext/gpu_program_parameters.d>
+	<derelict/opengl/extension/ext/timer_query.d>
+	<derelict/opengl/extension/ext/framebuffer_multisample.d>
+	<derelict/opengl/extension/ext/framebuffer_blit.d>
+	<derelict/opengl/extension/ext/texture_sRGB.d>
+	<derelict/opengl/extension/ext/stencil_clear_tag.d>
+	<derelict/opengl/extension/ext/packed_depth_stencil.d>
+	<derelict/opengl/extension/ext/framebuffer_object.d>
+	<derelict/opengl/extension/ext/pixel_buffer_object.d>
+	<derelict/opengl/extension/ext/blend_equation_separate.d>
+	<derelict/opengl/extension/ext/texture_mirror_clamp.d>
+	<derelict/opengl/extension/ext/depth_bounds_test.d>
+	<derelict/opengl/extension/ext/stencil_two_side.d>
+	<derelict/opengl/extension/ext/shadow_funcs.d>
+	<derelict/opengl/extension/ext/texture_filter_anisotropic.d>
+	<derelict/opengl/extension/ext/texture_lod_bias.d>
+	<derelict/opengl/extension/ext/texture_env_add.d>
+	<derelict/opengl/extension/ext/stencil_wrap.d>
+	<derelict/opengl/extension/ext/blend_func_separate.d>
+	<derelict/opengl/extension/ext/texture_env_combine.d>
+	<derelict/opengl/extension/ext/fog_coord.d>
+	<derelict/opengl/extension/ext/multi_draw_arrays.d>
+	<derelict/opengl/extension/ext/texture_perturb_normal.d>
+	<derelict/opengl/extension/ext/secondary_color.d>
+	<derelict/opengl/extension/ext/separate_specular_color.d>
+	<derelict/opengl/extension/ext/shared_texture_palette.d>
+	<derelict/opengl/extension/ext/pixel_transform_color_table.d>
+	<derelict/opengl/extension/ext/pixel_transform.d>
+	<derelict/opengl/extension/ext/bgra.d>
+	<derelict/opengl/extension/ext/light_texture.d>
+	<derelict/opengl/extension/ext/draw_range_elements.d>
+	<derelict/opengl/extension/ext/cull_vertex.d>
+	<derelict/opengl/extension/ext/clip_volume_hint.d>
+	<derelict/opengl/extension/ext/paletted_texture.d>
+	<derelict/opengl/extension/ext/color_subtable.d>
+	<derelict/opengl/extension/ext/point_parameters.d>
+	<derelict/opengl/extension/ext/abgr.d>
+	<derelict/opengl/extension/ext/compiled_vertex_array.d>
+	<derelict/opengl/extension/ext/Cg_shader.d>
+	<derelict/opengl/extension/ext/packed_pixels.d>
+	<derelict/opengl/extension/ext/rescale_normal.d>
+	<derelict/opengl/extension/ext/texture_cube_map.d>
+	<derelict/opengl/extension/ext/texture_edge_clamp.d>
+	<derelict/opengl/extension/ext/histogram.d>
+	<derelict/opengl/extension/ext/convolution.d>
+	<derelict/opengl/extension/ext/blend_color.d>
+	<derelict/opengl/extension/ext/blend_minmax.d>
+	<derelict/opengl/extension/ext/blend_subtract.d>
+	<derelict/opengl/extension/ati/element_array.d>
+	<derelict/opengl/extension/ati/map_object_buffer.d>
+	<derelict/opengl/extension/ati/pn_triangles.d>
+	<derelict/opengl/extension/ati/vertex_array_object.d>
+	<derelict/opengl/extension/ati/vertex_attrib_array_object.d>
+	<derelict/opengl/extension/ati/vertex_streams.d>
+	<derelict/opengl/extension/ati/separate_stencil.d>
+	<derelict/opengl/extension/ati/draw_buffers.d>
+	<derelict/opengl/extension/ati/envmap_bumpmap.d>
+	<derelict/opengl/extension/ati/fragment_shader.d>
+	<derelict/opengl/extension/ati/texture_float.d>
+	<derelict/opengl/extension/ati/texture_mirror_once.d>
+	<derelict/opengl/extension/nv/blend_square.d>
+	<derelict/opengl/extension/nv/copy_depth_to_color.d>
+	<derelict/opengl/extension/nv/depth_buffer_float.d>
+	<derelict/opengl/extension/nv/depth_clamp.d>
+	<derelict/opengl/extension/nv/evaluators.d>
+	<derelict/opengl/extension/nv/fence.d>
+	<derelict/opengl/extension/nv/float_buffer.d>
+	<derelict/opengl/extension/nv/fog_distance.d>
+	<derelict/opengl/extension/nv/fragment_program.d>
+	<derelict/opengl/extension/nv/fragment_program_option.d>
+	<derelict/opengl/extension/nv/framebuffer_multisample_coverage.d>
+	<derelict/opengl/extension/nv/half_float.d>
+	<derelict/opengl/extension/nv/light_max_exponent.d>
+	<derelict/opengl/extension/nv/multisample_filter_hint.d>
+	<derelict/opengl/extension/nv/occlusion_query.d>
+	<derelict/opengl/extension/nv/packed_depth_stencil.d>
+	<derelict/opengl/extension/nv/parameter_buffer_object.d>
+	<derelict/opengl/extension/nv/pixel_data_range.d>
+	<derelict/opengl/extension/nv/point_sprite.d>
+	<derelict/opengl/extension/nv/primitive_restart.d>
+	<derelict/opengl/extension/nv/register_combiners.d>
+	<derelict/opengl/extension/nv/texgen_emboss.d>
+	<derelict/opengl/extension/nv/texgen_reflection.d>
+	<derelict/opengl/extension/nv/texture_compression_vtc.d>
+	<derelict/opengl/extension/nv/texture_expand_normal.d>
+	<derelict/opengl/extension/nv/texture_rectangle.d>
+	<derelict/opengl/extension/nv/texture_shader.d>
+	<derelict/opengl/extension/hp/convolution_border_modes.d>
+	<derelict/opengl/extension/sgi/color_matrix.d>
+	<derelict/opengl/extension/sgis/generate_mipmap.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\glfuncs.d
+	<derelict/opengl/gltypes.d>
+	<derelict/util/loader.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\gltypes.d
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\glu.d
+	<derelict/opengl/gltypes.d>
+	<derelict/util/loader.d>
+	<std/c/windows/windows.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\glx.d
+	<derelict/opengl/gltypes.d>
+	<derelict/util/loader.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\wgl.d
+	<derelict/opengl/gltypes.d>
+	<derelict/opengl/wingdi.d>
+	<derelict/util/loader.d>
+	<derelict/util/exception.d>
+	<std/c/windows/windows.d>
+	<std/string.d>
+
+1172209853 c:\myfiles\eric\current\yage\src\derelict\opengl\wingdi.d
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\opengl\wingdi.d
+	<std/c/windows/windows.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\active.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\audio.d
+	<derelict/sdl/types.d>
+	<derelict/sdl/rwops.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\byteorder.d
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\cdrom.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\cpuinfo.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\endian.d
+	<derelict/sdl/types.d>
+	<derelict/sdl/rwops.d>
+	<std/intrinsic.d>
+
+1172209843 source:c:\myfiles\eric\current\yage\src\derelict\sdl\error.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\events.d
+	<derelict/sdl/types.d>
+	<derelict/sdl/active.d>
+	<derelict/sdl/keyboard.d>
+	<derelict/sdl/mouse.d>
+	<derelict/sdl/joystick.d>
+	<derelict/sdl/syswm.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\image.d
+	<derelict/sdl/sdl.d>
+	<derelict/util/loader.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\joystick.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\keyboard.d
+	<derelict/sdl/types.d>
+	<derelict/sdl/keysym.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\keysym.d
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\loadso.d
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\mouse.d
+	<derelict/sdl/types.d>
+	<derelict/sdl/video.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\mutex.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\rwops.d
+	<derelict/sdl/types.d>
+	<std/c/stdio.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\sdl.d
+	<derelict/util/loader.d>
+	<derelict/sdl/active.d>
+	<derelict/sdl/audio.d>
+	<derelict/sdl/byteorder.d>
+	<derelict/sdl/cdrom.d>
+	<derelict/sdl/cpuinfo.d>
+	<derelict/sdl/endian.d>
+	<derelict/sdl/error.d>
+	<derelict/sdl/events.d>
+	<derelict/sdl/joystick.d>
+	<derelict/sdl/keyboard.d>
+	<derelict/sdl/keysym.d>
+	<derelict/sdl/loadso.d>
+	<derelict/sdl/mouse.d>
+	<derelict/sdl/mutex.d>
+	<derelict/sdl/rwops.d>
+	<derelict/sdl/sdlversion.d>
+	<derelict/sdl/syswm.d>
+	<derelict/sdl/thread.d>
+	<derelict/sdl/timer.d>
+	<derelict/sdl/types.d>
+	<derelict/sdl/video.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\sdlversion.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\syswm.d
+	<derelict/sdl/sdlversion.d>
+	<std/c/windows/windows.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\thread.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\timer.d
+	<derelict/sdl/types.d>
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\types.d
+
+1172209842 source:c:\myfiles\eric\current\yage\src\derelict\sdl\video.d
+	<derelict/sdl/types.d>
+	<derelict/sdl/mutex.d>
+	<derelict/sdl/rwops.d>
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\util\exception.d
+
+1172209853 source:c:\myfiles\eric\current\yage\src\derelict\util\loader.d
+	<derelict/util/exception.d>
+	<std/string.d>
+	<std/loader.d>
+	<std/c/windows/windows.d>
+	<std/c/linux/linux.d>
+

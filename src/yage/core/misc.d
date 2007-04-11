@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -124,6 +124,13 @@ char[] absPath(char[] rel_path)
 	return result~filename;
 }
 
+/// Clamp v between l and u
+float clampf(float v, float lower, float upper)
+{	if (v<lower) return lower;
+	if (v>upper) return upper;
+	return v;
+}
+
 /**
  * Resolve "../", "./", "//" and other redirections from any path.
  * This function also ensures correct use of path separators for the current platform.*/
@@ -153,47 +160,6 @@ char[] cleanPath(char[] path)
 	delete paths;
 	delete result;
 	return path;
-}
-
-
-/// An improved, D compatible, scanf()
-char[] formatString(...)
-{	char[] res;
-    void putchar(dchar c)
-    {	res~= c;
-    }
-    std.format.doFormat(&putchar, _arguments, _argptr);
-    return res;
-}
-
-/**
- * Convert an array of float color values (0-1) to hexadecimal. */
-char[] floatToHex(float[] vec)
-{	char[] result;
-	foreach (float v; vec)
-		result ~= formatString("%.2X", cast(ubyte)(v*255));
-	return result;
-}
-
-/**
- * Convert a hexadecimal string to an unsigned int.
- * Throws:
- * Exception if hex contains an invalid hexadecimal character. */
-uint hexToUint(char[] hex)
-{	uint result = 0, digit;
-	for (int i=0; i<hex.length; i++)
-	{	digit=0;
-		if (47 < hex[i] && hex[i] < 58)
-			digit = (hex[i]-48);
-		else if (64 < hex[i] && hex[i] < 71)
-			digit = (hex[i]-55);
-		else if (96 < hex[i] && hex[i] < 103)
-			digit = (hex[i]-87);
-		else
-			throw new Exception("Invalid character '" ~ hex[i] ~"' for hexToUint()");
-		result+=digit*pow(16, cast(float)hex.length-i-1);;
-	}
-	return result;
 }
 
 /**
@@ -266,45 +232,8 @@ double mind(double[] a ...)
 {	return minType!(double).min(a);
 }
 
-/// Clamp v between l and u
-float clampf(float v, float lower, float upper)
-{	if (v<lower) return lower;
-	if (v>upper) return upper;
-	return v;
-}
 
-/**
- * Convert a string to 0 or 1.
- * "true", "yes", "on", "y", "t", and "1" will all return true,
- * "false", "no", "off", "n", "f", and "0" will all return false,
- * and an Exception is thrown for any other value.*/
-bool strToBool(char[] word)
-{	switch (tolower(word))
-	{	case "true":
-		case "yes":
-		case "on":
-		case "y":
-		case "t":
-		case "1":
-			return true;
-		case "false":
-		case "no":
-		case "off":
-		case "n":
-		case "f":
-		case "0":
-			return false;
-		default:
-			throw new Exception("strToBool() cannot parse '" ~ word ~"'.");
-}	}
-
-
-/// Convert 1 to "true" and 0 to "false".
-char[] boolToString(bool a)
-{	if (a) return "true";
-	return "false";
-}
-
+///
 long getCPUCount()
 {	uint loword, hiword;
 	asm
@@ -328,23 +257,5 @@ void printBits(void* a)
 /// Generate a random number between min and max.
 float random(float min, float max)
 {	return (rand()/4294967296.0f)*(max-min)+min;
-}
-
-/// Encode characters such as &, <, >, etc. as their xml/html equivalents
-char[] xmlEncode(char[] src)
-{   char[] tempStr;
-	tempStr = replace(src    , "&", "&amp;");
-	tempStr = replace(tempStr, "<", "&lt;");
-	tempStr = replace(tempStr, ">", "&gt;");
-	return tempStr;
-}
-
-/// Convert xml-encoded special characters such as &amp;amp; back to &amp;.
-char[] xmlDecode(char[] src)
-{	char[] tempStr;
-	tempStr = replace(src    , "&amp;", "&");
-	tempStr = replace(tempStr, "&lt;",  "<");
-	tempStr = replace(tempStr, "&gt;",  ">");
-	return tempStr;
 }
 

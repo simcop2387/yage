@@ -25,7 +25,7 @@
 		  <ul>
 			<li><a href="http://www.yage3d.net" title="Yage Home"><span>Home</span></a></li>
 			<li><a href="http://www.yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
-			<li><a href="http://dsource.org/forums/viewtopic.php?t=1818" title="Yage Forum"><span>Forum</span></a></li>
+			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
 			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
 		  </ul>
 		</div>
@@ -56,7 +56,7 @@
 				  <input type="hidden" name="oe" value="UTF-8">
 				  <input type="hidden" name="domains" value="www.yage3d.net">
 				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+				  <input type="text" name="q" value="" style="width: 8em;"><span>
 				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
 				</form>
 				<div style="width: 14em; height: 1px;"></div>
@@ -98,7 +98,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>The device class exists to group functions for initializing a window,
-  checking OpenGL extensions, and other utility and lower level tasks.
+ checking OpenGL extensions, and other utility and lower level tasks.
 <br><br>
 
 
@@ -108,7 +108,7 @@ Eric Poggel
 <dt><span class="decl">static void 
 <span class="currsymbol">init</span>
 <script type="text/javascript">explorer.outline.addDecl('init');</script>
-(int <span class="funcparam">width</span>, int <span class="funcparam">height</span>, ubyte <span class="funcparam">depth</span>, bool <span class="funcparam">fullscreen</span>, ubyte <span class="funcparam">samples</span> = cast(ubyte)1);
+(int <span class="funcparam">width</span>, int <span class="funcparam">height</span>, ubyte <span class="funcparam">depth</span>, bool <span class="funcparam">fullscreen</span>, ubyte <span class="funcparam">samples</span> = cast(ubyte)32);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -142,21 +142,8 @@ Eric Poggel
 <td nowrap valign="top" style="padding-right: 8px">ubyte <span class="funcparam">samples</span></td>
 
                
-<td>the level of anti-aliasing </td></tr>
+<td>The level of anti-aliasing. </td></tr>
 </table><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static char[][] 
-<span class="currsymbol">getExtensions</span>
-<script type="text/javascript">explorer.outline.addDecl('getExtensions');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return an array of all supported OpenGL extensions.
-<br><br>
 
 </dd>
 
@@ -169,8 +156,19 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Searches to see if the given extension is supported in hardware.
-  Spaces are pre and postpended to <span class="funcparam">name</span> because extension names can be
-  prefixes of other extension names. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static char[][] 
+<span class="currsymbol">getExtensions</span>
+<script type="text/javascript">explorer.outline.addDecl('getExtensions');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return an array of all supported OpenGL extensions.
 <br><br>
 
 </dd>
@@ -300,10 +298,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2006 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Fri Feb 23 01:12:26 2007
+		on Tue Apr 10 20:18:54 2007
 
 	</div>
 	
@@ -321,6 +319,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
 	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.plane");
 
@@ -405,8 +405,7 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
-
-<!-- This file is used to create html templates for the generation of documentation from code files --></script>
+</script>
   </body>
 </html>
 

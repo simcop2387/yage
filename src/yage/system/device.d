@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2006-2007 Eric Poggel
+ * Copyright:  (c) 2005-2007 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -28,8 +28,9 @@ const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
 const int SINGLE_COLOR_EXT				= 0x81F9;
 const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
 
-/** The device class exists to group functions for initializing a window,
- *  checking OpenGL extensions, and other utility and lower level tasks.*/
+/**
+ * The device class exists to group functions for initializing a window,
+ * checking OpenGL extensions, and other utility and lower level tasks.*/
 abstract class Device
 {
 	protected:
@@ -75,8 +76,8 @@ abstract class Device
 	 * height = Height of the window in pixels
 	 * depth = Color depth of each pixel (should be 16, 24 or 32)
 	 * fullscreen = The window is fullscreen if true; windowed otherwise.
-	 * samples = the level of anti-aliasing */
-	static void init(int width, int height, ubyte depth, bool fullscreen, ubyte samples=1)
+	 * samples = The level of anti-aliasing. */
+	static void init(int width, int height, ubyte depth, bool fullscreen, ubyte samples=32)
 	in
 	{	assert(depth==16 || depth==24 || depth==32);
 		assert(width>0 && height>0);
@@ -117,11 +118,8 @@ abstract class Device
 			" video mode: : " ~ .toString(SDL_GetError()));
 		SDL_LockSurface(sdl_surface);
 
-		Input.setGrabMouse(true);
-
-		// Load functions for OpenGL past 1.1 as far as possible
-		// Perhaps only load 1.1 and only load what's needed manually?
-		GLVersion glv = DerelictGL.availableVersion();
+		// Load all opengl versions
+		DerelictGL.loadVersions(GLVersion.Version20);
 
 		// Attempt to load multitexturing
 		if (getSupport(DEVICE_MULTITEXTURE))
@@ -131,25 +129,24 @@ abstract class Device
 		}else
 			Log.write("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
 
-		// Attempt to load vertex buffer object
+		//ARBVertexShader.load("GL_ARB_vertex_shader");
+		// Attempt to load shaders
 		if (getSupport(DEVICE_SHADER))
 		{	if (!ARBShaderObjects.load("GL_ARB_shader_objects"))
 				throw new Exception("GL_ARB_shader_objects extension detected but it could not be loaded.");
+			if (!ARBVertexShader.load("GL_ARB_vertex_shader"))
+				throw new Exception("GL_ARB_vertex_shader extension detected but it could not be loaded.");
 			Log.write("GL_ARB_shader_objects support enabled.");
 		}else
-			Log.write("GL_ARB_shader_objects not supported.  This is ok, but rendering will be limited to the fixed-function pipelone.");
+			Log.write("GL_ARB_shader_objects not supported.  This is ok, but rendering will be limited to the fixed-function pipeline.");
 
-		// Attempt to load shaders
+		// Attempt to load vertex buffer object
 		if (getSupport(DEVICE_VBO))
 		{	if (!ARBVertexBufferObject.load("GL_ARB_vertex_buffer_object"))
 				throw new Exception("GL_ARB_vertex_buffer_object extension detected but it could not be loaded.");
 			Log.write("GL_ARB_vertex_buffer_object support enabled.");
 		}else
 			Log.write("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
-
-		//if (getLimit(DEVICE_MAX_TEXTURE_UNITS) < 2)
-		//	throw new Exception("No hardware support found for 2+ texture units.  " ~
-		//	"This hardware supports only " ~.toString(getLimit(DEVICE_MAX_TEXTURE_UNITS)) ~ ".");
 
 		// OpenGL options
 		// These are the engine defaults.  Any function that
@@ -162,20 +159,38 @@ abstract class Device
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_NORMALIZE);  // GL_RESCALE_NORMAL is faster but does not work for non-uniform scaling
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-		glHint(GL_FOG_HINT, GL_FASTEST);
+		glHint(GL_FOG_HINT, GL_FASTEST); // per vertex fog
 		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, true); // [below] Specular highlights w/ textures.
 		glLightModeli(LIGHT_MODEL_COLOR_CONTROL_EXT, SEPARATE_SPECULAR_COLOR_EXT);
 
 		glEnable(GL_LIGHTING);
 		glFogi(GL_FOG_MODE, GL_EXP); // Most realistic?
 
+		glAlphaFunc(GL_GEQUAL, 0.5f);
+
+		// Environment Mapping (disabled by default)
+		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+
+		// Enable Vertex arrays
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+		// Enable texture coordinate arrays for each texture unit
+		if (Device.getSupport(DEVICE_MULTITEXTURE))
+			for (int i=Device.getLimit(DEVICE_MAX_TEXTURES)-1; i>=0; i--)
+			{	glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
+				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+				glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+				glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+			}
 
 		// Input options
 		SDL_EnableUNICODE(true);
 		SDL_EnableKeyRepeat(1, 100);
+		Input.setGrabMouse(true);
 
 		// Initialize OpenAL
 		al_device = alcOpenDevice(null);
@@ -188,16 +203,8 @@ abstract class Device
 		Log.write("Yage has been initialized.");
 	}
 
-	/// Return an array of all supported OpenGL extensions.
-	static char[][] getExtensions()
-	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
-		return split(exts, " ");
-	}
-
-
-	/** Searches to see if the given extension is supported in hardware.
-	 *  Spaces are pre and postpended to name because extension names can be
-	 *  prefixes of other extension names. */
+	/**
+	 * Searches to see if the given extension is supported in hardware.*/
 	static bool checkExtension(char[] name)
 	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
 	    int result = find(toupper(exts), toupper(name)~" ");
@@ -205,6 +212,12 @@ abstract class Device
 		if (result>=0)
 			return true;
 	    return false;
+	}
+
+	/// Return an array of all supported OpenGL extensions.
+	static char[][] getExtensions()
+	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
+		return split(exts, " ");
 	}
 
 	/**
@@ -219,7 +232,7 @@ abstract class Device
 			case DEVICE_MAX_TEXTURE_SIZE:
 				glGetIntegerv(GL_MAX_TEXTURE_SIZE, &result);
 				break;
-			case DEVICE_MAX_TEXTURE_UNITS:
+			case DEVICE_MAX_TEXTURES:
 				glGetIntegerv(GL_MAX_TEXTURE_UNITS, &result);
 				break;
 			default:
@@ -233,30 +246,28 @@ abstract class Device
 	 * Get whether the given opengl feature is supported by the hardware.
 	 * Params: constant is a DEVICE_* constant defined in yage.device.constant.*/
 	static bool getSupport(int constant)
-	{	switch (constant)
+	{	//return false;
+		static int shader=-1, vbo=-1, mt=-1, np2=-1;	// so support only has to be found once
+		switch (constant)
 		{	case DEVICE_SHADER:
 				version(linux)		// Shaders often fail on linux due to poor driver support!  :(
-				{	return false;	// ATI drivers will claim shader support but fail on shader compile.
-				}					// I'll eventually write a better workaround.
-				static int s = -1;
-				if (s==-1)
-					s = checkExtension("GL_ARB_shader_objects");
-				return cast(bool)s;
-			case DEVICE_VBO:
-				static int s = -1;
-				if (s==-1)
-					s = checkExtension("GL_ARB_vertex_buffer_object");
-				return cast(bool)s;
+					return false;	// ATI drivers will claim shader support but fail on shader compile.
+									// This needs a better workaround.
+				if (shader==-1)
+					shader = checkExtension("GL_ARB_shader_objects") && checkExtension("GL_ARB_vertex_shader");
+				return cast(bool)shader;
+			case DEVICE_VBO: //return false; // true breaks custom vertex attributes
+				if (vbo==-1)
+					vbo = checkExtension("GL_ARB_vertex_buffer_object");
+				return cast(bool)vbo;
 			case DEVICE_MULTITEXTURE:
-				static int s = -1;
-				if (s==-1)
-					s = checkExtension("GL_ARB_multitexture");
-				return cast(bool)s;
+				if (mt==-1)
+					mt = checkExtension("GL_ARB_multitexture");
+				return cast(bool)mt;
 			case DEVICE_NON_2_TEXTURE:
-				static int s = -1;
-				if (s==-1)
-					s = checkExtension("GL_ARB_texture_non_power_of_two");
-				return cast(bool)s;
+				if (np2==-1)
+					np2 = checkExtension("GL_ARB_texture_non_power_of_two");
+				return cast(bool)np2;
 			default:
 				throw new Exception("Unknown Device.getSupport() constant: '" ~
 									.toString(constant) ~ "'.");
@@ -279,21 +290,21 @@ abstract class Device
 		glLoadIdentity();
 
 		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
 
 		// If a texture to render
 		float x, y;
 		if (texture !is null)
 		{	glEnable(GL_TEXTURE_2D);
-			glDisable(GL_LIGHTING);
 
 			// If our texture is larger than the viewport, set the size of the quad to adjust.
 			x = texture.requested_width/cast(float)texture.getWidth();
 			y = texture.requested_height/cast(float)texture.getHeight();
 
 			// Draw a textured quad of our current material
-			texture.bind(true, TEXTURE_FILTER_BILINEAR);
+			Texture(texture, true, TEXTURE_FILTER_BILINEAR).bind();
 		}
-		else // black screen (because of lighting enabled
+		else
 			glDisable(GL_TEXTURE_2D);
 
 		glBegin(GL_QUADS);
@@ -304,6 +315,8 @@ abstract class Device
 		glEnd();
 
 		SDL_GL_SwapBuffers();
+
+		Texture(texture, true, TEXTURE_FILTER_BILINEAR).bind();
 		glPopAttrib();
 	}
 
@@ -345,7 +358,7 @@ abstract class Device
 		gluPerspective(fov, aspect, near, far);
 
 		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+
 	}
 
 	/** Stores the dimensions of the current window size.
