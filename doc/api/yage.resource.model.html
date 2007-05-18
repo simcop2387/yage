@@ -101,13 +101,13 @@ Eric Poggel
 <span class="currsymbol">Model</span>
 <script type="text/javascript">explorer.outline.addDecl('Model');</script>
  is a 3D object, typically loaded from a file.
-  A model contains an array of vertices, texture coordinates, and normals.
-  Each model is divided into one or more Meshes; each Mesh has its own material
-  and an array of triangle indices that correspond to vertices in the 
+ A model contains an array of vertices, texture coordinates, and normal vectors.
+ Each model is divided into one or more Meshes; each Mesh has its own material
+ and an array of triangle indices that correspond to vertices in the 
 <span class="currsymbol">Model</span>
 <script type="text/javascript">explorer.outline.addDecl('Model');</script>
 's
-  vertex array.  ModelNodes can be used to create 3D models in a scene.
+ vertex array.  ModelNodes can be used to create 3D models in a scene.
 <br><br>
 
 
@@ -475,7 +475,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Tue Apr 10 20:18:54 2007
+		on Thu May 17 23:35:07 2007
 
 	</div>
 	
@@ -547,6 +547,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.resource.mesh");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
+
+	explorer.packageExplorer.addModule("yage.resource.modelloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 

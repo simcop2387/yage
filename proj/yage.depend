@@ -556,7 +556,7 @@
 
 1175458106 c:\myfiles\eric\current\yage\src\yage\resource\layer.d
 
-1174620750 c:\myfiles\eric\current\yage\src\yage\resource\model.d
+1179458716 c:\myfiles\eric\current\yage\src\yage\resource\model.d
 
 1174615281 c:\myfiles\eric\current\yage\src\yage\resource\resource.d
 
@@ -713,7 +713,7 @@
 
 1172288462 c:\myfiles\eric\current\yage\src\yage\universe.d
 
-1176250408 source:c:\myfiles\eric\current\yage\src\yage\main.d
+1179456788 source:c:\myfiles\eric\current\yage\src\yage\main.d
 	<std/string.d>
 	<std/stdio.d>
 	<derelict/sdl/sdl.d>
@@ -958,7 +958,7 @@
 	<yage/system/constant.d>
 	<yage/system/device.d>
 
-1174620750 source:c:\myfiles\eric\current\yage\src\yage\resource\model.d
+1179458716 source:c:\myfiles\eric\current\yage\src\yage\resource\model.d
 	<std/string.d>
 	<std/file.d>
 	<std/math.d>
@@ -967,10 +967,12 @@
 	<derelict/opengl/gl.d>
 	<derelict/opengl/glext.d>
 	<yage/core/matrix.d>
+	<yage/core/misc.d>
 	<yage/core/vector.d>
 	<yage/resource/material.d>
 	<yage/resource/mesh.d>
 	<yage/resource/resource.d>
+	<yage/resource/modelloader.d>
 	<yage/node/node.d>
 	<yage/system/constant.d>
 	<yage/system/device.d>
@@ -2255,4 +2257,26 @@
 	<std/loader.d>
 	<std/c/windows/windows.d>
 	<std/c/linux/linux.d>
+
+1179459179 c:\myfiles\eric\current\yage\src\yage\resource\modelloader.d
+
+1179458921 source:c:\myfiles\eric\current\yage\src\yage\resource\modelloader.d
+	<std/string.d>
+	<std/file.d>
+	<std/math.d>
+	<std/path.d>
+	<std/stdio.d>
+	<derelict/opengl/gl.d>
+	<derelict/opengl/glext.d>
+	<yage/core/matrix.d>
+	<yage/core/vector.d>
+	<yage/core/misc.d>
+	<yage/resource/model.d>
+	<yage/resource/material.d>
+	<yage/resource/mesh.d>
+	<yage/resource/resource.d>
+	<yage/node/node.d>
+	<yage/system/constant.d>
+	<yage/system/device.d>
+	<yage/system/log.d>
 

@@ -14,24 +14,26 @@ import std.stdio;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.matrix;
+import yage.core.misc;
 import yage.core.vector;
 
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.resource;
+import yage.resource.modelloader;
 import yage.node.node;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
 
-extern (C) void *memcpy(void *, void *, uint);
 
 
-/** A Model is a 3D object, typically loaded from a file.
- *  A model contains an array of vertices, texture coordinates, and normals.
- *  Each model is divided into one or more Meshes; each Mesh has its own material
- *  and an array of triangle indices that correspond to vertices in the Model's
- *  vertex array.  ModelNodes can be used to create 3D models in a scene.*/
+/**
+ * A Model is a 3D object, typically loaded from a file.
+ * A model contains an array of vertices, texture coordinates, and normal vectors.
+ * Each model is divided into one or more Meshes; each Mesh has its own material
+ * and an array of triangle indices that correspond to vertices in the Model's
+ * vertex array.  ModelNodes can be used to create 3D models in a scene.*/
 class Model
 {	protected char[] source;
 	protected bool	cached = false;// False if any vertex attributes are not cached in video memory
@@ -44,7 +46,7 @@ class Model
 
 	struct Attribute
 	{	float[] values;
-		uint index = 0;
+		uint vbo = 0;
 		// bool cached = false;
 	}
 	protected Attribute[char[]] attributes;	// An associative array to store as many attributes as necessary
@@ -53,6 +55,8 @@ class Model
 	protected uint vbo_texcoords;	// OpenGL index of hardware texture coordinate array
 	protected uint vbo_normals;		// OpenGL index of hardware normal array
 	protected uint vbo_tangents;	//
+
+	mixin ModelLoader;
 
 
 	/// Generate buffers in video memory for the vertex data.
@@ -150,14 +154,11 @@ class Model
 			glBufferDataARB(GL_ARRAY_BUFFER_ARB, normals.length*Vec3f.sizeof, normals.ptr, GL_STATIC_DRAW);
 
 			foreach (name, inout attrib; attributes)
-			{	if (attrib.index == 0)
-					glGenBuffers(1, &attrib.index); // todo: cleanup!
-				glBindBuffer(GL_ARRAY_BUFFER_ARB, attrib.index);
+			{	if (attrib.vbo == 0)
+					glGenBuffers(1, &attrib.vbo); // todo: cleanup!
+				glBindBuffer(GL_ARRAY_BUFFER_ARB, attrib.vbo);
 				//writefln(attrib.values.length);
 				glBufferData(GL_ARRAY_BUFFER_ARB, attrib.values.length, attrib.values.ptr, GL_STATIC_DRAW);
-
-
-
 			}
 
 			// bind and upload the triangle indices
@@ -416,259 +417,5 @@ class Model
 		attributes[name] = a;
 		attributes[name].values = values;
 		cached = false;
-	}
-
-	/*
-	 * Load a model from a Milkshape3D model file.
-	 * All materials, etc. referenced by this model are loaded through the Resource
-	 * manager to avoid duplicates.  Meshes without a material are assigned a default material.
-	 * Uploading vertex data to video memory must be done manually by calling Upload().
-	 * This function needs to be tested on big-endian systems. */
-	private void loadMs3d(char[] filename)
-	{	source = Resource.resolvePath(filename);
-		Log.write("Loading Milkshape 3D model '" ~ source ~ "'.");
-
-		// Ms3d Data structures.  See the Ms3D SDK for details.
-		// Ms3d Vertices
-		struct mVertex
-		{	align(1) byte		flags;			// SELECTED | SELECTED2 | HIDDEN
-			align(1) float[3]	vertex;
-			align(1) byte    	boneId;			// -1 = no bone
-			align(1) byte    	referenceCount;
-		}
-		// Ms3d Triangles
-		struct mTriangle
-		{	align(1) ushort    	flags;			// SELECTED | SELECTED2 | HIDDEN
-			align(1) ushort[3]	vertexIndices;
-			align(1) float[9]	vertexNormals;
-			align(1) float[3]	s;
-			align(1) float[3]	t;
-			align(1) byte		smoothingGroup;	// 1 - 32
-			align(1) ubyte		groupIndex;
-		}
-		// Ms3d Groups
-		struct mGroup
-		{	align(1) ubyte		flags;			// SELECTED | HIDDEN
-			align(1) char[32]	name;
-			align(1) ushort		numtriangles;
-			align(1) byte		materialIndex;	// -1 = no material (moved here for proper alignment)
-			align(1) ushort[]	triangleIndices;// the groups group the triangles
-		}
-		//Ms3d Material
-		struct mMaterial
-		{	align(1) char[32]	name;
-			align(1) float[4]	ambient;
-			align(1) float[4]	diffuse;
-			align(1) float[4]	specular;
-			align(1) float[4]	emissive;
-			align(1) float		shininess;		// 0.0f - 128.0f
-			align(1) float		transparency;	// 0.0f - 1.0f
-			align(1) char		mode;			// 0, 1, 2 is unused now
-			align(1) char[128]	texture;		// texture.bmp
-			align(1) char[128]	alphamap;		// alpha.bmp
-		}
-
-		// Local variables
-		mVertex[]	mvertices;
-		mTriangle[] mtriangles;
-		mGroup[]	mgroups;
-		mMaterial[] mmaterials;
-		ushort 		size;		// used repeatedly as temporary size variable.
-		uint 		idx=16; 	// current index in the file array.  The first loop starts at 16.
-		ubyte[]		file = cast(ubyte[])read(source);
-		char[]		path = source[0 .. rfind(source, "/") + 1]; // path stripped of filename
-
-		// Check for Ms3d header
-		if (icmp("MS3D000000", cast(char[])file[0..10])!=0)
-			throw new Exception("This file does not have a valid MS3D header.");
-
-		// Check Ms3d version (3 or 4 only)
-		if (file[10] <3 || file[10] > 4)
-			throw new Exception("Milkshape file format version " ~ .toString(file[10]) ~ " not supported.");
-
-		// Vertices
-		memcpy(&size, &file[14], 2);
-		mvertices.length = size;
-		for (int v=0; v<size; v++)
-		{	memcpy(&mvertices[v], &file[idx], 15);
-			idx+=15;
-		}
-
-		// Triangles and normals
-		memcpy(&size, &file[idx], 2);
-		mtriangles.length = size;
-		idx+=2;
-		for (int t=0; t<size; t++)
-		{	memcpy(&mtriangles[t], &file[idx], 70);
-			idx+=70;
-		}
-
-		// Groups (aka Meshes)
-		memcpy(&size, &file[idx], 2);
-		mgroups.length = size;
-		idx+=2;
-		for (int g=0; g<size; g++)
-		{	// get number of triangles
-			memcpy(&mgroups[g], &file[idx], 35);
-			mgroups[g].triangleIndices.length = mgroups[g].numtriangles;
-			// now copy the triangles into the mesh struct
-			memcpy(&mgroups[g].triangleIndices[0], &file[idx+35], mgroups[g].numtriangles*2);
-			memcpy(&mgroups[g].materialIndex, &file[idx+35+mgroups[g].numtriangles*2], 1);
-			idx+=(36+mgroups[g].numtriangles*2);
-		}
-
-		// Materials
-		memcpy(&size, &file[idx], 2);
-		mmaterials.length = size;
-		idx+=2;
-		for (int m=0; m<size; m++)
-		{	memcpy(&mmaterials[m], &file[idx], 361);
-			idx+=361;
-		}
-
-		// Post processing
-
-		// Vertices
-		vertices.length  = mvertices.length;
-		texcoords.length = mvertices.length;
-		normals.length   = mvertices.length;
-
-		for (int v; v<mvertices.length; v++)
-		{	vertices[v].x = mvertices[v].vertex[0];
-			vertices[v].y = mvertices[v].vertex[1];
-			vertices[v].z = mvertices[v].vertex[2];
-		}
-
-		// Meshes
-		meshes.length = mgroups.length;
-		for (int m; m<meshes.length; m++)
-		{	meshes[m] = new Mesh();
-			meshes[m].triangles.length = mgroups[m].numtriangles;
-
-			// Material
-			if (mgroups[m].materialIndex != -1)
-			{	// The filename exists in the system?
-
-				char[] name = mmaterials[mgroups[m].materialIndex].name;
-				if (exists(path~name))
-					meshes[m].setMaterial(path~name);
-				else // create new material
-				{	Material matl = new Material();
-					matl.addLayer(new Layer());
-
-					mMaterial *cur_material = &mmaterials[mgroups[m].materialIndex];
-
-					memcpy(&matl.getLayers()[0].ambient, cur_material.ambient.ptr, 16);
-					memcpy(&matl.getLayers()[0].diffuse, cur_material.diffuse.ptr, 16);
-					memcpy(&matl.getLayers()[0].specular, cur_material.specular.ptr, 16);
-					memcpy(&matl.getLayers()[0].emissive, cur_material.emissive.ptr, 16);
-					matl.getLayers()[0].specularity = cur_material.shininess;
-					meshes[m].setMaterial(matl);
-
-					// Load textures
-					// Ms3d stores a texture map and an alpha map for every material
-					char[] texfile = .toString(cur_material.texture.ptr);
-					if (texfile.length)
-					{	if (icmp(texfile[0..2], ".\\")==0) // linux fails with .\ in a path.
-							texfile = texfile[2..length];
-						meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ texfile));
-					}
-					if (cur_material.alphamap[0])
-						meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ cur_material.alphamap));
-				}
-			}
-
-			// Triangles
-			for (int t; t<meshes[m].triangles.length; t++)
-			{	//printf( "%d\n", mgroups[m].triangleIndices[t]);
-				meshes[m].triangles[t].x = mtriangles[mgroups[m].triangleIndices[t]].vertexIndices[0];
-				meshes[m].triangles[t].y = mtriangles[mgroups[m].triangleIndices[t]].vertexIndices[1];
-				meshes[m].triangles[t].z = mtriangles[mgroups[m].triangleIndices[t]].vertexIndices[2];
-
-				// Tex coords
-				texcoords[meshes[m].triangles[t].x].x = mtriangles[mgroups[m].triangleIndices[t]].s[0];
-				texcoords[meshes[m].triangles[t].y].x = mtriangles[mgroups[m].triangleIndices[t]].s[1];
-				texcoords[meshes[m].triangles[t].z].x = mtriangles[mgroups[m].triangleIndices[t]].s[2];
-				texcoords[meshes[m].triangles[t].x].y = mtriangles[mgroups[m].triangleIndices[t]].t[0];
-				texcoords[meshes[m].triangles[t].y].y = mtriangles[mgroups[m].triangleIndices[t]].t[1];
-				texcoords[meshes[m].triangles[t].z].y = mtriangles[mgroups[m].triangleIndices[t]].t[2];
-
-				// Normals
-				normals[meshes[m].triangles[t].x].x = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[0];
-				normals[meshes[m].triangles[t].x].y = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[1];
-				normals[meshes[m].triangles[t].x].z = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[2];
-				normals[meshes[m].triangles[t].y].x = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[3];
-				normals[meshes[m].triangles[t].y].y = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[4];
-				normals[meshes[m].triangles[t].y].z = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[5];
-				normals[meshes[m].triangles[t].z].x = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[6];
-				normals[meshes[m].triangles[t].z].y = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[7];
-				normals[meshes[m].triangles[t].z].z = mtriangles[mgroups[m].triangleIndices[t]].vertexNormals[8];
-			}
-		}
-
-		// In the MS3D format, texture coordinate and normal data is stored per triangle, while the vertex
-		// position is stored per vertex.  This allows two triangles that reference the same vertex to have
-		// different texture and normal coordinates.  This finds such instances, and creates
-		// new vertices to correct the problem.
-		for (int m; m<meshes.length; m++)
-		{	for (int t; t<meshes[m].triangles.length; t++)
-			{
-				// Index of the triangle we're dealing with.
-				int tindex = mgroups[m].triangleIndices[t];
-
-				// Triangle index a
-				if ((texcoords[meshes[m].triangles[t].x].x != mtriangles[tindex].s[0]) ||
-					(texcoords[meshes[m].triangles[t].x].y != mtriangles[tindex].t[0]))
-				{
-					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
-					vertices.length = texcoords.length = normals.length = vertices.length+1;
-					memcpy(&vertices[length-1], &vertices[mtriangles[tindex].vertexIndices[0]], 12);
-					memcpy(&normals[length-1], &mtriangles[tindex].vertexNormals[0], 12);
-					texcoords[length-1].x = mtriangles[tindex].s[0];
-					texcoords[length-1].y = mtriangles[tindex].t[0];
-					// Assign this new vertex to the triangle
-					meshes[m].triangles[t].x = vertices.length-1;
-				}
-
-				// Triangle index b
-				if ((texcoords[meshes[m].triangles[t].y].x != mtriangles[tindex].s[1]) ||
-					(texcoords[meshes[m].triangles[t].y].y != mtriangles[tindex].t[1]))
-				{
-					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
-					vertices.length = texcoords.length = normals.length = vertices.length+1;
-					memcpy(&vertices[length-1], &vertices[mtriangles[tindex].vertexIndices[1]], 12);
-					memcpy(&normals[length-1], &mtriangles[tindex].vertexNormals[3], 12);
-					texcoords[length-1].x = mtriangles[tindex].s[1];
-					texcoords[length-1].y = mtriangles[tindex].t[1];
-					// Assign this new vertex to the triangle
-					meshes[m].triangles[t].y = vertices.length-1;
-				}
-
-				// Triangle index b
-				if ((texcoords[meshes[m].triangles[t].z].x != mtriangles[tindex].s[2]) ||
-					(texcoords[meshes[m].triangles[t].z].y != mtriangles[tindex].t[2]))
-				{
-					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
-					vertices.length = texcoords.length = normals.length = vertices.length+1;
-					memcpy(&vertices[length-1], &vertices[mtriangles[tindex].vertexIndices[2]], 12);
-					memcpy(&normals[length-1], &mtriangles[tindex].vertexNormals[6], 12);
-					texcoords[length-1].x = mtriangles[tindex].s[2];
-					texcoords[length-1].y = mtriangles[tindex].t[2];
-					// Assign this new vertex to the triangle
-					meshes[m].triangles[t].z = vertices.length-1;
-				}
-			}
-
-			// Find meshes with material of -1 (no material) and assign them the default material
-			if (mgroups[m].materialIndex==-1)
-			{	meshes[m].setMaterial(new Material());
-				meshes[m].getMaterial().addLayer(new Layer());	// should be init'd to defaults
-			}
-		}
-		delete mvertices;
-		delete mtriangles;
-		delete mgroups;
-		delete mmaterials;
-		delete file;
 	}
 }
