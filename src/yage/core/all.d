@@ -16,8 +16,8 @@
 module yage.core.all;
 
 public
-{	import yage.core.freelist;
-	import yage.core.horde;
+{	import yage.core.array;
+	import yage.core.freelist;
 	import yage.core.matrix;
 	import yage.core.misc;
 	import yage.core.parse;

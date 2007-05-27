@@ -144,30 +144,6 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">addMesh</span>
-<script type="text/javascript">explorer.outline.addDecl('addMesh');</script>
-(Mesh <span class="funcparam">m</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">addVertex</span>
-<script type="text/javascript">explorer.outline.addDecl('addVertex');</script>
-(Vec3f <span class="funcparam">vert</span>, Vec3f <span class="funcparam">norm</span>, Vec!(float,2) <span class="funcparam">tex</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>This can only be called before upload()
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">bind</span>
 <script type="text/javascript">explorer.outline.addDecl('bind');</script>
@@ -175,7 +151,22 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Bind the Vertex, Texture, and Normal VBO's for use.
+<dd>This can only be called before upload()
+<br><br>
+Bind the Vertex, Texture, and Normal VBO's for use.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">clearAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('clearAttribute');</script>
+(char[] <span class="funcparam">name</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Clear an attribute.
 <br><br>
 
 </dd>
@@ -194,17 +185,14 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">getCached</span>
-<script type="text/javascript">explorer.outline.addDecl('getCached');</script>
-();
+<dt><span class="decl">Attribute  
+<span class="currsymbol">getAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('getAttribute');</script>
+(char[] <span class="funcparam">name</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return true
- if the model data has been cached in video memory.
-<br><br>
-
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -231,6 +219,17 @@ Eric Poggel
 <dd>Get the array of meshes that compose this model.
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">hasAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('hasAttribute');</script>
+(char[] <span class="funcparam">name</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -333,38 +332,6 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">setVertices</span>
-<script type="text/javascript">explorer.outline.addDecl('setVertices');</script>
-(Vec3f [] <span class="funcparam">vertices</span>, Vec3f [] <span class="funcparam">normals</span>, Vec!(float,2) [] <span class="funcparam">texcoords</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">vertices</span> used by this Model.
- The triangle arrays of this Model's meshes will index into these arrays.
- upload() should be called after this method to update changes in video memory.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">verts</td>
-
-               
-<td>vertex coordinate vectors (xyz).</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">norms</td>
-
-               
-<td>normal coordinate vectors; need to be of length 1.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">texs</td>
-
-               
-<td>texure coordinates for each vertex. </td></tr>
-</table><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
 <span class="currsymbol">setMeshes</span>
 <script type="text/javascript">explorer.outline.addDecl('setMeshes');</script>
 (Mesh[] <span class="funcparam">meshes</span>);
@@ -389,10 +356,6 @@ Eric Poggel
 <span class="currsymbol">setAttribute</span>
 <script type="text/javascript">explorer.outline.addDecl('setAttribute');</script>
 (char[] <span class="funcparam">name</span>, Vec3f [] <span class="funcparam">values</span>);
-<br>void 
-<span class="currsymbol">setAttribute</span>
-<script type="text/javascript">explorer.outline.addDecl('setAttribute');</script>
-(char[] <span class="funcparam">name</span>, Vec!(float,4) [] <span class="funcparam">values</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -432,30 +395,6 @@ Eric Poggel
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec!(float,4) [] 
-<span class="currsymbol">calcTangents</span>
-<script type="text/javascript">explorer.outline.addDecl('calcTangents');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">unsetAttribute</span>
-<script type="text/javascript">explorer.outline.addDecl('unsetAttribute');</script>
-(char[] <span class="funcparam">name</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Clear an attribute.
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -475,7 +414,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu May 17 23:35:07 2007
+		on Sat May 26 23:07:49 2007
 
 	</div>
 	
@@ -486,9 +425,9 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
-	explorer.packageExplorer.addModule("yage.core.freelist");
+	explorer.packageExplorer.addModule("yage.core.array");
 
-	explorer.packageExplorer.addModule("yage.core.horde");
+	explorer.packageExplorer.addModule("yage.core.freelist");
 
 	explorer.packageExplorer.addModule("yage.core.matrix");
 

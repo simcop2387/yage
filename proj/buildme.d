@@ -42,7 +42,7 @@ char[] doc_path = "../doc/api";	// folder for html documentation, if ddoc flag i
 char[] cur_path;					// Path of this script, set automatically
 
 // Options
-bool _debug, _release, nolink, profile, ddoc, _clean, verbose, run, gdc;
+bool _debug, _release, nolink, profile, ddoc, _clean, verbose, run, silent, gdc;
 
 // OS dependant strings
 version (Windows)
@@ -175,7 +175,6 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 	{	if (_debug)
 		{	flags~="debug";
 			flags~="g";
-
 		}
 		else if (_release)
 		{	flags~="O";
@@ -271,18 +270,39 @@ void docsPostProcess()
 }
 
 int main(char[][] args)
-{	writefln("Building Yage...");
-	writefln("If you're curious, the options are:");
-	writefln("   -clean     Delete all intermediate object files.");
-	writefln("   -ddoc      Generate documentation in "~doc_path);
-	writefln("   -debug     Include debugging symbols.");
-	writefln("   -gdc       Compile using gdc instead of dmd (incomplete).");
-	writefln("   -nolink    Compile but do not link.");
-	writefln("   -profile   Compile in profiling code.");
-	writefln("   -release   Optimize, inline expand functions, and remove unit tests and asserts.");
-	writefln("   -run       Run when finished.");
-	writefln("   -verbose   Print all commands as they're being executed.");
-	writefln("Example:  dmd -run buildme.d -clean -release -run");
+{	
+	// Parse arguments
+	foreach (char[] arg; args)
+	{	switch(tolower(arg))
+		{	case "-debug": _debug = true; break;
+			case "-release": _release = true; break;
+			case "-profile": profile = true; break;
+			case "-ddoc": ddoc = true; break;
+			case "-clean": _clean = true; break;
+			case "-nolink": nolink = true; break;
+			case "-run": run = true; break;
+			case "-silent": silent = true; break;
+			case "-verbose": verbose = true; break;
+			case "-gdc": gdc = true; break;
+			default: break;
+		}
+	}
+
+	writefln("Building Yage...");
+	if (!silent)
+	{	writefln("If you're curious, the options are:");
+		writefln("   -clean     Delete all intermediate object files.");
+		writefln("   -ddoc      Generate documentation in "~doc_path);
+		writefln("   -debug     Include debugging symbols.");
+		writefln("   -gdc       Compile using gdc instead of dmd (incomplete).");
+		writefln("   -nolink    Compile but do not link.");
+		writefln("   -profile   Compile in profiling code.");
+		writefln("   -release   Optimize, inline expand functions, and remove unit tests and asserts.");
+		writefln("   -run       Run when finished.");
+		writefln("   -silent    Hide this helpful message.");
+		writefln("   -verbose   Print all commands as they're being executed.");
+		writefln("Example:  dmd -run buildme.d -clean -release -run");
+	}
 
 	// Create the paths we write to if they don't exist
 	if (!exists(bin_path))	mkdir(bin_path);
@@ -299,21 +319,7 @@ int main(char[][] args)
 	bin_path = abs_path(bin_path);
 	doc_path = abs_path(doc_path);
 
-	// Parse arguments
-	foreach (char[] arg; args)
-	{	switch(tolower(arg))
-		{	case "-debug": _debug = true; break;
-			case "-release": _release = true; break;
-			case "-profile": profile = true; break;
-			case "-ddoc": ddoc = true; break;
-			case "-clean": _clean = true; break;
-			case "-nolink": nolink = true; break;
-			case "-run": run = true; break;
-			case "-verbose": verbose = true; break;
-			case "-gdc": gdc = true; break;
-			default: break;
-		}
-	}
+
 	
 	// Start timing
 	PerformanceCounter hpc = new PerformanceCounter();

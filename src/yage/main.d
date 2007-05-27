@@ -67,8 +67,8 @@ int main()
 	// Lights
 	LightNode l1 = new LightNode(scene);
 	l1.setDiffuse(1, .85, .7);
-	l1.setLightRadius(8000);
-	l1.setPosition(0, 0, -8000);
+	l1.setLightRadius(7000);
+	l1.setPosition(0, 0, -6000);
 
 	// Star
 	SpriteNode star = new SpriteNode(l1);
@@ -79,13 +79,10 @@ int main()
 	auto planet = new ModelNode(scene);
 	planet.setModel("space/planet.ms3d");
 	planet.setScale(60);
-
-	//planet.getModel().setAttribute("tangent", earth.getModel().calcTangents());
 	planet.setAngularVelocity(0, -0.01, 0);
-
+	
 	// Asteroids
-	asteroidBelt(700, 1400, planet);
-
+	asteroidBelt(800, 1400, planet);
 
 	// Add to the scene's update loop
 	Input.getMouseDelta();
@@ -134,7 +131,7 @@ int main()
 
 		// Cap framerate
 		//if (dtime < 1/60.0)
-		//	std.c.time.usleep(cast(uint)(1000*1000 / (60-dtime) ));
+			std.c.time.usleep(cast(uint)(1000));
 		scene.swapTransformRead();
 	}
 

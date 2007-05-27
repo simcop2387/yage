@@ -11,9 +11,7 @@ module yage.universe;
 import std.math;
 import std.random;
 import std.stdio;
-import yage.core.horde;
-import yage.core.misc;
-import yage.core.vector;
+import yage.core.all;
 import yage.node.base;
 import yage.node.node;
 import yage.resource.resource;
@@ -33,11 +31,10 @@ int step = 32;
 class Universe : Scene
 {
 	/*
-	Horde!(GameObject) gravity_objs;
+	GameObj[] gravity_objs;
 
 	this()
-	{	gravity_objs = new Horde!(GameObject);
-		super();
+	{	super();
 	}
 
 	// Generate a random universe

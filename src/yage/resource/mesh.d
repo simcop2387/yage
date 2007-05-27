@@ -19,43 +19,44 @@ import yage.system.device;
 /**
  * Models are divided into one or more meshes.
  * Each mesh has its own material and an array of triangle indices.
- * The triangle indicices index into an array of Vertices in the parent Model. */
+ * The triangle indicices index into an array of vertices in a parent Model. */
 class Mesh
-{	/*protected*/ Vec3i[]	triangles;
+{	protected Vec3i[]	triangles;
 	protected uint		vbo_triangles;
 	protected Material	material;
+	protected bool cached;
 
-	/// Construct and allocate Opengl buffer.
+	///
 	this()
 	{	if (Device.getSupport(DEVICE_VBO))
 			glGenBuffersARB(1, &vbo_triangles);
 	}
 
-	/// Create as an exact duplicate of another Model.
+	/// Create as an exact duplicate of another Mesh.
 	this(Mesh mesh)
 	{	this();
 		triangles = mesh.triangles.dup;
 		material = mesh.material;
 	}
 
-	///
+	/// Create with a material and triangles.
 	this(Material matl, Vec3i[] triangles)
 	{	this();
 		setMaterial(matl);
 		this.triangles = triangles;
 	}
 
-	/// Cleanup Opengl buffer if necessary.
+	/// Cleanup
 	~this()
 	{	if (Device.getSupport(DEVICE_VBO))
 			glDeleteBuffersARB(triangles.length*Vec3i.sizeof, &vbo_triangles);
 	}
 
-	/// Add three vertex indices (that define a Triangle) to this Mesh.
-	void addTriangle(Vec3i t)
-	{	triangles ~= t;
+	/// Are the triangles of this mesh cashed in video memory?
+	bool getCached()
+	{	return cached;		
 	}
-
+	
 	/// Get the array of triangle indices that define this Mesh.
 	Vec3i[] getTriangles()
 	{	return triangles;
@@ -75,6 +76,7 @@ class Mesh
 	void setMaterial(Material matl)
 	{	this.material = matl;
 	}
+	
 	/// Ditto
 	void setMaterial(char[] filename)
 	{	this.material = Resource.material(filename);
@@ -85,6 +87,12 @@ class Mesh
 	 * three vertex indicies from the vertex arrays in the containing Model.*/
 	void setTriangles(Vec3i[] triangles)
 	{	this.triangles = triangles;
+		if (Device.getSupport(DEVICE_VBO))
+		{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, getTrianglesVBO());
+			glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, getTriangles().length*Vec3i.sizeof, getTriangles().ptr, GL_STATIC_DRAW);
+			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+			cached = true;
+		}
 	}
 
 	/// Return a string representation of this Mesh and its data.
@@ -92,7 +100,6 @@ class Mesh
 	{	char[] result;
 		result ~= "Mesh\n";
 		result ~= "Material: '"~material.getSource()~"'";
-
 		result ~= .toString(triangles.length)~" triangles\n";
 		foreach (Vec3i t; triangles)
 			result ~= t.toString();

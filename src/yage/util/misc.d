@@ -55,7 +55,7 @@ void asteroidBelt(int number, float radius, BaseNode scene)
 		a.setModel(Resource.model("space/asteroid1.ms3d"));
 		a.setScale(value5*value5*value5*value5*value5*value5*value5*1.1 + .2);
 		a.rotate(Vec3f(value4*12, value2*12, value3*12));
-		a.setAngularVelocity(random(-.5, .5), random(-.5, .5), random(-.5, .5));
+		a.setAngularVelocity(random(-.2, .2), random(-.2, .2), random(-.2, .2));
 	}
 }
 

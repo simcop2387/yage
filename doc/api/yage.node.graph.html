@@ -106,7 +106,7 @@ Eric Poggel
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> <b>GraphNode</b> plot = <font color=blue>new</font> <b>GraphNode</b>(scene);
- plot.setWindow(-2, 2, -2, 2, step, step);
+ plot.setWindow(-2, 2, -2, 2, .1, .1);
  plot.setFunction((<font color=blue>float</font> s, <font color=blue>float</font> t){ <font color=blue>return</font> Vec3f(s, 1-(s*s+t*t), t); });
  plot.setTextureFunction((<font color=blue>float</font> s, <font color=blue>float</font> t){ <font color=blue>return</font> Vec2f(s/4-.5, t/4-.5); } );
  plot.setMaterial(Resource.material(<span style="color: purple">"blue.xml"</span>));
@@ -275,7 +275,9 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set whether the graph wraps around on itself in the s or t directions; useful for a cylinder, for example.
+<dd>Set whether the graph wraps around on itself in the s or t parametric coordinates; 
+<br><br>
+useful for a cylinder, for example.
 <br><br>
 
 </dd>
@@ -288,8 +290,10 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Regenerate the vertices of the GraphNode.  This is called automatically
- when changing many of the GraphNode's parameters.
+<dd>Regenerate the gl_Vertex, gl_Normal, and gl_TexCoord attributes of the GraphNode,
+ as well as triangle mesh data.
+ This effectively creates the vertex and mesh data necessary for rendering.
+ This is called automatically when changing many of the GraphNode's parameters.
 <br><br>
 
 </dd>
@@ -312,7 +316,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu May 17 23:35:06 2007
+		on Sat May 26 23:07:48 2007
 
 	</div>
 	
@@ -323,9 +327,9 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
-	explorer.packageExplorer.addModule("yage.core.freelist");
+	explorer.packageExplorer.addModule("yage.core.array");
 
-	explorer.packageExplorer.addModule("yage.core.horde");
+	explorer.packageExplorer.addModule("yage.core.freelist");
 
 	explorer.packageExplorer.addModule("yage.core.matrix");
 

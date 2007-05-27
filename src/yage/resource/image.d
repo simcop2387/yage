@@ -17,6 +17,8 @@ import yage.system.device;
 import yage.system.constant;
 import yage.system.log;
 
+private extern (C) void *memcpy(void *, void *, uint);
+
 
 /**
  * A class for loading and manipulating images.

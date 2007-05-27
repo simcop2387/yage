@@ -25,7 +25,7 @@ import yage.node.scene;
  * Example:
  * --------------------------------
  * GraphNode plot = new GraphNode(scene);
- * plot.setWindow(-2, 2, -2, 2, step, step);
+ * plot.setWindow(-2, 2, -2, 2, .1, .1);
  * plot.setFunction((float s, float t){ return Vec3f(s, 1-(s*s+t*t), t); });
  * plot.setTextureFunction((float s, float t){ return Vec2f(s/4-.5, t/4-.5); } );
  * plot.setMaterial(Resource.material("blue.xml"));
@@ -48,8 +48,7 @@ class GraphNode : Node
 		setWindow(-1, 1, -1, 1);
 
 		model = new Model();
-		model.meshes.length =1;
-		model.meshes[0] = new Mesh();
+		model.setMeshes([new Mesh()]);
 	}
 
 	/**
@@ -61,9 +60,8 @@ class GraphNode : Node
 	{	super(parent, original);
 
 		model = new Model();
-		model.meshes.length =1;
-		model.meshes[0] = new Mesh();
-		model.meshes[0].setMaterial(original.model.meshes[0].getMaterial());
+		model.setMeshes([new Mesh()]);
+		model.getMeshes()[0].setMaterial(original.model.getMeshes()[0].getMaterial());
 
 		setWindow(original.smin, original.smax, original.tmin, original.tmax, original.step_s, original.step_t);
 		setFunction(original.func);
@@ -89,7 +87,7 @@ class GraphNode : Node
 
 	/// Set the Material of the GraphNode.
 	void setMaterial(Material material)
-	{	model.meshes[0].setMaterial(material);
+	{	model.getMeshes()[0].setMaterial(material);
 	}
 
 	/**
@@ -97,7 +95,7 @@ class GraphNode : Node
 	 * to ensure that no Material is loaded twice.
 	 * Equivalent of setMaterial(Resource.material(filename)); */
 	void setMaterial(char[] material_file)
-	{	model.meshes[0].setMaterial(Resource.material(material_file));
+	{	model.getMeshes()[0].setMaterial(Resource.material(material_file));
 	}
 
 	/// Overridden to cache the radius if changed by the scale.
@@ -132,15 +130,18 @@ class GraphNode : Node
 		regenerate();
 	}
 
-	/// Set whether the graph wraps around on itself in the s or t directions; useful for a cylinder, for example.
+	/// Set whether the graph wraps around on itself in the s or t parametric coordinates; 
+	/// useful for a cylinder, for example.
 	void setWrap(bool swrap, bool twrap)
 	{	this.swrap = swrap;
 		this.twrap = twrap;
 	}
 
 	/**
-	 * Regenerate the vertices of the GraphNode.  This is called automatically
-	 * when changing many of the GraphNode's parameters.*/
+	 * Regenerate the gl_Vertex, gl_Normal, and gl_TexCoord attributes of the GraphNode,
+	 * as well as triangle mesh data.
+	 * This effectively creates the vertex and mesh data necessary for rendering.
+	 * This is called automatically when changing many of the GraphNode's parameters.*/
 	void regenerate()
 	{	if (func is null)
 			return;
@@ -148,17 +149,24 @@ class GraphNode : Node
 		int ssize = cast(int)ceil((smax-smin)/step_s);
 		int tsize = cast(int)ceil((tmax-tmin)/step_t);
 		int vsize = ssize*tsize;
-		model.vertices.length = vsize;
-		model.normals.length = vsize;
-		model.texcoords.length = vsize;
-		model.meshes[0].triangles.length = vsize*2;
 
-		// Aliases
-		Vec3i[] triangles = model.meshes[0].triangles;
+		Vec3f[] vertices;
+		Vec3f[] normals;
+		Vec2f[] texcoords;
+		
+		if (model.hasAttribute("gl_Vertex")) vertices = model.getAttribute("gl_Vertex").vec3f;
+		if (model.hasAttribute("gl_Normal")) normals = model.getAttribute("gl_Normal").vec3f;
+		if (model.hasAttribute("gl_TexCoord")) texcoords = model.getAttribute("gl_TexCoord").vec2f;
+		
+		vertices.length = vsize;
+		normals.length = vsize;
+		texcoords.length = vsize;
+		Vec3i[] triangles = model.getMeshes()[0].getTriangles();
+		triangles.length = vsize*2;
 
 		// Reset the normals.
 		for (int i=0; i<vsize; i++)
-			model.normals[i].set(0);
+			normals[i].set(0);
 
 		// Create vertices
 		int i=0;
@@ -172,13 +180,13 @@ class GraphNode : Node
 				if (rs>smax-step_s) rs = smax;	// round the last vertices
 				if (rt>tmax-step_t) rt = tmax;	// up to the graph max
 
-				model.vertices[c] = func(rs, rt);
+				vertices[c] = func(rs, rt);
 
 				// Texture coordinates
 				if (texfunc !is null)
-					model.texcoords[c] = texfunc(rs, rt);
+					texcoords[c] = texfunc(rs, rt);
 				else
-					model.texcoords[c] = Vec2f(rs, rt);
+					texcoords[c] = Vec2f(rs, rt);
 
 				// Triangles
 				if ((twrap || t+1<tsize) && (swrap || s+1<ssize))
@@ -204,21 +212,26 @@ class GraphNode : Node
 			{	int c = s*tsize+t;
 
 				for (int j=0; j<2; j++)
-				{	Vec3f p1 = model.vertices[triangles[i+j].x];
-					Vec3f p2 = model.vertices[triangles[i+j].y];
-					Vec3f p3 = model.vertices[triangles[i+j].z];
+				{	Vec3f p1 = vertices[triangles[i+j].x];
+					Vec3f p2 = vertices[triangles[i+j].y];
+					Vec3f p3 = vertices[triangles[i+j].z];
 
 					Vec3f n = ((p1-p2).cross(p1-p3)).normalize();	// plane normal
-					model.normals[triangles[i+j].x] += n;
-					model.normals[triangles[i+j].y] += n;
-					model.normals[triangles[i+j].z] += n;
+					normals[triangles[i+j].x] += n;
+					normals[triangles[i+j].y] += n;
+					normals[triangles[i+j].z] += n;
 				}
 				i+=2;
 		}	}
 
 		// Normalize all normals
-		foreach (inout Vec3f n; model.normals)
+		foreach (inout Vec3f n; normals)
 			n = n.normalize();
+		
+		model.setAttribute("gl_Vertex", vertices);
+		model.setAttribute("gl_TexCoord", texcoords);
+		model.setAttribute("gl_Normal", normals);
+		model.getMeshes()[0].setTriangles(triangles);
 
 		radius = model.getDimensions().scale(scale).max();
 

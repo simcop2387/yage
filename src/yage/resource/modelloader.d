@@ -19,6 +19,7 @@ import yage.resource.mesh;
 import yage.resource.resource;
 import yage.system.log;
 
+import std.c.string : memcpy;
 
 /**
  * An in-memory representation of a Milkshape3D model.
@@ -151,6 +152,9 @@ template ModelLoader()
 		// Load the Ms3d model into the MS3D struct.
 		MS3D ms3d;
 		ms3d.load(source);
+		
+		Vec3f[] vertices, normals;
+		Vec2f[] texcoords;
 
 		// Vertices
 		vertices.length  = ms3d.vertices.length;
@@ -167,7 +171,8 @@ template ModelLoader()
 		meshes.length = ms3d.groups.length;
 		for (int m; m<meshes.length; m++)
 		{	meshes[m] = new Mesh();
-			meshes[m].triangles.length = ms3d.groups[m].numtriangles;
+			Vec3i[] triangles = meshes[m].getTriangles();
+			triangles.length = ms3d.groups[m].numtriangles;
 
 			// Material
 			if (ms3d.groups[m].materialIndex != -1)
@@ -202,46 +207,45 @@ template ModelLoader()
 			}
 
 			// Triangles
-			for (int t; t<meshes[m].triangles.length; t++)
+			for (int t; t<triangles.length; t++)
 			{	//printf( "%d\n", ms3d.groups[m].triangleIndices[t]);
-				meshes[m].triangles[t].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexIndices[0];
-				meshes[m].triangles[t].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexIndices[1];
-				meshes[m].triangles[t].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexIndices[2];
+				triangles[t].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexIndices[0];
+				triangles[t].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexIndices[1];
+				triangles[t].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexIndices[2];
 
 				// Tex coords
-				texcoords[meshes[m].triangles[t].x].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].s[0];
-				texcoords[meshes[m].triangles[t].y].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].s[1];
-				texcoords[meshes[m].triangles[t].z].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].s[2];
-				texcoords[meshes[m].triangles[t].x].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].t[0];
-				texcoords[meshes[m].triangles[t].y].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].t[1];
-				texcoords[meshes[m].triangles[t].z].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].t[2];
+				texcoords[triangles[t].x].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].s[0];
+				texcoords[triangles[t].y].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].s[1];
+				texcoords[triangles[t].z].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].s[2];
+				texcoords[triangles[t].x].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].t[0];
+				texcoords[triangles[t].y].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].t[1];
+				texcoords[triangles[t].z].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].t[2];
 
 				// Normals
-				normals[meshes[m].triangles[t].x].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[0];
-				normals[meshes[m].triangles[t].x].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[1];
-				normals[meshes[m].triangles[t].x].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[2];
-				normals[meshes[m].triangles[t].y].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[3];
-				normals[meshes[m].triangles[t].y].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[4];
-				normals[meshes[m].triangles[t].y].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[5];
-				normals[meshes[m].triangles[t].z].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[6];
-				normals[meshes[m].triangles[t].z].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[7];
-				normals[meshes[m].triangles[t].z].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[8];
+				normals[triangles[t].x].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[0];
+				normals[triangles[t].x].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[1];
+				normals[triangles[t].x].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[2];
+				normals[triangles[t].y].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[3];
+				normals[triangles[t].y].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[4];
+				normals[triangles[t].y].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[5];
+				normals[triangles[t].z].x = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[6];
+				normals[triangles[t].z].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[7];
+				normals[triangles[t].z].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[8];
 			}
-		}
 
-		// In the MS3D format, texture coordinate and normal data is stored per triangle, while the vertex
-		// position is stored per vertex.  This allows two triangles that reference the same vertex to have
-		// different texture and normal coordinates.  This finds such instances, and creates
-		// new vertices to correct the problem.
-		for (int m; m<meshes.length; m++)
-		{	for (int t; t<meshes[m].triangles.length; t++)
+
+			// In the MS3D format, texture coordinate and normal data is stored per triangle, while the vertex
+			// position is stored per vertex.  This allows two triangles that reference the same vertex to have
+			// different texture and normal coordinates, but is incompatible with the OpenGL vertex format.  
+			// This loop finds such instances, and creates new vertices to correct the problem.
+			for (int t; t<triangles.length; t++)
 			{
 				// Index of the triangle we're dealing with.
 				int tindex = ms3d.groups[m].triangleIndices[t];
 
 				// Triangle index a
-				if ((texcoords[meshes[m].triangles[t].x].x != ms3d.triangles[tindex].s[0]) ||
-					(texcoords[meshes[m].triangles[t].x].y != ms3d.triangles[tindex].t[0]))
+				if ((texcoords[triangles[t].x].x != ms3d.triangles[tindex].s[0]) ||
+					(texcoords[triangles[t].x].y != ms3d.triangles[tindex].t[0]))
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
 					vertices.length = texcoords.length = normals.length = vertices.length+1;
@@ -250,12 +254,12 @@ template ModelLoader()
 					texcoords[length-1].x = ms3d.triangles[tindex].s[0];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[0];
 					// Assign this new vertex to the triangle
-					meshes[m].triangles[t].x = vertices.length-1;
+					triangles[t].x = vertices.length-1;
 				}
 
 				// Triangle index b
-				if ((texcoords[meshes[m].triangles[t].y].x != ms3d.triangles[tindex].s[1]) ||
-					(texcoords[meshes[m].triangles[t].y].y != ms3d.triangles[tindex].t[1]))
+				if ((texcoords[triangles[t].y].x != ms3d.triangles[tindex].s[1]) ||
+					(texcoords[triangles[t].y].y != ms3d.triangles[tindex].t[1]))
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
 					vertices.length = texcoords.length = normals.length = vertices.length+1;
@@ -264,12 +268,12 @@ template ModelLoader()
 					texcoords[length-1].x = ms3d.triangles[tindex].s[1];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[1];
 					// Assign this new vertex to the triangle
-					meshes[m].triangles[t].y = vertices.length-1;
+					triangles[t].y = vertices.length-1;
 				}
 
 				// Triangle index b
-				if ((texcoords[meshes[m].triangles[t].z].x != ms3d.triangles[tindex].s[2]) ||
-					(texcoords[meshes[m].triangles[t].z].y != ms3d.triangles[tindex].t[2]))
+				if ((texcoords[triangles[t].z].x != ms3d.triangles[tindex].s[2]) ||
+					(texcoords[triangles[t].z].y != ms3d.triangles[tindex].t[2]))
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
 					vertices.length = texcoords.length = normals.length = vertices.length+1;
@@ -278,7 +282,7 @@ template ModelLoader()
 					texcoords[length-1].x = ms3d.triangles[tindex].s[2];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[2];
 					// Assign this new vertex to the triangle
-					meshes[m].triangles[t].z = vertices.length-1;
+					triangles[t].z = vertices.length-1;
 				}
 			}
 
@@ -287,10 +291,91 @@ template ModelLoader()
 			{	meshes[m].setMaterial(new Material());
 				meshes[m].getMaterial().addLayer(new Layer());	// should be init'd to defaults
 			}
+			meshes[m].setTriangles(triangles);
 		}
 		delete ms3d.vertices;
 		delete ms3d.triangles;
 		delete ms3d.groups;
 		delete ms3d.materials;
+		
+		setAttribute("gl_Vertex", vertices);
+		setAttribute("gl_TexCoord", texcoords);
+		setAttribute("gl_Normal", normals);
 	}
 }
+
+
+/*///
+Vec4f[] calcTangents()
+{
+	Vec3f[] tan1 = new Vec3f[vertices.length];
+	Vec3f[] tan2 = new Vec3f[vertices.length];
+
+	Vec4f[] result = new Vec4f[vertices.length];
+
+	foreach (m; meshes)
+	{	foreach (t; m.triangles)
+		{
+			int i1 = t.x;
+			int i2 = t.y;
+			int i3 = t.z;
+
+			Vec3f v1 = vertices[i1];
+			Vec3f v2 = vertices[i2];
+			Vec3f v3 = vertices[i3];
+
+			Vec2f w1 = texcoords[i1];
+			Vec2f w2 = texcoords[i2];
+			Vec2f w3 = texcoords[i3];
+
+			//Vec2f x = Vec2f(v2.x-v1.x, v3.x-v1.x);
+			//Vec2f y = Vec2f(v2.y-v1.y, v3.y-v1.y);
+			//Vec2f z = Vec2f(v2.z-v1.z, v3.z-v1.z);
+
+			float x1 = v2.x-v1.x;
+			float x2 = v3.x-v1.x;
+			float y1 = v2.y-v1.y;
+			float y2 = v3.y-v1.y;
+			float z1 = v2.z-v1.z;
+			float z2 = v3.z-v1.z;
+
+			float s1 = w2.x-w1.x;
+			float s2 = w3.x-w1.x;
+			float t1 = w2.y-w1.y;
+			float t2 = w3.y-w1.y;
+
+			float r = 1.0f / (s1*t2 - s2*t1);
+			Vec3f sdir = Vec3f((t2*x1 - t1*x2)*r, (t2*y1 - t1*y2)*r, (t2*z1 - t1*z2)*r);
+			Vec3f tdir = Vec3f((s1*x2 - s2*x1)*r, (s1*y2 - s2*y1)*r, (s1*z2 - s2*z1)*r);
+
+			tan1[i1] += sdir;
+			tan1[i2] += sdir;
+			tan1[i3] += sdir;
+
+			tan2[i1] += tdir;
+			tan2[i2] += tdir;
+			tan2[i3] += tdir;
+		}
+	}
+
+	for (int a=0; a<vertices.length; a++)
+	{
+		Vec3f n = normals[a];
+		Vec3f t = tan1[a];
+
+		// Gram-Schmidt orthogonalize
+		Vec3f temp = (t-n * n.dot(t)).normalize();
+		result[a].v[0..3] = temp.v[0..3];
+
+		// Calculate handedness
+		result[a].w = (n.cross(t).dot(tan2[a]) < 0.0f) ? -1.0f : 1.0f;
+	}
+
+	delete tan1;
+	delete tan2;
+
+	//result[0..length] = Vec4f(1, 0, 1, 1);
+	//setAttribute("tangent", result);
+	return result;
+}
+*/

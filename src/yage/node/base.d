@@ -9,8 +9,7 @@ module yage.node.base;
 import std.stdio;
 import std.traits;
 import std.bind;
-import yage.core.horde;
-import yage.core.misc;
+import yage.core.all;
 import yage.node.node;
 import yage.node.scene;
 import yage.core.all;
@@ -22,11 +21,10 @@ import yage.core.all;
  * to take an argument of either type. */
 abstract class BaseNode
 {
-
 	// These are public for easy internal access.
 	Scene		scene;			// The Scene that this node belongs to.
 	BaseNode	parent;
-	Horde!(Node)children;
+	Node[]		children;
 	int 		index = -1;		// index of this node in parent array
 
 	protected void delegate(BaseNode self) on_update = null;	// called on update
@@ -48,7 +46,7 @@ abstract class BaseNode
 
 	/// Get an array of this Node's children
 	Node[] getChildren()
-	{	return children.array();
+	{	return children;
 	}
 
 	/**
@@ -127,7 +125,7 @@ abstract class BaseNode
 
 		if (recurse)
 		{	indent++;
-			foreach (Node c; children.array())
+			foreach (Node c; children)
 				result ~= c.toString(recurse);
 			indent--;
 		}
@@ -137,14 +135,14 @@ abstract class BaseNode
 
 	/// Update the positions and rotations of this Node and all children by delta seconds.
 	void update(float delta)
-	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
 
 		// Call the onUpdate() function
 		if (on_update !is null)
 			on_update(this);
 
 		// Iterate in reverse to ensure we hit all of them, since the last item
-		// is moved over the current item when removing from a Horde.
+		// is moved over the current item when removing from an array.
 		foreach_reverse(Node c; children)
 			c.update(delta);
 	}

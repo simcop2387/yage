@@ -31,7 +31,7 @@ class Material
 	// Internal structure
 	protected char[] source;		// the path to the xml file.
 	protected int max_lights;
-	protected Horde!(Layer) layers;
+	protected Layer[] layers;
 
 	/// Construct an empty material.
 	this()
@@ -45,12 +45,13 @@ class Material
 
 	/// Add a new layer to this material and return it.
 	int addLayer(Layer l)
-	{	return layers.add(l);
+	{	layers~=l;
+		return layers.length; 
 	}
 
 	/// Get all Layers as an array.
 	Layer[] getLayers()
-	{	return layers.array;
+	{	return layers;
 	}
 
 	/// Return the path and filename from where this material was loaded.
@@ -249,8 +250,8 @@ class Material
 	}
 
 	/// Remove the layer with the given index from this material.
-	void removeLayer(uint index)
-	{	layers.remove(index, true);
+	void removeLayer(int index)
+	{	yage.core.array.remove(layers, index, true);
 	}
 
 	/// Return a string of xml for this material along with all layers.
@@ -258,7 +259,7 @@ class Material
 	{	char[] result;
 		result = formatString("<material maxlights=%d>\n", max_lights);
 		// Loop through layers
-		foreach (Layer layer; layers.array())
+		foreach (Layer layer; layers)
 			result ~= layer.toString();
 		result~= formatString("</material>\n");
 		return result;

@@ -11,11 +11,7 @@ import std.stdio;
 import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
-import yage.core.horde;
-import yage.core.parse;
-import yage.core.matrix;
-import yage.core.misc;
-import yage.core.vector;
+import yage.core.all;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
@@ -66,8 +62,8 @@ class Layer
 	int	width = 1;
 
 	// private
-	protected Horde!(Texture) textures;
-	protected Horde!(Shader) shaders;
+	protected Texture[] textures;
+	protected Shader[] shaders;
 	protected int program=0;
 	protected static int current_program=0;
 
@@ -86,19 +82,20 @@ class Layer
 	 * Add a Shader to this Layer.  Call linkShaders() to recompile the program.
 	 * Returns: the index of the new Shader in the Shader array. */
 	int addShader(Shader shader)
-	{	return shaders.add(shader);
+	{	shaders ~= shader;
+		return shaders.length; 
 	}
 
 	/// Add a new texture to this layer and return it.
 	int addTexture(GPUTexture texture, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT,
 				Vec2f position=zero, float rotation=0, Vec2f scale=one)
 	{
-		Texture a = Texture(texture, clamp, filter, position, rotation, scale);
-		return textures.add(a);
+		return addTexture(Texture(texture, clamp, filter, position, rotation, scale));
 	}
 	/// ditto
 	int addTexture(Texture texture)
-	{	return textures.add(texture);
+	{	textures ~= texture;
+		return textures.length;
 	}
 
 	/**
@@ -111,12 +108,12 @@ class Layer
 
 	/// Return the array of shader obects used by this layer.
 	Shader[] getShaders()
-	{	return shaders.array();
+	{	return shaders;
 	}
 
 	/// Get an array of all the textures of this layer.
 	Texture[] getTextures()
-	{	return textures.array();
+	{	return textures;
 	}
 
 	///
@@ -148,7 +145,7 @@ class Layer
 		program = glCreateProgramObjectARB();
 
 		// Add shaders to the program
-		foreach (Shader shader; shaders.array())
+		foreach (Shader shader; shaders)
 		{	glAttachObjectARB(program, shader.getShader());
 			Log.write("Linking shader ", shader.getSource());
 		}

@@ -253,7 +253,7 @@ class SoundNode : Node
 
 		if (recurse)
 		{	indent++;
-			foreach (Node c; children.array())
+			foreach (Node c; children)
 				result ~= c.toString(recurse);
 			indent--;
 		}

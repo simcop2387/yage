@@ -33,7 +33,7 @@ import yage.system.log;
  * --------------------------------
  * TerrainNode a = new TerrainNode(scene);  // Child of scene
  * a.setScale(1000, 100, 1000);             // Make it a decent size
- * a.setMaterial("terrain/dirt.xml");
+ * a.setMaterial("terrain/islands.xml");
  * a.setHeightMap("terrain/islands-height.png");
  * --------------------------------
  */
@@ -47,7 +47,7 @@ class TerrainNode : Node
 	this(BaseNode parent)
 	{	super(parent);
 		model = new Model();
-		model.addMesh(new Mesh());
+		model.setMeshes([new Mesh()]);
 		setVisible(true);
 	}
 
@@ -67,7 +67,7 @@ class TerrainNode : Node
 
 	///
 	Material getMaterial()
-	{	return model.meshes[0].getMaterial();
+	{	return model.getMeshes()[0].getMaterial();
 	}
 
 	/// Get the model generated from setHeightMap().
@@ -118,13 +118,15 @@ class TerrainNode : Node
 				i+=2;
 			}
 
-		model.setVertices(vertices, normals, texcoords);
+		//model.setVertices(vertices, normals, texcoords);
+		model.setAttribute("gl_Vertex", vertices);
+		model.setAttribute("gl_TexCoord", texcoords);
+		model.setAttribute("gl_Normal", normals);
 		model.getMeshes[0].setTriangles(triangles);
 
 		// Normals and upload
 		width = w;
 		regenerate();
-		//model.upload();
 	}
 
 	/// ditto
@@ -137,7 +139,7 @@ class TerrainNode : Node
 	 * to ensure that no Material is loaded twice.
 	 * Equivalent of setMaterial(Resource.material(filename)); */
 	void setMaterial(Material material)
-	{	model.meshes[0].setMaterial(material);
+	{	model.getMeshes()[0].setMaterial(material);
 	}
 
 	/// Set the Material of the GraphNode.
@@ -197,6 +199,9 @@ class TerrainNode : Node
 				Vec3f tz = Vec3f(0, dz, 1.0/height);
 				normals[z*width+x] = -(tx.cross(tz)).normalize();
 			}
+		//model.setAttribute("gl_Vertex", vertices);
+		model.setAttribute("gl_Normal", normals);
+		
 		radius = model.getDimensions().scale(scale).length();
 	}
 }

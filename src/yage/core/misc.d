@@ -16,7 +16,7 @@ import std.string;
 import std.stdio;
 
 // Just because it's so useful
-extern (C) void *memcpy(void *, void *, uint);
+// extern (C) void *memcpy(void *, void *, uint);
 
 const float PI_180 = 0.01745329251994;	// PI / 180
 const float _180_PI = 57.2957795130823; // 180 / pi

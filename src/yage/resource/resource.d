@@ -6,10 +6,9 @@
 
 module yage.resource.resource;
 
-import std.file;
 import std.path;
 import std.stdio;
-import yage.core.horde;
+import yage.core.array;
 import yage.core.misc;
 import yage.resource.model;
 import yage.resource.material;
@@ -29,7 +28,7 @@ import std.string;
  * a check should first be made with the resource manager.*/
 abstract class Resource
 {
-	static Horde!(char[]) paths;		// paths to look for resources
+	static char[][] paths;		// paths to look for resources
 
 	private static GPUTexture[char[]][2][2]  textures; // [source][clamped][compressed][mipmapped][filter]
 	private static Shader[char[]]	shaders;
@@ -39,12 +38,12 @@ abstract class Resource
 
 	/// Initialize
 	static this()
-	{	paths.add("");
+	{	paths ~= "";
 	}
 
 	/// Get the array of path strings
 	static char[][] getPath()
-	{	return paths.array();
+	{	return paths;
 	}
 
 	/**
@@ -57,7 +56,8 @@ abstract class Resource
 			path = tolower(path);
 		if (path[length-1] != std.path.sep[0])
 			path ~= std.path.sep;
-		return paths.add(path);
+		paths ~= path;
+		return paths.length;
 	}
 
 	/**
@@ -78,7 +78,7 @@ abstract class Resource
 		}
 		if (std.file.exists(std.path.join(current_dir, path)))
 			return cleanPath(current_dir~path);
-		foreach(char[] p; paths.array())
+		foreach(char[] p; paths)
 			if (std.file.exists(std.path.join(p, path)))
 				return cleanPath(p~path);
 		throw new Exception("The path '" ~ path ~ "' could not be resolved.");
@@ -91,7 +91,7 @@ abstract class Resource
 
 		for (int i=0; i<paths.length; i++)
 			if (paths[i]==path)
-			{	paths.remove(i);
+			{	yage.core.array.remove(paths, i);
 				return true;
 			}
 		return false;

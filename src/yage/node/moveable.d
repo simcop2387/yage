@@ -87,7 +87,7 @@ abstract class MoveableNode : BaseNode
 	 * cached = Get the absolute transformation Matrix cached after the last complete scenegraph update,
 	 * instead of the current version.  This can be used to avoid working with a half-updated scenegraph.*/
 	Matrix getAbsoluteTransform(bool cached = false)
-	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
 
 		if (cached) // the transform_abs cache is never dirty
 			return cache[scene.transform_read].transform_abs;
@@ -293,14 +293,14 @@ abstract class MoveableNode : BaseNode
 	void setTransformDirty()
 	{	if (!transform_dirty)
 		{	transform_dirty=true;
-			foreach(Node c; children.array())
+			foreach(Node c; children)
 				c.setTransformDirty();
 	}	}
 
 	// Cache the current relative and absolute position/rotation for rendering.
 	// This prevents rendering a halfway-updated scenegraph.
 	void update(float delta)
-	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
 
 		cache[scene.transform_write].transform = transform;
 		cache[scene.transform_write].transform_abs = getAbsoluteTransform();

@@ -8,7 +8,7 @@ module yage.node.scene;
 
 import derelict.opengl.gl;
 import derelict.openal.al;
-import yage.core.horde;
+import yage.core.array;
 import yage.core.misc;
 import yage.core.repeater;
 import yage.core.timer;
@@ -22,7 +22,7 @@ import yage.node.base;
  * A Scene is the root of a tree of Nodes, and obviously, a Scene never has a parent.
  * Certain "global" variables are stored per Scene and affect all Nodes in that
  * Scene.  Examples include global ambient lighting and the speed of sound.
- * Scenes also maintain a Horde (array) of all lights in them.
+ * Scenes also maintain an array of all lights in them.
  *
  * Each Scene can also be thought to exist in its own thread.  start() and stop()
  * control the updating of all child nodes at a fixed frequency.
@@ -42,7 +42,7 @@ import yage.node.base;
 class Scene : BaseNode
 {
 	protected Scene skybox;
-	protected Horde!(LightNode) lights;
+	protected LightNode[] lights;
 
 	protected Timer delta; 					// time since the last time this Scene was updated.
 	protected float delta_time;
@@ -92,7 +92,7 @@ class Scene : BaseNode
 
 	/// Get an array that contains all lights that are children of this Scene.
 	LightNode[] getLights()
-	{	return cast(LightNode[])lights.array();
+	{	return lights;
 	}
 
 	///
@@ -287,7 +287,8 @@ class Scene : BaseNode
 	 * A list of lights in the scene are mainained here only for faster lookups.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	void addLight(LightNode light)
-	{	light.setLightIndex(lights.add(light));
+	{	lights ~= light;
+		light.setLightIndex(lights.length-1);
 	}
 
 	/*
@@ -295,7 +296,8 @@ class Scene : BaseNode
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	synchronized void removeLight(int light_index)
 	{	if (light_index != -1)
-		{	LightNode goodbye = lights.remove(light_index);
+		{	LightNode goodbye = lights[light_index];
+			lights.remove(light_index, false);
 			if (light_index < lights.length) // set the index of the light that was moved over the one just deleted.
 				lights[light_index].setLightIndex(light_index);
 			goodbye.setLightIndex(-1); // prevent multiple removals.
