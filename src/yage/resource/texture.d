@@ -309,7 +309,7 @@ class GPUTexture
 			}
 
 			// Resize if necessary
-			image.resize(mini(newwidth, max), mini(newheight, max));
+			image.resize(min(newwidth, max), min(newheight, max));
 			glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.get().ptr);
 
 	    }

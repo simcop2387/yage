@@ -86,9 +86,9 @@ class Flyer
 	/// Accept input and apply dampening to the FloatingCamera.
 	void update(float delta)
 	{
-		base.setVelocity(base.getVelocity().scale(maxf(1-delta*ldamp, 0.0f)));
-		pivot.setAngularVelocity(pivot.getAngularVelocity().scale(maxf(1-delta*xdamp, 0.0f)));
-		base.setAngularVelocity(base.getAngularVelocity().scale(maxf(1-delta*ydamp, 0.0f)));
+		base.setVelocity(base.getVelocity().scale(max(1-delta*ldamp, 0.0f)));
+		pivot.setAngularVelocity(pivot.getAngularVelocity().scale(max(1-delta*xdamp, 0.0f)));
+		base.setAngularVelocity(base.getAngularVelocity().scale(max(1-delta*ydamp, 0.0f)));
 
 		float speed = 2000*delta;
 

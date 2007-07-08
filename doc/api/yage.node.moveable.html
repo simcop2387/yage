@@ -90,15 +90,14 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
+<dt><span class="decl">template 
 <span class="currsymbol">MoveableNode</span>
 <script type="text/javascript">explorer.outline.addDecl('MoveableNode');</script>
-: yage.node.base.BaseNode;
-</span></dt>
+()</span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Nodes have numerous methods for changing position and velocity.
- They are separated into this abstract class to keep things better organized.
+ They are separated into this templated mixin to reduce the length of base.d and keep things better organized.
 <br><br>
 <b>See Also:</b><br>
 yage.node.Node
@@ -109,7 +108,7 @@ yage.node.Node
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix * 
+<dt><span class="decl">Matrix* 
 <span class="currsymbol">getTransformPtr</span>
 <script type="text/javascript">explorer.outline.addDecl('getTransformPtr');</script>
 ();
@@ -122,7 +121,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix * 
+<dt><span class="decl">Matrix* 
 <span class="currsymbol">getAbsoluteTransformPtr</span>
 <script type="text/javascript">explorer.outline.addDecl('getAbsoluteTransformPtr');</script>
 ();
@@ -135,7 +134,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix  
+<dt><span class="decl">Matrix 
 <span class="currsymbol">getTransform</span>
 <script type="text/javascript">explorer.outline.addDecl('getTransform');</script>
 (bool <span class="funcparam">cached</span> = false);
@@ -157,7 +156,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix  
+<dt><span class="decl">Matrix 
 <span class="currsymbol">getAbsoluteTransform</span>
 <script type="text/javascript">explorer.outline.addDecl('getAbsoluteTransform');</script>
 (bool <span class="funcparam">cached</span> = false);
@@ -178,7 +177,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
+<dt><span class="decl">Vec3f 
 <span class="currsymbol">getPosition</span>
 <script type="text/javascript">explorer.outline.addDecl('getPosition');</script>
 ();
@@ -192,7 +191,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
+<dt><span class="decl">Vec3f 
 <span class="currsymbol">getAbsolutePosition</span>
 <script type="text/javascript">explorer.outline.addDecl('getAbsolutePosition');</script>
 ();
@@ -206,7 +205,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
+<dt><span class="decl">Vec3f 
 <span class="currsymbol">getRotation</span>
 <script type="text/javascript">explorer.outline.addDecl('getRotation');</script>
 ();
@@ -220,7 +219,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
+<dt><span class="decl">Vec3f 
 <span class="currsymbol">getAbsoluteRotation</span>
 <script type="text/javascript">explorer.outline.addDecl('getAbsoluteRotation');</script>
 ();
@@ -369,7 +368,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
+<dt><span class="decl">Vec3f 
 <span class="currsymbol">getVelocity</span>
 <script type="text/javascript">explorer.outline.addDecl('getVelocity');</script>
 ();
@@ -382,7 +381,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
+<dt><span class="decl">Vec3f 
 <span class="currsymbol">getAbsoluteVelocity</span>
 <script type="text/javascript">explorer.outline.addDecl('getAbsoluteVelocity');</script>
 ();
@@ -412,7 +411,7 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
+<dt><span class="decl">Vec3f 
 <span class="currsymbol">getAngularVelocity</span>
 <script type="text/javascript">explorer.outline.addDecl('getAngularVelocity');</script>
 ();
@@ -529,7 +528,7 @@ yage.node.Node
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 26 23:07:48 2007
+		on Sun Jul  8 00:19:33 2007
 
 	</div>
 	
@@ -625,8 +624,6 @@ yage.node.Node
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
-
-	explorer.packageExplorer.addModule("yage.universe");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

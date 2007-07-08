@@ -1,12 +1,16 @@
 #!~/bin/dmd -run
 /**
- * Authors: Eric Poggel
- * Date: October 16, 2006
- * Copyright: Public Domain
+ * Copyright:  Public Domain
+ * Authors:    Eric Poggel
  * Warranty: none
  *
  * Builds the yage game engine and optionally the html documentation, but
  * feel free to use this script for whatever.
+ * 
+ * This script can either use precompiled derelict libraries in the lib folder
+ * or build the derelict source directly with the engine.  The former is
+ * of course faster, but the latter can be achieved by setting ign_path and
+ * lib_path to empty strings in the compilation options below.
  *
  * Examples:
  * ------
@@ -33,9 +37,9 @@ version (Windows)
 // Paths are relative to the build script.
 char[] src_path = "../src";			// Path to .d source files
 char[] imp_path = "../src";			// Semicolon delimited list of paths to look for imports
-char[] ign_path = "../src/derelict";// Semicolon delimited list of paths to exclude source files
-char[] lib_path = "../lib";			// libraries and library "headers"
-char[] obj_path = "../bin/obj";		// temporary directory for object files
+char[] ign_path = "../src/derelict/";// A path to exclude source files (should eventually be semicolon delimited list)
+char[] lib_path = "../lib";			// libraries and library "headers" (should eventually be semicolon delimited list)
+char[] obj_path = "../bin/.obj";	// temporary directory for object files
 char[] bin_path = "../bin";			// folder where executable binary will be placed
 char[] bin_name = "yage";			// executable binary name
 char[] doc_path = "../doc/api";	// folder for html documentation, if ddoc flag is set
@@ -82,7 +86,7 @@ char[][] recls(char[] directory=".")
 	return result;
 }
 
-/// Given relative path rel_path, returns an absolute path.
+// Given relative path rel_path, returns an absolute path.
 char[] abs_path(char[] rel_path)
 {
 	// Remove filename
@@ -110,7 +114,7 @@ char[][] getSources(bool include_ddoc=false)
 		all ~= scan(".", ".ddoc");
 	char[][] sources;
 	foreach(char[] src; all)
-		if (find(abs_path(src), ign_path)== -1)
+		if (!ign_path.length || find(abs_path(src), ign_path)== -1)
 			sources ~= src;
 	return sources;
 }
@@ -149,54 +153,54 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 	char[][] flags;
 	if (gdc)
 	{	if (_debug)
-		{	flags~="fdebug";
-			flags~="g";
+		{	flags~="-fdebug";
+			flags~="-g";
 		}
 		else if (_release)
-		{	flags~="O3";
-			flags~="finline";
-			flags~="frelease";
+		{	flags~="-O3";
+			flags~="-finline";
+			flags~="-frelease";
 		}
 		if (profile)
-			flags~="profile";
+			flags~="-profile";
 		if (ddoc)
-		{	flags~="fdoc";
-			flags~="fdoc-dir"~doc_path;
+		{	flags~="-fdoc";
+			flags~="-fdoc-dir"~doc_path;
 		}
 		if (!_release)
-			flags~="funittest";
-		flags~="I"~imp_path;
-		//flags~="od"~obj_path;			// Set the object output directory
-		//flags~="op";					// Preserve path of object files, otherwise duplicate names will overwrite one another!
-		flags~="o"~bin_name~bin_ext;	// output filename
+			flags~="-funittest";
+		flags~="-I"~imp_path;
+		//flags~="-od"~obj_path;		// Set the object output directory
+		//flags~="-op";					// Preserve path of object files, otherwise duplicate names will overwrite one another!
+		flags~="-o"~bin_name~bin_ext;	// output filename
 	
 	}
 	else
 	{	if (_debug)
-		{	flags~="debug";
-			flags~="g";
+		{	flags~="-debug";
+			flags~="-g";
 		}
 		else if (_release)
-		{	flags~="O";
-			flags~="inline";
-			flags~="release";
+		{	flags~="-O";
+			flags~="-inline";
+			flags~="-release";
 		}
 		if (profile)
-			flags~="profile";
+			flags~="-profile";
 		if (ddoc)
-		{	flags~="D";
-			flags~="Dd"~doc_path;
+		{	flags~="-D";
+			flags~="-Dd"~doc_path;
 		}
 		if (!_release)
-			flags~="unittest";
-		flags~="I"~imp_path;
-		flags~="od"~obj_path;	// Set the object output directory
-		flags~="op";			// Preserve path of object files, otherwise duplicate names will !
-		flags~="of"~bin_name~bin_ext;	// output filename
-		flags~="quiet";
+			flags~="-unittest";
+		flags~="-I"~imp_path;
+		flags~="-od"~obj_path;	// Set the object output directory
+		flags~="-op";			// Preserve path of object files, otherwise duplicate names will occur!
+		flags~="-of"~bin_name~bin_ext;	// output filename
+		flags~="-quiet";
 	}
 	if (nolink)
-		flags~="c";				// do not link		
+		flags~="-c";				// do not link		
 
 	// Create folders for the documentation
 	if (ddoc)
@@ -208,11 +212,22 @@ bool compile(bool _debug=false, bool _release=false, bool profile=false, bool dd
 	}	}
 
 	char[] compiler = gdc ? "gdc" : "dmd";
-	char[] compile = compiler ~ " -" ~ std.string.join(flags, " -") ~ " " ~ std.string.join(sources, " ") ~ " " ~ std.string.join(libs, " ");
+	char[][] args = flags ~ sources ~ libs;
+	
 	if (verbose)
-		writefln(compile);
-		
-	bool success = !system(toStringz(compile));
+		writefln(compiler ~ " " ~ std.string.join(args," "));
+	
+	bool success;
+	if (gdc)
+	{	char[] exec = compiler ~" " ~ std.string.join(args," ");
+		success = !std.c.process.system(toStringz(exec));
+	}
+	else
+	{	std.file.write("compile.txt", std.string.join(args," "));
+		char[] exec = compiler ~ " @compile.txt";	// we write args out to a file in case they're too long for system to execute.
+		success = !std.c.process.system(toStringz(exec));
+		std.file.remove("compile.txt");
+	}
 	return success;
 }
 
@@ -386,7 +401,7 @@ int main(char[][] args)
 	// Run
 	if (run)
 	{	chdir(bin_path);
-		system(toStringz(bin_name ~ bin_ext));
+		std.c.process.system(toStringz(bin_name ~ bin_ext));
 		chdir(cur_path);
 	}
 

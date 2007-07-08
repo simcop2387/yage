@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTFogCoord
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_fog_coord") == -1)
+        if(extString.findStr("GL_EXT_fog_coord") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glFogCoordfEXT, "glFogCoordfEXT"))
@@ -80,20 +80,26 @@ else
     }
 }
 
-
-const GLenum GL_FOG_COORDINATE_SOURCE_EXT           = 0x8450;
-const GLenum GL_FOG_COORDINATE_EXT                  = 0x8451;
-const GLenum GL_FRAGMENT_DEPTH_EXT                  = 0x8452;
-const GLenum GL_CURRENT_FOG_COORDINATE_EXT          = 0x8453;
-const GLenum GL_FOG_COORDINATE_ARRAY_TYPE_EXT       = 0x8454;
-const GLenum GL_FOG_COORDINATE_ARRAY_STRIDE_EXT     = 0x8455;
-const GLenum GL_FOG_COORDINATE_ARRAY_POINTER_EXT    = 0x8456;
-const GLenum GL_FOG_COORDINATE_ARRAY_EXT            = 0x8457;
+enum : GLenum
+{
+    GL_FOG_COORDINATE_SOURCE_EXT           = 0x8450,
+    GL_FOG_COORDINATE_EXT                  = 0x8451,
+    GL_FRAGMENT_DEPTH_EXT                  = 0x8452,
+    GL_CURRENT_FOG_COORDINATE_EXT          = 0x8453,
+    GL_FOG_COORDINATE_ARRAY_TYPE_EXT       = 0x8454,
+    GL_FOG_COORDINATE_ARRAY_STRIDE_EXT     = 0x8455,
+    GL_FOG_COORDINATE_ARRAY_POINTER_EXT    = 0x8456,
+    GL_FOG_COORDINATE_ARRAY_EXT            = 0x8457,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLfloat) pfglFogCoordfEXT;
 typedef void function(GLfloat*) pfglFogCoordfvEXT;

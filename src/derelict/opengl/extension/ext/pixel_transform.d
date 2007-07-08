@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTPixelTransform
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_pixel_transform") == -1)
+        if(extString.findStr("GL_EXT_pixel_transform") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glPixelTransformParameteriEXT, "glPixelTransformParameteriEXT"))
@@ -78,20 +78,27 @@ else
     }
 }
 
-const GLenum GL_PIXEL_TRANSFORM_2D_EXT                  = 0x8330;
-const GLenum GL_PIXEL_MAG_FILTER_EXT                    = 0x8331;
-const GLenum GL_PIXEL_MIN_FILTER_EXT                    = 0x8332;
-const GLenum GL_PIXEL_CUBIC_WEIGHT_EXT                  = 0x8333;
-const GLenum GL_CUBIC_EXT                               = 0x8334;
-const GLenum GL_AVERAGE_EXT                             = 0x8335;
-const GLenum GL_PIXEL_TRANSFORM_2D_STACK_DEPTH_EXT      = 0x8336;
-const GLenum GL_MAX_PIXEL_TRANSFORM_2D_STACK_DEPTH_EXT  = 0x8337;
-const GLenum GL_PIXEL_TRANSFORM_2D_MATRIX_EXT           = 0x8338;
+enum : GLenum
+{
+    GL_PIXEL_TRANSFORM_2D_EXT                  = 0x8330,
+    GL_PIXEL_MAG_FILTER_EXT                    = 0x8331,
+    GL_PIXEL_MIN_FILTER_EXT                    = 0x8332,
+    GL_PIXEL_CUBIC_WEIGHT_EXT                  = 0x8333,
+    GL_CUBIC_EXT                               = 0x8334,
+    GL_AVERAGE_EXT                             = 0x8335,
+    GL_PIXEL_TRANSFORM_2D_STACK_DEPTH_EXT      = 0x8336,
+    GL_MAX_PIXEL_TRANSFORM_2D_STACK_DEPTH_EXT  = 0x8337,
+    GL_PIXEL_TRANSFORM_2D_MATRIX_EXT           = 0x8338,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLenum, GLint) pfglPixelTransformParameteriEXT;
 typedef void function(GLenum, GLenum, GLfloat) pfglPixelTransformParameterfEXT;

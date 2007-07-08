@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTFramebufferBlit
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_framebuffer_blit") == -1)
+        if(extString.findStr("GL_EXT_framebuffer_blit") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glBlitFramebufferEXT, "glBlitFramebufferEXT"))
@@ -72,15 +72,22 @@ else
     }
 }
 
-const GLenum GL_READ_FRAMEBUFFER_EXT            = 0x8CA8;
-const GLenum GL_DRAW_FRAMEBUFFER_EXT            = 0x8CA9;
-const GLenum GL_READ_FRAMEBUFFER_BINDING_EXT    = 0x8CA6;       // same as GL_FRAMEBUFFER_BINDING_EXT in framebuffer_object.d
-const GLenum GL_DRAW_FRAMEBUFFER_BINDING_EXT    = 0x8CAA;
+enum : GLenum
+{
+    GL_READ_FRAMEBUFFER_EXT            = 0x8CA8,
+    GL_DRAW_FRAMEBUFFER_EXT            = 0x8CA9,
+    GL_READ_FRAMEBUFFER_BINDING_EXT    = 0x8CA6,       // same as GL_FRAMEBUFFER_BINDING_EXT in framebuffer_object.d
+    GL_DRAW_FRAMEBUFFER_BINDING_EXT    = 0x8CAA,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum) pfglBlitFramebufferEXT;
 pfglBlitFramebufferEXT      glBlitFramebufferEXT;

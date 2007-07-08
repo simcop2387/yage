@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,7 @@ private:
 * the shared library to continue loading. Returning false will cause the exception
 * to be thrown.
 */
-typedef bool function(char[] libName, char[] procName) MissingProcCallback;
+alias bool function(char[] libName, char[] procName) MissingProcCallback;
 
 private MissingProcCallback missingProcCallback;
 

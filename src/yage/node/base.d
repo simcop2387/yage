@@ -12,7 +12,7 @@ import std.bind;
 import yage.core.all;
 import yage.node.node;
 import yage.node.scene;
-import yage.core.all;
+import yage.node.moveable;
 
 /**
  * Node and Scene both inherit from BaseNode and this abastract class defines
@@ -28,7 +28,10 @@ abstract class BaseNode
 	int 		index = -1;		// index of this node in parent array
 
 	protected void delegate(BaseNode self) on_update = null;	// called on update
+	
+	mixin MoveableNode;
 
+	/// Prohibit manual deletion of Nodes.  node.remove() must be used.
 	delete(void* p)
 	{	throw new Exception("Nodes cannot be deleted.");
 	}
@@ -133,9 +136,16 @@ abstract class BaseNode
 		return result;
 	}
 
-	/// Update the positions and rotations of this Node and all children by delta seconds.
+	/**
+	 * Update the positions and rotations of this Node and all children by delta seconds.
+	 */ 
 	void update(float delta)
 	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
+	
+		// Cache the current relative and absolute position/rotation for rendering.
+		// This prevents rendering a halfway-updated scenegraph.
+		cache[scene.transform_write].transform = transform;
+		cache[scene.transform_write].transform_abs = getAbsoluteTransform();
 
 		// Call the onUpdate() function
 		if (on_update !is null)
@@ -145,5 +155,52 @@ abstract class BaseNode
 		// is moved over the current item when removing from an array.
 		foreach_reverse(Node c; children)
 			c.update(delta);
+	}
+	
+	/*
+	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
+	 * This should be called whenever a Node is moved or rotated
+	 * This function is used internally by the engine usually doesn't need to be called manually. */
+	void setTransformDirty()
+	{	if (!transform_dirty)
+		{	transform_dirty=true;
+			foreach(Node c; children)
+				c.setTransformDirty();
+	}	}
+	/*
+	 * Calculate and store the absolute transformation matrices of this Node up to the first node
+	 * that has a correct absolute transformation matrix.
+	 * This is called automatically when the absolute transformation matrix of a node is needed.
+	 * Remember that rotating a Node's parent will change the Node's velocity. */
+	protected synchronized void calcTransform()
+	{
+		// Errors occur here
+		// could this function be called by two different threads on the same Node?
+		// and then the path gets messed up?
+		debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
+
+		BaseNode path[16384] = void; // surely no one will have a scene graph deeper than this!
+		BaseNode node = this;
+
+		// build a path up to the first node that does not have transform_dirty set.
+		int i=0;
+		do
+		{	path[i] = node;
+			i++;
+			// If parent isn't a Scene
+			if (cast(BaseNode)node.parent)
+				node = cast(BaseNode)node.parent;
+			else break;
+		}while (node.parent !is null && node.transform_dirty)
+
+		// Follow back down that path calculating absolute matrices.
+		foreach_reverse(BaseNode n; path[0..i])
+		{	// If parent isn't a Scene
+			if (cast(BaseNode)n.parent)
+				n.transform_abs = n.transform * (cast(BaseNode)n.parent).transform_abs;
+			else // since scene's don't have a transform matrix
+				n.transform_abs = n.transform;
+			n.transform_dirty = false;
+		}
 	}
 }

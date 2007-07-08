@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -237,95 +237,102 @@ package void loadGL20(SharedLib lib)
     }
 }
 
-const GLuint GL_BLEND_EQUATION_RGB              = 0x8009;
-const GLuint GL_VERTEX_ATTRIB_ARRAY_ENABLED     = 0x8622;
-const GLuint GL_VERTEX_ATTRIB_ARRAY_SIZE        = 0x8623;
-const GLuint GL_VERTEX_ATTRIB_ARRAY_STRIDE      = 0x8624;
-const GLuint GL_VERTEX_ATTRIB_ARRAY_TYPE        = 0x8625;
-const GLuint GL_CURRENT_VERTEX_ATTRIB           = 0x8626;
-const GLuint GL_VERTEX_PROGRAM_POINT_SIZE       = 0x8642;
-const GLuint GL_VERTEX_PROGRAM_TWO_SIDE         = 0x8643;
-const GLuint GL_VERTEX_ATTRIB_ARRAY_POINTER     = 0x8645;
-const GLuint GL_STENCIL_BACK_FUNC               = 0x8800;
-const GLuint GL_STENCIL_BACK_FAIL               = 0x8801;
-const GLuint GL_STENCIL_BACK_PASS_DEPTH_FAIL    = 0x8802;
-const GLuint GL_STENCIL_BACK_PASS_DEPTH_PASS    = 0x8803;
-const GLuint GL_MAX_DRAW_BUFFERS                = 0x8824;
-const GLuint GL_DRAW_BUFFER0                    = 0x8825;
-const GLuint GL_DRAW_BUFFER1                    = 0x8826;
-const GLuint GL_DRAW_BUFFER2                    = 0x8827;
-const GLuint GL_DRAW_BUFFER3                    = 0x8828;
-const GLuint GL_DRAW_BUFFER4                    = 0x8829;
-const GLuint GL_DRAW_BUFFER5                    = 0x882A;
-const GLuint GL_DRAW_BUFFER6                    = 0x882B;
-const GLuint GL_DRAW_BUFFER7                    = 0x882C;
-const GLuint GL_DRAW_BUFFER8                    = 0x882D;
-const GLuint GL_DRAW_BUFFER9                    = 0x882E;
-const GLuint GL_DRAW_BUFFER10                   = 0x882F;
-const GLuint GL_DRAW_BUFFER11                   = 0x8830;
-const GLuint GL_DRAW_BUFFER12                   = 0x8831;
-const GLuint GL_DRAW_BUFFER13                   = 0x8832;
-const GLuint GL_DRAW_BUFFER14                   = 0x8833;
-const GLuint GL_DRAW_BUFFER15                   = 0x8834;
-const GLuint GL_BLEND_EQUATION_ALPHA            = 0x883D;
-const GLuint GL_POINT_SPRITE                    = 0x8861;
-const GLuint GL_COORD_REPLACE                   = 0x8862;
-const GLuint GL_MAX_VERTEX_ATTRIBS              = 0x8869;
-const GLuint GL_VERTEX_ATTRIB_ARRAY_NORMALIZED  = 0x886A;
-const GLuint GL_MAX_TEXTURE_COORDS              = 0x8871;
-const GLuint GL_MAX_TEXTURE_IMAGE_UNITS         = 0x8872;
-const GLuint GL_FRAGMENT_SHADER                 = 0x8B30;
-const GLuint GL_VERTEX_SHADER                   = 0x8B31;
-const GLuint GL_MAX_FRAGMENT_UNIFORM_COMPONENTS = 0x8B49;
-const GLuint GL_MAX_VERTEX_UNIFORM_COMPONENTS   = 0x8B4A;
-const GLuint GL_MAX_VARYING_FLOATS              = 0x8B4B;
-const GLuint GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS  = 0x8B4C;
-const GLuint GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS= 0x8B4D;
-const GLuint GL_SHADER_TYPE                     = 0x8B4F;
-const GLuint GL_FLOAT_VEC2                      = 0x8B50;
-const GLuint GL_FLOAT_VEC3                      = 0x8B51;
-const GLuint GL_FLOAT_VEC4                      = 0x8B52;
-const GLuint GL_INT_VEC2                        = 0x8B53;
-const GLuint GL_INT_VEC3                        = 0x8B54;
-const GLuint GL_INT_VEC4                        = 0x8B55;
-const GLuint GL_BOOL                            = 0x8B56;
-const GLuint GL_BOOL_VEC2                       = 0x8B57;
-const GLuint GL_BOOL_VEC3                       = 0x8B58;
-const GLuint GL_BOOL_VEC4                       = 0x8B59;
-const GLuint GL_FLOAT_MAT2                      = 0x8B5A;
-const GLuint GL_FLOAT_MAT3                      = 0x8B5B;
-const GLuint GL_FLOAT_MAT4                      = 0x8B5C;
-const GLuint GL_SAMPLER_1D                      = 0x8B5D;
-const GLuint GL_SAMPLER_2D                      = 0x8B5E;
-const GLuint GL_SAMPLER_3D                      = 0x8B5F;
-const GLuint GL_SAMPLER_CUBE                    = 0x8B60;
-const GLuint GL_SAMPLER_1D_SHADOW               = 0x8B61;
-const GLuint GL_SAMPLER_2D_SHADOW               = 0x8B62;
-const GLuint GL_DELETE_STATUS                   = 0x8B80;
-const GLuint GL_COMPILE_STATUS                  = 0x8B81;
-const GLuint GL_LINK_STATUS                     = 0x8B82;
-const GLuint GL_VALIDATE_STATUS                 = 0x8B83;
-const GLuint GL_INFO_LOG_LENGTH                 = 0x8B84;
-const GLuint GL_ATTACHED_SHADERS                = 0x8B85;
-const GLuint GL_ACTIVE_UNIFORMS                 = 0x8B86;
-const GLuint GL_ACTIVE_UNIFORM_MAX_LENGTH       = 0x8B87;
-const GLuint GL_SHADER_SOURCE_LENGTH            = 0x8B88;
-const GLuint GL_ACTIVE_ATTRIBUTES               = 0x8B89;
-const GLuint GL_ACTIVE_ATTRIBUTE_MAX_LENGTH     = 0x8B8A;
-const GLuint GL_FRAGMENT_SHADER_DERIVATIVE_HINT = 0x8B8B;
-const GLuint GL_SHADING_LANGUAGE_VERSION        = 0x8B8C;
-const GLuint GL_CURRENT_PROGRAM                 = 0x8B8D;
-const GLuint GL_POINT_SPRITE_COORD_ORIGIN       = 0x8CA0;
-const GLuint GL_LOWER_LEFT                      = 0x8CA1;
-const GLuint GL_UPPER_LEFT                      = 0x8CA2;
-const GLuint GL_STENCIL_BACK_REF                = 0x8CA3;
-const GLuint GL_STENCIL_BACK_VALUE_MASK         = 0x8CA4;
-const GLuint GL_STENCIL_BACK_WRITEMASK          = 0x8CA5;
+enum : GLenum
+{
+    GL_BLEND_EQUATION_RGB              = 0x8009,
+    GL_VERTEX_ATTRIB_ARRAY_ENABLED     = 0x8622,
+    GL_VERTEX_ATTRIB_ARRAY_SIZE        = 0x8623,
+    GL_VERTEX_ATTRIB_ARRAY_STRIDE      = 0x8624,
+    GL_VERTEX_ATTRIB_ARRAY_TYPE        = 0x8625,
+    GL_CURRENT_VERTEX_ATTRIB           = 0x8626,
+    GL_VERTEX_PROGRAM_POINT_SIZE       = 0x8642,
+    GL_VERTEX_PROGRAM_TWO_SIDE         = 0x8643,
+    GL_VERTEX_ATTRIB_ARRAY_POINTER     = 0x8645,
+    GL_STENCIL_BACK_FUNC               = 0x8800,
+    GL_STENCIL_BACK_FAIL               = 0x8801,
+    GL_STENCIL_BACK_PASS_DEPTH_FAIL    = 0x8802,
+    GL_STENCIL_BACK_PASS_DEPTH_PASS    = 0x8803,
+    GL_MAX_DRAW_BUFFERS                = 0x8824,
+    GL_DRAW_BUFFER0                    = 0x8825,
+    GL_DRAW_BUFFER1                    = 0x8826,
+    GL_DRAW_BUFFER2                    = 0x8827,
+    GL_DRAW_BUFFER3                    = 0x8828,
+    GL_DRAW_BUFFER4                    = 0x8829,
+    GL_DRAW_BUFFER5                    = 0x882A,
+    GL_DRAW_BUFFER6                    = 0x882B,
+    GL_DRAW_BUFFER7                    = 0x882C,
+    GL_DRAW_BUFFER8                    = 0x882D,
+    GL_DRAW_BUFFER9                    = 0x882E,
+    GL_DRAW_BUFFER10                   = 0x882F,
+    GL_DRAW_BUFFER11                   = 0x8830,
+    GL_DRAW_BUFFER12                   = 0x8831,
+    GL_DRAW_BUFFER13                   = 0x8832,
+    GL_DRAW_BUFFER14                   = 0x8833,
+    GL_DRAW_BUFFER15                   = 0x8834,
+    GL_BLEND_EQUATION_ALPHA            = 0x883D,
+    GL_POINT_SPRITE                    = 0x8861,
+    GL_COORD_REPLACE                   = 0x8862,
+    GL_MAX_VERTEX_ATTRIBS              = 0x8869,
+    GL_VERTEX_ATTRIB_ARRAY_NORMALIZED  = 0x886A,
+    GL_MAX_TEXTURE_COORDS              = 0x8871,
+    GL_MAX_TEXTURE_IMAGE_UNITS         = 0x8872,
+    GL_FRAGMENT_SHADER                 = 0x8B30,
+    GL_VERTEX_SHADER                   = 0x8B31,
+    GL_MAX_FRAGMENT_UNIFORM_COMPONENTS = 0x8B49,
+    GL_MAX_VERTEX_UNIFORM_COMPONENTS   = 0x8B4A,
+    GL_MAX_VARYING_FLOATS              = 0x8B4B,
+    GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS  = 0x8B4C,
+    GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS= 0x8B4D,
+    GL_SHADER_TYPE                     = 0x8B4F,
+    GL_FLOAT_VEC2                      = 0x8B50,
+    GL_FLOAT_VEC3                      = 0x8B51,
+    GL_FLOAT_VEC4                      = 0x8B52,
+    GL_INT_VEC2                        = 0x8B53,
+    GL_INT_VEC3                        = 0x8B54,
+    GL_INT_VEC4                        = 0x8B55,
+    GL_BOOL                            = 0x8B56,
+    GL_BOOL_VEC2                       = 0x8B57,
+    GL_BOOL_VEC3                       = 0x8B58,
+    GL_BOOL_VEC4                       = 0x8B59,
+    GL_FLOAT_MAT2                      = 0x8B5A,
+    GL_FLOAT_MAT3                      = 0x8B5B,
+    GL_FLOAT_MAT4                      = 0x8B5C,
+    GL_SAMPLER_1D                      = 0x8B5D,
+    GL_SAMPLER_2D                      = 0x8B5E,
+    GL_SAMPLER_3D                      = 0x8B5F,
+    GL_SAMPLER_CUBE                    = 0x8B60,
+    GL_SAMPLER_1D_SHADOW               = 0x8B61,
+    GL_SAMPLER_2D_SHADOW               = 0x8B62,
+    GL_DELETE_STATUS                   = 0x8B80,
+    GL_COMPILE_STATUS                  = 0x8B81,
+    GL_LINK_STATUS                     = 0x8B82,
+    GL_VALIDATE_STATUS                 = 0x8B83,
+    GL_INFO_LOG_LENGTH                 = 0x8B84,
+    GL_ATTACHED_SHADERS                = 0x8B85,
+    GL_ACTIVE_UNIFORMS                 = 0x8B86,
+    GL_ACTIVE_UNIFORM_MAX_LENGTH       = 0x8B87,
+    GL_SHADER_SOURCE_LENGTH            = 0x8B88,
+    GL_ACTIVE_ATTRIBUTES               = 0x8B89,
+    GL_ACTIVE_ATTRIBUTE_MAX_LENGTH     = 0x8B8A,
+    GL_FRAGMENT_SHADER_DERIVATIVE_HINT = 0x8B8B,
+    GL_SHADING_LANGUAGE_VERSION        = 0x8B8C,
+    GL_CURRENT_PROGRAM                 = 0x8B8D,
+    GL_POINT_SPRITE_COORD_ORIGIN       = 0x8CA0,
+    GL_LOWER_LEFT                      = 0x8CA1,
+    GL_UPPER_LEFT                      = 0x8CA2,
+    GL_STENCIL_BACK_REF                = 0x8CA3,
+    GL_STENCIL_BACK_VALUE_MASK         = 0x8CA4,
+    GL_STENCIL_BACK_WRITEMASK          = 0x8CA5,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef GLvoid function(GLenum, GLenum) pfglBlendEquationSeparate;
 typedef GLvoid function(GLsizei, GLenum*) pfglDrawBuffers;

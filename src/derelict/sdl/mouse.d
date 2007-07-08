@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,21 +49,24 @@ struct SDL_Cursor
     WMcursor *wm_cursor;
 }
 
-const Uint8 SDL_BUTTON_LEFT         = 1;
-const Uint8 SDL_BUTTON_MIDDLE       = 2;
-const Uint8 SDL_BUTTON_RIGHT        = 3;
-const Uint8 SDL_BUTTON_WHEELUP      = 4;
-const Uint8 SDL_BUTTON_WHEELDOWN    = 5;
-const Uint8 SDL_BUTTON_LMASK        = 1 << (SDL_BUTTON_LEFT-1);
-const Uint8 SDL_BUTTON_MMASK        = 1 << (SDL_BUTTON_MIDDLE-1);
-const Uint8 SDL_BUTTON_RMASK        = 1 << (SDL_BUTTON_RIGHT-1);
+enum : Uint8
+{
+    SDL_BUTTON_LEFT         = 1,
+    SDL_BUTTON_MIDDLE       = 2,
+    SDL_BUTTON_RIGHT        = 3,
+    SDL_BUTTON_WHEELUP      = 4,
+    SDL_BUTTON_WHEELDOWN    = 5,
+    SDL_BUTTON_LMASK        = 1 << (SDL_BUTTON_LEFT-1),
+    SDL_BUTTON_MMASK        = 1 << (SDL_BUTTON_MIDDLE-1),
+    SDL_BUTTON_RMASK        = 1 << (SDL_BUTTON_RIGHT-1),
+}
 
 //==============================================================================
 // MACROS
 //==============================================================================
 Uint8 SDL_BUTTON(Uint8 x)
 {
-	return cast(Uint8)(1 << (x - 1));
+    return cast(Uint8)(1 << (x - 1));
 }
 
 //==============================================================================

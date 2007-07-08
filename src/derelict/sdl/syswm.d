@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,12 +33,21 @@ module derelict.sdl.syswm;
 
 private import derelict.sdl.sdlversion;
 
+version(linux)
+{
+	version = Nix;
+}
+else version(Unix)
+{
+	version = Nix;
+}
+
 //==============================================================================
 // TYPES
 //==============================================================================
 version(Windows)
 {
-    import std.c.windows.windows;
+    import derelict.util.wintypes;
 
     struct SDL_SysWMmsg
     {
@@ -61,13 +70,7 @@ version(Windows)
     }
 }
 
-version(linux)
-{
-    struct SDL_SysWMmsg;
-    struct SDL_SysWMinfo;
-}
-
-version(Unix)
+version(Nix)
 {
     struct SDL_SysWMmsg;
     struct SDL_SysWMinfo;

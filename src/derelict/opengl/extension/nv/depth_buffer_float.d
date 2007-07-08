@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVDepthBufferFloat
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_depth_buffer_float") == -1)
+        if(extString.findStr("GL_NV_depth_buffer_float") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glDepthRangedNV, "glDepthRangedNV"))
@@ -76,15 +76,22 @@ else
     }
 }
 
-const GLenum GL_DEPTH_COMPONENT32F_NV               = 0x8DAB;
-const GLenum GL_DEPTH32F_STENCIL8_NV                = 0x8DAC;
-const GLenum GL_FLOAT_32_UNSIGNED_INT_24_8_REV_NV   = 0x8DAD;
-const GLenum GL_DEPTH_BUFFER_FLOAT_MODE_NV          = 0x8DAF;
+enum : GLenum
+{
+    GL_DEPTH_COMPONENT32F_NV               = 0x8DAB,
+    GL_DEPTH32F_STENCIL8_NV                = 0x8DAC,
+    GL_FLOAT_32_UNSIGNED_INT_24_8_REV_NV   = 0x8DAD,
+    GL_DEPTH_BUFFER_FLOAT_MODE_NV          = 0x8DAF,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLdouble, GLdouble) pfglDepthRangedNV;
 typedef void function(GLdouble) pfglClearDepthdNV;

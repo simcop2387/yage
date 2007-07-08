@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBVertexShader
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_vertex_shader") == -1)
+        if(extString.findStr("GL_ARB_vertex_shader") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glBindAttribLocationARB, "glBindAttribLocationARB"))
             return false;
@@ -75,13 +75,16 @@ else
     }
 }
 
-const GLenum GL_VERTEX_SHADER_ARB                       = 0x8B31;
-const GLenum GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB       = 0x8B4A;
-const GLenum GL_MAX_VARYING_FLOATS_ARB                  = 0x8B4B;
-const GLenum GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB      = 0x8B4C;
-const GLenum GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB    = 0x8B4D;
-const GLenum GL_OBJECT_ACTIVE_ATTRIBUTES_ARB            = 0x8B89;
-const GLenum GL_OBJECT_ACTIVE_ATTRIBUTE_MAX_LENGTH_ARB  = 0x8B8A;
+enum : GLenum
+{
+    GL_VERTEX_SHADER_ARB                       = 0x8B31,
+    GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB       = 0x8B4A,
+    GL_MAX_VARYING_FLOATS_ARB                  = 0x8B4B,
+    GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB      = 0x8B4C,
+    GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB    = 0x8B4D,
+    GL_OBJECT_ACTIVE_ATTRIBUTES_ARB            = 0x8B89,
+    GL_OBJECT_ACTIVE_ATTRIBUTE_MAX_LENGTH_ARB  = 0x8B8A,
+}
 
 private
 {
@@ -90,9 +93,13 @@ private
 }
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function (GLhandleARB, GLuint, GLcharARB*) pfglBindAttribLocationARB;
 typedef void function (GLhandleARB, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLcharARB*) pfglGetActiveAttribARB;

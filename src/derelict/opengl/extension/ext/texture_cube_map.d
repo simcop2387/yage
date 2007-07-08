@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct EXTTextureCubeMap
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_texture_cube_map") == -1)
+        if(extString.findStr("GL_EXT_texture_cube_map") == -1)
             return false;
 
         enabled = true;
@@ -68,15 +68,18 @@ else
     }
 }
 
-const GLenum GL_NORMAL_MAP_EXT                  = 0x8511;
-const GLenum GL_REFLECTION_MAP_EXT              = 0x8512;
-const GLenum GL_TEXTURE_CUBE_MAP_EXT            = 0x8513;
-const GLenum GL_TEXTURE_BINDING_CUBE_MAP_EXT    = 0x8514;
-const GLenum GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT = 0x8515;
-const GLenum GL_TEXTURE_CUBE_MAP_NEGATIVE_X_EXT = 0x8516;
-const GLenum GL_TEXTURE_CUBE_MAP_POSITIVE_Y_EXT = 0x8517;
-const GLenum GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_EXT = 0x8518;
-const GLenum GL_TEXTURE_CUBE_MAP_POSITIVE_Z_EXT = 0x8519;
-const GLenum GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_EXT = 0x851A;
-const GLenum GL_PROXY_TEXTURE_CUBE_MAP_EXT      = 0x851B;
-const GLenum GL_MAX_CUBE_MAP_TEXTURE_SIZE_EXT   = 0x851C;
+enum : GLenum
+{
+    GL_NORMAL_MAP_EXT                  = 0x8511,
+    GL_REFLECTION_MAP_EXT              = 0x8512,
+    GL_TEXTURE_CUBE_MAP_EXT            = 0x8513,
+    GL_TEXTURE_BINDING_CUBE_MAP_EXT    = 0x8514,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT = 0x8515,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_X_EXT = 0x8516,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Y_EXT = 0x8517,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_EXT = 0x8518,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Z_EXT = 0x8519,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_EXT = 0x851A,
+    GL_PROXY_TEXTURE_CUBE_MAP_EXT      = 0x851B,
+    GL_MAX_CUBE_MAP_TEXTURE_SIZE_EXT   = 0x851C,
+}

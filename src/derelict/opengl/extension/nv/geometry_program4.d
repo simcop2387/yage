@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVGeometryProgram4
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_geometry_program4") == -1)
+        if(extString.findStr("GL_NV_geometry_program4") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glProgramVertexLimitNV, "glProgramVertexLimitNV"))
@@ -72,14 +72,21 @@ else
     }
 }
 
-const GLenum GEOMETRY_PROGRAM_NV                            = 0x8C26;
-const GLenum GL_MAX_PROGRAM_OUTPUT_VERTICES_NV              = 0x8C27;
-const GLenum GL_MAX_PROGRAM_TOTAL_OUTPUT_COMPONENTS_NV      = 0x8C28;
+enum : GLenum
+{
+    GL_GEOMETRY_PROGRAM_NV                         = 0x8C26,
+    GL_MAX_PROGRAM_OUTPUT_VERTICES_NV              = 0x8C27,
+    GL_MAX_PROGRAM_TOTAL_OUTPUT_COMPONENTS_NV      = 0x8C28,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLint) pfglProgramVertexLimitNV;
 pfglProgramVertexLimitNV            glProgramVertexLimitNV;

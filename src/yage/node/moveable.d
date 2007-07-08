@@ -15,11 +15,11 @@ import yage.core.misc;
 
 /**
  * Nodes have numerous methods for changing position and velocity.
- * They are separated into this abstract class to keep things better organized.
+ * They are separated into this templated mixin to reduce the length of base.d and keep things better organized.
  * See_Also:
  * yage.node.Node
  * yage.node.BaseNode */
-abstract class MoveableNode : BaseNode
+template MoveableNode()
 {
 	protected Matrix	transform;				// The position and rotation of this node relative to its parent
 	protected Matrix	transform_abs;			// The position and rotation of this node in worldspace coordinates
@@ -37,8 +37,6 @@ abstract class MoveableNode : BaseNode
 	// Each node has three extra copies of its relative and absolute transform matrices.
 	// The renderer simply uses the copy (buffer) that isn't being updated.  A third copy
 	// exists so neither the renderer or updater need to wait on one another.
-
-
 	struct Cache
 	{	Matrix transform;
 		Matrix transform_abs;
@@ -55,7 +53,6 @@ abstract class MoveableNode : BaseNode
 
 		setRotation(0, 0, 0);
 		rotate(u);
-
 	}
 
 	/// Return a pointer to the transformation Matrix of this Node.  This is faster than returning a copy.
@@ -286,62 +283,5 @@ abstract class MoveableNode : BaseNode
 
 
 
-	/*
-	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
-	 * This should be called whenever a Node is moved or rotated
-	 * This function is used internally by the engine usually doesn't need to be called manually. */
-	void setTransformDirty()
-	{	if (!transform_dirty)
-		{	transform_dirty=true;
-			foreach(Node c; children)
-				c.setTransformDirty();
-	}	}
 
-	// Cache the current relative and absolute position/rotation for rendering.
-	// This prevents rendering a halfway-updated scenegraph.
-	void update(float delta)
-	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
-		cache[scene.transform_write].transform = transform;
-		cache[scene.transform_write].transform_abs = getAbsoluteTransform();
-
-		super.update(delta);
-	}
-
-	/*
-	 * Calculate and store the absolute transformation matrices of this Node up to the first node
-	 * that has a correct absolute transformation matrix.
-	 * This is called automatically when the absolute transformation matrix of a node is needed.
-	 * Remember that rotating a Node's parent will change the Node's velocity. */
-	protected synchronized void calcTransform()
-	{
-		// Errors occur here
-		// could this function be called by two different threads on the same Node?
-		// and then the path gets messed up?
-		debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
-		MoveableNode path[16384] = void; // surely no one will have a scene graph deeper than this!
-		MoveableNode node = this;
-
-		// build a path up to the first node that does not have transform_dirty set.
-		int i=0;
-		do
-		{	path[i] = node;
-			i++;
-			// If parent isn't a Scene
-			if (cast(MoveableNode)node.parent)
-				node = cast(MoveableNode)node.parent;
-			else break;
-		}while (node.parent !is null && node.transform_dirty)
-
-		// Follow back down that path calculating absolute matrices.
-		foreach_reverse(MoveableNode n; path[0..i])
-		{	// If parent isn't a Scene
-			if (cast(MoveableNode)n.parent)
-				n.transform_abs = n.transform * (cast(MoveableNode)n.parent).transform_abs;
-			else // since scene's don't have a transform matrix
-				n.transform_abs = n.transform;
-			n.transform_dirty = false;
-		}
-	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -140,16 +140,16 @@ public void loadALU(SharedLib lib)
 }
 
 
-GenericLoader			DerelictAL;
-GenericDependentLoader	DerelictALU;
+GenericLoader           DerelictAL;
+GenericDependentLoader  DerelictALU;
 static this() {
-	DerelictAL.setup(
-		"OpenAL32.dll",
-		"libal.so, libAL.so, libopenal.so, libopenal.so.0",
-		"",
-		&loadAL
-	);
-	DerelictALU.setup(&DerelictAL, &loadALU);
+    DerelictAL.setup(
+        "OpenAL32.dll",
+        "libal.so, libAL.so, libopenal.so, libopenal.so.0",
+        "",
+        &loadAL
+    );
+    DerelictALU.setup(&DerelictAL, &loadALU);
 }
 
 

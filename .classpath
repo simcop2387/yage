@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="derelict/" kind="src" path="src"/>
+	<classpathentry kind="src" path="proj"/>
+	<classpathentry kind="src" path="src/derelict"/>
+	<classpathentry kind="con" path="descent.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

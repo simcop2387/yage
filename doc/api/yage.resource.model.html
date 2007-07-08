@@ -90,6 +90,53 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">struct 
+<span class="currsymbol">Attribute</span>
+<script type="text/javascript">explorer.outline.addDecl('Attribute');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>An array of vertex attribute.
+ Vertex attributes can be vertices themselves, texture coordinates, normals, colors, or anything else.
+ They can be an array of floats, vectors of varying size, or matrices. 
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f [] 
+<span class="currsymbol">vec3f</span>
+<script type="text/javascript">explorer.outline.addDecl('vec3f');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the values of this attribute as an array of Vec3f
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec!(float,2) [] 
+<span class="currsymbol">vec2f</span>
+<script type="text/javascript">explorer.outline.addDecl('vec2f');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the values of this attribute as an array of Vec3f
+<br><br>
+
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">class 
 <span class="currsymbol">Model</span>
 <script type="text/javascript">explorer.outline.addDecl('Model');</script>
@@ -101,13 +148,13 @@ Eric Poggel
 <span class="currsymbol">Model</span>
 <script type="text/javascript">explorer.outline.addDecl('Model');</script>
  is a 3D object, typically loaded from a file.
- A model contains an array of vertices, texture coordinates, and normal vectors.
- Each model is divided into one or more Meshes; each Mesh has its own material
+<br><br>
+Each model is divided into one or more Meshes; each Mesh has its own material
  and an array of triangle indices that correspond to vertices in the 
 <span class="currsymbol">Model</span>
 <script type="text/javascript">explorer.outline.addDecl('Model');</script>
-'s
- vertex array.  ModelNodes can be used to create 3D models in a scene.
+'s vertex array.
+ ModelNodes can be used to create 3D models in a scene.
 <br><br>
 
 
@@ -233,30 +280,6 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f [] 
-<span class="currsymbol">getNormals</span>
-<script type="text/javascript">explorer.outline.addDecl('getNormals');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">getNormalsVBO</span>
-<script type="text/javascript">explorer.outline.addDecl('getNormalsVBO');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the OpenGL Vertex Buffer Object index for the vertex normals.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">char[] 
 <span class="currsymbol">getSource</span>
 <script type="text/javascript">explorer.outline.addDecl('getSource');</script>
@@ -265,54 +288,6 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the path to the file where the model was loaded.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec!(float,2) [] 
-<span class="currsymbol">getTexCoords</span>
-<script type="text/javascript">explorer.outline.addDecl('getTexCoords');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">getTexCoordsVBO</span>
-<script type="text/javascript">explorer.outline.addDecl('getTexCoordsVBO');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the OpenGL Vertex Buffer Object index for the vertex texture coordinates.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f [] 
-<span class="currsymbol">getVertices</span>
-<script type="text/javascript">explorer.outline.addDecl('getVertices');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">getVerticesVBO</span>
-<script type="text/javascript">explorer.outline.addDecl('getVerticesVBO');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the OpenGL Vertex Buffer Object index for the vertices.
 <br><br>
 
 </dd>
@@ -414,7 +389,7 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 26 23:07:49 2007
+		on Sun Jul  8 00:19:34 2007
 
 	</div>
 	
@@ -510,8 +485,6 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
-
-	explorer.packageExplorer.addModule("yage.universe");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct SGISGenerateMipMap
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_SGIS_generate_mipmap") == -1)
+        if(extString.findStr("GL_SGIS_generate_mipmap") == -1)
             return false;
 
         enabled = true;
@@ -68,5 +68,8 @@ else
     }
 }
 
-const GL_GENERATE_MIPMAP_SGIS           = 0x8191;
-const GL_GENERATE_MIPMAP_HINT_SGIS      = 0x8192;
+enum : GLenum
+{
+    GL_GENERATE_MIPMAP_SGIS           = 0x8191,
+    GL_GENERATE_MIPMAP_HINT_SGIS      = 0x8192,
+}

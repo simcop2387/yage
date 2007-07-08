@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBColorBufferFloat
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_color_buffer_float") == -1)
+        if(extString.findStr("GL_ARB_color_buffer_float") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glClampColorARB, "glClampColorARB"))
             return false;
@@ -71,16 +71,23 @@ else
     }
 }
 
-const GLenum GL_RGBA_FLOAT_MODE_ARB             = 0x8820;
-const GLenum GL_CLAMP_VERTEX_COLOR_ARB          = 0x891A;
-const GLenum GL_CLAMP_FRAGMENT_COLOE_ARB        = 0x891B;
-const GLenum GL_CLAMP_READ_COLOR_ARB            = 0x891C;
-const GLenum GL_FIXED_ONLY_COLOR_ARB            = 0x891D;
+enum : GLenum
+{
+    GL_RGBA_FLOAT_MODE_ARB             = 0x8820,
+    GL_CLAMP_VERTEX_COLOR_ARB          = 0x891A,
+    GL_CLAMP_FRAGMENT_COLOE_ARB        = 0x891B,
+    GL_CLAMP_READ_COLOR_ARB            = 0x891C,
+    GL_FIXED_ONLY_COLOR_ARB            = 0x891D,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum,GLenum) pfglClampColorARB;
 pfglClampColorARB       glClampColorARB;

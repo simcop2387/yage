@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTMultiDrawArrays
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_multi_draw_arrays") == -1)
+        if(extString.findStr("GL_EXT_multi_draw_arrays") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glMultiDrawArraysEXT, "glMultiDrawArraysEXT"))
@@ -75,9 +75,13 @@ else
 }
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLint*, GLsizei*, GLsizei) pfglMultiDrawArraysEXT;
 typedef void function(GLenum, GLsizei*, GLenum, GLvoid*, GLsizei) pfglMultiDrawElementsEXT;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,10 +31,11 @@
  */
 module derelict.ogg.ogg;
 
-public import derelict.ogg.oggtypes;
-
-private import derelict.util.loader;
-
+private 
+{
+	import derelict.util.loader;
+	import derelict.ogg.oggtypes;
+}
 
 private void loadOgg(SharedLib lib)
 {

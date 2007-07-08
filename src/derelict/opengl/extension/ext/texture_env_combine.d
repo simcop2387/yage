@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct EXTTextureEnvCombine
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_texture_env_combine") == -1)
+        if(extString.findStr("GL_EXT_texture_env_combine") == -1)
             return false;
 
         enabled = true;
@@ -68,24 +68,27 @@ else
     }
 }
 
-const GLenum GL_COMBINE_EXT                    = 0x8570;
-const GLenum GL_COMBINE_RGB_EXT                = 0x8571;
-const GLenum GL_COMBINE_ALPHA_EXT              = 0x8572;
-const GLenum GL_RGB_SCALE_EXT                  = 0x8573;
-const GLenum GL_ADD_SIGNED_EXT                 = 0x8574;
-const GLenum GL_INTERPOLATE_EXT                = 0x8575;
-const GLenum GL_CONSTANT_EXT                   = 0x8576;
-const GLenum GL_PRIMARY_COLOR_EXT              = 0x8577;
-const GLenum GL_PREVIOUS_EXT                   = 0x8578;
-const GLenum GL_SOURCE0_RGB_EXT                = 0x8580;
-const GLenum GL_SOURCE1_RGB_EXT                = 0x8581;
-const GLenum GL_SOURCE2_RGB_EXT                = 0x8582;
-const GLenum GL_SOURCE0_ALPHA_EXT              = 0x8588;
-const GLenum GL_SOURCE1_ALPHA_EXT              = 0x8589;
-const GLenum GL_SOURCE2_ALPHA_EXT              = 0x858A;
-const GLenum GL_OPERAND0_RGB_EXT               = 0x8590;
-const GLenum GL_OPERAND1_RGB_EXT               = 0x8591;
-const GLenum GL_OPERAND2_RGB_EXT               = 0x8592;
-const GLenum GL_OPERAND0_ALPHA_EXT             = 0x8598;
-const GLenum GL_OPERAND1_ALPHA_EXT             = 0x8599;
-const GLenum GL_OPERAND2_ALPHA_EXT             = 0x859A;
+enum : GLenum
+{
+    GL_COMBINE_EXT                    = 0x8570,
+    GL_COMBINE_RGB_EXT                = 0x8571,
+    GL_COMBINE_ALPHA_EXT              = 0x8572,
+    GL_RGB_SCALE_EXT                  = 0x8573,
+    GL_ADD_SIGNED_EXT                 = 0x8574,
+    GL_INTERPOLATE_EXT                = 0x8575,
+    GL_CONSTANT_EXT                   = 0x8576,
+    GL_PRIMARY_COLOR_EXT              = 0x8577,
+    GL_PREVIOUS_EXT                   = 0x8578,
+    GL_SOURCE0_RGB_EXT                = 0x8580,
+    GL_SOURCE1_RGB_EXT                = 0x8581,
+    GL_SOURCE2_RGB_EXT                = 0x8582,
+    GL_SOURCE0_ALPHA_EXT              = 0x8588,
+    GL_SOURCE1_ALPHA_EXT              = 0x8589,
+    GL_SOURCE2_ALPHA_EXT              = 0x858A,
+    GL_OPERAND0_RGB_EXT               = 0x8590,
+    GL_OPERAND1_RGB_EXT               = 0x8591,
+    GL_OPERAND2_RGB_EXT               = 0x8592,
+    GL_OPERAND0_ALPHA_EXT             = 0x8598,
+    GL_OPERAND1_ALPHA_EXT             = 0x8599,
+    GL_OPERAND2_ALPHA_EXT             = 0x859A,
+}

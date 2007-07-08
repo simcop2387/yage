@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,11 +45,11 @@ struct ARBDrawBuffers
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_draw_buffers") == -1)
+        if(extString.findStr("GL_ARB_draw_buffers") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glDrawBuffersARB, "glDrawBuffersARB"))
             return false;
-           
+
         enabled = true;
         return true;
     }
@@ -71,27 +71,34 @@ else
     }
 }
 
-const GLenum GL_MAX_DRAW_BUFFERS_ARB           = 0x8824;
-const GLenum GL_DRAW_BUFFER0_ARB               = 0x8825;
-const GLenum GL_DRAW_BUFFER1_ARB               = 0x8826;
-const GLenum GL_DRAW_BUFFER2_ARB               = 0x8827;
-const GLenum GL_DRAW_BUFFER3_ARB               = 0x8828;
-const GLenum GL_DRAW_BUFFER4_ARB               = 0x8829;
-const GLenum GL_DRAW_BUFFER5_ARB               = 0x882A;
-const GLenum GL_DRAW_BUFFER6_ARB               = 0x882B;
-const GLenum GL_DRAW_BUFFER7_ARB               = 0x882C;
-const GLenum GL_DRAW_BUFFER8_ARB               = 0x882D;
-const GLenum GL_DRAW_BUFFER9_ARB               = 0x882E;
-const GLenum GL_DRAW_BUFFER10_ARB              = 0x882F;
-const GLenum GL_DRAW_BUFFER11_ARB              = 0x8830;
-const GLenum GL_DRAW_BUFFER12_ARB              = 0x8831;
-const GLenum GL_DRAW_BUFFER13_ARB              = 0x8832;
-const GLenum GL_DRAW_BUFFER14_ARB              = 0x8833;
-const GLenum GL_DRAW_BUFFER15_ARB              = 0x8834;
-
+enum : GLenum
+{
+    GL_MAX_DRAW_BUFFERS_ARB           = 0x8824,
+    GL_DRAW_BUFFER0_ARB               = 0x8825,
+    GL_DRAW_BUFFER1_ARB               = 0x8826,
+    GL_DRAW_BUFFER2_ARB               = 0x8827,
+    GL_DRAW_BUFFER3_ARB               = 0x8828,
+    GL_DRAW_BUFFER4_ARB               = 0x8829,
+    GL_DRAW_BUFFER5_ARB               = 0x882A,
+    GL_DRAW_BUFFER6_ARB               = 0x882B,
+    GL_DRAW_BUFFER7_ARB               = 0x882C,
+    GL_DRAW_BUFFER8_ARB               = 0x882D,
+    GL_DRAW_BUFFER9_ARB               = 0x882E,
+    GL_DRAW_BUFFER10_ARB              = 0x882F,
+    GL_DRAW_BUFFER11_ARB              = 0x8830,
+    GL_DRAW_BUFFER12_ARB              = 0x8831,
+    GL_DRAW_BUFFER13_ARB              = 0x8832,
+    GL_DRAW_BUFFER14_ARB              = 0x8833,
+    GL_DRAW_BUFFER15_ARB              = 0x8834,
+}
 version(Windows)
-	extern(Windows):
+{
+    extern(Windows):
+}
 else
-	extern(C):
+{
+    extern(C):
+}
+
 typedef void function(GLsizei, GLenum*) pfglDrawBuffersARB;
 pfglDrawBuffersARB          glDrawBuffersARB;

@@ -302,7 +302,7 @@ struct Vec3f
 
 	///
 	Vec3f clamp(float l, float u)
-	{	return Vec3f(clampf(x, l, u), clampf(y, l, u), clampf(z, l, u));
+	{	return Vec3f(.clamp(x, l, u), .clamp(y, l, u), .clamp(z, l, u));
 	}
 
 	/// Return the cross product of this vector with another vector.

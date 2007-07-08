@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTCullVertex
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_cull_vertex") == -1)
+        if(extString.findStr("GL_EXT_cull_vertex") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glCullParameterdvEXT, "glCullParameterdvEXT"))
@@ -74,14 +74,21 @@ else
     }
 }
 
-const GLenum GL_CULL_VERTEX_EXT                 = 0x81AA;
-const GLenum GL_CULL_VERTEX_EYE_POSITION_EXT    = 0x81AB;
-const GLenum GL_CULL_VERTEX_OBJECT_POSITION_EXT = 0x81AC;
+enum : GLenum
+{
+    GL_CULL_VERTEX_EXT                 = 0x81AA,
+    GL_CULL_VERTEX_EYE_POSITION_EXT    = 0x81AB,
+    GL_CULL_VERTEX_OBJECT_POSITION_EXT = 0x81AC,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLdouble*) pfglCullParameterdvEXT;
 typedef void function(GLenum, GLfloat*) pfglCullParameterfvEXT;

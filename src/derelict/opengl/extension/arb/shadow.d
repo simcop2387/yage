@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct ARBShadow
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_shadow") != -1)
+        if(extString.findStr("GL_ARB_shadow") != -1)
         {
             enabled = true;
             return true;
@@ -69,6 +69,9 @@ else
     }
 }
 
-const GLenum GL_TEXTURE_COMPARE_MODE_ARB       = 0x884C;
-const GLenum GL_TEXTURE_COMPARE_FUNC_ARB       = 0x884D;
-const GLenum GL_COMPARE_R_TO_TEXTURE_ARB       = 0x884E;
+enum : GLenum
+{
+    GL_TEXTURE_COMPARE_MODE_ARB       = 0x884C,
+    GL_TEXTURE_COMPARE_FUNC_ARB       = 0x884D,
+    GL_COMPARE_R_TO_TEXTURE_ARB       = 0x884E,
+}

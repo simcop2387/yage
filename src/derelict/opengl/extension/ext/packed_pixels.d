@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct EXTPackedPixels
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_packed_pixels") == -1)
+        if(extString.findStr("GL_EXT_packed_pixels") == -1)
             return false;
 
         enabled = true;
@@ -68,8 +68,11 @@ else
     }
 }
 
-const GLenum GL_UNSIGNED_BYTE_3_3_2_EXT        = 0x8032;
-const GLenum GL_UNSIGNED_SHORT_4_4_4_4_EXT     = 0x8033;
-const GLenum GL_UNSIGNED_SHORT_5_5_5_1_EXT     = 0x8034;
-const GLenum GL_UNSIGNED_INT_8_8_8_8_EXT       = 0x8035;
-const GLenum GL_UNSIGNED_INT_10_10_10_2_EXT    = 0x8036;
+enum : GLenum
+{
+    GL_UNSIGNED_BYTE_3_3_2_EXT        = 0x8032,
+    GL_UNSIGNED_SHORT_4_4_4_4_EXT     = 0x8033,
+    GL_UNSIGNED_SHORT_5_5_5_1_EXT     = 0x8034,
+    GL_UNSIGNED_INT_8_8_8_8_EXT       = 0x8035,
+    GL_UNSIGNED_INT_10_10_10_2_EXT    = 0x8036,
+}

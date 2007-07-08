@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,14 +45,14 @@ struct NVPixelDataRange
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_pixel_data_range") == -1)
+        if(extString.findStr("GL_NV_pixel_data_range") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glPixelDataRangeNV, "glPixelDataRangeNV"))
             return false;
         if(!glBindExtFunc(cast(void**)&glFlushPixelDataRangeNV, "glFlushPixelDataRangeNV"))
             return false;
-        
+
         enabled = true;
         return true;
     }
@@ -74,19 +74,26 @@ else
     }
 }
 
-const GLenum GL_WRITE_PIXEL_DATA_RANGE_NV      		= 0x8878;
-const GLenum GL_READ_PIXEL_DATA_RANGE_NV       		= 0x8879;
-const GLenum GL_WRITE_PIXEL_DATA_RANGE_LENGTH_NV 	= 0x887A;
-const GLenum GL_READ_PIXEL_DATA_RANGE_LENGTH_NV 	= 0x887B;
-const GLenum GL_WRITE_PIXEL_DATA_RANGE_POINTER_NV 	= 0x887C;
-const GLenum GL_READ_PIXEL_DATA_RANGE_POINTER_NV 	= 0x887D;
+enum : GLenum
+{
+    GL_WRITE_PIXEL_DATA_RANGE_NV            = 0x8878,
+    GL_READ_PIXEL_DATA_RANGE_NV             = 0x8879,
+    GL_WRITE_PIXEL_DATA_RANGE_LENGTH_NV     = 0x887A,
+    GL_READ_PIXEL_DATA_RANGE_LENGTH_NV      = 0x887B,
+    GL_WRITE_PIXEL_DATA_RANGE_POINTER_NV    = 0x887C,
+    GL_READ_PIXEL_DATA_RANGE_POINTER_NV     = 0x887D,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLsizei, GLvoid*) pfglPixelDataRangeNV;
 typedef void function(GLenum) pfglFlushPixelDataRangeNV;
-pfglPixelDataRangeNV		glPixelDataRangeNV;
-pfglFlushPixelDataRangeNV	glFlushPixelDataRangeNV;
+pfglPixelDataRangeNV        glPixelDataRangeNV;
+pfglFlushPixelDataRangeNV   glFlushPixelDataRangeNV;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct EXTTextureFilterAnisotropic
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_texture_filter_anisotropic") != -1)
+        if(extString.findStr("GL_EXT_texture_filter_anisotropic") != -1)
         {
             enabled = true;
             return true;
@@ -69,5 +69,8 @@ else
     }
 }
 
-const GLenum GL_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE;
-const GLenum GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FF;
+enum : GLenum
+{
+    GL_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE,
+    GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FF,
+}

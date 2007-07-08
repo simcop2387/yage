@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVGpuProgram4
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_gpu_program4") == -1)
+        if(extString.findStr("GL_NV_gpu_program4") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glProgramLocalParameterI4iNV, "glProgramLocalParameterI4iNV"))
@@ -102,19 +102,26 @@ else
     }
 }
 
-const GLenum GL_MIN_PROGRAM_TEXEL_OFFSET_NV         = 0x8904;
-const GLenum GL_MAX_PROGRAM_TEXEL_OFFSET_NV         = 0x8905;
-const GLenum GL_PROGRAM_ATTRIB_COMPONENTS_NV        = 0x8906;
-const GLenum GL_PROGRAM_RESULT_COMPONENTS_NV        = 0x8907;
-const GLenum GL_MAX_PROGRAM_ATTRIB_COMPONENTS_NV    = 0x8908;
-const GLenum GL_MAX_PROGRAM_RESULT_COMPONENTS_NV    = 0x8909;
-const GLenum GL_MAX_PROGRAM_GENERIC_ATTRIBS_NV      = 0x8DA5;
-const GLenum GL_MAX_PROGRAM_GENERIC_RESULTS_NV      = 0x8DA6;
+enum : GLenum
+{
+    GL_MIN_PROGRAM_TEXEL_OFFSET_NV         = 0x8904,
+    GL_MAX_PROGRAM_TEXEL_OFFSET_NV         = 0x8905,
+    GL_PROGRAM_ATTRIB_COMPONENTS_NV        = 0x8906,
+    GL_PROGRAM_RESULT_COMPONENTS_NV        = 0x8907,
+    GL_MAX_PROGRAM_ATTRIB_COMPONENTS_NV    = 0x8908,
+    GL_MAX_PROGRAM_RESULT_COMPONENTS_NV    = 0x8909,
+    GL_MAX_PROGRAM_GENERIC_ATTRIBS_NV      = 0x8DA5,
+    GL_MAX_PROGRAM_GENERIC_RESULTS_NV      = 0x8DA6,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLuint, GLint, GLint, GLint, GLint) pfglProgramLocalParameterI4iNV;
 typedef void function(GLenum, GLuint, GLint*) pfglProgramLocalParameterI4ivNV;

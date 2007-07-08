@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -142,108 +142,114 @@ package void loadGL13(SharedLib lib)
     }
 }
 
-const GLuint GL_TEXTURE0                    = 0x84C0;
-const GLuint GL_TEXTURE1                    = 0x84C1;
-const GLuint GL_TEXTURE2                    = 0x84C2;
-const GLuint GL_TEXTURE3                    = 0x84C3;
-const GLuint GL_TEXTURE4                    = 0x84C4;
-const GLuint GL_TEXTURE5                    = 0x84C5;
-const GLuint GL_TEXTURE6                    = 0x84C6;
-const GLuint GL_TEXTURE7                    = 0x84C7;
-const GLuint GL_TEXTURE8                    = 0x84C8;
-const GLuint GL_TEXTURE9                    = 0x84C9;
-const GLuint GL_TEXTURE10                   = 0x84CA;
-const GLuint GL_TEXTURE11                   = 0x84CB;
-const GLuint GL_TEXTURE12                   = 0x84CC;
-const GLuint GL_TEXTURE13                   = 0x84CD;
-const GLuint GL_TEXTURE14                   = 0x84CE;
-const GLuint GL_TEXTURE15                   = 0x84CF;
-const GLuint GL_TEXTURE16                   = 0x84D0;
-const GLuint GL_TEXTURE17                   = 0x84D1;
-const GLuint GL_TEXTURE18                   = 0x84D2;
-const GLuint GL_TEXTURE19                   = 0x84D3;
-const GLuint GL_TEXTURE20                   = 0x84D4;
-const GLuint GL_TEXTURE21                   = 0x84D5;
-const GLuint GL_TEXTURE22                   = 0x84D6;
-const GLuint GL_TEXTURE23                   = 0x84D7;
-const GLuint GL_TEXTURE24                   = 0x84D8;
-const GLuint GL_TEXTURE25                   = 0x84D9;
-const GLuint GL_TEXTURE26                   = 0x84DA;
-const GLuint GL_TEXTURE27                   = 0x84DB;
-const GLuint GL_TEXTURE28                   = 0x84DC;
-const GLuint GL_TEXTURE29                   = 0x84DD;
-const GLuint GL_TEXTURE30                   = 0x84DE;
-const GLuint GL_TEXTURE31                   = 0x84DF;
-const GLuint GL_ACTIVE_TEXTURE              = 0x84E0;
-const GLuint GL_CLIENT_ACTIVE_TEXTURE       = 0x84E1;
-const GLuint GL_MAX_TEXTURE_UNITS           = 0x84E2;
-const GLuint GL_NORMAL_MAP                  = 0x8511;
-const GLuint GL_REFLECTION_MAP              = 0x8512;
-const GLuint GL_TEXTURE_CUBE_MAP            = 0x8513;
-const GLuint GL_TEXTURE_BINDING_CUBE_MAP    = 0x8514;
-const GLuint GL_TEXTURE_CUBE_MAP_POSITIVE_X = 0x8515;
-const GLuint GL_TEXTURE_CUBE_MAP_NEGATIVE_X = 0x8516;
-const GLuint GL_TEXTURE_CUBE_MAP_POSITIVE_Y = 0x8517;
-const GLuint GL_TEXTURE_CUBE_MAP_NEGATIVE_Y = 0x8518;
-const GLuint GL_TEXTURE_CUBE_MAP_POSITIVE_Z = 0x8519;
-const GLuint GL_TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x851A;
-const GLuint GL_PROXY_TEXTURE_CUBE_MAP      = 0x851B;
-const GLuint GL_MAX_CUBE_MAP_TEXTURE_SIZE   = 0x851C;
-const GLuint GL_COMPRESSED_ALPHA            = 0x84E9;
-const GLuint GL_COMPRESSED_LUMINANCE        = 0x84EA;
-const GLuint GL_COMPRESSED_LUMINANCE_ALPHA  = 0x84EB;
-const GLuint GL_COMPRESSED_INTENSITY        = 0x84EC;
-const GLuint GL_COMPRESSED_RGB              = 0x84ED;
-const GLuint GL_COMPRESSED_RGBA             = 0x84EE;
-const GLuint GL_TEXTURE_COMPRESSION_HINT    = 0x84EF;
-const GLuint GL_TEXTURE_COMPRESSED_IMAGE_SIZE   = 0x86A0;
-const GLuint GL_TEXTURE_COMPRESSED      = 0x86A1;
-const GLuint GL_NUM_COMPRESSED_TEXTURE_FORMATS  = 0x86A2;
-const GLuint GL_COMPRESSED_TEXTURE_FORMATS  = 0x86A3;
-const GLuint GL_MULTISAMPLE                 = 0x809D;
-const GLuint GL_SAMPLE_ALPHA_TO_COVERAGE    = 0x809E;
-const GLuint GL_SAMPLE_ALPHA_TO_ONE         = 0x809F;
-const GLuint GL_SAMPLE_COVERAGE             = 0x80A0;
-const GLuint GL_SAMPLE_BUFFERS              = 0x80A8;
-const GLuint GL_SAMPLES                     = 0x80A9;
-const GLuint GL_SAMPLE_COVERAGE_VALUE       = 0x80AA;
-const GLuint GL_SAMPLE_COVERAGE_INVERT      = 0x80AB;
-const GLuint GL_MULTISAMPLE_BIT             = 0x20000000;
-const GLuint GL_TRANSPOSE_MODELVIEW_MATRIX  = 0x84E3;
-const GLuint GL_TRANSPOSE_PROJECTION_MATRIX = 0x84E4;
-const GLuint GL_TRANSPOSE_TEXTURE_MATRIX    = 0x84E5;
-const GLuint GL_TRANSPOSE_COLOR_MATRIX      = 0x84E6;
-const GLuint GL_COMBINE                     = 0x8570;
-const GLuint GL_COMBINE_RGB                 = 0x8571;
-const GLuint GL_COMBINE_ALPHA               = 0x8572;
-const GLuint GL_SOURCE0_RGB                 = 0x8580;
-const GLuint GL_SOURCE1_RGB                 = 0x8581;
-const GLuint GL_SOURCE2_RGB                 = 0x8582;
-const GLuint GL_SOURCE0_ALPHA               = 0x8588;
-const GLuint GL_SOURCE1_ALPHA               = 0x8589;
-const GLuint GL_SOURCE2_ALPHA               = 0x858A;
-const GLuint GL_OPERAND0_RGB                = 0x8590;
-const GLuint GL_OPERAND1_RGB                = 0x8591;
-const GLuint GL_OPERAND2_RGB                = 0x8592;
-const GLuint GL_OPERAND0_ALPHA              = 0x8598;
-const GLuint GL_OPERAND1_ALPHA              = 0x8599;
-const GLuint GL_OPERAND2_ALPHA              = 0x859A;
-const GLuint GL_RGB_SCALE                   = 0x8573;
-const GLuint GL_ADD_SIGNED                  = 0x8574;
-const GLuint GL_INTERPOLATE                 = 0x8575;
-const GLuint GL_SUBTRACT                    = 0x84E7;
-const GLuint GL_CONSTANT                    = 0x8576;
-const GLuint GL_PRIMARY_COLOR               = 0x8577;
-const GLuint GL_PREVIOUS                    = 0x8578;
-const GLuint GL_DOT3_RGB                    = 0x86AE;
-const GLuint GL_DOT3_RGBA                   = 0x86AF;
-const GLuint GL_CLAMP_TO_BORDER             = 0x812D;
-
+enum : GLenum
+{
+    GL_TEXTURE0                    = 0x84C0,
+    GL_TEXTURE1                    = 0x84C1,
+    GL_TEXTURE2                    = 0x84C2,
+    GL_TEXTURE3                    = 0x84C3,
+    GL_TEXTURE4                    = 0x84C4,
+    GL_TEXTURE5                    = 0x84C5,
+    GL_TEXTURE6                    = 0x84C6,
+    GL_TEXTURE7                    = 0x84C7,
+    GL_TEXTURE8                    = 0x84C8,
+    GL_TEXTURE9                    = 0x84C9,
+    GL_TEXTURE10                   = 0x84CA,
+    GL_TEXTURE11                   = 0x84CB,
+    GL_TEXTURE12                   = 0x84CC,
+    GL_TEXTURE13                   = 0x84CD,
+    GL_TEXTURE14                   = 0x84CE,
+    GL_TEXTURE15                   = 0x84CF,
+    GL_TEXTURE16                   = 0x84D0,
+    GL_TEXTURE17                   = 0x84D1,
+    GL_TEXTURE18                   = 0x84D2,
+    GL_TEXTURE19                   = 0x84D3,
+    GL_TEXTURE20                   = 0x84D4,
+    GL_TEXTURE21                   = 0x84D5,
+    GL_TEXTURE22                   = 0x84D6,
+    GL_TEXTURE23                   = 0x84D7,
+    GL_TEXTURE24                   = 0x84D8,
+    GL_TEXTURE25                   = 0x84D9,
+    GL_TEXTURE26                   = 0x84DA,
+    GL_TEXTURE27                   = 0x84DB,
+    GL_TEXTURE28                   = 0x84DC,
+    GL_TEXTURE29                   = 0x84DD,
+    GL_TEXTURE30                   = 0x84DE,
+    GL_TEXTURE31                   = 0x84DF,
+    GL_ACTIVE_TEXTURE              = 0x84E0,
+    GL_CLIENT_ACTIVE_TEXTURE       = 0x84E1,
+    GL_MAX_TEXTURE_UNITS           = 0x84E2,
+    GL_NORMAL_MAP                  = 0x8511,
+    GL_REFLECTION_MAP              = 0x8512,
+    GL_TEXTURE_CUBE_MAP            = 0x8513,
+    GL_TEXTURE_BINDING_CUBE_MAP    = 0x8514,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_X = 0x8515,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_X = 0x8516,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Y = 0x8517,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Y = 0x8518,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Z = 0x8519,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x851A,
+    GL_PROXY_TEXTURE_CUBE_MAP      = 0x851B,
+    GL_MAX_CUBE_MAP_TEXTURE_SIZE   = 0x851C,
+    GL_COMPRESSED_ALPHA            = 0x84E9,
+    GL_COMPRESSED_LUMINANCE        = 0x84EA,
+    GL_COMPRESSED_LUMINANCE_ALPHA  = 0x84EB,
+    GL_COMPRESSED_INTENSITY        = 0x84EC,
+    GL_COMPRESSED_RGB              = 0x84ED,
+    GL_COMPRESSED_RGBA             = 0x84EE,
+    GL_TEXTURE_COMPRESSION_HINT    = 0x84EF,
+    GL_TEXTURE_COMPRESSED_IMAGE_SIZE   = 0x86A0,
+    GL_TEXTURE_COMPRESSED      = 0x86A1,
+    GL_NUM_COMPRESSED_TEXTURE_FORMATS  = 0x86A2,
+    GL_COMPRESSED_TEXTURE_FORMATS  = 0x86A3,
+    GL_MULTISAMPLE                 = 0x809D,
+    GL_SAMPLE_ALPHA_TO_COVERAGE    = 0x809E,
+    GL_SAMPLE_ALPHA_TO_ONE         = 0x809F,
+    GL_SAMPLE_COVERAGE             = 0x80A0,
+    GL_SAMPLE_BUFFERS              = 0x80A8,
+    GL_SAMPLES                     = 0x80A9,
+    GL_SAMPLE_COVERAGE_VALUE       = 0x80AA,
+    GL_SAMPLE_COVERAGE_INVERT      = 0x80AB,
+    GL_MULTISAMPLE_BIT             = 0x20000000,
+    GL_TRANSPOSE_MODELVIEW_MATRIX  = 0x84E3,
+    GL_TRANSPOSE_PROJECTION_MATRIX = 0x84E4,
+    GL_TRANSPOSE_TEXTURE_MATRIX    = 0x84E5,
+    GL_TRANSPOSE_COLOR_MATRIX      = 0x84E6,
+    GL_COMBINE                     = 0x8570,
+    GL_COMBINE_RGB                 = 0x8571,
+    GL_COMBINE_ALPHA               = 0x8572,
+    GL_SOURCE0_RGB                 = 0x8580,
+    GL_SOURCE1_RGB                 = 0x8581,
+    GL_SOURCE2_RGB                 = 0x8582,
+    GL_SOURCE0_ALPHA               = 0x8588,
+    GL_SOURCE1_ALPHA               = 0x8589,
+    GL_SOURCE2_ALPHA               = 0x858A,
+    GL_OPERAND0_RGB                = 0x8590,
+    GL_OPERAND1_RGB                = 0x8591,
+    GL_OPERAND2_RGB                = 0x8592,
+    GL_OPERAND0_ALPHA              = 0x8598,
+    GL_OPERAND1_ALPHA              = 0x8599,
+    GL_OPERAND2_ALPHA              = 0x859A,
+    GL_RGB_SCALE                   = 0x8573,
+    GL_ADD_SIGNED                  = 0x8574,
+    GL_INTERPOLATE                 = 0x8575,
+    GL_SUBTRACT                    = 0x84E7,
+    GL_CONSTANT                    = 0x8576,
+    GL_PRIMARY_COLOR               = 0x8577,
+    GL_PREVIOUS                    = 0x8578,
+    GL_DOT3_RGB                    = 0x86AE,
+    GL_DOT3_RGBA                   = 0x86AF,
+    GL_CLAMP_TO_BORDER             = 0x812D,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef GLvoid function(GLenum) pfglActiveTexture;
 typedef GLvoid function(GLenum) pfglClientActiveTexture;

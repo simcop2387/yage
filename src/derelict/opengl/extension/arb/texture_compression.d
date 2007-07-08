@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBTextureCompression
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_texture_compression") == -1)
+        if(extString.findStr("GL_ARB_texture_compression") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glCompressedTexImage3DARB, "glCompressedTexImage3DARB"))
             return false;
@@ -83,22 +83,29 @@ else
     }
 }
 
-const GLenum GL_COMPRESSED_ALPHA_ARB                = 0x84E9;
-const GLenum GL_COMPRESSED_LUMINANCE_ARB            = 0x84EA;
-const GLenum GL_COMPRESSED_LUMINANCE_ALPHA_ARB      = 0x84EB;
-const GLenum GL_COMPRESSED_INTENSITY_ARB            = 0x84EC;
-const GLenum GL_COMPRESSED_RGB_ARB                  = 0x84ED;
-const GLenum GL_COMPRESSED_RGBA_ARB                 = 0x84EE;
-const GLenum GL_TEXTURE_COMPRESSION_HINT_ARB        = 0x84EF;
-const GLenum GL_TEXTURE_COMPRESSED_IMAGE_SIZE_ARB   = 0x86A0;
-const GLenum GL_TEXTURE_COMPRESSED_ARB              = 0x86A1;
-const GLenum GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB  = 0x86A2;
-const GLenum GL_COMPRESSED_TEXTURE_FORMATS_ARB      = 0x86A3;
+enum : GLenum
+{
+    GL_COMPRESSED_ALPHA_ARB                = 0x84E9,
+    GL_COMPRESSED_LUMINANCE_ARB            = 0x84EA,
+    GL_COMPRESSED_LUMINANCE_ALPHA_ARB      = 0x84EB,
+    GL_COMPRESSED_INTENSITY_ARB            = 0x84EC,
+    GL_COMPRESSED_RGB_ARB                  = 0x84ED,
+    GL_COMPRESSED_RGBA_ARB                 = 0x84EE,
+    GL_TEXTURE_COMPRESSION_HINT_ARB        = 0x84EF,
+    GL_TEXTURE_COMPRESSED_IMAGE_SIZE_ARB   = 0x86A0,
+    GL_TEXTURE_COMPRESSED_ARB              = 0x86A1,
+    GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB  = 0x86A2,
+    GL_COMPRESSED_TEXTURE_FORMATS_ARB      = 0x86A3,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage3DARB;
 typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage2DARB;

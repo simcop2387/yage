@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,15 +38,18 @@ private import derelict.sdl.types;
 //==============================================================================
 struct SDL_Joystick {}
 
-const Uint8 SDL_HAT_CENTERED            = 0x00;
-const Uint8 SDL_HAT_UP                  = 0x01;
-const Uint8 SDL_HAT_RIGHT               = 0x02;
-const Uint8 SDL_HAT_DOWN                = 0x04;
-const Uint8 SDL_HAT_LEFT                = 0x08;
-const Uint8 SDL_HAT_RIGHTUP             = SDL_HAT_RIGHT | SDL_HAT_UP;
-const Uint8 SDL_HAT_RIGHTDOWN           = SDL_HAT_RIGHT | SDL_HAT_DOWN;
-const Uint8 SDL_HAT_LEFTUP              = SDL_HAT_LEFT | SDL_HAT_UP;
-const Uint8 SDL_HAT_LEFTDOWN            = SDL_HAT_LEFT | SDL_HAT_DOWN;
+enum : Uint8
+{
+    SDL_HAT_CENTERED            = 0x00,
+    SDL_HAT_UP                  = 0x01,
+    SDL_HAT_RIGHT               = 0x02,
+    SDL_HAT_DOWN                = 0x04,
+    SDL_HAT_LEFT                = 0x08,
+    SDL_HAT_RIGHTUP             = SDL_HAT_RIGHT | SDL_HAT_UP,
+    SDL_HAT_RIGHTDOWN           = SDL_HAT_RIGHT | SDL_HAT_DOWN,
+    SDL_HAT_LEFTUP              = SDL_HAT_LEFT | SDL_HAT_UP,
+    SDL_HAT_LEFTDOWN            = SDL_HAT_LEFT | SDL_HAT_DOWN,
+}
 
 //==============================================================================
 // FUNCTIONS

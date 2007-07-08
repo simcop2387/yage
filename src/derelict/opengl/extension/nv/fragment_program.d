@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVFragmentProgram
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_fragment_program") == -1)
+        if(extString.findStr("GL_NV_fragment_program") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glProgramNamedParameter4fNV, "glProgramNamedParameter4fNV"))
@@ -82,17 +82,24 @@ else
     }
 }
 
-const GLenum GL_MAX_FRAGMENT_PROGRAM_LOCAL_PARAMETERS_NV    = 0x8868;
-const GLenum GL_FRAGMENT_PROGRAM_NV                         = 0x8870;
-const GLenum GL_MAX_TEXTURE_COORDS_NV                       = 0x8871;
-const GLenum GL_MAX_TEXTURE_IMAGE_UNITS_NV                  = 0x8872;
-const GLenum GL_FRAGMENT_PROGRAM_BINDING_NV                 = 0x8873;
-const GLenum GL_PROGRAM_ERROR_STRING_NV                     = 0x8874;
+enum : GLenum
+{
+    GL_MAX_FRAGMENT_PROGRAM_LOCAL_PARAMETERS_NV    = 0x8868,
+    GL_FRAGMENT_PROGRAM_NV                         = 0x8870,
+    GL_MAX_TEXTURE_COORDS_NV                       = 0x8871,
+    GL_MAX_TEXTURE_IMAGE_UNITS_NV                  = 0x8872,
+    GL_FRAGMENT_PROGRAM_BINDING_NV                 = 0x8873,
+    GL_PROGRAM_ERROR_STRING_NV                     = 0x8874,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLuint, GLsizei, GLubyte*, GLfloat, GLfloat, GLfloat, GLfloat) pfglProgramNamedParameter4fNV;
 typedef void function(GLuint, GLsizei, GLubyte*, GLdouble, GLdouble, GLdouble, GLdouble) pfglProgramNamedParameter4dNV;

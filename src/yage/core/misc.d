@@ -37,6 +37,13 @@ union word
 	byte[2] b;		/// ditto
 	ubyte[2] ub;	/// ditto
 	char[2] c;		/// ditto
+	
+	/// Convert ushort to word
+	static word opApply(ushort us)
+	{	word res;
+		res.us = us;
+		return res;
+	}
 }
 
 /// Allow for easy bool-by-bool conversion from one four-byte type to another
@@ -75,15 +82,6 @@ union qword
 	char[8] c;		/// ditto
 }
 
-unittest
-{	assert(almostEqual(0, 0.0001));
-	assert(almostEqual(0, -0.0001));
-	assert(almostEqual(1, 1.000099));
-	assert(almostEqual(1000, 1000.1));
-	assert(!almostEqual(10000, 10001.01));
-	//assert(almostEqual(float.infinity, float.infinity));
-}
-
 /**
  * Check if two floats are almost equal, that is, they differ no more than
  * fudge from one another, relatively speaking.  If fudge is 0.0001 (the default)
@@ -102,6 +100,14 @@ bool almostEqual(float a, float b, float fudge=0.0001)
 		if (fabs((a-b)/b) <= fudge)
 			return true;
 	return false;
+}
+unittest
+{	assert(almostEqual(0, 0.0001));
+	assert(almostEqual(0, -0.0001));
+	assert(almostEqual(1, 1.000099));
+	assert(almostEqual(1000, 1000.1));
+	assert(!almostEqual(10000, 10001.01));
+	//assert(almostEqual(float.infinity, float.infinity));
 }
 
 /// Given relative path rel_path, returns an absolute path.
@@ -125,7 +131,7 @@ char[] absPath(char[] rel_path)
 }
 
 /// Clamp v between l and u
-float clampf(float v, float lower, float upper)
+T clamp(T)(T v, T lower, T upper)
 {	if (v<lower) return lower;
 	if (v>upper) return upper;
 	return v;
@@ -163,10 +169,21 @@ char[] cleanPath(char[] path)
 }
 
 /**
- * Returns the first integer n such that 2^n >= abs(x).
- * input of 9 returns 16 */
+ * Returns the first integer n such that 2^n >= input.
+ * Example:
+ * nextPow2(9); // returns 16 */
 uint nextPow2(uint input)
-{	return cast(uint)pow(2, ceil(log2(input)));	// a bool shift would be faster.
+{	if (0 == input)
+		return 1;
+	int msb = std.intrinsic.bsr(input);	// get first bit set, starting with most significant.
+	if ((1 << msb) == input)				// If already equal to a power of two
+		return input;
+	return 2 << msb;
+}
+unittest
+{	assert(nextPow2(9) == 16);
+	assert(nextPow2(1) == 1);	// 2^0 == 1
+	assert(nextPow2(16) == 16);
 }
 
 /// Map a value from one range to another
@@ -174,62 +191,29 @@ float map(float v, float oldmin, float oldmax, float newmin, float newmax)
 {	return ((newmax-newmin)*v/(oldmax-oldmin))+newmin;
 }
 
-/// Set the type for the max function.
-template maxType(T)
-{	/// Return the maximum from an array of type T.
-	T max(T[] a ...)
-	{	T max=a[0];
-		foreach (T x; a)
-			if (x>max)
-				max=x;
-		return max;
-	}
+
+/// Return the maximum of all arguments 
+T[0] max(T...)(T a)
+{	typeof(a[0]) max = a[0];
+	foreach(T x; a)
+		if (x>max)
+			max = x;
+	return max;
+}
+unittest
+{	assert(max(3, 4, -1) == 4);
 }
 
-/// Return the maximum of an array.
-int maxi(int[] a ...)
-{	return maxType!(int).max(a);
+/// Return the minimum of all arguments.
+T[0] min(T...)(T a)
+{	typeof(a[0]) min = a[0];
+	foreach (T x; a)
+		if (x<min)
+			min = x;
+	return min;
 }
-/// ditto
-long maxl(long[] a ...)
-{	return maxType!(long).max(a);
-}
-/// ditto
-float maxf(float[] a ...)
-{	return maxType!(float).max(a);
-}
-/// ditto
-double maxd(double[] a ...)
-{	return maxType!(double).max(a);
-}
-
-/// Set the type for the max function.
-template minType(T)
-{	/// Return the maximum from an array of type T.
-	T min(T[] a ...)
-	{	T min=a[0];
-		foreach (T x; a)
-			if (x<min)
-				min=x;
-		return min;
-	}
-}
-
-/// Return the minimum of an array.
-int mini(int[] a ...)
-{	return minType!(int).min(a);
-}
-/// ditto
-long minl(long[] a ...)
-{	return minType!(long).min(a);
-}
-/// ditto
-float minf(float[] a ...)
-{	return minType!(float).min(a);
-}
-/// ditto
-double mind(double[] a ...)
-{	return minType!(double).min(a);
+unittest
+{	assert(min(3, 4, -1) == -1);
 }
 
 

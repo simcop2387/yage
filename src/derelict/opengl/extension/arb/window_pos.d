@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBWindowPos
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_window_pos") == -1)
+        if(extString.findStr("GL_ARB_window_pos") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glWindowPos2dARB, "glWindowPos2dARB"))
             return false;
@@ -102,9 +102,13 @@ else
 }
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLdouble, GLdouble) pfglWindowPos2dARB;
 typedef void function(GLdouble*) pfglWindowPos2dvARB;

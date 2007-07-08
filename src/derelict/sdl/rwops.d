@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,22 +31,40 @@
  */
 module derelict.sdl.rwops;
 
-private import derelict.sdl.types;
-private import std.c.stdio;
+private
+{
+    import derelict.sdl.types;
+
+    version(Tango)
+    {
+        import tango.stdc.stdio;
+    }
+    else
+    {
+        import std.c.stdio;
+    }
+}
 
 //==============================================================================
 // TYPES
 //==============================================================================
-const int RW_SEEK_SET       = 0;
-const int RW_SEEK_CUR       = 1;
-const int RW_SEEK_END       = 2;
+enum
+{
+    RW_SEEK_SET       = 0,
+    RW_SEEK_CUR       = 1,
+    RW_SEEK_END       = 2,
+}
 
 struct SDL_RWops
 {
-    int (*seek)(SDL_RWops *context, int offset, int whence);
-    int (*read)(SDL_RWops *context, void *ptr, int size, int maxnum);
-    int (*write)(SDL_RWops *context, void *ptr, int size, int num);
-    int (*close)(SDL_RWops *context);
+	extern(C)
+	{
+	    int (*seek)(SDL_RWops *context, int offset, int whence);
+	    int (*read)(SDL_RWops *context, void *ptr, int size, int maxnum);
+	    int (*write)(SDL_RWops *context, void *ptr, int size, int num);
+	    int (*close)(SDL_RWops *context);
+    }
+    
     Uint32 type;
     union Hidden
     {
@@ -59,14 +77,14 @@ struct SDL_RWops
             }
             Win32io win32io;
         }
-        
+
         struct Stdio
         {
             int autoclose;
             FILE *fp;
         }
         Stdio stdio;
-        
+
         struct Mem
         {
             Uint8 *base;
@@ -74,7 +92,7 @@ struct SDL_RWops
             Uint8 *stop;
         }
         Mem mem;
-        
+
         struct Unknown
         {
             void *data1;

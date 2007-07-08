@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTBlendColor
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_blend_color") == -1)
+        if(extString.findStr("GL_EXT_blend_color") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glBlendColorEXT, "glBlendColorEXT"))
@@ -72,16 +72,23 @@ else
     }
 }
 
-const GLenum GL_CONSTANT_COLOR_EXT             = 0x8001;
-const GLenum GL_ONE_MINUS_CONSTANT_COLOR_EXT   = 0x8002;
-const GLenum GL_CONSTANT_ALPHA_EXT             = 0x8003;
-const GLenum GL_ONE_MINUS_CONSTANT_ALPHA_EXT   = 0x8004;
-const GLenum GL_BLEND_COLOR_EXT                = 0x8005;
+enum : GLenum
+{
+    GL_CONSTANT_COLOR_EXT             = 0x8001,
+    GL_ONE_MINUS_CONSTANT_COLOR_EXT   = 0x8002,
+    GL_CONSTANT_ALPHA_EXT             = 0x8003,
+    GL_ONE_MINUS_CONSTANT_ALPHA_EXT   = 0x8004,
+    GL_BLEND_COLOR_EXT                = 0x8005,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLclampf, GLclampf, GLclampf, GLclampf) pfglBlendColorEXT;
 pfglBlendColorEXT       glBlendColorEXT;

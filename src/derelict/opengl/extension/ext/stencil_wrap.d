@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct EXTStencilWrap
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_stencil_wrap") == -1)
+        if(extString.findStr("GL_EXT_stencil_wrap") == -1)
             return false;
 
         enabled = true;
@@ -68,5 +68,8 @@ else
     }
 }
 
-const GLenum GL_INCR_WRAP_EXT       = 0x8507;
-const GLenum GL_DECR_WRAP_EXT       = 0x8508;
+enum : GLenum
+{
+    GL_INCR_WRAP_EXT       = 0x8507,
+    GL_DECR_WRAP_EXT       = 0x8508,
+}

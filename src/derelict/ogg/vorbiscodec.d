@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@ module derelict.ogg.vorbiscodec;
 private {
     import derelict.util.loader;
     import derelict.ogg.oggtypes;
-	import derelict.ogg.vorbistypes;
+    import derelict.ogg.vorbistypes;
 }
 
 
@@ -91,12 +91,12 @@ private void loadVorbis(SharedLib lib)
 
 GenericLoader DerelictVorbis;
 static this() {
-	DerelictVorbis.setup(
-		"vorbis.dll",
-		"libvorbis.so, libvorbis.so.0, libvorbis.so.0.3.0",
-		"",
-		&loadVorbis
-	);
+    DerelictVorbis.setup(
+        "vorbis.dll",
+        "libvorbis.so, libvorbis.so.0, libvorbis.so.0.3.0",
+        "",
+        &loadVorbis
+    );
 }
 
 

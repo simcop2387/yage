@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,9 +45,13 @@ struct SDL_keysym
     Uint16 unicode;
 }
 
-const uint SDL_ALL_HOTKEYS              = 0xFFFFFFFF;
-const int SDL_DEFAULT_REPEAT_DELAY      = 500;
-const int SDL_DEFAULT_REPEAT_INTERVAL   = 30;
+enum : uint { SDL_ALL_HOTKEYS = 0xFFFFFFFF }
+
+enum
+{
+    SDL_DEFAULT_REPEAT_DELAY      = 500,
+    SDL_DEFAULT_REPEAT_INTERVAL   = 30,
+}
 
 //==============================================================================
 // FUNCTIONS

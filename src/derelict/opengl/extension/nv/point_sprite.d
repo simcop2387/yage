@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVPointSprite
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_point_sprite") == -1)
+        if(extString.findStr("GL_NV_point_sprite") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glPointParameteriNV, "glPointParameteriNV"))
@@ -74,14 +74,21 @@ else
     }
 }
 
-const GLenum GL_POINT_SPRITE_NV                = 0x8861;
-const GLenum GL_COORD_REPLACE_NV               = 0x8862;
-const GLenum GL_POINT_SPRITE_R_MODE_NV         = 0x8863;
+enum : GLenum
+{
+    GL_POINT_SPRITE_NV                = 0x8861,
+    GL_COORD_REPLACE_NV               = 0x8862,
+    GL_POINT_SPRITE_R_MODE_NV         = 0x8863,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLint) pfglPointParameteriNV;
 typedef void function(GLenum, GLint*) pfglPointParameterivNV;

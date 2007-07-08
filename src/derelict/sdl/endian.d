@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,7 +101,7 @@ else
 {
     Uint16 SDL_SwapLE16(Uint16 val)
     {
-        return ((val<<8)|(val>>8));
+        return cast(Uint16)((val<<8)|(val>>8));
     }
 
     Uint32 SDL_SwapLE32(Uint32 val)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,69 +31,64 @@
  */
 module derelict.ogg.oggtypes;
 
-alias long		ogg_int64_t;
-alias int		ogg_int32_t;
-alias uint		ogg_uint32_t;
-alias short		ogg_int16_t;
-alias ushort	ogg_uint16_t;
-
-extern(C)
-{
+alias long      ogg_int64_t;
+alias int       ogg_int32_t;
+alias uint      ogg_uint32_t;
+alias short     ogg_int16_t;
+alias ushort    ogg_uint16_t;
 
 struct oggpack_buffer
-{	int endbyte;
-	int endbit;
-	ubyte* buffer;
-	ubyte* ptr;
-	int storage;
+{   int endbyte;
+    int endbit;
+    ubyte* buffer;
+    ubyte* ptr;
+    int storage;
 }
 
 struct ogg_page
-{	ubyte *header;
-	int  header_len;
-	ubyte *_body;		// originally named "body", but that's a keyword in D.
-	int  body_len;
+{   ubyte *header;
+    int  header_len;
+    ubyte *_body;       // originally named "body", but that's a keyword in D.
+    int  body_len;
 }
 
 struct ogg_stream_state
-{	ubyte  *body_data;
-	int     body_storage;
-	int     body_fill;
-	int     body_returned;
-	int     *lacing_vals;
-	ogg_int64_t *granule_vals;
-	int     lacing_storage;
-	int     lacing_fill;
-	int     lacing_packet;
-	int     lacing_returned;
-	ubyte   header[282];
-	int     header_fill;
-	int     e_o_s;
-	int     b_o_s;
-	int     serialno;
-	int     pageno;
-	ogg_int64_t  packetno;
-	ogg_int64_t   granulepos;
+{   ubyte  *body_data;
+    int     body_storage;
+    int     body_fill;
+    int     body_returned;
+    int     *lacing_vals;
+    ogg_int64_t *granule_vals;
+    int     lacing_storage;
+    int     lacing_fill;
+    int     lacing_packet;
+    int     lacing_returned;
+    ubyte   header[282];
+    int     header_fill;
+    int     e_o_s;
+    int     b_o_s;
+    int     serialno;
+    int     pageno;
+    ogg_int64_t  packetno;
+    ogg_int64_t   granulepos;
 }
 
 struct ogg_packet
-{	ubyte *packet;
-	int   bytes;
-	int   b_o_s;
-	int   e_o_s;
-	ogg_int64_t  granulepos;
-	ogg_int64_t  packetno;
+{   ubyte *packet;
+    int   bytes;
+    int   b_o_s;
+    int   e_o_s;
+    ogg_int64_t  granulepos;
+    ogg_int64_t  packetno;
 }
 
 struct ogg_sync_state
-{	ubyte *data;
-	int storage;
-	int fill;
-	int returned;
+{   ubyte *data;
+    int storage;
+    int fill;
+    int returned;
 
-	int unsynced;
-	int headerbytes;
-	int bodybytes;
+    int unsynced;
+    int headerbytes;
+    int bodybytes;
 }
-
-} // extern(C)

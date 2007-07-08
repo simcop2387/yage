@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct NVTextureEnvCombine4
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_texture_env_combine4") == -1)
+        if(extString.findStr("GL_NV_texture_env_combine4") == -1)
             return false;
 
         enabled = true;
@@ -68,8 +68,11 @@ else
     }
 }
 
-const GLenum GL_COMBINE4_NV                    = 0x8503;
-const GLenum GL_SOURCE3_RGB_NV                 = 0x8583;
-const GLenum GL_SOURCE3_ALPHA_NV               = 0x858B;
-const GLenum GL_OPERAND3_RGB_NV                = 0x8593;
-const GLenum GL_OPERAND3_ALPHA_NV              = 0x859B;
+enum : GLenum
+{
+    GL_COMBINE4_NV                    = 0x8503,
+    GL_SOURCE3_RGB_NV                 = 0x8583,
+    GL_SOURCE3_ALPHA_NV               = 0x858B,
+    GL_OPERAND3_RGB_NV                = 0x8593,
+    GL_OPERAND3_ALPHA_NV              = 0x859B,
+}

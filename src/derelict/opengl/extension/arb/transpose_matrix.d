@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBTransposeMatrix
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_transpose_matrix") == -1)
+        if(extString.findStr("GL_ARB_transpose_matrix") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glLoadTransposeMatrixfARB, "glLoadTransposeMatrixfARB"))
             return false;
@@ -77,15 +77,22 @@ else
     }
 }
 
-const GLenum GL_TRANSPOSE_MODELVIEW_MATRIX_ARB  = 0x84E3;
-const GLenum GL_TRANSPOSE_PROJECTION_MATRIX_ARB = 0x84E4;
-const GLenum GL_TRANSPOSE_TEXTURE_MATRIX_ARB    = 0x84E5;
-const GLenum GL_TRANSPOSE_COLOR_MATRIX_ARB      = 0x84E6;
+enum : GLenum
+{
+    GL_TRANSPOSE_MODELVIEW_MATRIX_ARB  = 0x84E3,
+    GL_TRANSPOSE_PROJECTION_MATRIX_ARB = 0x84E4,
+    GL_TRANSPOSE_TEXTURE_MATRIX_ARB    = 0x84E5,
+    GL_TRANSPOSE_COLOR_MATRIX_ARB      = 0x84E6,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLfloat*) pfglLoadTransposeMatrixfARB;
 typedef void function(GLdouble*) pfglLoadTransposeMatrixdARB;

@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATIEnvmapBumpmap
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_envmap_bumpmap") == -1)
+        if(extString.findStr("GL_ATI_envmap_bumpmap") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glTexBumpParameterivATI, "glTexBumpParameterivATI"))
@@ -78,19 +78,26 @@ else
     }
 }
 
-const GL_BUMP_ROT_MATRIX_ATI            = 0x8775;
-const GL_BUMP_ROT_MATRIX_SIZE_ATI       = 0x8776;
-const GL_BUMP_NUM_TEX_UNITS_ATI         = 0x8777;
-const GL_BUMP_TEX_UNITS_ATI             = 0x8778;
-const GL_DUDV_ATI                       = 0x8779;
-const GL_DU8DV8_ATI                     = 0x877A;
-const GL_BUMP_ENVMAP_ATI                = 0x877B;
-const GL_BUMP_TARGET_ATI                = 0x877C;
+enum : GLenum
+{
+    GL_BUMP_ROT_MATRIX_ATI            = 0x8775,
+    GL_BUMP_ROT_MATRIX_SIZE_ATI       = 0x8776,
+    GL_BUMP_NUM_TEX_UNITS_ATI         = 0x8777,
+    GL_BUMP_TEX_UNITS_ATI             = 0x8778,
+    GL_DUDV_ATI                       = 0x8779,
+    GL_DU8DV8_ATI                     = 0x877A,
+    GL_BUMP_ENVMAP_ATI                = 0x877B,
+    GL_BUMP_TARGET_ATI                = 0x877C,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLint *) pfglTexBumpParameterivATI;
 typedef void function(GLenum, GLfloat *) pfglTexBumpParameterfvATI;

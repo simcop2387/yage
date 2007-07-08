@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBVertexBlend
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_vertex_blend") == -1)
+        if(extString.findStr("GL_ARB_vertex_blend") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glWeightbvARB, "glWeightbvARB"))
             return false;
@@ -89,53 +89,60 @@ else
     }
 }
 
-const GLenum GL_MAX_VERTEX_UNITS_ARB           = 0x86A4;
-const GLenum GL_ACTIVE_VERTEX_UNITS_ARB        = 0x86A5;
-const GLenum GL_WEIGHT_SUM_UNITY_ARB           = 0x86A6;
-const GLenum GL_VERTEX_BLEND_ARB               = 0x86A7;
-const GLenum GL_CURRENT_WEIGHT_ARB             = 0x86A8;
-const GLenum GL_WEIGHT_ARRAY_TYPE_ARB          = 0x86A9;
-const GLenum GL_WEIGHT_ARRAY_STRIDE_ARB        = 0x86AA;
-const GLenum GL_WEIGHT_ARRAY_SIZE_ARB          = 0x86AB;
-const GLenum GL_WEIGHT_ARRAY_POINTER_ARB       = 0x86AC;
-const GLenum GL_WEIGHT_ARRAY_ARB               = 0x86AD;
-const GLenum GL_MODELVIEW0_ARB                 = 0x1700;
-const GLenum GL_MODELVIEW1_ARB                 = 0x850A;
-const GLenum GL_MODELVIEW2_ARB                 = 0x8722;
-const GLenum GL_MODELVIEW3_ARB                 = 0x8723;
-const GLenum GL_MODELVIEW4_ARB                 = 0x8724;
-const GLenum GL_MODELVIEW5_ARB                 = 0x8725;
-const GLenum GL_MODELVIEW6_ARB                 = 0x8726;
-const GLenum GL_MODELVIEW7_ARB                 = 0x8727;
-const GLenum GL_MODELVIEW8_ARB                 = 0x8728;
-const GLenum GL_MODELVIEW9_ARB                 = 0x8729;
-const GLenum GL_MODELVIEW10_ARB                = 0x872A;
-const GLenum GL_MODELVIEW11_ARB                = 0x872B;
-const GLenum GL_MODELVIEW12_ARB                = 0x872C;
-const GLenum GL_MODELVIEW13_ARB                = 0x872D;
-const GLenum GL_MODELVIEW14_ARB                = 0x872E;
-const GLenum GL_MODELVIEW15_ARB                = 0x872F;
-const GLenum GL_MODELVIEW16_ARB                = 0x8730;
-const GLenum GL_MODELVIEW17_ARB                = 0x8731;
-const GLenum GL_MODELVIEW18_ARB                = 0x8732;
-const GLenum GL_MODELVIEW19_ARB                = 0x8733;
-const GLenum GL_MODELVIEW20_ARB                = 0x8734;
-const GLenum GL_MODELVIEW21_ARB                = 0x8735;
-const GLenum GL_MODELVIEW22_ARB                = 0x8736;
-const GLenum GL_MODELVIEW23_ARB                = 0x8737;
-const GLenum GL_MODELVIEW24_ARB                = 0x8738;
-const GLenum GL_MODELVIEW25_ARB                = 0x8739;
-const GLenum GL_MODELVIEW26_ARB                = 0x873A;
-const GLenum GL_MODELVIEW27_ARB                = 0x873B;
-const GLenum GL_MODELVIEW28_ARB                = 0x873C;
-const GLenum GL_MODELVIEW29_ARB                = 0x873D;
-const GLenum GL_MODELVIEW30_ARB                = 0x873E;
-const GLenum GL_MODELVIEW31_ARB                = 0x873F;
+enum : GLenum
+{
+    GL_MAX_VERTEX_UNITS_ARB           = 0x86A4,
+    GL_ACTIVE_VERTEX_UNITS_ARB        = 0x86A5,
+    GL_WEIGHT_SUM_UNITY_ARB           = 0x86A6,
+    GL_VERTEX_BLEND_ARB               = 0x86A7,
+    GL_CURRENT_WEIGHT_ARB             = 0x86A8,
+    GL_WEIGHT_ARRAY_TYPE_ARB          = 0x86A9,
+    GL_WEIGHT_ARRAY_STRIDE_ARB        = 0x86AA,
+    GL_WEIGHT_ARRAY_SIZE_ARB          = 0x86AB,
+    GL_WEIGHT_ARRAY_POINTER_ARB       = 0x86AC,
+    GL_WEIGHT_ARRAY_ARB               = 0x86AD,
+    GL_MODELVIEW0_ARB                 = 0x1700,
+    GL_MODELVIEW1_ARB                 = 0x850A,
+    GL_MODELVIEW2_ARB                 = 0x8722,
+    GL_MODELVIEW3_ARB                 = 0x8723,
+    GL_MODELVIEW4_ARB                 = 0x8724,
+    GL_MODELVIEW5_ARB                 = 0x8725,
+    GL_MODELVIEW6_ARB                 = 0x8726,
+    GL_MODELVIEW7_ARB                 = 0x8727,
+    GL_MODELVIEW8_ARB                 = 0x8728,
+    GL_MODELVIEW9_ARB                 = 0x8729,
+    GL_MODELVIEW10_ARB                = 0x872A,
+    GL_MODELVIEW11_ARB                = 0x872B,
+    GL_MODELVIEW12_ARB                = 0x872C,
+    GL_MODELVIEW13_ARB                = 0x872D,
+    GL_MODELVIEW14_ARB                = 0x872E,
+    GL_MODELVIEW15_ARB                = 0x872F,
+    GL_MODELVIEW16_ARB                = 0x8730,
+    GL_MODELVIEW17_ARB                = 0x8731,
+    GL_MODELVIEW18_ARB                = 0x8732,
+    GL_MODELVIEW19_ARB                = 0x8733,
+    GL_MODELVIEW20_ARB                = 0x8734,
+    GL_MODELVIEW21_ARB                = 0x8735,
+    GL_MODELVIEW22_ARB                = 0x8736,
+    GL_MODELVIEW23_ARB                = 0x8737,
+    GL_MODELVIEW24_ARB                = 0x8738,
+    GL_MODELVIEW25_ARB                = 0x8739,
+    GL_MODELVIEW26_ARB                = 0x873A,
+    GL_MODELVIEW27_ARB                = 0x873B,
+    GL_MODELVIEW28_ARB                = 0x873C,
+    GL_MODELVIEW29_ARB                = 0x873D,
+    GL_MODELVIEW30_ARB                = 0x873E,
+    GL_MODELVIEW31_ARB                = 0x873F,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLint, GLbyte*) pfglWeightbvARB;
 typedef void function(GLint, GLshort*) pfglWeightsvARB;

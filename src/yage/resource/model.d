@@ -28,32 +28,36 @@ import yage.system.log;
 
 
 /**
+ * An array of vertex attribute.
+ * Vertex attributes can be vertices themselves, texture coordinates, normals, colors, or anything else.
+ * They can be an array of floats, vectors of varying size, or matrices. */
+struct Attribute
+{	float[]	values;			// Raw data of the attributes
+	ubyte	width;			// Number of floats to use for each vertex.
+	uint	vbo;		
+	bool	cached = false; // Are the values of this attribute cached in video memory?
+
+	/// Get the values of this attribute as an array of Vec3f
+	Vec3f[] vec3f()
+	{	return (cast(Vec3f*)values.ptr)[0..values.length/3];
+	}
+
+	/// Get the values of this attribute as an array of Vec3f
+	Vec2f[] vec2f()
+	{	return (cast(Vec2f*)values.ptr)[0..values.length/2];
+	}
+}
+
+/**
  * A Model is a 3D object, typically loaded from a file.
- * A model contains an array of vertices, texture coordinates, and normal vectors.
+ *
  * Each model is divided into one or more Meshes; each Mesh has its own material
- * and an array of triangle indices that correspond to vertices in the Model's
- * vertex array.  ModelNodes can be used to create 3D models in a scene.*/
+ * and an array of triangle indices that correspond to vertices in the Model's vertex array.  
+ * ModelNodes can be used to create 3D models in a scene.*/
 class Model
 {	
 	protected char[] source;
-	protected Mesh[]	meshes;
-
-	struct Attribute
-	{	float[]	values;			// Raw data of the attributes
-		ubyte	width;			// Number of floats to use for each vertex.
-		uint	vbo;		
-		bool	cached = false; // Are the values of this attribute cached in video memory?
-
-		/// Get the values of this attribute as an array of Vec3f
-		Vec3f[] vec3f()
-		{	return (cast(Vec3f*)values.ptr)[0..values.length/3];
-		}
-
-		/// Get the values of this attribute as an array of Vec3f
-		Vec2f[] vec2f()
-		{	return (cast(Vec2f*)values.ptr)[0..values.length/2];
-		}
-	}
+	protected Mesh[] meshes;
 	protected Attribute[char[]] attributes;	// An associative array to store as many attributes as necessary
 
 	mixin ModelLoader;
@@ -174,39 +178,9 @@ class Model
 	{	return cast(bool)(name in attributes);
 	}
 
-	///
-	Vec3f[] getNormals()
-	{	return attributes["gl_Normal"].vec3f;
-	}
-
-	/// Get the OpenGL Vertex Buffer Object index for the vertex normals.
-	uint getNormalsVBO()
-	{	return attributes["gl_Normal"].vbo;
-	}
-
 	/// Get the path to the file where the model was loaded.
 	char[] getSource()
 	{	return source;
-	}
-
-	///
-	Vec2f[] getTexCoords()
-	{	return attributes["gl_TexCoord"].vec2f;
-	}
-
-	/// Get the OpenGL Vertex Buffer Object index for the vertex texture coordinates.
-	uint getTexCoordsVBO()
-	{	return attributes["gl_TexCoord"].vbo;
-	}
-
-	///
-	Vec3f[] getVertices()
-	{	return attributes["gl_Vertex"].vec3f;
-	}
-
-	/// Get the OpenGL Vertex Buffer Object index for the vertices.
-	uint getVerticesVBO()
-	{	return attributes["gl_Vertex"].vbo;
 	}
 
 	/// Load vertex, mesh, and material data from a 3D model file.

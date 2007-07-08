@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,28 +46,37 @@ struct SDL_AudioSpec
     Uint16 samples;
     Uint16 padding;
     Uint32 size;
-    void (*callback)(void *userdata, Uint8 *stream, int len);
+    extern(C) void (*callback)(void *userdata, Uint8 *stream, int len);
     void *userdata;
 }
 
-const Uint16 AUDIO_U8           = 0x0008;
-const Uint16 AUDIO_S8           = 0x8008;
-const Uint16 AUDIO_U16LSB       = 0x0010;
-const Uint16 AUDIO_S16LSB       = 0x8010;
-const Uint16 AUDIO_U16MSB       = 0x1010;
-const Uint16 AUDIO_S16MSB       = 0x9010;
-const Uint16 AUDIO_U16          = AUDIO_U16LSB;
-const Uint16 AUDIO_S16          = AUDIO_S16LSB;
+enum : Uint16
+{
+    AUDIO_U8           = 0x0008,
+    AUDIO_S8           = 0x8008,
+    AUDIO_U16LSB       = 0x0010,
+    AUDIO_S16LSB       = 0x8010,
+    AUDIO_U16MSB       = 0x1010,
+    AUDIO_S16MSB       = 0x9010,
+    AUDIO_U16          = AUDIO_U16LSB,
+    AUDIO_S16          = AUDIO_S16LSB,
+}
 
 version(LittleEndian)
 {
-    const Uint16 AUDIO_U16SYS   = AUDIO_U16LSB;
-    const Uint16 AUDIO_S16SYS   = AUDIO_S16LSB;
+    enum : Uint16
+    {
+        AUDIO_U16SYS   = AUDIO_U16LSB,
+        AUDIO_S16SYS   = AUDIO_S16LSB,
+    }
 }
 else
 {
-    const Uint16 AUDIO_U16SYS   = AUDIO_U16MSB;
-    const Uint16 AUDIO_S16SYS   = AUDIO_S16MSB;
+    enum : Uint16
+    {
+        AUDIO_U16SYS   = AUDIO_U16MSB,
+        AUDIO_S16SYS   = AUDIO_S16MSB,
+    }
 }
 
 struct SDL_AudioCVT
@@ -93,7 +102,7 @@ enum
     SDL_AUDIO_PAUSED
 }
 
-const int SDL_MIX_MAXVOLUME     = 128;
+enum { SDL_MIX_MAXVOLUME = 128 }
 
 //==============================================================================
 // MACROS

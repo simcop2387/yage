@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVPrimitiveRestart
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_primitive_restart") == -1)
+        if(extString.findStr("GL_NV_primitive_restart") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glPrimitiveRestartNV, "glPrimitiveRestartNV"))
@@ -74,13 +74,20 @@ else
     }
 }
 
-const GLenum GL_PRIMITIVE_RESTART_NV           = 0x8558;
-const GLenum GL_PRIMITIVE_RESTART_INDEX_NV     = 0x8559;
+enum : GLenum
+{
+    GL_PRIMITIVE_RESTART_NV           = 0x8558,
+    GL_PRIMITIVE_RESTART_INDEX_NV     = 0x8559,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function() pfglPrimitiveRestartNV;
 typedef void function(GLuint) pfglPrimitiveRestartIndexNV;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@ module derelict.opengl.extension.nv.texture_compression_vtc;
 private
 {
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -43,7 +43,7 @@ struct NVTextureCompressionVtc
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_texture_compression_vtc") == -1)
+        if(extString.findStr("GL_NV_texture_compression_vtc") == -1)
             return false;
 
         enabled = true;

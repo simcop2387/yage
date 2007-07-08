@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct ATITextureEnvCombine3
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_texture_env_combine3") == -1)
+        if(extString.findStr("GL_ATI_texture_env_combine3") == -1)
             return false;
 
         enabled = true;
@@ -68,7 +68,9 @@ else
     }
 }
 
-const GL_MODULATE_ADD_ATI               = 0x8744;
-const GL_MODULATE_SIGNED_ADD_ATI        = 0x8745;
-const GL_MODULATE_SUBTRACT_ATI          = 0x8746;
-
+enum : GLenum
+{
+    GL_MODULATE_ADD_ATI               = 0x8744,
+    GL_MODULATE_SIGNED_ADD_ATI        = 0x8745,
+    GL_MODULATE_SUBTRACT_ATI          = 0x8746,
+}

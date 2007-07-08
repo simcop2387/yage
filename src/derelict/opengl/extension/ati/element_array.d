@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATIElementArray
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_element_array") == -1)
+        if(extString.findStr("GL_ATI_element_array") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glElementPointerATI, "glElementPointerATI"))
@@ -76,14 +76,21 @@ else
     }
 }
 
-const GLenum GL_ELEMENT_ARRAY_ATI           = 0x8768;
-const GLenum GL_ELEMENT_ARRAY_TYPE_ATI      = 0x8769;
-const GLenum GL_ELEMENT_ARRAY_POINTER_ATI   = 0x876A;
+enum : GLenum
+{
+    GL_ELEMENT_ARRAY_ATI           = 0x8768,
+    GL_ELEMENT_ARRAY_TYPE_ATI      = 0x8769,
+    GL_ELEMENT_ARRAY_POINTER_ATI   = 0x876A,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLvoid*) pfglElementPointerATI;
 typedef void function(GLenum, GLsizei) pfglDrawElementArrayATI;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTTexturePerturbNormal
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_texture_perturb_normal") == -1)
+        if(extString.findStr("GL_EXT_texture_perturb_normal") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glTextureNormalEXT, "glTextureNormalEXT"))
@@ -72,13 +72,20 @@ else
     }
 }
 
-const GLenum GL_PERTURB_EXT             = 0x85AE;
-const GLenum GL_TEXTURE_NORMAL_EXT      = 0x85AF;
+enum : GLenum
+{
+    GL_PERTURB_EXT             = 0x85AE,
+    GL_TEXTURE_NORMAL_EXT      = 0x85AF,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum) pfglTextureNormalEXT;
 pfglTextureNormalEXT        glTextureNormalEXT;

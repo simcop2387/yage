@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,9 +43,12 @@ private
 alias SDL_SetError          IMG_SetError;
 alias SDL_GetError          IMG_GetError;
 
-const Uint8 SDL_IMAGE_MAJOR_VERSION     = 1;
-const Uint8 SDL_IMAGE_MINOR_VERSION     = 2;
-const Uint8 SDL_IMAGE_PATCHLEVEL        = 3;
+enum : Uint8
+{
+    SDL_IMAGE_MAJOR_VERSION     = 1,
+    SDL_IMAGE_MINOR_VERSION     = 2,
+    SDL_IMAGE_PATCHLEVEL        = 3,
+}
 
 //==============================================================================
 // Functions
@@ -141,11 +144,11 @@ private void load(SharedLib lib)
 
 GenericLoader DerelictSDLImage;
 static this() {
-	DerelictSDLImage.setup(
-		"SDL_image.dll",
-		"libSDL_image.so, libSDL_image-1.2.so, libSDL_image-1.2.so.0",
-		"",
-		&load
-	);
+    DerelictSDLImage.setup(
+        "SDL_image.dll",
+        "libSDL_image.so, libSDL_image-1.2.so, libSDL_image-1.2.so.0",
+        "",
+        &load
+    );
 }
 

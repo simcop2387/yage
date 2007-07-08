@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATIDrawBuffers
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_draw_buffers") == -1)
+        if(extString.findStr("GL_ATI_draw_buffers") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glDrawBuffersATI, "glDrawBuffersATI"))
@@ -72,28 +72,35 @@ else
     }
 }
 
-const GL_MAX_DRAW_BUFFERS_ATI          = 0x8824;
-const GL_DRAW_BUFFER0_ATI              = 0x8825;
-const GL_DRAW_BUFFER1_ATI              = 0x8826;
-const GL_DRAW_BUFFER2_ATI              = 0x8827;
-const GL_DRAW_BUFFER3_ATI              = 0x8828;
-const GL_DRAW_BUFFER4_ATI              = 0x8829;
-const GL_DRAW_BUFFER5_ATI              = 0x882A;
-const GL_DRAW_BUFFER6_ATI              = 0x882B;
-const GL_DRAW_BUFFER7_ATI              = 0x882C;
-const GL_DRAW_BUFFER8_ATI              = 0x882D;
-const GL_DRAW_BUFFER9_ATI              = 0x882E;
-const GL_DRAW_BUFFER10_ATI             = 0x882F;
-const GL_DRAW_BUFFER11_ATI             = 0x8830;
-const GL_DRAW_BUFFER12_ATI             = 0x8831;
-const GL_DRAW_BUFFER13_ATI             = 0x8832;
-const GL_DRAW_BUFFER14_ATI             = 0x8833;
-const GL_DRAW_BUFFER15_ATI             = 0x8834;
+enum : GLenum
+{
+    GL_MAX_DRAW_BUFFERS_ATI          = 0x8824,
+    GL_DRAW_BUFFER0_ATI              = 0x8825,
+    GL_DRAW_BUFFER1_ATI              = 0x8826,
+    GL_DRAW_BUFFER2_ATI              = 0x8827,
+    GL_DRAW_BUFFER3_ATI              = 0x8828,
+    GL_DRAW_BUFFER4_ATI              = 0x8829,
+    GL_DRAW_BUFFER5_ATI              = 0x882A,
+    GL_DRAW_BUFFER6_ATI              = 0x882B,
+    GL_DRAW_BUFFER7_ATI              = 0x882C,
+    GL_DRAW_BUFFER8_ATI              = 0x882D,
+    GL_DRAW_BUFFER9_ATI              = 0x882E,
+    GL_DRAW_BUFFER10_ATI             = 0x882F,
+    GL_DRAW_BUFFER11_ATI             = 0x8830,
+    GL_DRAW_BUFFER12_ATI             = 0x8831,
+    GL_DRAW_BUFFER13_ATI             = 0x8832,
+    GL_DRAW_BUFFER14_ATI             = 0x8833,
+    GL_DRAW_BUFFER15_ATI             = 0x8834,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLsizei, GLenum *) pfglDrawBuffersATI;
 pfglDrawBuffersATI     glDrawBuffersATI;

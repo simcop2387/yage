@@ -19,6 +19,10 @@ module yage.core.array;
 import std.stdio;
 
 /**
+ * 
+ */
+
+/**
  * Remove an element from an array.
  * This takes constant time, or linear time if ordered is true.
  * Params:
@@ -37,9 +41,8 @@ void remove(T)(inout T[] array, int index, bool ordered=true)
 /**
  * Reserve space inside the array.
  * Params:
- *     array = 
- *     length =
- */
+ *     array  = The array in which to reserve space.
+ *     length = The array will reserve enough space to hold this many total elements. */
 void reserve(T)(inout T[] array, int length)
 {	int old = array.length;
 	array.length = length;
@@ -59,14 +62,14 @@ void reserve(T)(inout T[] array, int length)
  * --------------------------------
  * Timer[] array;
  * // ... fill array with new Timer() ...
- * array.sort((Timer a) { return a.get(); });
+ * array.radixSort((Timer a) { return a.get(); });
  * -------------------------------- */
-void sort(T)(inout T[] array)
-{	sort(array, (T a) { return a; });
+void radixSort(T)(inout T[] array)
+{	radixSort(array, (T a) { return a; });
 }
 
 /// ditto
-void sort(T, K)(inout T[] array, K delegate(T elem) getKey, bool signed=true)
+void radixSort(T, K)(inout T[] array, K delegate(T elem) getKey, bool signed=true)
 {	// Are we sorting floats?
 	bool isfloat = false;
 	static if (is(K == float) || is(K == double) || is(K == real) || 
@@ -171,11 +174,11 @@ unittest
 	
 	// Sort ints
 	int[] test2 = [3, 5, 2, 0, -1, 7, -4];
-	test2.sort();
+	test2.radixSort();
 	assert(test2 == [-4, -1, 0, 2, 3, 5, 7]);
 	
 	// Sort doubles
 	double[] test3 = [3.0, 5, 2, 0, -1, 7, -4];
-	test3.sort();
+	test3.radixSort();
 	assert(test3 == [-4.0, -1, 0, 2, 3, 5, 7]);	
 }

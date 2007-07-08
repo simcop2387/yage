@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVRegisterCombiners2
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_register_combiners2") == -1)
+        if(extString.findStr("GL_NV_register_combiners2") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glCombinerStageParameterfvNV, "glCombinerStageParameterfvNV"))
@@ -74,12 +74,19 @@ else
     }
 }
 
-const GLenum GL_PER_STAGE_CONSTANTS_NV = 0x8535;
+enum : GLenum
+{
+    GL_PER_STAGE_CONSTANTS_NV = 0x8535
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLenum, GLfloat*) pfglCombinerStageParameterfvNV;
 typedef void function(GLenum, GLenum, GLfloat*) pfglGetCombinerStageParameterfvNV;

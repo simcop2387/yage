@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVHalfFloat
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_half_float") == -1)
+        if(extString.findStr("GL_NV_half_float") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glVertex2hNV, "glVertex2hNV"))
@@ -166,12 +166,19 @@ else
 
 typedef ushort GLhalfNV;
 
-const GLenum GL_HALF_FLOAT_NV = 0x140B;
+enum : GLenum
+{
+    GL_HALF_FLOAT_NV = 0x140B
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLhalfNV, GLhalfNV) pfglVertex2hNV;
 typedef void function(GLhalfNV*) pfglVertex2hvNV;

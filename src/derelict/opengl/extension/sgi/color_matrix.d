@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct SGIColorMatrix
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_SGI_color_matrix") == -1)
+        if(extString.findStr("GL_SGI_color_matrix") == -1)
             return false;
 
         enabled = true;
@@ -68,14 +68,17 @@ else
     }
 }
 
-const GLenum GL_COLOR_MATRIX_SGI                    = 0x80B1;
-const GLenum GL_COLOR_MATRIX_STACK_DEPTH_SGI        = 0x80B2;
-const GLenum GL_MAX_COLOR_MATRIX_STACK_DEPTH_SGI    = 0x80B3;
-const GLenum GL_POST_COLOR_MATRIX_RED_SCALE_SGI     = 0x80B4;
-const GLenum GL_POST_COLOR_MATRIX_GREEN_SCALE_SGI   = 0x80B5;
-const GLenum GL_POST_COLOR_MATRIX_BLUE_SCALE_SGI    = 0x80B6;
-const GLenum GL_POST_COLOR_MATRIX_ALPHA_SCALE_SGI   = 0x80B7;
-const GLenum GL_POST_COLOR_MATRIX_RED_BIAS_SGI      = 0x80B8;
-const GLenum GL_POST_COLOR_MATRIX_GREEN_BIAS_SGI    = 0x80B9;
-const GLenum GL_POST_COLOR_MATRIX_BLUE_BIAS_SGI     = 0x80BA;
-const GLenum GL_POST_COLOR_MATRIX_ALPHA_BIAS_SGI    = 0x80BB;
+enum : GLenum
+{
+    GL_COLOR_MATRIX_SGI                    = 0x80B1,
+    GL_COLOR_MATRIX_STACK_DEPTH_SGI        = 0x80B2,
+    GL_MAX_COLOR_MATRIX_STACK_DEPTH_SGI    = 0x80B3,
+    GL_POST_COLOR_MATRIX_RED_SCALE_SGI     = 0x80B4,
+    GL_POST_COLOR_MATRIX_GREEN_SCALE_SGI   = 0x80B5,
+    GL_POST_COLOR_MATRIX_BLUE_SCALE_SGI    = 0x80B6,
+    GL_POST_COLOR_MATRIX_ALPHA_SCALE_SGI   = 0x80B7,
+    GL_POST_COLOR_MATRIX_RED_BIAS_SGI      = 0x80B8,
+    GL_POST_COLOR_MATRIX_GREEN_BIAS_SGI    = 0x80B9,
+    GL_POST_COLOR_MATRIX_BLUE_BIAS_SGI     = 0x80BA,
+    GL_POST_COLOR_MATRIX_ALPHA_BIAS_SGI    = 0x80BB,
+}

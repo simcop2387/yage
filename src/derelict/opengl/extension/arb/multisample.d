@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBMultisample
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_multisample") == -1)
+        if(extString.findStr("GL_ARB_multisample") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glSampleCoverageARB, "glSampleCoverageARB"))
             return false;
@@ -71,20 +71,27 @@ else
     }
 }
 
-const GLenum GL_MULTISAMPLE_ARB                = 0x809D;
-const GLenum GL_SAMPLE_ALPHA_TO_COVERAGE_ARB   = 0x809E;
-const GLenum GL_SAMPLE_ALPHA_TO_ONE_ARB        = 0x809F;
-const GLenum GL_SAMPLE_COVERAGE_ARB            = 0x80A0;
-const GLenum GL_SAMPLE_BUFFERS_ARB             = 0x80A8;
-const GLenum GL_SAMPLES_ARB                    = 0x80A9;
-const GLenum GL_SAMPLE_COVERAGE_VALUE_ARB      = 0x80AA;
-const GLenum GL_SAMPLE_COVERAGE_INVERT_ARB     = 0x80AB;
-const GLenum GL_MULTISAMPLE_BIT_ARB            = 0x20000000;
+enum : GLenum
+{
+    GL_MULTISAMPLE_ARB                = 0x809D,
+    GL_SAMPLE_ALPHA_TO_COVERAGE_ARB   = 0x809E,
+    GL_SAMPLE_ALPHA_TO_ONE_ARB        = 0x809F,
+    GL_SAMPLE_COVERAGE_ARB            = 0x80A0,
+    GL_SAMPLE_BUFFERS_ARB             = 0x80A8,
+    GL_SAMPLES_ARB                    = 0x80A9,
+    GL_SAMPLE_COVERAGE_VALUE_ARB      = 0x80AA,
+    GL_SAMPLE_COVERAGE_INVERT_ARB     = 0x80AB,
+    GL_MULTISAMPLE_BIT_ARB            = 0x20000000,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLclampf, GLboolean) pfglSampleCoverageARB;
 pfglSampleCoverageARB       glSampleCoverageARB;

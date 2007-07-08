@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,7 +99,7 @@ enum
     SDL_SYSWMEVENTMASK          = (1<<SDL_SYSWMEVENT)
 }
 
-const uint SDL_ALLEVENTS        = 0xFFFFFFFF;
+enum : uint { SDL_ALLEVENTS = 0xFFFFFFFF }
 
 struct SDL_ActiveEvent
 {
@@ -225,12 +225,15 @@ enum
     SDL_GETEVENT
 }
 
-typedef int function(SDL_Event *event) SDL_EventFilter;
+extern(C) typedef int function(SDL_Event *event) SDL_EventFilter;
 
-const Uint8 SDL_QUERY           = cast(Uint8)-1;
-const Uint8 SDL_IGNORE          = 0;
-const Uint8 SDL_DISABLE         = 0;
-const Uint8 SDL_ENABLE          = 1;
+enum : Uint8
+{
+    SDL_QUERY           = cast(Uint8)-1,
+    SDL_IGNORE          = 0,
+    SDL_DISABLE         = 0,
+    SDL_ENABLE          = 1,
+}
 
 //==============================================================================
 // MACROS

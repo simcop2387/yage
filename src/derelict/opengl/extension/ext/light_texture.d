@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTLightTexture
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_light_texture") == -1)
+        if(extString.findStr("GL_EXT_light_texture") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glApplyTextureEXT, "glApplyTextureEXT"))
@@ -76,20 +76,27 @@ else
     }
 }
 
-const GLenum GL_FRAGMENT_MATERIAL_EXT          = 0x8349;
-const GLenum GL_FRAGMENT_NORMAL_EXT            = 0x834A;
-const GLenum GL_FRAGMENT_COLOR_EXT             = 0x834C;
-const GLenum GL_ATTENUATION_EXT                = 0x834D;
-const GLenum GL_SHADOW_ATTENUATION_EXT         = 0x834E;
-const GLenum GL_TEXTURE_APPLICATION_MODE_EXT   = 0x834F;
-const GLenum GL_TEXTURE_LIGHT_EXT              = 0x8350;
-const GLenum GL_TEXTURE_MATERIAL_FACE_EXT      = 0x8351;
-const GLenum GL_TEXTURE_MATERIAL_PARAMETER_EXT = 0x8352;
+enum : GLenum
+{
+    GL_FRAGMENT_MATERIAL_EXT          = 0x8349,
+    GL_FRAGMENT_NORMAL_EXT            = 0x834A,
+    GL_FRAGMENT_COLOR_EXT             = 0x834C,
+    GL_ATTENUATION_EXT                = 0x834D,
+    GL_SHADOW_ATTENUATION_EXT         = 0x834E,
+    GL_TEXTURE_APPLICATION_MODE_EXT   = 0x834F,
+    GL_TEXTURE_LIGHT_EXT              = 0x8350,
+    GL_TEXTURE_MATERIAL_FACE_EXT      = 0x8351,
+    GL_TEXTURE_MATERIAL_PARAMETER_EXT = 0x8352,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum) pfglApplyTextureEXT;
 typedef void function(GLenum) pfglTextureLightEXT;

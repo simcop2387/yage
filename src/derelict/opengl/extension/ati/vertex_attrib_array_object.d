@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATIVertexAttribArrayObject
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_vertex_attrib_array_object") == -1)
+        if(extString.findStr("GL_ATI_vertex_attrib_array_object") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glVertexAttribArrayObjectATI, "glVertexAttribArrayObjectATI"))
@@ -77,9 +77,13 @@ else
 }
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLuint, GLint, GLenum, GLboolean, GLsizei, GLuint, GLuint) pfglVertexAttribArrayObjectATI;
 typedef void function(GLuint, GLenum, GLfloat *)                                 pfglGetVertexAttribArrayObjectfvATI;

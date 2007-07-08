@@ -57,7 +57,7 @@ class Spring
 	{	tail.setRotation(head.getAbsoluteRotation());
 
 		Vec3f dist = head.getAbsolutePosition() - tail.getAbsolutePosition() + distance.rotate(head.getAbsoluteTransform());
-		Vec3f vel = dist.scale(minf(stiffness, 1/delta)); // scale by 1/delta when framerate is low to prevent jerkiness.
+		Vec3f vel = dist.scale(min(stiffness, 1/delta)); // scale by 1/delta when framerate is low to prevent jerkiness.
 
 		if (vel.length*delta > dist.length)
 			vel = dist;

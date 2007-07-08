@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct EXTTextureLodBias
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_texture_lod_bias") == -1)
+        if(extString.findStr("GL_EXT_texture_lod_bias") == -1)
             return false;
 
         enabled = true;
@@ -68,6 +68,9 @@ else
     }
 }
 
-const GLenum GL_MAX_TEXTURE_LOD_BIAS_EXT        = 0x84FD;
-const GLenum GL_TEXTURE_FILTER_CONTROL_EXT      = 0x8500;
-const GLenum GL_TEXTURE_LOD_BIAS_EXT            = 0x8501;
+enum : GLenum
+{
+    GL_MAX_TEXTURE_LOD_BIAS_EXT        = 0x84FD,
+    GL_TEXTURE_FILTER_CONTROL_EXT      = 0x8500,
+    GL_TEXTURE_LOD_BIAS_EXT            = 0x8501,
+}

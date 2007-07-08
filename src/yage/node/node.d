@@ -56,7 +56,7 @@ import yage.system.input;
  *                            //to 0, 0, 0, instead of a.
  * --------------------------------
  */
-class Node : MoveableNode
+class Node : BaseNode
 {
 	protected bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
 	protected bool 	visible = true;
@@ -91,7 +91,7 @@ class Node : MoveableNode
 		color = original.color;
 		lifetime = original.lifetime;
 
-		// From MoveableNode
+		// From BaseNode
 		transform = original.transform;
 		linear_velocity = original.linear_velocity;
 		angular_velocity = original.angular_velocity;
@@ -217,7 +217,7 @@ class Node : MoveableNode
 
 	/**
 	 * Set the scale of this Node in the x, y, and z directions.
-	 * The default is (1, 1, 1) */
+	 * The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. */
 	void setScale(float x, float y, float z)
 	{	scale.set(x, y, z);
 	}
@@ -281,8 +281,8 @@ class Node : MoveableNode
 			number = Device.getLimit(DEVICE_MAX_LIGHTS);
 
 		LightNode[] all_lights = scene.getLights();
-		lights.length = maxi(number, all_lights.length);
-		intensities.length = maxi(number, all_lights.length);
+		lights.length = max(cast(int)number, cast(int)all_lights.length);
+		intensities.length = max(cast(int)number, cast(int)all_lights.length);
 
 		// clear out old values
 		for (int i=0; i<lights.length; i++)

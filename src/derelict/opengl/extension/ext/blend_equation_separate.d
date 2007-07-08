@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTBlendEquationSeparate
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_blend_equation_separate") == -1)
+        if(extString.findStr("GL_EXT_blend_equation_separate") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glBlendEquationSeparateEXT, "glBlendEquationSeparateEXT"))
@@ -72,13 +72,20 @@ else
     }
 }
 
-const GLenum GL_BLEND_EQUATION_RGB_EXT      = 0x8009;
-const GLenum GL_BLEND_EQUATION_ALPHA_EXT    = 0x883D;
+enum : GLenum
+{
+    GL_BLEND_EQUATION_RGB_EXT      = 0x8009,
+    GL_BLEND_EQUATION_ALPHA_EXT    = 0x883D,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLenum) pfglBlendEquationSeparateEXT;
 pfglBlendEquationSeparateEXT    glBlendEquationSeparateEXT;

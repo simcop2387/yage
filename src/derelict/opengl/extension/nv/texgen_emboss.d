@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct NVTexgenEmboss
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_texgen_emboss") == -1)
+        if(extString.findStr("GL_NV_texgen_emboss") == -1)
             return false;
 
         enabled = true;
@@ -68,6 +68,9 @@ else
     }
 }
 
-const GLenum GL_EMBOSS_LIGHT_NV                = 0x855D;
-const GLenum GL_EMBOSS_CONSTANT_NV             = 0x855E;
-const GLenum GL_EMBOSS_MAP_NV                  = 0x855F;
+enum : GLenum
+{
+    GL_EMBOSS_LIGHT_NV                = 0x855D,
+    GL_EMBOSS_CONSTANT_NV             = 0x855E,
+    GL_EMBOSS_MAP_NV                  = 0x855F,
+}

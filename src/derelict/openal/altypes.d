@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,91 +56,98 @@ alias uint ALbitfield;
 alias ALfloat ALclampf;
 alias ALdouble ALclampd;
 
+enum : ALboolean
+{
+	AL_FALSE               = 0,
+    AL_TRUE                = 1,
+}
 
-const ALenum AL_INVALD              = -1;
-const ALenum AL_NONE                = 0;
-const ALenum AL_FALSE               = 0;
-const ALenum AL_TRUE                    = 1;
+enum : ALenum
+{
+    AL_INVALD              = -1,
+    AL_NONE                = 0,    
 
-const ALenum AL_SOURCE_TYPE         = 0x200;
-const ALenum AL_SOURCE_ABSOLUTE     = 0x201;
-const ALenum AL_SOURCE_RELATIVE     = 0x202;
+    AL_SOURCE_TYPE         = 0x200,
+    AL_SOURCE_ABSOLUTE     = 0x201,
+    AL_SOURCE_RELATIVE     = 0x202,
 
-const ALenum AL_CONE_INNER_ANGLE    = 0x1001;
-const ALenum AL_CONE_OUTER_ANGLE    = 0x1002;
+    AL_CONE_INNER_ANGLE    = 0x1001,
+    AL_CONE_OUTER_ANGLE    = 0x1002,
 
-const ALenum AL_PITCH               = 0x1003;
-const ALenum AL_POSITION            = 0x1004;
-const ALenum AL_DIRECTION           = 0x1005;
-const ALenum AL_VELOCITY            = 0x1006;
-const ALenum AL_LOOPING             = 0x1007;
-const ALenum AL_BUFFER              = 0x1009;
-const ALenum AL_GAIN                = 0x100A;
-const ALenum AL_MIN_GAIN            = 0x100D;
-const ALenum AL_MAX_GAIN            = 0x100E;
-const ALenum AL_ORIENTATION         = 0x100F;
+    AL_PITCH               = 0x1003,
+    AL_POSITION            = 0x1004,
+    AL_DIRECTION           = 0x1005,
+    AL_VELOCITY            = 0x1006,
+    AL_LOOPING             = 0x1007,
+    AL_BUFFER              = 0x1009,
+    AL_GAIN                = 0x100A,
+    AL_MIN_GAIN            = 0x100D,
+    AL_MAX_GAIN            = 0x100E,
+    AL_ORIENTATION         = 0x100F,
+
+    AL_CHANNEL_MASK        = 0x3000,
+
+    AL_SOURCE_STATE        = 0x1010,
+    AL_INITIAL             = 0x1011,
+    AL_PLAYING             = 0x1012,
+    AL_PAUSED              = 0x1013,
+    AL_STOPPED             = 0x1014,
+
+    AL_BUFFERS_QUEUED      = 0x1015,
+    AL_BUFFERS_PROCESSED   = 0x1016,
+
+    AL_FORMAT_MONO8        = 0x1100,
+    AL_FORMAT_MONO16       = 0x1101,
+    AL_FORMAT_STEREO8      = 0x1102,
+    AL_FORMAT_STEREO16     = 0x1103,
+
+    AL_REFERENCE_DISTANCE  = 0x1020,
+    AL_ROLLOFF_FACTOR      = 0x1021,
+    AL_CONE_OUTER_GAIN     = 0x1022,
+    AL_MAX_DISTANCE        = 0x1023,
+
+
+    AL_FREQUENCEY          = 0x2001,
+    AL_BITS                = 0x2002,
+    AL_CHANNELS            = 0x2003,
+    AL_SIZE                = 0x2004,
+    AL_DATA                = 0x2005,
+
+    AL_UNUSED              = 0x2010,
+    AL_PENDING             = 0x2011,
+    AL_PROCESSID           = 0x2012,
+
+    AL_NO_ERROR            = AL_FALSE,
+
+    AL_INVALID_NAME        = 0xA001,
+    AL_ILLEGAL_ENUM        = 0xA002,
+    AL_INVALID_ENUM        = 0xA002,
+    AL_INVALID_VALUE       = 0xA003,
+    AL_ILLEGAL_COMMAND     = 0xA004,
+    AL_INVALID_OPERATION   = 0xA004,
+    AL_OUT_OF_MEMORY       = 0xA005,
+
+    AL_VENDOR              = 0xB001,
+    AL_VERSION             = 0xB002,
+    AL_RENDERER            = 0xB003,
+    AL_EXTENSIONS          = 0xB004,
+
+    AL_DOPPLER_FACTOR      = 0xC001,
+
+    AL_DISTANCE_MODEL              = 0xD000,
+    AL_INVERSE_DISTANCE            = 0xD001,
+    AL_INVERSE_DISTANCE_CLAMPED    = 0xD002,
+}
 
 version(linux)
 {
-    const int AL_STREAMING      = 0x1008;
-    const int AL_BYTE_LOKI      = 0x100C;
+    enum : ALenum
+    {
+        AL_DISTANCE_SCALE   = 0xC002,
+        AL_STREAMING        = 0x1008,
+        AL_BYTE_LOKI        = 0x100C,
+    }
 }
 
-const ALenum AL_CHANNEL_MASK        = 0x3000;
 
-const ALenum AL_SOURCE_STATE        = 0x1010;
-const ALenum AL_INITIAL             = 0x1011;
-const ALenum AL_PLAYING             = 0x1012;
-const ALenum AL_PAUSED              = 0x1013;
-const ALenum AL_STOPPED             = 0x1014;
-
-const ALenum AL_BUFFERS_QUEUED      = 0x1015;
-const ALenum AL_BUFFERS_PROCESSED   = 0x1016;
-
-const ALenum AL_FORMAT_MONO8        = 0x1100;
-const ALenum AL_FORMAT_MONO16       = 0x1101;
-const ALenum AL_FORMAT_STEREO8      = 0x1102;
-const ALenum AL_FORMAT_STEREO16     = 0x1103;
-
-const ALenum AL_REFERENCE_DISTANCE  = 0x1020;
-const ALenum AL_ROLLOFF_FACTOR      = 0x1021;
-const ALenum AL_CONE_OUTER_GAIN     = 0x1022;
-const ALenum AL_MAX_DISTANCE        = 0x1023;
-
-
-const ALenum AL_FREQUENCEY          = 0x2001;
-const ALenum AL_BITS                = 0x2002;
-const ALenum AL_CHANNELS            = 0x2003;
-const ALenum AL_SIZE                = 0x2004;
-const ALenum AL_DATA                = 0x2005;
-
-const ALenum AL_UNUSED              = 0x2010;
-const ALenum AL_PENDING             = 0x2011;
-const ALenum AL_PROCESSID           = 0x2012;
-
-const ALenum AL_NO_ERROR            = AL_FALSE;
-
-const ALenum AL_INVALID_NAME        = 0xA001;
-const ALenum AL_ILLEGAL_ENUM        = 0xA002;
-const ALenum AL_INVALID_ENUM        = 0xA002;
-const ALenum AL_INVALID_VALUE       = 0xA003;
-const ALenum AL_ILLEGAL_COMMAND     = 0xA004;
-const ALenum AL_INVALID_OPERATION   = 0xA004;
-const ALenum AL_OUT_OF_MEMORY       = 0xA005;
-
-const ALenum AL_VENDOR              = 0xB001;
-const ALenum AL_VERSION             = 0xB002;
-const ALenum AL_RENDERER            = 0xB003;
-const ALenum AL_EXTENSIONS          = 0xB004;
-
-const ALenum AL_DOPPLER_FACTOR      = 0xC001;
-
-version(linux)
-{
-    const ALenum AL_DISTANCE_SCALE  = 0xC002;
-}
-
-const ALenum AL_DISTANCE_MODEL              = 0xD000;
-const ALenum AL_INVERSE_DISTANCE            = 0xD001;
-const ALenum AL_INVERSE_DISTANCE_CLAMPED    = 0xD002;
 

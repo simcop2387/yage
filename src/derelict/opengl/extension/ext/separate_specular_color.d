@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct EXTSeparateSpecularColor
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_separate_specular_color") == -1)
+        if(extString.findStr("GL_EXT_separate_specular_color") == -1)
             return false;
 
         enabled = true;
@@ -68,6 +68,9 @@ else
     }
 }
 
-const GLenum GL_LIGHT_MODEL_COLOR_CONTROL_EXT  = 0x81F8;
-const GLenum GL_SINGLE_COLOR_EXT               = 0x81F9;
-const GLenum GL_SEPARATE_SPECULAR_COLOR_EXT    = 0x81FA;
+enum : GLenum
+{
+    GL_LIGHT_MODEL_COLOR_CONTROL_EXT  = 0x81F8,
+    GL_SINGLE_COLOR_EXT               = 0x81F9,
+    GL_SEPARATE_SPECULAR_COLOR_EXT    = 0x81FA,
+}

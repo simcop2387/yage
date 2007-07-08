@@ -81,6 +81,8 @@ int main()
 	planet.setScale(60);
 	planet.setAngularVelocity(0, -0.01, 0);
 	
+	//planet.getModel().clearAttribute("gl_Normal");
+	
 	// Asteroids
 	asteroidBelt(800, 1400, planet);
 

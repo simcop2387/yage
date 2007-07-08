@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,11 @@
  */
 module derelict.sdl.byteorder;
 
-const uint SDL_LIL_ENDIAN           = 1234;
-const uint SDL_BIG_ENDIAN           = 4321;
-
+enum : uint
+{
+    SDL_LIL_ENDIAN           = 1234,
+    SDL_BIG_ENDIAN           = 4321,
+}
 
 version(LittleEndian)
     const uint SDL_BYTEORDER = SDL_LIL_ENDIAN;

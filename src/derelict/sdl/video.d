@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,11 @@ private import derelict.sdl.rwops;
 //==============================================================================
 // TYPES
 //==============================================================================
-const Uint8 SDL_ALPHA_OPAQUE            = 255;
-const Uint8 SDL_ALPHA_TRANSPARENT       = 0;
+enum : Uint8
+{
+    SDL_ALPHA_OPAQUE            = 255,
+    SDL_ALPHA_TRANSPARENT       = 0,
+}
 
 struct SDL_Rect
 {
@@ -100,23 +103,26 @@ struct SDL_Surface
     int refcount;
 }
 
-const Uint32 SDL_SWSURFACE                  = 0x00000000;
-const Uint32 SDL_HWSURFACE                  = 0x00000001;
-const Uint32 SDL_ASYNCBLIT                  = 0x00000004;
-const Uint32 SDL_ANYFORMAT                  = 0x10000000;
-const Uint32 SDL_HWPALETTE                  = 0x20000000;
-const Uint32 SDL_DOUBLEBUF                  = 0x40000000;
-const Uint32 SDL_FULLSCREEN                 = 0x80000000;
-const Uint32 SDL_OPENGL                     = 0x00000002;
-const Uint32 SDL_OPENGLBLIT                 = 0x0000000A;
-const Uint32 SDL_RESIZABLE                  = 0x00000010;
-const Uint32 SDL_NOFRAME                    = 0x00000020;
-const Uint32 SDL_HWACCEL                    = 0x00000100;
-const Uint32 SDL_SRCCOLORKEY                = 0x00001000;
-const Uint32 SDL_RLEACCELOK                 = 0x00002000;
-const Uint32 SDL_RLEACCEL                   = 0x00004000;
-const Uint32 SDL_SRCALPHA                   = 0x00010000;
-const Uint32 SDL_PREALLOC                   = 0x01000000;
+enum : Uint32
+{
+    SDL_SWSURFACE                  = 0x00000000,
+    SDL_HWSURFACE                  = 0x00000001,
+    SDL_ASYNCBLIT                  = 0x00000004,
+    SDL_ANYFORMAT                  = 0x10000000,
+    SDL_HWPALETTE                  = 0x20000000,
+    SDL_DOUBLEBUF                  = 0x40000000,
+    SDL_FULLSCREEN                 = 0x80000000,
+    SDL_OPENGL                     = 0x00000002,
+    SDL_OPENGLBLIT                 = 0x0000000A,
+    SDL_RESIZABLE                  = 0x00000010,
+    SDL_NOFRAME                    = 0x00000020,
+    SDL_HWACCEL                    = 0x00000100,
+    SDL_SRCCOLORKEY                = 0x00001000,
+    SDL_RLEACCELOK                 = 0x00002000,
+    SDL_RLEACCEL                   = 0x00004000,
+    SDL_SRCALPHA                   = 0x00010000,
+    SDL_PREALLOC                   = 0x01000000,
+}
 
 struct SDL_VideoInfo
 {
@@ -127,11 +133,14 @@ struct SDL_VideoInfo
     int current_h;
 }
 
-const Uint32 SDL_YV12_OVERLAY               = 0x32315659;
-const Uint32 SDL_IYUV_OVERLAY               = 0x56555949;
-const Uint32 SDL_YUY2_OVERLAY               = 0x32595559;
-const Uint32 SDL_UYVY_OVERLAY               = 0x59565955;
-const Uint32 SDL_YUYU_OVERLAY               = 0x55595659;
+enum : Uint32
+{
+    SDL_YV12_OVERLAY               = 0x32315659,
+    SDL_IYUV_OVERLAY               = 0x56555949,
+    SDL_YUY2_OVERLAY               = 0x32595559,
+    SDL_UYVY_OVERLAY               = 0x59565955,
+    SDL_YUYU_OVERLAY               = 0x55595659,
+}
 
 struct SDL_Overlay
 {
@@ -167,8 +176,11 @@ enum
     SDL_GL_SWAP_CONTROL
 }
 
-const Uint8 SDL_LOGPAL          = 0x01;
-const Uint8 SDL_PHYSPAL         = 0x02;
+enum : Uint8
+{
+    SDL_LOGPAL          = 0x01,
+    SDL_PHYSPAL         = 0x02,
+}
 
 alias int SDL_GrabMode;
 enum

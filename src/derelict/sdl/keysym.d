@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -305,10 +305,9 @@ enum
     KMOD_NUM   = 0x1000,
     KMOD_CAPS  = 0x2000,
     KMOD_MODE  = 0x4000,
-    KMOD_RESERVED = 0x8000
+    KMOD_RESERVED = 0x8000,
+    KMOD_CTRL         = KMOD_LCTRL | KMOD_RCTRL,
+    KMOD_SHIFT        = KMOD_LSHIFT | KMOD_RSHIFT,
+    KMOD_ALT          = KMOD_LALT | KMOD_RALT,
+    KMOD_META         = KMOD_LMETA | KMOD_RMETA,
 }
-
-const int KMOD_CTRL         = KMOD_LCTRL | KMOD_RCTRL;
-const int KMOD_SHIFT        = KMOD_LSHIFT | KMOD_RSHIFT;
-const int KMOD_ALT          = KMOD_LALT | KMOD_RALT;
-const int KMOD_META         = KMOD_LMETA | KMOD_RMETA;

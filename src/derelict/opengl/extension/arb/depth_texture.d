@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct ARBDepthTexture
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_depth_texture") != -1)
+        if(extString.findStr("GL_ARB_depth_texture") != -1)
         {
             enabled = true;
             return true;
@@ -69,8 +69,11 @@ else
     }
 }
 
-const GLenum GL_DEPTH_COMPONENT16_ARB          = 0x81A5;
-const GLenum GL_DEPTH_COMPONENT24_ARB          = 0x81A6;
-const GLenum GL_DEPTH_COMPONENT32_ARB          = 0x81A7;
-const GLenum GL_TEXTURE_DEPTH_SIZE_ARB         = 0x884A;
-const GLenum GL_DEPTH_TEXTURE_MODE_ARB         = 0x884B;
+enum : GLenum
+{
+    GL_DEPTH_COMPONENT16_ARB          = 0x81A5,
+    GL_DEPTH_COMPONENT24_ARB          = 0x81A6,
+    GL_DEPTH_COMPONENT32_ARB          = 0x81A7,
+    GL_TEXTURE_DEPTH_SIZE_ARB         = 0x884A,
+    GL_DEPTH_TEXTURE_MODE_ARB         = 0x884B,
+}

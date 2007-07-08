@@ -19,12 +19,10 @@ import yage.node.scene;
 import yage.node.sprite;
 import yage.node.model;
 import yage.node.light;
-import yage.universe;
 
 
 abstract class GameObject : Node
 {
-	int universe_index;
 	float mass=0;
 
 	this (BaseNode parent)
@@ -32,16 +30,8 @@ abstract class GameObject : Node
 	}
 }
 
-abstract class GravityObject : GameObject
-{
-	Universe parent;
 
-	this (BaseNode parent)
-	{	super(parent);
-	}
-}
-
-class Asteroid : GravityObject
+class Asteroid : GameObject
 {
 	float radius; // cached
 

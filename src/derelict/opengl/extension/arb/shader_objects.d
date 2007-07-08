@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBShaderObjects
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_shader_objects") == -1)
+        if(extString.findStr("GL_ARB_shader_objects") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glDeleteObjectARB, "glDeleteObjectARB"))
             return false;
@@ -147,48 +147,55 @@ else
     }
 }
 
-const GLenum GL_PROGRAM_OBJECT_ARB                  = 0x8B40;
-const GLenum GL_SHADER_OBJECT_ARB                   = 0x8B48;
-const GLenum GL_OBJECT_TYPE_ARB                     = 0x8B4E;
-const GLenum GL_OBJECT_SUBTYPE_ARB                  = 0x8B4F;
-const GLenum GL_FLOAT_VEC2_ARB                      = 0x8B50;
-const GLenum GL_FLOAT_VEC3_ARB                      = 0x8B51;
-const GLenum GL_FLOAT_VEC4_ARB                      = 0x8B52;
-const GLenum GL_INT_VEC2_ARB                        = 0x8B53;
-const GLenum GL_INT_VEC3_ARB                        = 0x8B54;
-const GLenum GL_INT_VEC4_ARB                        = 0x8B55;
-const GLenum GL_BOOL_ARB                            = 0x8B56;
-const GLenum GL_BOOL_VEC2_ARB                       = 0x8B57;
-const GLenum GL_BOOL_VEC3_ARB                       = 0x8B58;
-const GLenum GL_BOOL_VEC4_ARB                       = 0x8B59;
-const GLenum GL_FLOAT_MAT2_ARB                      = 0x8B5A;
-const GLenum GL_FLOAT_MAT3_ARB                      = 0x8B5B;
-const GLenum GL_FLOAT_MAT4_ARB                      = 0x8B5C;
-const GLenum GL_SAMPLER_1D_ARB                      = 0x8B5D;
-const GLenum GL_SAMPLER_2D_ARB                      = 0x8B5E;
-const GLenum GL_SAMPLER_3D_ARB                      = 0x8B5F;
-const GLenum GL_SAMPLER_CUBE_ARB                    = 0x8B60;
-const GLenum GL_SAMPLER_1D_SHADOW_ARB               = 0x8B61;
-const GLenum GL_SAMPLER_2D_SHADOW_ARB               = 0x8B62;
-const GLenum GL_SAMPLER_2D_RECT_ARB                 = 0x8B63;
-const GLenum GL_SAMPLER_2D_RECT_SHADOW_ARB          = 0x8B64;
-const GLenum GL_OBJECT_DELETE_STATUS_ARB            = 0x8B80;
-const GLenum GL_OBJECT_COMPILE_STATUS_ARB           = 0x8B81;
-const GLenum GL_OBJECT_LINK_STATUS_ARB              = 0x8B82;
-const GLenum GL_OBJECT_VALIDATE_STATUS_ARB          = 0x8B83;
-const GLenum GL_OBJECT_INFO_LOG_LENGTH_ARB          = 0x8B84;
-const GLenum GL_OBJECT_ATTACHED_OBJECTS_ARB         = 0x8B85;
-const GLenum GL_OBJECT_ACTIVE_UNIFORMS_ARB          = 0x8B86;
-const GLenum GL_OBJECT_ACTIVE_UNIFORM_MAX_LENGTH_ARB = 0x8B87;
-const GLenum GL_OBJECT_SHADER_SOURCE_LENGTH_ARB     = 0x8B88;
+enum : GLenum
+{
+    GL_PROGRAM_OBJECT_ARB                  = 0x8B40,
+    GL_SHADER_OBJECT_ARB                   = 0x8B48,
+    GL_OBJECT_TYPE_ARB                     = 0x8B4E,
+    GL_OBJECT_SUBTYPE_ARB                  = 0x8B4F,
+    GL_FLOAT_VEC2_ARB                      = 0x8B50,
+    GL_FLOAT_VEC3_ARB                      = 0x8B51,
+    GL_FLOAT_VEC4_ARB                      = 0x8B52,
+    GL_INT_VEC2_ARB                        = 0x8B53,
+    GL_INT_VEC3_ARB                        = 0x8B54,
+    GL_INT_VEC4_ARB                        = 0x8B55,
+    GL_BOOL_ARB                            = 0x8B56,
+    GL_BOOL_VEC2_ARB                       = 0x8B57,
+    GL_BOOL_VEC3_ARB                       = 0x8B58,
+    GL_BOOL_VEC4_ARB                       = 0x8B59,
+    GL_FLOAT_MAT2_ARB                      = 0x8B5A,
+    GL_FLOAT_MAT3_ARB                      = 0x8B5B,
+    GL_FLOAT_MAT4_ARB                      = 0x8B5C,
+    GL_SAMPLER_1D_ARB                      = 0x8B5D,
+    GL_SAMPLER_2D_ARB                      = 0x8B5E,
+    GL_SAMPLER_3D_ARB                      = 0x8B5F,
+    GL_SAMPLER_CUBE_ARB                    = 0x8B60,
+    GL_SAMPLER_1D_SHADOW_ARB               = 0x8B61,
+    GL_SAMPLER_2D_SHADOW_ARB               = 0x8B62,
+    GL_SAMPLER_2D_RECT_ARB                 = 0x8B63,
+    GL_SAMPLER_2D_RECT_SHADOW_ARB          = 0x8B64,
+    GL_OBJECT_DELETE_STATUS_ARB            = 0x8B80,
+    GL_OBJECT_COMPILE_STATUS_ARB           = 0x8B81,
+    GL_OBJECT_LINK_STATUS_ARB              = 0x8B82,
+    GL_OBJECT_VALIDATE_STATUS_ARB          = 0x8B83,
+    GL_OBJECT_INFO_LOG_LENGTH_ARB          = 0x8B84,
+    GL_OBJECT_ATTACHED_OBJECTS_ARB         = 0x8B85,
+    GL_OBJECT_ACTIVE_UNIFORMS_ARB          = 0x8B86,
+    GL_OBJECT_ACTIVE_UNIFORM_MAX_LENGTH_ARB = 0x8B87,
+    GL_OBJECT_SHADER_SOURCE_LENGTH_ARB     = 0x8B88,
+}
 
 alias char GLcharARB;
 alias uint GLhandleARB;
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLhandleARB) pfglDeleteObjectARB;
 typedef GLhandleARB function(GLenum) pfglGetHandleARB;

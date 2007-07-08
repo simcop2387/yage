@@ -113,6 +113,19 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static void 
+<span class="currsymbol">delete</span>
+<script type="text/javascript">explorer.outline.addDecl('delete');</script>
+(void* <span class="funcparam">p</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Prohibit manual deletion of Nodes.  node.remove() must be used.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">BaseNode 
 <span class="currsymbol">addChild</span>
 <script type="text/javascript">explorer.outline.addDecl('addChild');</script>
@@ -278,6 +291,7 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Update the positions and rotations of this Node and all children by <span class="funcparam">delta</span> seconds.
+	 
 <br><br>
 
 </dd>
@@ -300,7 +314,7 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 26 23:07:48 2007
+		on Sun Jul  8 00:19:33 2007
 
 	</div>
 	
@@ -396,8 +410,6 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
-
-	explorer.packageExplorer.addModule("yage.universe");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

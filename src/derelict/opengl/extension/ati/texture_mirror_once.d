@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct ATITextureMirrorOnce
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_texture_mirror_once") == -1)
+        if(extString.findStr("GL_ATI_texture_mirror_once") == -1)
             return false;
 
         enabled = true;
@@ -68,6 +68,8 @@ else
     }
 }
 
-const GL_MIRROR_CLAMP_ATI               = 0x8742;
-const GL_MIRROR_CLAMP_TO_EDGE_ATI       = 0x8743;
-
+enum : GLenum
+{
+    GL_MIRROR_CLAMP_ATI               = 0x8742,
+    GL_MIRROR_CLAMP_TO_EDGE_ATI       = 0x8743,
+}

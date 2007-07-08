@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct ARBTextureEnvDot3
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_texture_env_dot3") != -1)
+        if(extString.findStr("GL_ARB_texture_env_dot3") != -1)
         {
             enabled = true;
             return true;
@@ -69,5 +69,8 @@ else
     }
 }
 
-const GLenum GL_DOT3_RGB_ARB   = 0x86AE;
-const GLenum GL_DOT3_RGBA_ARB  = 0x86AF;
+enum GLenum
+{
+    GL_DOT3_RGB_ARB   = 0x86AE,
+    GL_DOT3_RGBA_ARB  = 0x86AF,
+}

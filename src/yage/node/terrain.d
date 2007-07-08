@@ -169,8 +169,8 @@ class TerrainNode : Node
 	 * Recalculate the terrain's normals and culling sphere radius.*/
 	protected void regenerate()
 	{
-		Vec3f[] vertices = model.getVertices();
-		Vec3f[] normals = model.getNormals();
+		Vec3f[] vertices = model.getAttribute("gl_Vertex").vec3f;
+		Vec3f[] normals = model.getAttribute("gl_Normal").vec3f;
 
 		int height = vertices.length/width;
 		for (int x=0; x<width; x++)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,6 @@ private
     import derelict.opengl.gltypes;
     import derelict.util.loader;
 }
-
-version(Windows)
-    private import std.c.windows.windows;
 
 private void load(SharedLib lib)
 {
@@ -106,179 +103,182 @@ private void load(SharedLib lib)
 
 GenericLoader DerelictGLU;
 static this() {
-	DerelictGLU.setup(
-		"glu32.dll",
-		"libGLU.so",
-		"",
-		&load
-	);
+    DerelictGLU.setup(
+        "glu32.dll",
+        "libGLU.so,libGLU.so.1",
+        "/System/Library/Frameworks/OpenGL.framework/OpenGL",
+        &load
+    );
 }
 
 //==============================================================================
 // CONSTANTS
 //==============================================================================
-// StringName
-const uint GLU_VERSION                      = 100800;
-const uint GLU_EXTENSIONS                   = 100801;
-// ErrorCode
-const uint GLU_INVALID_ENUM                 = 100900;
-const uint GLU_INVALID_VALUE                = 100901;
-const uint GLU_OUT_OF_MEMORY                = 100902;
-const uint GLU_INVALID_OPERATION            = 100904;
-// NurbsDisplay
-const uint GLU_OUTLINE_POLYGON              = 100240;
-const uint GLU_OUTLINE_PATCH                = 100241;
-// NurbsCallback
-const uint GLU_NURBS_ERROR                  = 100103;
-const uint GLU_ERROR                        = 100103;
-const uint GLU_NURBS_BEGIN                  = 100164;
-const uint GLU_NURBS_BEGIN_EXT              = 100164;
-const uint GLU_NURBS_VERTEX                 = 100165;
-const uint GLU_NURBS_VERTEX_EXT             = 100165;
-const uint GLU_NURBS_NORMAL                 = 100166;
-const uint GLU_NURBS_NORMAL_EXT             = 100166;
-const uint GLU_NURBS_COLOR                  = 100167;
-const uint GLU_NURBS_COLOR_EXT              = 100167;
-const uint GLU_NURBS_TEXTURE_COORD          = 100168;
-const uint GLU_NURBS_TEX_COORD_EXT          = 100168;
-const uint GLU_NURBS_END                    = 100169;
-const uint GLU_NURBS_END_EXT                = 100169;
-const uint GLU_NURBS_BEGIN_DATA             = 100170;
-const uint GLU_NURBS_BEGIN_DATA_EXT         = 100170;
-const uint GLU_NURBS_VERTEX_DATA            = 100171;
-const uint GLU_NURBS_VERTEX_DATA_EXT        = 100171;
-const uint GLU_NURBS_NORMAL_DATA            = 100172;
-const uint GLU_NURBS_NORMAL_DATA_EXT        = 100172;
-const uint GLU_NURBS_COLOR_DATA             = 100173;
-const uint GLU_NURBS_COLOR_DATA_EXT         = 100173;
-const uint GLU_NURBS_TEXTURE_COORD_DATA     = 100174;
-const uint GLU_NURBS_TEX_COORD_DATA_EXT     = 100174;
-const uint GLU_NURBS_END_DATA               = 100175;
-const uint GLU_NURBS_END_DATA_EXT           = 100175;
-// NurbsError
-const uint GLU_NURBS_ERROR1                 = 100251;
-const uint GLU_NURBS_ERROR2                 = 100252;
-const uint GLU_NURBS_ERROR3                 = 100253;
-const uint GLU_NURBS_ERROR4                 = 100254;
-const uint GLU_NURBS_ERROR5                 = 100255;
-const uint GLU_NURBS_ERROR6                 = 100256;
-const uint GLU_NURBS_ERROR7                 = 100257;
-const uint GLU_NURBS_ERROR8                 = 100258;
-const uint GLU_NURBS_ERROR9                 = 100259;
-const uint GLU_NURBS_ERROR10                = 100260;
-const uint GLU_NURBS_ERROR11                = 100261;
-const uint GLU_NURBS_ERROR12                = 100262;
-const uint GLU_NURBS_ERROR13                = 100263;
-const uint GLU_NURBS_ERROR14                = 100264;
-const uint GLU_NURBS_ERROR15                = 100265;
-const uint GLU_NURBS_ERROR16                = 100266;
-const uint GLU_NURBS_ERROR17                = 100267;
-const uint GLU_NURBS_ERROR18                = 100268;
-const uint GLU_NURBS_ERROR19                = 100269;
-const uint GLU_NURBS_ERROR20                = 100270;
-const uint GLU_NURBS_ERROR21                = 100271;
-const uint GLU_NURBS_ERROR22                = 100272;
-const uint GLU_NURBS_ERROR23                = 100273;
-const uint GLU_NURBS_ERROR24                = 100274;
-const uint GLU_NURBS_ERROR25                = 100275;
-const uint GLU_NURBS_ERROR26                = 100276;
-const uint GLU_NURBS_ERROR27                = 100277;
-const uint GLU_NURBS_ERROR28                = 100278;
-const uint GLU_NURBS_ERROR29                = 100279;
-const uint GLU_NURBS_ERROR30                = 100280;
-const uint GLU_NURBS_ERROR31                = 100281;
-const uint GLU_NURBS_ERROR32                = 100282;
-const uint GLU_NURBS_ERROR33                = 100283;
-const uint GLU_NURBS_ERROR34                = 100284;
-const uint GLU_NURBS_ERROR35                = 100285;
-const uint GLU_NURBS_ERROR36                = 100286;
-const uint GLU_NURBS_ERROR37                = 100287;
-// NurbsProperty
-const uint GLU_AUTO_LOAD_MATRIX             = 100200;
-const uint GLU_CULLING                      = 100201;
-const uint GLU_SAMPLING_TOLERANCE           = 100203;
-const uint GLU_DISPLAY_MODE                 = 100204;
-const uint GLU_PARAMETRIC_TOLERANCE         = 100202;
-const uint GLU_SAMPLING_METHOD              = 100205;
-const uint GLU_U_STEP                       = 100206;
-const uint GLU_V_STEP                       = 100207;
-const uint GLU_NURBS_MODE                   = 100160;
-const uint GLU_NURBS_MODE_EXT               = 100160;
-const uint GLU_NURBS_TESSELLATOR            = 100161;
-const uint GLU_NURBS_TESSELLATOR_EXT        = 100161;
-const uint GLU_NURBS_RENDERER               = 100162;
-const uint GLU_NURBS_RENDERER_EXT           = 100162;
-// NurbsSampling
-const uint GLU_OBJECT_PARAMETRIC_ERROR      = 100208;
-const uint GLU_OBJECT_PARAMETRIC_ERROR_EXT  = 100208;
-const uint GLU_OBJECT_PATH_LENGTH           = 100209;
-const uint GLU_OBJECT_PATH_LENGTH_EXT       = 100209;
-const uint GLU_PATH_LENGTH                  = 100215;
-const uint GLU_PARAMETRIC_ERROR             = 100216;
-const uint GLU_DOMAIN_DISTANCE              = 100217;
-// NurbsTrim
-const uint GLU_MAP1_TRIM_2                  = 100210;
-const uint GLU_MAP2_TRIM_3                  = 100211;
-// QuadricDrawStyle
-const uint GLU_POINT                        = 100010;
-const uint GLU_LINE                         = 100011;
-const uint GLU_FILL                         = 100012;
-const uint GLU_SILHOUETTE                   = 100013;
-// QuadricNormal
-const uint GLU_SMOOTH                       = 100000;
-const uint GLU_FLAT                         = 100001;
-const uint GLU_NONE                         = 100002;
-// QuadricOrientation
-const uint GLU_OUTSITE                      = 100020;
-const uint GLU_INSIDE                       = 100021;
-// TessCallback
-const uint GLU_TESS_BEGIN                   = 100100;
-const uint GLU_BEGIN                        = 100100;
-const uint GLU_TESS_VERTEX                  = 100101;
-const uint GLU_VERTEX                       = 100101;
-const uint GLU_TESS_END                     = 100102;
-const uint GLU_END                          = 100102;
-const uint GLU_TESS_ERROR                   = 100103;
-const uint GLU_TESS_EDGE_FLAG               = 100104;
-const uint GLU_EDGE_FLAG                    = 100104;
-const uint GLU_TESS_COMBINE                 = 100105;
-const uint GLU_TESS_BEGIN_DATA              = 100106;
-const uint GLU_TESS_VERTEX_DATA             = 100107;
-const uint GLU_TESS_END_DATA                = 100108;
-const uint GLU_TESS_ERROR_DATA              = 100109;
-const uint GLU_TESS_EDGE_FLAG_DATA          = 100110;
-const uint GLU_TESS_COMBINE_DATA            = 100111;
-// TessContour
-const uint GLU_CW                           = 100120;
-const uint GLU_CCW                          = 100121;
-const uint GLU_INTERIOR                     = 100122;
-const uint GLU_EXTERIOR                     = 100123;
-const uint GLU_UNKNOWN                      = 100124;
-// TessProperty
-const uint GLU_TESS_WINDING_RULE            = 100140;
-const uint GLU_TESS_BOUNDARY_ONLY           = 100141;
-const uint GLU_TESS_TOLERANCE               = 100142;
-// TessError
-const uint GLU_TESS_ERROR1                  = 100151;
-const uint GLU_TESS_ERROR2                  = 100152;
-const uint GLU_TESS_ERROR3                  = 100153;
-const uint GLU_TESS_ERROR4                  = 100154;
-const uint GLU_TESS_ERROR5                  = 100155;
-const uint GLU_TESS_ERROR6                  = 100156;
-const uint GLU_TESS_ERROR7                  = 100157;
-const uint GLU_TESS_ERROR8                  = 100158;
-const uint GLU_TESS_MISSING_BEGIN_POLYGON   = 100151;
-const uint GLU_TESS_MISSING_BEGIN_COUNTER   = 100152;
-const uint GLU_TESS_MISSING_END_POLYGON     = 100153;
-const uint GLU_TESS_MISSING_END_COUNTER     = 100154;
-const uint GLU_TESS_COORD_TOO_LARGE         = 100155;
-const uint GLU_TESS_NEED_COMBINE_CALLBACK   = 100156;
-// TessWinding
-const uint GLU_TESS_WINDING_ODD             = 100130;
-const uint GLU_TESS_WINDING_NONZERO         = 100131;
-const uint GLU_TESS_WINDING_POSITIVE        = 100132;
-const uint GLU_TESS_WINDING_NEGATIVE        = 100133;
-const uint GLU_TESS_WINDING_ABS_GEQ_TWO     = 100134;
+enum : GLenum
+{
+    // StringName
+    GLU_VERSION                      = 100800,
+    GLU_EXTENSIONS                   = 100801,
+    // ErrorCode
+    GLU_INVALID_ENUM                 = 100900,
+    GLU_INVALID_VALUE                = 100901,
+    GLU_OUT_OF_MEMORY                = 100902,
+    GLU_INVALID_OPERATION            = 100904,
+    // NurbsDisplay
+    GLU_OUTLINE_POLYGON              = 100240,
+    GLU_OUTLINE_PATCH                = 100241,
+    // NurbsCallback
+    GLU_NURBS_ERROR                  = 100103,
+    GLU_ERROR                        = 100103,
+    GLU_NURBS_BEGIN                  = 100164,
+    GLU_NURBS_BEGIN_EXT              = 100164,
+    GLU_NURBS_VERTEX                 = 100165,
+    GLU_NURBS_VERTEX_EXT             = 100165,
+    GLU_NURBS_NORMAL                 = 100166,
+    GLU_NURBS_NORMAL_EXT             = 100166,
+    GLU_NURBS_COLOR                  = 100167,
+    GLU_NURBS_COLOR_EXT              = 100167,
+    GLU_NURBS_TEXTURE_COORD          = 100168,
+    GLU_NURBS_TEX_COORD_EXT          = 100168,
+    GLU_NURBS_END                    = 100169,
+    GLU_NURBS_END_EXT                = 100169,
+    GLU_NURBS_BEGIN_DATA             = 100170,
+    GLU_NURBS_BEGIN_DATA_EXT         = 100170,
+    GLU_NURBS_VERTEX_DATA            = 100171,
+    GLU_NURBS_VERTEX_DATA_EXT        = 100171,
+    GLU_NURBS_NORMAL_DATA            = 100172,
+    GLU_NURBS_NORMAL_DATA_EXT        = 100172,
+    GLU_NURBS_COLOR_DATA             = 100173,
+    GLU_NURBS_COLOR_DATA_EXT         = 100173,
+    GLU_NURBS_TEXTURE_COORD_DATA     = 100174,
+    GLU_NURBS_TEX_COORD_DATA_EXT     = 100174,
+    GLU_NURBS_END_DATA               = 100175,
+    GLU_NURBS_END_DATA_EXT           = 100175,
+    // NurbsError
+    GLU_NURBS_ERROR1                 = 100251,
+    GLU_NURBS_ERROR2                 = 100252,
+    GLU_NURBS_ERROR3                 = 100253,
+    GLU_NURBS_ERROR4                 = 100254,
+    GLU_NURBS_ERROR5                 = 100255,
+    GLU_NURBS_ERROR6                 = 100256,
+    GLU_NURBS_ERROR7                 = 100257,
+    GLU_NURBS_ERROR8                 = 100258,
+    GLU_NURBS_ERROR9                 = 100259,
+    GLU_NURBS_ERROR10                = 100260,
+    GLU_NURBS_ERROR11                = 100261,
+    GLU_NURBS_ERROR12                = 100262,
+    GLU_NURBS_ERROR13                = 100263,
+    GLU_NURBS_ERROR14                = 100264,
+    GLU_NURBS_ERROR15                = 100265,
+    GLU_NURBS_ERROR16                = 100266,
+    GLU_NURBS_ERROR17                = 100267,
+    GLU_NURBS_ERROR18                = 100268,
+    GLU_NURBS_ERROR19                = 100269,
+    GLU_NURBS_ERROR20                = 100270,
+    GLU_NURBS_ERROR21                = 100271,
+    GLU_NURBS_ERROR22                = 100272,
+    GLU_NURBS_ERROR23                = 100273,
+    GLU_NURBS_ERROR24                = 100274,
+    GLU_NURBS_ERROR25                = 100275,
+    GLU_NURBS_ERROR26                = 100276,
+    GLU_NURBS_ERROR27                = 100277,
+    GLU_NURBS_ERROR28                = 100278,
+    GLU_NURBS_ERROR29                = 100279,
+    GLU_NURBS_ERROR30                = 100280,
+    GLU_NURBS_ERROR31                = 100281,
+    GLU_NURBS_ERROR32                = 100282,
+    GLU_NURBS_ERROR33                = 100283,
+    GLU_NURBS_ERROR34                = 100284,
+    GLU_NURBS_ERROR35                = 100285,
+    GLU_NURBS_ERROR36                = 100286,
+    GLU_NURBS_ERROR37                = 100287,
+    // NurbsProperty
+    GLU_AUTO_LOAD_MATRIX             = 100200,
+    GLU_CULLING                      = 100201,
+    GLU_SAMPLING_TOLERANCE           = 100203,
+    GLU_DISPLAY_MODE                 = 100204,
+    GLU_PARAMETRIC_TOLERANCE         = 100202,
+    GLU_SAMPLING_METHOD              = 100205,
+    GLU_U_STEP                       = 100206,
+    GLU_V_STEP                       = 100207,
+    GLU_NURBS_MODE                   = 100160,
+    GLU_NURBS_MODE_EXT               = 100160,
+    GLU_NURBS_TESSELLATOR            = 100161,
+    GLU_NURBS_TESSELLATOR_EXT        = 100161,
+    GLU_NURBS_RENDERER               = 100162,
+    GLU_NURBS_RENDERER_EXT           = 100162,
+    // NurbsSampling
+    GLU_OBJECT_PARAMETRIC_ERROR      = 100208,
+    GLU_OBJECT_PARAMETRIC_ERROR_EXT  = 100208,
+    GLU_OBJECT_PATH_LENGTH           = 100209,
+    GLU_OBJECT_PATH_LENGTH_EXT       = 100209,
+    GLU_PATH_LENGTH                  = 100215,
+    GLU_PARAMETRIC_ERROR             = 100216,
+    GLU_DOMAIN_DISTANCE              = 100217,
+    // NurbsTrim
+    GLU_MAP1_TRIM_2                  = 100210,
+    GLU_MAP2_TRIM_3                  = 100211,
+    // QuadricDrawStyle
+    GLU_POINT                        = 100010,
+    GLU_LINE                         = 100011,
+    GLU_FILL                         = 100012,
+    GLU_SILHOUETTE                   = 100013,
+    // QuadricNormal
+    GLU_SMOOTH                       = 100000,
+    GLU_FLAT                         = 100001,
+    GLU_NONE                         = 100002,
+    // QuadricOrientation
+    GLU_OUTSITE                      = 100020,
+    GLU_INSIDE                       = 100021,
+    // TessCallback
+    GLU_TESS_BEGIN                   = 100100,
+    GLU_BEGIN                        = 100100,
+    GLU_TESS_VERTEX                  = 100101,
+    GLU_VERTEX                       = 100101,
+    GLU_TESS_END                     = 100102,
+    GLU_END                          = 100102,
+    GLU_TESS_ERROR                   = 100103,
+    GLU_TESS_EDGE_FLAG               = 100104,
+    GLU_EDGE_FLAG                    = 100104,
+    GLU_TESS_COMBINE                 = 100105,
+    GLU_TESS_BEGIN_DATA              = 100106,
+    GLU_TESS_VERTEX_DATA             = 100107,
+    GLU_TESS_END_DATA                = 100108,
+    GLU_TESS_ERROR_DATA              = 100109,
+    GLU_TESS_EDGE_FLAG_DATA          = 100110,
+    GLU_TESS_COMBINE_DATA            = 100111,
+    // TessContour
+    GLU_CW                           = 100120,
+    GLU_CCW                          = 100121,
+    GLU_INTERIOR                     = 100122,
+    GLU_EXTERIOR                     = 100123,
+    GLU_UNKNOWN                      = 100124,
+    // TessProperty
+    GLU_TESS_WINDING_RULE            = 100140,
+    GLU_TESS_BOUNDARY_ONLY           = 100141,
+    GLU_TESS_TOLERANCE               = 100142,
+    // TessError
+    GLU_TESS_ERROR1                  = 100151,
+    GLU_TESS_ERROR2                  = 100152,
+    GLU_TESS_ERROR3                  = 100153,
+    GLU_TESS_ERROR4                  = 100154,
+    GLU_TESS_ERROR5                  = 100155,
+    GLU_TESS_ERROR6                  = 100156,
+    GLU_TESS_ERROR7                  = 100157,
+    GLU_TESS_ERROR8                  = 100158,
+    GLU_TESS_MISSING_BEGIN_POLYGON   = 100151,
+    GLU_TESS_MISSING_BEGIN_COUNTER   = 100152,
+    GLU_TESS_MISSING_END_POLYGON     = 100153,
+    GLU_TESS_MISSING_END_COUNTER     = 100154,
+    GLU_TESS_COORD_TOO_LARGE         = 100155,
+    GLU_TESS_NEED_COMBINE_CALLBACK   = 100156,
+    // TessWinding
+    GLU_TESS_WINDING_ODD             = 100130,
+    GLU_TESS_WINDING_NONZERO         = 100131,
+    GLU_TESS_WINDING_POSITIVE        = 100132,
+    GLU_TESS_WINDING_NEGATIVE        = 100133,
+    GLU_TESS_WINDING_ABS_GEQ_TWO     = 100134,
+}
 
 const GLdouble GLU_TESS_MAX_COORD           = 1.0e150;
 
@@ -294,15 +294,25 @@ typedef GLUquadric GLUquadricObj;
 typedef GLUtesselator GLUtesselatorObj;
 typedef GLUtesselator GLUtriangulatorObj;
 
-typedef void function() _GLUfuncptr;
-
+version(Windows)
+{
+    extern(Windows) typedef void function() _GLUfuncptr;
+}
+else
+{
+    extern(C) typedef void function() _GLUfuncptr;
+}
 //==============================================================================
 // DLL FUNCTIONS
 //==============================================================================
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef GLint function(GLenum,GLint,GLsizei,GLenum,GLenum,GLint,GLint,GLint,void*) pfgluBuild1DMipmapLevels;
 typedef GLint function(GLenum,GLint,GLsizei,GLenum,GLenum,void*) pfgluBuild1DMipmaps;
@@ -410,7 +420,7 @@ pfgluTessBeginPolygon       gluTessBeginPolygon;
 pfgluTessCallback           gluTessCallback;
 pfgluTessEndContour         gluTessEndContour;
 pfgluTessEndPolygon         gluTessEndPolygon;
-pfgluTessProperty			gluTessProperty;
+pfgluTessProperty           gluTessProperty;
 pfgluTessNormal             gluTessNormal;
 
 pfgluTessVertex             gluTessVertex;

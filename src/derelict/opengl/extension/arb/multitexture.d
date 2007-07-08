@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBMultitexture
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_multitexture") == -1)
+        if(extString.findStr("GL_ARB_multitexture") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glActiveTextureARB, "glActiveTextureARB"))
@@ -83,8 +83,8 @@ struct ARBMultitexture
         if(!glBindExtFunc(cast(void**)&glMultiTexCoord2sARB, "glMultiTexCoord2sARB"))
             return false;
         if(!glBindExtFunc(cast(void**)&glMultiTexCoord2svARB, "glMultiTexCoord2svARB"))
-            return false;    
-  		if(!glBindExtFunc(cast(void**)&glMultiTexCoord3dARB, "glMultiTexCoord3dARB"))
+            return false;
+        if(!glBindExtFunc(cast(void**)&glMultiTexCoord3dARB, "glMultiTexCoord3dARB"))
             return false;
         if(!glBindExtFunc(cast(void**)&glMultiTexCoord3dvARB, "glMultiTexCoord3dvARB"))
             return false;
@@ -100,7 +100,7 @@ struct ARBMultitexture
             return false;
         if(!glBindExtFunc(cast(void**)&glMultiTexCoord3svARB, "glMultiTexCoord3svARB"))
             return false;
-		if(!glBindExtFunc(cast(void**)&glMultiTexCoord4dARB, "glMultiTexCoord4dARB"))
+        if(!glBindExtFunc(cast(void**)&glMultiTexCoord4dARB, "glMultiTexCoord4dARB"))
             return false;
         if(!glBindExtFunc(cast(void**)&glMultiTexCoord4dvARB, "glMultiTexCoord4dvARB"))
             return false;
@@ -116,7 +116,7 @@ struct ARBMultitexture
             return false;
         if(!glBindExtFunc(cast(void**)&glMultiTexCoord4svARB, "glMultiTexCoord4svARB"))
             return false;
-            
+
         enabled = true;
         return true;
     }
@@ -138,46 +138,53 @@ else
     }
 }
 
-const GLenum GL_TEXTURE0_ARB                   = 0x84C0;
-const GLenum GL_TEXTURE1_ARB                   = 0x84C1;
-const GLenum GL_TEXTURE2_ARB                   = 0x84C2;
-const GLenum GL_TEXTURE3_ARB                   = 0x84C3;
-const GLenum GL_TEXTURE4_ARB                   = 0x84C4;
-const GLenum GL_TEXTURE5_ARB                   = 0x84C5;
-const GLenum GL_TEXTURE6_ARB                   = 0x84C6;
-const GLenum GL_TEXTURE7_ARB                   = 0x84C7;
-const GLenum GL_TEXTURE8_ARB                   = 0x84C8;
-const GLenum GL_TEXTURE9_ARB                   = 0x84C9;
-const GLenum GL_TEXTURE10_ARB                  = 0x84CA;
-const GLenum GL_TEXTURE11_ARB                  = 0x84CB;
-const GLenum GL_TEXTURE12_ARB                  = 0x84CC;
-const GLenum GL_TEXTURE13_ARB                  = 0x84CD;
-const GLenum GL_TEXTURE14_ARB                  = 0x84CE;
-const GLenum GL_TEXTURE15_ARB                  = 0x84CF;
-const GLenum GL_TEXTURE16_ARB                  = 0x84D0;
-const GLenum GL_TEXTURE17_ARB                  = 0x84D1;
-const GLenum GL_TEXTURE18_ARB                  = 0x84D2;
-const GLenum GL_TEXTURE19_ARB                  = 0x84D3;
-const GLenum GL_TEXTURE20_ARB                  = 0x84D4;
-const GLenum GL_TEXTURE21_ARB                  = 0x84D5;
-const GLenum GL_TEXTURE22_ARB                  = 0x84D6;
-const GLenum GL_TEXTURE23_ARB                  = 0x84D7;
-const GLenum GL_TEXTURE24_ARB                  = 0x84D8;
-const GLenum GL_TEXTURE25_ARB                  = 0x84D9;
-const GLenum GL_TEXTURE26_ARB                  = 0x84DA;
-const GLenum GL_TEXTURE27_ARB                  = 0x84DB;
-const GLenum GL_TEXTURE28_ARB                  = 0x84DC;
-const GLenum GL_TEXTURE29_ARB                  = 0x84DD;
-const GLenum GL_TEXTURE30_ARB                  = 0x84DE;
-const GLenum GL_TEXTURE31_ARB                  = 0x84DF;
-const GLenum GL_ACTIVE_TEXTURE_ARB             = 0x84E0;
-const GLenum GL_CLIENT_ACTIVE_TEXTURE_ARB      = 0x84E1;
-const GLenum GL_MAX_TEXTURE_UNITS_ARB          = 0x84E2;
+enum : GLenum
+{
+    GL_TEXTURE0_ARB                   = 0x84C0,
+    GL_TEXTURE1_ARB                   = 0x84C1,
+    GL_TEXTURE2_ARB                   = 0x84C2,
+    GL_TEXTURE3_ARB                   = 0x84C3,
+    GL_TEXTURE4_ARB                   = 0x84C4,
+    GL_TEXTURE5_ARB                   = 0x84C5,
+    GL_TEXTURE6_ARB                   = 0x84C6,
+    GL_TEXTURE7_ARB                   = 0x84C7,
+    GL_TEXTURE8_ARB                   = 0x84C8,
+    GL_TEXTURE9_ARB                   = 0x84C9,
+    GL_TEXTURE10_ARB                  = 0x84CA,
+    GL_TEXTURE11_ARB                  = 0x84CB,
+    GL_TEXTURE12_ARB                  = 0x84CC,
+    GL_TEXTURE13_ARB                  = 0x84CD,
+    GL_TEXTURE14_ARB                  = 0x84CE,
+    GL_TEXTURE15_ARB                  = 0x84CF,
+    GL_TEXTURE16_ARB                  = 0x84D0,
+    GL_TEXTURE17_ARB                  = 0x84D1,
+    GL_TEXTURE18_ARB                  = 0x84D2,
+    GL_TEXTURE19_ARB                  = 0x84D3,
+    GL_TEXTURE20_ARB                  = 0x84D4,
+    GL_TEXTURE21_ARB                  = 0x84D5,
+    GL_TEXTURE22_ARB                  = 0x84D6,
+    GL_TEXTURE23_ARB                  = 0x84D7,
+    GL_TEXTURE24_ARB                  = 0x84D8,
+    GL_TEXTURE25_ARB                  = 0x84D9,
+    GL_TEXTURE26_ARB                  = 0x84DA,
+    GL_TEXTURE27_ARB                  = 0x84DB,
+    GL_TEXTURE28_ARB                  = 0x84DC,
+    GL_TEXTURE29_ARB                  = 0x84DD,
+    GL_TEXTURE30_ARB                  = 0x84DE,
+    GL_TEXTURE31_ARB                  = 0x84DF,
+    GL_ACTIVE_TEXTURE_ARB             = 0x84E0,
+    GL_CLIENT_ACTIVE_TEXTURE_ARB      = 0x84E1,
+    GL_MAX_TEXTURE_UNITS_ARB          = 0x84E2,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum) pfglActiveTextureARB;
 typedef void function(GLenum) pfglClientActiveTextureARB;
@@ -189,61 +196,61 @@ typedef void function(GLenum, GLint) pfglMultiTexCoord1iARB;
 typedef void function(GLenum, GLint*) pfglMultiTexCoord1ivARB;
 typedef void function(GLenum, GLshort) pfglMultiTexCoord1sARB;
 typedef void function(GLenum, GLshort*) pfglMultiTexCoord1svARB;
-typedef void function(GLenum, GLdouble) pfglMultiTexCoord2dARB;
+typedef void function(GLenum, GLdouble, GLdouble) pfglMultiTexCoord2dARB;
 typedef void function(GLenum, GLdouble*) pfglMultiTexCoord2dvARB;
-typedef void function(GLenum, GLfloat) pfglMultiTexCoord2fARB;
+typedef void function(GLenum, GLfloat, GLfloat) pfglMultiTexCoord2fARB;
 typedef void function(GLenum, GLfloat*) pfglMultiTexCoord2fvARB;
-typedef void function(GLenum, GLint) pfglMultiTexCoord2iARB;
+typedef void function(GLenum, GLint, GLint) pfglMultiTexCoord2iARB;
 typedef void function(GLenum, GLint*) pfglMultiTexCoord2ivARB;
-typedef void function(GLenum, GLshort) pfglMultiTexCoord2sARB;
+typedef void function(GLenum, GLshort, GLshort) pfglMultiTexCoord2sARB;
 typedef void function(GLenum, GLshort*) pfglMultiTexCoord2svARB;
-typedef void function(GLenum, GLdouble) pfglMultiTexCoord3dARB;
+typedef void function(GLenum, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord3dARB;
 typedef void function(GLenum, GLdouble*) pfglMultiTexCoord3dvARB;
-typedef void function(GLenum, GLfloat) pfglMultiTexCoord3fARB;
+typedef void function(GLenum, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord3fARB;
 typedef void function(GLenum, GLfloat*) pfglMultiTexCoord3fvARB;
-typedef void function(GLenum, GLint) pfglMultiTexCoord3iARB;
+typedef void function(GLenum, GLint, GLint, GLint) pfglMultiTexCoord3iARB;
 typedef void function(GLenum, GLint*) pfglMultiTexCoord3ivARB;
-typedef void function(GLenum, GLshort) pfglMultiTexCoord3sARB;
+typedef void function(GLenum, GLshort, GLshort, GLshort) pfglMultiTexCoord3sARB;
 typedef void function(GLenum, GLshort*) pfglMultiTexCoord3svARB;
-typedef void function(GLenum, GLdouble) pfglMultiTexCoord4dARB;
+typedef void function(GLenum, GLdouble, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord4dARB;
 typedef void function(GLenum, GLdouble*) pfglMultiTexCoord4dvARB;
-typedef void function(GLenum, GLfloat) pfglMultiTexCoord4fARB;
+typedef void function(GLenum, GLfloat, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord4fARB;
 typedef void function(GLenum, GLfloat*) pfglMultiTexCoord4fvARB;
-typedef void function(GLenum, GLint) pfglMultiTexCoord4iARB;
+typedef void function(GLenum, GLint, GLint, GLint, GLint) pfglMultiTexCoord4iARB;
 typedef void function(GLenum, GLint*) pfglMultiTexCoord4ivARB;
-typedef void function(GLenum, GLshort) pfglMultiTexCoord4sARB;
+typedef void function(GLenum, GLshort, GLshort, GLshort, GLshort) pfglMultiTexCoord4sARB;
 typedef void function(GLenum, GLshort*) pfglMultiTexCoord4svARB;
-pfglActiveTextureARB      		glActiveTextureARB;
-pfglClientActiveTextureARB		glClientActiveTextureARB;
-pfglMultiTexCoord1dARB			glMultiTexCoord1dARB;
-pfglMultiTexCoord1dvARB			glMultiTexCoord1dvARB;
-pfglMultiTexCoord1fARB			glMultiTexCoord1fARB;
-pfglMultiTexCoord1fvARB			glMultiTexCoord1fvARB;
-pfglMultiTexCoord1iARB			glMultiTexCoord1iARB;
-pfglMultiTexCoord1ivARB			glMultiTexCoord1ivARB;
-pfglMultiTexCoord1sARB			glMultiTexCoord1sARB;
-pfglMultiTexCoord1svARB			glMultiTexCoord1svARB;
-pfglMultiTexCoord2dARB			glMultiTexCoord2dARB;
-pfglMultiTexCoord2dvARB			glMultiTexCoord2dvARB;
-pfglMultiTexCoord2fARB			glMultiTexCoord2fARB;
-pfglMultiTexCoord2fvARB			glMultiTexCoord2fvARB;
-pfglMultiTexCoord2iARB			glMultiTexCoord2iARB;
-pfglMultiTexCoord2ivARB			glMultiTexCoord2ivARB;
-pfglMultiTexCoord2sARB			glMultiTexCoord2sARB;
-pfglMultiTexCoord2svARB			glMultiTexCoord2svARB;
-pfglMultiTexCoord3dARB			glMultiTexCoord3dARB;
-pfglMultiTexCoord3dvARB			glMultiTexCoord3dvARB;
-pfglMultiTexCoord3fARB			glMultiTexCoord3fARB;
-pfglMultiTexCoord3fvARB			glMultiTexCoord3fvARB;
-pfglMultiTexCoord3iARB			glMultiTexCoord3iARB;
-pfglMultiTexCoord3ivARB			glMultiTexCoord3ivARB;
-pfglMultiTexCoord3sARB			glMultiTexCoord3sARB;
-pfglMultiTexCoord3svARB			glMultiTexCoord3svARB;
-pfglMultiTexCoord4dARB			glMultiTexCoord4dARB;
-pfglMultiTexCoord4dvARB			glMultiTexCoord4dvARB;
-pfglMultiTexCoord4fARB			glMultiTexCoord4fARB;
-pfglMultiTexCoord4fvARB			glMultiTexCoord4fvARB;
-pfglMultiTexCoord4iARB			glMultiTexCoord4iARB;
-pfglMultiTexCoord4ivARB			glMultiTexCoord4ivARB;
-pfglMultiTexCoord4sARB			glMultiTexCoord4sARB;
-pfglMultiTexCoord4svARB			glMultiTexCoord4svARB;
+pfglActiveTextureARB            glActiveTextureARB;
+pfglClientActiveTextureARB      glClientActiveTextureARB;
+pfglMultiTexCoord1dARB          glMultiTexCoord1dARB;
+pfglMultiTexCoord1dvARB         glMultiTexCoord1dvARB;
+pfglMultiTexCoord1fARB          glMultiTexCoord1fARB;
+pfglMultiTexCoord1fvARB         glMultiTexCoord1fvARB;
+pfglMultiTexCoord1iARB          glMultiTexCoord1iARB;
+pfglMultiTexCoord1ivARB         glMultiTexCoord1ivARB;
+pfglMultiTexCoord1sARB          glMultiTexCoord1sARB;
+pfglMultiTexCoord1svARB         glMultiTexCoord1svARB;
+pfglMultiTexCoord2dARB          glMultiTexCoord2dARB;
+pfglMultiTexCoord2dvARB         glMultiTexCoord2dvARB;
+pfglMultiTexCoord2fARB          glMultiTexCoord2fARB;
+pfglMultiTexCoord2fvARB         glMultiTexCoord2fvARB;
+pfglMultiTexCoord2iARB          glMultiTexCoord2iARB;
+pfglMultiTexCoord2ivARB         glMultiTexCoord2ivARB;
+pfglMultiTexCoord2sARB          glMultiTexCoord2sARB;
+pfglMultiTexCoord2svARB         glMultiTexCoord2svARB;
+pfglMultiTexCoord3dARB          glMultiTexCoord3dARB;
+pfglMultiTexCoord3dvARB         glMultiTexCoord3dvARB;
+pfglMultiTexCoord3fARB          glMultiTexCoord3fARB;
+pfglMultiTexCoord3fvARB         glMultiTexCoord3fvARB;
+pfglMultiTexCoord3iARB          glMultiTexCoord3iARB;
+pfglMultiTexCoord3ivARB         glMultiTexCoord3ivARB;
+pfglMultiTexCoord3sARB          glMultiTexCoord3sARB;
+pfglMultiTexCoord3svARB         glMultiTexCoord3svARB;
+pfglMultiTexCoord4dARB          glMultiTexCoord4dARB;
+pfglMultiTexCoord4dvARB         glMultiTexCoord4dvARB;
+pfglMultiTexCoord4fARB          glMultiTexCoord4fARB;
+pfglMultiTexCoord4fvARB         glMultiTexCoord4fvARB;
+pfglMultiTexCoord4iARB          glMultiTexCoord4iARB;
+pfglMultiTexCoord4ivARB         glMultiTexCoord4ivARB;
+pfglMultiTexCoord4sARB          glMultiTexCoord4sARB;
+pfglMultiTexCoord4svARB         glMultiTexCoord4svARB;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct NVFragmentProgram2
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_fragment_program2") == -1)
+        if(extString.findStr("GL_NV_fragment_program2") == -1)
             return false;
 
         enabled = true;
@@ -68,8 +68,11 @@ else
     }
 }
 
-const GLenum GL_MAX_PROGRAM_EXEC_INSTRUCTIONS_NV    = 0x88F4;
-const GLenum GL_MAX_PROGRAM_CALL_DEPTH_NV           = 0x88F5;
-const GLenum GL_MAX_PROGRAM_IF_DEPTH_NV             = 0x88F6;
-const GLenum GL_MAX_PROGRAM_LOOP_DEPTH_NV           = 0x88F7;
-const GLenum GL_MAX_PROGRAM_LOOP_COUNT_NV           = 0x88F8;
+enum : GLenum
+{
+    GL_MAX_PROGRAM_EXEC_INSTRUCTIONS_NV    = 0x88F4,
+    GL_MAX_PROGRAM_CALL_DEPTH_NV           = 0x88F5,
+    GL_MAX_PROGRAM_IF_DEPTH_NV             = 0x88F6,
+    GL_MAX_PROGRAM_LOOP_DEPTH_NV           = 0x88F7,
+    GL_MAX_PROGRAM_LOOP_COUNT_NV           = 0x88F8,
+}

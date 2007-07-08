@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct EXTPackedDepthStencil
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_packed_depth_stencil") == -1)
+        if(extString.findStr("GL_EXT_packed_depth_stencil") == -1)
             return false;
 
         enabled = true;
@@ -68,7 +68,10 @@ else
     }
 }
 
-const GLenum GL_DEPTH_STENCIL_EXT              = 0x84F9;
-const GLenum GL_UNSIGNED_INT_24_8_EXT          = 0x84FA;
-const GLenum GL_DEPTH24_STENCIL8_EXT           = 0x88F0;
-const GLenum GL_TEXTURE_STENCIL_SIZE_EXT       = 0x88F1;
+enum : GLenum
+{
+    GL_DEPTH_STENCIL_EXT              = 0x84F9,
+    GL_UNSIGNED_INT_24_8_EXT          = 0x84FA,
+    GL_DEPTH24_STENCIL8_EXT           = 0x88F0,
+    GL_TEXTURE_STENCIL_SIZE_EXT       = 0x88F1,
+}

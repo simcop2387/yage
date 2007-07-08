@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATIPnTriangles
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_pn_triangles") == -1)
+        if(extString.findStr("GL_ATI_pn_triangles") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glPNTrianglesiATI, "glPNTrianglesiATI"))
@@ -74,20 +74,27 @@ else
     }
 }
 
-const GL_PN_TRIANGLES_ATI                         = 0x87F0;
-const GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI   = 0x87F1;
-const GL_PN_TRIANGLES_POINT_MODE_ATI              = 0x87F2;
-const GL_PN_TRIANGLES_NORMAL_MODE_ATI             = 0x87F3;
-const GL_PN_TRIANGLES_TESSELATION_LEVEL_ATI       = 0x87F4;
-const GL_PN_TRIANGLES_POINT_MODE_LINEAR_ATI       = 0x87F5;
-const GL_PN_TRIANGLES_POINT_MODE_CUBIC_ATI        = 0x87F6;
-const GL_PN_TRIANGLES_NORMAL_MODE_LINEAR_ATI      = 0x87F7;
-const GL_PN_TRIANGLES_NORMAL_MODE_QUADRATIC_ATI   = 0x87F8;
+enum : GLenum
+{
+    GL_PN_TRIANGLES_ATI                         = 0x87F0,
+    GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI   = 0x87F1,
+    GL_PN_TRIANGLES_POINT_MODE_ATI              = 0x87F2,
+    GL_PN_TRIANGLES_NORMAL_MODE_ATI             = 0x87F3,
+    GL_PN_TRIANGLES_TESSELATION_LEVEL_ATI       = 0x87F4,
+    GL_PN_TRIANGLES_POINT_MODE_LINEAR_ATI       = 0x87F5,
+    GL_PN_TRIANGLES_POINT_MODE_CUBIC_ATI        = 0x87F6,
+    GL_PN_TRIANGLES_NORMAL_MODE_LINEAR_ATI      = 0x87F7,
+    GL_PN_TRIANGLES_NORMAL_MODE_QUADRATIC_ATI   = 0x87F8,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLint) pfglPNTrianglesiATI;
 typedef void function(GLenum, GLfloat) pfglPNTrianglesfATI;

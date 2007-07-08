@@ -269,7 +269,7 @@ class Layer
 
 		// Textures
 		if (textures.length>1 && Device.getSupport(DEVICE_MULTITEXTURE))
-		{	int length = mini(textures.length, Device.getLimit(DEVICE_MAX_TEXTURES));
+		{	int length = min(textures.length, Device.getLimit(DEVICE_MAX_TEXTURES));
 
 			// Loop through all of Layer's textures up to the maximum allowed.
 			for (int i=0; i<length; i++)
@@ -281,11 +281,12 @@ class Layer
 				glClientActiveTextureARB(GL_TEXTUREI_ARB);
 
 				// Set texture coordinates
+				Attribute texcoords = model.getAttribute("gl_TexCoord");
 				if (Device.getSupport(DEVICE_VBO))
-				{	glBindBufferARB(GL_ARRAY_BUFFER, model.getTexCoordsVBO());
-					glTexCoordPointer(2, GL_FLOAT, 0, null);
+				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.vbo);
+					glTexCoordPointer(texcoords.width, GL_FLOAT, 0, null);
 				} else
-					glTexCoordPointer(2, GL_FLOAT, 0, model.getTexCoords().ptr);
+					glTexCoordPointer(texcoords.width, GL_FLOAT, 0, texcoords.values.ptr);
 
 				// Bind and blend
 				textures[i].bind();
@@ -398,7 +399,7 @@ class Layer
 
 		// Textures
 		if (textures.length>1 && Device.getSupport(DEVICE_MULTITEXTURE))
-		{	int length = mini(textures.length, Device.getLimit(DEVICE_MAX_TEXTURES));
+		{	int length = min(textures.length, Device.getLimit(DEVICE_MAX_TEXTURES));
 
 			for (int i=length-1; i>=0; i--)
 			{	glActiveTextureARB(GL_TEXTURE0_ARB+i);

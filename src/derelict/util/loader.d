@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,14 @@ module derelict.util.loader;
 private
 {
     import derelict.util.exception;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 version(linux)
+{
+    version = Nix;
+}
+version(darwin)
 {
     version = Nix;
 }
@@ -47,6 +51,11 @@ else version(Unix)
 }
 
 version (DerelictUseStdLoader) {
+    version(Tango)
+    {
+        static assert(0, "Cannot use std.loader with Tango");
+    }
+
     import std.loader;
 
     //==============================================================================
@@ -243,11 +252,11 @@ else {
     //==============================================================================
     version(Windows)
     {
-        private import std.c.windows.windows;
+        private import derelict.util.wintypes;
 
         SharedLib Platform_LoadSharedLib(char[] libName)
         {
-            HMODULE hlib = LoadLibraryA(toStringz(libName));
+            HMODULE hlib = LoadLibraryA(toCString(libName));
             if(null is hlib)
                 throw new SharedLibLoadException(libName);
 
@@ -262,7 +271,7 @@ else {
 
         void* Platform_GetProc(SharedLib lib, char[] procName)
         {
-            void* proc = GetProcAddress(cast(HMODULE)lib._handle, toStringz(procName));
+            void* proc = GetProcAddress(cast(HMODULE)lib._handle, toCString(procName));
             if(null is proc)
                 Derelict_HandleMissingProc(lib._name, procName);
 
@@ -272,7 +281,11 @@ else {
     }
     else version(Nix)
     {
-        version(linux)
+        version(Tango)
+        {
+            private import tango.sys.Common;
+        }
+        else version(linux)
         {
             private import std.c.linux.linux;
         }
@@ -295,7 +308,7 @@ else {
 
         SharedLib Platform_LoadSharedLib(char[] libName)
         {
-            void* hlib = dlopen(toStringz(libName), RTLD_NOW);
+            void* hlib = dlopen(toCString(libName), RTLD_NOW);
             if(null is hlib)
                 throw new SharedLibLoadException("Failed to load shared library " ~ libName);
 
@@ -310,7 +323,7 @@ else {
 
         void* Platform_GetProc(SharedLib lib, char[] procName)
         {
-            void* proc = dlsym(lib._handle, toStringz(procName));
+            void* proc = dlsym(lib._handle, toCString(procName));
             if(null is proc)
                 Derelict_HandleMissingProc(lib._name, procName);
 
@@ -352,14 +365,28 @@ struct GenericLoader {
             else version (linux) {
                 libNameString = linLibs;
             }
+            else version(darwin) {
+	            libNameString = macLibs;
+            }
+            
+            if(libNameString is null || libNameString == "")
+            {
+	            throw new DerelictException("Invalid library name");
+            }
         }
 
-        char[][] libNames = libNameString.split(",");
+        char[][] libNames = libNameString.splitStr(",");
         foreach (inout char[] l; libNames) {
-            l = l.strip();
+            l = l.stripWhiteSpace();
         }
 
         myLib = Derelict_LoadSharedLib(libNames);
+        
+        if(userLoad is null)
+        {
+	        // this should never, ever, happen
+	        throw new DerelictException("Something is horribly wrong -- internal load function not configured");
+        }
         userLoad(myLib);
     }
 

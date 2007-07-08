@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVParameterBufferObject
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_parameter_buffer_object") == -1)
+        if(extString.findStr("GL_NV_parameter_buffer_object") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glProgramBufferParametersfvNV, "glProgramBufferParametersfvNV"))
@@ -77,13 +77,17 @@ else
 }
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLuint, GLuint, GLsizei, GLfloat*) pfglProgramBufferParametersfvNV;
 typedef void function(GLenum, GLuint, GLuint, GLsizei, GLint*) pfglProgramBufferParametersIivNV;
 typedef void function(GLenum, GLuint, GLuint, GLsizei, GLuint*) pfglProgramBufferParametersIuivNV;
 pfglProgramBufferParametersfvNV     glProgramBufferParametersfvNV;
 pfglProgramBufferParametersIivNV    glProgramBufferParametersIivNV;
-pfglProgramBufferParametersIuivNV	glProgramBufferParametersIuivNV;
+pfglProgramBufferParametersIuivNV   glProgramBufferParametersIuivNV;

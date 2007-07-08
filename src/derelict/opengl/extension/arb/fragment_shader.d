@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct ARBFragmentShader
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_fragment_shader") != -1)
+        if(extString.findStr("GL_ARB_fragment_shader") != -1)
         {
             enabled = true;
             return true;
@@ -69,6 +69,9 @@ else
     }
 }
 
-const GLenum GL_FRAGMENT_SHADER_ARB                     = 0x8B30;
-const GLenum GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB     = 0x8B49;
-const GLenum GL_FRAGMENT_SHADER_DERIVATIVE_HINT_ARB     = 0x8B8B;
+enum : GLenum
+{
+    GL_FRAGMENT_SHADER_ARB                     = 0x8B30,
+    GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB     = 0x8B49,
+    GL_FRAGMENT_SHADER_DERIVATIVE_HINT_ARB     = 0x8B8B,
+}

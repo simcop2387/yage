@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,27 +56,35 @@ alias void ALCvoid;
 alias ALCvoid ALCdevice;
 alias ALCvoid ALCcontext;
 
-const ALCenum ALC_INVALID           = 0;
-const ALCboolean ALC_FALSE          = 0;
-const ALCboolean ALC_TRUE           = 1;
 
-const ALCenum ALC_FREQUENCY         = 0x1007;
-const ALCenum ALC_REFRESH           = 0x1008;
-const ALCenum ALC_SYNC              = 0x1009;
+enum : ALCboolean
+{
+    ALC_FALSE          = 0,
+    ALC_TRUE           = 1,
+}
 
-const ALCenum ALC_NO_ERROR          = ALC_FALSE;
-const ALCenum ALC_INVALID_DEVICE    = 0xA001;
-const ALCenum ALC_INVALID_CONTEXT   = 0xA002;
-const ALCenum ALC_INVALID_ENUM      = 0xA003;
-const ALCenum ALC_INVALID_VALUE     = 0xA004;
-const ALCenum ALC_OUT_OF_MEMORY     = 0xA005;
+enum : ALCenum
+{
+    ALC_INVALID           = 0,
 
-const ALCenum ALC_DEFAULT_DEVICE_SPECIFIER      = 0x1004;
-const ALCenum ALC_DEVICE_SPECIFIER              = 0x1005;
-const ALCenum ALC_EXTENSIONS                    = 0x1006;
+    ALC_FREQUENCY         = 0x1007,
+    ALC_REFRESH           = 0x1008,
+    ALC_SYNC              = 0x1009,
 
-const ALCenum ALC_MAJOR_VERSION                 = 0x1000;
-const ALCenum ALC_MINOR_VERSION                 = 0x1001;
+    ALC_NO_ERROR          = ALC_FALSE,
+    ALC_INVALID_DEVICE    = 0xA001,
+    ALC_INVALID_CONTEXT   = 0xA002,
+    ALC_INVALID_ENUM      = 0xA003,
+    ALC_INVALID_VALUE     = 0xA004,
+    ALC_OUT_OF_MEMORY     = 0xA005,
 
-const ALCenum ALC_ATTRIBUTES_SIZE               = 0x1002;
-const ALCenum ALC_ALL_ATTRIBUTES                = 0x1003;
+    ALC_DEFAULT_DEVICE_SPECIFIER      = 0x1004,
+    ALC_DEVICE_SPECIFIER              = 0x1005,
+    ALC_EXTENSIONS                    = 0x1006,
+
+    ALC_MAJOR_VERSION                 = 0x1000,
+    ALC_MINOR_VERSION                 = 0x1001,
+
+    ALC_ATTRIBUTES_SIZE               = 0x1002,
+    ALC_ALL_ATTRIBUTES                = 0x1003,
+}

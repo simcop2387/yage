@@ -20,7 +20,6 @@ import yage.resource.material;
 import yage.resource.resource;
 import yage.util.flyer;
 import yage.util.spring;
-import yage.universe;
 import yage.gameobj;
 
 class Ship : GameObject
@@ -66,7 +65,7 @@ class Ship : GameObject
 	}
 
 	void update(float delta)
-	{	debug scope(failure) writef("Backtrace xx "__FILE__"(",__LINE__,")\n");
+	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
 
 		super.update(delta);
 
@@ -127,9 +126,9 @@ class Ship : GameObject
 		pitch.setAngularVelocity(pitch.getAngularVelocity().clamp(-3, 3));
 
 		// Apply linear and angular dampening
-		setVelocity(getVelocity().scale(maxf(1-delta*ldamp, 0.0f)));
-		pitch.setAngularVelocity(pitch.getAngularVelocity().scale(maxf(1-delta*xdamp, 0.0f)));
-		setAngularVelocity(getAngularVelocity().scale(maxf(1-delta*ydamp, 0.0f)));
+		setVelocity(getVelocity().scale(max(1-delta*ldamp, 0.0f)));
+		pitch.setAngularVelocity(pitch.getAngularVelocity().scale(max(1-delta*xdamp, 0.0f)));
+		setAngularVelocity(getAngularVelocity().scale(max(1-delta*ydamp, 0.0f)));
 
 		// Update the spring
 		if (spring.getStiffness()<50)

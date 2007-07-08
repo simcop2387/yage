@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTTexture3D
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_texture3D") == -1)
+        if(extString.findStr("GL_EXT_texture3D") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glTexImage3DEXT, "glTexImage3DEXT"))
@@ -74,22 +74,29 @@ else
     }
 }
 
-const GLenum GL_PACK_SKIP_IMAGES_EXT           = 0x806B;
-const GLenum GL_PACK_IMAGE_HEIGHT_EXT          = 0x806C;
-const GLenum GL_UNPACK_SKIP_IMAGES_EXT         = 0x806D;
-const GLenum GL_UNPACK_IMAGE_HEIGHT_EXT        = 0x806E;
-const GLenum GL_TEXTURE_3D_EXT                 = 0x806F;
-const GLenum GL_PROXY_TEXTURE_3D_EXT           = 0x8070;
-const GLenum GL_TEXTURE_DEPTH_EXT              = 0x8071;
-const GLenum GL_TEXTURE_WRAP_R_EXT             = 0x8072;
-const GLenum GL_MAX_3D_TEXTURE_SIZE_EXT        = 0x8073;
+enum : GLenum
+{
+    GL_PACK_SKIP_IMAGES_EXT           = 0x806B,
+    GL_PACK_IMAGE_HEIGHT_EXT          = 0x806C,
+    GL_UNPACK_SKIP_IMAGES_EXT         = 0x806D,
+    GL_UNPACK_IMAGE_HEIGHT_EXT        = 0x806E,
+    GL_TEXTURE_3D_EXT                 = 0x806F,
+    GL_PROXY_TEXTURE_3D_EXT           = 0x8070,
+    GL_TEXTURE_DEPTH_EXT              = 0x8071,
+    GL_TEXTURE_WRAP_R_EXT             = 0x8072,
+    GL_MAX_3D_TEXTURE_SIZE_EXT        = 0x8073,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLvoid*) pfglTexImage3DEXT;
 typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglTexSubImage3DEXT;
-pfglTexImage3DEXT		glTexImage3DEXT;
-pfglTexSubImage3DEXT	glTexSubImage3DEXT;
+pfglTexImage3DEXT       glTexImage3DEXT;
+pfglTexSubImage3DEXT    glTexSubImage3DEXT;

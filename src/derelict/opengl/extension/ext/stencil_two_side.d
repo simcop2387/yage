@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTStencilTwoSide
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_stencil_two_side") == -1)
+        if(extString.findStr("GL_EXT_stencil_two_side") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glActiveStencilFaceEXT, "glActiveStencilFaceEXT"))
@@ -72,13 +72,20 @@ else
     }
 }
 
-const GLenum GL_STENCIL_TEST_TWO_SIDE_EXT   = 0x8910;
-const GLenum GL_ACTIVE_STENCIL_FACE_EXT     = 0x8911;
+enum : GLenum
+{
+    GL_STENCIL_TEST_TWO_SIDE_EXT   = 0x8910,
+    GL_ACTIVE_STENCIL_FACE_EXT     = 0x8911,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum) pfglActiveStencilFaceEXT;
 pfglActiveStencilFaceEXT    glActiveStencilFaceEXT;

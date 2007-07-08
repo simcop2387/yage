@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTSecondaryColor
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_secondary_color") == -1)
+        if(extString.findStr("GL_EXT_secondary_color") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glSecondaryColor3bEXT, "glSecondaryColor3bEXT"))
@@ -104,18 +104,25 @@ else
     }
 }
 
-const GLenum GL_COLOR_SUM_EXT                       = 0x8458;
-const GLenum GL_CURRENT_SECONDARY_COLOR_EXT         = 0x8459;
-const GLenum GL_SECONDARY_COLOR_ARRAY_SIZE_EXT      = 0x845A;
-const GLenum GL_SECONDARY_COLOR_ARRAY_TYPE_EXT      = 0x845B;
-const GLenum GL_SECONDARY_COLOR_ARRAY_STRIDE_EXT    = 0x845C;
-const GLenum GL_SECONDARY_COLOR_ARRAY_POINTER_EXT   = 0x845D;
-const GLenum GL_SECONDARY_COLOR_ARRAY_EXT           = 0x845E;
+enum : GLenum
+{
+    GL_COLOR_SUM_EXT                       = 0x8458,
+    GL_CURRENT_SECONDARY_COLOR_EXT         = 0x8459,
+    GL_SECONDARY_COLOR_ARRAY_SIZE_EXT      = 0x845A,
+    GL_SECONDARY_COLOR_ARRAY_TYPE_EXT      = 0x845B,
+    GL_SECONDARY_COLOR_ARRAY_STRIDE_EXT    = 0x845C,
+    GL_SECONDARY_COLOR_ARRAY_POINTER_EXT   = 0x845D,
+    GL_SECONDARY_COLOR_ARRAY_EXT           = 0x845E,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLbyte, GLbyte, GLbyte) pfglSecondaryColor3bEXT;
 typedef void function(GLbyte*) pfglSecondaryColor3bvEXT;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,9 @@ private import derelict.sdl.types;
 //==============================================================================
 // TYPES
 //==============================================================================
-const int SDL_MUTEX_TIMEOUT         = 1;
-const Uint32 SDL_MUTEX_MAXWAIT      = (~(cast(Uint32)0));
+enum { SDL_MUTEX_TIMEOUT = 1 }
+
+enum : Uint32 { SDL_MUTEX_MAXWAIT = (~(cast(Uint32)0)) }
 
 struct SDL_mutex {}
 

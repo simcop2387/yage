@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,12 +45,12 @@ struct EXTBlendFuncSeparate
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_blend_func_separate") == -1)
+        if(extString.findStr("GL_EXT_blend_func_separate") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glBlendFuncSeparateEXT, "glBlendFuncSeparateEXT"))
             return false;
-        
+
         enabled = true;
         return true;
     }
@@ -72,15 +72,22 @@ else
     }
 }
 
-const GLenum GL_BLEND_DST_RGB_EXT              = 0x80C8;
-const GLenum GL_BLEND_SRC_RGB_EXT              = 0x80C9;
-const GLenum GL_BLEND_DST_ALPHA_EXT            = 0x80CA;
-const GLenum GL_BLEND_SRC_ALPHA_EXT            = 0x80CB;
+enum : GLenum
+{
+    GL_BLEND_DST_RGB_EXT              = 0x80C8,
+    GL_BLEND_SRC_RGB_EXT              = 0x80C9,
+    GL_BLEND_DST_ALPHA_EXT            = 0x80CA,
+    GL_BLEND_SRC_ALPHA_EXT            = 0x80CB,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLenum, GLenum, GLenum) pfglBlendFuncSeparateEXT;
-pfglBlendFuncSeparateEXT	glBlendFuncSeparateEXT;
+pfglBlendFuncSeparateEXT    glBlendFuncSeparateEXT;

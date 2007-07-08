@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct NVTextureShader
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_texture_shader") == -1)
+        if(extString.findStr("GL_NV_texture_shader") == -1)
             return false;
 
         enabled = true;
@@ -68,76 +68,79 @@ else
     }
 }
 
-const GLenum GL_OFFSET_TEXTURE_RECTANGLE_NV             = 0x864C;
-const GLenum GL_OFFSET_TEXTURE_RECTANGLE_SCALE_NV       = 0x864D;
-const GLenum GL_DOT_PRODUCT_TEXTURE_RECTANGLE_NV        = 0x864E;
-const GLenum GL_RGBA_UNSIGNED_DOT_PRODUCT_MAPPING_NV    = 0x86D9;
-const GLenum GL_UNSIGNED_INT_S8_S8_8_8_NV               = 0x86DA;
-const GLenum GL_UNSIGNED_INT_8_8_S8_S8_REV_NV           = 0x86DB;
-const GLenum GL_DSDT_MAG_INTENSITY_NV                   = 0x86DC;
-const GLenum GL_SHADER_CONSISTENT_NV                    = 0x86DD;
-const GLenum GL_TEXTURE_SHADER_NV                       = 0x86DE;
-const GLenum GL_SHADER_OPERATION_NV                     = 0x86DF;
-const GLenum GL_CULL_MODES_NV                           = 0x86E0;
-const GLenum GL_OFFSET_TEXTURE_MATRIX_NV                = 0x86E1;
-const GLenum GL_OFFSET_TEXTURE_SCALE_NV                 = 0x86E2;
-const GLenum GL_OFFSET_TEXTURE_BIAS_NV                  = 0x86E3;
-const GLenum GL_OFFSET_TEXTURE_2D_MATRIX_NV             = GL_OFFSET_TEXTURE_MATRIX_NV;
-const GLenum GL_OFFSET_TEXTURE_2D_SCALE_NV              = GL_OFFSET_TEXTURE_SCALE_NV;
-const GLenum GL_OFFSET_TEXTURE_2D_BIAS_NV               = GL_OFFSET_TEXTURE_BIAS_NV;
-const GLenum GL_PREVIOUS_TEXTURE_INPUT_NV               = 0x86E4;
-const GLenum GL_CONST_EYE_NV                            = 0x86E5;
-const GLenum GL_PASS_THROUGH_NV                         = 0x86E6;
-const GLenum GL_CULL_FRAGMENT_NV                        = 0x86E7;
-const GLenum GL_OFFSET_TEXTURE_2D_NV                    = 0x86E8;
-const GLenum GL_DEPENDENT_AR_TEXTURE_2D_NV              = 0x86E9;
-const GLenum GL_DEPENDENT_GB_TEXTURE_2D_NV              = 0x86EA;
-const GLenum GL_DOT_PRODUCT_NV                          = 0x86EC;
-const GLenum GL_DOT_PRODUCT_DEPTH_REPLACE_NV            = 0x86ED;
-const GLenum GL_DOT_PRODUCT_TEXTURE_2D_NV               = 0x86EE;
-const GLenum GL_DOT_PRODUCT_TEXTURE_CUBE_MAP_NV         = 0x86F0;
-const GLenum GL_DOT_PRODUCT_DIFFUSE_CUBE_MAP_NV         = 0x86F1;
-const GLenum GL_DOT_PRODUCT_REFLECT_CUBE_MAP_NV         = 0x86F2;
-const GLenum GL_DOT_PRODUCT_CONST_EYE_REFLECT_CUBE_MAP_NV = 0x86F3;
-const GLenum GL_HILO_NV                                 = 0x86F4;
-const GLenum GL_DSDT_NV                                 = 0x86F5;
-const GLenum GL_DSDT_MAG_NV                             = 0x86F6;
-const GLenum GL_DSDT_MAG_VIB_NV                         = 0x86F7;
-const GLenum GL_HILO16_NV                               = 0x86F8;
-const GLenum GL_SIGNED_HILO_NV                          = 0x86F9;
-const GLenum GL_SIGNED_HILO16_NV                        = 0x86FA;
-const GLenum GL_SIGNED_RGBA_NV                          = 0x86FB;
-const GLenum GL_SIGNED_RGBA8_NV                         = 0x86FC;
-const GLenum GL_SIGNED_RGB_NV                           = 0x86FE;
-const GLenum GL_SIGNED_RGB8_NV                          = 0x86FF;
-const GLenum GL_SIGNED_LUMINANCE_NV                     = 0x8701;
-const GLenum GL_SIGNED_LUMINANCE8_NV                    = 0x8702;
-const GLenum GL_SIGNED_LUMINANCE_ALPHA_NV               = 0x8703;
-const GLenum GL_SIGNED_LUMINANCE8_ALPHA8_NV             = 0x8704;
-const GLenum GL_SIGNED_ALPHA_NV                         = 0x8705;
-const GLenum GL_SIGNED_ALPHA8_NV                        = 0x8706;
-const GLenum GL_SIGNED_INTENSITY_NV                     = 0x8707;
-const GLenum GL_SIGNED_INTENSITY8_NV                    = 0x8708;
-const GLenum GL_DSDT8_NV                                = 0x8709;
-const GLenum GL_DSDT8_MAG8_NV                           = 0x870A;
-const GLenum GL_DSDT8_MAG8_INTENSITY8_NV                = 0x870B;
-const GLenum GL_SIGNED_RGB_UNSIGNED_ALPHA_NV            = 0x870C;
-const GLenum GL_SIGNED_RGB8_UNSIGNED_ALPHA8_NV          = 0x870D;
-const GLenum GL_HI_SCALE_NV                             = 0x870E;
-const GLenum GL_LO_SCALE_NV                             = 0x870F;
-const GLenum GL_DS_SCALE_NV                             = 0x8710;
-const GLenum GL_DT_SCALE_NV                             = 0x8711;
-const GLenum GL_MAGNITUDE_SCALE_NV                      = 0x8712;
-const GLenum GL_VIBRANCE_SCALE_NV                       = 0x8713;
-const GLenum GL_HI_BIAS_NV                              = 0x8714;
-const GLenum GL_LO_BIAS_NV                              = 0x8715;
-const GLenum GL_DS_BIAS_NV                              = 0x8716;
-const GLenum GL_DT_BIAS_NV                              = 0x8717;
-const GLenum GL_MAGNITUDE_BIAS_NV                       = 0x8718;
-const GLenum GL_VIBRANCE_BIAS_NV                        = 0x8719;
-const GLenum GL_TEXTURE_BORDER_VALUES_NV                = 0x871A;
-const GLenum GL_TEXTURE_HI_SIZE_NV                      = 0x871B;
-const GLenum GL_TEXTURE_LO_SIZE_NV                      = 0x871C;
-const GLenum GL_TEXTURE_DS_SIZE_NV                      = 0x871D;
-const GLenum GL_TEXTURE_DT_SIZE_NV                      = 0x871E;
-const GLenum GL_TEXTURE_MAG_SIZE_NV                     = 0x871F;
+enum : GLenum
+{
+    GL_OFFSET_TEXTURE_RECTANGLE_NV             = 0x864C,
+    GL_OFFSET_TEXTURE_RECTANGLE_SCALE_NV       = 0x864D,
+    GL_DOT_PRODUCT_TEXTURE_RECTANGLE_NV        = 0x864E,
+    GL_RGBA_UNSIGNED_DOT_PRODUCT_MAPPING_NV    = 0x86D9,
+    GL_UNSIGNED_INT_S8_S8_8_8_NV               = 0x86DA,
+    GL_UNSIGNED_INT_8_8_S8_S8_REV_NV           = 0x86DB,
+    GL_DSDT_MAG_INTENSITY_NV                   = 0x86DC,
+    GL_SHADER_CONSISTENT_NV                    = 0x86DD,
+    GL_TEXTURE_SHADER_NV                       = 0x86DE,
+    GL_SHADER_OPERATION_NV                     = 0x86DF,
+    GL_CULL_MODES_NV                           = 0x86E0,
+    GL_OFFSET_TEXTURE_MATRIX_NV                = 0x86E1,
+    GL_OFFSET_TEXTURE_SCALE_NV                 = 0x86E2,
+    GL_OFFSET_TEXTURE_BIAS_NV                  = 0x86E3,
+    GL_OFFSET_TEXTURE_2D_MATRIX_NV             = GL_OFFSET_TEXTURE_MATRIX_NV,
+    GL_OFFSET_TEXTURE_2D_SCALE_NV              = GL_OFFSET_TEXTURE_SCALE_NV,
+    GL_OFFSET_TEXTURE_2D_BIAS_NV               = GL_OFFSET_TEXTURE_BIAS_NV,
+    GL_PREVIOUS_TEXTURE_INPUT_NV               = 0x86E4,
+    GL_CONST_EYE_NV                            = 0x86E5,
+    GL_PASS_THROUGH_NV                         = 0x86E6,
+    GL_CULL_FRAGMENT_NV                        = 0x86E7,
+    GL_OFFSET_TEXTURE_2D_NV                    = 0x86E8,
+    GL_DEPENDENT_AR_TEXTURE_2D_NV              = 0x86E9,
+    GL_DEPENDENT_GB_TEXTURE_2D_NV              = 0x86EA,
+    GL_DOT_PRODUCT_NV                          = 0x86EC,
+    GL_DOT_PRODUCT_DEPTH_REPLACE_NV            = 0x86ED,
+    GL_DOT_PRODUCT_TEXTURE_2D_NV               = 0x86EE,
+    GL_DOT_PRODUCT_TEXTURE_CUBE_MAP_NV         = 0x86F0,
+    GL_DOT_PRODUCT_DIFFUSE_CUBE_MAP_NV         = 0x86F1,
+    GL_DOT_PRODUCT_REFLECT_CUBE_MAP_NV         = 0x86F2,
+    GL_DOT_PRODUCT_CONST_EYE_REFLECT_CUBE_MAP_NV = 0x86F3,
+    GL_HILO_NV                                 = 0x86F4,
+    GL_DSDT_NV                                 = 0x86F5,
+    GL_DSDT_MAG_NV                             = 0x86F6,
+    GL_DSDT_MAG_VIB_NV                         = 0x86F7,
+    GL_HILO16_NV                               = 0x86F8,
+    GL_SIGNED_HILO_NV                          = 0x86F9,
+    GL_SIGNED_HILO16_NV                        = 0x86FA,
+    GL_SIGNED_RGBA_NV                          = 0x86FB,
+    GL_SIGNED_RGBA8_NV                         = 0x86FC,
+    GL_SIGNED_RGB_NV                           = 0x86FE,
+    GL_SIGNED_RGB8_NV                          = 0x86FF,
+    GL_SIGNED_LUMINANCE_NV                     = 0x8701,
+    GL_SIGNED_LUMINANCE8_NV                    = 0x8702,
+    GL_SIGNED_LUMINANCE_ALPHA_NV               = 0x8703,
+    GL_SIGNED_LUMINANCE8_ALPHA8_NV             = 0x8704,
+    GL_SIGNED_ALPHA_NV                         = 0x8705,
+    GL_SIGNED_ALPHA8_NV                        = 0x8706,
+    GL_SIGNED_INTENSITY_NV                     = 0x8707,
+    GL_SIGNED_INTENSITY8_NV                    = 0x8708,
+    GL_DSDT8_NV                                = 0x8709,
+    GL_DSDT8_MAG8_NV                           = 0x870A,
+    GL_DSDT8_MAG8_INTENSITY8_NV                = 0x870B,
+    GL_SIGNED_RGB_UNSIGNED_ALPHA_NV            = 0x870C,
+    GL_SIGNED_RGB8_UNSIGNED_ALPHA8_NV          = 0x870D,
+    GL_HI_SCALE_NV                             = 0x870E,
+    GL_LO_SCALE_NV                             = 0x870F,
+    GL_DS_SCALE_NV                             = 0x8710,
+    GL_DT_SCALE_NV                             = 0x8711,
+    GL_MAGNITUDE_SCALE_NV                      = 0x8712,
+    GL_VIBRANCE_SCALE_NV                       = 0x8713,
+    GL_HI_BIAS_NV                              = 0x8714,
+    GL_LO_BIAS_NV                              = 0x8715,
+    GL_DS_BIAS_NV                              = 0x8716,
+    GL_DT_BIAS_NV                              = 0x8717,
+    GL_MAGNITUDE_BIAS_NV                       = 0x8718,
+    GL_VIBRANCE_BIAS_NV                        = 0x8719,
+    GL_TEXTURE_BORDER_VALUES_NV                = 0x871A,
+    GL_TEXTURE_HI_SIZE_NV                      = 0x871B,
+    GL_TEXTURE_LO_SIZE_NV                      = 0x871C,
+    GL_TEXTURE_DS_SIZE_NV                      = 0x871D,
+    GL_TEXTURE_DT_SIZE_NV                      = 0x871E,
+    GL_TEXTURE_MAG_SIZE_NV                     = 0x871F,
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVOcclusionQuery
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_occlusion_query") == -1)
+        if(extString.findStr("GL_NV_occlusion_query") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glGenOcclusionQueriesNV, "glGenOcclusionQueriesNV"))
@@ -84,16 +84,23 @@ else
     }
 }
 
-const GLenum GL_QUERY_COUNTER_BITS_ARB         = 0x8864;
-const GLenum GL_CURRENT_QUERY_ARB              = 0x8865;
-const GLenum GL_QUERY_RESULT_ARB               = 0x8866;
-const GLenum GL_QUERY_RESULT_AVAILABLE_ARB     = 0x8867;
-const GLenum GL_SAMPLES_PASSED_ARB             = 0x8914;
+enum : GLenum
+{
+    GL_QUERY_COUNTER_BITS_ARB         = 0x8864,
+    GL_CURRENT_QUERY_ARB              = 0x8865,
+    GL_QUERY_RESULT_ARB               = 0x8866,
+    GL_QUERY_RESULT_AVAILABLE_ARB     = 0x8867,
+    GL_SAMPLES_PASSED_ARB             = 0x8914,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLsizei, GLuint*) pfglGenOcclusionQueriesNV;
 typedef void function(GLsizei, GLuint*) pfglDeleteOcclusionQueriesNV;

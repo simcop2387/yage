@@ -271,7 +271,7 @@ class SoundNode : Node
 		{	// Count buffers processed since last time we queue'd more
 			int processed;
 			alGetSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
-			to_process = maxi(processed, cast(int)(size-(buffer_end-buffer_start)));
+			to_process = max(processed, cast(int)(size-(buffer_end-buffer_start)));
 
 			// Update the buffers for this source
 			if (to_process > size/4)

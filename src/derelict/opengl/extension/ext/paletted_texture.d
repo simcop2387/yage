@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTPalettedTexture
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_paletted_texture") == -1)
+        if(extString.findStr("GL_EXT_paletted_texture") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glColorTableEXT, "glColorTableEXT"))
@@ -78,18 +78,25 @@ else
     }
 }
 
-const GLenum GL_COLOR_INDEX1_EXT               = 0x80E2;
-const GLenum GL_COLOR_INDEX2_EXT               = 0x80E3;
-const GLenum GL_COLOR_INDEX4_EXT               = 0x80E4;
-const GLenum GL_COLOR_INDEX8_EXT               = 0x80E5;
-const GLenum GL_COLOR_INDEX12_EXT              = 0x80E6;
-const GLenum GL_COLOR_INDEX16_EXT              = 0x80E7;
-const GLenum GL_TEXTURE_INDEX_SIZE_EXT         = 0x80ED;
+enum : GLenum
+{
+    GL_COLOR_INDEX1_EXT               = 0x80E2,
+    GL_COLOR_INDEX2_EXT               = 0x80E3,
+    GL_COLOR_INDEX4_EXT               = 0x80E4,
+    GL_COLOR_INDEX8_EXT               = 0x80E5,
+    GL_COLOR_INDEX12_EXT              = 0x80E6,
+    GL_COLOR_INDEX16_EXT              = 0x80E7,
+    GL_TEXTURE_INDEX_SIZE_EXT         = 0x80ED,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLenum, GLsizei, GLenum, GLenum, GLvoid*) pfglColorTableEXT;
 typedef void function(GLenum, GLenum, GLenum, GLvoid*) pfglGetColorTableEXT;

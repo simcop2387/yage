@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTDepthBoundsTest
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_depth_bounds_test") == -1)
+        if(extString.findStr("GL_EXT_depth_bounds_test") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glDepthBoundsEXT, "glDepthBoundsEXT"))
@@ -72,13 +72,20 @@ else
     }
 }
 
-const GLenum GL_DEPTH_BOUNDS_TEST_EXT       = 0x8890;
-const GLenum GL_DEPTH_BOUNDS_EXT            = 0x8891;
+enum : GLenum
+{
+    GL_DEPTH_BOUNDS_TEST_EXT       = 0x8890,
+    GL_DEPTH_BOUNDS_EXT            = 0x8891,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLclampd, GLclampd) pfglDepthBoundsEXT;
 pfglDepthBoundsEXT      glDepthBoundsEXT;

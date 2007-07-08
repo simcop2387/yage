@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVFramebufferMultisampleCoverage
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_framebuffer_multisample_coverage") == -1)
+        if(extString.findStr("GL_NV_framebuffer_multisample_coverage") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glRenderbufferStorageMultsampleCoverageNV, "glRenderbufferStorageMultsampleCoverageNV"))
@@ -72,17 +72,24 @@ else
     }
 }
 
-const GLenum GL_RENDERBUFFER_COVERAGE_SAMPLES_NV        = 0x8CAB;
-const GLenum GL_RENDERBUFFER_COLOR_SAMPLES_NV           = 0x8E10;
-const GLenum GL_MAX_RENDERBUFFER_COVERAGE_SAMPLES_NV    = 0x8D57;
-const GLenum GL_MAX_RENDERBUFFER_COLOR_SAMPLES_NV       = 0x8E11;
-const GLenum GL_MAX_MULTISAMPLE_COVERAGE_MODES_NV       = 0x8E12;
-const GLenum GL_MULTISAMPLE_COVERAGE_MODES_NV           = 0x8E13;
+enum : GLenum
+{
+    GL_RENDERBUFFER_COVERAGE_SAMPLES_NV        = 0x8CAB,
+    GL_RENDERBUFFER_COLOR_SAMPLES_NV           = 0x8E10,
+    GL_MAX_RENDERBUFFER_COVERAGE_SAMPLES_NV    = 0x8D57,
+    GL_MAX_RENDERBUFFER_COLOR_SAMPLES_NV       = 0x8E11,
+    GL_MAX_MULTISAMPLE_COVERAGE_MODES_NV       = 0x8E12,
+    GL_MULTISAMPLE_COVERAGE_MODES_NV           = 0x8E13,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLsizei, GLsizei, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageMultsampleCoverageNV;
 pfglRenderbufferStorageMultsampleCoverageNV     glRenderbufferStorageMultsampleCoverageNV;

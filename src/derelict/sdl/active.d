@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,12 @@ private import derelict.sdl.types;
 //==============================================================================
 // TYPES
 //==============================================================================
-const Uint8 SDL_APPMOUSEFOCUS   = 0x01;
-const Uint8 SDL_APPINPUTFOCUS   = 0x02;
-const Uint8 SDL_APPACTIVE       = 0x04;
+enum : Uint8
+{
+    SDL_APPMOUSEFOCUS   = 0x01,
+    SDL_APPINPUTFOCUS   = 0x02,
+    SDL_APPACTIVE       = 0x04,
+}
 
 //==============================================================================
 // FUNCTIONS

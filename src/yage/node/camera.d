@@ -245,7 +245,7 @@ class CameraNode : Node
 		//int modified_xres=xres, modified_yres=yres;
 		//if (modified_xres ==0) modified_xres=Device.getWidth();
 		//if (modified_yres ==0) modified_yres=Device.getHeight();
-		//capture.loadFrameBuffer(mini(xres, Device.getWidth()), mini(xres, Device.getHeight()));
+		//capture.loadFrameBuffer(min(xres, Device.getWidth()), min(xres, Device.getHeight()));
 
 		// Copy framebuffer to our texture.
 		int modified_xres=xres, modified_yres=yres;

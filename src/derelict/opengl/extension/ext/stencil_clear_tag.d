@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTStencilClearTag
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_stencil_clear_tag") == -1)
+        if(extString.findStr("GL_EXT_stencil_clear_tag") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glStencilClearTagEXT, "glStencilClearTagEXT"))
@@ -72,13 +72,20 @@ else
     }
 }
 
-const GLenum GL_STENCIL_TAG_BITS_EXT        = 0x88F2;
-const GLenum GL_STENCIL_CLEAR_TAG_VALUE_EXT = 0x88F3;
+enum : GLenum
+{
+    GL_STENCIL_TAG_BITS_EXT        = 0x88F2,
+    GL_STENCIL_CLEAR_TAG_VALUE_EXT = 0x88F3,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLsizei, GLuint) pfglStencilClearTagEXT;
 pfglStencilClearTagEXT glStencilClearTagEXT;

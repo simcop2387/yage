@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,18 +45,30 @@ public
 
 private
 {
-    import std.string;
-
     import derelict.util.loader;
     import derelict.util.exception;
+    import derelict.util.wrapper;
 
-    version(Windows)
+    version(Windows) 
+    {
         import derelict.opengl.wgl;
+        import derelict.util.wintypes;
+        alias HGLRC DerelictGLContext;
+    }
     else version(linux)
+    {
         version = UsingGLX;
+    }
+    else version(darwin)
+    {
+	    void loadPlatformGL(SharedLib lib) {}
+    }
 
     version(UsingGLX)
+    {
         import derelict.opengl.glx;
+        alias GLXContext DerelictGLContext;
+    }
 }
 
 private void loadAll(SharedLib lib) {
@@ -90,8 +102,6 @@ private
 
     version(Windows)
     {
-        import std.c.windows.windows;
-
         version(DigitalMars)
         {
             pragma(lib, "gdi32.lib");
@@ -107,7 +117,7 @@ private
         {
             HDC hdc = wglGetCurrentDC();
             if(hdc is null)
-                throw new Error("Could not obtain a device context for the current OpenGL context");
+                throw new DerelictException("Could not obtain a device context for the current OpenGL context");
 
             if(0  == currentPixelFormat)
             {
@@ -117,7 +127,7 @@ private
 
             int newFormat = GetPixelFormat(hdc);
             if(0 == newFormat)
-                throw new Error("Could not determine current pixel format");
+                throw new DerelictException("Could not determine current pixel format");
 
             bool ret = true;
             if(newFormat == currentPixelFormat)
@@ -164,7 +174,16 @@ struct DerelictGL
             if(glXGetCurrentContext() is null)
                 return false;
         }
+        else throw new DerelictException("DerelictGL.hasValidContext is unimplemented for this platform");
+        
         return true;
+    }
+    
+    static DerelictGLContext getCurrentContext()
+    {
+	    version(Windows) return wglGetCurrentContext();
+	    else version(UsingGLX) return glXGetCurrentContext();
+	    else throw new DerelictException("DerelictGL.getCurrentContext is Unimplemented for this platform");
     }
 
     static void loadVersions(GLVersion minVersion)
@@ -172,7 +191,7 @@ struct DerelictGL
         version(Windows)
         {
             if(!hasValidContext)
-                throw new Error("You must create an OpenGL context before attempting to load OpenGL versions later than 1.1");
+                throw new DerelictException("You must create an OpenGL context before attempting to load OpenGL versions later than 1.1");
         }
 
         if(versionsOnce)
@@ -230,7 +249,7 @@ struct DerelictGL
     static int loadExtensions()
     {
         if(!hasValidContext)
-                throw new Error("You must create an OpenGL context before attempting to load OpenGL extensions");
+                throw new DerelictException("You must create an OpenGL context before attempting to load OpenGL extensions");
 
         if(extensionsOnce)
         {
@@ -240,7 +259,7 @@ struct DerelictGL
         else
             extensionsOnce = true;
 
-        char[] extString = toString(glGetString(GL_EXTENSIONS));
+        char[] extString = toDString(glGetString(GL_EXTENSIONS));
 
         int count;
         foreach(ExtensionLoader loader; loaders)
@@ -286,27 +305,26 @@ struct DerelictGL
     private static void setVersion()
     {
         if(!hasValidContext)
-            throw new Error("You must create an OpenGL context before attempting to check the OpenGL version");
+            throw new DerelictException("You must create an OpenGL context before attempting to check the OpenGL version");
 
-        char *cstr = glGetString(GL_VERSION);
-        char[] str = toString(cstr);
+        char[] str = toDString(glGetString(GL_VERSION));
 
-        if(str.find("2.1") == 0)
+        if(str.findStr("2.1") == 0)
             maxVersionAvail = GLVersion.Version21;
-        else if(str.find("2.0") == 0)
+        else if(str.findStr("2.0") == 0)
             maxVersionAvail = GLVersion.Version20;
-        else if(str.find("1.5") == 0)
+        else if(str.findStr("1.5") == 0)
             maxVersionAvail = GLVersion.Version15;
-        else if(str.find("1.4") == 0)
+        else if(str.findStr("1.4") == 0)
             maxVersionAvail = GLVersion.Version14;
-        else if(str.find("1.3") == 0)
+        else if(str.findStr("1.3") == 0)
             maxVersionAvail = GLVersion.Version13;
-        else if(str.find("1.2") == 0)
+        else if(str.findStr("1.2") == 0)
             maxVersionAvail = GLVersion.Version12;
-        else if(str.find("1.1") == 0)
+        else if(str.findStr("1.1") == 0)
             maxVersionAvail = GLVersion.Version11;
-        else if(str.find("1.0") == 0)
-            throw new Error("Unsupported OpenGL version \"" ~ str ~ "\"");
+        else if(str.findStr("1.0") == 0)
+            throw new Exception("Unsupported OpenGL version \"" ~ str ~ "\"");
         else
         {
             // assume a new version of OpenGL that we haven't added support for
@@ -328,8 +346,8 @@ struct DerelictGL
 static this () {
     DerelictGL.setup (
         "opengl32.dll",
-        "libGL.so",
-        "",
+        "libGL.so,libGL.so.1",
+        "/System/Library/Frameworks/OpenGL.framework/OpenGL",
         &loadAll
     );
 }

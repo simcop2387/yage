@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct NVCopyDepthToColor
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_copy_depth_to_color") == -1)
+        if(extString.findStr("GL_NV_copy_depth_to_color") == -1)
             return false;
 
         enabled = true;
@@ -68,5 +68,8 @@ else
     }
 }
 
-const GLenum GL_DEPTH_STENCIL_TO_RGBA_NV        = 0x886E;
-const GLenum GL_DEPTH_STENCIL_TO_BGRA_NV        = 0x886F;
+enum : GLenum
+{
+    GL_DEPTH_STENCIL_TO_RGBA_NV        = 0x886E,
+    GL_DEPTH_STENCIL_TO_BGRA_NV        = 0x886F,
+}

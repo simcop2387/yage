@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTConvolution
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_convolution") == -1)
+        if(extString.findStr("GL_EXT_convolution") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glConvolutionFilter1DEXT, "glConvolutionFilter1DEXT"))
@@ -96,31 +96,38 @@ else
     }
 }
 
-const GLenum GL_CONVOLUTION_1D_EXT                  = 0x8010;
-const GLenum GL_CONVOLUTION_2D_EXT                  = 0x8011;
-const GLenum GL_SEPARABLE_2D_EXT                    = 0x8012;
-const GLenum GL_CONVOLUTION_BORDER_MODE_EXT         = 0x8013;
-const GLenum GL_CONVOLUTION_FILTER_SCALE_EXT        = 0x8014;
-const GLenum GL_CONVOLUTION_FILTER_BIAS_EXT         = 0x8015;
-const GLenum GL_REDUCE_EXT                          = 0x8016;
-const GLenum GL_CONVOLUTION_FORMAT_EXT              = 0x8017;
-const GLenum GL_CONVOLUTION_WIDTH_EXT               = 0x8018;
-const GLenum GL_CONVOLUTION_HEIGHT_EXT              = 0x8019;
-const GLenum GL_MAX_CONVOLUTION_WIDTH_EXT           = 0x801A;
-const GLenum GL_MAX_CONVOLUTION_HEIGHT_EXT          = 0x801B;
-const GLenum GL_POST_CONVOLUTION_RED_SCALE_EXT      = 0x801C;
-const GLenum GL_POST_CONVOLUTION_GREEN_SCALE_EXT    = 0x801D;
-const GLenum GL_POST_CONVOLUTION_BLUE_SCALE_EXT     = 0x801E;
-const GLenum GL_POST_CONVOLUTION_ALPHA_SCALE_EXT    = 0x801F;
-const GLenum GL_POST_CONVOLUTION_RED_BIAS_EXT       = 0x8020;
-const GLenum GL_POST_CONVOLUTION_GREEN_BIAS_EXT     = 0x8021;
-const GLenum GL_POST_CONVOLUTION_BLUE_BIAS_EXT      = 0x8022;
-const GLenum GL_POST_CONVOLUTION_ALPHA_BIAS_EXT     = 0x8023;
+enum : GLenum
+{
+    GL_CONVOLUTION_1D_EXT                  = 0x8010,
+    GL_CONVOLUTION_2D_EXT                  = 0x8011,
+    GL_SEPARABLE_2D_EXT                    = 0x8012,
+    GL_CONVOLUTION_BORDER_MODE_EXT         = 0x8013,
+    GL_CONVOLUTION_FILTER_SCALE_EXT        = 0x8014,
+    GL_CONVOLUTION_FILTER_BIAS_EXT         = 0x8015,
+    GL_REDUCE_EXT                          = 0x8016,
+    GL_CONVOLUTION_FORMAT_EXT              = 0x8017,
+    GL_CONVOLUTION_WIDTH_EXT               = 0x8018,
+    GL_CONVOLUTION_HEIGHT_EXT              = 0x8019,
+    GL_MAX_CONVOLUTION_WIDTH_EXT           = 0x801A,
+    GL_MAX_CONVOLUTION_HEIGHT_EXT          = 0x801B,
+    GL_POST_CONVOLUTION_RED_SCALE_EXT      = 0x801C,
+    GL_POST_CONVOLUTION_GREEN_SCALE_EXT    = 0x801D,
+    GL_POST_CONVOLUTION_BLUE_SCALE_EXT     = 0x801E,
+    GL_POST_CONVOLUTION_ALPHA_SCALE_EXT    = 0x801F,
+    GL_POST_CONVOLUTION_RED_BIAS_EXT       = 0x8020,
+    GL_POST_CONVOLUTION_GREEN_BIAS_EXT     = 0x8021,
+    GL_POST_CONVOLUTION_BLUE_BIAS_EXT      = 0x8022,
+    GL_POST_CONVOLUTION_ALPHA_BIAS_EXT     = 0x8023,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLenum, GLsizei, GLenum, GLenum, GLvoid*) pfglConvolutionFilter1DEXT;
 typedef void function(GLenum, GLenum, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglConvolutionFilter2DEXT;

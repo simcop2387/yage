@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct NVTextureRectangle
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_texture_rectangle") == -1)
+        if(extString.findStr("GL_NV_texture_rectangle") == -1)
             return false;
 
         enabled = true;
@@ -68,7 +68,10 @@ else
     }
 }
 
-const GLenum GL_TEXTURE_RECTANGLE_NV           = 0x84F5;
-const GLenum GL_TEXTURE_BINDING_RECTANGLE_NV   = 0x84F6;
-const GLenum GL_PROXY_TEXTURE_RECTANGLE_NV     = 0x84F7;
-const GLenum GL_MAX_RECTANGLE_TEXTURE_SIZE_NV  = 0x84F8;
+enum : GLenum
+{
+    GL_TEXTURE_RECTANGLE_NV           = 0x84F5,
+    GL_TEXTURE_BINDING_RECTANGLE_NV   = 0x84F6,
+    GL_PROXY_TEXTURE_RECTANGLE_NV     = 0x84F7,
+    GL_MAX_RECTANGLE_TEXTURE_SIZE_NV  = 0x84F8,
+}

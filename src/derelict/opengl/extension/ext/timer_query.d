@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 bool enabled = false;
@@ -45,7 +45,7 @@ struct EXTTimerQuery
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_EXT_timer_query") == -1)
+        if(extString.findStr("GL_EXT_timer_query") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glGetQueryObjecti64vEXT, "glGetQueryObjecti64vEXT"))
@@ -77,12 +77,19 @@ else
 alias long GLint64EXT;
 alias ulong GLuint64EXT;
 
-const GLenum GL_TIME_ELAPSED_EXT            = 0x88BF;
+enum : GLenum
+{
+    GL_TIME_ELAPSED_EXT = 0x88BF
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjecti64vEXT;
 typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjectui64vEXT;

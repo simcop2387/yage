@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct NVFence
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_fence") == -1)
+        if(extString.findStr("GL_NV_fence") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glDeleteFencesNV, "glDeleteFencesNV"))
@@ -84,14 +84,21 @@ else
     }
 }
 
-const GLenum GL_ALL_COMPLETED_NV               = 0x84F2;
-const GLenum GL_FENCE_STATUS_NV                = 0x84F3;
-const GLenum GL_FENCE_CONDITION_NV             = 0x84F4;
+enum : GLenum
+{
+    GL_ALL_COMPLETED_NV               = 0x84F2,
+    GL_FENCE_STATUS_NV                = 0x84F3,
+    GL_FENCE_CONDITION_NV             = 0x84F4,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLsizei, GLuint*) pfglDeleteFencesNV;
 typedef void function(GLsizei, GLuint*) pfglGenFencesNV;

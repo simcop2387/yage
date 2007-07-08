@@ -106,7 +106,7 @@ $(DDOC_MODULE_MEMBERS
 <dt><span class="decl">void 
 <span class="currsymbol">remove</span>
 <script type="text/javascript">explorer.outline.addDecl('remove');</script>
-(T)(inout T[] <span class="funcparam">array</span>, int <span class="funcparam">index</span>, bool <span class="funcparam">ordered</span> = true);
+(T)(ref T[] <span class="funcparam">array</span>, int <span class="funcparam">index</span>, bool <span class="funcparam">ordered</span> = true);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -141,7 +141,7 @@ $(DDOC_MODULE_MEMBERS
 <dt><span class="decl">void 
 <span class="currsymbol">reserve</span>
 <script type="text/javascript">explorer.outline.addDecl('reserve');</script>
-(T)(inout T[] <span class="funcparam">array</span>, int <span class="funcparam">length</span>);
+(T)(ref T[] <span class="funcparam">array</span>, int <span class="funcparam">length</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -152,42 +152,42 @@ $(DDOC_MODULE_MEMBERS
 <td nowrap valign="top" style="padding-right: 8px">array</td>
 
                
-<td></td></tr>
+<td>The array in which to 
+<span class="currsymbol">reserve</span>
+<script type="text/javascript">explorer.outline.addDecl('reserve');</script>
+ space.</td></tr>
 <tr>
 <td nowrap valign="top" style="padding-right: 8px">length</td>
 
                
-<td></td></tr>
+<td>The array will 
+<span class="currsymbol">reserve</span>
+<script type="text/javascript">explorer.outline.addDecl('reserve');</script>
+ enough space to hold this many total elements. </td></tr>
 </table><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">sort</span>
-<script type="text/javascript">explorer.outline.addDecl('sort');</script>
-(T)(inout T[] <span class="funcparam">array</span>);
+<span class="currsymbol">radixSort</span>
+<script type="text/javascript">explorer.outline.addDecl('radixSort');</script>
+(T)(ref T[] <span class="funcparam">array</span>);
 <br>void 
 <span class="currsymbol">
-<span class="currsymbol">sort</span>
-<script type="text/javascript">explorer.outline.addDecl('sort');</script>
+<span class="currsymbol">radixSort</span>
+<script type="text/javascript">explorer.outline.addDecl('radixSort');</script>
 </span>
 <script type="text/javascript">explorer.outline.addDecl('
-<span class="currsymbol">sort</span>
-<script type="text/javascript">explorer.outline.addDecl('sort');</script>
+<span class="currsymbol">radixSort</span>
+<script type="text/javascript">explorer.outline.addDecl('radixSort');</script>
 ');</script>
-(T,K)(inout T[] <span class="funcparam"><span class="funcparam">array</span></span>, K delegate(T elem) <span class="funcparam"><span class="funcparam">getKey</span></span>, bool <span class="funcparam"><span class="funcparam">signed</span></span> = true);
+(T,K)(ref T[] <span class="funcparam"><span class="funcparam">array</span></span>, K delegate(T elem) <span class="funcparam"><span class="funcparam">getKey</span></span>, bool <span class="funcparam"><span class="funcparam">signed</span></span> = true);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Sort the elements of an array using a radix 
-<span class="currsymbol">sort</span>
-<script type="text/javascript">explorer.outline.addDecl('sort');</script>
-.
- This runs in linear time and can 
-<span class="currsymbol">sort</span>
-<script type="text/javascript">explorer.outline.addDecl('sort');</script>
- several million items per second on modern hardware.
+<dd>Sort the elements of an array using a radix sort.
+ This runs in linear time and can sort several million items per second on modern hardware.
  Special thanks go to Pierre Terdiman for his essay: Radix Sort Revisited.
 <br><br>
 <b>Params:</b><br>
@@ -207,7 +207,7 @@ $(DDOC_MODULE_MEMBERS
 <b>Example:</b><br>
 <pre class="d_code"> Timer[] array;
  // ... fill array with new Timer() ...
- array.sort((Timer a) { return a.get(); });
+ array.radixSort((Timer a) { return a.get(); });
  -------------------------------- 
 </pre>
 <br><br>
@@ -223,7 +223,7 @@ $(DDOC_MODULE_MEMBERS
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 26 23:07:47 2007
+		on Sun Jul  8 00:19:33 2007
 
 	</div>
 	
@@ -319,8 +319,6 @@ $(DDOC_MODULE_MEMBERS
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
-
-	explorer.packageExplorer.addModule("yage.universe");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

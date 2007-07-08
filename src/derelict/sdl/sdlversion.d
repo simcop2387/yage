@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,12 @@ private import derelict.sdl.types;
 //==============================================================================
 // TYPES
 //==============================================================================
-const Uint8 SDL_MAJOR_VERSION   = 1;
-const Uint8 SDL_MINOR_VERSION   = 2;
-const Uint8 SDL_PATCHLEVEL      = 10;
+enum : Uint8
+{
+    SDL_MAJOR_VERSION   = 1,
+    SDL_MINOR_VERSION   = 2,
+    SDL_PATCHLEVEL      = 10,
+}
 
 struct SDL_version
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,7 +44,7 @@ struct NVFloatBuffer
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_NV_float_buffer") == -1)
+        if(extString.findStr("GL_NV_float_buffer") == -1)
             return false;
 
         enabled = true;
@@ -68,18 +68,21 @@ else
     }
 }
 
-const GLenum GL_FLOAT_R_NV                     = 0x8880;
-const GLenum GL_FLOAT_RG_NV                    = 0x8881;
-const GLenum GL_FLOAT_RGB_NV                   = 0x8882;
-const GLenum GL_FLOAT_RGBA_NV                  = 0x8883;
-const GLenum GL_FLOAT_R16_NV                   = 0x8884;
-const GLenum GL_FLOAT_R32_NV                   = 0x8885;
-const GLenum GL_FLOAT_RG16_NV                  = 0x8886;
-const GLenum GL_FLOAT_RG32_NV                  = 0x8887;
-const GLenum GL_FLOAT_RGB16_NV                 = 0x8888;
-const GLenum GL_FLOAT_RGB32_NV                 = 0x8889;
-const GLenum GL_FLOAT_RGBA16_NV                = 0x888A;
-const GLenum GL_FLOAT_RGBA32_NV                = 0x888B;
-const GLenum GL_TEXTURE_FLOAT_COMPONENTS_NV    = 0x888C;
-const GLenum GL_FLOAT_CLEAR_COLOR_VALUE_NV     = 0x888D;
-const GLenum GL_FLOAT_RGBA_MODE_NV             = 0x888E;
+enum : GLenum
+{
+    GL_FLOAT_R_NV                     = 0x8880,
+    GL_FLOAT_RG_NV                    = 0x8881,
+    GL_FLOAT_RGB_NV                   = 0x8882,
+    GL_FLOAT_RGBA_NV                  = 0x8883,
+    GL_FLOAT_R16_NV                   = 0x8884,
+    GL_FLOAT_R32_NV                   = 0x8885,
+    GL_FLOAT_RG16_NV                  = 0x8886,
+    GL_FLOAT_RG32_NV                  = 0x8887,
+    GL_FLOAT_RGB16_NV                 = 0x8888,
+    GL_FLOAT_RGB32_NV                 = 0x8889,
+    GL_FLOAT_RGBA16_NV                = 0x888A,
+    GL_FLOAT_RGBA32_NV                = 0x888B,
+    GL_TEXTURE_FLOAT_COMPONENTS_NV    = 0x888C,
+    GL_FLOAT_CLEAR_COLOR_VALUE_NV     = 0x888D,
+    GL_FLOAT_RGBA_MODE_NV             = 0x888E,
+}

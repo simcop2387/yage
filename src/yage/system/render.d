@@ -18,24 +18,26 @@ import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
 import yage.node.all;
-import yage.node.camera;
-import yage.node.node;
-import yage.node.light;
-import yage.node.scene;
 
+private struct Attribute2
+{	char[] name;
+	float[] values;	
+}
 
 /// Used for translucent polygon rendering
 private struct AlphaTriangle
-{	Vec3f[3] vertices;	// in worldspace coordinates
+{	Node node;
+	Model model;
+	Mesh mesh;
+	Material matl;
+	int triangle;
+	Matrix transform;
+	
+	Vec3f[3] vertices;	// in worldspace coordinates
 	Vec3f*[3] normals;	// store pointers to these since the values aren't transformed
 	Vec2f*[3] texcoords;// by the world coordinates, helps reduce size.
-	Layer layer;
-	LightNode[] lights;
-	Vec4f color;
-	int order;	// order to draw if the same distance as another polygon
-				// this is commonly needed for polygons from different layers of the same mesh.
-				// Useless, since they should already be in the order they're added and
-				// because radix preserves order
+
+	//Attribute2[] attributes;
 }
 
 /**
@@ -111,45 +113,41 @@ class Render
 		{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(.33333333333);
 			return -camera.distance2(center); // distance squared is faster and values still compare the same
 		}
-		//alpha.sortType!(float).radix(&triSort, true, true);
-		sort(alpha, &triSort);
+		//radixSort(alpha, &triSort);
 
 		// Render alpha triangles
-		foreach (AlphaTriangle a; alpha)
-		{	a.layer.bind(a.lights, a.color);
-			glBegin(GL_TRIANGLES);
+		foreach (AlphaTriangle at; alpha)
+		{	foreach (layer; at.matl.getLayers())
+			{	layer.bind(at.node.getLights(), at.node.getColor());
+				glBegin(GL_TRIANGLES);
+				
+				Vec3i triangle = at.mesh.getTriangles[at.triangle];
+				
 				for (int i=0; i<3; i++)
-				{	glTexCoord2fv(a.texcoords[i].v.ptr);
-					glNormal3fv(a.normals[i].ptr);
-					glVertex3fv(a.vertices[i].ptr);
+				{	
+					glTexCoord2fv(at.texcoords[i].v.ptr);
+					//glTexCoord2fv(at.model.getAttribute("gl_Vertex").vec3f[triangle.v[i]].ptr);
+					glNormal3fv(at.normals[i].ptr);
+					glVertex3fv(at.vertices[i].ptr);
+					
+					
 				}
-			glEnd();
-			a.layer.unbind();
+				glEnd();
+				layer.unbind();			
+			}			
 		}
+		/*
+		for (int i=0; i<3; i++)
+		{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getScale());
+			at.texcoords[i] = &t[tri.v[i]];
+			at.normals[i] = &n[tri.v[i]];
+		}*/
 
 		nodes.length = 0;
-		//yage.core.array.reserve(alpha, alpha.length);
 		alpha.length = 0;
 
 		poly_count = this.poly_count;
 		vertex_count = this.vertex_count;
-	}
-
-
-	/// Get the current (or last) camera that is/was rendering a scene.
-	static CameraNode getCurrentCamera()
-	{	return current_camera;
-	}
-
-	/// Set the current camera for rendering.
-	static void setCurrentCamera(CameraNode camera)
-	{	current_camera = camera;
-	}
-
-	// Render a cube
-	protected static void cube(Node node)
-	{	model(mcube, node);
-		// (cast(LightNode)n).getDiffuse().add((cast(LightNode)n).getAmbient())
 	}
 
 	/*
@@ -159,16 +157,16 @@ class Render
 	protected static void model(Model model, Node node, Vec3f rotation = Vec3f(0))
 	{
 		model.bind();
-		Vec3f[] v = model.getVertices();
-		Vec3f[] n = model.getNormals();
-		Vec2f[] t = model.getTexCoords();
+		Vec3f[] v = model.getAttribute("gl_Vertex").vec3f;
+		Vec3f[] n = model.getAttribute("gl_Normal").vec3f;
+		Vec2f[] t = model.getAttribute("gl_TexCoord").vec2f;
 		Matrix abs_transform = node.getAbsoluteTransform(true);
-		vertex_count += model.getVertices().length;
+		vertex_count += v.length;
 
-		// Rotate by rotation, if nonzero
+		// Rotate if rotation is nonzero.
 		if (rotation.length2())
 		{	abs_transform = abs_transform.rotate(rotation);
-			glRotatef(rotation.length()*57.295779513, rotation.x, rotation.y, rotation.z);
+			glRotatef(rotation.length()*PI_180, rotation.x, rotation.y, rotation.z);
 		}
 
 		// Loop through the meshes
@@ -206,7 +204,7 @@ class Render
 
 					} else
 					{
-						foreach (Vec3i tri; mesh.getTriangles())
+						foreach (int index, Vec3i tri; mesh.getTriangles())
 						// Add to translucent
 						{	AlphaTriangle at;
 							for (int i=0; i<3; i++)
@@ -214,8 +212,14 @@ class Render
 								at.texcoords[i] = &t[tri.v[i]];
 								at.normals[i] = &n[tri.v[i]];
 							}
-							at.layer = l;
-							at.color = node.getColor();
+
+							// New
+							at.node 	= node;
+							at.model	= model;
+							at.mesh		= mesh;
+							at.matl     = matl;
+							at.triangle = index;						
+							
 							alpha ~= at;
 						}
 					}
@@ -244,6 +248,23 @@ class Render
 			else // render with no material
 				draw();
 		}
+	}
+
+	/// Get the current (or last) camera that is/was rendering a scene.
+	static CameraNode getCurrentCamera()
+	{	return current_camera;
+	}
+
+	/// Set the current camera for rendering.
+	static void setCurrentCamera(CameraNode camera)
+	{	current_camera = camera;
+	}
+
+	
+	// Render a cube
+	protected static void cube(Node node)
+	{	model(mcube, node);
+		// (cast(LightNode)n).getDiffuse().add((cast(LightNode)n).getAmbient())
 	}
 
 	// Render a sprite

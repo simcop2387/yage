@@ -141,6 +141,19 @@ Eric Poggel
 <br><br>
 
 </dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static word  
+<span class="currsymbol">opApply</span>
+<script type="text/javascript">explorer.outline.addDecl('opApply');</script>
+(ushort <span class="funcparam">us</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Convert ushort to word
+<br><br>
+
+</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -324,14 +337,14 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">clampf</span>
-<script type="text/javascript">explorer.outline.addDecl('clampf');</script>
-(float <span class="funcparam">v</span>, float <span class="funcparam">lower</span>, float <span class="funcparam">upper</span>);
+<dt><span class="decl">T 
+<span class="currsymbol">clamp</span>
+<script type="text/javascript">explorer.outline.addDecl('clamp');</script>
+(T)(T <span class="funcparam">v</span>, T <span class="funcparam">lower</span>, T <span class="funcparam">upper</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Clamp <span class="funcparam">v</span> between l and u
+<dd>Clamp v between l and u
 <br><br>
 
 </dd>
@@ -358,8 +371,13 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Returns the first integer n such that 2^n &gt;= abs(x).
- <span class="funcparam">input</span> of 9 returns 16 
+<dd>Returns the first integer n such that 2^n &gt;= <span class="funcparam">input</span>.
+<br><br>
+<b>Example:</b><br>
+
+<span class="currsymbol">nextPow2</span>
+<script type="text/javascript">explorer.outline.addDecl('nextPow2');</script>
+(9); // returns 16 
 <br><br>
 
 </dd>
@@ -378,87 +396,27 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">template 
-<span class="currsymbol">maxType</span>
-<script type="text/javascript">explorer.outline.addDecl('maxType');</script>
-(T)</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the type for the max function.
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl></dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">maxi</span>
-<script type="text/javascript">explorer.outline.addDecl('maxi');</script>
-(int[] <span class="funcparam">a</span>...);
-<br>long 
-<span class="currsymbol">maxl</span>
-<script type="text/javascript">explorer.outline.addDecl('maxl');</script>
-(long[] <span class="funcparam">a</span>...);
-<br>float 
-<span class="currsymbol">maxf</span>
-<script type="text/javascript">explorer.outline.addDecl('maxf');</script>
-(float[] <span class="funcparam">a</span>...);
-<br>double 
-<span class="currsymbol">maxd</span>
-<script type="text/javascript">explorer.outline.addDecl('maxd');</script>
-(double[] <span class="funcparam">a</span>...);
+<dt><span class="decl">T[0] 
+<span class="currsymbol">max</span>
+<script type="text/javascript">explorer.outline.addDecl('max');</script>
+(T...)(T <span class="funcparam">a</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return the maximum of an array.
+<dd>Return the maximum of all arguments 
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">template 
-<span class="currsymbol">minType</span>
-<script type="text/javascript">explorer.outline.addDecl('minType');</script>
-(T)</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the type for the max function.
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl></dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">mini</span>
-<script type="text/javascript">explorer.outline.addDecl('mini');</script>
-(int[] <span class="funcparam">a</span>...);
-<br>long 
-<span class="currsymbol">minl</span>
-<script type="text/javascript">explorer.outline.addDecl('minl');</script>
-(long[] <span class="funcparam">a</span>...);
-<br>float 
-<span class="currsymbol">minf</span>
-<script type="text/javascript">explorer.outline.addDecl('minf');</script>
-(float[] <span class="funcparam">a</span>...);
-<br>double 
-<span class="currsymbol">mind</span>
-<script type="text/javascript">explorer.outline.addDecl('mind');</script>
-(double[] <span class="funcparam">a</span>...);
+<dt><span class="decl">T[0] 
+<span class="currsymbol">min</span>
+<script type="text/javascript">explorer.outline.addDecl('min');</script>
+(T...)(T <span class="funcparam">a</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return the minimum of an array.
+<dd>Return the minimum of all arguments.
 <br><br>
 
 </dd>
@@ -516,7 +474,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 26 23:07:47 2007
+		on Sun Jul  8 00:19:33 2007
 
 	</div>
 	
@@ -612,8 +570,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
-
-	explorer.packageExplorer.addModule("yage.universe");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

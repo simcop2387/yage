@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATIVertexArrayObject
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_vertex_array_object") == -1)
+        if(extString.findStr("GL_ATI_vertex_array_object") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glNewObjectBufferATI, "glNewObjectBufferATI"))
@@ -94,19 +94,26 @@ else
     }
 }
 
-const GL_STATIC_ATI                     = 0x8760;
-const GL_DYNAMIC_ATI                    = 0x8761;
-const GL_PRESERVE_ATI                   = 0x8762;
-const GL_DISCARD_ATI                    = 0x8763;
-const GL_OBJECT_BUFFER_SIZE_ATI         = 0x8764;
-const GL_OBJECT_BUFFER_USAGE_ATI        = 0x8765;
-const GL_ARRAY_OBJECT_BUFFER_ATI        = 0x8766;
-const GL_ARRAY_OBJECT_OFFSET_ATI        = 0x8767;
+enum : GLenum
+{
+    GL_STATIC_ATI                     = 0x8760,
+    GL_DYNAMIC_ATI                    = 0x8761,
+    GL_PRESERVE_ATI                   = 0x8762,
+    GL_DISCARD_ATI                    = 0x8763,
+    GL_OBJECT_BUFFER_SIZE_ATI         = 0x8764,
+    GL_OBJECT_BUFFER_USAGE_ATI        = 0x8765,
+    GL_ARRAY_OBJECT_BUFFER_ATI        = 0x8766,
+    GL_ARRAY_OBJECT_OFFSET_ATI        = 0x8767,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef GLuint function(GLsizei, GLvoid *, GLenum)                    pfglNewObjectBufferATI;
 typedef GLboolean function(GLuint)                                    pfglIsObjectBufferATI;

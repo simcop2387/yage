@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,14 @@ module derelict.ogg.vorbisfile;
 //==============================================================================
 
 private {
-    import std.c.stdio;
+    version(Tango)
+    {
+        import tango.stdc.stdio;
+    }
+    else
+    {
+        import std.c.stdio;
+    }
     import derelict.util.loader;
     import derelict.ogg.oggtypes;
     import derelict.ogg.vorbistypes;
@@ -98,12 +105,12 @@ void loadVorbisFile(SharedLib lib)
 
 GenericLoader DerelictVorbisFile;
 static this() {
-	DerelictVorbisFile.setup(
-		"vorbisfile.dll",
-		"libvorbisfile.so, libvorbisfile.so.3, libvorbisfile.so.3.1.0",
-		"",
-		&loadVorbisFile
-	);
+    DerelictVorbisFile.setup(
+        "vorbisfile.dll",
+        "libvorbisfile.so, libvorbisfile.so.3, libvorbisfile.so.3.1.0",
+        "",
+        &loadVorbisFile
+    );
 }
 
 

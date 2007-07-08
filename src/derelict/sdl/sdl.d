@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,14 +61,17 @@ public
 //==============================================================================
 // Types
 //==============================================================================
-const Uint32 SDL_INIT_TIMER   = 0x00000001;
-const Uint32 SDL_INIT_AUDIO   = 0x00000010;
-const Uint32 SDL_INIT_VIDEO   = 0x00000020;
-const Uint32 SDL_INIT_CDROM   = 0x00000100;
-const Uint32 SDL_INIT_JOYSTICK  = 0x00000200;
-const Uint32 SDL_INIT_NOPARACHUTE = 0x00100000;
-const Uint32 SDL_INIT_EVENTTHREAD = 0x00200000;
-const Uint32 SDL_INIT_EVERYTHING = 0x0000FFFF;
+enum : Uint32
+{
+    SDL_INIT_TIMER   = 0x00000001,
+    SDL_INIT_AUDIO   = 0x00000010,
+    SDL_INIT_VIDEO   = 0x00000020,
+    SDL_INIT_CDROM   = 0x00000100,
+    SDL_INIT_JOYSTICK  = 0x00000200,
+    SDL_INIT_NOPARACHUTE = 0x00100000,
+    SDL_INIT_EVENTTHREAD = 0x00200000,
+    SDL_INIT_EVERYTHING = 0x0000FFFF,
+}
 
 //==============================================================================
 // Functions
@@ -166,7 +169,7 @@ private void load(SharedLib lib)
     // keyboard.d
     bindFunc(SDL_EnableUNICODE)("SDL_EnableUNICODE", lib);
     bindFunc(SDL_EnableKeyRepeat)("SDL_EnableKeyRepeat", lib);
-   // bindFunc(SDL_GetKeyRepeat)("SDL_GetKeyRepeat", lib);	// Commented out by Eric Poggel, unavailable on Kubuntu 6.06's libsdl.so
+    bindFunc(SDL_GetKeyRepeat)("SDL_GetKeyRepeat", lib);
     bindFunc(SDL_GetKeyState)("SDL_GetKeyState", lib);
     bindFunc(SDL_GetModState)("SDL_GetModState", lib);
     bindFunc(SDL_SetModState)("SDL_SetModState", lib);

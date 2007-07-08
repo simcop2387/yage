@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBVertexProgram
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_vertex_program") == -1)
+        if(extString.findStr("GL_ARB_vertex_program") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glVertexAttrib1dARB, "glVertexAttrib1dARB"))
             return false;
@@ -193,90 +193,97 @@ else
     }
 }
 
-const GLenum GL_COLOR_SUM_ARB                           = 0x8458;
-const GLenum GL_VERTEX_PROGRAM_ARB                      = 0x8620;
-const GLenum GL_VERTEX_ATTRIB_ARRAY_ENABLED_ARB         = 0x8622;
-const GLenum GL_VERTEX_ATTRIB_ARRAY_SIZE_ARB            = 0x8623;
-const GLenum GL_VERTEX_ATTRIB_ARRAY_STRIDE_ARB          = 0x8624;
-const GLenum GL_VERTEX_ATTRIB_ARRAY_TYPE_ARB            = 0x8625;
-const GLenum GL_CURRENT_VERTEX_ATTRIB_ARB               = 0x8626;
-const GLenum GL_PROGRAM_LENGTH_ARB                      = 0x8627;
-const GLenum GL_PROGRAM_STRING_ARB                      = 0x8628;
-const GLenum GL_MAX_PROGRAM_MATRIX_STACK_DEPTH_ARB      = 0x862E;
-const GLenum GL_MAX_PROGRAM_MATRICES_ARB                = 0x862F;
-const GLenum GL_CURRENT_MATRIX_STACK_DEPTH_ARB          = 0x8640;
-const GLenum GL_CURRENT_MATRIX_ARB                      = 0x8641;
-const GLenum GL_VERTEX_PROGRAM_POINT_SIZE_ARB           = 0x8642;
-const GLenum GL_VERTEX_PROGRAM_TWO_SIDE_ARB             = 0x8643;
-const GLenum GL_VERTEX_ATTRIB_ARRAY_POINTER_ARB         = 0x8645;
-const GLenum GL_PROGRAM_ERROR_POSITION_ARB              = 0x864B;
-const GLenum GL_PROGRAM_BINDING_ARB                     = 0x8677;
-const GLenum GL_MAX_VERTEX_ATTRIBS_ARB                  = 0x8869;
-const GLenum GL_VERTEX_ATTRIB_ARRAY_NORMALIZED_ARB      = 0x886A;
-const GLenum GL_PROGRAM_ERROR_STRING_ARB                = 0x8874;
-const GLenum GL_PROGRAM_FORMAT_ASCII_ARB                = 0x8875;
-const GLenum GL_PROGRAM_FORMAT_ARB                      = 0x8876;
-const GLenum GL_PROGRAM_INSTRUCTIONS_ARB                = 0x88A0;
-const GLenum GL_MAX_PROGRAM_INSTRUCTIONS_ARB            = 0x88A1;
-const GLenum GL_PROGRAM_NATIVE_INSTRUCTIONS_ARB         = 0x88A2;
-const GLenum GL_MAX_PROGRAM_NATIVE_INSTRUCTIONS_ARB     = 0x88A3;
-const GLenum GL_PROGRAM_TEMPORARIES_ARB                 = 0x88A4;
-const GLenum GL_MAX_PROGRAM_TEMPORARIES_ARB             = 0x88A5;
-const GLenum GL_PROGRAM_NATIVE_TEMPORARIES_ARB          = 0x88A6;
-const GLenum GL_MAX_PROGRAM_NATIVE_TEMPORARIES_ARB      = 0x88A7;
-const GLenum GL_PROGRAM_PARAMETERS_ARB                  = 0x88A8;
-const GLenum GL_MAX_PROGRAM_PARAMETERS_ARB              = 0x88A9;
-const GLenum GL_PROGRAM_NATIVE_PARAMETERS_ARB           = 0x88AA;
-const GLenum GL_MAX_PROGRAM_NATIVE_PARAMETERS_ARB       = 0x88AB;
-const GLenum GL_PROGRAM_ATTRIBS_ARB                     = 0x88AC;
-const GLenum GL_MAX_PROGRAM_ATTRIBS_ARB                 = 0x88AD;
-const GLenum GL_PROGRAM_NATIVE_ATTRIBS_ARB              = 0x88AE;
-const GLenum GL_MAX_PROGRAM_NATIVE_ATTRIBS_ARB          = 0x88AF;
-const GLenum GL_PROGRAM_ADDRESS_REGISTERS_ARB           = 0x88B0;
-const GLenum GL_MAX_PROGRAM_ADDRESS_REGISTERS_ARB       = 0x88B1;
-const GLenum GL_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB    = 0x88B2;
-const GLenum GL_MAX_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB = 0x88B3;
-const GLenum GL_MAX_PROGRAM_LOCAL_PARAMETERS_ARB        = 0x88B4;
-const GLenum GL_MAX_PROGRAM_ENV_PARAMETERS_ARB          = 0x88B5;
-const GLenum GL_PROGRAM_UNDER_NATIVE_LIMITS_ARB         = 0x88B6;
-const GLenum GL_TRANSPOSE_CURRENT_MATRIX_ARB            = 0x88B7;
-const GLenum GL_MATRIX0_ARB                             = 0x88C0;
-const GLenum GL_MATRIX1_ARB                             = 0x88C1;
-const GLenum GL_MATRIX2_ARB                             = 0x88C2;
-const GLenum GL_MATRIX3_ARB                             = 0x88C3;
-const GLenum GL_MATRIX4_ARB                             = 0x88C4;
-const GLenum GL_MATRIX5_ARB                             = 0x88C5;
-const GLenum GL_MATRIX6_ARB                             = 0x88C6;
-const GLenum GL_MATRIX7_ARB                             = 0x88C7;
-const GLenum GL_MATRIX8_ARB                             = 0x88C8;
-const GLenum GL_MATRIX9_ARB                             = 0x88C9;
-const GLenum GL_MATRIX10_ARB                            = 0x88CA;
-const GLenum GL_MATRIX11_ARB                            = 0x88CB;
-const GLenum GL_MATRIX12_ARB                            = 0x88CC;
-const GLenum GL_MATRIX13_ARB                            = 0x88CD;
-const GLenum GL_MATRIX14_ARB                            = 0x88CE;
-const GLenum GL_MATRIX15_ARB                            = 0x88CF;
-const GLenum GL_MATRIX16_ARB                            = 0x88D0;
-const GLenum GL_MATRIX17_ARB                            = 0x88D1;
-const GLenum GL_MATRIX18_ARB                            = 0x88D2;
-const GLenum GL_MATRIX19_ARB                            = 0x88D3;
-const GLenum GL_MATRIX20_ARB                            = 0x88D4;
-const GLenum GL_MATRIX21_ARB                            = 0x88D5;
-const GLenum GL_MATRIX22_ARB                            = 0x88D6;
-const GLenum GL_MATRIX23_ARB                            = 0x88D7;
-const GLenum GL_MATRIX24_ARB                            = 0x88D8;
-const GLenum GL_MATRIX25_ARB                            = 0x88D9;
-const GLenum GL_MATRIX26_ARB                            = 0x88DA;
-const GLenum GL_MATRIX27_ARB                            = 0x88DB;
-const GLenum GL_MATRIX28_ARB                            = 0x88DC;
-const GLenum GL_MATRIX29_ARB                            = 0x88DD;
-const GLenum GL_MATRIX30_ARB                            = 0x88DE;
-const GLenum GL_MATRIX31_ARB                            = 0x88DF;
+enum : GLenum
+{
+    GL_COLOR_SUM_ARB                           = 0x8458,
+    GL_VERTEX_PROGRAM_ARB                      = 0x8620,
+    GL_VERTEX_ATTRIB_ARRAY_ENABLED_ARB         = 0x8622,
+    GL_VERTEX_ATTRIB_ARRAY_SIZE_ARB            = 0x8623,
+    GL_VERTEX_ATTRIB_ARRAY_STRIDE_ARB          = 0x8624,
+    GL_VERTEX_ATTRIB_ARRAY_TYPE_ARB            = 0x8625,
+    GL_CURRENT_VERTEX_ATTRIB_ARB               = 0x8626,
+    GL_PROGRAM_LENGTH_ARB                      = 0x8627,
+    GL_PROGRAM_STRING_ARB                      = 0x8628,
+    GL_MAX_PROGRAM_MATRIX_STACK_DEPTH_ARB      = 0x862E,
+    GL_MAX_PROGRAM_MATRICES_ARB                = 0x862F,
+    GL_CURRENT_MATRIX_STACK_DEPTH_ARB          = 0x8640,
+    GL_CURRENT_MATRIX_ARB                      = 0x8641,
+    GL_VERTEX_PROGRAM_POINT_SIZE_ARB           = 0x8642,
+    GL_VERTEX_PROGRAM_TWO_SIDE_ARB             = 0x8643,
+    GL_VERTEX_ATTRIB_ARRAY_POINTER_ARB         = 0x8645,
+    GL_PROGRAM_ERROR_POSITION_ARB              = 0x864B,
+    GL_PROGRAM_BINDING_ARB                     = 0x8677,
+    GL_MAX_VERTEX_ATTRIBS_ARB                  = 0x8869,
+    GL_VERTEX_ATTRIB_ARRAY_NORMALIZED_ARB      = 0x886A,
+    GL_PROGRAM_ERROR_STRING_ARB                = 0x8874,
+    GL_PROGRAM_FORMAT_ASCII_ARB                = 0x8875,
+    GL_PROGRAM_FORMAT_ARB                      = 0x8876,
+    GL_PROGRAM_INSTRUCTIONS_ARB                = 0x88A0,
+    GL_MAX_PROGRAM_INSTRUCTIONS_ARB            = 0x88A1,
+    GL_PROGRAM_NATIVE_INSTRUCTIONS_ARB         = 0x88A2,
+    GL_MAX_PROGRAM_NATIVE_INSTRUCTIONS_ARB     = 0x88A3,
+    GL_PROGRAM_TEMPORARIES_ARB                 = 0x88A4,
+    GL_MAX_PROGRAM_TEMPORARIES_ARB             = 0x88A5,
+    GL_PROGRAM_NATIVE_TEMPORARIES_ARB          = 0x88A6,
+    GL_MAX_PROGRAM_NATIVE_TEMPORARIES_ARB      = 0x88A7,
+    GL_PROGRAM_PARAMETERS_ARB                  = 0x88A8,
+    GL_MAX_PROGRAM_PARAMETERS_ARB              = 0x88A9,
+    GL_PROGRAM_NATIVE_PARAMETERS_ARB           = 0x88AA,
+    GL_MAX_PROGRAM_NATIVE_PARAMETERS_ARB       = 0x88AB,
+    GL_PROGRAM_ATTRIBS_ARB                     = 0x88AC,
+    GL_MAX_PROGRAM_ATTRIBS_ARB                 = 0x88AD,
+    GL_PROGRAM_NATIVE_ATTRIBS_ARB              = 0x88AE,
+    GL_MAX_PROGRAM_NATIVE_ATTRIBS_ARB          = 0x88AF,
+    GL_PROGRAM_ADDRESS_REGISTERS_ARB           = 0x88B0,
+    GL_MAX_PROGRAM_ADDRESS_REGISTERS_ARB       = 0x88B1,
+    GL_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB    = 0x88B2,
+    GL_MAX_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB = 0x88B3,
+    GL_MAX_PROGRAM_LOCAL_PARAMETERS_ARB        = 0x88B4,
+    GL_MAX_PROGRAM_ENV_PARAMETERS_ARB          = 0x88B5,
+    GL_PROGRAM_UNDER_NATIVE_LIMITS_ARB         = 0x88B6,
+    GL_TRANSPOSE_CURRENT_MATRIX_ARB            = 0x88B7,
+    GL_MATRIX0_ARB                             = 0x88C0,
+    GL_MATRIX1_ARB                             = 0x88C1,
+    GL_MATRIX2_ARB                             = 0x88C2,
+    GL_MATRIX3_ARB                             = 0x88C3,
+    GL_MATRIX4_ARB                             = 0x88C4,
+    GL_MATRIX5_ARB                             = 0x88C5,
+    GL_MATRIX6_ARB                             = 0x88C6,
+    GL_MATRIX7_ARB                             = 0x88C7,
+    GL_MATRIX8_ARB                             = 0x88C8,
+    GL_MATRIX9_ARB                             = 0x88C9,
+    GL_MATRIX10_ARB                            = 0x88CA,
+    GL_MATRIX11_ARB                            = 0x88CB,
+    GL_MATRIX12_ARB                            = 0x88CC,
+    GL_MATRIX13_ARB                            = 0x88CD,
+    GL_MATRIX14_ARB                            = 0x88CE,
+    GL_MATRIX15_ARB                            = 0x88CF,
+    GL_MATRIX16_ARB                            = 0x88D0,
+    GL_MATRIX17_ARB                            = 0x88D1,
+    GL_MATRIX18_ARB                            = 0x88D2,
+    GL_MATRIX19_ARB                            = 0x88D3,
+    GL_MATRIX20_ARB                            = 0x88D4,
+    GL_MATRIX21_ARB                            = 0x88D5,
+    GL_MATRIX22_ARB                            = 0x88D6,
+    GL_MATRIX23_ARB                            = 0x88D7,
+    GL_MATRIX24_ARB                            = 0x88D8,
+    GL_MATRIX25_ARB                            = 0x88D9,
+    GL_MATRIX26_ARB                            = 0x88DA,
+    GL_MATRIX27_ARB                            = 0x88DB,
+    GL_MATRIX28_ARB                            = 0x88DC,
+    GL_MATRIX29_ARB                            = 0x88DD,
+    GL_MATRIX30_ARB                            = 0x88DE,
+    GL_MATRIX31_ARB                            = 0x88DF,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLuint, GLdouble) pfglVertexAttrib1dARB;
 typedef void function(GLuint, GLdouble*) pfglVertexAttrib1dvARB;

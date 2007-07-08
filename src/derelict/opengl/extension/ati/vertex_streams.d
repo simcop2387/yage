@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATIVertexStreams
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_vertex_streams") == -1)
+        if(extString.findStr("GL_ATI_vertex_streams") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glVertexStream1sATI, "glVertexStream1sATI"))
@@ -160,21 +160,28 @@ else
     }
 }
 
-const GL_MAX_VERTEX_STREAMS_ATI         = 0x876B;
-const GL_VERTEX_STREAM0_ATI             = 0x876C;
-const GL_VERTEX_STREAM1_ATI             = 0x876D;
-const GL_VERTEX_STREAM2_ATI             = 0x876E;
-const GL_VERTEX_STREAM3_ATI             = 0x876F;
-const GL_VERTEX_STREAM4_ATI             = 0x8770;
-const GL_VERTEX_STREAM5_ATI             = 0x8771;
-const GL_VERTEX_STREAM6_ATI             = 0x8772;
-const GL_VERTEX_STREAM7_ATI             = 0x8773;
-const GL_VERTEX_SOURCE_ATI              = 0x8774;
+enum : GLenum
+{
+    GL_MAX_VERTEX_STREAMS_ATI         = 0x876B,
+    GL_VERTEX_STREAM0_ATI             = 0x876C,
+    GL_VERTEX_STREAM1_ATI             = 0x876D,
+    GL_VERTEX_STREAM2_ATI             = 0x876E,
+    GL_VERTEX_STREAM3_ATI             = 0x876F,
+    GL_VERTEX_STREAM4_ATI             = 0x8770,
+    GL_VERTEX_STREAM5_ATI             = 0x8771,
+    GL_VERTEX_STREAM6_ATI             = 0x8772,
+    GL_VERTEX_STREAM7_ATI             = 0x8773,
+    GL_VERTEX_SOURCE_ATI              = 0x8774,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLshort)             pfglVertexStream1sATI;
 typedef void function(GLenum, GLshort *)           pfglVertexStream1svATI;

@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATIMapObjectBuffer
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_map_object_buffer") == -1)
+        if(extString.findStr("GL_ATI_map_object_buffer") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glMapObjectBufferATI, "glMapObjectBufferATI"))
@@ -75,9 +75,13 @@ else
 }
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef GLvoid* function(GLuint) pfglMapObjectBufferATI;
 typedef void function(GLuint) pfglUnmapObjectBufferATI;

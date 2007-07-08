@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,13 @@ private import derelict.sdl.types;
 //==============================================================================
 // TYPES
 //==============================================================================
-const Sint32 SDL_MAX_TRACKS     = 99;
-const Uint8 SDL_AUDIO_TRACK     = 0x00;
-const Uint8 SDL_DATA_TRACK      = 0x04;
+enum : Sint32 { SDL_MAX_TRACKS = 99 }
+
+enum : Uint8
+{
+    SDL_AUDIO_TRACK     = 0x00,
+    SDL_DATA_TRACK      = 0x04,
+}
 
 alias int CDstatus;
 enum
@@ -69,7 +73,7 @@ struct SDL_CD
     SDL_CDtrack track[SDL_MAX_TRACKS + 1];
 }
 
-const int CD_FPS        = 75;
+enum { CD_FPS = 75 }
 
 //==============================================================================
 // MACROS

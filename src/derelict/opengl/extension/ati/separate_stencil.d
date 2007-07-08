@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ATISeparateStencil
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ATI_separate_stencil") == -1)
+        if(extString.findStr("GL_ATI_separate_stencil") == -1)
             return false;
 
         if(!glBindExtFunc(cast(void**)&glStencilOpSeparateATI, "glStencilOpSeparateATI"))
@@ -74,15 +74,22 @@ else
     }
 }
 
-const GL_STENCIL_BACK_FUNC_ATI             = 0x8800;
-const GL_STENCIL_BACK_FAIL_ATI             = 0x8801;
-const GL_STENCIL_BACK_PASS_DEPTH_FAIL_ATI  = 0x8802;
-const GL_STENCIL_BACK_PASS_DEPTH_PASS_ATI  = 0x8803;
+enum : GLenum
+{
+    GL_STENCIL_BACK_FUNC_ATI             = 0x8800,
+    GL_STENCIL_BACK_FAIL_ATI             = 0x8801,
+    GL_STENCIL_BACK_PASS_DEPTH_FAIL_ATI  = 0x8802,
+    GL_STENCIL_BACK_PASS_DEPTH_PASS_ATI  = 0x8803,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLenum, GLenum, GLenum) pfglStencilOpSeparateATI;
 typedef void function(GLenum, GLenum, GLint, GLuint) pfglStencilFuncSeparateATI;

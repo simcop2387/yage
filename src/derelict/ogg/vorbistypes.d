@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,31 +31,33 @@
  */
 module derelict.ogg.vorbistypes;
 
-private {
-	import derelict.ogg.oggtypes;
+private
+{
+    import derelict.ogg.oggtypes;
 }
 
-const int OV_FALSE      = -1;
-const int OV_EOF        = -2;
-const int OV_HOLE       = -3;
-
-const int OV_EREAD      = -128;
-const int OV_EFAULT     = -129;
-const int OV_EIMPL      = -130;
-const int OV_EINVAL     = -131;
-const int OV_ENOTVORBIS = -132;
-const int OV_EBADHEADER = -133;
-const int OV_EVERSION   = -134;
-const int OV_ENOTAUDIO  = -135;
-const int OV_EBADPACKET = -136;
-const int OV_EBADLINK   = -137;
-const int OV_ENOSEEK    = -138;
-
+enum
+{
+    OV_FALSE      = -1,
+    OV_EOF        = -2,
+    OV_HOLE       = -3,
+    OV_EREAD      = -128,
+    OV_EFAULT     = -129,
+    OV_EIMPL      = -130,
+    OV_EINVAL     = -131,
+    OV_ENOTVORBIS = -132,
+    OV_EBADHEADER = -133,
+    OV_EVERSION   = -134,
+    OV_ENOTAUDIO  = -135,
+    OV_EBADPACKET = -136,
+    OV_EBADLINK   = -137,
+    OV_ENOSEEK    = -138,
+}
 
 struct vorbis_info
 {   int _version; // Renamed from "version", since that's a keyword in D
     int channels;
-    int rate;   
+    int rate;
     int bitrate_upper;
     int bitrate_nominal;
     int bitrate_lower;
@@ -95,7 +97,7 @@ struct vorbis_dsp_state
 
 
 struct vorbis_block
-{   
+{
     float  **pcm;
     oggpack_buffer opb;
     int   lW;
@@ -106,7 +108,7 @@ struct vorbis_block
     int         eofflag;
     ogg_int64_t granulepos;
     ogg_int64_t sequence;
-    vorbis_dsp_state *vd;    
+    vorbis_dsp_state *vd;
     void               *localstore;
     int                 localtop;
     int                 localalloc;
@@ -126,7 +128,7 @@ struct alloc_chain
 }
 
 struct vorbis_comment
-{   
+{
     char **user_comments;
     int   *comment_lengths;
     int    comments;
@@ -136,7 +138,7 @@ struct vorbis_comment
 extern (C)
 {
     struct ov_callbacks
-    {   
+    {
         size_t function(void* ptr, size_t size, size_t nmemb, void* datasource ) read_func;
         int function(void* datasource, ogg_int64_t offset, int whence ) seek_func;
         int function(void* datasource ) close_func;
@@ -144,11 +146,14 @@ extern (C)
     }
 }
 
-const int NOTOPEN   =0;
-const int PARTOPEN  =1;
-const int OPENED    =2;
-const int STREAMSET =3;
-const int INITSET   =4;
+enum
+{
+    NOTOPEN   =0,
+    PARTOPEN  =1,
+    OPENED    =2,
+    STREAMSET =3,
+    INITSET   =4,
+}
 
 struct OggVorbis_File
 {   void            *datasource;
@@ -162,14 +167,14 @@ struct OggVorbis_File
     int             *serialnos;
     ogg_int64_t     *pcmlengths;
     vorbis_info     *vi;
-    vorbis_comment  *vc;    
+    vorbis_comment  *vc;
     ogg_int64_t      pcm_offset;
     int              ready_state;
     int              current_serialno;
     int              current_link;
     double           bittrack;
     double           samptrack;
-    ogg_stream_state os; 
+    ogg_stream_state os;
     vorbis_dsp_state vd;
     vorbis_block     vb;
 
@@ -206,10 +211,13 @@ int vorbis_encode_setup_init(vorbis_info *vi);
 int vorbis_encode_ctl(vorbis_info *vi,int number, void *arg);
 
 // deprecated rate management supported only for compatability
-const int OV_ECTL_RATEMANAGE_GET       =0x10;
-const int OV_ECTL_RATEMANAGE_SET       =0x11;
-const int OV_ECTL_RATEMANAGE_AVG       =0x12;
-const int OV_ECTL_RATEMANAGE_HARD      =0x13;
+enum
+{
+    OV_ECTL_RATEMANAGE_GET       =0x10,
+    OV_ECTL_RATEMANAGE_SET       =0x11,
+    OV_ECTL_RATEMANAGE_AVG       =0x12,
+    OV_ECTL_RATEMANAGE_HARD      =0x13,
+}
 
 struct ovectl_ratemanage_arg {
     int    management_active;
@@ -225,8 +233,11 @@ struct ovectl_ratemanage_arg {
 };
 
 // new rate setup
-const int OV_ECTL_RATEMANAGE2_GET      =0x14;
-const int OV_ECTL_RATEMANAGE2_SET      =0x15;
+enum
+{
+    OV_ECTL_RATEMANAGE2_GET      =0x14,
+    OV_ECTL_RATEMANAGE2_SET      =0x15,
+}
 
 struct ovectl_ratemanage2_arg {
     int    management_active;
@@ -240,10 +251,10 @@ struct ovectl_ratemanage2_arg {
     double bitrate_average_damping;
 };
 
-
-
-const int OV_ECTL_LOWPASS_GET          =0x20;
-const int OV_ECTL_LOWPASS_SET          =0x21;
-
-const int OV_ECTL_IBLOCK_GET           =0x30;
-const int OV_ECTL_IBLOCK_SET           =0x31;
+enum
+{
+    OV_ECTL_LOWPASS_GET          =0x20,
+    OV_ECTL_LOWPASS_SET          =0x21,
+    OV_ECTL_IBLOCK_GET           =0x30,
+    OV_ECTL_IBLOCK_SET           =0x31,
+}

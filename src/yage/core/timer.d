@@ -8,7 +8,7 @@ module yage.core.timer;
 
 import std.perf;
 import std.string;
-import derelict.sdl.sdl;
+//import derelict.sdl.sdl;
 
 
 // Because they have different names on Windows and Linux

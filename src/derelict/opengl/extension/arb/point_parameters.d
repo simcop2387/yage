@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBPointParameters
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_point_parameters") == -1)
+        if(extString.findStr("GL_ARB_point_parameters") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glPointParameterfARB, "glPointParameterfARB"))
             return false;
@@ -73,15 +73,22 @@ else
     }
 }
 
-const GLenum GL_POINT_SIZE_MIN_ARB             = 0x8126;
-const GLenum GL_POINT_SIZE_MAX_ARB             = 0x8127;
-const GLenum GL_POINT_FADE_THRESHOLD_SIZE_ARB  = 0x8128;
-const GLenum GL_POINT_DISTANCE_ATTENUATION_ARB = 0x8129;
+enum : GLenum
+{
+    GL_POINT_SIZE_MIN_ARB             = 0x8126,
+    GL_POINT_SIZE_MAX_ARB             = 0x8127,
+    GL_POINT_FADE_THRESHOLD_SIZE_ARB  = 0x8128,
+    GL_POINT_DISTANCE_ATTENUATION_ARB = 0x8129,
+}
 
 version(Windows)
+{
     extern(Windows):
+}
 else
+{
     extern(C):
+}
 
 typedef void function(GLenum, GLfloat) pfglPointParameterfARB;
 typedef void function(GLenum, GLfloat*) pfglPointParameterfvARB;

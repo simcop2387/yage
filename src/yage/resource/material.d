@@ -63,7 +63,7 @@ class Material
 	void load(char[] filename)
 	{
 		source = Resource.resolvePath(filename);
-		Log.write("Loading material '" ~ source ~ "'.");
+		Log.write("Loading material '", source, "'.");
 		char[] path = source[0 .. rfind(source, "/") + 1]; // should be replace with getDirName(absolute(path))
 
 		// Load xml file

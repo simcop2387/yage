@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,17 @@ private import derelict.sdl.types;
 //==============================================================================
 // TYPES
 //==============================================================================
-const Uint32 SDL_TIMESLICE          = 10;
-const Uint32 SDL_RESOLUTION         = 10;
-typedef Uint32 function(Uint32) SDL_TimerCallback;
-typedef Uint32 function(Uint32,void*) SDL_NewTimerCallback;
+enum : Uint32
+{
+    SDL_TIMESLICE          = 10,
+    SDL_RESOLUTION         = 10,
+}
+
+extern(C)
+{
+	typedef Uint32 function(Uint32) SDL_TimerCallback;
+	typedef Uint32 function(Uint32,void*) SDL_NewTimerCallback;
+}
 
 alias void *SDL_TimerID;
 

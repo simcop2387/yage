@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ private
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
     import derelict.opengl.extension.loader;
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -45,7 +45,7 @@ struct ARBMatrixPalette
 {
     static bool load(char[] extString)
     {
-        if(extString.find("GL_ARB_matrix_palette") == -1)
+        if(extString.findStr("GL_ARB_matrix_palette") == -1)
             return false;
         if(!glBindExtFunc(cast(void**)&glCurrentPaletteMatrixARB, "glCurrentPaletteMatrixARB"))
             return false;
@@ -57,7 +57,7 @@ struct ARBMatrixPalette
             return false;
         if(!glBindExtFunc(cast(void**)&glMatrixIndexPointerARB, "glMatrixIndexPointerARB"))
             return false;
-        
+
         enabled = true;
         return true;
     }
@@ -79,28 +79,36 @@ else
     }
 }
 
-const GLenum GL_MATRIX_PALETTE_ARB             		= 0x8840;
-const GLenum GL_MAX_MATRIX_PALETTE_STACK_DEPTH_ARB 	= 0x8841;
-const GLenum GL_MAX_PALETTE_MATRICES_ARB       		= 0x8842;
-const GLenum GL_CURRENT_PALETTE_MATRIX_ARB     		= 0x8843;
-const GLenum GL_MATRIX_INDEX_ARRAY_ARB         		= 0x8844;
-const GLenum GL_CURRENT_MATRIX_INDEX_ARB       		= 0x8845;
-const GLenum GL_MATRIX_INDEX_ARRAY_SIZE_ARB    		= 0x8846;
-const GLenum GL_MATRIX_INDEX_ARRAY_TYPE_ARB    		= 0x8847;
-const GLenum GL_MATRIX_INDEX_ARRAY_STRIDE_ARB  		= 0x8848;
-const GLenum GL_MATRIX_INDEX_ARRAY_POINTER_ARB 		= 0x8849;
+enum : GLenum
+{
+    GL_MATRIX_PALETTE_ARB                   = 0x8840,
+    GL_MAX_MATRIX_PALETTE_STACK_DEPTH_ARB   = 0x8841,
+    GL_MAX_PALETTE_MATRICES_ARB             = 0x8842,
+    GL_CURRENT_PALETTE_MATRIX_ARB           = 0x8843,
+    GL_MATRIX_INDEX_ARRAY_ARB               = 0x8844,
+    GL_CURRENT_MATRIX_INDEX_ARB             = 0x8845,
+    GL_MATRIX_INDEX_ARRAY_SIZE_ARB          = 0x8846,
+    GL_MATRIX_INDEX_ARRAY_TYPE_ARB          = 0x8847,
+    GL_MATRIX_INDEX_ARRAY_STRIDE_ARB        = 0x8848,
+    GL_MATRIX_INDEX_ARRAY_POINTER_ARB       = 0x8849,
+}
 
 version(Windows)
-	extern(Windows):
+{
+    extern(Windows):
+}
 else
-	extern(C):
+{
+    extern(C):
+}
+
 typedef void function(GLint) pfglCurrentPaletteMatrixARB;
 typedef void function(GLint, GLubyte*) pfglMatrixIndexubvARB;
 typedef void function(GLint, GLushort*) pfglMatrixIndexusvARB;
 typedef void function(GLint, GLuint*) pfglMatrixIndexuivARB;
 typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglMatrixIndexPointerARB;
-pfglCurrentPaletteMatrixARB			glCurrentPaletteMatrixARB;
-pfglMatrixIndexubvARB				glMatrixIndexubvARB;
-pfglMatrixIndexusvARB				glMatrixIndexusvARB;
-pfglMatrixIndexuivARB				glMatrixIndexuivARB;
-pfglMatrixIndexPointerARB			glMatrixIndexPointerARB;
+pfglCurrentPaletteMatrixARB         glCurrentPaletteMatrixARB;
+pfglMatrixIndexubvARB               glMatrixIndexubvARB;
+pfglMatrixIndexusvARB               glMatrixIndexusvARB;
+pfglMatrixIndexuivARB               glMatrixIndexuivARB;
+pfglMatrixIndexPointerARB           glMatrixIndexPointerARB;

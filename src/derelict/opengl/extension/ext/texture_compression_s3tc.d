@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,8 @@ private
 {
     import derelict.opengl.gltypes;
     import derelict.opengl.gl;
-    import std.string;
+    import derelict.opengl.extension.ext.texture_compression_dxt1;
+    import derelict.util.wrapper;
 }
 
 private bool enabled = false;
@@ -44,11 +45,8 @@ struct EXTTextureCompressionS3tc
 {
     static bool load(char[] extString)
     {
-	    if(extString.find("GL_EXT_texture_compression_s3tc") == -1)
-	    {
-	        if(extString.find("GL_EXT_texture_compression_dxt1") == -1)
-	            return false;
-        }
+        if(extString.findStr("GL_EXT_texture_compression_s3tc") == -1)
+            return false;
 
         enabled = true;
         return true;
@@ -71,7 +69,8 @@ else
     }
 }
 
-const GLenum GL_COMPRESSED_RGB_S3TC_DXT1_EXT   = 0x83F0;
-const GLenum GL_COMPRESSED_RGBA_S3TC_DXT1_EXT  = 0x83F1;
-const GLenum GL_COMPRESSED_RGBA_S3TC_DXT3_EXT  = 0x83F2;
-const GLenum GL_COMPRESSED_RGBA_S3TC_DXT5_EXT  = 0x83F3;
+enum : GLenum
+{
+    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT  = 0x83F2,
+    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT  = 0x83F3,
+}
