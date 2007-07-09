@@ -11,6 +11,9 @@
  * or build the derelict source directly with the engine.  The former is
  * of course faster, but the latter can be achieved by setting ign_path and
  * lib_path to empty strings in the compilation options below.
+ * 
+ * This script can easily be expanded to compile and generate docs for most
+ * things by changing the path variables below.
  *
  * Examples:
  * ------
@@ -19,7 +22,7 @@
  * ------
  *
  * TODO:
- * Test on Linux.
+ * Test with GDC on Linux.
  */
 
 import std.c.process;
@@ -38,7 +41,7 @@ char[][] lib_path = ["../lib"];						// Array of folders to scan for libraries
 
 char[] obj_path = "../bin/.obj";					// Folder for object files
 char[] bin_path = "../bin";							// Folder where executable binary will be placed
-char[] bin_name = "yage";							// executable binary name
+char[] bin_name = "yage3d";							// executable binary name
 char[] doc_path = "../doc/api";						// Folder for html documentation, if ddoc flag is set
 char[] cur_path;									// Folder of this script, set automatically
 
@@ -51,9 +54,6 @@ version (Windows)
 	char[] lib_ext = ".a";
 }
 
-
-
-
 version (Windows)
 {	alias HighPerformanceCounter PerformanceCounter;
 }
@@ -62,20 +62,21 @@ version (Windows)
 class Util
 {
 	// Return the full path of all files in directory and all subdirectories with extension ext
-	static char[][] scan(char[] directory, char[] ext)
+	static char[][] scan(char[] directory, char[][] exts)
 	{	char[][] res;
 		foreach(char[] filename; listdir(directory))
 		{	char[] name = directory~sep~filename;
 			if(isdir(name))
-				res ~= scan(name, ext);
+				res ~= scan(name, exts);
 			else if (isfile(name))
 			{	// if filename is longer than ext and filename's extention is ext.
-				if (filename.length>=ext.length && filename[(length-ext.length)..length]==ext)
-				{	char[] t = name;
-					if (t[0..2] == "."~sep)
-						t = t[2..length];
-					res~= t;
-			}	}
+				foreach (char[] ext; exts)
+					if (filename.length>=ext.length && filename[(length-ext.length)..length]==ext)
+					{	char[] t = name;
+						if (t[0..2] == "."~sep)
+							t = t[2..length];
+						res~= t;
+			}		}
 		}
 		return res;
 	}
@@ -121,7 +122,7 @@ class Build
 	static char[][] libs;		// All lib files to include in build.
 	
 	
-	static void all()
+	static bool all()
 	{	makePaths();
 		getFiles();
 		clean();
@@ -140,11 +141,12 @@ class Build
 		{	writefln("Compile failed.  Please fix the errors and try again.");
 			return 1;
 		}
+
 		
 		// Move the output files
 		if (!nolink)
 		{	// Executable binary
-			char[] target = bin_path~sep~bin_name~bin_ext;
+			char[] target = bin_path~sep~bin_name~bin_ext;			
 			if (std.file.exists(target))
 				std.file.remove(target); // remove old binary
 			std.file.rename(mod_path~sep~bin_name~bin_ext, target);
@@ -153,7 +155,8 @@ class Build
 			target = obj_path~sep~bin_name~".map";
 			if (std.file.exists(target))
 				std.file.remove(target);	// shouldn't this have been removed in the initial clean?
-			std.file.rename(mod_path~sep~bin_name~".map", target);
+			if (std.file.exists(mod_path~sep~bin_name~".map"))
+				std.file.rename(mod_path~sep~bin_name~".map", target);
 		}
 
 		// Move Docs
@@ -173,6 +176,8 @@ class Build
 			{	writefln(e);
 				writefln("Error with optional clean step.  Continuing.");
 			}
+		
+		return 0;
 	}
 	
 	static public void makePaths()
@@ -201,18 +206,18 @@ class Build
 		
 		// Get a list of all files as absolute paths
 		foreach (char[] path; src_path)
-		{	sources ~= Util.scan(path, ".d");
+		{	sources ~= Util.scan(path, [".d", ".ddoc"]);
 			if (ddoc)
-				sources ~= Util.scan(path, ".ddoc");
+				sources ~= Util.scan(path, [".ddoc"]);
 		}		
 		foreach (char[] path; lib_path)
-			libs ~= Util.scan(path, lib_ext);
+			libs ~= Util.scan(path, [lib_ext]);
 
 		// Convert from absolute paths to paths relative to mod_path
 		foreach (inout char[] source; sources)
-			source = replace(source, mod_path~"\\", "");
+			source = replace(source, mod_path~sep, "");
 		foreach (inout char[] lib; libs)
-			lib = replace(lib, mod_path~"\\", "");
+			lib = replace(lib, mod_path~sep, "");
 	}
 
 	// Delete all object files
@@ -222,21 +227,19 @@ class Build
 
 		// Remove all intermediate files
 		char[][] files = 
-			Util.scan(obj_path, ".obj") ~
-			Util.scan(obj_path, ".o") ~
-			Util.scan(obj_path, ".map") ~
-			Util.scan(obj_path, bin_ext);
+			Util.scan(obj_path, [".obj"]) ~
+			Util.scan(obj_path, [".o"]) ~
+			Util.scan(obj_path, [".map"]) ~
+			Util.scan(obj_path, [bin_ext]);
 		foreach(char[] file; files)
-			//try {
+			if (std.file.exists(file))
 				std.file.remove(file);
-			//} catch {}
 
 		// Remove all intermediate folders
 		char[][] folders = Util.recls(obj_path);
 		for(int i=folders.length-1; i>-0; i--)
-			//try {
+			if (std.file.exists(folders[i]))
 				rmdir(folders[i]);
-			//} catch {}
 	}
 
 
@@ -292,8 +295,8 @@ class Build
 			if (!_release)
 				flags~="-unittest";
 			flags~="-od"~obj_path;	// Set the object output directory
-			flags~="-op";			// Preserve path of object files, otherwise duplicate names will occur!
 			flags~="-of"~bin_name~bin_ext;	// output filename
+			flags~="-op";			// Preserve path of object files, otherwise duplicate names will occur!
 			flags~="-quiet";
 		}
 		if (nolink)
@@ -308,22 +311,21 @@ class Build
 					mkdir(path);
 		}	}
 		
-		char[][] args = flags ~ sources ~ libs;		
-		if (verbose)
-		{	char[] compiler = gdc ? "gdc" : "dmd";
-			writefln(compiler ~ " " ~ std.string.join(args," "));
-		}
+		char[][] args = flags ~ sources ~ libs;	
+		char[] compiler = gdc ? "gdc" : "dmd";	
+		if (verbose)			
+			writefln(compiler ~ " " ~ std.string.join(args," "));		
 		
 		bool success;
-		if (gdc)
-		{	char[] exec = "gdc" ~" " ~ std.string.join(args," ");
+		version (Windows) // Since windows is limited to 8190 chars per command
+		{	std.file.write("compile", std.string.join(args," "));
+			char[] exec = compiler ~ " @compile";	// we write args out to a file in case they're too long for system to execute.
 			success = !std.c.process.system(toStringz(exec));
+			std.file.remove("compile");
 		}
 		else
-		{	std.file.write("compile.txt", std.string.join(args," "));
-			char[] exec = "dmd" ~ " @compile.txt";	// we write args out to a file in case they're too long for system to execute.
+		{	char[] exec = compiler ~" " ~ std.string.join(args," ") ~ " -L-ldl";
 			success = !std.c.process.system(toStringz(exec));
-			std.file.remove("compile.txt");
 		}
 		return success;
 	}
@@ -335,20 +337,25 @@ class Build
 
 		// Clean out any previous docs
 		chdir(doc_path);
-		char[][] docs = Util.scan(".", ".html");
+		char[][] docs = Util.scan(".", [".html"]);
 		foreach (char[] doc; docs)
 			std.file.remove(doc);
-
-		// Build modules file for candydoc
-		chdir(mod_path);
-		char[] modules = "MODULES = \r\n";
-		foreach(char[] src; sources)
-		{	src = split(src, ".")[0];		// remove extension
-			src = replace(src, sep, ".");	// replace path separator with dot.
-			modules ~= "\t$(MODULE "~src~")\r\n";
+		
+		foreach (char[] path; src_path)
+		{	if (std.file.exists(path~"/candy.ddoc"))
+			{	chdir(path);
+				char[] modules = "MODULES = \r\n";
+				foreach(char[] src; Util.scan(path, [".d"]))
+				{	src = replace(src, mod_path~sep, "");  // Make relative path
+					src = split(src, ".")[0];		// remove extension
+					src = replace(src, sep, ".");	// replace path separator with dot.
+					modules ~= "\t$(MODULE "~src~")\r\n";
+				}
+				// Create modules.ddoc
+				std.file.write("modules.ddoc", modules);
+				sources ~= replace(path~"/modules.ddoc", mod_path~sep, "");	// Add newly created modules.ddoc to sources
+			}				
 		}
-		// Create modules.ddoc
-		std.file.write("modules.ddoc", modules);
 	}
 
 	/**
@@ -359,7 +366,7 @@ class Build
 
 		// Move all html files in doc_path to the same folder and rename with the "package.module" naming convention.
 		chdir(doc_path);
-		char[][] docs = Util.scan(".", ".html");
+		char[][] docs = Util.scan(".", [".html"]);
 		foreach (char[] doc; docs)
 		{	char[] dest = replace(doc, sep, ".");
 			if (doc != dest)
@@ -376,8 +383,9 @@ class Build
 		}
 
 		// Delete modules.ddoc
-		chdir(mod_path);
-		std.file.remove("modules.ddoc");
+		foreach (char[] path; src_path)
+			if (std.file.exists(path~"/modules.ddoc"))
+				std.file.remove(path~"/modules.ddoc");		
 	}
 }
 
@@ -421,7 +429,8 @@ int main(char[][] args)
 	hpc.start();
 	
 	// Build everything
-	Build.all();
+	if (Build.all() != 0)
+		return 1;
 	
 	// Completed message and time
 	hpc.stop();
