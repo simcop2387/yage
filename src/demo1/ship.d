@@ -6,21 +6,11 @@
  * This module is not technically part of the engine, but merely uses it.
  */
 
-module yage.ship;
+module demo1.ship;
 
 import std.stdio;
-import yage.core.all;
-import yage.node.base;
-import yage.node.node;
-import yage.node.model;
-import yage.node.sprite;
-import yage.node.sound;
-import yage.system.input;
-import yage.resource.material;
-import yage.resource.resource;
-import yage.util.flyer;
-import yage.util.spring;
-import yage.gameobj;
+import yage.all;
+import demo1.gameobj;
 
 class Ship : GameObject
 {

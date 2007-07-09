@@ -6,7 +6,7 @@
  * This module is not technically part of the engine, but merely uses it.
  */
 
-module yage.gameobj;
+module demo1.gameobj;
 
 import std.math;
 import std.stdio;

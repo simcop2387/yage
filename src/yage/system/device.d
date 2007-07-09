@@ -118,9 +118,6 @@ abstract class Device
 			" video mode: : " ~ .toString(SDL_GetError()));
 		SDL_LockSurface(sdl_surface);
 
-		// Load all opengl versions
-		DerelictGL.loadVersions(GLVersion.Version20);
-
 		// Attempt to load multitexturing
 		if (getSupport(DEVICE_MULTITEXTURE))
 		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
@@ -166,7 +163,7 @@ abstract class Device
 		glEnable(GL_LIGHTING);
 		glFogi(GL_FOG_MODE, GL_EXP); // Most realistic?
 
-		glAlphaFunc(GL_GEQUAL, 0.5f);
+		glAlphaFunc(GL_GEQUAL, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
 
 		// Environment Mapping (disabled by default)
 		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
@@ -316,7 +313,7 @@ abstract class Device
 
 		SDL_GL_SwapBuffers();
 
-		Texture(texture, true, TEXTURE_FILTER_BILINEAR).bind();
+		//Texture(texture, true, TEXTURE_FILTER_BILINEAR).bind();
 		glPopAttrib();
 	}
 

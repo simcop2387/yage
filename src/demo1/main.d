@@ -6,7 +6,7 @@
  * This module is not technically part of the engine, but merely uses it.
  */
 
-module yage.main;
+module demo1.main;
 
 import std.string;
 import std.stdio;
@@ -16,7 +16,7 @@ import yage.all;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 
-import yage.ship;
+import demo1.ship;
 
 // Current program entry point.  This may change in the future.
 int main()
