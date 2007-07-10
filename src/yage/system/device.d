@@ -26,7 +26,7 @@ import yage.system.input;
 
 // Enable specular highlights with textures.
 const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
-const int SINGLE_COLOR_EXT				= 0x81F9;
+const int SINGLE_COLOR_EXT = 0x81F9;
 const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
 
 /**
@@ -189,7 +189,7 @@ abstract class Device
 		// Input options
 		SDL_EnableUNICODE(true);
 		SDL_EnableKeyRepeat(1, 100);
-		Input.setGrabMouse(true);
+		//Input.setGrabMouse(true);
 
 		// Initialize OpenAL
 		al_device = alcOpenDevice(null);
@@ -272,35 +272,6 @@ abstract class Device
 									.toString(constant) ~ "'.");
 		}
 		return false;
-	}
-
-	/// Draw the current material to the screen.
-	static void render(){
-		glPushAttrib(0xFFFFFFFF);	// all attribs
-
-		// Setup the viewport in orthogonal mode,
-		// with dimensions 0..width, 0..height
-		// with 0,0 being at the top left.
-		glViewport(0, 0, width, height);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, 1, 1, 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		
-		glEnable(GL_TEXTURE_2D);
-		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		foreach(sub; this.subs)
-			sub.draw();
-
-		SDL_GL_SwapBuffers();
-
-		//Texture(texture, true, TEXTURE_FILTER_BILINEAR).bind();
-		glPopAttrib();
 	}
 
 	/// Return the aspect ratio (width/height) of the rendering window.

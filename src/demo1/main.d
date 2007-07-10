@@ -58,12 +58,35 @@ int main()
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
 
 	Surface disp = new Surface(null);
-	disp.texture = camera.getTexture();
 	disp.topLeft = Vec2f(0,0);
-	disp.bottomRight = Vec2f(1,1);
-	disp.map();
+	disp.bottomRight = Vec2f(1, 1);
+	disp.setVisibility(true);
 	
+	Surface first = new Surface(disp);
+	first.texture = camera.getTexture();
+	first.topLeft = Vec2f(0,0);
+	first.bottomRight = Vec2f(.75, .75);
+	first.setVisibility(true);
 	
+	Surface second = new Surface(disp);
+	second.texture = camera.getTexture();
+	second.topLeft = Vec2f(.25,.25);
+	second.bottomRight = Vec2f(1,1);
+	second.setVisibility(true);
+	
+	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
+		self.raise();
+		Input.button[1].up = false;
+		Input.setGrabMouse(!Input.getGrabMouse());
+	}
+	
+	void onResize(Surface self, Vec2i difference){
+		camera.setResolution(self.size.x, self.size.y);
+	}
+	
+	first.onMousedown = &onMousedown;
+	second.onMousedown = &onMousedown;	
+	first.onResize = &onResize;
 	
 	// Music
 	SoundNode music = new SoundNode(camera);
@@ -101,16 +124,16 @@ int main()
 			Input.exit=true;
 
 		// Toggle mouse grab
-		if (Input.button[1].up)
-		{	Input.button[1].up = false;
-			Input.setGrabMouse(!Input.getGrabMouse());
-		}
+// 		if (Input.button[1].up)
+// 		{	Input.button[1].up = false;
+// 			Input.setGrabMouse(!Input.getGrabMouse());
+// 		}
 		ship.getSpring().update(1/60.0f);
 	}
 	scene.onUpdate(&update);
 
 	Device.resizeWindow(800, 600);
-	disp.recalculateTexture();
+	//disp.recalculateTexture();
 	
 	// Rendering / Input Loop
 	int fps = 0;
@@ -126,8 +149,9 @@ int main()
 
 		Input.processInput();
 		camera.toTexture();
-		Device.render();
-
+		disp.render();
+		
+		
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)

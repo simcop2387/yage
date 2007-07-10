@@ -11,6 +11,7 @@ public import derelict.sdl.sdl;
 import std.stdio;
 import yage.core.vector;
 import yage.system.device;
+import yage.gui.surface;
 
 
 /// A class to handle keyboard, mouse, and eventually joystick input.
@@ -75,12 +76,20 @@ class Input
 					button[event.button.button].up = false;
 					button[event.button.button].xdown = mousex;
 					button[event.button.button].ydown = mousey;
+
+					auto surface = findSurface(mousex, mousey);
+					if(!(surface is null)) surface.mousedown(event.button.button, Vec2i(mousex,mousey));
+
 					break;
 				case SDL_MOUSEBUTTONUP:
 					button[event.button.button].down = false;
 					button[event.button.button].up = true;
 					button[event.button.button].xup = mousex;
 					button[event.button.button].yup = mousey;
+
+					auto surface = findSurface(mousex, mousey);
+					if(!(surface is null)) surface.mouseup(event.button.button, Vec2i(mousex,mousey));
+
 					break;
 				case SDL_MOUSEMOTION:
 					if (resetmouse)
@@ -91,6 +100,9 @@ class Input
 					mousedy += event.motion.yrel;	// than on win32.  Testing should be done.
 					mousex = event.motion.x;
 					mousey = event.motion.y;
+					
+					//auto surface = findSurface(mousex, mousey);
+					//if(!(surface is null)) surface.mousemove(event.button.button, Vec2i(mousex,mousey));
 					break;
 
 				// System
