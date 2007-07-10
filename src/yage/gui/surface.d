@@ -10,6 +10,8 @@ import yage.system.constant;
 import std.stdio;
 
 class Surface{
+	
+	
 	GPUTexture texture;
 	
 	Surface[] subs;
@@ -59,7 +61,6 @@ class Surface{
 	
 	void recalculateTexture(){
 		portion.x = texture.requested_width/cast(float)texture.getWidth();
-
 		portion.y = texture.requested_height/cast(float)texture.getHeight();
 	}
 	

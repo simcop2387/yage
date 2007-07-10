@@ -23,7 +23,7 @@ const float _180_PI = 57.2957795130823; // 180 / pi
 
 
 /**
- * Allow for easy bool-by-bool conversion from one two-byte type to another.
+ * Allow for easy bit-by-bit conversion from one two-byte type to another.
  * Example:
  * --------------------------------
  * short a;
@@ -46,7 +46,7 @@ union word
 	}
 }
 
-/// Allow for easy bool-by-bool conversion from one four-byte type to another
+/// Allow for easy bit-by-bit conversion from one four-byte type to another
 struct dword
 {	union
 	{	int i;			/// Union of various types.
@@ -67,7 +67,7 @@ struct dword
 	}
 }
 
-/// Allow for easy bool-by-bool conversion from one eight-byte type to another.
+/// Allow for easy bit-by-bit conversion from one eight-byte type to another.
 union qword
 {	long l;			/// Union of various types.
 	ulong ul;		/// ditto
