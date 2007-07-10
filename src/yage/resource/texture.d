@@ -304,7 +304,8 @@ class GPUTexture
 			uint newheight= image.getHeight();
 
 			// Ensure power of two sized if required
-			if (!Device.getSupport(DEVICE_NON_2_TEXTURE))
+			//if (!Device.getSupport(DEVICE_NON_2_TEXTURE))
+			if (true)
 			{	if (log2(newheight) != floor(log2(newheight)))
 					newheight = nextPow2(newheight);
 				if (log2(newwidth) != floor(log2(newwidth)))
@@ -325,7 +326,8 @@ class GPUTexture
 		if (height==0) height = Device.getHeight();
 
 		// Needs to be tested.
-		if (!Device.getSupport(DEVICE_NON_2_TEXTURE))
+		//if (!Device.getSupport(DEVICE_NON_2_TEXTURE))
+		if (true)
 		{	this.width = nextPow2(width);
 			this.height =nextPow2(height);
 		}
