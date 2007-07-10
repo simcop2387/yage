@@ -56,8 +56,15 @@ int main()
 	// Camera
 	CameraNode camera = new CameraNode(ship.getCameraSpot());
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
-	Device.texture = camera.getTexture();
 
+	Surface disp = new Surface(null);
+	disp.texture = camera.getTexture();
+	disp.topLeft = Vec2f(0,0);
+	disp.bottomRight = Vec2f(1,1);
+	disp.map();
+	
+	
+	
 	// Music
 	SoundNode music = new SoundNode(camera);
 	music.setSound("music/celery - pages.ogg");
@@ -102,8 +109,9 @@ int main()
 	}
 	scene.onUpdate(&update);
 
-
-
+	Device.resizeWindow(800, 600);
+	disp.recalculateTexture();
+	
 	// Rendering / Input Loop
 	int fps = 0;
 	Timer frame = new Timer();
