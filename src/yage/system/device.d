@@ -19,6 +19,7 @@ import derelict.sdl.image;
 import derelict.ogg.vorbis;
 import derelict.ogg.vorbisfile;
 import yage.resource.texture;
+import yage.gui.surface;
 import yage.system.log;
 import yage.system.constant;
 import yage.system.input;
@@ -51,11 +52,12 @@ abstract class Device
 	static bool initialized=0;			// true if init() has been called
 
 	// The texture that is rendered to the screen.
-	static CameraTexture texture;
-
+	//static CameraTexture texture;
+	
 	public:
-
-
+	
+	static Surface[] subs;
+	
 	/// Unload SDL at exit.
 	static ~this()
 	{	if (initialized)
@@ -175,7 +177,7 @@ abstract class Device
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 		// Enable texture coordinate arrays for each texture unit
-		if (Device.getSupport(DEVICE_MULTITEXTURE))
+		/*if (Device.getSupport(DEVICE_MULTITEXTURE))
 			for (int i=Device.getLimit(DEVICE_MAX_TEXTURES)-1; i>=0; i--)
 			{	glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -183,7 +185,7 @@ abstract class Device
 				glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 				glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 			}
-
+*/
 		// Input options
 		SDL_EnableUNICODE(true);
 		SDL_EnableKeyRepeat(1, 100);
@@ -273,8 +275,8 @@ abstract class Device
 	}
 
 	/// Draw the current material to the screen.
-	static void render()
-	{	glPushAttrib(0xFFFFFFFF);	// all attribs
+	static void render(){
+		glPushAttrib(0xFFFFFFFF);	// all attribs
 
 		// Setup the viewport in orthogonal mode,
 		// with dimensions 0..width, 0..height
@@ -288,28 +290,11 @@ abstract class Device
 
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
-
-		// If a texture to render
-		float x, y;
-		if (texture !is null)
-		{	glEnable(GL_TEXTURE_2D);
-
-			// If our texture is larger than the viewport, set the size of the quad to adjust.
-			x = texture.requested_width/cast(float)texture.getWidth();
-			y = texture.requested_height/cast(float)texture.getHeight();
-
-			// Draw a textured quad of our current material
-			Texture(texture, true, TEXTURE_FILTER_BILINEAR).bind();
-		}
-		else
-			glDisable(GL_TEXTURE_2D);
-
-		glBegin(GL_QUADS);
-		glTexCoord2f(0, 0); glVertex2f(0, 1);
-		glTexCoord2f(x, 0); glVertex2f(1, 1);
-		glTexCoord2f(x, y); glVertex2f(1, 0);
-		glTexCoord2f(0, y); glVertex2f(0, 0);
-		glEnd();
+		
+		glEnable(GL_TEXTURE_2D);
+		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		foreach(sub; this.subs) sub.draw();
 
 		SDL_GL_SwapBuffers();
 
@@ -363,7 +348,9 @@ abstract class Device
 	static void resizeWindow(int _width, int _height)
 	{	width = _width;
 		height = _height;
-
+		
+		foreach(sub ;this.subs)	sub.recalculate(width, height);
+		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, alsy try SDL lock surface)
 		// This same code would crash the engine on windows.

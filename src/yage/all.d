@@ -15,5 +15,6 @@ public
 	import yage.node.all;
 	import yage.util.all;
 	import yage.system.all;
+	import yage.gui.all;
 }
 

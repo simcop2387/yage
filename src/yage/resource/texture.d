@@ -197,7 +197,10 @@ class GPUTexture
 	protected uint width     = 0;
 	protected uint height    = 0;
 	protected char[] source;
-
+	
+	uint requested_width   = 0;
+	uint requested_height  = 0;
+	
 	///
 	this()
 	{	glGenTextures(1, &gl_index);
@@ -316,8 +319,7 @@ class GPUTexture
 	}
 
 	/// Copy the the contents of the framebuffer into this Texture.
-	void loadFrameBuffer(uint width, uint height)
-	{
+	void loadFrameBuffer(uint width, uint height){
 		// A special value of zero to stretch to the window size.
 		if (width ==0) width  = Device.getWidth();
 		if (height==0) height = Device.getHeight();
@@ -331,27 +333,8 @@ class GPUTexture
 		glBindTexture(GL_TEXTURE_2D, gl_index);
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, this.width, this.height, 0);
 		format = IMAGE_FORMAT_RGB;
-	}
-}
-
-/**
- * A Texture that is used as a rendering target by a Camera.
- * Since not all video hardware supports non-power of two sized Textures,
- * Textures are oversized to the next power of two when necessary.
- * It is then necessary to store the size the texture wishes it was. */
-class CameraTexture : GPUTexture
-{	uint requested_width   = 0;
-	uint requested_height  = 0;
-
-	///
-	this()
-	{	super();
-	}
-
-	/// loadFrameBuffer is overridden to set requested_width and requested_height.
-	void loadFrameBuffer(uint _width, uint _height)
-	{	super.loadFrameBuffer(_width, _height);
-		requested_width  =_width;
-		requested_height =_height;
+		
+		requested_width  = width;
+		requested_height = height;
 	}
 }

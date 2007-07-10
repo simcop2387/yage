@@ -42,7 +42,7 @@ class CameraNode : Node
 	float aspect	= 0;		// aspect ratio of the view
 	float threshold = 2.25;		// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
-	CameraTexture capture;		// The camera renders to this Texture
+	GPUTexture capture;		// The camera renders to this Texture
 	Plane[6] frustum;
 	Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
 
@@ -58,7 +58,7 @@ class CameraNode : Node
 	 * the capture Texture for rendering.*/
 	this(BaseNode _parent)
 	{	super(_parent);
-		capture = new CameraTexture();
+		capture = new GPUTexture();
 		setResolution(xres, yres);
 		setVisible(false);
 	}
@@ -146,7 +146,7 @@ class CameraNode : Node
 	}
 
 	/// Get the Texture that the camera renders to.
-	CameraTexture getTexture()
+	GPUTexture getTexture()
 	{	return capture;
 	}
 
