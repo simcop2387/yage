@@ -82,6 +82,7 @@ int main()
 	
 	void onResize(Surface self, Vec2i difference){
 		camera.setResolution(self.size.x, self.size.y);
+		writefln("Resolution changed to ", self.size.x, " x " self.size.y);
 	}
 	
 	first.onMousedown = &onMousedown;
