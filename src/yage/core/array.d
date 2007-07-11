@@ -18,9 +18,61 @@ module yage.core.array;
 
 import std.stdio;
 
+/// Return the maximum value of an array.
+T amax(T)(T[] array)
+{	T m = array[0];
+	foreach (T a; array)
+		if (a>m)
+			m=a;	
+	return m;
+}
+
+/// Return the minimum value of an array.
+T amin(T)(T[] array)
+{	T m = array[0];
+	foreach (T a; array)
+		if (a<m)
+			m=a;	
+	return m;
+}
+
 /**
- * 
- */
+ * Is the array ordered?
+ * Params:
+ * increasing = Check for ordering by small to big.
+ * getKey = a function to get a key. 
+ * Example:
+ * --------------------------------
+ * Timer[] array;
+ * // ... fill array with new Timer() ...
+ * array.ordered(true, (Timer a) { return a.get(); }); // should return true
+ * -------------------------------- 
+ */ 
+bool ordered(T)(T[] array, bool increasing=true)
+{	return ordered(array, increasing, (T a) { return a; });
+}
+
+/// Ditto
+bool ordered(T, K)(T[] array, bool increasing=true, K delegate(T elem) getKey=null)
+{	if (array.length <= 1)
+		return true;
+	
+	if (increasing)
+	{	for (int i=0; i<array.length-1; i++)
+			if (getKey(array[i]) > getKey(array[i+1]))
+				return false;
+	} else
+	{	for (int i=0; i<array.length-1; i++)
+			if (getKey(array[i]) < getKey(array[i+1]))
+				return false;		
+	}				
+	return true;
+}
+unittest
+{	assert(ordered([-1, 0, 1, 2, 2, 5]) == true);
+	assert(ordered([-1, 0, 1, 2, 1, 5]) == false);
+	assert(ordered([5, 3, 3, 3, 2, -1], false) == true);
+}
 
 /**
  * Remove an element from an array.
@@ -63,7 +115,8 @@ void reserve(T)(inout T[] array, int length)
  * Timer[] array;
  * // ... fill array with new Timer() ...
  * array.radixSort((Timer a) { return a.get(); });
- * -------------------------------- */
+ * -------------------------------- 
+ */
 void radixSort(T)(inout T[] array)
 {	radixSort(array, (T a) { return a; });
 }
@@ -96,6 +149,7 @@ void radixSort(T, K)(inout T[] array, K delegate(T elem) getKey, bool signed=tru
 	for (size_t i=0; i<count; i++)
 	{	elem[i].key2 = getKey(array[i]);
 		elem[i].data = array[i];
+		writefln(elem[i].key2);
 	}
 
 	for (int k=0; k<K.sizeof; k++)

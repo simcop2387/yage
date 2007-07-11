@@ -14,41 +14,41 @@ import yage.resource.material;
  * Styles that have a top, right, bottom, left (like margin, border) are stored in arrays of length 4.*/
 struct Style
 {
-    enum Units {PX, PERCENT};
+    enum Unit {PX, PERCENT};
 
     Material backgroundMaterial;
     Vec4f   backgroundColor;
 
     float[4] borderWidth;
-    byte[4]  borderWidthUnits;
-    float[4] borderRadius; // used for rounded corners.
-    byte[4]  borderRadiusUnits;
-    Vec4f[4] borderColor;    
+    Unit[4]  borderWidthUnits;
+    float[4] borderRadius; 			// used for rounded corners.
+    Unit[4]  borderRadiusUnits;
+    Vec4f[4] borderColor;
+    Material borderMaterial;		// Overrides radius and color if set
+    bool[4]  borderMaterialStretch;  // top, right, bottom, left
 
     Material cursor;
-    byte display; // block, none, anything else?
+    bool visible = false;;
     byte position;
-    byte visibility;
 
     //Font  fontFamily;
     float fontSize;
     byte  fontSizeUnits;
     float fontWeight;
 
-    float[4] marginWidth;
-    byte[4] marginUnits;
+    float[4] margin;
+    Unit[4] marginUnits;
 
-    float[4] paddingWidth;
-    byte[4] paddingUnits;
+    float[4] padding;
+    Unit[4] paddingUnits;
 
-    Vec4f dimension; // top, right, bottom, left
+    float[4] dimension; 		// top, right, bottom, left
     byte[4] dimensinUnits;
-    byte  overflow;
-    int   zIndex;
     float height;
-    byte  heightUnits;
+    Unit  heightUnits;
     float width;
-    byte  widthUnits;
+    Unit  widthUnits;
+    int   zIndex;
 
     Vec4f color;
     byte  textAlign;

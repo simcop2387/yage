@@ -61,10 +61,21 @@ int main()
 	disp.topLeft = Vec2f(0,0);
 	disp.bottomRight = Vec2f(1, 1);
 	disp.setVisibility(true);
-	disp.texture = camera.getTexture();
-
+	
+	Surface first = new Surface(disp);
+	first.texture = camera.getTexture();
+	first.topLeft = Vec2f(0,0);
+	first.bottomRight = Vec2f(.75, .75);
+	first.setVisibility(true);
+	
+	Surface second = new Surface(disp);
+	second.texture = camera.getTexture();
+	second.topLeft = Vec2f(.25,.25);
+	second.bottomRight = Vec2f(1,1);
+	second.setVisibility(true);
 	
 	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
+		self.raise();
 		Input.button[1].up = false;
 		Input.setGrabMouse(!Input.getGrabMouse());
 	}
@@ -74,8 +85,9 @@ int main()
 		writefln("Resolution changed to ", self.size.x, " x ", self.size.y);
 	}
 	
-	disp.onMousedown = &onMousedown;
-	disp.onResize = &onResize;
+	first.onMousedown = &onMousedown;
+	second.onMousedown = &onMousedown;	
+	first.onResize = &onResize;
 	
 	// Music
 	SoundNode music = new SoundNode(camera);

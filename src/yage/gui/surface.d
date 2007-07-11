@@ -1,16 +1,30 @@
+/**
+ * Copyright:  (c) 2005-2007 Eric Poggel
+ * Authors:    Joe Pusderis (deformative0@gmail.com)
+ * License:    <a href="lgpl.txt">LGPL</a> 
+ */
+
 module yage.gui.surface;
 
-import yage.resource.texture;
-import yage.core.vector;
-import yage.system.device;
+import std.stdio;
 import derelict.opengl.gl;
 import derelict.sdl.sdl;
-import yage.gui.style;
+import yage.core.all;
+import yage.system.device;
 import yage.system.constant;
+import yage.resource.texture;
+import yage.gui.style;
 
-import std.stdio;
 
+/** 
+ * A surface will be similar to an HTML DOM element, including having text inside it, 
+ * margin, padding, a border, and a background texture, including textures from a camera. 
+ * Surfaces will exist in a hierarchical structure, with each having a parent and an array of children. 
+ * The children will be positioned relative to the borders of their parent. */
 class Surface{
+	static final Style defaultStyle;
+	Style style;
+	
 	//Style style;  //move style into a higher level clas, perhaps make a geometry struct isntead
 	GPUTexture texture;  //Change from GPUTexture to Texture or Material
 	
@@ -32,6 +46,7 @@ class Surface{
 	Vec2i size;
 	
 	bool visible;
+
 
 	//add root position and stuff
 	
@@ -166,7 +181,13 @@ class Surface{
 
 				glEnd();
 			}
-			foreach(sub; subs)sub.draw();
+			
+			// Sort subs
+			if (!subs.ordered(true, (Surface s){return s.style.zIndex;} ))
+				subs.radixSort((Surface s){return s.style.zIndex;} );			
+			
+			foreach(sub; subs)
+				sub.draw();
 		}
 	}
 	

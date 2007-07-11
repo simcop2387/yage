@@ -7,7 +7,6 @@
 module yage.system.device;
 
 import std.stdio;
-
 import std.string;
 import derelict.openal.al;
 import derelict.opengl.gl;
