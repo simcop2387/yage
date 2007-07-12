@@ -17,11 +17,12 @@ import derelict.sdl.sdl;
 import derelict.sdl.image;
 import derelict.ogg.vorbis;
 import derelict.ogg.vorbisfile;
-import yage.resource.texture;
+//import yage.resource.texture;
 import yage.gui.surface;
 import yage.system.log;
 import yage.system.constant;
 import yage.system.input;
+import yage.core.vector;
 
 // Enable specular highlights with textures.
 const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
@@ -320,7 +321,7 @@ abstract class Device
 	{	width = _width;
 		height = _height;
 		
-		foreach(sub ;this.subs)	sub.recalculate(width, height);
+		foreach(sub ;this.subs)	sub.recalculate(Vec2i(0, 0), Vec2i(width, height));
 		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, alsy try SDL lock surface)

@@ -25,7 +25,10 @@ class Input
 
 	static int mousex, mousey;		/// The current pixel location of the mouse cursor; (0, 0) is top left.
 	static int mousedx, mousedy;	/// The number of pixels the mouse has moved since the last time input was queried.
-
+	
+	//I do not know if this does the same as moused, I was too lazy to mod it for my needs.
+	static int xdiff, ydiff;
+	
 	/// A structure to track various state variables associated with each mouse button.
 	struct Buttons
 	{	bool down;					/// True if the button is currently down.
@@ -40,7 +43,7 @@ class Input
 	static bool grabbed=0;			/// The window grabs the mouse.
 	static bool exit = false;		/// A termination request has been received.
 
-
+	static Surface surfaceLock;
 
 	/** This function fills the above fields with the current intput data.
 	 *  See the descriptions of each field for more details.  If this function is not called,
@@ -78,7 +81,7 @@ class Input
 					button[event.button.button].ydown = mousey;
 
 					auto surface = findSurface(mousex, mousey);
-					if(!(surface is null)) surface.mousedown(event.button.button, Vec2i(mousex,mousey));
+					if(surface !is null) surface.mousedown(event.button.button, Vec2i(mousex,mousey));
 
 					break;
 				case SDL_MOUSEBUTTONUP:
@@ -88,7 +91,7 @@ class Input
 					button[event.button.button].yup = mousey;
 
 					auto surface = findSurface(mousex, mousey);
-					if(!(surface is null)) surface.mouseup(event.button.button, Vec2i(mousex,mousey));
+					if(surface !is null) surface.mouseup(event.button.button, Vec2i(mousex,mousey));
 
 					break;
 				case SDL_MOUSEMOTION:
@@ -98,11 +101,15 @@ class Input
 					}
 					mousedx += event.motion.xrel;	// these seem to behave differently on linux
 					mousedy += event.motion.yrel;	// than on win32.  Testing should be done.
+					
+					xdiff = mousex - event.motion.x;
+					ydiff = mousey - event.motion.y;
+					
 					mousex = event.motion.x;
 					mousey = event.motion.y;
 					
-					//auto surface = findSurface(mousex, mousey);
-					//if(!(surface is null)) surface.mousemove(event.button.button, Vec2i(mousex,mousey));
+					auto surface = findSurface(mousex, mousey);
+					if(surface !is null) surface.mousemove(event.button.button, Vec2i(xdiff,ydiff));
 					break;
 
 				// System
@@ -145,5 +152,12 @@ class Input
 
 	static bool getGrabMouse()
 	{	return grabbed;
+	}
+	
+	static void setSurfaceLock(Surface lock){
+		surfaceLock = lock;
+	}
+	static void unlockSurface(){
+		surfaceLock = null;
 	}
 }

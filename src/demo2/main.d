@@ -56,23 +56,61 @@ int main()
 	// Camera
 	CameraNode camera = new CameraNode(ship.getCameraSpot());
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
-
-	Surface disp = new Surface(null);
-	disp.topLeft = Vec2f(0,0);
-	disp.bottomRight = Vec2f(1, 1);
-	disp.setVisibility(true);
 	
+	Surface bg = new Surface(null);
+	bg.topLeft = Vec2f(.05,.05);
+	bg.bottomRight = Vec2f(.95, .95);
+	bg.setTexture(new GPUTexture("test2.png"));
+	bg.fill = stretched;
+	bg.setVisibility(true);
+	
+	Surface disp = new Surface(bg);
+	disp.topLeft = Vec2f(.1,.1);
+	disp.bottomRight = Vec2f(.9, .9);
+	disp.setTexture(new GPUTexture("test/bc-dark.png"));
+	//disp.fill = stretched;
+	disp.setVisibility(true);
+
 	Surface first = new Surface(disp);
-	first.texture = camera.getTexture();
-	first.topLeft = Vec2f(0,0);
-	first.bottomRight = Vec2f(.75, .75);
+	first.setTexture(new GPUTexture("test.png"));
+	first.fill = stretched;
+	first.topLeft = Vec2f(.8, .8);
+	first.bottomRight = Vec2f(.95, .95);
 	first.setVisibility(true);
 	
+	Surface third = new Surface(disp);
+	third.setTexture(new GPUTexture("box.png"));
+	third.fill = stretched;
+	third.topLeft = Vec2f(.8, .05);
+	third.bottomRight = Vec2f(.95, .2);
+	third.setVisibility(true);
+	
+	Surface fourth = new Surface(disp);
+	fourth.setTexture(new GPUTexture("test/button2.png"));
+	fourth.fill = stretched;
+	fourth.topLeft = Vec2f(.05, .8);
+	fourth.bottomRight = Vec2f(.2, .95);
+	fourth.setVisibility(true);
+	
+	Surface fifth = new Surface(disp);
+	fifth.setTexture(new GPUTexture("test/radio1.png"));
+	fifth.fill = stretched;
+	fifth.topLeft = Vec2f(.05, .05);
+	fifth.bottomRight = Vec2f(.2, .2);
+	fifth.setVisibility(true);
+	
 	Surface second = new Surface(disp);
-	second.texture = camera.getTexture();
-	second.topLeft = Vec2f(.25,.25);
-	second.bottomRight = Vec2f(1,1);
+	second.setTexture(camera.getTexture());
+	second.topLeft = Vec2f(.2,.2);
+	second.bottomRight = Vec2f(.8, .8);
 	second.setVisibility(true);
+	
+	Surface clear = new Surface(second);
+	clear.setTexture(new GPUTexture("test/clear.png"));
+	clear.topLeft = Vec2f(.1,.1);
+	clear.bottomRight = Vec2f(.9, .9);
+	clear.fill = stretched;
+	clear.setVisibility(true);
 	
 	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
@@ -80,14 +118,36 @@ int main()
 		Input.setGrabMouse(!Input.getGrabMouse());
 	}
 	
-	void onResize(Surface self, Vec2i difference){
-		camera.setResolution(self.size.x, self.size.y);
-		writefln("Resolution changed to ", self.size.x, " x ", self.size.y);
+	void onResize(Surface self){
+		int xres = self.position2.x - self.position1.x;
+		int yres = self.position2.y - self.position1.y;
+		camera.setResolution(xres, yres);
+		writefln("Camera resolution changed to ", xres, " x ", yres);
 	}
 	
-	first.onMousedown = &onMousedown;
+	void onMousedown2(Surface self, byte buttons, Vec2i coordinates){
+		self.raise();
+		Input.setSurfaceLock(self);
+	}
+	void onMouseup2(Surface self, byte buttons, Vec2i coordinates){
+		Input.unlockSurface();
+	}
+	void onMousemove(Surface self, byte buttons, Vec2i coordinates){
+		if(buttons == 1) self.moveAdd(coordinates);
+	}
+	
 	second.onMousedown = &onMousedown;	
-	first.onResize = &onResize;
+	second.onResize = &onResize;
+	clear.onMousedown = &onMousedown2;
+	clear.onMousemove = &onMousemove;
+	clear.onMouseup = &onMouseup2;
+	first.onMousedown = &onMousedown2;
+	first.onMousemove = &onMousemove;
+	first.onMouseup = &onMouseup2;
+	
+	bg.onMousedown = &onMousedown2;
+	bg.onMousemove = &onMousemove;
+	bg.onMouseup = &onMouseup2;
 	
 	// Music
 	SoundNode music = new SoundNode(camera);
@@ -150,7 +210,7 @@ int main()
 
 		Input.processInput();
 		camera.toTexture();
-		disp.render();
+		bg.render();
 		
 		
 		// Print framerate

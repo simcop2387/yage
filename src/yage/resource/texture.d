@@ -317,6 +317,8 @@ class GPUTexture
 			glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.get().ptr);
 
 	    }
+	    if(this.requested_width == 0) this.requested_width = this.getWidth();
+	    if(this.requested_height == 0) this.requested_height = this.getHeight();
 	}
 
 	/// Copy the the contents of the framebuffer into this Texture.

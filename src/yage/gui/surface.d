@@ -12,9 +12,19 @@ import derelict.sdl.sdl;
 import yage.core.all;
 import yage.system.device;
 import yage.system.constant;
+import yage.system.input;
 import yage.resource.texture;
 import yage.gui.style;
 
+
+//move to constants
+enum{
+	traditional, //default
+	stretched,
+	tiled
+}
+
+float third = 1.0/3.0;
 
 /** 
  * A surface will be similar to an HTML DOM element, including having text inside it, 
@@ -22,44 +32,45 @@ import yage.gui.style;
  * Surfaces will exist in a hierarchical structure, with each having a parent and an array of children. 
  * The children will be positioned relative to the borders of their parent. */
 class Surface{
-	static final Style defaultStyle;
-	Style style;
+	//Not sure that a Surface should have a style... I think surface should be a lower abstraction, for only geometry, rendering, and input.
+	//static final Style defaultStyle; //Default style should be more fitting as something that is global.
+	//Style style;
 	
-	//Style style;  //move style into a higher level clas, perhaps make a geometry struct isntead
-	GPUTexture texture;  //Change from GPUTexture to Texture or Material
+	//Change from GPUTexture to Texture or Material
+	private GPUTexture texture;
 	
-	//Linked list would be faster for raising a window.
-	Surface[] subs;//Perhaps this should be changed into a linked list...
+	Surface[] subs;
 	//Not sure if I should have a reference to Parent or not, but for now, I will.
 	Surface parent;
 	
-	Vec2f portion; //used for the texture only
-	
-	Vec2f topLeft;
+	Vec2f topLeft;//rid self of these
 	Vec2f bottomRight;
 	
-	//these are used for rendering, not calculation
+	//these are used for rendering, not for user
 	Vec2i position1;
 	Vec2i position2;
 	
+	Vec2i location;
 	
-	Vec2i size;
+	//used for the texture
+	Vec2f portion;
 	
 	bool visible;
-
-
-	//add root position and stuff
+	
+	byte fill = traditional;
 	
 	//Not sure how to impelement gluUnProject
 	
+	//Perhaps add some of these for global events.
 	void delegate(typeof(this) self) onBlur;
-	void blur(){ if(onBlur)onBlur(this);}
-
+	
+	//dunno how
 	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onClick;
 
+	//dunno how
 	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onDblclick;
 
-	void delegate(typeof(this) self) onFocus;
+	void delegate(typeof(this) self) onFocus; //Done -- See Raise, no fall through
 
 	void delegate(typeof(this) self, byte key, byte modifiers) onKeydown;
 
@@ -67,31 +78,40 @@ class Surface{
 
 	void delegate(typeof(this) self, byte key, byte modifiers) onKeyup;
 
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMousedown;
-	void mousedown(byte buttons, Vec2i coordinates){ if(onMousedown)onMousedown(this, buttons, coordinates);}
+	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMousedown; //Done
+	void mousedown(byte buttons, Vec2i coordinates){ 
+		if(onMousedown)onMousedown(this, buttons, coordinates);
+		else if(parent !is null) parent.mousedown(buttons, coordinates);
+	}
 
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMousemove;
-	void mousemove(byte buttons, Vec2i coordinates){ if(onMousemove)onMousemove(this, buttons, coordinates);}
+	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMousemove; //Done
+	void mousemove(byte buttons, Vec2i coordinates){
+		if(onMousemove)onMousemove(this, buttons, coordinates);
+		else if(parent !is null) parent.mousemove(buttons, coordinates);
+	}
 
 	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseout;
 
 	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseover;
 
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseup;
-	void mouseup(byte buttons, Vec2i coordinates){ if(onMouseup)onMouseup(this, buttons, coordinates);}
+	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseup; //Done
+	void mouseup(byte buttons, Vec2i coordinates){ 
+		if(onMouseup)onMouseup(this, buttons, coordinates);
+		else if(parent !is null) parent.mouseup(buttons, coordinates);
+	}
 
-	void delegate(typeof(this) self, Vec2i difference) onResize;
+	void delegate(typeof(this) self) onResize; //Done -- See recalculate, no fall through
 	
 	
 	this(Surface p){
 		parent = p;
 		if(parent is null){
 			Device.subs ~= this;
-			recalculate(Device.getHeight(), Device.getWidth());
+			this.recalculate();
 		}
 		else{
 			parent.subs ~= this;
-			recalculate(parent.size.x, parent.size.y);
+			this.recalculate();
 		}
 	}
 	
@@ -100,32 +120,71 @@ class Surface{
 		recalculateTexture();
 	}
 	
-	void recalculate(int width, int height){ //not done
-		position1.x = cast(int)(topLeft.x * cast(float)width);
-		position1.y = cast(int)(topLeft.y * cast(float)height);
+	//MAYBE I SHOULD PUT RECALCUALTE INTO A DELEGATE SO THAT THE USER COULD PICK ANYTHING!
+	void recalculate(Vec2i parent1, Vec2i parent2){ //not done
+		Vec2i parentSize = Vec2i(parent2.x - parent1.x, parent2.y - parent1.y);
 		
-		position2.x = cast(int)(bottomRight.x * cast(float)width);
-		position2.y = cast(int)(bottomRight.y * cast(float)height);
+		Vec2i tempPosition1;
+		Vec2i tempPosition2;
 		
-		Vec2i temp = size;
+		tempPosition1.x = cast(int)(topLeft.x * cast(float)parentSize.x) + parent1.x + location.x;
+		tempPosition1.y = cast(int)(topLeft.y * cast(float)parentSize.y) + parent1.y + location.y;
+		tempPosition2.x = parent2.x - cast(int)((1.0 - bottomRight.x) * cast(float)parentSize.x) + location.x;
+		tempPosition2.y = parent2.y - cast(int)((1.0 - bottomRight.y) * cast(float)parentSize.y) + location.y;
 		
-		size.x = position2.x - position1.x;
-		size.y = position2.y - position1.y;
+		//All of the below is for not going out of boundry
+		if(parent is null) goto setx;
+		bool xfailed;
+		if(tempPosition1.x < parent.position1.x){
+			xfailed = true;
+ 			goto afterx;
+		}
+		if(tempPosition2.x > parent.position2.x){
+			xfailed = true;
+ 			goto afterx;
+		}
 		
-		if(onResize)onResize(this, Vec2i(temp.x - size.x, temp.y - size.y));
+		setx:
+			position1.x = tempPosition1.x;
+			position2.x = tempPosition2.x;
+			if(parent is null) goto sety;
+			
+		afterx:
+			if(tempPosition1.y < parent.position1.y){
+ 				if(xfailed) return; //subs are not calculated and the window has not been resized
+ 				else goto aftery;
+			}
+			if(tempPosition2.y > parent.position2.y){
+ 				if(xfailed) return; //subs are not calculated and the window has not ben resized
+ 				else goto aftery;
+			}
+		
+		sety:
+			position1.y = tempPosition1.y;
+			position2.y = tempPosition2.y;
+		
+		aftery:
+		if(onResize)onResize(this);
 		
 		foreach(sub ;this.subs)
-			sub.recalculate(size.x, size.y);
+			sub.recalculate(position1, position2);
 	}
 	
 	void recalculate(){
-		if(parent == null)
-			recalculate(Device.width, Device.height);
+		if(parent is null)
+			recalculate(Vec2i(0,0), Vec2i(Device.width, Device.height));
 		else
-			recalculate(parent.size.x, parent.size.y);
+			recalculate(parent.position1, parent.position2);
 	}
 	
-	void recalculateTexture(){
+	void moveAdd(Vec2i add){
+		location.x -= add.x;
+		location.y -= add.y;
+		recalculate();
+	}
+	
+	//I would like textures to automatically do this so that it doesn't need to happen for every single surface on every single frame
+	void recalculateTexture(){  //Dunno if this will be needed when we change to materials
 		portion.x = texture.requested_width/cast(float)texture.getWidth();
 		portion.y = texture.requested_height/cast(float)texture.getHeight();
 	}
@@ -145,6 +204,11 @@ class Surface{
 		
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
+		
+		glEnable(GL_BLEND);
+ 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+ 		//glColor4f(1, 1, 1, 1);
+		
 		
 		glEnable(GL_TEXTURE_2D);
 		
@@ -166,25 +230,195 @@ class Surface{
 				Texture(texture, true, TEXTURE_FILTER_BILINEAR).bind();
 		
 				glBegin(GL_QUADS);
-
-				glTexCoord2f(0, 0);
-				glVertex2i(position1.x, position2.y);
 				
-				glTexCoord2f(portion.x, 0);
-				glVertex2i(position2.x, position2.y);
-				
-				glTexCoord2f(portion.x, portion.y); 
-				glVertex2i(position2.x, position1.y);
-
-				glTexCoord2f(0, portion.y);
-				glVertex2i(position1.x, position1.y);
-
+				switch(fill){
+					case traditional:
+						glTexCoord2f(0, 0);
+						glVertex2i(position1.x, position2.y);
+						
+						glTexCoord2f(portion.x, 0);
+						glVertex2i(position2.x, position2.y);
+						
+						glTexCoord2f(portion.x, portion.y); 
+						glVertex2i(position2.x, position1.y);
+		
+						glTexCoord2f(0, portion.y);
+						glVertex2i(position1.x, position1.y);
+						break;
+					case stretched: //Move calculations somwhere else!
+						//Not sure about the difference between /3 and *third, but who cares, I used *third
+						float partx = portion.x * third;
+						float party = portion.y * third;
+						
+						float partytimes2 = party * 2;
+						float partxtimes2 = partx * 2;
+						
+						int w = cast(int)(texture.requested_width * third);
+						int h = cast(int)(texture.requested_height * third);
+						
+						int partwidth = position1.x + w;
+						int partheight = position1.y + h;
+						
+						int partwidthminus = position2.x - w;
+						int partheightminus = position2.y - h;
+						
+						/*
+						* topleft
+						*/
+						glTexCoord2f(0, party);
+						glVertex2i(position1.x, partheight);
+						
+						glTexCoord2f(partx, party);
+						glVertex2i(partwidth, partheight);
+						
+						glTexCoord2f(partx, 0); 
+						glVertex2i(partwidth, position1.y);
+		
+						glTexCoord2f(0, 0);
+						glVertex2i(position1.x, position1.y);
+	
+						
+						/*
+						* left
+						*/
+						glTexCoord2f(0, partytimes2);
+						glVertex2i(position1.x, partheightminus);
+						
+						glTexCoord2f(partx, partytimes2);
+						glVertex2i(partwidth, partheightminus);
+						
+						glTexCoord2f(partx, party); 
+						glVertex2i(partwidth, partheight);
+		
+						glTexCoord2f(0, party);
+						glVertex2i(position1.x, partheight);
+	
+	
+						/*
+						* bottomleft
+						*/
+						glTexCoord2f(0, portion.y);
+						glVertex2i(position1.x, position2.y);
+						
+						glTexCoord2f(partx, portion.y);
+						glVertex2i(partwidth, position2.y);
+						
+						glTexCoord2f(partx, partytimes2); 
+						glVertex2i(partwidth, partheightminus);
+		
+						glTexCoord2f(0, partytimes2);
+						glVertex2i(position1.x, partheightminus);
+	
+	
+						/*
+						* top
+						*/
+						glTexCoord2f(partx, party);
+						glVertex2i(partwidth, partheight);
+						
+						glTexCoord2f(partxtimes2, party);
+						glVertex2i(partwidthminus, partheight);
+						
+						glTexCoord2f(partxtimes2, 0); 
+						glVertex2i(partwidthminus, position1.y);
+		
+						glTexCoord2f(partx, 0);
+						glVertex2i(partwidth, position1.y);
+	
+	
+						/*
+						* middle
+						*/
+						glTexCoord2f(partx, partytimes2);
+						glVertex2i(partwidth, partheightminus);
+						
+						glTexCoord2f(partxtimes2, partytimes2);
+						glVertex2i(partwidthminus, partheightminus);
+						
+						glTexCoord2f(partxtimes2, party); 
+						glVertex2i(partwidthminus, partheight);
+		
+						glTexCoord2f(partx, party);
+						glVertex2i(partwidth, partheight);
+	
+	
+						/*
+						* bottom
+						*/
+						glTexCoord2f(partx, portion.y);
+						glVertex2i(partwidth, position2.y);
+						
+						glTexCoord2f(partxtimes2, portion.y);
+						glVertex2i(partwidthminus, position2.y);
+						
+						glTexCoord2f(partxtimes2, partytimes2); 
+						glVertex2i(partwidthminus, partheightminus);
+		
+						glTexCoord2f(partx, partytimes2);
+						glVertex2i(partwidth, partheightminus);
+	
+	
+						/*
+						* topright
+						*/
+						glTexCoord2f(partxtimes2, party);
+						glVertex2i(partwidthminus, partheight);
+						
+						glTexCoord2f(portion.x, party);
+						glVertex2i(position2.x, partheight);
+						
+						glTexCoord2f(portion.x, 0); 
+						glVertex2i(position2.x, position1.y);
+		
+						glTexCoord2f(partxtimes2, 0);
+						glVertex2i(partwidthminus, position1.y);
+	
+	
+						/*
+						* right
+						*/
+						glTexCoord2f(partxtimes2, partytimes2);
+						glVertex2i(partwidthminus, partheightminus);
+						
+						glTexCoord2f(portion.x, partytimes2);
+						glVertex2i(position2.x, partheightminus);
+						
+						glTexCoord2f(portion.x, party); 
+						glVertex2i(position2.x, partheight);
+		
+						glTexCoord2f(partxtimes2, party);
+						glVertex2i(partwidthminus, partheight);
+	
+						/*
+						* bottomright
+						*/
+						glTexCoord2f(partxtimes2, portion.y);
+						glVertex2i(partwidthminus, position2.y);
+						
+						glTexCoord2f(portion.x, portion.y);
+						glVertex2i(position2.x, position2.y);
+						
+						glTexCoord2f(portion.x, partytimes2); 
+						glVertex2i(position2.x, partheightminus);
+		
+						glTexCoord2f(partxtimes2, partytimes2);
+						glVertex2i(partwidthminus, partheightminus);
+						break;
+					case tiled:
+						
+						break;
+					default:
+						writefln("Not a valid fill type");
+						//assert(0)
+						break;
+				}
 				glEnd();
 			}
 			
+			//I am clueless about this, so it's commented
 			// Sort subs
-			if (!subs.ordered(true, (Surface s){return s.style.zIndex;} ))
-				subs.radixSort((Surface s){return s.style.zIndex;} );			
+			//if (!subs.ordered(true, (Surface s){return s.style.zIndex;} ))
+			//	subs.radixSort((Surface s){return s.style.zIndex;} );
 			
 			foreach(sub; subs)
 				sub.draw();
@@ -200,7 +434,7 @@ class Surface{
 			uint index = findIndex(this, Device.subs);
 			for(; index < Device.subs.length - 1; index++)
 				Device.subs[index] = Device.subs[index+1];
-			Device.subs[$] = this;
+			Device.subs[$-1] = this;
 		}
 		else{
 			uint index = findIndex(this, parent.subs);
@@ -208,10 +442,14 @@ class Surface{
 				parent.subs[index] = parent.subs[index+1];
 			parent.subs[$-1] = this;
 		}
-	}
+		if(onFocus) onFocus(this);
+	}	
 }
 
+//Perhaps put into yage.system.input
+//Could be better, a method perhaps...
 Surface findSurface(int x, int y){
+	if(Input.surfaceLock) return Input.surfaceLock;
 	foreach_reverse(sub; Device.subs){
 		if(sub.position1.x <= x && x <= sub.position2.x && sub.position1.y <= y && y <= sub.position2.y){
 			return findSurface(sub, x, y);
@@ -219,7 +457,7 @@ Surface findSurface(int x, int y){
 	}
 	return null;
 }
-
+//Could be better, a method perhaps...
 Surface findSurface(Surface surface,int x, int y){
 	foreach_reverse(sub; surface.subs){
 		if(sub.position1.x <= x && x <= sub.position2.x && sub.position1.y <= y && y <= sub.position2.y){
@@ -233,5 +471,5 @@ uint findIndex(Surface surface, Surface[] array){ //perhaps put into a template
 	foreach(uint index, Surface current; array){
 		if(current == surface) return  index;
 	}
-	return 1 << 8;
+	return 1 << 8;  //Implement this for not in subs
 }
