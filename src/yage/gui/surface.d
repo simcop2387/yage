@@ -58,6 +58,7 @@ class Surface{
 	Vec2f portion;
 	
 	bool visible;
+	bool mouseIn;
 	
 	byte fill = traditional;
 	
@@ -92,10 +93,32 @@ class Surface{
 		else if(parent !is null) parent.mousemove(buttons, coordinates);
 	}
 
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseout;
-
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseover;
-
+	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseleave;
+	void mouseleave(Surface next, byte buttons, Vec2i coordinates){
+		if(mouseIn == true){
+			if(isSub(next))
+				return;
+			else{
+				mouseIn = false;
+				if(onMouseleave)
+					onMouseleave(this, buttons, coordinates);
+			
+				if(next !is parent && parent !is null)
+					parent.mouseleave(next, buttons, coordinates);
+			}
+		}
+	}
+	
+	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseenter;
+	void mouseenter(byte buttons, Vec2i coordinates){
+		if(mouseIn == false){
+			if(parent !is null) parent.mouseenter(buttons, coordinates);
+			
+			mouseIn = true;
+			if(onMouseenter) onMouseenter(this, buttons, coordinates);
+		}
+	}
+	
 	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseup; //Done
 	void mouseup(byte buttons, Vec2i coordinates){ 
 		if(onMouseup)onMouseup(this, buttons, coordinates);
@@ -472,7 +495,14 @@ class Surface{
 			parent.subs[$-1] = this;
 		}
 		if(onFocus) onFocus(this);
-	}	
+	}
+		
+	bool isSub(Surface surf){
+		foreach(sub; subs){
+			if (sub == surf) return true;
+		}
+		return false;
+	}
 }
 
 //Perhaps put into yage.system.input

@@ -170,6 +170,8 @@ class CameraNode : Node
 		uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
 		if (xres > max)	xres = max;
 		if (yres > max)	yres = max;
+
+		aspect = cast(float)width / cast(float)height;
 	}
 
 	/**

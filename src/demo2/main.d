@@ -58,60 +58,11 @@ int main()
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
 	
 	Surface bg = new Surface(null);
-	bg.topLeft = Vec2f(.05,.05);
-	bg.bottomRight = Vec2f(.95, .95);
-	bg.setTexture(new GPUTexture("test2.png"));
-	bg.fill = stretched;
+	bg.setTexture(camera.getTexture());
+	bg.topLeft = Vec2f(0,0);
+	bg.bottomRight = Vec2f(1, 1);
 	bg.setVisibility(true);
-	
-	Surface disp = new Surface(bg);
-	disp.topLeft = Vec2f(.1,.1);
-	disp.bottomRight = Vec2f(.9, .9);
-	disp.setTexture(new GPUTexture("test/bc-dark.png"));
-	//disp.fill = stretched;
-	disp.setVisibility(true);
-
-	Surface first = new Surface(disp);
-	first.setTexture(new GPUTexture("test.png"));
-	first.fill = stretched;
-	first.topLeft = Vec2f(.8, .8);
-	first.bottomRight = Vec2f(.95, .95);
-	first.setVisibility(true);
-	
-	Surface third = new Surface(disp);
-	third.setTexture(new GPUTexture("box.png"));
-	third.fill = stretched;
-	third.topLeft = Vec2f(.8, .05);
-	third.bottomRight = Vec2f(.95, .2);
-	third.setVisibility(true);
-	
-	Surface fourth = new Surface(disp);
-	fourth.setTexture(new GPUTexture("test/button2.png"));
-	fourth.fill = stretched;
-	fourth.topLeft = Vec2f(.05, .8);
-	fourth.bottomRight = Vec2f(.2, .95);
-	fourth.setVisibility(true);
-	
-	Surface fifth = new Surface(disp);
-	fifth.setTexture(new GPUTexture("test/radio1.png"));
-	fifth.fill = stretched;
-	fifth.topLeft = Vec2f(.05, .05);
-	fifth.bottomRight = Vec2f(.2, .2);
-	fifth.setVisibility(true);
-	
-	Surface second = new Surface(disp);
-	second.setTexture(camera.getTexture());
-	second.topLeft = Vec2f(.2,.2);
-	second.bottomRight = Vec2f(.8, .8);
-	second.setVisibility(true);
-	
-	Surface clear = new Surface(second);
-	clear.setTexture(new GPUTexture("test/clear.png"));
-	clear.topLeft = Vec2f(.1,.1);
-	clear.bottomRight = Vec2f(.9, .9);
-	clear.fill = stretched;
-	clear.setVisibility(true);
-	
+		
 	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
 		Input.button[1].up = false;
@@ -125,6 +76,13 @@ int main()
 		writefln("Camera resolution changed to ", xres, " x ", yres);
 	}
 	
+	bg.onMousedown = &onMousedown;	
+	bg.onResize = &onResize;
+	
+	GPUTexture active = new GPUTexture("test/clear.png");
+	GPUTexture inactive = new GPUTexture("test/clearInactive.png");
+	GPUTexture inactive2 = new GPUTexture("test/clearInactive2.png");
+	
 	void onMousedown2(Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
 		self.startDrag();
@@ -135,19 +93,48 @@ int main()
 	void onMousemove(Surface self, byte buttons, Vec2i coordinates){
 		if(buttons == 1) self.drag(coordinates);
 	}
+	void onMouseenter(Surface self, byte buttons, Vec2i coordinates){
+		self.setTexture(active);
+	}
+	void onMouseleave(Surface self, byte buttons, Vec2i coordinates){
+		self.setTexture(inactive2);
+	}
 	
-	second.onMousedown = &onMousedown;	
-	second.onResize = &onResize;
+	Surface clear = new Surface(bg);
+	clear.setTexture(inactive);
+	clear.topLeft = Vec2f(.65,0);
+	clear.bottomRight = Vec2f(1, .25);
+	clear.fill = stretched;
+	clear.setVisibility(true);
 	clear.onMousedown = &onMousedown2;
 	clear.onMousemove = &onMousemove;
 	clear.onMouseup = &onMouseup2;
-	first.onMousedown = &onMousedown2;
-	first.onMousemove = &onMousemove;
-	first.onMouseup = &onMouseup2;
+	clear.onMouseenter = &onMouseenter;
+	clear.onMouseleave = &onMouseleave;
 	
-	bg.onMousedown = &onMousedown2;
-	bg.onMousemove = &onMousemove;
-	bg.onMouseup = &onMouseup2;
+	Surface clear2 = new Surface(clear);
+	clear2.setTexture(inactive);
+	clear2.topLeft = Vec2f(.65,0);
+	clear2.bottomRight = Vec2f(1, .25);
+	clear2.fill = stretched;
+	clear2.setVisibility(true);
+	clear2.onMousedown = &onMousedown2;
+	clear2.onMousemove = &onMousemove;
+	clear2.onMouseup = &onMouseup2;
+	clear2.onMouseenter = &onMouseenter;
+	clear2.onMouseleave = &onMouseleave;
+
+	Surface clear3 = new Surface(bg);
+	clear3.setTexture(inactive);
+	clear3.topLeft = Vec2f(.65,0);
+	clear3.bottomRight = Vec2f(1, .25);
+	clear3.fill = stretched;
+	clear3.setVisibility(true);
+	clear3.onMousedown = &onMousedown2;
+	clear3.onMousemove = &onMousemove;
+	clear3.onMouseup = &onMouseup2;
+	clear3.onMouseenter = &onMouseenter;
+	clear3.onMouseleave = &onMouseleave;
 	
 	// Music
 	SoundNode music = new SoundNode(camera);

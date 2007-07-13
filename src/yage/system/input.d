@@ -44,6 +44,7 @@ class Input
 	static bool exit = false;		/// A termination request has been received.
 
 	static Surface surfaceLock;
+	static Surface currentSurface;
 
 	/** This function fills the above fields with the current intput data.
 	 *  See the descriptions of each field for more details.  If this function is not called,
@@ -80,7 +81,7 @@ class Input
 					button[event.button.button].xdown = mousex;
 					button[event.button.button].ydown = mousey;
 
-					auto surface = currentSurface();
+					auto surface = getSurface();
 
 					if(surface !is null) surface.mousedown(event.button.button, Vec2i(mousex,mousey));
 
@@ -91,7 +92,7 @@ class Input
 					button[event.button.button].xup = mousex;
 					button[event.button.button].yup = mousey;
 
-					auto surface = currentSurface();
+					auto surface = getSurface();
 
 					if(surface !is null) surface.mouseup(event.button.button, Vec2i(mousex,mousey));
 
@@ -110,9 +111,26 @@ class Input
 					mousex = event.motion.x;
 					mousey = event.motion.y;
 					
-					auto surface = currentSurface();
+					auto surface = getSurface();
 
-					if(surface !is null) surface.mousemove(event.button.button, Vec2i(xdiff,ydiff));
+					//if the surface that the mouse is in has changed
+					if(currentSurface !is surface){
+						//If the old surface is not device
+						if(currentSurface !is null)
+							//Tell it that the mouse left
+							currentSurface.mouseleave(surface, event.button.button, Vec2i(mousex,mousey));
+						//If the new surface is not device
+						if(surface !is null)
+							//Tell it that the mosue entered
+							surface.mouseenter(event.button.button, Vec2i(mousex,mousey));
+						
+						//The new current surface
+						currentSurface = surface;
+					}
+					//Needs to be changed so that check is run once
+					if(surface !is null)
+						surface.mousemove(event.button.button, Vec2i(xdiff,ydiff));
+					
 					break;
 
 				// System
@@ -164,7 +182,7 @@ class Input
 		surfaceLock = null;
 	}
 	
-	static Surface currentSurface(){
+	static Surface getSurface(){
 		if(surfaceLock) return surfaceLock;
 		return findSurface(mousex, mousey);
 	}
