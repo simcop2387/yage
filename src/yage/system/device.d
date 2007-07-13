@@ -37,8 +37,8 @@ abstract class Device
 	protected:
 	// Video
 	static SDL_Surface* sdl_surface; // Holds a reference to the main (and only) SDL surface
-	static uint 		width;			// The width of the window.
-	static uint 		height; 		// The heght of the window.
+
+	static Vec2i		size;	// The width/height of the window.
 	static uint 		viewport_width; // The width of the current viewport
 	static uint 		viewport_height;// The height of the current viewport
 	static ubyte 		depth;
@@ -86,8 +86,8 @@ abstract class Device
 	}
 	body
 	{
-		this.width = width;
-		this.height= height;
+		this.size.x = width;
+		this.size.y= height;
 		this.depth = depth;
 		this.fullscreen = fullscreen;
 
@@ -114,9 +114,9 @@ abstract class Device
 		// Create the screen surface (window)
 		uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
 		if (fullscreen) flags |= SDL_FULLSCREEN;
-		sdl_surface = SDL_SetVideoMode(width, height, depth, flags);
+		sdl_surface = SDL_SetVideoMode(size.x, size.y, depth, flags);
 		if(sdl_surface is null)
-			throw new Exception ("Unable to set " ~ .toString(width) ~ "x" ~ .toString(height) ~
+			throw new Exception ("Unable to set " ~ .toString(size.x) ~ "x" ~ .toString(size.y) ~
 			" video mode: : " ~ .toString(SDL_GetError()));
 		SDL_LockSurface(sdl_surface);
 
@@ -276,17 +276,17 @@ abstract class Device
 
 	/// Return the aspect ratio (width/height) of the rendering window.
 	static float getAspectRatio()
-	{	if (height==0) height=1;
-		return width/cast(float)height;
+	{	if (size.y==0) size.y=1;
+		return size.x/cast(float)size.x;
 	}
 
 	/// Return the current width of the window in pixels.
 	static uint getWidth()
-	{	return width;
+	{	return size.x;
 	}
 	/// return the current height of the window in pixels.
 	static uint getHeight()
-	{	return height;
+	{	return size.y;
 	}
 
 	/** Resize the viewport to the given size.  Special values of
@@ -296,13 +296,13 @@ abstract class Device
 		viewport_height = _height;
 
 		// special values of 0 means stretch to window size
-		if (viewport_width ==0) viewport_width  = width;
-		if (viewport_height==0) viewport_height = height;
+		if (viewport_width ==0) viewport_width  = size.x;
+		if (viewport_height==0) viewport_height = size.y;
 
 		// Ensure our new resolution is less than the window size
 		// This might no longer be an issue once framebufferobjects are used.
-		if (viewport_width  > width)  viewport_width  = width;
-		if (viewport_height > height) viewport_height = height;
+		if (viewport_width  > size.x)  viewport_width  = size.x;
+		if (viewport_height > size.y) viewport_height = size.y;
 
 		glViewport(0, 0, viewport_width, viewport_height);
 
@@ -317,11 +317,11 @@ abstract class Device
 
 	/** Stores the dimensions of the current window size.
 	 *  This is called by a resize event in Input.checkInput(). */
-	static void resizeWindow(int _width, int _height)
-	{	width = _width;
-		height = _height;
+	static void resizeWindow(int width, int height)
+	{	size.x = width;
+		size.y = height;
 		
-		foreach(sub ;this.subs)	sub.recalculate(Vec2i(0, 0), Vec2i(width, height));
+		foreach(sub ;this.subs)	sub.recalculate(Vec2i(0, 0), size, size);
 		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, alsy try SDL lock surface)

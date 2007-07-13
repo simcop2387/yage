@@ -80,7 +80,8 @@ class Input
 					button[event.button.button].xdown = mousex;
 					button[event.button.button].ydown = mousey;
 
-					auto surface = findSurface(mousex, mousey);
+					auto surface = currentSurface();
+
 					if(surface !is null) surface.mousedown(event.button.button, Vec2i(mousex,mousey));
 
 					break;
@@ -90,7 +91,8 @@ class Input
 					button[event.button.button].xup = mousex;
 					button[event.button.button].yup = mousey;
 
-					auto surface = findSurface(mousex, mousey);
+					auto surface = currentSurface();
+
 					if(surface !is null) surface.mouseup(event.button.button, Vec2i(mousex,mousey));
 
 					break;
@@ -108,7 +110,8 @@ class Input
 					mousex = event.motion.x;
 					mousey = event.motion.y;
 					
-					auto surface = findSurface(mousex, mousey);
+					auto surface = currentSurface();
+
 					if(surface !is null) surface.mousemove(event.button.button, Vec2i(xdiff,ydiff));
 					break;
 
@@ -159,5 +162,10 @@ class Input
 	}
 	static void unlockSurface(){
 		surfaceLock = null;
+	}
+	
+	static Surface currentSurface(){
+		if(surfaceLock) return surfaceLock;
+		return findSurface(mousex, mousey);
 	}
 }

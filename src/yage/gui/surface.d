@@ -46,11 +46,13 @@ class Surface{
 	Vec2f topLeft;//rid self of these
 	Vec2f bottomRight;
 	
-	//these are used for rendering, not for user
+	//these are calculated, not for calculating
 	Vec2i position1;
 	Vec2i position2;
+	Vec2i size;
 	
-	Vec2i location;
+	//these are for calculating
+	private Vec2i locationAdd;
 	
 	//used for the texture
 	Vec2f portion;
@@ -120,67 +122,94 @@ class Surface{
 		recalculateTexture();
 	}
 	
-	//MAYBE I SHOULD PUT RECALCUALTE INTO A DELEGATE SO THAT THE USER COULD PICK ANYTHING!
-	void recalculate(Vec2i parent1, Vec2i parent2){ //not done
-		Vec2i parentSize = Vec2i(parent2.x - parent1.x, parent2.y - parent1.y);
+	void recalculate(Vec2i parent1, Vec2i parent2, Vec2i parentSize, bool doSubs = true){ //not done
 		
-		Vec2i tempPosition1;
-		Vec2i tempPosition2;
+		position1.x = cast(int)(topLeft.x * cast(float)parentSize.x) + parent1.x + locationAdd.x;
+		position1.y = cast(int)(topLeft.y * cast(float)parentSize.y) + parent1.y + locationAdd.y;
 		
-		tempPosition1.x = cast(int)(topLeft.x * cast(float)parentSize.x) + parent1.x + location.x;
-		tempPosition1.y = cast(int)(topLeft.y * cast(float)parentSize.y) + parent1.y + location.y;
-		tempPosition2.x = parent2.x - cast(int)((1.0 - bottomRight.x) * cast(float)parentSize.x) + location.x;
-		tempPosition2.y = parent2.y - cast(int)((1.0 - bottomRight.y) * cast(float)parentSize.y) + location.y;
+		position2.x = parent2.x - cast(int)((1.0 - bottomRight.x) * cast(float)parentSize.x) + locationAdd.x;
+		position2.y = parent2.y - cast(int)((1.0 - bottomRight.y) * cast(float)parentSize.y) + locationAdd.y;
 		
-		//All of the below is for not going out of boundry
-		if(parent is null) goto setx;
-		bool xfailed;
-		if(tempPosition1.x < parent.position1.x){
-			xfailed = true;
- 			goto afterx;
-		}
-		if(tempPosition2.x > parent.position2.x){
-			xfailed = true;
- 			goto afterx;
-		}
+		size.x = position2.x - position1.x;
+		size.y = position2.y - position1.y;
 		
-		setx:
-			position1.x = tempPosition1.x;
-			position2.x = tempPosition2.x;
-			if(parent is null) goto sety;
-			
-		afterx:
-			if(tempPosition1.y < parent.position1.y){
- 				if(xfailed) return; //subs are not calculated and the window has not been resized
- 				else goto aftery;
-			}
-			if(tempPosition2.y > parent.position2.y){
- 				if(xfailed) return; //subs are not calculated and the window has not ben resized
- 				else goto aftery;
-			}
-		
-		sety:
-			position1.y = tempPosition1.y;
-			position2.y = tempPosition2.y;
-		
-		aftery:
 		if(onResize)onResize(this);
 		
+		if(doSubs)
+			recalculateSubs();
+	}
+	
+	private void recalculateSubs(){
 		foreach(sub ;this.subs)
-			sub.recalculate(position1, position2);
+			sub.recalculate(position1, position2, size);
 	}
 	
-	void recalculate(){
-		if(parent is null)
-			recalculate(Vec2i(0,0), Vec2i(Device.width, Device.height));
+	void recalculate(bool doSubs = true){
+		if(parent is null){
+			recalculate(Vec2i(0,0), Device.size, Device.size, doSubs);
+		}
 		else
-			recalculate(parent.position1, parent.position2);
+			recalculate(parent.position1, parent.position2, parent.size, doSubs);
 	}
 	
-	void moveAdd(Vec2i add){
-		location.x -= add.x;
-		location.y -= add.y;
-		recalculate();
+	void startDrag(){
+		Input.setSurfaceLock(this);
+	}
+	
+	void drag(Vec2i add){
+		locationAdd.x -= add.x;
+		locationAdd.y -= add.y;
+		
+		
+		recalculate(false);
+		
+		
+		//All of the below is for not going out of boundry
+		if(parent is null){
+ 			recalculateSubs();
+ 			return;
+		}
+		
+		if(position1.x < parent.position1.x){
+			position1.x = parent.position1.x;
+			position2.x = position1.x + size.x;
+		}
+		else if(position2.x > parent.position2.x){
+ 			position2.x = parent.position2.x;
+ 			position1.x = position2.x - size.x;
+		}
+		
+		if(position1.y < parent.position1.y){
+			position1.y = parent.position1.y;
+			position2.y = position1.y + size.y;
+		}
+		else if(position2.y > parent.position2.y){
+			position2.y = parent.position2.y;
+			position1.y = position2.y - size.y;
+		}
+		
+		recalculateSubs();
+	}
+	
+	void endDrag(){
+		recalculate(false);
+		if(parent is null) goto after;
+		
+		
+		if(position1.x < parent.position1.x)
+			locationAdd.x += parent.position1.x - position1.x;
+		else if(position2.x > parent.position2.x)
+			locationAdd.x -= position2.x - parent.position2.x;
+		
+		
+		if(position1.y < parent.position1.y)
+			locationAdd.y += parent.position1.y - position1.y;
+		else if(position2.y > parent.position2.y)
+			locationAdd.y -= position2.y - parent.position2.y;
+		
+		recalculate(false);
+		after:
+		Input.unlockSurface();
 	}
 	
 	//I would like textures to automatically do this so that it doesn't need to happen for every single surface on every single frame
@@ -195,10 +224,10 @@ class Surface{
 		// Setup the viewport in orthogonal mode,
 		// with dimensions 0..width, 0..height
 		// with 0,0 being at the top left.
-		glViewport(0, 0, Device.width, Device.height);
+		glViewport(0, 0, Device.size.x, Device.size.y);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, Device.width, Device.height, 0, -1, 1);
+		glOrtho(0, Device.size.x, Device.size.y, 0, -1, 1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		
@@ -449,7 +478,6 @@ class Surface{
 //Perhaps put into yage.system.input
 //Could be better, a method perhaps...
 Surface findSurface(int x, int y){
-	if(Input.surfaceLock) return Input.surfaceLock;
 	foreach_reverse(sub; Device.subs){
 		if(sub.position1.x <= x && x <= sub.position2.x && sub.position1.y <= y && y <= sub.position2.y){
 			return findSurface(sub, x, y);

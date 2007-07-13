@@ -127,13 +127,13 @@ int main()
 	
 	void onMousedown2(Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
-		Input.setSurfaceLock(self);
+		self.startDrag();
 	}
 	void onMouseup2(Surface self, byte buttons, Vec2i coordinates){
-		Input.unlockSurface();
+		self.endDrag();
 	}
 	void onMousemove(Surface self, byte buttons, Vec2i coordinates){
-		if(buttons == 1) self.moveAdd(coordinates);
+		if(buttons == 1) self.drag(coordinates);
 	}
 	
 	second.onMousedown = &onMousedown;	
@@ -226,7 +226,7 @@ int main()
 
 		// Cap framerate
 		//if (dtime < 1/60.0)
-			std.c.time.usleep(cast(uint)(1000));
+		//	std.c.time.usleep(cast(uint)(1000));
 		scene.swapTransformRead();
 	}
 

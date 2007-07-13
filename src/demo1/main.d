@@ -61,7 +61,7 @@ int main()
 	disp.topLeft = Vec2f(0,0);
 	disp.bottomRight = Vec2f(1, 1);
 	disp.setVisibility(true);
-	disp.texture = camera.getTexture();
+	disp.setTexture(camera.getTexture());
 
 	
 	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
