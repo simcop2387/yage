@@ -69,7 +69,7 @@ int main()
 		Input.setGrabMouse(!Input.getGrabMouse());
 	}
 	
-	void onResize(Surface self, Vec2i difference){
+	void onResize(Surface self){
 		camera.setResolution(self.size.x, self.size.y);
 		writefln("Resolution changed to ", self.size.x, " x ", self.size.y);
 	}
