@@ -81,14 +81,18 @@ enum : GLenum
     GL_BLEND_COLOR_EXT                = 0x8005,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLclampf, GLclampf, GLclampf, GLclampf) pfglBlendColorEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLclampf, GLclampf, GLclampf, GLclampf) pfglBlendColorEXT;
 pfglBlendColorEXT       glBlendColorEXT;

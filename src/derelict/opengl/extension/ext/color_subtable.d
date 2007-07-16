@@ -75,16 +75,20 @@ else
     }
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglColorSubTableEXT;
+    typedef void function(GLenum, GLsizei, GLint, GLint, GLsizei) pfglCopyColorSubTableEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglColorSubTableEXT;
-typedef void function(GLenum, GLsizei, GLint, GLint, GLsizei) pfglCopyColorSubTableEXT;
 pfglColorSubTableEXT        glColorSubTableEXT;
 pfglCopyColorSubTableEXT    glCopyColorSubTableEXT;

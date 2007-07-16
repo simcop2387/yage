@@ -210,29 +210,33 @@ enum : GLuint
     GL_BIAS_BIT_ATI                             = 0x00000008,
 }
 
+private const char[] Funcs =
+"
+    typedef GLuint function(GLuint)                   pfglGenFragmentShadersATI;
+    typedef void function(GLuint)                     pfglBindFragmentShaderATI;
+    typedef void function(GLuint)                     pfglDeleteFragmentShaderATI;
+    typedef void function()                           pfglBeginFragmentShaderATI;
+    typedef void function()                           pfglEndFragmentShaderATI;
+    typedef void function(GLuint, GLuint, GLenum)     pfglPassTexCoordATI;
+    typedef void function(GLuint, GLuint, GLenum)     pfglSampleMapATI;
+    typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglColorFragmentOp1ATI;
+    typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglColorFragmentOp2ATI;
+    typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglColorFragmentOp3ATI;
+    typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint) pfglAlphaFragmentOp1ATI;
+    typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglAlphaFragmentOp2ATI;
+    typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglAlphaFragmentOp3ATI;
+    typedef void function(GLuint, GLfloat *)          pfglSetFragmentShaderConstantATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef GLuint function(GLuint)                   pfglGenFragmentShadersATI;
-typedef void function(GLuint)                     pfglBindFragmentShaderATI;
-typedef void function(GLuint)                     pfglDeleteFragmentShaderATI;
-typedef void function()                           pfglBeginFragmentShaderATI;
-typedef void function()                           pfglEndFragmentShaderATI;
-typedef void function(GLuint, GLuint, GLenum)     pfglPassTexCoordATI;
-typedef void function(GLuint, GLuint, GLenum)     pfglSampleMapATI;
-typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglColorFragmentOp1ATI;
-typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglColorFragmentOp2ATI;
-typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglColorFragmentOp3ATI;
-typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint) pfglAlphaFragmentOp1ATI;
-typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglAlphaFragmentOp2ATI;
-typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint) pfglAlphaFragmentOp3ATI;
-typedef void function(GLuint, GLfloat *)          pfglSetFragmentShaderConstantATI;
 pfglGenFragmentShadersATI           glGenFragmentShadersATI;
 pfglBindFragmentShaderATI           glBindFragmentShaderATI;
 pfglDeleteFragmentShaderATI         glDeleteFragmentShaderATI;

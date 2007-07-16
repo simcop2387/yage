@@ -85,19 +85,23 @@ enum : GLenum
     GL_TRANSPOSE_COLOR_MATRIX_ARB      = 0x84E6,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLfloat*) pfglLoadTransposeMatrixfARB;
+    typedef void function(GLdouble*) pfglLoadTransposeMatrixdARB;
+    typedef void function(GLfloat*) pfglMultTransposeMatrixfARB;
+    typedef void function(GLdouble*) pfglMultTransposeMatrixdARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLfloat*) pfglLoadTransposeMatrixfARB;
-typedef void function(GLdouble*) pfglLoadTransposeMatrixdARB;
-typedef void function(GLfloat*) pfglMultTransposeMatrixfARB;
-typedef void function(GLdouble*) pfglMultTransposeMatrixdARB;
 pfglLoadTransposeMatrixfARB             glLoadTransposeMatrixfARB;
 pfglLoadTransposeMatrixdARB             glLoadTransposeMatrixdARB;
 pfglMultTransposeMatrixfARB             glMultTransposeMatrixfARB;

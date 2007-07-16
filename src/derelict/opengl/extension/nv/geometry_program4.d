@@ -79,14 +79,18 @@ enum : GLenum
     GL_MAX_PROGRAM_TOTAL_OUTPUT_COMPONENTS_NV      = 0x8C28,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLint) pfglProgramVertexLimitNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLint) pfglProgramVertexLimitNV;
 pfglProgramVertexLimitNV            glProgramVertexLimitNV;

@@ -94,23 +94,27 @@ enum : GLenum
     GL_SAMPLES_PASSED_ARB             = 0x8914,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLsizei, GLuint*) pfglGenQueriesARB;
+    typedef void function(GLsizei, GLuint*) pfglDeleteQueriesARB;
+    typedef GLboolean function(GLuint) pfglIsQueryARB;
+    typedef void function(GLenum, GLuint) pfglBeginQueryARB;
+    typedef void function(GLenum) pfglEndQueryARB;
+    typedef void function(GLenum, GLenum, GLint*) pfglGetQueryivARB;
+    typedef void function(GLuint, GLenum, GLint*) pfglGetQueryObjectivARB;
+    typedef void function(GLuint, GLenum, GLuint*) pfglGetQueryObjectuivARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLsizei, GLuint*) pfglGenQueriesARB;
-typedef void function(GLsizei, GLuint*) pfglDeleteQueriesARB;
-typedef GLboolean function(GLuint) pfglIsQueryARB;
-typedef void function(GLenum, GLuint) pfglBeginQueryARB;
-typedef void function(GLenum) pfglEndQueryARB;
-typedef void function(GLenum, GLenum, GLint*) pfglGetQueryivARB;
-typedef void function(GLuint, GLenum, GLint*) pfglGetQueryObjectivARB;
-typedef void function(GLuint, GLenum, GLuint*) pfglGetQueryObjectuivARB;
 pfglGenQueriesARB           glGenQueriesARB;
 pfglDeleteQueriesARB        glDeleteQueriesARB;
 pfglIsQueryARB              glIsQueryARB;

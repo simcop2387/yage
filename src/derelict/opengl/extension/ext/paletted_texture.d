@@ -89,19 +89,23 @@ enum : GLenum
     GL_TEXTURE_INDEX_SIZE_EXT         = 0x80ED,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLenum, GLsizei, GLenum, GLenum, GLvoid*) pfglColorTableEXT;
+    typedef void function(GLenum, GLenum, GLenum, GLvoid*) pfglGetColorTableEXT;
+    typedef void function(GLenum, GLenum, GLint*) pfglGetColorTableParameterivEXT;
+    typedef void function(GLenum, GLenum, GLfloat*) pfglGetColorTableParameterfvEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLenum, GLsizei, GLenum, GLenum, GLvoid*) pfglColorTableEXT;
-typedef void function(GLenum, GLenum, GLenum, GLvoid*) pfglGetColorTableEXT;
-typedef void function(GLenum, GLenum, GLint*) pfglGetColorTableParameterivEXT;
-typedef void function(GLenum, GLenum, GLfloat*) pfglGetColorTableParameterfvEXT;
 pfglColorTableEXT               glColorTableEXT;
 pfglGetColorTableEXT            glGetColorTableEXT;
 pfglGetColorTableParameterivEXT glGetColorTableParameterivEXT;

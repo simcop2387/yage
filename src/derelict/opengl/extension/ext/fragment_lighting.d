@@ -124,33 +124,37 @@ enum : GLenum
     GL_FRAGMENT_LIGHT7_EXT                              = 0x8413,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum,GLenum) pfglFragmentColorMaterialEXT;
+    typedef void function(GLenum,GLfloat) pfglFragmentLightModelfEXT;
+    typedef void function(GLenum,GLfloat*) pfglFragmentLightModelfvEXT;
+    typedef void function(GLenum,GLint) pfglFragmentLightModeliEXT;
+    typedef void function(GLenum,GLint*) pfglFragmentLightModelivEXT;
+    typedef void function(GLenum,GLenum,GLfloat) pfglFragmentLightfEXT;
+    typedef void function(GLenum,GLenum,GLfloat*) pfglFragmentLightfvEXT;
+    typedef void function(GLenum,GLenum,GLint) pfglFragmentLightiEXT;
+    typedef void function(GLenum,GLenum,GLint*) pfglFragmentLightivEXT;
+    typedef void function(GLenum,GLenum,GLfloat) pfglFragmentMaterialfEXT;
+    typedef void function(GLenum,GLenum,GLfloat*) pfglFragmentMaterialfvEXT;
+    typedef void function(GLenum,GLenum,GLint) pfglFragmentMaterialiEXT;
+    typedef void function(GLenum,GLenum,GLint*) pfglFragmentMaterialivEXT;
+    typedef void function(GLenum,GLenum,GLfloat*) pfglGetFragmentLightfvEXT;
+    typedef void function(GLenum,GLenum,GLint*) pfglGetFragmentLightivEXT;
+    typedef void function(GLenum,GLenum,GLfloat*) pfglGetFragmentMaterialfvEXT;
+    typedef void function(GLenum,GLenum,GLint*) pfglGetFragmentMaterialivEXT;
+    typedef void function(GLenum,GLint) pfglLightEnviEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum,GLenum) pfglFragmentColorMaterialEXT;
-typedef void function(GLenum,GLfloat) pfglFragmentLightModelfEXT;
-typedef void function(GLenum,GLfloat*) pfglFragmentLightModelfvEXT;
-typedef void function(GLenum,GLint) pfglFragmentLightModeliEXT;
-typedef void function(GLenum,GLint*) pfglFragmentLightModelivEXT;
-typedef void function(GLenum,GLenum,GLfloat) pfglFragmentLightfEXT;
-typedef void function(GLenum,GLenum,GLfloat*) pfglFragmentLightfvEXT;
-typedef void function(GLenum,GLenum,GLint) pfglFragmentLightiEXT;
-typedef void function(GLenum,GLenum,GLint*) pfglFragmentLightivEXT;
-typedef void function(GLenum,GLenum,GLfloat) pfglFragmentMaterialfEXT;
-typedef void function(GLenum,GLenum,GLfloat*) pfglFragmentMaterialfvEXT;
-typedef void function(GLenum,GLenum,GLint) pfglFragmentMaterialiEXT;
-typedef void function(GLenum,GLenum,GLint*) pfglFragmentMaterialivEXT;
-typedef void function(GLenum,GLenum,GLfloat*) pfglGetFragmentLightfvEXT;
-typedef void function(GLenum,GLenum,GLint*) pfglGetFragmentLightivEXT;
-typedef void function(GLenum,GLenum,GLfloat*) pfglGetFragmentMaterialfvEXT;
-typedef void function(GLenum,GLenum,GLint*) pfglGetFragmentMaterialivEXT;
-typedef void function(GLenum,GLint) pfglLightEnviEXT;
 pfglFragmentColorMaterialEXT            glFragmentColorMaterialEXT;
 pfglFragmentLightModelfEXT              glFragmentLightModelfEXT;
 pfglFragmentLightModelfvEXT             glFragmentLightModelfvEXT;

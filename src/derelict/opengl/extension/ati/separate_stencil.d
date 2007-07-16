@@ -82,17 +82,21 @@ enum : GLenum
     GL_STENCIL_BACK_PASS_DEPTH_PASS_ATI  = 0x8803,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLenum, GLenum, GLenum) pfglStencilOpSeparateATI;
+    typedef void function(GLenum, GLenum, GLint, GLuint) pfglStencilFuncSeparateATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLenum, GLenum, GLenum) pfglStencilOpSeparateATI;
-typedef void function(GLenum, GLenum, GLint, GLuint) pfglStencilFuncSeparateATI;
 pfglStencilOpSeparateATI       glStencilOpSeparateATI;
 pfglStencilFuncSeparateATI     glStencilFuncSeparateATI;
 

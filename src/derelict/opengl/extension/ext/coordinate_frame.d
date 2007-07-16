@@ -92,16 +92,20 @@ enum : GLenum
     GL_MAP2_BINORMAL_EXT            = 0x8447,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum,GLsizei,GLvoid*) pfglBinormalPointerEXT;
+    typedef void function(GLenum,GLsizei,GLvoid*) pfglTangentPointerEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum,GLsizei,GLvoid*) pfglBinormalPointerEXT;
-typedef void function(GLenum,GLsizei,GLvoid*) pfglTangentPointerEXT;
 pfglBinormalPointerEXT          glBinormalPointerEXT;
 pfglTangentPointerEXT           glTangentPointerEXT;

@@ -93,22 +93,26 @@ enum : GLenum
     GL_SAMPLES_PASSED_ARB             = 0x8914,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLsizei, GLuint*) pfglGenOcclusionQueriesNV;
+    typedef void function(GLsizei, GLuint*) pfglDeleteOcclusionQueriesNV;
+    typedef GLboolean function(GLuint) pfglIsOcclusionQueryNV;
+    typedef void function(GLuint) pfglBeginOcclusionQueryNV;
+    typedef void function() pfglEndOcclusionQueryNV;
+    typedef void function(GLuint, GLenum, GLint*) pfglGetOcclusionQueryivNV;
+    typedef void function(GLuint, GLenum, GLuint*) pfglGetOcclusionQueryuivNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLsizei, GLuint*) pfglGenOcclusionQueriesNV;
-typedef void function(GLsizei, GLuint*) pfglDeleteOcclusionQueriesNV;
-typedef GLboolean function(GLuint) pfglIsOcclusionQueryNV;
-typedef void function(GLuint) pfglBeginOcclusionQueryNV;
-typedef void function() pfglEndOcclusionQueryNV;
-typedef void function(GLuint, GLenum, GLint*) pfglGetOcclusionQueryivNV;
-typedef void function(GLuint, GLenum, GLuint*) pfglGetOcclusionQueryuivNV;
 pfglGenOcclusionQueriesNV           glGenOcclusionQueriesNV;
 pfglDeleteOcclusionQueriesNV        glDeleteOcclusionQueriesNV;
 pfglIsOcclusionQueryNV              glIsOcclusionQueryNV;

@@ -80,14 +80,18 @@ enum : GLenum
     GL_BLEND_SRC_ALPHA_EXT            = 0x80CB,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLenum, GLenum, GLenum) pfglBlendFuncSeparateEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLenum, GLenum, GLenum) pfglBlendFuncSeparateEXT;
 pfglBlendFuncSeparateEXT    glBlendFuncSeparateEXT;

@@ -80,16 +80,20 @@ enum : GLenum
     GL_ARRAY_ELEMENT_LOCK_COUNT_EXT   = 0x81A9,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLint, GLsizei) pfglLockArraysEXT;
+    typedef void function() pfglUnlockArraysEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLint, GLsizei) pfglLockArraysEXT;
-typedef void function() pfglUnlockArraysEXT;
 pfglLockArraysEXT       glLockArraysEXT;
 pfglUnlockArraysEXT     glUnlockArraysEXT;

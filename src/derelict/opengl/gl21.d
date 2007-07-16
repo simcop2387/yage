@@ -89,21 +89,25 @@ enum : GLenum
     GL_COMPRESSED_SLUMINANCE_ALPHA    = 0x8C4B,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix2x3fv;
+    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix3x2fv;
+    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix2x4fv;
+    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix4x2fv;
+    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix3x4fv;
+    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix4x3fv;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix2x3fv;
-typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix3x2fv;
-typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix2x4fv;
-typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix4x2fv;
-typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix3x4fv;
-typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix4x3fv;
 pfglUniformMatrix2x3fv              glUniformMatrix2x3fv;
 pfglUniformMatrix3x2fv              glUniformMatrix3x2fv;
 pfglUniformMatrix2x4fv              glUniformMatrix2x4fv;

@@ -115,32 +115,36 @@ enum : GLenum
     GL_SECONDARY_COLOR_ARRAY_EXT           = 0x845E,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLbyte, GLbyte, GLbyte) pfglSecondaryColor3bEXT;
+    typedef void function(GLbyte*) pfglSecondaryColor3bvEXT;
+    typedef void function(GLdouble, GLdouble, GLdouble) pfglSecondaryColor3dEXT;
+    typedef void function(GLdouble*) pfglSecondaryColor3dvEXT;
+    typedef void function(GLfloat, GLfloat, GLfloat) pfglSecondaryColor3fEXT;
+    typedef void function(GLfloat*) pfglSecondaryColor3fvEXT;
+    typedef void function(GLint, GLint, GLint) pfglSecondaryColor3iEXT;
+    typedef void function(GLint*) pfglSecondaryColor3ivEXT;
+    typedef void function(GLshort, GLshort, GLshort) pfglSecondaryColor3sEXT;
+    typedef void function(GLshort*) pfglSecondaryColor3svEXT;
+    typedef void function(GLubyte, GLubyte, GLubyte) pfglSecondaryColor3ubEXT;
+    typedef void function(GLubyte*) pfglSecondaryColor3ubvEXT;
+    typedef void function(GLuint, GLuint, GLuint) pfglSecondaryColor3uiEXT;
+    typedef void function(GLuint*) pfglSecondaryColor3uivEXT;
+    typedef void function(GLushort, GLushort, GLushort) pfglSecondaryColor3usEXT;
+    typedef void function(GLushort*) pfglSecondaryColor3usvEXT;
+    typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglSecondaryColorPointerEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLbyte, GLbyte, GLbyte) pfglSecondaryColor3bEXT;
-typedef void function(GLbyte*) pfglSecondaryColor3bvEXT;
-typedef void function(GLdouble, GLdouble, GLdouble) pfglSecondaryColor3dEXT;
-typedef void function(GLdouble*) pfglSecondaryColor3dvEXT;
-typedef void function(GLfloat, GLfloat, GLfloat) pfglSecondaryColor3fEXT;
-typedef void function(GLfloat*) pfglSecondaryColor3fvEXT;
-typedef void function(GLint, GLint, GLint) pfglSecondaryColor3iEXT;
-typedef void function(GLint*) pfglSecondaryColor3ivEXT;
-typedef void function(GLshort, GLshort, GLshort) pfglSecondaryColor3sEXT;
-typedef void function(GLshort*) pfglSecondaryColor3svEXT;
-typedef void function(GLubyte, GLubyte, GLubyte) pfglSecondaryColor3ubEXT;
-typedef void function(GLubyte*) pfglSecondaryColor3ubvEXT;
-typedef void function(GLuint, GLuint, GLuint) pfglSecondaryColor3uiEXT;
-typedef void function(GLuint*) pfglSecondaryColor3uivEXT;
-typedef void function(GLushort, GLushort, GLushort) pfglSecondaryColor3usEXT;
-typedef void function(GLushort*) pfglSecondaryColor3usvEXT;
-typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglSecondaryColorPointerEXT;
 pfglSecondaryColor3bEXT         glSecondaryColor3bEXT;
 pfglSecondaryColor3bvEXT        glSecondaryColor3bvEXT;
 pfglSecondaryColor3dEXT         glSecondaryColor3dEXT;

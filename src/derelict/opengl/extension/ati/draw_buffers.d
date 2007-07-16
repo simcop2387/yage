@@ -93,15 +93,19 @@ enum : GLenum
     GL_DRAW_BUFFER15_ATI             = 0x8834,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLsizei, GLenum *) pfglDrawBuffersATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLsizei, GLenum *) pfglDrawBuffersATI;
 pfglDrawBuffersATI     glDrawBuffersATI;
 

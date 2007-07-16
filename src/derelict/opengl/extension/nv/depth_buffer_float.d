@@ -84,18 +84,22 @@ enum : GLenum
     GL_DEPTH_BUFFER_FLOAT_MODE_NV          = 0x8DAF,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLdouble, GLdouble) pfglDepthRangedNV;
+    typedef void function(GLdouble) pfglClearDepthdNV;
+    typedef void function(GLdouble, GLdouble) pfglDepthBoundsdNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLdouble, GLdouble) pfglDepthRangedNV;
-typedef void function(GLdouble) pfglClearDepthdNV;
-typedef void function(GLdouble, GLdouble) pfglDepthBoundsdNV;
 pfglDepthRangedNV           glDepthRangedNV;
 pfglClearDepthdNV           glClearDepthdNV;
 pfglDepthBoundsdNV          glDepthBoundsdNV;

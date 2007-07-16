@@ -78,14 +78,18 @@ enum : GLenum
     GL_STENCIL_CLEAR_TAG_VALUE_EXT = 0x88F3,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLsizei, GLuint) pfglStencilClearTagEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLsizei, GLuint) pfglStencilClearTagEXT;
 pfglStencilClearTagEXT glStencilClearTagEXT;

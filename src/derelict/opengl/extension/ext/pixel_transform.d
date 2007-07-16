@@ -91,19 +91,23 @@ enum : GLenum
     GL_PIXEL_TRANSFORM_2D_MATRIX_EXT           = 0x8338,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLenum, GLint) pfglPixelTransformParameteriEXT;
+    typedef void function(GLenum, GLenum, GLfloat) pfglPixelTransformParameterfEXT;
+    typedef void function(GLenum, GLenum, GLint*) pfglPixelTransformParameterivEXT;
+    typedef void function(GLenum, GLenum, GLfloat*) pfglPixelTransformParameterfvEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLenum, GLint) pfglPixelTransformParameteriEXT;
-typedef void function(GLenum, GLenum, GLfloat) pfglPixelTransformParameterfEXT;
-typedef void function(GLenum, GLenum, GLint*) pfglPixelTransformParameterivEXT;
-typedef void function(GLenum, GLenum, GLfloat*) pfglPixelTransformParameterfvEXT;
 pfglPixelTransformParameteriEXT     glPixelTransformParameteriEXT;
 pfglPixelTransformParameterfEXT     glPixelTransformParameterfEXT;
 pfglPixelTransformParameterivEXT    glPixelTransformParameterivEXT;

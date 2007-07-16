@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2006 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,7 +13,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the names 'Derelict', 'DerelictGL', nor the names of its contributors
+ * * Neither the names 'Derelict', 'DerelictFT', nor the names of its contributors
  *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
@@ -29,67 +29,10 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-module derelict.opengl.extension.ext.stencil_two_side;
+module derelict.freetype.ft;
 
-private
+public
 {
-    import derelict.opengl.gltypes;
-    import derelict.opengl.gl;
-    import derelict.opengl.extension.loader;
-    import derelict.util.wrapper;
+    import derelict.freetype.fttypes;
+    import derelict.freetype.ftfuncs;
 }
-
-private bool enabled = false;
-
-struct EXTStencilTwoSide
-{
-    static bool load(char[] extString)
-    {
-        if(extString.findStr("GL_EXT_stencil_two_side") == -1)
-            return false;
-
-        if(!glBindExtFunc(cast(void**)&glActiveStencilFaceEXT, "glActiveStencilFaceEXT"))
-            return false;
-
-        enabled = true;
-        return true;
-    }
-
-    static bool isEnabled()
-    {
-        return enabled;
-    }
-}
-
-version(DerelictGL_NoExtensionLoaders)
-{
-}
-else
-{
-    static this()
-    {
-        DerelictGL.registerExtensionLoader(&EXTStencilTwoSide.load);
-    }
-}
-
-enum : GLenum
-{
-    GL_STENCIL_TEST_TWO_SIDE_EXT   = 0x8910,
-    GL_ACTIVE_STENCIL_FACE_EXT     = 0x8911,
-}
-
-private const char[] Funcs =
-"
-    typedef void function(GLenum) pfglActiveStencilFaceEXT;
-";
-
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
-
-pfglActiveStencilFaceEXT    glActiveStencilFaceEXT;

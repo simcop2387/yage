@@ -84,16 +84,20 @@ enum : GLenum
     GL_READ_PIXEL_DATA_RANGE_POINTER_NV     = 0x887D,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLsizei, GLvoid*) pfglPixelDataRangeNV;
+    typedef void function(GLenum) pfglFlushPixelDataRangeNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLsizei, GLvoid*) pfglPixelDataRangeNV;
-typedef void function(GLenum) pfglFlushPixelDataRangeNV;
 pfglPixelDataRangeNV        glPixelDataRangeNV;
 pfglFlushPixelDataRangeNV   glFlushPixelDataRangeNV;

@@ -133,21 +133,25 @@ enum : GLenum
     GL_RGBA_INTEGER_MODE_EXT    = 0x8D9E,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLint,GLint,GLint,GLint) pfglClearColorIiEXT;
+    typedef void function(GLuint,GLuint,GLuint,GLuint) pfglClearColorIuiEXT;
+    typedef void function(GLenum,GLenum,GLint*) pfglGetTexParameterIivEXT;
+    typedef void function(GLenum,GLenum,GLuint*) pfglGetTexParameterIuivEXT;
+    typedef void function(GLenum,GLenum,GLint*) pfglTexParameterIivEXT;
+    typedef void function(GLenum,GLenum,GLuint*) pfglTexParameterIuivEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLint,GLint,GLint,GLint) pfglClearColorIiEXT;
-typedef void function(GLuint,GLuint,GLuint,GLuint) pfglClearColorIuiEXT;
-typedef void function(GLenum,GLenum,GLint*) pfglGetTexParameterIivEXT;
-typedef void function(GLenum,GLenum,GLuint*) pfglGetTexParameterIuivEXT;
-typedef void function(GLenum,GLenum,GLint*) pfglTexParameterIivEXT;
-typedef void function(GLenum,GLenum,GLuint*) pfglTexParameterIuivEXT;
 pfglClearColorIiEXT         glClearColorIiEXT;
 pfglClearColorIuiEXT        glClearColorIuiEXT;
 pfglGetTexParameterIivEXT   glGetTexParameterIivEXT;

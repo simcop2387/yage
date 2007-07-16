@@ -92,18 +92,22 @@ private
     alias uint GLhandleARB;
 }
 
+private const char[] Funcs =
+"
+    typedef void function (GLhandleARB, GLuint, GLcharARB*) pfglBindAttribLocationARB;
+    typedef void function (GLhandleARB, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLcharARB*) pfglGetActiveAttribARB;
+    typedef GLint function (GLhandleARB, GLcharARB* name) pfglGetAttribLocationARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function (GLhandleARB, GLuint, GLcharARB*) pfglBindAttribLocationARB;
-typedef void function (GLhandleARB, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLcharARB*) pfglGetActiveAttribARB;
-typedef GLint function (GLhandleARB, GLcharARB* name) pfglGetAttribLocationARB;
 pfglBindAttribLocationARB           glBindAttribLocationARB;
 pfglGetActiveAttribARB              glGetActiveAttribARB;
 pfglGetAttribLocationARB            glGetAttribLocationARB;

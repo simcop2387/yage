@@ -92,20 +92,24 @@ enum : GLenum
     GL_FOG_COORDINATE_ARRAY_EXT            = 0x8457,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLfloat) pfglFogCoordfEXT;
+    typedef void function(GLfloat*) pfglFogCoordfvEXT;
+    typedef void function(GLdouble) pfglFogCoorddEXT;
+    typedef void function(GLdouble*) pfglFogCoorddvEXT;
+    typedef void function(GLenum, GLsizei, GLvoid*) pfglFogCoordPointerEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLfloat) pfglFogCoordfEXT;
-typedef void function(GLfloat*) pfglFogCoordfvEXT;
-typedef void function(GLdouble) pfglFogCoorddEXT;
-typedef void function(GLdouble*) pfglFogCoorddvEXT;
-typedef void function(GLenum, GLsizei, GLvoid*) pfglFogCoordPointerEXT;
 pfglFogCoordfEXT            glFogCoordfEXT;
 pfglFogCoordfvEXT           glFogCoordfvEXT;
 pfglFogCoorddEXT            glFogCoorddEXT;

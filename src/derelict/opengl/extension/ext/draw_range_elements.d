@@ -78,14 +78,18 @@ enum : GLenum
     GL_MAX_ELEMENTS_INDICES_EXT        = 0x80E9,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLuint, GLuint, GLsizei, GLenum, GLvoid*) pfglDrawRangeElementsEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLuint, GLuint, GLsizei, GLenum, GLvoid*) pfglDrawRangeElementsEXT;
 pfglDrawRangeElementsEXT        glDrawRangeElementsEXT;

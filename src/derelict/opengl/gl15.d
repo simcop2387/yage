@@ -144,34 +144,37 @@ enum : GLenum
     GL_SRC2_ALPHA                      = GL_SOURCE2_ALPHA,
 }
 
+private const char[] Funcs =
+"
+    typedef GLvoid function(GLsizei, GLuint*) pfglGenQueries;
+    typedef GLvoid function(GLsizei,GLuint*) pfglDeleteQueries;
+    typedef GLboolean function(GLuint) pfglIsQuery;
+    typedef GLvoid function(GLenum, GLuint) pfglBeginQuery;
+    typedef GLvoid function(GLenum) pfglEndQuery;
+    typedef GLvoid function(GLenum, GLenum, GLint*) pfglGetQueryiv;
+    typedef GLvoid function(GLuint, GLenum, GLint*) pfglGetQueryObjectiv;
+    typedef GLvoid function(GLuint, GLenum, GLuint*) pfglGetQueryObjectuiv;
+    typedef GLvoid function(GLenum, GLuint) pfglBindBuffer;
+    typedef GLvoid function(GLsizei, GLuint*) pfglDeleteBuffers;
+    typedef GLvoid function(GLsizei, GLuint*) pfglGenBuffers;
+    typedef GLboolean function(GLuint) pfglIsBuffer;
+    typedef GLvoid function(GLenum, GLsizeiptr, GLvoid*, GLenum) pfglBufferData;
+    typedef GLvoid function(GLenum, GLintptr, GLsizeiptr,GLvoid*) pfglBufferSubData;
+    typedef GLvoid function(GLenum, GLintptr, GLsizeiptr, GLvoid*) pfglGetBufferSubData;
+    typedef GLvoid* function(GLenum, GLenum) pfglMapBuffer;
+    typedef GLboolean function(GLenum) pfglUnmapBuffer;
+    typedef GLvoid function(GLenum, GLenum, GLint*) pfglGetBufferParameteriv;
+    typedef GLvoid function(GLenum, GLenum, GLvoid**) pfglGetBufferPointerv;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
-
-typedef GLvoid function(GLsizei, GLuint*) pfglGenQueries;
-typedef GLvoid function(GLsizei,GLuint*) pfglDeleteQueries;
-typedef GLboolean function(GLuint) pfglIsQuery;
-typedef GLvoid function(GLenum, GLuint) pfglBeginQuery;
-typedef GLvoid function(GLenum) pfglEndQuery;
-typedef GLvoid function(GLenum, GLenum, GLint*) pfglGetQueryiv;
-typedef GLvoid function(GLuint, GLenum, GLint*) pfglGetQueryObjectiv;
-typedef GLvoid function(GLuint, GLenum, GLuint*) pfglGetQueryObjectuiv;
-typedef GLvoid function(GLenum, GLuint) pfglBindBuffer;
-typedef GLvoid function(GLsizei, GLuint*) pfglDeleteBuffers;
-typedef GLvoid function(GLsizei, GLuint*) pfglGenBuffers;
-typedef GLboolean function(GLuint) pfglIsBuffer;
-typedef GLvoid function(GLenum, GLsizeiptr, GLvoid*, GLenum) pfglBufferData;
-typedef GLvoid function(GLenum, GLintptr, GLsizeiptr,GLvoid*) pfglBufferSubData;
-typedef GLvoid function(GLenum, GLintptr, GLsizeiptr, GLvoid*) pfglGetBufferSubData;
-typedef GLvoid* function(GLenum, GLenum) pfglMapBuffer;
-typedef GLboolean function(GLenum) pfglUnmapBuffer;
-typedef GLvoid function(GLenum, GLenum, GLint*) pfglGetBufferParameteriv;
-typedef GLvoid function(GLenum, GLenum, GLvoid**) pfglGetBufferPointerv;
 
 pfglGenQueries              glGenQueries;
 pfglDeleteQueries           glDeleteQueries;

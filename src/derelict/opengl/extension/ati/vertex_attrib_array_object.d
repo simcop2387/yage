@@ -76,18 +76,22 @@ else
     }
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLuint, GLint, GLenum, GLboolean, GLsizei, GLuint, GLuint) pfglVertexAttribArrayObjectATI;
+    typedef void function(GLuint, GLenum, GLfloat *)                                 pfglGetVertexAttribArrayObjectfvATI;
+    typedef void function(GLuint, GLenum, GLint *)                                   pfglGetVertexAttribArrayObjectivATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLuint, GLint, GLenum, GLboolean, GLsizei, GLuint, GLuint) pfglVertexAttribArrayObjectATI;
-typedef void function(GLuint, GLenum, GLfloat *)                                 pfglGetVertexAttribArrayObjectfvATI;
-typedef void function(GLuint, GLenum, GLint *)                                   pfglGetVertexAttribArrayObjectivATI;
 pfglVertexAttribArrayObjectATI          glVertexAttribArrayObjectATI;
 pfglGetVertexAttribArrayObjectfvATI     glGetVertexAttribArrayObjectfvATI;
 pfglGetVertexAttribArrayObjectivATI     glGetVertexAttribArrayObjectivATI;

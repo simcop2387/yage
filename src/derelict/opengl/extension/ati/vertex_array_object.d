@@ -106,27 +106,31 @@ enum : GLenum
     GL_ARRAY_OBJECT_OFFSET_ATI        = 0x8767,
 }
 
+private const char[] Funcs =
+"
+    typedef GLuint function(GLsizei, GLvoid *, GLenum)                    pfglNewObjectBufferATI;
+    typedef GLboolean function(GLuint)                                    pfglIsObjectBufferATI;
+    typedef void function(GLuint, GLuint, GLsizei, GLvoid *, GLenum)      pfglUpdateObjectBufferATI;
+    typedef void function(GLuint, GLenum, GLfloat *)                      pfglGetObjectBufferfvATI;
+    typedef void function(GLuint, GLenum, GLint *)                        pfglGetObjectBufferivATI;
+    typedef void function(GLuint)                                         pfglFreeObjectBufferATI;
+    typedef void function(GLenum, GLint, GLenum, GLsizei, GLuint, GLuint) pfglArrayObjectATI;
+    typedef void function(GLenum, GLenum, GLfloat *)                      pfglGetArrayObjectfvATI;
+    typedef void function(GLenum, GLenum, GLint *)                        pfglGetArrayObjectivATI;
+    typedef void function(GLuint, GLenum, GLsizei, GLuint, GLuint)        pfglVariantArrayObjectATI;
+    typedef void function(GLuint, GLenum, GLfloat *)                      pfglGetVariantArrayObjectfvATI;
+    typedef void function(GLuint, GLenum, GLint *)                        pfglGetVariantArrayObjectivATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef GLuint function(GLsizei, GLvoid *, GLenum)                    pfglNewObjectBufferATI;
-typedef GLboolean function(GLuint)                                    pfglIsObjectBufferATI;
-typedef void function(GLuint, GLuint, GLsizei, GLvoid *, GLenum)      pfglUpdateObjectBufferATI;
-typedef void function(GLuint, GLenum, GLfloat *)                      pfglGetObjectBufferfvATI;
-typedef void function(GLuint, GLenum, GLint *)                        pfglGetObjectBufferivATI;
-typedef void function(GLuint)                                         pfglFreeObjectBufferATI;
-typedef void function(GLenum, GLint, GLenum, GLsizei, GLuint, GLuint) pfglArrayObjectATI;
-typedef void function(GLenum, GLenum, GLfloat *)                      pfglGetArrayObjectfvATI;
-typedef void function(GLenum, GLenum, GLint *)                        pfglGetArrayObjectivATI;
-typedef void function(GLuint, GLenum, GLsizei, GLuint, GLuint)        pfglVariantArrayObjectATI;
-typedef void function(GLuint, GLenum, GLfloat *)                      pfglGetVariantArrayObjectfvATI;
-typedef void function(GLuint, GLenum, GLint *)                        pfglGetVariantArrayObjectivATI;
 pfglNewObjectBufferATI          glNewObjectBufferATI;
 pfglIsObjectBufferATI           glIsObjectBufferATI;
 pfglUpdateObjectBufferATI       glUpdateObjectBufferATI;

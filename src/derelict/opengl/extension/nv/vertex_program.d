@@ -285,79 +285,83 @@ enum : GLenum
     GL_MAP2_VERTEX_ATTRIB15_4_NV      = 0x867F,
 }
 
+private const char[] Funcs =
+"
+    typedef GLboolean function(GLsizei,GLuint*,GLboolean*) pfglAreProgramsResidentNV;
+    typedef void function(GLenum,GLuint) pfglBindProgramNV;
+    typedef void function(GLsizei,GLuint*) pfglDeleteProgramsNV;
+    typedef void function(GLenum,GLuint,GLfloat*) pfglExecuteProgramNV;
+    typedef void function(GLsizei,GLuint*) pfglGenProgramsNV;
+    typedef void function(GLenum,GLuint,GLenum,GLdouble*) pfglGetProgramParameterdvNV;
+    typedef void function(GLenum,GLuint,GLenum,GLfloat*) pfglGetProgramParameterfvNV;
+    typedef void function(GLuint,GLenum,GLint*) pfglGetProgramivNV;
+    typedef void function(GLuint,GLenum,GLchar*) pfglGetProgramStringNV;
+    typedef void function(GLenum,GLuint,GLenum,GLint*) pfglGetTrackMatrixivNV;
+    typedef void function(GLuint,GLenum,GLdouble*) pfglGetVertexAttribdvNV;
+    typedef void function(GLuint,GLenum,GLfloat*) pfglGetVertexAttribfvNV;
+    typedef void function(GLuint,GLenum,GLint*) pfglGetVertexAttribivNV;
+    typedef void function(GLuint,GLenum,GLvoid*) pfglGetVertexAttribPointervNV;
+    typedef GLboolean function(GLuint) pfglIsProgramNV;
+    typedef void function(GLenum,GLuint,GLsizei,GLchar*) pfglLoadProgramNV;
+    typedef void function(GLenum,GLuint,GLdouble,GLdouble,GLdouble,GLdouble) pfglProgramParameter4dNV;
+    typedef void function(GLenum,GLuint,GLdouble*) pfglProgramParameter4dvNV;
+    typedef void function(GLenum,GLuint,GLfloat,GLfloat,GLfloat,GLfloat) pfglProgramParameter4fNV;
+    typedef void function(GLenum,GLuint,GLfloat*) pfglProgramParameter4fvNV;
+    typedef void function(GLenum,GLuint,GLuint,GLdouble*) pfglProgramParameters4dvNV;
+    typedef void function(GLenum,GLuint,GLuint,GLfloat*) pfglProgramParameters4fvNV;
+    typedef void function(GLsizei,GLuint*) pfglRequestResidentProgramsNV;
+    typedef void function(GLenum,GLuint,GLenum,GLenum) pfglTrackMatrixNV;
+    typedef void function(GLuint,GLint,GLenum,GLsizei,GLvoid*) pfglVertexAttribPointerNV;
+    typedef void function(GLuint,GLdouble) pfglVertexAttrib1dNV;
+    typedef void function(GLuint,GLdouble*) pfglVertexAttrib1dvNV;
+    typedef void function(GLuint,GLfloat) pfglVertexAttrib1fNV;
+    typedef void function(GLuint,GLfloat*) pfglVertexAttrib1fvNV;
+    typedef void function(GLuint,GLshort) pfglVertexAttrib1sNV;
+    typedef void function(GLuint,GLshort*) pfglVertexAttrib1svNV;
+    typedef void function(GLuint,GLdouble,GLdouble) pfglVertexAttrib2dNV;
+    typedef void function(GLuint,GLdouble*) pfglVertexAttrib2dvNV;
+    typedef void function(GLuint,GLfloat,GLfloat) pfglVertexAttrib2fNV;
+    typedef void function(GLuint,GLfloat*) pfglVertexAttrib2fvNV;
+    typedef void function(GLuint,GLshort,GLshort) pfglVertexAttrib2sNV;
+    typedef void function(GLuint,GLshort*) pfglVertexAttrib2svNV;
+    typedef void function(GLuint,GLdouble,GLdouble,GLdouble) pfglVertexAttrib3dNV;
+    typedef void function(GLuint,GLdouble*) pfglVertexAttrib3dvNV;
+    typedef void function(GLuint,GLfloat,GLfloat,GLfloat) pfglVertexAttrib3fNV;
+    typedef void function(GLuint,GLfloat*) pfglVertexAttrib3fvNV;
+    typedef void function(GLuint,GLshort,GLshort,GLshort) pfglVertexAttrib3sNV;
+    typedef void function(GLuint,GLshort*) pfglVertexAttrib3svNV;
+    typedef void function(GLuint,GLdouble,GLdouble,GLdouble,GLdouble) pfglVertexAttrib4dNV;
+    typedef void function(GLuint,GLdouble*) pfglVertexAttrib4dvNV;
+    typedef void function(GLuint,GLfloat,GLfloat,GLfloat,GLfloat) pfglVertexAttrib4fNV;
+    typedef void function(GLuint,GLfloat*) pfglVertexAttrib4fvNV;
+    typedef void function(GLuint,GLshort,GLshort,GLshort,GLshort) pfglVertexAttrib4sNV;
+    typedef void function(GLuint,GLshort*) pfglVertexAttrib4svNV;
+    typedef void function(GLuint,GLubyte,GLubyte,GLubyte,GLubyte) pfglVertexAttrib4ubNV;
+    typedef void function(GLuint,GLubyte*) pfglVertexAttrib4ubvNV;
+    typedef void function(GLuint,GLsizei,GLdouble*) pfglVertexAttribs1dvNV;
+    typedef void function(GLuint,GLsizei,GLfloat*) pfglVertexAttribs1fvNV;
+    typedef void function(GLuint,GLsizei,GLshort*) pfglVertexAttribs1svNV;
+    typedef void function(GLuint,GLsizei,GLdouble*) pfglVertexAttribs2dvNV;
+    typedef void function(GLuint,GLsizei,GLfloat*) pfglVertexAttribs2fvNV;
+    typedef void function(GLuint,GLsizei,GLshort*) pfglVertexAttribs2svNV;
+    typedef void function(GLuint,GLsizei,GLdouble*) pfglVertexAttribs3dvNV;
+    typedef void function(GLuint,GLsizei,GLfloat*) pfglVertexAttribs3fvNV;
+    typedef void function(GLuint,GLsizei,GLshort*) pfglVertexAttribs3svNV;
+    typedef void function(GLuint,GLsizei,GLdouble*) pfglVertexAttribs4dvNV;
+    typedef void function(GLuint,GLsizei,GLfloat*) pfglVertexAttribs4fvNV;
+    typedef void function(GLuint,GLsizei,GLshort*) pfglVertexAttribs4svNV;
+    typedef void function(GLuint,GLsizei,GLubyte*) pfglVertexAttribs4ubvNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef GLboolean function(GLsizei,GLuint*,GLboolean*) pfglAreProgramsResidentNV;
-typedef void function(GLenum,GLuint) pfglBindProgramNV;
-typedef void function(GLsizei,GLuint*) pfglDeleteProgramsNV;
-typedef void function(GLenum,GLuint,GLfloat*) pfglExecuteProgramNV;
-typedef void function(GLsizei,GLuint*) pfglGenProgramsNV;
-typedef void function(GLenum,GLuint,GLenum,GLdouble*) pfglGetProgramParameterdvNV;
-typedef void function(GLenum,GLuint,GLenum,GLfloat*) pfglGetProgramParameterfvNV;
-typedef void function(GLuint,GLenum,GLint*) pfglGetProgramivNV;
-typedef void function(GLuint,GLenum,GLchar*) pfglGetProgramStringNV;
-typedef void function(GLenum,GLuint,GLenum,GLint*) pfglGetTrackMatrixivNV;
-typedef void function(GLuint,GLenum,GLdouble*) pfglGetVertexAttribdvNV;
-typedef void function(GLuint,GLenum,GLfloat*) pfglGetVertexAttribfvNV;
-typedef void function(GLuint,GLenum,GLint*) pfglGetVertexAttribivNV;
-typedef void function(GLuint,GLenum,GLvoid*) pfglGetVertexAttribPointervNV;
-typedef GLboolean function(GLuint) pfglIsProgramNV;
-typedef void function(GLenum,GLuint,GLsizei,GLchar*) pfglLoadProgramNV;
-typedef void function(GLenum,GLuint,GLdouble,GLdouble,GLdouble,GLdouble) pfglProgramParameter4dNV;
-typedef void function(GLenum,GLuint,GLdouble*) pfglProgramParameter4dvNV;
-typedef void function(GLenum,GLuint,GLfloat,GLfloat,GLfloat,GLfloat) pfglProgramParameter4fNV;
-typedef void function(GLenum,GLuint,GLfloat*) pfglProgramParameter4fvNV;
-typedef void function(GLenum,GLuint,GLuint,GLdouble*) pfglProgramParameters4dvNV;
-typedef void function(GLenum,GLuint,GLuint,GLfloat*) pfglProgramParameters4fvNV;
-typedef void function(GLsizei,GLuint*) pfglRequestResidentProgramsNV;
-typedef void function(GLenum,GLuint,GLenum,GLenum) pfglTrackMatrixNV;
-typedef void function(GLuint,GLint,GLenum,GLsizei,GLvoid*) pfglVertexAttribPointerNV;
-typedef void function(GLuint,GLdouble) pfglVertexAttrib1dNV;
-typedef void function(GLuint,GLdouble*) pfglVertexAttrib1dvNV;
-typedef void function(GLuint,GLfloat) pfglVertexAttrib1fNV;
-typedef void function(GLuint,GLfloat*) pfglVertexAttrib1fvNV;
-typedef void function(GLuint,GLshort) pfglVertexAttrib1sNV;
-typedef void function(GLuint,GLshort*) pfglVertexAttrib1svNV;
-typedef void function(GLuint,GLdouble,GLdouble) pfglVertexAttrib2dNV;
-typedef void function(GLuint,GLdouble*) pfglVertexAttrib2dvNV;
-typedef void function(GLuint,GLfloat,GLfloat) pfglVertexAttrib2fNV;
-typedef void function(GLuint,GLfloat*) pfglVertexAttrib2fvNV;
-typedef void function(GLuint,GLshort,GLshort) pfglVertexAttrib2sNV;
-typedef void function(GLuint,GLshort*) pfglVertexAttrib2svNV;
-typedef void function(GLuint,GLdouble,GLdouble,GLdouble) pfglVertexAttrib3dNV;
-typedef void function(GLuint,GLdouble*) pfglVertexAttrib3dvNV;
-typedef void function(GLuint,GLfloat,GLfloat,GLfloat) pfglVertexAttrib3fNV;
-typedef void function(GLuint,GLfloat*) pfglVertexAttrib3fvNV;
-typedef void function(GLuint,GLshort,GLshort,GLshort) pfglVertexAttrib3sNV;
-typedef void function(GLuint,GLshort*) pfglVertexAttrib3svNV;
-typedef void function(GLuint,GLdouble,GLdouble,GLdouble,GLdouble) pfglVertexAttrib4dNV;
-typedef void function(GLuint,GLdouble*) pfglVertexAttrib4dvNV;
-typedef void function(GLuint,GLfloat,GLfloat,GLfloat,GLfloat) pfglVertexAttrib4fNV;
-typedef void function(GLuint,GLfloat*) pfglVertexAttrib4fvNV;
-typedef void function(GLuint,GLshort,GLshort,GLshort,GLshort) pfglVertexAttrib4sNV;
-typedef void function(GLuint,GLshort*) pfglVertexAttrib4svNV;
-typedef void function(GLuint,GLubyte,GLubyte,GLubyte,GLubyte) pfglVertexAttrib4ubNV;
-typedef void function(GLuint,GLubyte*) pfglVertexAttrib4ubvNV;
-typedef void function(GLuint,GLsizei,GLdouble*) pfglVertexAttribs1dvNV;
-typedef void function(GLuint,GLsizei,GLfloat*) pfglVertexAttribs1fvNV;
-typedef void function(GLuint,GLsizei,GLshort*) pfglVertexAttribs1svNV;
-typedef void function(GLuint,GLsizei,GLdouble*) pfglVertexAttribs2dvNV;
-typedef void function(GLuint,GLsizei,GLfloat*) pfglVertexAttribs2fvNV;
-typedef void function(GLuint,GLsizei,GLshort*) pfglVertexAttribs2svNV;
-typedef void function(GLuint,GLsizei,GLdouble*) pfglVertexAttribs3dvNV;
-typedef void function(GLuint,GLsizei,GLfloat*) pfglVertexAttribs3fvNV;
-typedef void function(GLuint,GLsizei,GLshort*) pfglVertexAttribs3svNV;
-typedef void function(GLuint,GLsizei,GLdouble*) pfglVertexAttribs4dvNV;
-typedef void function(GLuint,GLsizei,GLfloat*) pfglVertexAttribs4fvNV;
-typedef void function(GLuint,GLsizei,GLshort*) pfglVertexAttribs4svNV;
-typedef void function(GLuint,GLsizei,GLubyte*) pfglVertexAttribs4ubvNV;
 pfglAreProgramsResidentNV           glAreProgramsResidentNV;
 pfglBindProgramNV                   glBindProgramNV;
 pfglDeleteProgramsNV                glDeleteProgramsNV;

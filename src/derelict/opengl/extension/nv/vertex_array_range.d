@@ -83,16 +83,20 @@ enum : GLenum
     GL_VERTEX_ARRAY_RANGE_POINTER_NV        = 0x8521,
 }
 
+private const char[] Funcs =
+"
+    typedef void function() pfglFlushVertexArrayRangeNV;
+    typedef void function(GLsizei,GLvoid*) pfglVertexArrayRangeNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function() pfglFlushVertexArrayRangeNV;
-typedef void function(GLsizei,GLvoid*) pfglVertexArrayRangeNV;
 pfglFlushVertexArrayRangeNV     glFlushVertexArrayRangeNV;
 pfglVertexArrayRangeNV          glVertexArrayRangeNV;

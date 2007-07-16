@@ -168,49 +168,53 @@ enum : GLenum
     GL_UNSIGNED_INT_SAMPLER_BUFFER_EXT  = 0x8DD8,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLuint,GLuint,GLchar*) pfglBindFragDataLocationEXT;
+    typedef GLint function(GLuint,GLchar*) pfglGetFragDataLocationEXT;
+    typedef void function(GLuint,GLint,GLuint*) pfglGetUniformuivEXT;
+    typedef void function(GLuint,GLenum,GLint*) pfglGetVertexAttribIivEXT;
+    typedef void function(GLuint,GLenum,GLuint*) pfglGetVertexAttribIuivEXT;
+    typedef void function(GLint,GLuint) pfglUniform1uiEXT;
+    typedef void function(GLint,GLsizei,GLuint*) pfglUniform1uivEXT;
+    typedef void function(GLint,GLuint,GLuint) pfglUniform2uiEXT;
+    typedef void function(GLint,GLsizei,GLuint*) pfglUniform2uivEXT;
+    typedef void function(GLint,GLuint,GLuint,GLuint) pfglUniform3uiEXT;
+    typedef void function(GLint,GLsizei,GLuint*) pfglUniform3uivEXT;
+    typedef void function(GLint,GLuint,GLuint,GLuint,GLuint) pfglUniform4uiEXT;
+    typedef void function(GLint,GLsizei,GLuint*) pfglUniform4uivEXT;
+    typedef void function(GLuint,GLint) pfglVertexAttribI1iEXT;
+    typedef void function(GLuint,GLint*) pfglVertexAttribI1ivEXT;
+    typedef void function(GLuint,GLuint) pfglVertexAttribI1uiEXT;
+    typedef void function(GLuint,GLuint*) pfglVertexAttribI1uivEXT;
+    typedef void function(GLuint,GLint,GLint) pfglVertexAttribI2iEXT;
+    typedef void function(GLuint,GLint*) pfglVertexAttribI2ivEXT;
+    typedef void function(GLuint,GLuint,GLuint) pfglVertexAttribI2uiEXT;
+    typedef void function(GLuint,GLuint*) pfglVertexAttribI2uivEXT;
+    typedef void function(GLuint,GLint,GLint,GLint) pfglVertexAttribI3iEXT;
+    typedef void function(GLuint,GLint*) pfglVertexAttribI3ivEXT;
+    typedef void function(GLuint,GLuint,GLuint,GLuint) pfglVertexAttribI3uiEXT;
+    typedef void function(GLuint,GLuint*) pfglVertexAttribI3uivEXT;
+    typedef void function(GLuint,GLbyte*) pfglVertexAttribI4bvEXT;
+    typedef void function(GLuint,GLint,GLint,GLint,GLint) pfglVertexAttribI4iEXT;
+    typedef void function(GLuint,GLint*) pfglVertexAttribI4ivEXT;
+    typedef void function(GLuint,GLshort*) pfglVertexAttribI4svEXT;
+    typedef void function(GLuint,GLubyte*) pfglVertexAttribI4ubvEXT;
+    typedef void function(GLuint,GLuint,GLuint,GLuint,GLuint) pfglVertexAttribI4uiEXT;
+    typedef void function(GLuint,GLuint*) pfglVertexAttribI4uivEXT;
+    typedef void function(GLuint,GLushort*) pfglVertexAttribI4usvEXT;
+    typedef void function(GLuint,GLint,GLenum,GLenum,GLsizei,GLvoid*) pfglVertexAttribIPointerEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLuint,GLuint,GLchar*) pfglBindFragDataLocationEXT;
-typedef GLint function(GLuint,GLchar*) pfglGetFragDataLocationEXT;
-typedef void function(GLuint,GLint,GLuint*) pfglGetUniformuivEXT;
-typedef void function(GLuint,GLenum,GLint*) pfglGetVertexAttribIivEXT;
-typedef void function(GLuint,GLenum,GLuint*) pfglGetVertexAttribIuivEXT;
-typedef void function(GLint,GLuint) pfglUniform1uiEXT;
-typedef void function(GLint,GLsizei,GLuint*) pfglUniform1uivEXT;
-typedef void function(GLint,GLuint,GLuint) pfglUniform2uiEXT;
-typedef void function(GLint,GLsizei,GLuint*) pfglUniform2uivEXT;
-typedef void function(GLint,GLuint,GLuint,GLuint) pfglUniform3uiEXT;
-typedef void function(GLint,GLsizei,GLuint*) pfglUniform3uivEXT;
-typedef void function(GLint,GLuint,GLuint,GLuint,GLuint) pfglUniform4uiEXT;
-typedef void function(GLint,GLsizei,GLuint*) pfglUniform4uivEXT;
-typedef void function(GLuint,GLint) pfglVertexAttribI1iEXT;
-typedef void function(GLuint,GLint*) pfglVertexAttribI1ivEXT;
-typedef void function(GLuint,GLuint) pfglVertexAttribI1uiEXT;
-typedef void function(GLuint,GLuint*) pfglVertexAttribI1uivEXT;
-typedef void function(GLuint,GLint,GLint) pfglVertexAttribI2iEXT;
-typedef void function(GLuint,GLint*) pfglVertexAttribI2ivEXT;
-typedef void function(GLuint,GLuint,GLuint) pfglVertexAttribI2uiEXT;
-typedef void function(GLuint,GLuint*) pfglVertexAttribI2uivEXT;
-typedef void function(GLuint,GLint,GLint,GLint) pfglVertexAttribI3iEXT;
-typedef void function(GLuint,GLint*) pfglVertexAttribI3ivEXT;
-typedef void function(GLuint,GLuint,GLuint,GLuint) pfglVertexAttribI3uiEXT;
-typedef void function(GLuint,GLuint*) pfglVertexAttribI3uivEXT;
-typedef void function(GLuint,GLbyte*) pfglVertexAttribI4bvEXT;
-typedef void function(GLuint,GLint,GLint,GLint,GLint) pfglVertexAttribI4iEXT;
-typedef void function(GLuint,GLint*) pfglVertexAttribI4ivEXT;
-typedef void function(GLuint,GLshort*) pfglVertexAttribI4svEXT;
-typedef void function(GLuint,GLubyte*) pfglVertexAttribI4ubvEXT;
-typedef void function(GLuint,GLuint,GLuint,GLuint,GLuint) pfglVertexAttribI4uiEXT;
-typedef void function(GLuint,GLuint*) pfglVertexAttribI4uivEXT;
-typedef void function(GLuint,GLushort*) pfglVertexAttribI4usvEXT;
-typedef void function(GLuint,GLint,GLenum,GLenum,GLsizei,GLvoid*) pfglVertexAttribIPointerEXT;
 pfglBindFragDataLocationEXT             glBindFragDataLocationEXT;
 pfglGetFragDataLocationEXT              glGetFragDataLocationEXT;
 pfglGetUniformuivEXT                    glGetUniformuivEXT;

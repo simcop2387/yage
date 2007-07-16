@@ -78,14 +78,18 @@ enum : GLenum
     GL_TEXTURE_NORMAL_EXT      = 0x85AF,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum) pfglTextureNormalEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum) pfglTextureNormalEXT;
 pfglTextureNormalEXT        glTextureNormalEXT;

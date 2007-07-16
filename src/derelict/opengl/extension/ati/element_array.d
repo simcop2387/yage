@@ -83,18 +83,22 @@ enum : GLenum
     GL_ELEMENT_ARRAY_POINTER_ATI   = 0x876A,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLvoid*) pfglElementPointerATI;
+    typedef void function(GLenum, GLsizei) pfglDrawElementArrayATI;
+    typedef void function(GLenum, GLuint, GLuint, GLsizei) pfglDrawRangeElementArrayATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLvoid*) pfglElementPointerATI;
-typedef void function(GLenum, GLsizei) pfglDrawElementArrayATI;
-typedef void function(GLenum, GLuint, GLuint, GLsizei) pfglDrawRangeElementArrayATI;
 pfglElementPointerATI           glElementPointerATI;
 pfglDrawElementArrayATI         glDrawElementArrayATI;
 pfglDrawRangeElementArrayATI    glDrawRangeElementArrayATI;

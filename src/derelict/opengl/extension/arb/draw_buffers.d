@@ -91,14 +91,19 @@ enum : GLenum
     GL_DRAW_BUFFER14_ARB              = 0x8833,
     GL_DRAW_BUFFER15_ARB              = 0x8834,
 }
+
+private const char[] Funcs =
+"
+    typedef void function(GLsizei, GLenum*) pfglDrawBuffersARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLsizei, GLenum*) pfglDrawBuffersARB;
 pfglDrawBuffersARB          glDrawBuffersARB;

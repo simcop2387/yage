@@ -82,14 +82,18 @@ enum : GLenum
     GL_MULTISAMPLE_COVERAGE_MODES_NV           = 0x8E13,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLsizei, GLsizei, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageMultsampleCoverageNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLsizei, GLsizei, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageMultsampleCoverageNV;
 pfglRenderbufferStorageMultsampleCoverageNV     glRenderbufferStorageMultsampleCoverageNV;

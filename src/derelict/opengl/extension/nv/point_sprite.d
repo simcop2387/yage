@@ -81,16 +81,20 @@ enum : GLenum
     GL_POINT_SPRITE_R_MODE_NV         = 0x8863,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLint) pfglPointParameteriNV;
+    typedef void function(GLenum, GLint*) pfglPointParameterivNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLint) pfglPointParameteriNV;
-typedef void function(GLenum, GLint*) pfglPointParameterivNV;
 pfglPointParameteriNV       glPointParameteriNV;
 pfglPointParameterivNV      glPointParameterivNV;

@@ -87,16 +87,20 @@ enum : GLenum
     GL_MAX_3D_TEXTURE_SIZE_EXT        = 0x8073,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLvoid*) pfglTexImage3DEXT;
+    typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglTexSubImage3DEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLvoid*) pfglTexImage3DEXT;
-typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglTexSubImage3DEXT;
 pfglTexImage3DEXT       glTexImage3DEXT;
 pfglTexSubImage3DEXT    glTexSubImage3DEXT;

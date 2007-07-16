@@ -151,28 +151,32 @@ enum GLenum
     GL_COMBINER7_NV                   = 0x8557,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLfloat*) pfglCombinerParameterfvNV;
+    typedef void function(GLenum, GLfloat) pfglCombinerParameterfNV;
+    typedef void function(GLenum, GLint*) pfglCombinerParameterivNV;
+    typedef void function(GLenum, GLint) pfglCombinerParameteriNV;
+    typedef void function(GLenum, GLenum, GLenum, GLenum, GLenum, GLenum) pfglCombinerInputNV;
+    typedef void function(GLenum, GLenum, GLenum, GLenum, GLenum, GLenum, GLenum, GLboolean, GLboolean, GLboolean) pfglCombinerOutputNV;
+    typedef void function(GLenum, GLenum, GLenum, GLenum) pfglFinalCombinerInputNV;
+    typedef void function(GLenum, GLenum, GLenum, GLenum, GLfloat*) pfglGetCombinerInputParameterfvNV;
+    typedef void function(GLenum, GLenum, GLenum, GLenum, GLint*) pfglGetCombinerInputParameterivNV;
+    typedef void function(GLenum, GLenum, GLenum, GLfloat*) pfglGetCombinerOutputParameterfvNV;
+    typedef void function(GLenum, GLenum, GLenum, GLint*) pfglGetCombinerOutputParameterivNV;
+    typedef void function(GLenum, GLenum, GLfloat*) pfglGetFinalCombinerInputParameterfvNV;
+    typedef void function(GLenum, GLenum, GLint*) pfglGetFinalCombinerInputParameterivNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLfloat*) pfglCombinerParameterfvNV;
-typedef void function(GLenum, GLfloat) pfglCombinerParameterfNV;
-typedef void function(GLenum, GLint*) pfglCombinerParameterivNV;
-typedef void function(GLenum, GLint) pfglCombinerParameteriNV;
-typedef void function(GLenum, GLenum, GLenum, GLenum, GLenum, GLenum) pfglCombinerInputNV;
-typedef void function(GLenum, GLenum, GLenum, GLenum, GLenum, GLenum, GLenum, GLboolean, GLboolean, GLboolean) pfglCombinerOutputNV;
-typedef void function(GLenum, GLenum, GLenum, GLenum) pfglFinalCombinerInputNV;
-typedef void function(GLenum, GLenum, GLenum, GLenum, GLfloat*) pfglGetCombinerInputParameterfvNV;
-typedef void function(GLenum, GLenum, GLenum, GLenum, GLint*) pfglGetCombinerInputParameterivNV;
-typedef void function(GLenum, GLenum, GLenum, GLfloat*) pfglGetCombinerOutputParameterfvNV;
-typedef void function(GLenum, GLenum, GLenum, GLint*) pfglGetCombinerOutputParameterivNV;
-typedef void function(GLenum, GLenum, GLfloat*) pfglGetFinalCombinerInputParameterfvNV;
-typedef void function(GLenum, GLenum, GLint*) pfglGetFinalCombinerInputParameterivNV;
 pfglCombinerParameterfvNV               glCombinerParameterfvNV;
 pfglCombinerParameterfNV                glCombinerParameterfNV;
 pfglCombinerParameterivNV               glCombinerParameterivNV;

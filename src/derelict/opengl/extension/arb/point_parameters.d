@@ -81,16 +81,20 @@ enum : GLenum
     GL_POINT_DISTANCE_ATTENUATION_ARB = 0x8129,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLfloat) pfglPointParameterfARB;
+    typedef void function(GLenum, GLfloat*) pfglPointParameterfvARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLfloat) pfglPointParameterfARB;
-typedef void function(GLenum, GLfloat*) pfglPointParameterfvARB;
 pfglPointParameterfARB          glPointParameterfARB;
 pfglPointParameterfvARB         glPointParameterfvARB;

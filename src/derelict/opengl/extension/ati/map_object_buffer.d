@@ -74,16 +74,20 @@ else
     }
 }
 
+private const char[] Funcs =
+"
+    typedef GLvoid* function(GLuint) pfglMapObjectBufferATI;
+    typedef void function(GLuint) pfglUnmapObjectBufferATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef GLvoid* function(GLuint) pfglMapObjectBufferATI;
-typedef void function(GLuint) pfglUnmapObjectBufferATI;
 pfglMapObjectBufferATI     glMapObjectBufferATI;
 pfglUnmapObjectBufferATI     glUnmapObjectBufferATI;

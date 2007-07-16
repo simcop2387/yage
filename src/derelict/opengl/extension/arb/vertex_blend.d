@@ -135,25 +135,29 @@ enum : GLenum
     GL_MODELVIEW31_ARB                = 0x873F,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLint, GLbyte*) pfglWeightbvARB;
+    typedef void function(GLint, GLshort*) pfglWeightsvARB;
+    typedef void function(GLint, GLint*) pfglWeightivARB;
+    typedef void function(GLint, GLfloat*) pfglWeightfvARB;
+    typedef void function(GLint, GLdouble*) pfglWeightdvARB;
+    typedef void function(GLint, GLubyte*) pfglWeightubvARB;
+    typedef void function(GLint, GLushort*) pfglWeightusvARB;
+    typedef void function(GLint, GLuint*) pfglWeightuivARB;
+    typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglWeightPointerARB;
+    typedef void function(GLint) pfglVertexBlendARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLint, GLbyte*) pfglWeightbvARB;
-typedef void function(GLint, GLshort*) pfglWeightsvARB;
-typedef void function(GLint, GLint*) pfglWeightivARB;
-typedef void function(GLint, GLfloat*) pfglWeightfvARB;
-typedef void function(GLint, GLdouble*) pfglWeightdvARB;
-typedef void function(GLint, GLubyte*) pfglWeightubvARB;
-typedef void function(GLint, GLushort*) pfglWeightusvARB;
-typedef void function(GLint, GLuint*) pfglWeightuivARB;
-typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglWeightPointerARB;
-typedef void function(GLint) pfglVertexBlendARB;
 pfglWeightbvARB             glWeightbvARB;
 pfglWeightsvARB             glWeightsvARB;
 pfglWeightivARB             glWeightivARB;

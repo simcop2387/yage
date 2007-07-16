@@ -77,14 +77,18 @@ enum : GLenum
     GL_RENDERBUFFER_SAMPLES_EXT        = 0x8CAB
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLsizei, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageMultisampleEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLsizei, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageMultisampleEXT;
 pfglRenderbufferStorageMultisampleEXT       glRenderbufferStorageMultisampleEXT;

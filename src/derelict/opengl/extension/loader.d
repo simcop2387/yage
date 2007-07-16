@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2006 Derelict Developers
+ * Copyright (c) 2004-2007 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,15 +41,15 @@ private
     version(UsingGLX)
         import derelict.opengl.glx;
 
-    import std.string;
+    import derelict.util.wrapper;
 }
 
 bool glBindExtFunc(void **ptr, char[] funcName)
 {
     version(Windows)
-        *ptr = wglGetProcAddress(toStringz(funcName));
+        *ptr = wglGetProcAddress(toCString(funcName));
     else version(UsingGLX)
-        *ptr = glXGetProcAddress(toStringz(funcName));
+        *ptr = glXGetProcAddress(toCString(funcName));
     return (*ptr !is null);
 }
 

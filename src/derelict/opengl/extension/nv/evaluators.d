@@ -116,24 +116,28 @@ enum : GLenum
     GL_MAX_RATIONAL_EVAL_ORDER_NV      = 0x86D7,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLuint, GLenum, GLsizei, GLsizei, GLint, GLint, GLboolean, GLvoid*) pfglMapControlPointsNV;
+    typedef void function(GLenum, GLenum, GLint*) pfglMapParameterivNV;
+    typedef void function(GLenum, GLenum, GLfloat*) pfglMapParameterfvNV;
+    typedef void function(GLenum, GLuint, GLenum, GLsizei, GLsizei, GLboolean, GLvoid*) pfglGetMapControlPointsNV;
+    typedef void function(GLenum, GLenum, GLint*) pfglGetMapParameterivNV;
+    typedef void function(GLenum, GLenum, GLfloat*) pfglGetMapParameterfvNV;
+    typedef void function(GLenum, GLuint, GLenum, GLint*) pfglGetMapAttribParameterivNV;
+    typedef void function(GLenum, GLuint, GLenum, GLfloat*) pfglGetMapAttribParameterfvNV;
+    typedef void function(GLenum, GLenum) pfglEvalMapsNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLuint, GLenum, GLsizei, GLsizei, GLint, GLint, GLboolean, GLvoid*) pfglMapControlPointsNV;
-typedef void function(GLenum, GLenum, GLint*) pfglMapParameterivNV;
-typedef void function(GLenum, GLenum, GLfloat*) pfglMapParameterfvNV;
-typedef void function(GLenum, GLuint, GLenum, GLsizei, GLsizei, GLboolean, GLvoid*) pfglGetMapControlPointsNV;
-typedef void function(GLenum, GLenum, GLint*) pfglGetMapParameterivNV;
-typedef void function(GLenum, GLenum, GLfloat*) pfglGetMapParameterfvNV;
-typedef void function(GLenum, GLuint, GLenum, GLint*) pfglGetMapAttribParameterivNV;
-typedef void function(GLenum, GLuint, GLenum, GLfloat*) pfglGetMapAttribParameterfvNV;
-typedef void function(GLenum, GLenum) pfglEvalMapsNV;
 pfglMapControlPointsNV              glMapControlPointsNV;
 pfglMapParameterivNV                glMapParameterivNV;
 pfglMapParameterfvNV                glMapParameterfvNV;

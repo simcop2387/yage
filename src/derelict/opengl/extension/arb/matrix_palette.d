@@ -93,20 +93,24 @@ enum : GLenum
     GL_MATRIX_INDEX_ARRAY_POINTER_ARB       = 0x8849,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLint) pfglCurrentPaletteMatrixARB;
+    typedef void function(GLint, GLubyte*) pfglMatrixIndexubvARB;
+    typedef void function(GLint, GLushort*) pfglMatrixIndexusvARB;
+    typedef void function(GLint, GLuint*) pfglMatrixIndexuivARB;
+    typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglMatrixIndexPointerARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLint) pfglCurrentPaletteMatrixARB;
-typedef void function(GLint, GLubyte*) pfglMatrixIndexubvARB;
-typedef void function(GLint, GLushort*) pfglMatrixIndexusvARB;
-typedef void function(GLint, GLuint*) pfglMatrixIndexuivARB;
-typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglMatrixIndexPointerARB;
 pfglCurrentPaletteMatrixARB         glCurrentPaletteMatrixARB;
 pfglMatrixIndexubvARB               glMatrixIndexubvARB;
 pfglMatrixIndexusvARB               glMatrixIndexusvARB;

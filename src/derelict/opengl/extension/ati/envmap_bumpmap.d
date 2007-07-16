@@ -90,19 +90,23 @@ enum : GLenum
     GL_BUMP_TARGET_ATI                = 0x877C,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLint *) pfglTexBumpParameterivATI;
+    typedef void function(GLenum, GLfloat *) pfglTexBumpParameterfvATI;
+    typedef void function(GLenum, GLint *) pfglGetTexBumpParameterivATI;
+    typedef void function(GLenum, GLfloat *) pfglGetTexBumpParameterfvATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLint *) pfglTexBumpParameterivATI;
-typedef void function(GLenum, GLfloat *) pfglTexBumpParameterfvATI;
-typedef void function(GLenum, GLint *) pfglGetTexBumpParameterivATI;
-typedef void function(GLenum, GLfloat *) pfglGetTexBumpParameterfvATI;
 pfglTexBumpParameterivATI       glTexBumpParameterivATI;
 pfglTexBumpParameterfvATI       glTexBumpParameterfvATI;
 pfglGetTexBumpParameterivATI     glGetTexBumpParameterivATI;

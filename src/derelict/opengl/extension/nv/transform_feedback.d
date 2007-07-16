@@ -121,26 +121,30 @@ enum : GLenum
     GL_TRANSFORM_FEEDBACK_BUFFER_BINDING_NV             = 0x8C8F,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum) pfglBeginTransformFeedbackNV;
+    typedef void function() pfglEndTransformFeedbackNV;
+    typedef void function(GLuint,GLint*,GLenum) pfglTransformFeedbackAttribsNV;
+    typedef void function(GLenum,GLuint,GLuint,GLintptr,GLsizeiptr) pfglBindBufferRangeNV;
+    typedef void function(GLenum,GLuint,GLuint,GLintptr) pfglBindBufferOffsetNV;
+    typedef void function(GLenum,GLuint,GLuint) pfglBindBufferBaseNV;
+    typedef void function(GLuint,GLsizei,GLint*,GLenum) pfglTransformFeedbackVaryingsNV;
+    typedef void function(GLuint,GLchar*) pfglActiveVaryingNV;
+    typedef GLint function(GLuint,GLchar*) pfglGetVaryingLocationNV;
+    typedef void function(GLuint,GLuint,GLsizei,GLsizei*,GLsizei*,GLenum*,GLchar*) pfglGetActiveVaryingNV;
+    typedef void function(GLuint,GLuint,GLint*) pfglGetTransformFeedbackVaryingNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum) pfglBeginTransformFeedbackNV;
-typedef void function() pfglEndTransformFeedbackNV;
-typedef void function(GLuint,GLint*,GLenum) pfglTransformFeedbackAttribsNV;
-typedef void function(GLenum,GLuint,GLuint,GLintptr,GLsizeiptr) pfglBindBufferRangeNV;
-typedef void function(GLenum,GLuint,GLuint,GLintptr) pfglBindBufferOffsetNV;
-typedef void function(GLenum,GLuint,GLuint) pfglBindBufferBaseNV;
-typedef void function(GLuint,GLsizei,GLint*,GLenum) pfglTransformFeedbackVaryingsNV;
-typedef void function(GLuint,GLchar*) pfglActiveVaryingNV;
-typedef GLint function(GLuint,GLchar*) pfglGetVaryingLocationNV;
-typedef void function(GLuint,GLuint,GLsizei,GLsizei*,GLsizei*,GLenum*,GLchar*) pfglGetActiveVaryingNV;
-typedef void function(GLuint,GLuint,GLint*) pfglGetTransformFeedbackVaryingNV;
 pfglBeginTransformFeedbackNV        glBeginTransformFeedbackNV;
 pfglEndTransformFeedbackNV          glEndTransformFeedbackNV;
 pfglTransformFeedbackAttribsNV      glTransformFeedbackAttribsNV;

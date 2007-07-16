@@ -80,14 +80,18 @@ enum : GLenum
     GL_DRAW_FRAMEBUFFER_BINDING_EXT    = 0x8CAA,
 }
 
+private const char[] Funcs =
+"
+ typedef void function(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum) pfglBlitFramebufferEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum) pfglBlitFramebufferEXT;
 pfglBlitFramebufferEXT      glBlitFramebufferEXT;

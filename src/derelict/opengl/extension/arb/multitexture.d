@@ -177,49 +177,53 @@ enum : GLenum
     GL_MAX_TEXTURE_UNITS_ARB          = 0x84E2,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum) pfglActiveTextureARB;
+    typedef void function(GLenum) pfglClientActiveTextureARB;
+    typedef void function(GLenum, GLdouble) pfglMultiTexCoord1dARB;
+    typedef void function(GLenum, GLdouble*) pfglMultiTexCoord1dvARB;
+    typedef void function(GLenum, GLfloat) pfglMultiTexCoord1fARB;
+    typedef void function(GLenum, GLfloat*) pfglMultiTexCoord1fvARB;
+    typedef void function(GLenum, GLint) pfglMultiTexCoord1iARB;
+    typedef void function(GLenum, GLint*) pfglMultiTexCoord1ivARB;
+    typedef void function(GLenum, GLshort) pfglMultiTexCoord1sARB;
+    typedef void function(GLenum, GLshort*) pfglMultiTexCoord1svARB;
+    typedef void function(GLenum, GLdouble, GLdouble) pfglMultiTexCoord2dARB;
+    typedef void function(GLenum, GLdouble*) pfglMultiTexCoord2dvARB;
+    typedef void function(GLenum, GLfloat, GLfloat) pfglMultiTexCoord2fARB;
+    typedef void function(GLenum, GLfloat*) pfglMultiTexCoord2fvARB;
+    typedef void function(GLenum, GLint, GLint) pfglMultiTexCoord2iARB;
+    typedef void function(GLenum, GLint*) pfglMultiTexCoord2ivARB;
+    typedef void function(GLenum, GLshort, GLshort) pfglMultiTexCoord2sARB;
+    typedef void function(GLenum, GLshort*) pfglMultiTexCoord2svARB;
+    typedef void function(GLenum, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord3dARB;
+    typedef void function(GLenum, GLdouble*) pfglMultiTexCoord3dvARB;
+    typedef void function(GLenum, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord3fARB;
+    typedef void function(GLenum, GLfloat*) pfglMultiTexCoord3fvARB;
+    typedef void function(GLenum, GLint, GLint, GLint) pfglMultiTexCoord3iARB;
+    typedef void function(GLenum, GLint*) pfglMultiTexCoord3ivARB;
+    typedef void function(GLenum, GLshort, GLshort, GLshort) pfglMultiTexCoord3sARB;
+    typedef void function(GLenum, GLshort*) pfglMultiTexCoord3svARB;
+    typedef void function(GLenum, GLdouble, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord4dARB;
+    typedef void function(GLenum, GLdouble*) pfglMultiTexCoord4dvARB;
+    typedef void function(GLenum, GLfloat, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord4fARB;
+    typedef void function(GLenum, GLfloat*) pfglMultiTexCoord4fvARB;
+    typedef void function(GLenum, GLint, GLint, GLint, GLint) pfglMultiTexCoord4iARB;
+    typedef void function(GLenum, GLint*) pfglMultiTexCoord4ivARB;
+    typedef void function(GLenum, GLshort, GLshort, GLshort, GLshort) pfglMultiTexCoord4sARB;
+    typedef void function(GLenum, GLshort*) pfglMultiTexCoord4svARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum) pfglActiveTextureARB;
-typedef void function(GLenum) pfglClientActiveTextureARB;
-typedef void function(GLenum, GLdouble) pfglMultiTexCoord1dARB;
-typedef void function(GLenum, GLdouble*) pfglMultiTexCoord1dvARB;
-typedef void function(GLenum, GLfloat) pfglMultiTexCoord1fARB;
-typedef void function(GLenum, GLfloat*) pfglMultiTexCoord1fvARB;
-typedef void function(GLenum, GLint) pfglMultiTexCoord1iARB;
-typedef void function(GLenum, GLint*) pfglMultiTexCoord1ivARB;
-typedef void function(GLenum, GLshort) pfglMultiTexCoord1sARB;
-typedef void function(GLenum, GLshort*) pfglMultiTexCoord1svARB;
-typedef void function(GLenum, GLdouble, GLdouble) pfglMultiTexCoord2dARB;
-typedef void function(GLenum, GLdouble*) pfglMultiTexCoord2dvARB;
-typedef void function(GLenum, GLfloat, GLfloat) pfglMultiTexCoord2fARB;
-typedef void function(GLenum, GLfloat*) pfglMultiTexCoord2fvARB;
-typedef void function(GLenum, GLint, GLint) pfglMultiTexCoord2iARB;
-typedef void function(GLenum, GLint*) pfglMultiTexCoord2ivARB;
-typedef void function(GLenum, GLshort, GLshort) pfglMultiTexCoord2sARB;
-typedef void function(GLenum, GLshort*) pfglMultiTexCoord2svARB;
-typedef void function(GLenum, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord3dARB;
-typedef void function(GLenum, GLdouble*) pfglMultiTexCoord3dvARB;
-typedef void function(GLenum, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord3fARB;
-typedef void function(GLenum, GLfloat*) pfglMultiTexCoord3fvARB;
-typedef void function(GLenum, GLint, GLint, GLint) pfglMultiTexCoord3iARB;
-typedef void function(GLenum, GLint*) pfglMultiTexCoord3ivARB;
-typedef void function(GLenum, GLshort, GLshort, GLshort) pfglMultiTexCoord3sARB;
-typedef void function(GLenum, GLshort*) pfglMultiTexCoord3svARB;
-typedef void function(GLenum, GLdouble, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord4dARB;
-typedef void function(GLenum, GLdouble*) pfglMultiTexCoord4dvARB;
-typedef void function(GLenum, GLfloat, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord4fARB;
-typedef void function(GLenum, GLfloat*) pfglMultiTexCoord4fvARB;
-typedef void function(GLenum, GLint, GLint, GLint, GLint) pfglMultiTexCoord4iARB;
-typedef void function(GLenum, GLint*) pfglMultiTexCoord4ivARB;
-typedef void function(GLenum, GLshort, GLshort, GLshort, GLshort) pfglMultiTexCoord4sARB;
-typedef void function(GLenum, GLshort*) pfglMultiTexCoord4svARB;
 pfglActiveTextureARB            glActiveTextureARB;
 pfglClientActiveTextureARB      glClientActiveTextureARB;
 pfglMultiTexCoord1dARB          glMultiTexCoord1dARB;

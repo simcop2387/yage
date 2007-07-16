@@ -74,17 +74,20 @@ else
     }
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLuint, GLsizei, GLfloat*) pfglProgramEnvParameters4fvEXT;
+    typedef void function(GLenum, GLuint, GLsizei, GLfloat*) pfglProgramLocalParameters4fvEXT;
+";
 
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLuint, GLsizei, GLfloat*) pfglProgramEnvParameters4fvEXT;
-typedef void function(GLenum, GLuint, GLsizei, GLfloat*) pfglProgramLocalParameters4fvEXT;
 pfglProgramEnvParameters4fvEXT      glProgramEnvParameters4fvEXT;
 pfglProgramLocalParameters4fvEXT    glProgramLocalParameters4fvEXT;

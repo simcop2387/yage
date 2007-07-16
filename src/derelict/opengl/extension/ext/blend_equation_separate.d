@@ -78,14 +78,18 @@ enum : GLenum
     GL_BLEND_EQUATION_ALPHA_EXT    = 0x883D,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLenum) pfglBlendEquationSeparateEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLenum) pfglBlendEquationSeparateEXT;
 pfglBlendEquationSeparateEXT    glBlendEquationSeparateEXT;

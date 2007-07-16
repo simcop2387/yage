@@ -74,16 +74,20 @@ else
     }
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum,GLint,GLsizei,GLsizei) pfglDrawArraysInstancedEXT;
+    typedef void function(GLenum,GLsizei,GLenum,GLvoid*,GLsizei) pfglDrawElementsInstancedEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum,GLint,GLsizei,GLsizei) pfglDrawArraysInstancedEXT;
-typedef void function(GLenum,GLsizei,GLenum,GLvoid*,GLsizei) pfglDrawElementsInstancedEXT;
 pfglDrawArraysInstancedEXT      glDrawArraysInstancedEXT;
 pfglDrawElementsInstancedEXT    glDrawElementsInstancedEXT;

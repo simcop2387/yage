@@ -93,18 +93,22 @@ enum : GLenum
     GL_VERTEX_WEIGHT_ARRAY_POINTER_EXT  = 0x8510,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLfloat) pfglVertexWeightfEXT;
+    typedef void function(GLfloat*) pfglVertexWeightfvEXT;
+    typedef void function(GLsizei,GLenum,GLsizei,GLvoid*) pfglVertexWeightPointerEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLfloat) pfglVertexWeightfEXT;
-typedef void function(GLfloat*) pfglVertexWeightfvEXT;
-typedef void function(GLsizei,GLenum,GLsizei,GLvoid*) pfglVertexWeightPointerEXT;
 pfglVertexWeightfEXT        glVertexWeightfEXT;
 pfglVertexWeightfvEXT       glVertexWeightfvEXT;
 pfglVertexWeightPointerEXT  glVertexWeightPointerEXT;

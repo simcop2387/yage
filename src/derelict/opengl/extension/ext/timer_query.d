@@ -82,16 +82,20 @@ enum : GLenum
     GL_TIME_ELAPSED_EXT = 0x88BF
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjecti64vEXT;
+    typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjectui64vEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjecti64vEXT;
-typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjectui64vEXT;
 pfglGetQueryObjecti64vEXT       glGetQueryObjecti64vEXT;
 pfglGetQueryObjectui64vEXT      glGetQueryObjectui64vEXT;

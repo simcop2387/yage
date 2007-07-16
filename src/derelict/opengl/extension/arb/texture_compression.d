@@ -98,22 +98,26 @@ enum : GLenum
     GL_COMPRESSED_TEXTURE_FORMATS_ARB      = 0x86A3,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage3DARB;
+    typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage2DARB;
+    typedef void function(GLenum, GLint, GLenum, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage1DARB;
+    typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage3DARB;
+    typedef void function(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage2DARB;
+    typedef void function(GLenum, GLint, GLint, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage1DARB;
+    typedef void function(GLenum, GLint, GLvoid*) pfglGetCompressedTexImageARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage3DARB;
-typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage2DARB;
-typedef void function(GLenum, GLint, GLenum, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage1DARB;
-typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage3DARB;
-typedef void function(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage2DARB;
-typedef void function(GLenum, GLint, GLint, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage1DARB;
-typedef void function(GLenum, GLint, GLvoid*) pfglGetCompressedTexImageARB;
 pfglCompressedTexImage3DARB         glCompressedTexImage3DARB;
 pfglCompressedTexImage2DARB         glCompressedTexImage2DARB;
 pfglCompressedTexImage1DARB         glCompressedTexImage1DARB;

@@ -78,14 +78,18 @@ enum : GLenum
     GL_DEPTH_BOUNDS_EXT            = 0x8891,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLclampd, GLclampd) pfglDepthBoundsEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLclampd, GLclampd) pfglDepthBoundsEXT;
 pfglDepthBoundsEXT      glDepthBoundsEXT;

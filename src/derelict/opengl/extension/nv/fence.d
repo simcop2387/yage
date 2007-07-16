@@ -91,22 +91,26 @@ enum : GLenum
     GL_FENCE_CONDITION_NV             = 0x84F4,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLsizei, GLuint*) pfglDeleteFencesNV;
+    typedef void function(GLsizei, GLuint*) pfglGenFencesNV;
+    typedef GLboolean function(GLuint) pfglIsFenceNV;
+    typedef GLboolean function(GLuint) pfglTestFenceNV;
+    typedef void function(GLuint, GLenum, GLint*) pfglGetFenceivNV;
+    typedef void function(GLuint) pfglFinishFenceNV;
+    typedef void function(GLuint, GLenum) pfglSetFenceNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLsizei, GLuint*) pfglDeleteFencesNV;
-typedef void function(GLsizei, GLuint*) pfglGenFencesNV;
-typedef GLboolean function(GLuint) pfglIsFenceNV;
-typedef GLboolean function(GLuint) pfglTestFenceNV;
-typedef void function(GLuint, GLenum, GLint*) pfglGetFenceivNV;
-typedef void function(GLuint) pfglFinishFenceNV;
-typedef void function(GLuint, GLenum) pfglSetFenceNV;
 pfglDeleteFencesNV          glDeleteFencesNV;
 pfglGenFencesNV             glGenFencesNV;
 pfglIsFenceNV               glIsFenceNV;

@@ -76,18 +76,22 @@ else
     }
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLuint, GLuint, GLsizei, GLfloat*) pfglProgramBufferParametersfvNV;
+    typedef void function(GLenum, GLuint, GLuint, GLsizei, GLint*) pfglProgramBufferParametersIivNV;
+    typedef void function(GLenum, GLuint, GLuint, GLsizei, GLuint*) pfglProgramBufferParametersIuivNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLuint, GLuint, GLsizei, GLfloat*) pfglProgramBufferParametersfvNV;
-typedef void function(GLenum, GLuint, GLuint, GLsizei, GLint*) pfglProgramBufferParametersIivNV;
-typedef void function(GLenum, GLuint, GLuint, GLsizei, GLuint*) pfglProgramBufferParametersIuivNV;
 pfglProgramBufferParametersfvNV     glProgramBufferParametersfvNV;
 pfglProgramBufferParametersIivNV    glProgramBufferParametersIivNV;
 pfglProgramBufferParametersIuivNV   glProgramBufferParametersIuivNV;

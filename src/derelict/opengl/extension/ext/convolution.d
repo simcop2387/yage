@@ -120,28 +120,32 @@ enum : GLenum
     GL_POST_CONVOLUTION_ALPHA_BIAS_EXT     = 0x8023,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLenum, GLsizei, GLenum, GLenum, GLvoid*) pfglConvolutionFilter1DEXT;
+    typedef void function(GLenum, GLenum, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglConvolutionFilter2DEXT;
+    typedef void function(GLenum, GLenum, GLfloat) pfglConvolutionParameterfEXT;
+    typedef void function(GLenum, GLenum, GLfloat*) pfglConvolutionParameterfvEXT;
+    typedef void function(GLenum, GLenum, GLint) pfglConvolutionParameteriEXT;
+    typedef void function(GLenum, GLenum, GLint*) pfglConvolutionParameterivEXT;
+    typedef void function(GLenum, GLenum, GLint, GLint, GLsizei) pfglCopyConvolutionFilter1DEXT;
+    typedef void function(GLenum, GLenum, GLint, GLint, GLsizei, GLsizei) pfglCopyConvolutionFilter2DEXT;
+    typedef void function(GLenum, GLenum, GLenum, GLvoid*) pfglGetConvolutionFilterEXT;
+    typedef void function(GLenum, GLenum, GLfloat*) pfglGetConvolutionParameterfvEXT;
+    typedef void function(GLenum, GLenum, GLint*) pfglGetConvolutionParameterivEXT;
+    typedef void function(GLenum, GLenum, GLenum, GLvoid*, GLvoid*, GLvoid*) pfglGetSeparableFilterEXT;
+    typedef void function(GLenum, GLenum, GLsizei, GLsizei, GLenum, GLenum, GLvoid*, GLvoid*) pfglSeparableFilter2DEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLenum, GLsizei, GLenum, GLenum, GLvoid*) pfglConvolutionFilter1DEXT;
-typedef void function(GLenum, GLenum, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglConvolutionFilter2DEXT;
-typedef void function(GLenum, GLenum, GLfloat) pfglConvolutionParameterfEXT;
-typedef void function(GLenum, GLenum, GLfloat*) pfglConvolutionParameterfvEXT;
-typedef void function(GLenum, GLenum, GLint) pfglConvolutionParameteriEXT;
-typedef void function(GLenum, GLenum, GLint*) pfglConvolutionParameterivEXT;
-typedef void function(GLenum, GLenum, GLint, GLint, GLsizei) pfglCopyConvolutionFilter1DEXT;
-typedef void function(GLenum, GLenum, GLint, GLint, GLsizei, GLsizei) pfglCopyConvolutionFilter2DEXT;
-typedef void function(GLenum, GLenum, GLenum, GLvoid*) pfglGetConvolutionFilterEXT;
-typedef void function(GLenum, GLenum, GLfloat*) pfglGetConvolutionParameterfvEXT;
-typedef void function(GLenum, GLenum, GLint*) pfglGetConvolutionParameterivEXT;
-typedef void function(GLenum, GLenum, GLenum, GLvoid*, GLvoid*, GLvoid*) pfglGetSeparableFilterEXT;
-typedef void function(GLenum, GLenum, GLsizei, GLsizei, GLenum, GLenum, GLvoid*, GLvoid*) pfglSeparableFilter2DEXT;
 pfglConvolutionFilter1DEXT          glConvolutionFilter1DEXT;
 pfglConvolutionFilter2DEXT          glConvolutionFilter2DEXT;
 pfglConvolutionParameterfEXT        glConvolutionParameterfEXT;

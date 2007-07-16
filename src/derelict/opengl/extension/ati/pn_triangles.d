@@ -87,17 +87,21 @@ enum : GLenum
     GL_PN_TRIANGLES_NORMAL_MODE_QUADRATIC_ATI   = 0x87F8,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLint) pfglPNTrianglesiATI;
+    typedef void function(GLenum, GLfloat) pfglPNTrianglesfATI;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLint) pfglPNTrianglesiATI;
-typedef void function(GLenum, GLfloat) pfglPNTrianglesfATI;
 pfglPNTrianglesiATI     glPNTrianglesiATI;
 pfglPNTrianglesfATI     glPNTrianglesfATI;
 

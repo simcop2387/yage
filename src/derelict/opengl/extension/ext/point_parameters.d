@@ -75,16 +75,20 @@ else
     }
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLfloat) pfglPointParameterfEXT;
+    typedef void function(GLenum, GLfloat*) pfglPointParameterfvEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLfloat) pfglPointParameterfEXT;
-typedef void function(GLenum, GLfloat*) pfglPointParameterfvEXT;
 pfglPointParameterfEXT    glPointParameterfEXT;
 pfglPointParameterfvEXT   glPointParameterfvEXT;

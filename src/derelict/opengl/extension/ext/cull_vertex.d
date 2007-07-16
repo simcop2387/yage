@@ -81,16 +81,20 @@ enum : GLenum
     GL_CULL_VERTEX_OBJECT_POSITION_EXT = 0x81AC,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum, GLdouble*) pfglCullParameterdvEXT;
+    typedef void function(GLenum, GLfloat*) pfglCullParameterfvEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum, GLdouble*) pfglCullParameterdvEXT;
-typedef void function(GLenum, GLfloat*) pfglCullParameterfvEXT;
 pfglCullParameterdvEXT      glCullParameterdvEXT;
 pfglCullParameterfvEXT      glCullParameterfvEXT;

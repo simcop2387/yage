@@ -92,21 +92,25 @@ enum : GLenum
     GL_PROGRAM_ERROR_STRING_NV                     = 0x8874,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLuint, GLsizei, GLubyte*, GLfloat, GLfloat, GLfloat, GLfloat) pfglProgramNamedParameter4fNV;
+    typedef void function(GLuint, GLsizei, GLubyte*, GLdouble, GLdouble, GLdouble, GLdouble) pfglProgramNamedParameter4dNV;
+    typedef void function(GLuint, GLsizei, GLubyte*, GLfloat*) pfglProgramNamedParameter4fvNV;
+    typedef void function(GLuint, GLsizei, GLubyte*, GLdouble*) pfglProgramNamedParameter4dvNV;
+    typedef void function(GLuint, GLsizei, GLubyte*, GLfloat*) pfglGetProgramNamedParameterfvNV;
+    typedef void function(GLuint, GLsizei, GLubyte*, GLdouble*) pfglGetProgramNamedParameterdvNV;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLuint, GLsizei, GLubyte*, GLfloat, GLfloat, GLfloat, GLfloat) pfglProgramNamedParameter4fNV;
-typedef void function(GLuint, GLsizei, GLubyte*, GLdouble, GLdouble, GLdouble, GLdouble) pfglProgramNamedParameter4dNV;
-typedef void function(GLuint, GLsizei, GLubyte*, GLfloat*) pfglProgramNamedParameter4fvNV;
-typedef void function(GLuint, GLsizei, GLubyte*, GLdouble*) pfglProgramNamedParameter4dvNV;
-typedef void function(GLuint, GLsizei, GLubyte*, GLfloat*) pfglGetProgramNamedParameterfvNV;
-typedef void function(GLuint, GLsizei, GLubyte*, GLdouble*) pfglGetProgramNamedParameterdvNV;
 pfglProgramNamedParameter4fNV               glProgramNamedParameter4fNV;
 pfglProgramNamedParameter4dNV               glProgramNamedParameter4dNV;
 pfglProgramNamedParameter4fvNV              glProgramNamedParameter4fvNV;

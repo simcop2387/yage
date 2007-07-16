@@ -80,14 +80,18 @@ enum : GLenum
     GL_FIXED_ONLY_COLOR_ARB            = 0x891D,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum,GLenum) pfglClampColorARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum,GLenum) pfglClampColorARB;
 pfglClampColorARB       glClampColorARB;

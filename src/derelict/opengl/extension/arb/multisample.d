@@ -84,14 +84,19 @@ enum : GLenum
     GL_MULTISAMPLE_BIT_ARB            = 0x20000000,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLclampf, GLboolean) pfglSampleCoverageARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLclampf, GLboolean) pfglSampleCoverageARB;
+
 pfglSampleCoverageARB       glSampleCoverageARB;

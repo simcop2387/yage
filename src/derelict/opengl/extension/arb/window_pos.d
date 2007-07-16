@@ -101,23 +101,35 @@ else
     }
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLdouble, GLdouble) pfglWindowPos2dARB;
+    typedef void function(GLdouble*) pfglWindowPos2dvARB;
+    typedef void function(GLfloat, GLfloat) pfglWindowPos2fARB;
+    typedef void function(GLfloat*) pfglWindowPos2fvARB;
+    typedef void function(GLint, GLint) pfglWindowPost2iARB;
+    typedef void function(GLint*) pfglWindowPos2ivARB;
+    typedef void function(GLshort, GLshort) pfglWindowPos2sARB;
+    typedef void function(GLshort*) pfglWindowPos2svARB;
+    typedef void function(GLdouble, GLdouble, GLdouble) pfglWindowPos3dARB;
+    typedef void function(GLdouble*) pfglWindowPos3dvARB;
+    typedef void function(GLfloat, GLfloat, GLfloat) pfglWindowPos3fARB;
+    typedef void function(GLfloat*) pfglWindowPos3fvARB;
+    typedef void function(GLint, GLint, GLint) pfglWindowPos3iARB;
+    typedef void function(GLint*) pfglWindowPos3ivARB;
+    typedef void function(GLshort, GLshort, GLshort) pfglWindowPos3sARB;
+    typedef void function(GLshort*) pfglWindowPos3svARB;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLdouble, GLdouble) pfglWindowPos2dARB;
-typedef void function(GLdouble*) pfglWindowPos2dvARB;
-typedef void function(GLfloat, GLfloat) pfglWindowPos2fARB;
-typedef void function(GLfloat*) pfglWindowPos2fvARB;
-typedef void function(GLint, GLint) pfglWindowPost2iARB;
-typedef void function(GLint*) pfglWindowPos2ivARB;
-typedef void function(GLshort, GLshort) pfglWindowPos2sARB;
-typedef void function(GLshort*) pfglWindowPos2svARB;
 pfglWindowPos2dARB          glWindowPos2dARB;
 pfglWindowPos2dvARB         glWindowPos2dvARB;
 pfglWindowPos2fARB          glWindowPos2fARB;
@@ -126,15 +138,6 @@ pfglWindowPost2iARB         glWindowPost2iARB;
 pfglWindowPos2ivARB         glWindowPos2ivARB;
 pfglWindowPos2sARB          glWindowPos2sARB;
 pfglWindowPos2svARB         glWindowPos2svARB;
-
-typedef void function(GLdouble, GLdouble, GLdouble) pfglWindowPos3dARB;
-typedef void function(GLdouble*) pfglWindowPos3dvARB;
-typedef void function(GLfloat, GLfloat, GLfloat) pfglWindowPos3fARB;
-typedef void function(GLfloat*) pfglWindowPos3fvARB;
-typedef void function(GLint, GLint, GLint) pfglWindowPos3iARB;
-typedef void function(GLint*) pfglWindowPos3ivARB;
-typedef void function(GLshort, GLshort, GLshort) pfglWindowPos3sARB;
-typedef void function(GLshort*) pfglWindowPos3svARB;
 pfglWindowPos3dARB          glWindowPos3dARB;
 pfglWindowPos3dvARB         glWindowPos3dvARB;
 pfglWindowPos3fARB          glWindowPos3fARB;

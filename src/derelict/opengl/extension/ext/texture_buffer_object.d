@@ -81,14 +81,18 @@ enum : GLenum
     GL_TEXTURE_BUFFER_FORMAT_EXT                = 0x8C2E,
 }
 
+private const char[] Funcs =
+"
+    typedef void function(GLenum,GLenum,GLuint) pfglTexBufferEXT;
+";
+
 version(Windows)
 {
-    extern(Windows):
+    extern(Windows): mixin(Funcs);
 }
 else
 {
-    extern(C):
+    extern(C): mixin(Funcs);
 }
 
-typedef void function(GLenum,GLenum,GLuint) pfglTexBufferEXT;
 pfglTexBufferEXT    glTexBufferEXT;
