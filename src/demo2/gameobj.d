@@ -6,7 +6,7 @@
  * This module is not technically part of the engine, but merely uses it.
  */
 
-module demo1.gameobj;
+module demo2.gameobj;
 
 import std.math;
 import std.stdio;

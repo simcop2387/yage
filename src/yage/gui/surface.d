@@ -176,12 +176,12 @@ class Surface{
 	}
 	
 	void startDrag(){
-		Input.setSurfaceLock(this);
+		lock();
 	}
 	
 	void drag(Vec2i add){
-		locationAdd.x -= add.x;
-		locationAdd.y -= add.y;
+		locationAdd.x += add.x;
+		locationAdd.y += add.y;
 		
 		
 		recalculate(false);
@@ -232,7 +232,7 @@ class Surface{
 		
 		recalculate(false);
 		after:
-		Input.unlockSurface();
+		unlock();
 	}
 	
 	//I would like textures to automatically do this so that it doesn't need to happen for every single surface on every single frame
@@ -495,6 +495,34 @@ class Surface{
 			parent.subs[$-1] = this;
 		}
 		if(onFocus) onFocus(this);
+	}
+	
+	//Perhaps change to setLock(bool)
+	//Events will be forwarded to this
+	void lock(){
+		Input.surfaceLock = this;
+	}
+	
+	void unlock(){
+		Input.surfaceLock = null;
+	}
+	
+	/** If enabled, the mousecursor will be hidden and grabbed by the application.
+	 *  This also allows for mouse position changes to be registered in a relative fashion,
+	 *  i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching
+	 *  the mouse to the look direction of a first or third-person camera. */
+	void grabMouse(bool grab){
+		if (grab){
+			lock();
+			SDL_WM_GrabInput(SDL_GRAB_ON);
+			SDL_ShowCursor(false);
+		}
+		else{
+			unlock();
+			SDL_WM_GrabInput(SDL_GRAB_OFF);
+			SDL_ShowCursor(true);
+		}
+		Input.grabbed = grab;
 	}
 		
 	bool isSub(Surface surf){

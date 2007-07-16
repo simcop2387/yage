@@ -98,8 +98,8 @@ class Ship : GameObject
 		if (Input.getGrabMouse())
 		{
 			Vec2f m = Input.getMouseDelta();
-			angularAccelerate(Vec3f(0, -m.x/16.0, 0));
-			pitch.angularAccelerate(Vec3f(m.y/24.0, 0, 0));
+			angularAccelerate(Vec3f(0, m.x/16.0, 0));
+			pitch.angularAccelerate(Vec3f(-m.y/24.0, 0, 0));
 		}
 
 

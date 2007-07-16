@@ -17,7 +17,6 @@ import yage.gui.surface;
 /// A class to handle keyboard, mouse, and eventually joystick input.
 class Input
 {
-	private static bool resetmouse = true;	// Used to disable large mouse jumps
 
 	static bool[1024] keyup;		/// The key was down and has been released.
 	static bool[1024] keydown;		/// The key is currently being held down.
@@ -98,18 +97,20 @@ class Input
 
 					break;
 				case SDL_MOUSEMOTION:
-					if (resetmouse)
-					{	resetmouse = false;
-						event.motion.xrel = event.motion.yrel = 0;
+					
+					mousedx = event.motion.xrel;	// these seem to behave differently on linux
+					mousedy = event.motion.yrel;	// than on win32.  Testing should be done.
+					
+					if(grabbed){
+						if(event.motion.x != mousex || event.motion.y != mousey)
+							SDL_WarpMouse(mousex, mousey);
+						else break;
+						
 					}
-					mousedx += event.motion.xrel;	// these seem to behave differently on linux
-					mousedy += event.motion.yrel;	// than on win32.  Testing should be done.
-					
-					xdiff = mousex - event.motion.x;
-					ydiff = mousey - event.motion.y;
-					
-					mousex = event.motion.x;
-					mousey = event.motion.y;
+					else{
+						mousex = event.motion.x;
+						mousey = event.motion.y;
+					}
 					
 					auto surface = getSurface();
 
@@ -129,7 +130,7 @@ class Input
 					}
 					//Needs to be changed so that check is run once
 					if(surface !is null)
-						surface.mousemove(event.button.button, Vec2i(xdiff,ydiff));
+						surface.mousemove(event.button.button, Vec2i(event.motion.xrel, event.motion.yrel));
 					
 					break;
 
@@ -155,35 +156,23 @@ class Input
 		return result;
 	}
 
-	/** If enabled, the mousecursor will be hidden and grabbed by the application.
-	 *  This also allows for mouse position changes to be registered in a relative fashion,
-	 *  i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching
-	 *  the mouse to the look direction of a first or third-person camera. */
-	static void setGrabMouse(bool _grabbed)
-	{	if (_grabbed)
-		{	SDL_WM_GrabInput(SDL_GRAB_ON);
-			SDL_ShowCursor(false);
-			resetmouse = true;
-		}else
-		{	SDL_WM_GrabInput(SDL_GRAB_OFF);
-			SDL_ShowCursor(true);
-		}
-		grabbed = _grabbed;
-	}
-
 	static bool getGrabMouse()
 	{	return grabbed;
-	}
-	
-	static void setSurfaceLock(Surface lock){
-		surfaceLock = lock;
-	}
-	static void unlockSurface(){
-		surfaceLock = null;
 	}
 	
 	static Surface getSurface(){
 		if(surfaceLock) return surfaceLock;
 		return findSurface(mousex, mousey);
+	}
+	
+	void unlock(){
+		Input.surfaceLock = null;
+	}
+	
+	void ungrab(){
+		Input.unlock();
+		SDL_WM_GrabInput(SDL_GRAB_OFF);
+		SDL_ShowCursor(true);
+		grabbed = false;
 	}
 }

@@ -43,7 +43,7 @@ struct Style
     Unit[4] paddingUnits;
 
     float[4] dimension; 		// top, right, bottom, left
-    byte[4] dimensinUnits;
+    byte[4] dimensionUnits;
     float height;
     Unit  heightUnits;
     float width;

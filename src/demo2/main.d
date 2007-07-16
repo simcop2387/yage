@@ -6,7 +6,7 @@
  * This module is not technically part of the engine, but merely uses it.
  */
 
-module demo1.main;
+module demo2.main;
 
 import std.string;
 import std.stdio;
@@ -16,7 +16,7 @@ import yage.all;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 
-import demo1.ship;
+import demo2.ship;
 
 // Current program entry point.  This may change in the future.
 int main()
@@ -64,16 +64,12 @@ int main()
 	bg.setVisibility(true);
 		
 	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
-		self.raise();
-		Input.button[1].up = false;
-		Input.setGrabMouse(!Input.getGrabMouse());
+		self.grabMouse(!Input.getGrabMouse());
 	}
 	
 	void onResize(Surface self){
-		int xres = self.position2.x - self.position1.x;
-		int yres = self.position2.y - self.position1.y;
-		camera.setResolution(xres, yres);
-		writefln("Camera resolution changed to ", xres, " x ", yres);
+		camera.setResolution(self.size.x, self.size.y);
+		writefln("Camera resolution changed to ", self.size.x, " x ", self.size.y);
 	}
 	
 	bg.onMousedown = &onMousedown;	
@@ -101,7 +97,7 @@ int main()
 	}
 	
 	Surface clear = new Surface(bg);
-	clear.setTexture(inactive);
+	clear.setTexture(inactive2);
 	clear.topLeft = Vec2f(.65,0);
 	clear.bottomRight = Vec2f(1, .25);
 	clear.fill = stretched;
@@ -113,7 +109,7 @@ int main()
 	clear.onMouseleave = &onMouseleave;
 	
 	Surface clear2 = new Surface(clear);
-	clear2.setTexture(inactive);
+	clear2.setTexture(inactive2);
 	clear2.topLeft = Vec2f(.65,0);
 	clear2.bottomRight = Vec2f(1, .25);
 	clear2.fill = stretched;
@@ -125,7 +121,7 @@ int main()
 	clear2.onMouseleave = &onMouseleave;
 
 	Surface clear3 = new Surface(bg);
-	clear3.setTexture(inactive);
+	clear3.setTexture(inactive2);
 	clear3.topLeft = Vec2f(.65,0);
 	clear3.bottomRight = Vec2f(1, .25);
 	clear3.fill = stretched;
@@ -135,6 +131,30 @@ int main()
 	clear3.onMouseup = &onMouseup2;
 	clear3.onMouseenter = &onMouseenter;
 	clear3.onMouseleave = &onMouseleave;
+
+	Surface clear4 = new Surface(bg);
+	clear4.setTexture(inactive2);
+	clear4.topLeft = Vec2f(.4,0);
+	clear4.bottomRight = Vec2f(1, .25);
+	clear4.fill = stretched;
+	clear4.setVisibility(true);
+	clear4.onMousedown = &onMousedown2;
+	clear4.onMousemove = &onMousemove;
+	clear4.onMouseup = &onMouseup2;
+	clear4.onMouseenter = &onMouseenter;
+	clear4.onMouseleave = &onMouseleave;
+
+	Surface clear5 = new Surface(bg);
+	clear5.setTexture(inactive);
+	clear5.topLeft = Vec2f(.65,0);
+	clear5.bottomRight = Vec2f(1, .4);
+	clear5.fill = stretched;
+	clear5.setVisibility(true);
+	clear5.onMousedown = &onMousedown2;
+	clear5.onMousemove = &onMousemove;
+	clear5.onMouseup = &onMouseup2;
+	clear5.onMouseenter = &onMouseenter;
+	clear5.onMouseleave = &onMouseleave;
 	
 	// Music
 	SoundNode music = new SoundNode(camera);
@@ -165,23 +185,16 @@ int main()
 	asteroidBelt(800, 1400, planet);
 
 	// Add to the scene's update loop
-	Input.getMouseDelta();
+	//Input.getMouseDelta();
 	void update(BaseNode self)
 	{	// check for exit
 		if (Input.keydown[SDLK_ESCAPE])
 			Input.exit=true;
-
-		// Toggle mouse grab
-// 		if (Input.button[1].up)
-// 		{	Input.button[1].up = false;
-// 			Input.setGrabMouse(!Input.getGrabMouse());
-// 		}
 		ship.getSpring().update(1/60.0f);
 	}
 	scene.onUpdate(&update);
-
-	Device.resizeWindow(800, 600);
-	//disp.recalculateTexture();
+	
+	bg.recalculate();
 	
 	// Rendering / Input Loop
 	int fps = 0;

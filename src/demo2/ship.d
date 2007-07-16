@@ -6,11 +6,11 @@
  * This module is not technically part of the engine, but merely uses it.
  */
 
-module demo1.ship;
+module demo2.ship;
 
 import std.stdio;
 import yage.all;
-import demo1.gameobj;
+import demo2.gameobj;
 
 class Ship : GameObject
 {
@@ -98,8 +98,8 @@ class Ship : GameObject
 		if (Input.getGrabMouse())
 		{
 			Vec2f m = Input.getMouseDelta();
-			angularAccelerate(Vec3f(0, -m.x/16.0, 0));
-			pitch.angularAccelerate(Vec3f(m.y/24.0, 0, 0));
+			angularAccelerate(Vec3f(0, m.x/16.0, 0));
+			pitch.angularAccelerate(Vec3f(-m.y/24.0, 0, 0));
 		}
 
 

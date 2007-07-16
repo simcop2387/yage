@@ -6,7 +6,7 @@
  * This module is not technically part of the engine, but merely uses it.
  */
 
-module demo1.main;
+module demo2.main;
 
 import std.string;
 import std.stdio;
@@ -65,8 +65,7 @@ int main()
 
 	
 	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
-		Input.button[1].up = false;
-		Input.setGrabMouse(!Input.getGrabMouse());
+		self.grabMouse(!Input.getGrabMouse());
 	}
 	
 	void onResize(Surface self){

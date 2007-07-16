@@ -101,10 +101,10 @@ class Flyer
 		if (Input.keydown[SDLK_d] || Input.keydown[SDLK_RIGHT])
 			accelerate(speed, 0, 0);
 
-		if (Input.getGrabMouse())
-		{	Vec2f movement = Input.getMouseDelta();
-			angularAccelerate(-movement.x/12.0, movement.y/16.0);
-		}
+// 		if (Input.getGrabMouse())
+// 		{	Vec2f movement = Input.getMouseDelta();
+// 			angularAccelerate(-movement.x/12.0, movement.y/16.0);
+// 		}
 	}
 
 }
