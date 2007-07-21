@@ -15,6 +15,7 @@ module yage.core.all;
 public
 {	import yage.core.array;
 	import yage.core.freelist;
+	import yage.core.math;
 	import yage.core.matrix;
 	import yage.core.misc;
 	import yage.core.parse;
@@ -22,6 +23,7 @@ public
 	import yage.core.quatrn;
 	import yage.core.repeater;
 	import yage.core.timer;
+	import yage.core.types;
 	import yage.core.vector;
 	import yage.core.xml;
 }

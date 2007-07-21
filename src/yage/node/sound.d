@@ -10,7 +10,7 @@ import std.math;
 import std.string;
 import std.stdio;
 import derelict.openal.al;
-import yage.core.misc;
+import yage.core.math;
 import yage.resource.resource;
 import yage.resource.sound;
 import yage.node.base;

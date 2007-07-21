@@ -6,9 +6,7 @@
 
 module yage.util.flyer;
 
-import yage.core.matrix;
-import yage.core.misc;
-import yage.core.vector;
+import yage.core.all;
 import yage.node.base;
 import yage.node.camera;
 import yage.node.node;

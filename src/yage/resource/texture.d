@@ -15,7 +15,7 @@ import derelict.sdl.image;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
-import yage.core.misc;
+import yage.core.math;
 import yage.core.vector;
 import yage.resource.resource;
 import yage.resource.image;

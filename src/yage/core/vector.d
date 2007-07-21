@@ -8,12 +8,10 @@ module yage.core.vector;
 
 import std.math;
 import std.stdio;
-import yage.core.parse;
+import yage.core.all;
 import yage.core.matrix;
+import yage.core.math;
 import yage.core.quatrn;
-import yage.core.misc;
-
-
 /**
  * This is a template to create a vector of any type with any number of elements.
  * Use Vec.v[0..n] to access the vector's elements directly, or a-d to access
@@ -290,7 +288,7 @@ struct Vec3f
 	/// Is this vector equal to vector s, discarding relative error fudge.
 	bool almostEqual(Vec3f s, float fudge=0.0001)
 	{	for (int i=0; i<v.length; i++)
-			if (!yage.core.misc.almostEqual(v[i], s.v[i], fudge))
+			if (!yage.core.math.almostEqual(v[i], s.v[i], fudge))
 				return false;
 		return true;
 	}

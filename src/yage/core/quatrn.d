@@ -149,7 +149,7 @@ struct Quatrn
 	/// Is this Quatrn equal to Quatrn s, discarding relative error fudge.
 	bool almostEqual(Quatrn s, float fudge=0.0001)
 	{	for (int i=0; i<v.length; i++)
-			if (!yage.core.misc.almostEqual(v[i], s.v[i], fudge))
+			if (!yage.core.math.almostEqual(v[i], s.v[i], fudge))
 				return false;
 		return true;
 	}
