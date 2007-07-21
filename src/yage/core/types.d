@@ -20,6 +20,7 @@ private extern (C) void *memcpy(void *, void *, uint);
  * Colors are represented in RGBA format.
  * Note that uints and dwords store the bytes in reverse,
  * so Color(0x6633ff00).hex == "00FF3366"
+ * All Colors default to transparent black.
  * Example:
  * --------------------------------
  * uint  red  = Color("red").ui;
@@ -30,10 +31,32 @@ private extern (C) void *memcpy(void *, void *, uint);
  */
 struct Color
 {
+	private static real frac = 1.0f/255;
+	
 	union
-	{	uint ui;	/// Get the Color as a uint
-		ubyte[4] ub;/// Get the Color as an array of ubyte
+	{	ubyte[4] ub;/// Get the Color as an array of ubyte
+		uint ui;	/// Get the Color as a uint		
 		dword dw;	/// Get the Color as a dword
+		struct { ubyte r, g, b, a; } /// Access each color component.
+	}
+	
+	/// Initialize
+	static Color opCall(int r, int g,int b, int a=255)
+	{	Color res;
+		res.r=r;
+		res.b=b;
+		res.g=g;
+		res.a=a;
+		return res;
+	}
+	/// Ditto
+	static Color opCall(float r, float g, float b, float a=1)
+	{	Color res;
+		res.r=cast(ubyte)clamp(r*255, 0.0f, 255.0f);
+		res.b=cast(ubyte)clamp(b*255, 0.0f, 255.0f);
+		res.g=cast(ubyte)clamp(g*255, 0.0f, 255.0f);
+		res.a=cast(ubyte)clamp(a*255, 0.0f, 255.0f);
+		return res;
 	}
 
 
@@ -68,9 +91,14 @@ struct Color
 	/// Convert float[] to Color
 	static Color opCall(float[] f)
 	{	Color res;
-		for (int i=0; i<max(f.length, 4); i++)
-			res.ub[i] = cast(ubyte)(f[i]*255);
+		for (int i=0; i<min(f.length, 4); i++)
+			res.ub[i] = cast(ubyte)clamp(f[i]*255, 0.0f, 255.0f);
 		return res;
+	}
+	
+	/// Convert Vec3f to Color
+	static Color opCall(Vec3f v)
+	{	return Color(v.v);
 	}
 	
 	/// Convert Vec4f to Color
@@ -87,7 +115,9 @@ struct Color
 	 * Params:
 	 * string = The string to convert.*/
 	static Color opCall(char[] string)
-	{	switch (std.string.tolower(string))
+	{	
+		// An english color name
+		switch (std.string.tolower(string))
 		{	case "black":	return Color(0x00000000);
 			case "blue":	return Color(0x00FF0000);
 			case "brown":	return Color(0x00A52A2A);
@@ -110,7 +140,7 @@ struct Color
 	
 		// Append alpha to 6-digit hex string.
 		if (string.length == 6)
-			string ~= "00";		
+			string ~= "FF";		
 		
 		// Convert string one char at a a time.
 		Color result;
@@ -134,20 +164,29 @@ struct Color
 	/// Get the Color as an array of float.
 	float[] f()
 	{	float[4] res;
-		res[0] = ub[0] / 255.0f;
-		res[1] = ub[1] / 255.0f;
-		res[2] = ub[2] / 255.0f;
-		res[3] = ub[3] / 255.0f;
+		res[0] = r * frac;
+		res[1] = g * frac;
+		res[2] = b * frac;
+		res[3] = a * frac;
 		return res.dup;
+	}
+	
+	/// Get the Color as a Vec3f.
+	Vec3f vec3f()
+	{	Vec3f res;
+		res.v[0] = r * frac;
+		res.v[1] = g * frac;
+		res.v[2] = b * frac;
+		return res;
 	}
 
 	/// Get the Color as a Vec4f.
 	Vec4f vec4f()
 	{	Vec4f res;
-		res.v[0] = ub[0] / 255.0f;
-		res.v[1] = ub[1] / 255.0f;
-		res.v[2] = ub[2] / 255.0f;
-		res.v[3] = ub[3] / 255.0f;
+		res.v[0] = r * frac;
+		res.v[1] = g * frac;
+		res.v[2] = b * frac;
+		res.v[3] = a * frac;
 		return res;
 	}
 	
@@ -166,18 +205,18 @@ struct Color
 	}
 	
 	unittest
-	{	assert(Color.sizeof == 4);
+	{	writefln(cast(ubyte)257);
+		assert(Color.sizeof == 4);
 		
 		// Test initializers
-		assert(Color([0, 255, 51, 102]).hex == "00FF3366");
-		assert(Color([0.0f, 1.0f, 0.2f, 0.4f]).hex == "00FF3366");
-		assert(Color(0x6633ff00).hex == "00FF3366");
+		assert(Color([0, 102, 51, 255]).hex == "006633FF");
+		assert(Color([0.0f, 0.4f, 0.2f, 1.0f]).hex == "006633FF");
+		assert(Color(0xFF336600).hex == "006633FF");
 		
 		// Test converters
 		assert(Color("abcdef97").hex == "ABCDEF97");
-		assert(Color("00FF3366").vec4f == Vec4f(0.0f, 1.0f, 0.2f, 0.4f));
-		assert(Color("00FF3366").ui == 0x6633ff00);
-		//assert(0);
+		assert(Color("006633FF").vec4f == Vec4f(0.0f, 0.4f, 0.2f, 1.0f));
+		assert(Color("006633FF").ui == 0xFF336600);
 	}	
 }
 

@@ -46,7 +46,7 @@ int main()
 	auto sky = new ModelNode(skybox);
 	sky.setModel("sky/sanctuary.ms3d");
 	scene.setSkybox(skybox);
-	scene.setGlobalAmbient(Vec4f(.3));
+	scene.setGlobalAmbient(Color("555555"));
 
 	// Ship
 	Ship ship = new Ship(scene);
@@ -84,7 +84,7 @@ int main()
 
 	// Lights
 	LightNode l1 = new LightNode(scene);
-	l1.setDiffuse(1, .85, .7);
+	l1.setDiffuse(Color(1, .85, .7));
 	l1.setLightRadius(7000);
 	l1.setPosition(0, 0, -6000);
 

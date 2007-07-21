@@ -8,11 +8,7 @@ module yage.node.scene;
 
 import derelict.opengl.gl;
 import derelict.openal.al;
-import yage.core.array;
-import yage.core.misc;
-import yage.core.repeater;
-import yage.core.timer;
-import yage.core.vector;
+import yage.core.all;
 import yage.node.node;
 import yage.node.light;
 import yage.node.base;
@@ -46,15 +42,15 @@ class Scene : BaseNode
 
 	protected Timer delta; 					// time since the last time this Scene was updated.
 	protected float delta_time;
-	protected Vec4f ambient;				// scene ambient light color.
-	protected Vec4f color;					// scene background color.
-	protected Vec4f fog_color;
+	protected Color ambient;				// scene ambient light color.
+	protected Color background;				// scene background color.
+	protected Color fog_color;
 	protected float fog_density = 0.1;
 	protected bool  fog_enabled = false;
 	protected float speed_of_sound = 343;	// 343m/s is the speed of sound in air at sea level.
 
 	protected long timestamp[3];
-	int transform_read=0, transform_write=1;
+	package int transform_read=0, transform_write=1;
 
 	protected Repeater repeater;
 
@@ -62,9 +58,9 @@ class Scene : BaseNode
 	this()
 	{	delta	= new Timer();
 		scene	= this;
-		ambient	= Vec4f(.2, .2, .2, 1); // OpenGL default global ambient light.
-		color   = Vec4f(0, 0, 0, 1);	// OpenGL default clear color
-		fog_color = Vec4f(.5, .5, .5, 1);
+		ambient	= Color("333333"); // OpenGL default global ambient light.
+		background = Color("black");	// OpenGL default clear color
+		fog_color = Color("gray");
 		repeater = new Repeater(&update);
 	}
 
@@ -96,8 +92,8 @@ class Scene : BaseNode
 	}
 
 	///
-	Vec4f getClearColor()
-	{	return color;
+	Color getClearColor()
+	{	return background;
 	}
 
 	/// Return the amount of time since the last time update() was called for this Scene.
@@ -106,7 +102,7 @@ class Scene : BaseNode
 	}
 
 	///
-	Vec4f getFogColor()
+	Color getFogColor()
 	{	return fog_color;
 	}
 
@@ -121,7 +117,7 @@ class Scene : BaseNode
 	}
 
 	///
-	Vec4f getGlobalAmbient()
+	Color getGlobalAmbient()
 	{	return ambient;
 	}
 
@@ -147,21 +143,13 @@ class Scene : BaseNode
 
 
 	/// Set the background color when no skybox is specified.
-	void setClearColor(Vec4f color)
-	{	this.color = color;
-	}
-	/// Ditto
-	void setClearColor(float r, float g, float b)
-	{	color = Vec4f(r, g, b, 1);
+	void setClearColor(Color color)
+	{	this.background = background;
 	}
 
 	/// Set the color of fog, when fog is enabled.
-	void setFogColor(Vec4f fog_color)
+	void setFogColor(Color fog_color)
 	{	this.fog_color = fog_color;
-	}
-	/// Ditto
-	void setFogColor(float r, float g, float b)
-	{	fog_color = Vec4f(r, g, b, 1);
 	}
 
 	/**
@@ -181,12 +169,8 @@ class Scene : BaseNode
 	}
 
 	/// Set the color of the scene's global ambient light.
-	void setGlobalAmbient(Vec4f ambient)
+	void setGlobalAmbient(Color ambient)
 	{	this.ambient = ambient;
-	}
-	/// Ditto
-	void setGlobalAmbient(float r, float g, float b, float a=1)
-	{	ambient = Vec4f(r, g, b, a);
 	}
 
 	/**
@@ -262,19 +246,17 @@ class Scene : BaseNode
 		this.delta.reset();
 		scene.swapTransformWrite();
 	}
-
-
-
+	
 
 	/*
 	 * Apply OpenGL options specific to this Scene.  This function is used internally by
 	 * the engine and doesn't normally need to be called.*/
 	void apply()
-	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.v.ptr);
-		glClearColor(color.r, color.g, color.b, color.a);
+	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.vec4f.ptr);
+		glClearColor(background.r, background.g, background.b, background.a);
 
 		if (fog_enabled)
-		{	glFogfv(GL_FOG_COLOR, fog_color.v.ptr);
+		{	glFogfv(GL_FOG_COLOR, fog_color.vec4f.ptr);
 			glFogf(GL_FOG_DENSITY, fog_density);
 			glEnable(GL_FOG);
 		} else

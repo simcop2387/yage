@@ -36,9 +36,9 @@ class LightNode : Node
  	protected int type 			= LIGHT_POINT;
 	protected int light_index	= -1;
 
-	protected Vec4f	ambient;			// The RGBA ambient color of the light, defaults to black.
-	protected Vec4f	diffuse;			// The RGBA diffuse color of the light, defaults to 100% white.
-	protected Vec4f	specular;			// The RGBA specular color of the light, defaults to 100% white.
+	protected Color	ambient;			// The RGBA ambient color of the light, defaults to black.
+	protected Color	diffuse;			// The RGBA diffuse color of the light, defaults to 100% white.
+	protected Color	specular;			// The RGBA specular color of the light, defaults to 100% white.
 	protected float	spot_angle = 45.0;	// If the light type is SPOT, this sets the angle of the cone of light emitted.
 	protected float	spot_exponent = 0;	// If the light type is SPOT, this sets the fadeoff of the light.
 
@@ -47,8 +47,8 @@ class LightNode : Node
 	 * Construct this Node as the child of parent.*/
 	this(BaseNode parent)
 	{	super(parent); // calls setParent, which adds it to the Scene's light list.
-		diffuse = Vec4f(1, 1, 1, 1);
-		specular= Vec4f(1, 1, 1, 1);
+		diffuse = Color("white");
+		specular= Color("white");
 	}
 
 	/**
@@ -89,43 +89,31 @@ class LightNode : Node
 	}
 
 	/// Get the ambient color of the light.
-	Vec4f getAmbient()
+	Color getAmbient()
 	{	return ambient;
 	}
 	/// Set the ambient color of the light.
-	void setAmbient(float r, float g, float b)
-	{	ambient.set(r, g, b, 0);
-	}
-	/// Set the ambient color of the light.
-	void setAmbient(Vec4f ambient)
+	void setAmbient(Color ambient)
 	{	this.ambient = ambient;
 	}
 
 
 	/// Get the diffuse color of the light.
-	Vec4f getDiffuse()
+	Color getDiffuse()
 	{	return diffuse;
 	}
 	/// Set the diffuse color of the light.
-	void setDiffuse(float r, float g, float b)
-	{	diffuse.set(r, g, b, 0);
-	}
-	/// Set the diffuse color of the light.
-	void setDiffuse(Vec4f diffuse)
+	void setDiffuse(Color diffuse)
 	{	this.diffuse = diffuse;
 	}
 
 
 	/// Get the specular color of the light.
-	Vec4f getSpecular()
+	Color getSpecular()
 	{	return specular;
 	}
 	/// Set the specular color of the light.
-	void setSpecular(float r, float g, float b)
-	{	specular.set(r, g, b, 0);
-	}
-	/// Set the specular color of the light.
-	void setSpecular(Vec4f specular)
+	void setSpecular(Color specular)
 	{	this.specular = specular;
 	}
 
@@ -196,12 +184,12 @@ class LightNode : Node
 	 * of that radius.  This is used internally for nodes that have a spotlight shine on
 	 * one corner of them but not at all at their center.
 	 * Returns: RGB color value in a Vec3f of floats from 0 to 1.*/
-	Vec3f getBrightness(Vec3f point, float margin=0.0)
+	Color getBrightness(Vec3f point, float margin=0.0)
 	{
 		// Directional lights are easy, since they don't depend on which way the light points
 		// or how far away the light is.
 		if (type==LIGHT_DIRECTIONAL)
-			return Vec3f(ambient.r+diffuse.r, ambient.g+diffuse.g, ambient.b+diffuse.b);
+			return Color(ambient.r+diffuse.r, ambient.g+diffuse.g, ambient.b+diffuse.b);
 
 		// light_direction is vector from light to point
 		Vec3f light_direction = point - Vec3f(getAbsoluteTransform().v[12..15]);
@@ -229,15 +217,15 @@ class LightNode : Node
 
 		// color will store the RGB color values of the intensity.
 		Vec3f color;
-		color.set(diffuse.r*intensity, diffuse.g*intensity, diffuse.b*intensity);
+		color.set(diffuse.r/255*intensity, diffuse.g/255*intensity, diffuse.b/255*intensity);
 		if (add_ambient)
-			color.add(Vec3f(ambient.v));	// diffuse scaled by intensity plus ambient.
+			color.add(ambient.vec3f);	// diffuse scaled by intensity plus ambient.
 
 		if (color.x>=1) color.x=1;
 		if (color.y>=1) color.y=1;
 		if (color.z>=1) color.z=1;
 
-		return color;
+		return Color(color);
 	}
 
 	/*
@@ -269,9 +257,9 @@ class LightNode : Node
 		}
 
 		// Light material properties
-		glLightfv(GL_LIGHT0+num, GL_AMBIENT, ambient.v.ptr);
-		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, diffuse.v.ptr);
-		glLightfv(GL_LIGHT0+num, GL_SPECULAR, specular.v.ptr);
+		glLightfv(GL_LIGHT0+num, GL_AMBIENT, ambient.vec4f.ptr);
+		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, diffuse.vec4f.ptr);
+		glLightfv(GL_LIGHT0+num, GL_SPECULAR, specular.vec4f.ptr);
 
 		// Attenuation properties
 		glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?

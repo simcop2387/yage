@@ -297,7 +297,7 @@ class Node : BaseNode
 		{	LightNode l = all_lights[i];
 
 			// Add to the array of limited lights if bright enough
-			float intensity = l.getBrightness(position, getRadius()).average();
+			float intensity = l.getBrightness(position, getRadius()).vec3f.average();
 			intensities[i] = intensity;
 			if (intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
 			{	for (int j=0; j<number; j++)

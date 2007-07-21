@@ -104,6 +104,7 @@ Eric Poggel
 <span class="currsymbol">Color</span>
 <script type="text/javascript">explorer.outline.addDecl('Color');</script>
 (0x6633ff00).hex == "00FF3366"
+ All Colors default to transparent black.
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> <font color=blue>uint</font>  red  = <b>Color</b>(<span style="color: purple">"red"</span>).ui;
@@ -118,19 +119,6 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">ui</span>
-<script type="text/javascript">explorer.outline.addDecl('ui');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the Color as a uint
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">ubyte[4u] 
 <span class="currsymbol">ub</span>
 <script type="text/javascript">explorer.outline.addDecl('ub');</script>
@@ -144,6 +132,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">uint 
+<span class="currsymbol">ui</span>
+<script type="text/javascript">explorer.outline.addDecl('ui');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the Color as a uint		
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">dword 
 <span class="currsymbol">dw</span>
 <script type="text/javascript">explorer.outline.addDecl('dw');</script>
@@ -152,6 +153,75 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the Color as a dword
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">ubyte 
+<span class="currsymbol">r</span>
+<script type="text/javascript">explorer.outline.addDecl('r');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Access each color component.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">ubyte 
+<span class="currsymbol">g</span>
+<script type="text/javascript">explorer.outline.addDecl('g');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Access each color component.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">ubyte 
+<span class="currsymbol">b</span>
+<script type="text/javascript">explorer.outline.addDecl('b');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Access each color component.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">ubyte 
+<span class="currsymbol">a</span>
+<script type="text/javascript">explorer.outline.addDecl('a');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Access each color component.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Color  
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(int <span class="funcparam">r</span>, int <span class="funcparam">g</span>, int <span class="funcparam">b</span>, int <span class="funcparam">a</span> = 255);
+<br>static Color  
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Initialize
 <br><br>
 
 </dd>
@@ -225,6 +295,19 @@ Eric Poggel
 <dt><span class="decl">static Color  
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(Vec3f <span class="funcparam">v</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Convert Vec3f to Color
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Color  
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (Vec!(float,4) <span class="funcparam">v</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -269,6 +352,19 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get the Color as an array of float.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f  
+<span class="currsymbol">vec3f</span>
+<script type="text/javascript">explorer.outline.addDecl('vec3f');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the Color as a Vec3f.
 <br><br>
 
 </dd>
@@ -565,7 +661,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul 21 15:55:59 2007
+		on Sat Jul 21 17:44:33 2007
 
 	</div>
 	

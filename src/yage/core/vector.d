@@ -134,6 +134,10 @@ struct Vec(T, int K)
 	{	return s.scale(dot(s)/s.length2());
 	}
 
+	T* ptr()
+	{	return v.ptr;		
+	}
+	
 	/// Scale (multiply) this vector.
 	VTK scale(float s)
 	{	VTK res = *this;

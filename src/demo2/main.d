@@ -46,7 +46,7 @@ int main()
 	auto sky = new ModelNode(skybox);
 	sky.setModel("sky/sanctuary.ms3d");
 	scene.setSkybox(skybox);
-	scene.setGlobalAmbient(Vec4f(.3));
+	scene.setGlobalAmbient(Color("555555"));
 
 	// Ship
 	Ship ship = new Ship(scene);
