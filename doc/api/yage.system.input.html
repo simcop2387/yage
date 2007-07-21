@@ -104,7 +104,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static bool[1024] 
+<dt><span class="decl">static bool[1024u] 
 <span class="currsymbol">keyup</span>
 <script type="text/javascript">explorer.outline.addDecl('keyup');</script>
 ;
@@ -117,7 +117,7 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static bool[1024] 
+<dt><span class="decl">static bool[1024u] 
 <span class="currsymbol">keydown</span>
 <script type="text/javascript">explorer.outline.addDecl('keydown');</script>
 ;
@@ -285,7 +285,7 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Buttons [8] 
+<dt><span class="decl">static Buttons [8u] 
 <span class="currsymbol">button</span>
 <script type="text/javascript">explorer.outline.addDecl('button');</script>
 ;
@@ -351,22 +351,6 @@ Eric Poggel
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static void 
-<span class="currsymbol">setGrabMouse</span>
-<script type="text/javascript">explorer.outline.addDecl('setGrabMouse');</script>
-(bool <span class="funcparam">_grabbed</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>If enabled, the mousecursor will be hidden and grabbed by the application.
-  This also allows for mouse position changes to be registered in a relative fashion,
-  i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching
-  the mouse to the look direction of a first or third-person camera. 
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -386,7 +370,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul  8 23:04:54 2007
+		on Sat Jul 21 15:56:00 2007
 
 	</div>
 	
@@ -398,6 +382,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.math");
 
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
@@ -413,9 +399,17 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.types");
+
 	explorer.packageExplorer.addModule("yage.core.vector");
 
 	explorer.packageExplorer.addModule("yage.core.xml");
+
+	explorer.packageExplorer.addModule("yage.gui.all");
+
+	explorer.packageExplorer.addModule("yage.gui.style");
+
+	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.node.all");
 

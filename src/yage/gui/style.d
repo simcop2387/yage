@@ -3,6 +3,7 @@
  */
 module yage.gui.style;
 
+import yage.core.types;
 import yage.core.vector;
 import yage.resource.material;
 
@@ -10,20 +11,19 @@ import yage.resource.material;
  * Specifies the style of a Surface.
  * Inspired by the CSS specification (http://www.w3schools.com/css/css_reference.asp).
  * Defined here to keep things well separated. 
- * Colors are represented in Vec4f's
  * Styles that have a top, right, bottom, left (like margin, border) are stored in arrays of length 4.*/
 struct Style
 {
     enum Unit {PX, PERCENT};
 
     Material backgroundMaterial;
-    Vec4f   backgroundColor;
+    Color   backgroundColor;
 
     float[4] borderWidth;
     Unit[4]  borderWidthUnits;
     float[4] borderRadius; 			// used for rounded corners.
     Unit[4]  borderRadiusUnits;
-    Vec4f[4] borderColor;
+    Color[4] borderColor;
     Material borderMaterial;		// Overrides radius and color if set
     bool[4]  borderMaterialStretch;  // top, right, bottom, left
 
@@ -50,7 +50,7 @@ struct Style
     Unit  widthUnits;
     int   zIndex;
 
-    Vec4f color;
+    Color color;
     byte  textAlign;
     byte  textDecoration;
     float lineHeight;

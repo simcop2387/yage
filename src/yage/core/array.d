@@ -149,7 +149,6 @@ void radixSort(T, K)(inout T[] array, K delegate(T elem) getKey, bool signed=tru
 	for (size_t i=0; i<count; i++)
 	{	elem[i].key2 = getKey(array[i]);
 		elem[i].data = array[i];
-		writefln(elem[i].key2);
 	}
 
 	for (int k=0; k<K.sizeof; k++)

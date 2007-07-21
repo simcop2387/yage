@@ -100,7 +100,79 @@ Eric Poggel
  
 </pre>
 <br><br>
-$(DDOC_MODULE_MEMBERS 
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">T 
+<span class="currsymbol">amax</span>
+<script type="text/javascript">explorer.outline.addDecl('amax');</script>
+(T)(T[] <span class="funcparam">array</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return the maximum value of an array.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">T 
+<span class="currsymbol">amin</span>
+<script type="text/javascript">explorer.outline.addDecl('amin');</script>
+(T)(T[] <span class="funcparam">array</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return the minimum value of an array.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">ordered</span>
+<script type="text/javascript">explorer.outline.addDecl('ordered');</script>
+(T)(T[] <span class="funcparam">array</span>, bool <span class="funcparam">increasing</span> = true);
+<br>bool 
+<span class="currsymbol">
+<span class="currsymbol">ordered</span>
+<script type="text/javascript">explorer.outline.addDecl('ordered');</script>
+</span>
+<script type="text/javascript">explorer.outline.addDecl('
+<span class="currsymbol">ordered</span>
+<script type="text/javascript">explorer.outline.addDecl('ordered');</script>
+');</script>
+(T,K)(T[] <span class="funcparam"><span class="funcparam">array</span></span>, bool <span class="funcparam"><span class="funcparam">increasing</span></span> = true, K delegate(T elem) <span class="funcparam"><span class="funcparam">getKey</span></span> = null);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Is the array 
+<span class="currsymbol">ordered</span>
+<script type="text/javascript">explorer.outline.addDecl('ordered');</script>
+?
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">increasing</td>
+
+               
+<td>Check for ordering by small to big.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">getKey</td>
+
+               
+<td>a function to get a key.</td></tr>
+</table><br>
+<b>Example:</b><br>
+<pre class="d_code"> Timer[] array;
+ <font color=green>// ... fill array with new Timer() ...
+</font> array.<b>ordered</b>(<font color=blue>true</font>, (Timer a) { <font color=blue>return</font> a.get(); }); <font color=green>// should return true
+</font></pre>
+ 
+<br><br>
+
+</dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
@@ -206,13 +278,17 @@ $(DDOC_MODULE_MEMBERS
 </table><br>
 <b>Example:</b><br>
 <pre class="d_code"> Timer[] array;
- // ... fill array with new Timer() ...
- array.radixSort((Timer a) { return a.get(); });
- -------------------------------- 
+ <font color=green>// ... fill array with new Timer() ...
+</font> array.<b>radixSort</b>((Timer a) { <font color=blue>return</font> a.get(); });
 </pre>
+ 
 <br><br>
 
 </dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
 </td></tr>
 				</table>
 			</div>
@@ -223,7 +299,7 @@ $(DDOC_MODULE_MEMBERS
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul  8 23:04:52 2007
+		on Sat Jul 21 15:55:59 2007
 
 	</div>
 	
@@ -235,6 +311,8 @@ $(DDOC_MODULE_MEMBERS
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.math");
 
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
@@ -250,9 +328,17 @@ $(DDOC_MODULE_MEMBERS
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.types");
+
 	explorer.packageExplorer.addModule("yage.core.vector");
 
 	explorer.packageExplorer.addModule("yage.core.xml");
+
+	explorer.packageExplorer.addModule("yage.gui.all");
+
+	explorer.packageExplorer.addModule("yage.gui.style");
+
+	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.node.all");
 

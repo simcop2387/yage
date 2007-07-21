@@ -93,237 +93,6 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">union 
-<span class="currsymbol">word</span>
-<script type="text/javascript">explorer.outline.addDecl('word');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Allow for easy bool-by-bool conversion from one two-byte type to another.
-<br><br>
-<b>Example:</b><br>
-<pre class="d_code"> <font color=blue>short</font> a;
- <b>word</b> w;
- w.s = a;
- <font color=blue>char</font> c = w.c[1];	<font color=green>// c is the second byte of a.
-</font></pre>
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">short 
-<span class="currsymbol">s</span>
-<script type="text/javascript">explorer.outline.addDecl('s');</script>
-;
-<br>ushort 
-<span class="currsymbol">us</span>
-<script type="text/javascript">explorer.outline.addDecl('us');</script>
-;
-<br>byte[2] 
-<span class="currsymbol">b</span>
-<script type="text/javascript">explorer.outline.addDecl('b');</script>
-;
-<br>ubyte[2] 
-<span class="currsymbol">ub</span>
-<script type="text/javascript">explorer.outline.addDecl('ub');</script>
-;
-<br>char[2] 
-<span class="currsymbol">c</span>
-<script type="text/javascript">explorer.outline.addDecl('c');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Union of various types.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static word  
-<span class="currsymbol">opApply</span>
-<script type="text/javascript">explorer.outline.addDecl('opApply');</script>
-(ushort <span class="funcparam">us</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert ushort to word
-<br><br>
-
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">struct 
-<span class="currsymbol">dword</span>
-<script type="text/javascript">explorer.outline.addDecl('dword');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Allow for easy bool-by-bool conversion from one four-byte type to another
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">i</span>
-<script type="text/javascript">explorer.outline.addDecl('i');</script>
-;
-<br>uint 
-<span class="currsymbol">ui</span>
-<script type="text/javascript">explorer.outline.addDecl('ui');</script>
-;
-<br>float 
-<span class="currsymbol">f</span>
-<script type="text/javascript">explorer.outline.addDecl('f');</script>
-;
-<br>short[2] 
-<span class="currsymbol">s</span>
-<script type="text/javascript">explorer.outline.addDecl('s');</script>
-;
-<br>ushort[2] 
-<span class="currsymbol">us</span>
-<script type="text/javascript">explorer.outline.addDecl('us');</script>
-;
-<br>byte[4] 
-<span class="currsymbol">b</span>
-<script type="text/javascript">explorer.outline.addDecl('b');</script>
-;
-<br>ubyte[4] 
-<span class="currsymbol">ub</span>
-<script type="text/javascript">explorer.outline.addDecl('ub');</script>
-;
-<br>char[4] 
-<span class="currsymbol">c</span>
-<script type="text/javascript">explorer.outline.addDecl('c');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Union of various types.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static dword  
-<span class="currsymbol">opApply</span>
-<script type="text/javascript">explorer.outline.addDecl('opApply');</script>
-(uint <span class="funcparam">ui</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert uint to dword
-<br><br>
-
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">union 
-<span class="currsymbol">qword</span>
-<script type="text/javascript">explorer.outline.addDecl('qword');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Allow for easy bool-by-bool conversion from one eight-byte type to another.
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">long 
-<span class="currsymbol">l</span>
-<script type="text/javascript">explorer.outline.addDecl('l');</script>
-;
-<br>ulong 
-<span class="currsymbol">ul</span>
-<script type="text/javascript">explorer.outline.addDecl('ul');</script>
-;
-<br>double 
-<span class="currsymbol">d</span>
-<script type="text/javascript">explorer.outline.addDecl('d');</script>
-;
-<br>float[2] 
-<span class="currsymbol">f</span>
-<script type="text/javascript">explorer.outline.addDecl('f');</script>
-;
-<br>int[2] 
-<span class="currsymbol">i</span>
-<script type="text/javascript">explorer.outline.addDecl('i');</script>
-;
-<br>uint[2] 
-<span class="currsymbol">ui</span>
-<script type="text/javascript">explorer.outline.addDecl('ui');</script>
-;
-<br>short[4] 
-<span class="currsymbol">s</span>
-<script type="text/javascript">explorer.outline.addDecl('s');</script>
-;
-<br>ushort[4] 
-<span class="currsymbol">us</span>
-<script type="text/javascript">explorer.outline.addDecl('us');</script>
-;
-<br>byte[8] 
-<span class="currsymbol">b</span>
-<script type="text/javascript">explorer.outline.addDecl('b');</script>
-;
-<br>ubyte[8] 
-<span class="currsymbol">ub</span>
-<script type="text/javascript">explorer.outline.addDecl('ub');</script>
-;
-<br>char[8] 
-<span class="currsymbol">c</span>
-<script type="text/javascript">explorer.outline.addDecl('c');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Union of various types.
-<br><br>
-
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">almostEqual</span>
-<script type="text/javascript">explorer.outline.addDecl('almostEqual');</script>
-(float <span class="funcparam">a</span>, float <span class="funcparam">b</span>, float <span class="funcparam">fudge</span> = 0.0001F);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Check if two floats are almost equal, that is, they differ no more than
- <span class="funcparam">fudge</span> from one another, relatively speaking.  If <span class="funcparam">fudge</span> is 0.0001 (the default)
- Then 10000 and 10001 will compare equally and so will 1.000 and 1.0001; but if
- either of those differ more, they are not considered equal.  Also,
- numbers with an absolute difference less than or equal to <span class="funcparam">fudge</span> will always
- compare equal.  This allows 0.00001 and 0 to be almost equal. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">char[] 
 <span class="currsymbol">absPath</span>
 <script type="text/javascript">explorer.outline.addDecl('absPath');</script>
@@ -332,19 +101,6 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Given relative path <span class="funcparam">rel_path</span>, returns an absolute path.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">T 
-<span class="currsymbol">clamp</span>
-<script type="text/javascript">explorer.outline.addDecl('clamp');</script>
-(T)(T <span class="funcparam">v</span>, T <span class="funcparam">lower</span>, T <span class="funcparam">upper</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Clamp v between l and u
 <br><br>
 
 </dd>
@@ -359,64 +115,6 @@ Eric Poggel
 
 <dd>Resolve "../", "./", "//" and other redirections from any <span class="funcparam">path</span>.
  This function also ensures correct use of <span class="funcparam">path</span> separators for the current platform.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">nextPow2</span>
-<script type="text/javascript">explorer.outline.addDecl('nextPow2');</script>
-(uint <span class="funcparam">input</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Returns the first integer n such that 2^n &gt;= <span class="funcparam">input</span>.
-<br><br>
-<b>Example:</b><br>
-
-<span class="currsymbol">nextPow2</span>
-<script type="text/javascript">explorer.outline.addDecl('nextPow2');</script>
-(9); // returns 16 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">map</span>
-<script type="text/javascript">explorer.outline.addDecl('map');</script>
-(float <span class="funcparam">v</span>, float <span class="funcparam">oldmin</span>, float <span class="funcparam">oldmax</span>, float <span class="funcparam">newmin</span>, float <span class="funcparam">newmax</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Map a value from one range to another
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">T[0] 
-<span class="currsymbol">max</span>
-<script type="text/javascript">explorer.outline.addDecl('max');</script>
-(T...)(T <span class="funcparam">a</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return the maximum of all arguments 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">T[0] 
-<span class="currsymbol">min</span>
-<script type="text/javascript">explorer.outline.addDecl('min');</script>
-(T...)(T <span class="funcparam">a</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return the minimum of all arguments.
 <br><br>
 
 </dd>
@@ -444,22 +142,6 @@ Eric Poggel
 <br><br>
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">random</span>
-<script type="text/javascript">explorer.outline.addDecl('random');</script>
-(float <span class="funcparam">min</span>, float <span class="funcparam">max</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Generate a 
-<span class="currsymbol">random</span>
-<script type="text/javascript">explorer.outline.addDecl('random');</script>
- number between <span class="funcparam">min</span> and <span class="funcparam">max</span>.
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -474,7 +156,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul  8 23:04:52 2007
+		on Sat Jul 21 15:55:59 2007
 
 	</div>
 	
@@ -486,6 +168,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.math");
 
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
@@ -501,9 +185,17 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.types");
+
 	explorer.packageExplorer.addModule("yage.core.vector");
 
 	explorer.packageExplorer.addModule("yage.core.xml");
+
+	explorer.packageExplorer.addModule("yage.gui.all");
+
+	explorer.packageExplorer.addModule("yage.gui.style");
+
+	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.node.all");
 

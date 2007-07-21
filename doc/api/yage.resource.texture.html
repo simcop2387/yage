@@ -474,52 +474,6 @@ yage.system.constant
 
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
-<span class="currsymbol">CameraTexture</span>
-<script type="text/javascript">explorer.outline.addDecl('CameraTexture');</script>
-: yage.resource.texture.GPUTexture;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>A Texture that is used as a rendering target by a Camera.
- Since not all video hardware supports non-power of two sized Textures,
- Textures are oversized to the next power of two when necessary.
- It is then necessary to store the size the texture wishes it was. 
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">loadFrameBuffer</span>
-<script type="text/javascript">explorer.outline.addDecl('loadFrameBuffer');</script>
-(uint <span class="funcparam">_width</span>, uint <span class="funcparam">_height</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>
-<span class="currsymbol">loadFrameBuffer</span>
-<script type="text/javascript">explorer.outline.addDecl('loadFrameBuffer');</script>
- is overridden to set requested_width and requested_height.
-<br><br>
-
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -534,7 +488,7 @@ yage.system.constant
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul  8 23:04:53 2007
+		on Sat Jul 21 15:56:00 2007
 
 	</div>
 	
@@ -546,6 +500,8 @@ yage.system.constant
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.math");
 
 	explorer.packageExplorer.addModule("yage.core.matrix");
 
@@ -561,9 +517,17 @@ yage.system.constant
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.types");
+
 	explorer.packageExplorer.addModule("yage.core.vector");
 
 	explorer.packageExplorer.addModule("yage.core.xml");
+
+	explorer.packageExplorer.addModule("yage.gui.all");
+
+	explorer.packageExplorer.addModule("yage.gui.style");
+
+	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
