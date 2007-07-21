@@ -10,13 +10,9 @@ import std.string;
 import std.file;
 import std.path;
 import std.stdio;
-import yage.core.matrix;
-import yage.core.misc;
-import yage.core.vector;
-import yage.resource.model;
-import yage.resource.material;
-import yage.resource.mesh;
-import yage.resource.resource;
+import yage.core.all;
+import yage.core.types;
+import yage.resource.all;
 import yage.system.log;
 
 import std.c.string : memcpy;
@@ -186,10 +182,11 @@ template ModelLoader()
 					matl.addLayer(new Layer());
 
 					int midx = ms3d.groups[m].materialIndex;
-					memcpy(&matl.getLayers()[0].ambient, ms3d.materials[midx].ambient.ptr, 16);
-					memcpy(&matl.getLayers()[0].diffuse, ms3d.materials[midx].diffuse.ptr, 16);
-					memcpy(&matl.getLayers()[0].specular, ms3d.materials[midx].specular.ptr, 16);
-					memcpy(&matl.getLayers()[0].emissive, ms3d.materials[midx].emissive.ptr, 16);
+					matl.getLayers()[0].ambient = yage.core.types.Color(ms3d.materials[midx].ambient);					
+					matl.getLayers()[0].diffuse = yage.core.types.Color(ms3d.materials[midx].diffuse);
+					matl.getLayers()[0].specular = yage.core.types.Color(ms3d.materials[midx].specular);
+					matl.getLayers()[0].emissive = yage.core.types.Color(ms3d.materials[midx].emissive);
+					
 					matl.getLayers()[0].specularity = ms3d.materials[midx].shininess;
 					meshes[m].setMaterial(matl);
 

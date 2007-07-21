@@ -11,14 +11,10 @@ module demo2.gameobj;
 import std.math;
 import std.stdio;
 import yage.core.timer;
-import yage.node.base;
-import yage.node.node;
+import yage.core.types;
 import yage.resource.resource;
 import yage.resource.model;
-import yage.node.scene;
-import yage.node.sprite;
-import yage.node.model;
-import yage.node.light;
+import yage.node.all;
 
 
 abstract class GameObject : Node
@@ -74,7 +70,7 @@ class Flare : GameObject
 		if (timer.get() > .2)
 		{	timer.reset();
 			LightNode light = new LightNode(this);
-			light.setDiffuse(1, .5, 0);
+			light.setDiffuse(Color("orange"));
 			light.setLightRadius(96);
 		}
 	}

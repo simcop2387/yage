@@ -118,23 +118,23 @@ struct Color
 	{	
 		// An english color name
 		switch (std.string.tolower(string))
-		{	case "black":	return Color(0x00000000);
-			case "blue":	return Color(0x00FF0000);
-			case "brown":	return Color(0x00A52A2A);
-			case "cyan":	return Color(0x00FFFF00);
-			case "gold":	return Color(0x0000D7FF);
+		{	case "black":	return Color(0xFF000000);
+			case "blue":	return Color(0xFFFF0000);
+			case "brown":	return Color(0xFFA52A2A);
+			case "cyan":	return Color(0xFFFFFF00);
+			case "gold":	return Color(0xFF00D7FF);
 			case "gray":	
-			case "grey":	return Color(0x00808080);
-			case "green":	return Color(0x00008000);
-			case "indigo":	return Color(0x0082004B);
-			case "magenta":	return Color(0x00FF00FF);
-			case "orange":	return Color(0x0000A5FF);
-			case "pink":	return Color(0x00CBC0FF);
-			case "purple":	return Color(0x00800080);
-			case "red":		return Color(0x000000FF);
-			case "violet":	return Color(0x00EE82EE);
-			case "white":	return Color(0x00FFFFFF);
-			case "yellow":	return Color(0x0000FFFF);
+			case "grey":	return Color(0xFF808080);
+			case "green":	return Color(0xFF008000);
+			case "indigo":	return Color(0xFF82004B);
+			case "magenta":	return Color(0xFFFF00FF);
+			case "orange":	return Color(0xFF00A5FF);
+			case "pink":	return Color(0xFFCBC0FF);
+			case "purple":	return Color(0xFF800080);
+			case "red":		return Color(0xFF0000FF);
+			case "violet":	return Color(0xFFEE82EE);
+			case "white":	return Color(0xFFFFFFFF);
+			case "yellow":	return Color(0xFF00FFFF);
 			default: break;
 		}		
 	
@@ -146,7 +146,10 @@ struct Color
 		Color result;
 		int digit;
 		foreach (int i, char h; string)
-		{	digit=0; // will be 0-15
+		{	if (i>=8)
+				break;
+		
+			digit=0; // will be 0-15
 			if (47 < h && h < 58)	// 0-9
 				digit = (h-48);
 			else if (64 < h && h < 71) // A-F
@@ -205,8 +208,7 @@ struct Color
 	}
 	
 	unittest
-	{	writefln(cast(ubyte)257);
-		assert(Color.sizeof == 4);
+	{	assert(Color.sizeof == 4);
 		
 		// Test initializers
 		assert(Color([0, 102, 51, 255]).hex == "006633FF");
@@ -219,8 +221,6 @@ struct Color
 		assert(Color("006633FF").ui == 0xFF336600);
 	}	
 }
-
-
 
 
 
@@ -279,6 +279,7 @@ struct dword
 		static if(T.sizeof < 4)
 			throw new Exception("Variable must be at least 4 bytes to be converted to a dword.");		
 		memcpy(&res.i, &i, 4);
+		
 		return res;
 	}
 	

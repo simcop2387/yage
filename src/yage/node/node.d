@@ -61,7 +61,7 @@ class Node : BaseNode
 	protected bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
 	protected bool 	visible = true;
 	protected Vec3f	scale;
-	protected Vec4f color;				// RGBA, used for glColor4f()
+	protected Color color;				// RGBA, used for glColor4f()
 	protected float lifetime = float.infinity;	// in seconds
 
 	protected LightNode[] lights;		// Lights that affect this Node
@@ -72,7 +72,7 @@ class Node : BaseNode
 	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
 		visible = false;
 		scale = Vec3f(1);
-		color = Vec4f(1);
+		color = Color("white");
 		setParent(parent);
 	}
 
@@ -118,7 +118,7 @@ class Node : BaseNode
 	}
 
 	/// Get the color of the Node.
-	Vec4f getColor()
+	Color getColor()
 	{	return color;
 	}
 
@@ -177,10 +177,10 @@ class Node : BaseNode
 	 * blending enabled, their alpha value can be set via the fourth parameter.
 	 * Default color is white (all 1's).*/
 	void setColor(float r, float g, float b, float a=1)
-	{	color.set(r, g, b, a);
+	{	color = Color(r, g, b, a);
 	}
 	/// Ditto
-	void setColor(Vec4f color)
+	void setColor(Color color)
 	{	this.color = color;
 	}
 

@@ -40,10 +40,10 @@ private const Vec2f zero = {v:[0.0f, 0.0f]};
  * defined in the file. */
 class Layer
 {
-	Vec4f	ambient;				/// Property for the RGBA ambient layer color, default is Vec4f(0).
-	Vec4f	diffuse;				/// Property for the RGBA diffuse layer color, default is Vec4f(1).
-	Vec4f	specular;				/// Property for the RGBA specular layer color, default is Vec4f(0).
-	Vec4f	emissive;				/// Property for the RGBA emissive layer color, default is Vec4f(0).
+	Color	ambient;				/// Property for the RGBA ambient layer color, default is Vec4f(0).
+	Color	diffuse;				/// Property for the RGBA diffuse layer color, default is Vec4f(1).
+	Color	specular;				/// Property for the RGBA specular layer color, default is Vec4f(0).
+	Color	emissive;				/// Property for the RGBA emissive layer color, default is Vec4f(0).
 	float	specularity=0;			/// Shininess exponential value, default is zero (no shininess).
 
 	/// Property to set the blending for this Layer.
@@ -70,7 +70,10 @@ class Layer
 
 	/// Set layer properties to default values.
 	this()
-	{	diffuse.set(1);
+	{	ambient = Color("black");
+		diffuse = Color("white");
+		specular = Color("black");
+		emissive = Color("black");
 	}
 
 	~this()
@@ -190,10 +193,10 @@ class Layer
 	char[] toString()
 	{	char[] result;
 		result = "<layer" ~
-			" ambient=\"" ~ floatToHex(ambient.v[0..3]) ~ "\"" ~
-			" diffuse=\"" ~ floatToHex(diffuse.v[0..3]) ~ "\"" ~
-			" specular=\"" ~ floatToHex(specular.v[0..3]) ~ "\"" ~
-			" emissive=\"" ~ floatToHex(emissive.v[0..3]) ~ "\"" ~
+			" ambient=\"" ~ ambient.hex ~ "\"" ~
+			" diffuse=\"" ~ diffuse.hex ~ "\"" ~
+			" specular=\"" ~ specular.hex ~ "\"" ~
+			" emissive=\"" ~ emissive.hex ~ "\"" ~
 			" specularity=\"" ~ .toString(specularity) ~ "\"" ~
 			" blend=\"" ~ .toString(blend) ~ "\"" ~
 			" cull=\"" ~ .toString(cull) ~ "\"" ~
@@ -219,13 +222,13 @@ class Layer
 	 * This function is used internally by the engine and doesn't normally need to be called.
 	 * color = Used to set color on a per-instance basis, combined with existing material colors.
 	 * Model = Used to retrieve texture coordinates for multitexturing. */
-	void bind(LightNode[] lights = null, Vec4f color = Vec4f(1), Model model=null)
+	void bind(LightNode[] lights = null, Color color = Color("white"), Model model=null)
 	{
 		// Material
-		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.scale(color).v.ptr);
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse.scale(color).v.ptr);
-		glMaterialfv(GL_FRONT, GL_SPECULAR, specular.v.ptr);
-		glMaterialfv(GL_FRONT, GL_EMISSION, emissive.scale(color).v.ptr);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.vec4f.scale(color.vec4f).v.ptr);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse.vec4f.scale(color.vec4f).v.ptr);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, specular.vec4f.v.ptr);
+		glMaterialfv(GL_FRONT, GL_EMISSION, emissive.vec4f.scale(color.vec4f).v.ptr);
 		glMaterialfv(GL_FRONT, GL_SHININESS, &specularity);
 
 		// Blend

@@ -193,7 +193,7 @@ class Render
 					// Sorting rules:
 					// If the first layer has blending, sort it and every layer
 					// otherwise, sort none of them
-					if (l.blend != BLEND_NONE && num==0)
+					if ((l.blend != BLEND_NONE) && num==0)
 						sort = true;
 
 					// If not translucent

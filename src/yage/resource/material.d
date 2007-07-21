@@ -92,23 +92,17 @@ class Material
 			Layer layer = new Layer();
 			int i = addLayer(layer);
 
-			// Convert a 6-char hexadecimal color value to a Vec4f color
-			Vec4f strToColor(char[] input)
-			{	dword d;
-				d.ui= hexToUint(input);
-				return Vec4f(d.ub[0]/255.0f, d.ub[1]/255.0f, d.ub[2]/255.0f, 1.0);
-			}
 			// Load layer attributes
 			try
 			{	// Ambient, diffuse, specular, emissive, specularity
 				if (xml_layer.hasAttribute("diffuse"))
-					layer.diffuse = strToColor(xml_layer.getAttribute("diffuse"));
+					layer.diffuse = Color(xml_layer.getAttribute("diffuse"));
 				if (xml_layer.hasAttribute("ambient"))
-					layer.ambient = strToColor(xml_layer.getAttribute("ambient"));
+					layer.ambient = Color(xml_layer.getAttribute("ambient"));
 				if (xml_layer.hasAttribute("specular"))
-					layer.specular= strToColor(xml_layer.getAttribute("specular"));
+					layer.specular= Color(xml_layer.getAttribute("specular"));
 				if (xml_layer.hasAttribute("emissive"))
-					layer.emissive= strToColor(xml_layer.getAttribute("emissive"));
+					layer.emissive= Color(xml_layer.getAttribute("emissive"));
 				if (xml_layer.hasAttribute("specularity"))
 					layer.specularity = atoi(xml_layer.getAttribute("specularity"));
 				if (layer.specularity<0 || layer.specularity>128)
