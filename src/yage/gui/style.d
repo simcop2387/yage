@@ -18,14 +18,13 @@ struct Style
 
     Material backgroundMaterial;
     Color   backgroundColor;
+    float[4] backgroundCoordinates;  // Texture coordinates for top, right, bottom, left edges
 
     float[4] borderWidth;
     Unit[4]  borderWidthUnits;
-    float[4] borderRadius; 			// used for rounded corners.
-    Unit[4]  borderRadiusUnits;
     Color[4] borderColor;
-    Material borderMaterial;		// Overrides radius and color if set
-    bool[4]  borderMaterialStretch;  // top, right, bottom, left
+    Material decoration;		// Overrides radius and color if set
+    byte[5]  decorationRepeat;  // top, right, bottom, left, center
 
     Material cursor;
     bool visible = false;;
@@ -35,9 +34,6 @@ struct Style
     float fontSize;
     byte  fontSizeUnits;
     float fontWeight;
-
-    float[4] margin;
-    Unit[4] marginUnits;
 
     float[4] padding;
     Unit[4] paddingUnits;
