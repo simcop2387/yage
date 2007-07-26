@@ -39,8 +39,9 @@ int main()
 	Log.write("Starting update loop.");
 	Scene scene = new Scene();
 	scene.start(60); // update 60 times per second
-	scope(exit)scene.stop();
-
+	
+	Device.onExit = &scene.stop;
+	
 	// Skybox
 	Scene skybox = new Scene();
 	auto sky = new ModelNode(skybox);
@@ -65,17 +66,31 @@ int main()
 
 	
 	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
-		self.grabMouse(!Input.getGrabMouse());
+		self.grabMouse(!ship.input);
+		ship.input = !ship.input;
+	}
+	
+	void onMousemove(Surface self, byte buttons, Vec2i rel){
+		if(ship.input){
+ 			ship.mouseDelta = ship.mouseDelta.add(rel);
+		}
 	}
 	
 	void onResize(Surface self){
 		camera.setResolution(self.size.x, self.size.y);
-		writefln("Resolution changed to ", self.size.x, " x ", self.size.y);
+		writefln("Camera resolution changed to ", self.size.x, " x ", self.size.y);
 	}
 	
-	disp.onMousedown = &onMousedown;
-	disp.onResize = &onResize;
+	void onKeydown(Surface self, byte key){
+		if (Input.keydown[SDLK_ESCAPE])
+			Device.exit(0);
+	}
 	
+	disp.onMousedown = &onMousedown;	
+	disp.onResize = &onResize;
+	disp.onMousemove = &onMousemove;
+	disp.onKeydown = &onKeydown;
+		
 	// Music
 	SoundNode music = new SoundNode(camera);
 	music.setSound("music/celery - pages.ogg");
@@ -105,17 +120,7 @@ int main()
 	asteroidBelt(800, 1400, planet);
 
 	// Add to the scene's update loop
-	Input.getMouseDelta();
-	void update(BaseNode self)
-	{	// check for exit
-		if (Input.keydown[SDLK_ESCAPE])
-			Input.exit=true;
-
-		// Toggle mouse grab
-// 		if (Input.button[1].up)
-// 		{	Input.button[1].up = false;
-// 			Input.setGrabMouse(!Input.getGrabMouse());
-// 		}
+	void update(BaseNode self){
 		ship.getSpring().update(1/60.0f);
 	}
 	scene.onUpdate(&update);
@@ -128,7 +133,7 @@ int main()
 	Timer frame = new Timer();
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
-	while(!Input.exit)
+	while(1)
 	{
 		float dtime = delta.get();
 		delta.reset();

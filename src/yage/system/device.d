@@ -21,13 +21,19 @@ import derelict.ogg.vorbisfile;
 import yage.gui.surface;
 import yage.system.log;
 import yage.system.constant;
-import yage.system.input;
 import yage.core.vector;
+
+import std.c.stdlib : exit;
 
 // Enable specular highlights with textures.
 const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
 const int SINGLE_COLOR_EXT = 0x81F9;
 const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
+
+extern(C) {
+	void _moduleDtor();
+	void gc_term();
+}
 
 /**
  * The device class exists to group functions for initializing a window,
@@ -62,6 +68,7 @@ abstract class Device
 	static ~this()
 	{	if (initialized)
 		{	try {	// Order of un-initialization is causing trouble here with OpenAL
+				//writefln("Device destructor");
 				SDL_Quit();
 				//alcDestroyContext(al_context);
 				//alcCloseDevice(al_device);
@@ -189,7 +196,6 @@ abstract class Device
 		// Input options
 		SDL_EnableUNICODE(true);
 		SDL_EnableKeyRepeat(1, 100);
-		//Input.setGrabMouse(true);
 
 		// Initialize OpenAL
 		al_device = alcOpenDevice(null);
@@ -201,7 +207,17 @@ abstract class Device
 		initialized = true;
 		Log.write("Yage has been initialized.");
 	}
-
+	
+	static void delegate() onExit;
+	//Perhaps this needs to be improved, or maybe it will be added to the D runtime and no longer be needed
+	static void exit(int code){
+		if(onExit) onExit();
+		
+		_moduleDtor();
+		gc_term();
+		std.c.stdlib.exit(code);
+	}
+	
 	/**
 	 * Searches to see if the given extension is supported in hardware.*/
 	static bool checkExtension(char[] name)

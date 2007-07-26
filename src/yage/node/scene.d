@@ -207,8 +207,8 @@ class Scene : BaseNode
 	}
 
 	/// Stop updating the Scene.
-	synchronized void stop()
-	{	repeater.stop();
+	synchronized void stop(){
+		repeater.stop();
 	}
 
 	/**

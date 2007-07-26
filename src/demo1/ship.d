@@ -18,6 +18,9 @@ class Ship : GameObject
 	ModelNode ship;		// attached to pitch and rolls left & right
 	Spring spring;		// spring to attach camera
 	SoundNode sound;
+	
+	Vec2i mouseDelta;
+	bool input = false;
 
 	float ldamp=.5, xdamp=2, ydamp=2;
 
@@ -95,11 +98,10 @@ class Ship : GameObject
 			accelerate(Vec3f(0, 0, speed/3).rotate(pitch.getTransform()).rotate(getTransform()));
 
 		// Rotate
-		if (Input.getGrabMouse())
-		{
-			Vec2f m = Input.getMouseDelta();
-			angularAccelerate(Vec3f(0, m.x/16.0, 0));
-			pitch.angularAccelerate(Vec3f(-m.y/24.0, 0, 0));
+		if (input){
+			angularAccelerate(Vec3f(0, -mouseDelta.x/16.0, 0));
+			pitch.angularAccelerate(Vec3f(mouseDelta.y/24.0, 0, 0));
+			mouseDelta.x = mouseDelta.y = 0;
 		}
 
 

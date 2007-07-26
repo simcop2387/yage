@@ -20,4 +20,5 @@ public
 	import yage.resource.shader;
 	import yage.resource.sound;
 	import yage.resource.texture;
+	import yage.resource.font;
 }

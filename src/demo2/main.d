@@ -1,6 +1,6 @@
 /**
  * Copyright:  (c) 2005-2007 Eric Poggel
- * Authors:    Eric Poggel
+ * Authors:    Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
  * License:    <a href="lgpl.txt">LGPL</a>
  *
  * This module is not technically part of the engine, but merely uses it.
@@ -17,16 +17,16 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 
 import demo2.ship;
+import demo2.gameobj;
 
 // Current program entry point.  This may change in the future.
-int main()
-{
-
-  	// Init (resolution, depth, fullscreen, aa-samples)
+int main(){
+	
+	// Init (resolution, depth, fullscreen, aa-samples)
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
 	//Device.init(1440, 900, 32, true);
-
+	
 	// Paths
 	Resource.addPath("../res/");
 	Resource.addPath("../res2/");
@@ -39,7 +39,8 @@ int main()
 	Log.write("Starting update loop.");
 	Scene scene = new Scene();
 	scene.start(60); // update 60 times per second
-	scope(exit)scene.stop();
+	
+	Device.onExit = &scene.stop;
 
 	// Skybox
 	Scene skybox = new Scene();
@@ -57,6 +58,8 @@ int main()
 	CameraNode camera = new CameraNode(ship.getCameraSpot());
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
 	
+	//new Model("obj/cube.obj");
+	
 	Surface bg = new Surface(null);
 	bg.setTexture(camera.getTexture());
 	bg.topLeft = Vec2f(0,0);
@@ -64,7 +67,14 @@ int main()
 	bg.setVisibility(true);
 		
 	void onMousedown(Surface self, byte buttons, Vec2i coordinates){
-		self.grabMouse(!Input.getGrabMouse());
+		self.grabMouse(!ship.input);
+		ship.input = !ship.input;
+	}
+	
+	void onMousemove(Surface self, byte buttons, Vec2i rel){
+		if(ship.input){
+ 			ship.mouseDelta = ship.mouseDelta.add(rel);
+		}
 	}
 	
 	void onResize(Surface self){
@@ -72,8 +82,15 @@ int main()
 		writefln("Camera resolution changed to ", self.size.x, " x ", self.size.y);
 	}
 	
+	void onKeydown(Surface self, byte key){
+		if (Input.keydown[SDLK_ESCAPE])
+			Device.exit(0);
+	}
+	
 	bg.onMousedown = &onMousedown;	
 	bg.onResize = &onResize;
+	bg.onMousemove = &onMousemove;
+	bg.onKeydown = &onKeydown;
 	
 	GPUTexture active = new GPUTexture("test/clear.png");
 	GPUTexture inactive = new GPUTexture("test/clearInactive.png");
@@ -86,8 +103,8 @@ int main()
 	void onMouseup2(Surface self, byte buttons, Vec2i coordinates){
 		self.endDrag();
 	}
-	void onMousemove(Surface self, byte buttons, Vec2i coordinates){
-		if(buttons == 1) self.drag(coordinates);
+	void onMousemove2(Surface self, byte buttons, Vec2i diff){
+		if(buttons == 1) self.drag(diff);
 	}
 	void onMouseenter(Surface self, byte buttons, Vec2i coordinates){
 		self.setTexture(active);
@@ -103,7 +120,7 @@ int main()
 	clear.fill = stretched;
 	clear.setVisibility(true);
 	clear.onMousedown = &onMousedown2;
-	clear.onMousemove = &onMousemove;
+	clear.onMousemove = &onMousemove2;
 	clear.onMouseup = &onMouseup2;
 	clear.onMouseenter = &onMouseenter;
 	clear.onMouseleave = &onMouseleave;
@@ -115,7 +132,7 @@ int main()
 	clear2.fill = stretched;
 	clear2.setVisibility(true);
 	clear2.onMousedown = &onMousedown2;
-	clear2.onMousemove = &onMousemove;
+	clear2.onMousemove = &onMousemove2;
 	clear2.onMouseup = &onMouseup2;
 	clear2.onMouseenter = &onMouseenter;
 	clear2.onMouseleave = &onMouseleave;
@@ -127,7 +144,7 @@ int main()
 	clear3.fill = stretched;
 	clear3.setVisibility(true);
 	clear3.onMousedown = &onMousedown2;
-	clear3.onMousemove = &onMousemove;
+	clear3.onMousemove = &onMousemove2;
 	clear3.onMouseup = &onMouseup2;
 	clear3.onMouseenter = &onMouseenter;
 	clear3.onMouseleave = &onMouseleave;
@@ -139,7 +156,7 @@ int main()
 	clear4.fill = stretched;
 	clear4.setVisibility(true);
 	clear4.onMousedown = &onMousedown2;
-	clear4.onMousemove = &onMousemove;
+	clear4.onMousemove = &onMousemove2;
 	clear4.onMouseup = &onMouseup2;
 	clear4.onMouseenter = &onMouseenter;
 	clear4.onMouseleave = &onMouseleave;
@@ -151,7 +168,7 @@ int main()
 	clear5.fill = stretched;
 	clear5.setVisibility(true);
 	clear5.onMousedown = &onMousedown2;
-	clear5.onMousemove = &onMousemove;
+	clear5.onMousemove = &onMousemove2;
 	clear5.onMouseup = &onMouseup2;
 	clear5.onMouseenter = &onMouseenter;
 	clear5.onMouseleave = &onMouseleave;
@@ -175,7 +192,7 @@ int main()
 
 	// Planet
 	auto planet = new ModelNode(scene);
-	planet.setModel("space/planet.ms3d");
+	planet.setModel("obj/tieFighter.obj");
 	planet.setScale(60);
 	planet.setAngularVelocity(0, -0.01, 0);
 	
@@ -185,11 +202,7 @@ int main()
 	asteroidBelt(800, 1400, planet);
 
 	// Add to the scene's update loop
-	//Input.getMouseDelta();
-	void update(BaseNode self)
-	{	// check for exit
-		if (Input.keydown[SDLK_ESCAPE])
-			Input.exit=true;
+	void update(BaseNode self){
 		ship.getSpring().update(1/60.0f);
 	}
 	scene.onUpdate(&update);
@@ -201,8 +214,7 @@ int main()
 	Timer frame = new Timer();
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
-	while(!Input.exit)
-	{
+	while(1){
 		float dtime = delta.get();
 		delta.reset();
 

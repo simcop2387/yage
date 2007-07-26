@@ -32,9 +32,8 @@ float third = 1.0/3.0;
  * Surfaces will exist in a hierarchical structure, with each having a parent and an array of children. 
  * The children will be positioned relative to the borders of their parent. */
 class Surface{
-	//Not sure that a Surface should have a style... I think surface should be a lower abstraction, for only geometry, rendering, and input.
-	//static final Style defaultStyle; //Default style should be more fitting as something that is global.
-	//Style style;
+	static final Style defaultStyle;
+	Style style;
 	
 	//Change from GPUTexture to Texture or Material
 	private GPUTexture texture;
@@ -75,11 +74,19 @@ class Surface{
 
 	void delegate(typeof(this) self) onFocus; //Done -- See Raise, no fall through
 
-	void delegate(typeof(this) self, byte key, byte modifiers) onKeydown;
-
-	void delegate(typeof(this) self, byte key, byte modifiers) onKeypress;
-
-	void delegate(typeof(this) self, byte key, byte modifiers) onKeyup;
+	void delegate(typeof(this) self, byte key) onKeydown;
+	void keydown(byte key){
+		if(onKeydown)onKeydown(this, key);
+		else if(parent !is null) parent.keydown(key);
+	}
+	
+	void delegate(typeof(this) self, byte key, byte modifiers) onKeypress; //Why is this here when we have down?
+	
+	void delegate(typeof(this) self, byte key) onKeyup;
+	void keyup(byte key){
+		if(onKeyup)onKeyup(this, key);
+		else if(parent !is null) parent.keyup(key);
+	}
 
 	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMousedown; //Done
 	void mousedown(byte buttons, Vec2i coordinates){ 
@@ -87,10 +94,10 @@ class Surface{
 		else if(parent !is null) parent.mousedown(buttons, coordinates);
 	}
 
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMousemove; //Done
-	void mousemove(byte buttons, Vec2i coordinates){
-		if(onMousemove)onMousemove(this, buttons, coordinates);
-		else if(parent !is null) parent.mousemove(buttons, coordinates);
+	void delegate(typeof(this) self, byte buttons, Vec2i rel) onMousemove; //Done
+	void mousemove(byte buttons, Vec2i rel){
+		if(onMousemove)onMousemove(this, buttons, rel);
+		else if(parent !is null) parent.mousemove(buttons, rel);
 	}
 
 	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseleave;

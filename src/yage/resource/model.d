@@ -6,6 +6,7 @@
 
 module yage.resource.model;
 
+import std.gc;
 import std.string;
 import std.file;
 import std.math;
@@ -20,11 +21,13 @@ import yage.core.vector;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.resource;
-import yage.resource.modelloader;
 import yage.node.node;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
+
+import yage.resource.ms3dloader;
+import yage.resource.objloader;
 
 
 /**
@@ -60,8 +63,8 @@ class Model
 	protected Mesh[] meshes;
 	protected Attribute[char[]] attributes;	// An associative array to store as many attributes as necessary
 
-	mixin ModelLoader;
-
+	mixin Ms3dLoader;
+	mixin ObjLoader;
 
 	/// Generate buffers in video memory for the vertex data.
 	this()
@@ -189,6 +192,10 @@ class Model
 		switch (tolower(ext))
 		{	case "ms3d":
 				loadMs3d(filename);
+				break;
+			case "obj":
+				loadObj(filename);
+				fullCollect();
 				break;
 			default:
 				throw new Exception("Unrecognized file format '"~ext~"'.");
