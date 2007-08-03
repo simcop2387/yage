@@ -124,7 +124,7 @@ private struct MS3D
 			idx+=361;
 		}
 
-		delete file;
+		//delete file;
 	}
 }
 
@@ -290,10 +290,10 @@ template Ms3dLoader()
 			}
 			meshes[m].setTriangles(triangles);
 		}
-		delete ms3d.vertices;
-		delete ms3d.triangles;
-		delete ms3d.groups;
-		delete ms3d.materials;
+		//delete ms3d.vertices;
+		//delete ms3d.triangles;
+		//delete ms3d.groups;
+		//delete ms3d.materials;
 		
 		setAttribute("gl_Vertex", vertices);
 		setAttribute("gl_TexCoord", texcoords);

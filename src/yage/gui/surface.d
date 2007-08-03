@@ -504,12 +504,12 @@ class Surface{
 		if(onFocus) onFocus(this);
 	}
 	
-	//Perhaps change to setLock(bool)
-	//Events will be forwarded to this
+	//Events will be forwarded to the locked surface
 	void lock(){
 		Input.surfaceLock = this;
 	}
 	
+	//Releases the locked surface, now the appropriate surface will recieve events
 	void unlock(){
 		Input.surfaceLock = null;
 	}

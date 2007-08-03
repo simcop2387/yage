@@ -160,7 +160,7 @@ class Input
 		if(surfaceLock) return surfaceLock;
 		return findSurface(mousex, mousey);
 	}
-	
+	//Releases the locked surface, now the appropriate surface will recieve events rather than the locked
 	void unlock(){
 		Input.surfaceLock = null;
 	}

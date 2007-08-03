@@ -133,7 +133,7 @@ abstract class Resource
 			return models[source];
 		Timer a = new Timer();
 		models[source] = new Model(source);
-		Log.write("Model loaded in ", .toString(a.get()), "seconds.");
+		Log.write(source ~ " loaded in ", .toString(a.get()), "seconds.");
 		return models[source];
 	}
 

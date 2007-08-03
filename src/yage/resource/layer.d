@@ -294,8 +294,9 @@ class Layer
 				// Bind and blend
 				textures[i].bind();
 			}
-		}else
-		{	glEnable(GL_TEXTURE_2D);
+		}
+		else if(textures.length == 1){
+			glEnable(GL_TEXTURE_2D);
 			textures[0].bind();
 		}
 
@@ -417,8 +418,7 @@ class Layer
 			}
 			glClientActiveTextureARB(GL_TEXTURE0_ARB);
 		}
-		else
-		{	textures[0].unbind();
+		else if(textures.length == 1){	textures[0].unbind();
 			glDisable(GL_TEXTURE_2D);
 			//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		}

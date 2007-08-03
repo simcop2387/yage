@@ -52,7 +52,7 @@ class Scene : BaseNode
 	protected long timestamp[3];
 	package int transform_read=0, transform_write=1;
 
-	protected Repeater repeater;
+	Repeater repeater;
 
 	/// Construct an empty Scene.
 	this()

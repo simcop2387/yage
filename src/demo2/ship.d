@@ -17,7 +17,6 @@ class Ship : GameObject
 	Node pitch;			// attached to this node to look up and down
 	ModelNode ship;		// attached to pitch and rolls left & right
 	Spring spring;		// spring to attach camera
-	SoundNode sound;
 	
 	Vec2i mouseDelta;
 	bool input = false;
@@ -33,16 +32,12 @@ class Ship : GameObject
 		pitch = new Node(this);
 
 		ship = new ModelNode(pitch);
-		ship.setModel("scifi/fighter.ms3d");
+		ship.setModel("obj/tie2.obj");
 		ship.setScale(.25);
 
 		spring = new Spring(ship);
 		spring.setDistance(Vec3f(0, 4, 12));
 		spring.setStiffness(1);
-
-		sound = new SoundNode(ship);
-		sound.setSound("sound/ship_eng.ogg");
-		sound.setLooping(true);
 	}
 
 	ModelNode getShip()
@@ -63,31 +58,14 @@ class Ship : GameObject
 		super.update(delta);
 
 		// Set the acceleration speed
-		float speed = 50*delta;
-		if (Input.keydown[SDLK_q])
-			speed *= 20; // Hyperdrive
+		float speed = 250*delta;
 
 		// Accelerate forward
 		if (Input.keydown[SDLK_UP] || Input.keydown[SDLK_w])
 		{
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
 			Vec3f vel = Vec3f(0, 0, -.8).rotate(pitch.getAbsoluteRotation()).scale(getVelocity().length());
-
-			// Engine smoke
-			SpriteNode puff = new SpriteNode(ship.getScene());
-			puff.setMaterial(Resource.material("fx/smoke.xml"));
-			puff.setLifetime(1);
-			puff.setScale(.4);
-			//puff.setVelocity(vel);
-			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-
-			puff = new SpriteNode(ship.getScene(), puff);
-			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-
-			sound.play();
 		}
-		else
-			sound.stop();
 
 		// Accelerate left, right, and backward
 		if (Input.keydown[SDLK_LEFT] || Input.keydown[SDLK_a])
@@ -125,18 +103,5 @@ class Ship : GameObject
 		// Update the spring
 		if (spring.getStiffness()<50)
 			spring.setStiffness(spring.getStiffness*(delta+1));
-		// Fire a flare
-		if (Input.keydown[SDLK_SPACE])
-		{
-			Flare flare = new Flare(ship.getScene());
-			flare.setPosition(ship.getAbsolutePosition());
-			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getAbsoluteTransform())+getVelocity());
-
-			SoundNode zap = new SoundNode(ship);
-			zap.setSound("sound/laser.wav");
-			zap.setVolume(.3);
-			zap.setLifetime(2);
-			zap.play();
-		}
 	}
 }

@@ -85,8 +85,9 @@ class Mesh
 	/**
 	 * Set the triangles of this mesh.  Each triangle contains
 	 * three vertex indicies from the vertex arrays in the containing Model.*/
-	void setTriangles(Vec3i[] triangles)
-	{	this.triangles = triangles;
+	void setTriangles(Vec3i[] triangles){
+		this.triangles = triangles;
+		
 		if (Device.getSupport(DEVICE_VBO))
 		{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, getTrianglesVBO());
 			glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, getTriangles().length*Vec3i.sizeof, getTriangles().ptr, GL_STATIC_DRAW);

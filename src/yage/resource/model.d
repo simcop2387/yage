@@ -6,7 +6,6 @@
 
 module yage.resource.model;
 
-import std.gc;
 import std.string;
 import std.file;
 import std.math;
@@ -192,10 +191,11 @@ class Model
 		switch (tolower(ext))
 		{	case "ms3d":
 				loadMs3d(filename);
+				std.gc.fullCollect();
 				break;
 			case "obj":
 				loadObj(filename);
-				fullCollect();
+				std.gc.fullCollect();
 				break;
 			default:
 				throw new Exception("Unrecognized file format '"~ext~"'.");
@@ -245,8 +245,8 @@ class Model
 	}
 
 	// Used by the other setAttribute functions.
-	private void setAttribute(char[] name, float[] values, int width)
-	{	
+	private void setAttribute(char[] name, float[] values, int width){
+		
 		if (!(name in attributes))
 		{	Attribute a;
 			attributes[name] = a;

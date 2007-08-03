@@ -13,13 +13,16 @@ import std.stdio;
 import std.string;
 import std.conv;
 
+import yage.core.types;
 import yage.core.matrix;
 import yage.core.misc;
 import yage.core.vector;
+import yage.system.constant;
 import yage.resource.model;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.resource;
+import yage.resource.texture;
 import yage.system.log;
 
 union point{
@@ -34,14 +37,84 @@ union point{
 
 alias char[][] face;
 
-struct MTL{}
+struct MTL{
+	char[] name;
+	//Ka
+	float[4] ambient = [.2,.2,.2,1.0]; //color
+	//Kd and d
+	float[4] diffuse = [.8,.8,.8,1.0]; //color
+	//Ks
+	float[4] specular = [1.0,1.0,1.0,1.0]; //color
+	//Ns
+	float shininess = 0.0;
+	//map_Ka
+	char[] texture;
+}
+
+MTL[] handleMTL(char[] source){
+	char[] file = cast(char[])read(source);
+	char[][] lines = splitlines(file);
+	
+	MTL[] mats;
+	
+	void handleLine(char[] line){
+		char[][] words = split(line, " ");
+		if(words.length != 0){
+			switch(words[0]){
+				case "newmtl":
+					MTL m;
+					m.name = line[7..$];
+					mats ~= m;
+					break;
+				case "Ka":
+					Vec3f rgb = fromWords3(words);
+					mats[$-1].ambient[0] = rgb.x;
+					mats[$-1].ambient[1] = rgb.y;
+					mats[$-1].ambient[2] = rgb.z;
+					break;
+				case "Kd":
+					Vec3f rgb = fromWords3(words);
+					mats[$-1].diffuse[0] = rgb.x;
+					mats[$-1].diffuse[1] = rgb.y;
+					mats[$-1].diffuse[2] = rgb.z;
+					break;
+				case "Ks":
+					Vec3f rgb = fromWords3(words);
+					mats[$-1].specular[0] = rgb.x;
+					mats[$-1].specular[1] = rgb.y;
+					mats[$-1].specular[2] = rgb.z;
+					break;
+				case "Tr":
+				case "d":
+					//mats[$-1].diffuse[3] = toFloat(words[1]);  //FIX!
+					break;
+				case "Ns":
+					mats[$-1].shininess = toFloat(words[1]);
+					break;
+				case "map_Ka":
+					mats[$-1].texture = words[1];
+					break;
+				case "illum":
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	
+	foreach(inout line; lines){
+		line = strip(line);
+		handleLine(line);
+	}
+	
+	return mats;
+}
 
 struct group{
-	//MTL mtl;
+	MTL mtl;
 	point[char[]] points;//used to test if point already exists
 	//char[] == lazy man's point reference
 	face[] faces; //array of char[] is face, array of faces
-	//face[] faces;
 	
 	void addPoint(char[] word){
 		if(!(word in points)){
@@ -66,38 +139,27 @@ struct group{
 struct OBJ{
 	group[] groups;
 	
+	MTL[char[]] materials;
+	
 	Vec3f[] vertices, normals;
 	Vec2f[] texcoords;
 	
 	char[] file;
 	
+	char[] path;//path without filename, move out of struct
+	
 	void load(char[] source){
+		path = source[0 .. rfind(source, "/") + 1]; // path stripped of filename
+		
 		file = cast(char[])read(source);
 		char[][] lines = splitlines(file);
-		//delete file;
 		
-		group g;
-		groups ~= g;
+		groups.length = 1;
 		
 		foreach(inout line; lines){
 			line = strip(line);
 			handleLine(line);
 		}
-	}
-	
-	//Do not want to make a template or making 2/3 an arg for only two functions
-	Vec3f fromWords3(char[][] words){
-		Vec3f vertex;
-		for(int i; i < 3; i++)
-			vertex[i] = std.conv.toFloat(words[i+1]);
-		return vertex;
-	}
-	
-	Vec2f fromWords2(char[][] words){
-		Vec2f vertex;
-		for(int i; i < 2; i++)
-			vertex[i] = std.conv.toFloat(words[i+1]);
-		return vertex;
 	}
 	
 	void handleLine(char[] line){
@@ -177,10 +239,14 @@ struct OBJ{
 				case "lod":
 					break;
 				case "usemtl":
-					//mesh[$-1].material = 
+					groups[$-1].mtl = materials[line[7..$]];
 					break;
 				case "mtllib":
-					//new Material(words[1]);
+					foreach(word; words[1..$]){
+						MTL[] mats = handleMTL(path ~ word);
+						foreach(m; mats)
+							materials[m.name] = m;
+					}
 					break;
 				case "shadow_obj":
 					break;
@@ -197,6 +263,21 @@ struct OBJ{
 	}
 }
 
+//Do not want to make a template or making 2/3 an arg for only two functions
+Vec3f fromWords3(char[][] words){
+	Vec3f vertex;
+	for(int i; i < 3; i++)
+		vertex[i] = std.conv.toFloat(words[i+1]);
+	return vertex;
+}
+	
+Vec2f fromWords2(char[][] words){
+	Vec2f vertex;
+	for(int i; i < 2; i++)
+		vertex[i] = std.conv.toFloat(words[i+1]);
+	return vertex;
+}
+
 /**
  * Create Models from files and other sources.
  * This is separated and used as a mixin to reduce the length of model.d.*/
@@ -211,12 +292,11 @@ template ObjLoader(){
 		Vec2f[] texcoords;
 		
 		source = Resource.resolvePath(filename);
-		char[] path = source[0 .. rfind(source, "/") + 1]; // path stripped of filename
 		
 		OBJ obj;
 		obj.load(source);
 		
-		foreach(inout g; obj.groups){ //makes new vertices for different normals or tex
+		foreach(inout g; obj.groups[1..$]){ //makes new vertices for different normals or tex
 			foreach(inout p; g.points){
 				vertices ~= obj.vertices[p.vertex - 1];
 				p.vertex = vertices.length - 1;
@@ -235,16 +315,39 @@ template ObjLoader(){
 					p.texcoord = texcoords.length - 1;
 				}
 			}
-		}
-		
-		// Meshes
-		foreach(g; obj.groups[1..$]){
+			
+			// Meshes
 			meshes ~= new Mesh();
 			int m = meshes.length - 1;
-			Vec3i[] triangles = meshes[m].getTriangles();
+				
+			Material matl = new Material();
+			matl.addLayer(new Layer());
+			
+			//matl.getLayers[0].blend = BLEND_AVERAGE; //FIX!
+
+			matl.getLayers()[0].ambient = yage.core.types.Color(g.mtl.ambient);
+			matl.getLayers()[0].diffuse = yage.core.types.Color(g.mtl.diffuse);
+			matl.getLayers()[0].specular = yage.core.types.Color(g.mtl.specular);
+			matl.getLayers()[0].specularity = g.mtl.shininess;
+			
+			meshes[m].setMaterial(matl);
+
+			// Load textures
+			// Ms3d stores a texture map and an alpha map for every material
+			//char[] texfile = .toString(ms3d.materials[midx].texture.ptr);
+			//if (texfile.length){
+			//	if (icmp(texfile[0..2], ".\\")==0) // linux fails with .\ in a path.
+			//		texfile = texfile[2..length];
+			//meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ texfile));
+			//}
+			//if (ms3d.materials[midx].alphamap[0])
+			if(g.mtl.texture.length)
+				meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(obj.path ~ g.mtl.texture));
+			
 			
 			// Triangles
-			foreach(f; g.faces){
+			Vec3i[] triangles = meshes[m].getTriangles();
+			foreach(inout f; g.faces){
 				//this will fan polygons
 				while(f.length != 2){
 					triangles ~= Vec3i(g.points[f[0]].vertex, g.points[f[1]].vertex, g.points[f[2]].vertex);

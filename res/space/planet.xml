@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <material>
   <layer ambient="FFFFFF" specular="000000" specularity="32">
-  	<texture src="rocky2.jpg" name="tex_diffuse"/>
+  	<texture src="rocky2.png" name="tex_diffuse"/>
   	<shader src="diffuse.vert" type="vertex" />
 	<shader src="diffuse-hdr.frag" type="fragment" />
   </layer>

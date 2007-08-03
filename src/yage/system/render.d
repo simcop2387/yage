@@ -174,10 +174,11 @@ class Render
 		{
 			// Bind and draw the triangles
 			void draw()
-			{	if (mesh.getCached())
-				{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTrianglesVBO());
+			{	if (mesh.getCached()){
+					glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTrianglesVBO());
 					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, null);
-				}else
+				}
+				else
 					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, mesh.getTriangles().ptr);
 			}
 

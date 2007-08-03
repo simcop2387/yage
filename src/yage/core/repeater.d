@@ -29,7 +29,7 @@ class Repeater : Thread
 	this(void delegate(float f) func)
 	{	since_last_start = new Timer();
 		this.func = func;
-		super.start();
+		super.start();  //COMMENT THIS FOR DEBUGING
 	}
 
 	~this()

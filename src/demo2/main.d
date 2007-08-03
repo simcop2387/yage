@@ -24,8 +24,6 @@ int main(){
 	
 	// Init (resolution, depth, fullscreen, aa-samples)
 	Device.init(800, 600, 32, false, 1);
-	//Device.init(1024, 768, 32, true);
-	//Device.init(1440, 900, 32, true);
 	
 	// Paths
 	Resource.addPath("../res/");
@@ -58,8 +56,6 @@ int main(){
 	CameraNode camera = new CameraNode(ship.getCameraSpot());
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
 	
-	//new Model("obj/cube.obj");
-	
 	Surface bg = new Surface(null);
 	bg.setTexture(camera.getTexture());
 	bg.topLeft = Vec2f(0,0);
@@ -83,11 +79,28 @@ int main(){
 	}
 	
 	void onKeydown(Surface self, byte key){
-		if (Input.keydown[SDLK_ESCAPE])
+		if (key == SDLK_ESCAPE)
 			Device.exit(0);
+		
+		if (key == SDLK_SPACE){
+			Flare flare = new Flare(ship.getScene());
+			flare.setPosition(ship.getAbsolutePosition());
+			flare.setVelocity(Vec3f(0, 0, -150).rotate(ship.ship.getAbsoluteTransform())+ship.getVelocity());
+
+			SoundNode zap = new SoundNode(ship);
+			zap.setSound("sound/laser.wav");
+			zap.setVolume(.3);
+			zap.setLifetime(2);
+			zap.play();
+		}
+		
+		if(key == SDLK_c){
+			std.gc.fullCollect();  //FIX!
+			writefln("garbage collected");
+		}
 	}
 	
-	bg.onMousedown = &onMousedown;	
+	bg.onMousedown = &onMousedown;
 	bg.onResize = &onResize;
 	bg.onMousemove = &onMousemove;
 	bg.onKeydown = &onKeydown;
@@ -192,11 +205,9 @@ int main(){
 
 	// Planet
 	auto planet = new ModelNode(scene);
-	planet.setModel("obj/tieFighter.obj");
-	planet.setScale(60);
+	planet.setModel("space/planet.obj");
+	planet.setScale(600);
 	planet.setAngularVelocity(0, -0.01, 0);
-	
-	//planet.getModel().clearAttribute("gl_Normal");
 	
 	// Asteroids
 	asteroidBelt(800, 1400, planet);
@@ -214,11 +225,10 @@ int main(){
 	Timer frame = new Timer();
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
+	std.gc.fullCollect();
 	while(1){
 		float dtime = delta.get();
 		delta.reset();
-
-		//earth.getModel().getMeshes()[0].getMaterial().getLayers()[1].getTextures()[0].position.x -= dtime/1024;
 
 		Input.processInput();
 		camera.toTexture();
@@ -231,7 +241,7 @@ int main(){
 		{	char[] caption = formatString("Yage Test (%.2f fps) (%d objects, %d polygons, %d vertices rendered)\0",
 				fps/frame.get(), camera.getNodeCount(), camera.getPolyCount(), camera.getVertexCount());
 			SDL_WM_SetCaption(caption.ptr, null);
-			delete caption;
+			//delete caption;
 			frame.reset();
 			fps = 0;
 		}

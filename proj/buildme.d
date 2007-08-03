@@ -41,7 +41,7 @@ char[][] lib_path = ["../lib"];						// Array of folders to scan for libraries
 
 char[] obj_path = "../bin/.obj";					// Folder for object files
 char[] bin_path = "../bin";							// Folder where executable binary will be placed
-char[] bin_name = "yage3d";							// executable binary name
+char[] bin_name = "demo2";							// executable binary name
 char[] doc_path = "../doc/api";						// Folder for html documentation, if ddoc flag is set
 char[] cur_path;									// Folder of this script, set automatically
 
