@@ -18,7 +18,7 @@ import yage.node.scene;
 import yage.system.device;
 import yage.system.constant;
 import yage.system.render;
-
+import yage.node.camera: CameraNode;
 
 /**
  * LightNodes are Nodes that emit light.

@@ -113,8 +113,8 @@ class CameraNode : Node
 	}
 
 	/// Get the inverse of the camera's absolute matrix.  This is pre-calculated per call to .toTexture().
-	Matrix getInverseAbsoluteMatrix()
-	{	return inverse_absolute;
+	public Matrix getInverseAbsoluteMatrix() {
+		return inverse_absolute; 
 	}
 
 	/**

@@ -198,8 +198,8 @@ class Layer
 			" specular=\"" ~ specular.hex ~ "\"" ~
 			" emissive=\"" ~ emissive.hex ~ "\"" ~
 			" specularity=\"" ~ .toString(specularity) ~ "\"" ~
-			" blend=\"" ~ .toString(blend) ~ "\"" ~
-			" cull=\"" ~ .toString(cull) ~ "\"" ~
+		//	" blend=\"" ~ .toString(blend) ~ "\"" ~
+		//	" cull=\"" ~ .toString(cull) ~ "\"" ~
 			" draw=\"" ~ .toString(draw) ~ "\"" ~
 			" width=\"" ~ .toString(width) ~ "\"" ~
 			">\n";

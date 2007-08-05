@@ -11,6 +11,7 @@ import std.intrinsic;
 import yage.core.math;
 import yage.core.parse;
 import yage.core.vector;
+import yage.core.vector:Vec4f;
 private extern (C) void *memcpy(void *, void *, uint);
 
 

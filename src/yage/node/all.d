@@ -23,3 +23,5 @@ public
 	import yage.node.sound;
 	import yage.node.terrain;
 }
+public import yage.node.node: Node;
+public import yage.node.camera: CameraNode;

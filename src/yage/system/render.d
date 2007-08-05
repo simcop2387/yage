@@ -18,6 +18,7 @@ import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
 import yage.node.all;
+import yage.node.camera: CameraNode;
 
 private struct Attribute2
 {	char[] name;

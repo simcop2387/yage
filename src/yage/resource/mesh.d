@@ -48,11 +48,10 @@ class Mesh
 	}
 
 	/// Cleanup
-	//~this(){
-		//writefln(this.toString(), " has been destructed");
-		//if (Device.getSupport(DEVICE_VBO))
-		//	glDeleteBuffersARB(triangles.length*Vec3i.sizeof, &vbo_triangles);
-	//}
+	~this(){
+		if (Device.getSupport(DEVICE_VBO))
+			glDeleteBuffersARB(1, &vbo_triangles);
+	}
 
 	/// Are the triangles of this mesh cashed in video memory?
 	bool getCached()

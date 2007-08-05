@@ -8,7 +8,7 @@ module yage.core.vector;
 
 import std.math;
 import std.stdio;
-import yage.core.all;
+import yage.core.parse;
 import yage.core.matrix;
 import yage.core.math;
 import yage.core.quatrn;
