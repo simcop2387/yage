@@ -6,6 +6,7 @@
 
 module yage.resource.mesh;
 
+import std.stdio;
 import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
@@ -47,10 +48,11 @@ class Mesh
 	}
 
 	/// Cleanup
-	~this()
-	{	if (Device.getSupport(DEVICE_VBO))
-			glDeleteBuffersARB(triangles.length*Vec3i.sizeof, &vbo_triangles);
-	}
+	//~this(){
+		//writefln(this.toString(), " has been destructed");
+		//if (Device.getSupport(DEVICE_VBO))
+		//	glDeleteBuffersARB(triangles.length*Vec3i.sizeof, &vbo_triangles);
+	//}
 
 	/// Are the triangles of this mesh cashed in video memory?
 	bool getCached()
@@ -102,8 +104,8 @@ class Mesh
 		result ~= "Mesh\n";
 		result ~= "Material: '"~material.getSource()~"'";
 		result ~= .toString(triangles.length)~" triangles\n";
-		foreach (Vec3i t; triangles)
-			result ~= t.toString();
+		//foreach (Vec3i t; triangles)
+		//	result ~= t.toString();
 
 		return result;
 	}

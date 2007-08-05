@@ -205,7 +205,7 @@ int main(){
 
 	// Planet
 	auto planet = new ModelNode(scene);
-	planet.setModel("space/planet.obj");
+	planet.setModel("space/planet.ms3d");
 	planet.setScale(600);
 	planet.setAngularVelocity(0, -0.01, 0);
 	
