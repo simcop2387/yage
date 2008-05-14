@@ -54,9 +54,7 @@ class Spring
 
 	/// Update the position of the floater relative to what it's attached to.
 	void update(float delta){
-		Vec3f h = head.getAbsoluteRotation();
-		Vec3f t = tail.getAbsoluteRotation();
-		tail.setRotation(Vec3f((t.x+h.x)/2, (t.y+h.y)/2, (t.z+h.z)/2));
+		tail.setRotation(head.getAbsoluteRotation());
 
 		Vec3f dist = head.getAbsolutePosition() - tail.getAbsolutePosition() + distance.rotate(head.getAbsoluteTransform());
 		Vec3f vel = dist.scale(min(stiffness, 1/delta)); // scale by 1/delta when framerate is low to prevent jerkiness.

@@ -69,7 +69,7 @@ int main()
 		self.grabMouse(!ship.input);
 		ship.input = !ship.input;
 	}
-	
+
 	void onMousemove(Surface self, byte buttons, Vec2i rel){
 		if(ship.input){
  			ship.mouseDelta = ship.mouseDelta.add(rel);

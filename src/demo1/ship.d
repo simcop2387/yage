@@ -103,7 +103,8 @@ class Ship : GameObject
 			pitch.angularAccelerate(Vec3f(mouseDelta.y/24.0, 0, 0));
 			mouseDelta.x = mouseDelta.y = 0;
 		}
-
+		
+		writefln(getRotation());
 
 		// Bank on turn
 		float turn = getAngularVelocity().y;
