@@ -201,12 +201,12 @@ int main(){
 	// Star
 	SpriteNode star = new SpriteNode(l1);
 	star.setMaterial("space/star.xml");
-	star.setScale(2500);
+	star.scale = Vec3f(2500);
 
 	// Planet
 	auto planet = new ModelNode(scene);
 	planet.setModel("space/planet.ms3d");
-	planet.setScale(600);
+	planet.scale = Vec3f(600);
 	planet.setAngularVelocity(0, -0.01, 0);
 	
 	// Asteroids

@@ -48,7 +48,7 @@ class TerrainNode : Node
 	{	super(parent);
 		model = new Model();
 		model.setMeshes([new Mesh()]);
-		setVisible(true);
+		visible = true;
 	}
 
 
@@ -147,23 +147,19 @@ class TerrainNode : Node
 	{	setMaterial(Resource.material(material_file));
 	}
 
-
-	// Overridden to cache the radius if changed by the scale.
-	void setScale(float x, float y, float z)
-	{	super.setScale(x, y, z);
+	
+	/// Overridden to cache the radius if changed by the scale.
+	void scale(Vec3f scale)
+	{	this.scale = scale;
 		if (width != 0) // if heightmap loaded
 			radius = model.getDimensions().scale(scale).length();
 	}
-
-	// ditto
-	void setScale(Vec3f scale)
-	{	setScale(scale.x, scale.y, scale.z);
+	
+	Vec3f scale()
+	{	return super.scale;		
 	}
-
-	// ditto
-	void setScale(float scale)
-	{	setScale(scale, scale, scale);
-	}
+	
+	
 
 	/*
 	 * Recalculate the terrain's normals and culling sphere radius.*/

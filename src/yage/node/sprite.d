@@ -22,7 +22,7 @@ class SpriteNode : Node
 	/// Create this Node as a child of parent.
 	this(BaseNode parent)
 	{	super(parent);
-		setVisible(true);
+		visible = true;
 	}
 
 	/**

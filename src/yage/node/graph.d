@@ -44,7 +44,7 @@ class GraphNode : Node
 	/// Construct this Node as a child of parent.
 	this(BaseNode parent)
 	{	super(parent);
-		setVisible(true);
+		visible = true;
 		setWindow(-1, 1, -1, 1);
 
 		model = new Model();
@@ -98,20 +98,15 @@ class GraphNode : Node
 	{	model.getMeshes()[0].setMaterial(Resource.material(material_file));
 	}
 
+
 	/// Overridden to cache the radius if changed by the scale.
-	void setScale(float x, float y, float z)
-	{	super.setScale(x, y, z);
+	void scale(Vec3f scale)
+	{	this.scale = scale;
 		radius = model.getDimensions().scale(scale).length();
 	}
-
-	/// ditto
-	void setScale(Vec3f scale)
-	{	setScale(scale.x, scale.y, scale.z);
-	}
-
-	/// ditto
-	void setScale(float scale)
-	{	setScale(scale, scale, scale);
+	
+	Vec3f scale()
+	{	return super.scale;		
 	}
 
 	/// Set a function of two variables to generate texture coordinates.

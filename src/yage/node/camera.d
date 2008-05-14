@@ -60,7 +60,7 @@ class CameraNode : Node
 	{	super(_parent);
 		capture = new GPUTexture();
 		setResolution(xres, yres);
-		setVisible(false);
+		visible = false;
 	}
 
 	/**
@@ -294,7 +294,7 @@ class CameraNode : Node
 	// Ditto
 	protected void addNodesToRender(Node node)
 	{
-		if (node.getVisible())
+		if (node.visible)
 		{	node.setOnscreen(true);
 
 			float r = -node.getRadius();

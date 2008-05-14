@@ -82,7 +82,7 @@ class Render
 		{
 			glPushMatrix();
 			glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
-			glScalef(n.getScale().x, n.getScale().y, n.getScale().z);
+			glScalef(n.scale.x, n.scale.y, n.scale.z);
 			n.enableLights();
 
 			switch(n.getType())
@@ -119,7 +119,7 @@ class Render
 		// Render alpha triangles
 		foreach (AlphaTriangle at; alpha)
 		{	foreach (layer; at.matl.getLayers())
-			{	layer.bind(at.node.getLights(), at.node.getColor());
+			{	layer.bind(at.node.getLights(), at.node.color);
 				glBegin(GL_TRIANGLES);
 				
 				Vec3i triangle = at.mesh.getTriangles[at.triangle];
@@ -200,7 +200,7 @@ class Render
 
 					// If not translucent
 					if (!sort)
-					{	l.bind(node.getLights(), node.getColor(), model);
+					{	l.bind(node.getLights(), node.color, model);
 						draw();
 						l.unbind();
 
@@ -210,7 +210,7 @@ class Render
 						// Add to translucent
 						{	AlphaTriangle at;
 							for (int i=0; i<3; i++)
-							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getScale());
+							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.scale);
 								at.texcoords[i] = &t[tri.v[i]];
 								at.normals[i] = &n[tri.v[i]];
 							}

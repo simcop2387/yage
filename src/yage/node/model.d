@@ -25,7 +25,7 @@ class ModelNode : Node
 	/// Construct this Node as a child of parent.
 	this(BaseNode parent)
 	{	super(parent);
-		setVisible(true);
+		visible = true;
 	}
 
 	/**
@@ -59,21 +59,16 @@ class ModelNode : Node
 	}
 
 	/// Overridden to cache the radius if changed by the scale.
-	void setScale(float x, float y, float z)
-	{	super.setScale(x, y, z);
+	void scale(Vec3f s)
+	{	super.scale = Vec3f(s.x, s.y, s.z);
 		if (model)
 			radius = model.getDimensions().scale(scale).max();
 	}
-
-	/// ditto
-	void setScale(Vec3f scale)
-	{	setScale(scale.x, scale.y, scale.z);
+	
+	Vec3f scale()
+	{	return super.scale;		
 	}
 
-	/// ditto
-	void setScale(float scale)
-	{	setScale(scale, scale, scale);
-	}
 
 	/**
 	 * Get the radius of the culling sphere used when rendering the 3D Model
