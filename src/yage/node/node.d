@@ -59,24 +59,13 @@ import yage.system.input;
 class Node : BaseNode
 {
 	protected bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
-	
-
+	protected bool 	visible = true;
+	protected Vec3f	scale;
+	protected Color color;				// RGBA, used for glColor4f()
 	protected float lifetime = float.infinity;	// in seconds
 
 	protected LightNode[] lights;		// Lights that affect this Node
 	protected float[]     intensities;	// stores the brightness of each light on this Node.
-	
-	// Public properties
-	Vec3f scale;	/// The x,y,z scale of the Node.
-	bool visible = true; /// Set whether this Node is rendered.
-	
-	/**
-	 * The color and opacity of the Node, which is multiplied with any Materials that are
-	 * rendered with the Node.
-	 * This is equivalent to glColor4f(). If the materials of any meshes have
-	 * blending enabled, their alpha value can be set via the fourth parameter.
-	 * Default color is white (all 1's).*/
-	Color color;
 
 	/// Construct this Node as a child of parent.
 	this(BaseNode parent)
@@ -122,16 +111,37 @@ class Node : BaseNode
 				case "yage.node.model.ModelNode": new ModelNode(this, cast(ModelNode)c); break;
 				case "yage.node.sound.SoundNode": new SoundNode(this, cast(SoundNode)c); break;
 				case "yage.node.sprite.SpriteNode": new SpriteNode(this, cast(SpriteNode)c); break;
-				case "yage.node.terrain.TerrainNode": new TerrainNode(this, cast(TerrainNode)c); break;
+				case "yage.node.terrain.TerrainNode": new TerrainNode(this, cast(TerrainNode)c); break;				
 				default:
 			}
+			/*
+			new Object.factory(c.classinfo.name);
+			auto ci = ClassInfo.find(classname);
+			if (ci)
+			{
+			    return ci.create();
+			}
+			return null;
+			*/
 		}
 	}
 
-	/// Get the time before the Node will be removed.
-	float getLifetime()
-	{	return lifetime;
-	}
+	
+	/**
+	 * Get / Set the color of the Node.
+	 * Material colors of the Node are combined (multiplied) with this color.
+	 * This provides an easy way to change the color of a Node without having to modify all materials individually.
+	 * Default color is white and opaque (all 1's).*/
+	Color getColor() { return color; }
+	void setColor(Color color) { this.color = color; } /// Ditto
+	void setColor(float r, float g, float b, float a=1)	{ color = Color(r, g, b, a); }	/// Ditto
+	
+	/**
+	 * Get / set the lifeime of a Node (in seconds).
+	 * The default value is float.infinity, but a lower number will cause the Node to be removed
+	 * from the scene graph after that amount of time, as its lifetime is decreased with every Scene update.*/	
+	float getLifetime() { return lifetime; }
+	void setLifetime(float seconds) { lifetime = seconds; } /// Ditto
 
 	/// Get an array of lights that were enabled in the last call to enableLights().
 	LightNode[] getLights()
@@ -150,6 +160,19 @@ class Node : BaseNode
 	{	return 1.732050807*scale.max();	// a value of zero would not be rendered since it's always smaller than the pixel threshold.
 	}									// This is the radius of a 1x1x1 cube
 
+	/**
+	 * Get / set the scale of this Node in the x, y, and z directions.
+	 * The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. */	
+	void setScale(float x, float y, float z) { scale.set(x, y, z); }
+	void setScale(Vec3f scale) { setScale(scale.x, scale.y, scale.z); } /// ditto
+	void setScale(float scale){	setScale(scale, scale, scale); } /// ditto
+	Vec3f getScale() { return scale; } /// ditto
+
+	/** 
+	 * Gt /set whether this Node will be rendered.  This has nothing to do with frustum culling.
+	 * Setting a Node as invisible will not make its children invisible also. */
+	void setVisible(bool visible) {	this.visible = visible;	}
+	bool getVisible() { return visible; } /// ditto
 	
 
 	/// Remove this Node.  This function should be used instead of delete.
@@ -165,15 +188,6 @@ class Node : BaseNode
 		// this needs to happen because some children (like lights) may need to do more in their remove() function.
 		foreach(Node c; children)
 			c.remove();
-	}
-
-	/**
-	 * The Node will be removed (along with all of its children) after a given time.
-	 * Params:
-	 * seconds = The number of seconds before the Node will be removed.
-	 * Set to float.infinity to make the Node last forever (the default behavior).*/
-	void setLifetime(float seconds)
-	{	lifetime = seconds;
 	}
 
 	/**
@@ -198,7 +212,7 @@ class Node : BaseNode
 		return this;
 	}
 
-	
+
 	/*
 	 * Update the position and rotation of this node based on its velocity and angular velocity.
 	 * This function is called automatically as a Scene's update() function recurses through Nodes.

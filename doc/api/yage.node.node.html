@@ -173,14 +173,25 @@ yage.node.MoveableNode
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Color  
+<dt><span class="decl">Color 
 <span class="currsymbol">getColor</span>
 <script type="text/javascript">explorer.outline.addDecl('getColor');</script>
 ();
+<br>void 
+<span class="currsymbol">setColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
+(Color <span class="funcparam">color</span>);
+<br>void 
+<span class="currsymbol">setColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
+(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the color of the Node.
+<dd>Get / Set the color of the Node.
+ Material colors of the Node are combined (multiplied) with this color.
+ This provides an easy way to change the color of a Node without having to modify all materials individually.
+ Default color is white and opaque (all 1's).
 <br><br>
 
 </dd>
@@ -190,10 +201,16 @@ yage.node.MoveableNode
 <span class="currsymbol">getLifetime</span>
 <script type="text/javascript">explorer.outline.addDecl('getLifetime');</script>
 ();
+<br>void 
+<span class="currsymbol">setLifetime</span>
+<script type="text/javascript">explorer.outline.addDecl('setLifetime');</script>
+(float <span class="funcparam">seconds</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the time before the Node will be removed.
+<dd>Get / set the lifeime of a Node (in seconds).
+ The default value is float.infinity, but a lower number will cause the Node to be removed
+ from the scene graph after that amount of time, as its lifetime is decreased with every Scene update.
 <br><br>
 
 </dd>
@@ -239,27 +256,45 @@ yage.node.MoveableNode
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f  
+<dt><span class="decl">void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
+<br>void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(Vec3f <span class="funcparam">scale</span>);
+<br>void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(float <span class="funcparam">scale</span>);
+<br>Vec3f 
 <span class="currsymbol">getScale</span>
 <script type="text/javascript">explorer.outline.addDecl('getScale');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the scale of the Node.
+<dd>Get / set the scale of this Node in the <span class="funcparam">x</span>, <span class="funcparam">y</span>, and <span class="funcparam">z</span> directions.
+ The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. 
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
+<dt><span class="decl">void 
+<span class="currsymbol">setVisible</span>
+<script type="text/javascript">explorer.outline.addDecl('setVisible');</script>
+(bool <span class="funcparam">visible</span>);
+<br>bool 
 <span class="currsymbol">getVisible</span>
 <script type="text/javascript">explorer.outline.addDecl('getVisible');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Is rendering enabled for this node?
+<dd>Gt /set whether this Node will be rendered.  This has nothing to do with frustum culling.
+ Setting a Node as invisible will not make its children invisible also. 
 <br><br>
 
 </dd>
@@ -278,47 +313,6 @@ yage.node.MoveableNode
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
-(float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
-<br>void 
-<span class="currsymbol">setColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
-(Color <span class="funcparam">color</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the color of the Node, multiplied with the material properties.
- This is equivalent to glColor4f(). If the materials of any meshes have
- blending enabled, their alpha value can be set via the fourth parameter.
- Default color is white (all 1's).
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setLifetime</span>
-<script type="text/javascript">explorer.outline.addDecl('setLifetime');</script>
-(float <span class="funcparam">seconds</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>The Node will be removed (along with all of its children) after a given time.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">seconds</span></td>
-
-               
-<td>The number of <span class="funcparam">seconds</span> before the Node will be removed.
- Set to float.infinity to make the Node last forever (the default behavior).</td></tr>
-</table><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Node 
 <span class="currsymbol">setParent</span>
 <script type="text/javascript">explorer.outline.addDecl('setParent');</script>
@@ -331,42 +325,6 @@ yage.node.MoveableNode
 <br><br>
 <b>Returns:</b><br>
 A self reference.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(Vec3f <span class="funcparam">scale</span>);
-<br>void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">scale</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the scale of this Node in the <span class="funcparam">x</span>, <span class="funcparam">y</span>, and <span class="funcparam">z</span> directions.
- The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setVisible</span>
-<script type="text/javascript">explorer.outline.addDecl('setVisible');</script>
-(bool <span class="funcparam">visible</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set whether this Node will be renered.  This has nothing to do with frustum culling.
-  Setting a Node as invisible will not make its children invisible also. 
 <br><br>
 
 </dd>
@@ -389,7 +347,7 @@ A self reference.
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul 21 18:37:13 2007
+		on Sat May 17 17:35:22 2008
 
 	</div>
 	
@@ -466,7 +424,9 @@ A self reference.
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 
-	explorer.packageExplorer.addModule("yage.resource.modelloader");
+	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+
+	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 

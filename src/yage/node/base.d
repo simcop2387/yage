@@ -101,16 +101,12 @@ abstract class BaseNode
 	{	this.on_update = on_update;
 	}
 
-	/// Return a string representation of this Node for human reading.
-	char[] toString()
-	{	return toString(false);
-	}
-
 	/**
 	 * Return a string representation of this Node for human reading.
 	 * Params:
 	 * recurse = Print this Node's children as well. */
-	char[] toString(bool recurse)
+	char[] toString() { return toString(false); }
+	char[] toString(bool recurse) /// Ditto
 	{	static int indent;
 		char[] pad = new char[indent*3];
 		pad[0..length] = ' ';

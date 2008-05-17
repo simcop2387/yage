@@ -191,7 +191,7 @@ the TEXTURE_FILTER_* constants in yage.system.constant
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec!(float,2) 
+<dt><span class="decl">Vec2f 
 <span class="currsymbol">position</span>
 <script type="text/javascript">explorer.outline.addDecl('position');</script>
 ;
@@ -213,7 +213,7 @@ the TEXTURE_FILTER_* constants in yage.system.constant
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec!(float,2) 
+<dt><span class="decl">Vec2f 
 <span class="currsymbol">scale</span>
 <script type="text/javascript">explorer.outline.addDecl('scale');</script>
 ;
@@ -237,7 +237,7 @@ the TEXTURE_FILTER_* constants in yage.system.constant
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Texture  
+<dt><span class="decl">static Texture 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (GPUTexture <span class="funcparam">texture</span>, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 300, Vec!(float,2) <span class="funcparam">position</span> = zero, float <span class="funcparam">rotation</span> = cast(float)0, Vec!(float,2) <span class="funcparam">scale</span> = one);
@@ -488,7 +488,7 @@ yage.system.constant
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul 21 18:37:14 2007
+		on Sat May 17 17:35:22 2008
 
 	</div>
 	
@@ -565,7 +565,9 @@ yage.system.constant
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 
-	explorer.packageExplorer.addModule("yage.resource.modelloader");
+	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+
+	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 

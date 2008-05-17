@@ -124,7 +124,7 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Material <span class="funcparam">matl</span>, Vec!(int,3) [] <span class="funcparam">triangles</span>);
+<dt><span class="decl">this(Material <span class="funcparam">matl</span>, Vec3i[] <span class="funcparam">triangles</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -147,7 +147,7 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec!(int,3) [] 
+<dt><span class="decl">Vec!(int,3)[] 
 <span class="currsymbol">getTriangles</span>
 <script type="text/javascript">explorer.outline.addDecl('getTriangles');</script>
 ();
@@ -206,7 +206,7 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">setTriangles</span>
 <script type="text/javascript">explorer.outline.addDecl('setTriangles');</script>
-(Vec!(int,3) [] <span class="funcparam">triangles</span>);
+(Vec!(int,3)[] <span class="funcparam">triangles</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -247,7 +247,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul 21 18:37:13 2007
+		on Sat May 17 17:35:22 2008
 
 	</div>
 	
@@ -324,7 +324,9 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 
-	explorer.packageExplorer.addModule("yage.resource.modelloader");
+	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+
+	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 

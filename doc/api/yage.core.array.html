@@ -135,15 +135,9 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.addDecl('ordered');</script>
 (T)(T[] <span class="funcparam">array</span>, bool <span class="funcparam">increasing</span> = true);
 <br>bool 
-<span class="currsymbol">
 <span class="currsymbol">ordered</span>
 <script type="text/javascript">explorer.outline.addDecl('ordered');</script>
-</span>
-<script type="text/javascript">explorer.outline.addDecl('
-<span class="currsymbol">ordered</span>
-<script type="text/javascript">explorer.outline.addDecl('ordered');</script>
-');</script>
-(T,K)(T[] <span class="funcparam"><span class="funcparam">array</span></span>, bool <span class="funcparam"><span class="funcparam">increasing</span></span> = true, K delegate(T elem) <span class="funcparam"><span class="funcparam">getKey</span></span> = null);
+(T,K)(T[] <span class="funcparam">array</span>, bool <span class="funcparam">increasing</span> = true, K delegate(T elem) <span class="funcparam">getKey</span> = null);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -246,15 +240,9 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.addDecl('radixSort');</script>
 (T)(ref T[] <span class="funcparam">array</span>);
 <br>void 
-<span class="currsymbol">
 <span class="currsymbol">radixSort</span>
 <script type="text/javascript">explorer.outline.addDecl('radixSort');</script>
-</span>
-<script type="text/javascript">explorer.outline.addDecl('
-<span class="currsymbol">radixSort</span>
-<script type="text/javascript">explorer.outline.addDecl('radixSort');</script>
-');</script>
-(T,K)(ref T[] <span class="funcparam"><span class="funcparam">array</span></span>, K delegate(T elem) <span class="funcparam"><span class="funcparam">getKey</span></span>, bool <span class="funcparam"><span class="funcparam">signed</span></span> = true);
+(T,K)(ref T[] <span class="funcparam">array</span>, K delegate(T elem) <span class="funcparam">getKey</span>, bool <span class="funcparam">signed</span> = true);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -299,7 +287,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul 21 18:37:12 2007
+		on Sat May 17 17:35:21 2008
 
 	</div>
 	
@@ -376,7 +364,9 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 
-	explorer.packageExplorer.addModule("yage.resource.modelloader");
+	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+
+	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 

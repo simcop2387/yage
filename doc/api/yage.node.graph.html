@@ -180,7 +180,7 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">setFunction</span>
 <script type="text/javascript">explorer.outline.addDecl('setFunction');</script>
-(Vec3f  delegate(float x, float y) <span class="funcparam">func</span>);
+(Vec3f delegate(float x, float y) <span class="funcparam">func</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -245,7 +245,7 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">setTextureFunction</span>
 <script type="text/javascript">explorer.outline.addDecl('setTextureFunction');</script>
-(Vec!(float,2)  delegate(float r, float s) <span class="funcparam">texfunc</span>);
+(Vec!(float,2) delegate(float r, float s) <span class="funcparam">texfunc</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -316,7 +316,7 @@ useful for a cylinder, for example.
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul 21 18:37:13 2007
+		on Sat May 17 17:35:22 2008
 
 	</div>
 	
@@ -393,7 +393,9 @@ useful for a cylinder, for example.
 
 	explorer.packageExplorer.addModule("yage.resource.model");
 
-	explorer.packageExplorer.addModule("yage.resource.modelloader");
+	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+
+	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 
