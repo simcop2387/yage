@@ -106,7 +106,7 @@ int main()
 	// Star
 	SpriteNode star = new SpriteNode(l1);
 	star.setMaterial("space/star.xml");
-	star.scale = Vec3f(2500);
+	star.setScale(Vec3f(2500));
 
 	// Planet
 	auto planet = new ModelNode(scene);

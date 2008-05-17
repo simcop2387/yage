@@ -103,7 +103,7 @@ class Node : BaseNode
 		foreach (inout Node c; original.children)
 		{	// Scene and BaseNode are never children
 			// Is there a better way to do this?
-			switch (c.getType())
+			switch (c.classinfo.name)
 			{	case "yage.node.node.Node": new Node(this, cast(Node)c); break;
 				case "yage.node.camera.CameraNode": new CameraNode(this, cast(CameraNode)c); break;
 				case "yage.node.graph.GraphNode": new typeof(c)(this, cast(GraphNode)c); break;

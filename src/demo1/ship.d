@@ -77,7 +77,7 @@ class Ship : GameObject
 			SpriteNode puff = new SpriteNode(ship.getScene());
 			puff.setMaterial(Resource.material("fx/smoke.xml"));
 			puff.setLifetime(1);
-			puff.scale = Vec3f(.4);
+			puff.setScale(Vec3f(.4));
 			//puff.setVelocity(vel);
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 

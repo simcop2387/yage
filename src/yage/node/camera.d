@@ -294,7 +294,7 @@ class CameraNode : Node
 	// Ditto
 	protected void addNodesToRender(Node node)
 	{
-		if (node.visible)
+		if (node.getVisible())
 		{	node.setOnscreen(true);
 
 			float r = -node.getRadius();
