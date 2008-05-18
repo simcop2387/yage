@@ -30,11 +30,13 @@ abstract class GameObject : Node
 
 class Asteroid : GameObject
 {
+	ModelNode rock;
+	
 	float radius; // cached
 
 	this (BaseNode parent)
 	{	super(parent);
-		ModelNode rock = new ModelNode(this);
+		rock = new ModelNode(this);
 		rock.setModel(Resource.model("space/asteroid1.ms3d"));
 	}
 
@@ -44,7 +46,7 @@ class Asteroid : GameObject
 
 	void setMass(float mass)
 	{	this.mass = mass;
-		children[0].setScale(Vec3f(pow(mass, .33333)/2));
+		rock.setScale(Vec3f(pow(mass, .33333)/2));
 		radius = pow(mass, .3333)*.75*4;
 	}
 }

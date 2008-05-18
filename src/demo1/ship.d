@@ -71,19 +71,30 @@ class Ship : GameObject
 		if (Input.keydown[SDLK_UP] || Input.keydown[SDLK_w])
 		{
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
-			Vec3f vel = Vec3f(0, 0, -.8).rotate(pitch.getAbsoluteRotation()).scale(getVelocity().length());
 
 			// Engine smoke
 			SpriteNode puff = new SpriteNode(ship.getScene());
 			puff.setMaterial(Resource.material("fx/smoke.xml"));
-			puff.setLifetime(1);
+			puff.setLifetime(5);
 			puff.setScale(Vec3f(.4));
-			//puff.setVelocity(vel);
+			//puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
+			
+			void fade(BaseNode self)
+			{	SpriteNode node = cast(SpriteNode)self;
+				node.setColor(1, 1, 1, node.getLifetime()/5);
+				float scale = std.math.sqrt(5.0f)-std.math.sqrt(node.getLifetime()) + .4;
+				node.setScale(scale);
+				node.setVelocity(node.getVelocity().scale(max(1-delta*ldamp*2, 0.0f)));
+			}
+			puff.onUpdate(&fade);
 
 			puff = new SpriteNode(ship.getScene(), puff);
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-
+			
+			
+			
+			
 			sound.play();
 		}
 		else

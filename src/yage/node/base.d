@@ -24,8 +24,7 @@ abstract class BaseNode
 	// These are public for easy internal access.
 	Scene		scene;			// The Scene that this node belongs to.
 	BaseNode	parent;
-	Node[]		children;
-	int 		index = -1;		// index of this node in parent array
+	Node[Node]	children;	
 
 	protected void delegate(BaseNode self) on_update = null;	// called on update
 	
@@ -48,15 +47,8 @@ abstract class BaseNode
 	}
 
 	/// Get an array of this Node's children
-	Node[] getChildren()
+	Node[Node] getChildren()
 	{	return children;
-	}
-
-	/**
-	 * Get the index of this Node in its parent's array.
-	 * Returns -1 if this node is a Scene.*/
-	int getIndex()
-	{	return index;
 	}
 
 	/// Return this Node's parent.
@@ -136,9 +128,7 @@ abstract class BaseNode
 	 * Update the positions and rotations of this Node and all children by delta seconds.
 	 */ 
 	void update(float delta)
-	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-	
-		// Cache the current relative and absolute position/rotation for rendering.
+	{	// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.
 		cache[scene.transform_write].transform = transform;
 		cache[scene.transform_write].transform_abs = getAbsoluteTransform();
@@ -147,9 +137,7 @@ abstract class BaseNode
 		if (on_update !is null)
 			on_update(this);
 
-		// Iterate in reverse to ensure we hit all of them, since the last item
-		// is moved over the current item when removing from an array.
-		foreach_reverse(Node c; children)
+		foreach(Node c; children)
 			c.update(delta);
 	}
 	
@@ -173,8 +161,6 @@ abstract class BaseNode
 		// Errors occur here
 		// could this function be called by two different threads on the same Node?
 		// and then the path gets messed up?
-		debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
 		BaseNode path[16384] = void; // surely no one will have a scene graph deeper than this!
 		BaseNode node = this;
 

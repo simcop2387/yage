@@ -74,7 +74,7 @@ class LightNode : Node
 	{	Scene old = scene;
 		super.setParent(parent);
 		if (old !is scene)
-		{	if ((old !is null) && (index != -1))
+		{	if ((old !is null))
 				old.removeLight(light_index);
 			scene.addLight(this);
 		}

@@ -69,8 +69,7 @@ class Node : BaseNode
 
 	/// Construct this Node as a child of parent.
 	this(BaseNode parent)
-	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-		visible = false;
+	{	visible = false;
 		scale = Vec3f(1);
 		color = Color("white");
 		setParent(parent);
@@ -82,14 +81,13 @@ class Node : BaseNode
 	 * parent = This Node will be a child of parent.
 	 * original = This Node will be an exact copy of original.*/
 	this(BaseNode parent, Node original)
-	{
-		debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-		this(parent);
+	{	this(parent);
 
 		visible = original.visible;
 		scale = original.scale;
 		color = original.color;
 		lifetime = original.lifetime;
+		on_update = original.on_update;
 
 		// From BaseNode
 		transform = original.transform;
@@ -177,14 +175,9 @@ class Node : BaseNode
 
 	/// Remove this Node.  This function should be used instead of delete.
 	void remove()
-	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
-		if (index != -1)
-		{	yage.core.all.remove(parent.children, index, false);
-			if (index < parent.children.length)
-				parent.children[index].index = index;
-			index = -1; // so remove can't be called twice.
-		}
+	{	if (parent && this in parent.children)
+			parent.children.remove(this);
+		
 		// this needs to happen because some children (like lights) may need to do more in their remove() function.
 		foreach(Node c; children)
 			c.remove();
@@ -197,16 +190,12 @@ class Node : BaseNode
 	Node setParent(BaseNode _parent)
 	in { assert(_parent !is null);
 	}body
-	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
-		if (index!=-1)
-		{	yage.core.array.remove(children, index, false);
-			if (index < parent.children.length) // if not removed from the end.
-				parent.children[index].index = index; // update external index.
-		}// Add to new parent
+	{	if (parent && this in parent.children)
+			parent.children.remove(this);
+		
+		// Add to new parent
 		parent = _parent;
-		parent.children ~= this;
-		index = parent.children.length-1;
+		parent.children[this] = this;
 		scene = parent.scene;
 		setTransformDirty();
 		return this;
@@ -218,9 +207,7 @@ class Node : BaseNode
 	 * This function is called automatically as a Scene's update() function recurses through Nodes.
 	 * It normally doesn't need to be called manually.*/
 	void update(float delta)
-	{	debug scope( failure ) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
-		lifetime-= delta;
+	{	lifetime-= delta;
 
 		// Move by linear velocity if not zero.
 		if (linear_velocity.length2() != 0)
@@ -247,8 +234,7 @@ class Node : BaseNode
 	 * on the Node's center.  Need to test to see if this is even broken.
 	 * Also perhaps use axis sorting for faster calculations. */
 	void enableLights(ubyte number=8)
-	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
+	{	
 		if (number>Device.getLimit(DEVICE_MAX_LIGHTS))
 			number = Device.getLimit(DEVICE_MAX_LIGHTS);
 
