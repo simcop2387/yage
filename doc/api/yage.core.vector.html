@@ -93,7 +93,7 @@ Eric Poggel
 <dt><span class="decl">struct 
 <span class="currsymbol">Vec</span>
 <script type="text/javascript">explorer.outline.addDecl('Vec');</script>
-(T,int K);
+(int S,T);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -105,7 +105,7 @@ Eric Poggel
  elements of vector's of size less than or equal to four.
 <br><br>
 <b>Example:</b><br>
-<pre class="d_code"> <b>Vec</b>!(<font color=blue>real</font>, 4) a; <font color=green>// a is a four-component real vector.
+<pre class="d_code"> <b>Vec</b>!(4, <font color=blue>real</font>) a; <font color=green>// a is a four-component real vector.
 </font></pre>
 <br><br>
 
@@ -113,7 +113,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VTK 
+<dt><span class="decl">VST 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 ();
@@ -126,7 +126,7 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VTK 
+<dt><span class="decl">VST 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (T <span class="funcparam">s</span>);
@@ -139,10 +139,10 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VTK 
+<dt><span class="decl">VST 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
-(T[K] <span class="funcparam">s</span>...);
+(T[S] <span class="funcparam">s</span>...);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -152,23 +152,23 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VTK 
+<dt><span class="decl">VST 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (T[] <span class="funcparam">s</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Create a new vector with the values of <span class="funcparam">s</span>; <span class="funcparam">s</span> must be at least of length K.
+<dd>Create a new vector with the values of <span class="funcparam">s</span>; <span class="funcparam">s</span> must be at least of length S.
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VTK 
+<dt><span class="decl">VST 
 <span class="currsymbol">add</span>
 <script type="text/javascript">explorer.outline.addDecl('add');</script>
-(VTK <span class="funcparam">s</span>);
+(VST <span class="funcparam">s</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -179,7 +179,7 @@ Eric Poggel
 <dt><span class="decl">float 
 <span class="currsymbol">angle</span>
 <script type="text/javascript">explorer.outline.addDecl('angle');</script>
-(VTK <span class="funcparam">s</span>);
+(VST <span class="funcparam">s</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -189,21 +189,23 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VTK 
+<dt><span class="decl">VST 
 <span class="currsymbol">clamp</span>
 <script type="text/javascript">explorer.outline.addDecl('clamp');</script>
 (T <span class="funcparam">min</span>, T <span class="funcparam">max</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Clamp all values between <span class="funcparam">min</span> and <span class="funcparam">max</span>.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
 <span class="currsymbol">dot</span>
 <script type="text/javascript">explorer.outline.addDecl('dot');</script>
-(VTK <span class="funcparam">s</span>);
+(VST <span class="funcparam">s</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -265,10 +267,10 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VTK 
+<dt><span class="decl">VST 
 <span class="currsymbol">projection</span>
 <script type="text/javascript">explorer.outline.addDecl('projection');</script>
-(VTK <span class="funcparam">s</span>);
+(VST <span class="funcparam">s</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -278,14 +280,25 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VTK 
+<dt><span class="decl">T* 
+<span class="currsymbol">ptr</span>
+<script type="text/javascript">explorer.outline.addDecl('ptr');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">VST 
 <span class="currsymbol">scale</span>
 <script type="text/javascript">explorer.outline.addDecl('scale');</script>
 (float <span class="funcparam">s</span>);
-<br>VTK 
+<br>VST 
 <span class="currsymbol">scale</span>
 <script type="text/javascript">explorer.outline.addDecl('scale');</script>
-(VTK <span class="funcparam">s</span>);
+(VST <span class="funcparam">s</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -302,11 +315,11 @@ Eric Poggel
 <br>void 
 <span class="currsymbol">set</span>
 <script type="text/javascript">explorer.outline.addDecl('set');</script>
-(VTK <span class="funcparam">s</span>);
+(VST <span class="funcparam">s</span>);
 <br>void 
 <span class="currsymbol">set</span>
 <script type="text/javascript">explorer.outline.addDecl('set');</script>
-(T[K] <span class="funcparam">s</span>...);
+(T[S] <span class="funcparam">s</span>...);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -417,8 +430,8 @@ Eric Poggel
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">__unittest12</span>
-<script type="text/javascript">explorer.outline.addDecl('__unittest12');</script>
+<span class="currsymbol">__unittest13</span>
+<script type="text/javascript">explorer.outline.addDecl('__unittest13');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -1092,7 +1105,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 17 17:35:21 2008
+		on Sun May 25 15:02:03 2008
 
 	</div>
 	
@@ -1102,6 +1115,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.core.all");
 
 	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
 

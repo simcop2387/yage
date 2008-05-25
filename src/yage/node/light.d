@@ -32,9 +32,8 @@ import yage.node.camera: CameraNode;
  * (1, .5, 0, 0) is orange, since it is 100% red and 50% green.*/
 class LightNode : Node
 {
-	protected float	quad_attenuation	= 1.52e-5;	// (1/256)^2, radius of 256.
+	protected float	quad_attenuation	= 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
  	protected int type 			= LIGHT_POINT;
-	protected int light_index	= -1;
 
 	protected Color	ambient;			// The RGBA ambient color of the light, defaults to black.
 	protected Color	diffuse;			// The RGBA diffuse color of the light, defaults to 100% white.
@@ -42,6 +41,7 @@ class LightNode : Node
 	protected float	spot_angle = 45.0;	// If the light type is SPOT, this sets the angle of the cone of light emitted.
 	protected float	spot_exponent = 0;	// If the light type is SPOT, this sets the fadeoff of the light.
 
+	package float intensity;			// Used internally and temporarily to sort lights by intensity for each node.
 
 	/**
 	 * Construct this Node as the child of parent.*/
@@ -75,7 +75,7 @@ class LightNode : Node
 		super.setParent(parent);
 		if (old !is scene)
 		{	if ((old !is null))
-				old.removeLight(light_index);
+				old.removeLight(this);
 			scene.addLight(this);
 		}
 		return this;
@@ -83,74 +83,63 @@ class LightNode : Node
 
 	/// Overridden to remove the light from the Scene's arary of lights
 	void remove()
-	{	
-		scene.removeLight(light_index);
+	{	scene.removeLight(this);
 		super.remove();
 	}
 
-	/// Get the ambient color of the light.
+	/// Get / set the ambient color of the light.
 	Color getAmbient()
 	{	return ambient;
 	}
-	/// Set the ambient color of the light.
-	void setAmbient(Color ambient)
+	void setAmbient(Color ambient) /// Ditto
 	{	this.ambient = ambient;
 	}
 
-
-	/// Get the diffuse color of the light.
+	/// Get /set the diffuse color of the light.
 	Color getDiffuse()
 	{	return diffuse;
 	}
-	/// Set the diffuse color of the light.
-	void setDiffuse(Color diffuse)
+	void setDiffuse(Color diffuse) /// Ditto
 	{	this.diffuse = diffuse;
 	}
 
 
-	/// Get the specular color of the light.
+	/// Get / set the specular color of the light.
 	Color getSpecular()
 	{	return specular;
 	}
-	/// Set the specular color of the light.
-	void setSpecular(Color specular)
+	void setSpecular(Color specular) /// Ditto
 	{	this.specular = specular;
 	}
 
 
-	/// Get the spotlight angle of the light, in radians.
+	/**
+	 * Get/ set the spotlight angle of the light, in radians.  If the light type is a
+	 * spotlight, this is the angle of the light cone. */
 	float getSpotAngle()
 	{	return spot_angle*PI/180;
 	}
-	/**
-	 * Set the spotlight angle of the light, in radians.  If the light type is a
-	 * spotlight, this is the angle of the light cone. */
-	void setSpotAngle(float radians)
+	void setSpotAngle(float radians) /// Ditto
 	{	spot_angle = radians*_180_PI;
 	}
 
-
-	/// Get the spotlight exponent of the light.
+	/**
+	 * Set the spotlight exponent of the light.  If the light type is a
+	 * spotlight, this is how focussed the light is.  Higher exponents are more focussed.*/
 	float getSpotExponent()
 	{	return spot_exponent;
 	}
-	/**
-	 * Set the spotlight exponent of the light.  If the light type is a
-	 * spotlight, this is how focussed the light is.  Higher exponents are
-	 * more focussed.*/
-	void setSpotExponent(float exponent)
+	void setSpotExponent(float exponent) /// Ditto
 	{	spot_exponent = exponent;
 	}
 
 
-	/** Get the type of the light.
+	/** Get / set the type of the light.
 	 *  0 for directional, 1 for point, or 2 for spot. */
 	ubyte getLightType()
 	{	return type;
 	}
-	/** Set the type of the light.
-	 *  0 for directional, 1 for point, or 2 for spot. */
-	void setLightType(int type)
+	void setLightType(int type) /// Ditto
 	{	this.type = type;
 	}
 
@@ -181,9 +170,10 @@ class LightNode : Node
 	 * Params:
 	 * point = 3D coordinates of the point to be evaluated.
 	 * margin = For spotlights, setting a margin cause this function to return brightest point inside
-	 * of that radius.  This is used internally for nodes that have a spotlight shine on
-	 * one corner of them but not at all at their center.
-	 * Returns: RGB color value in a Vec3f of floats from 0 to 1.*/
+	 * of that radius, instead of the default of a single point.  
+	 * This is used internally for nodes that have a spotlight shine on one corner of them 
+	 * but not at all at their center.
+	 * Returns: Color.*/
 	Color getBrightness(Vec3f point, float margin=0.0)
 	{
 		// Directional lights are easy, since they don't depend on which way the light points
@@ -272,7 +262,7 @@ class LightNode : Node
 	/*
 	 * Set the index of this light in its Scene's lights array.
 	 * This function is used internally by the engine and should not be called manually or exported. */
-	void setLightIndex(int index)
-	{	light_index = index;
-	}
+	//void setLightIndex(int index)
+	//{	light_index = index;
+	//}
 }

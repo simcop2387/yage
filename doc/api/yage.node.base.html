@@ -143,7 +143,7 @@ A self reference.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Node[] 
+<dt><span class="decl">Node[Node] 
 <span class="currsymbol">getChildren</span>
 <script type="text/javascript">explorer.outline.addDecl('getChildren');</script>
 ();
@@ -151,20 +151,6 @@ A self reference.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get an array of this Node's children
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">getIndex</span>
-<script type="text/javascript">explorer.outline.addDecl('getIndex');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the index of this Node in its parent's array.
- Returns -1 if this node is a Scene.
 <br><br>
 
 </dd>
@@ -305,7 +291,7 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 17 17:35:22 2008
+		on Sun May 25 15:02:03 2008
 
 	</div>
 	
@@ -315,6 +301,8 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 	explorer.packageExplorer.addModule("yage.core.all");
 
 	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
 

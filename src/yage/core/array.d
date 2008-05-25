@@ -18,6 +18,56 @@ module yage.core.array;
 
 import std.stdio;
 
+/**
+ * Add an element to an already sorted array, maintaining the same sort order. 
+ * Params:
+ *     array = The array to use.
+ *     value = Value to add.
+ *     increasing = The elements are stored in increasing order.
+ *     getKey = A function to return a key of type K for each element.
+ *     			K must be either a primitive type or a type that impelments opCmp.
+ *              Only required for arrays of classes and structs. */
+void addSorted(T)(inout T[] array, T value, bool increasing=true)
+{	addSorted(array, value, increasing, (T a) { return a; });
+}
+/// Ditto
+void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem) getKey)
+{
+	if (!array.length)
+	{	array ~= value;
+		return;		
+	}
+	
+	array.length = array.length+1;
+	K compare_value = getKey(value);	
+	
+	for (int i=0; i<array.length-1; i++)
+	{	if (increasing ? compare_value <= getKey(array[i]) : compare_value >= getKey(array[i]))
+		{	for (int j=array.length-2; j>=i; j--) // Shift all elements forward
+				array[j+1] = array[j];			
+			array[i] = value;
+			return;
+	}	}
+
+	array[length-1] = value;
+}
+unittest
+{	float[] array;
+	array.addSorted(yage.core.types.dword(std.random.rand()).f);
+	array.addSorted(yage.core.types.dword(std.random.rand()).f);
+	array.addSorted(yage.core.types.dword(std.random.rand()).f);
+	array.addSorted(yage.core.types.dword(std.random.rand()).f);
+	assert(array.sorted());	
+	array.length = 0;
+	array.addSorted(yage.core.types.dword(std.random.rand()).f, false);
+	array.addSorted(yage.core.types.dword(std.random.rand()).f, false);
+	array.addSorted(yage.core.types.dword(std.random.rand()).f, false);
+	array.addSorted(yage.core.types.dword(std.random.rand()).f, false);
+	assert(array.sorted(false));
+}
+
+
+
 /// Return the maximum value of an array.
 T amax(T)(T[] array)
 {	T m = array[0];
@@ -37,23 +87,24 @@ T amin(T)(T[] array)
 }
 
 /**
- * Is the array ordered?
+ * Is the array sorted?
  * Params:
  * increasing = Check for ordering by small to big.
- * getKey = a function to get a key. 
+ * getKey = A function to return a key of type K for each element.
+ *          Only required for arrays of classes and structs.
  * Example:
  * --------------------------------
  * Timer[] array;
  * // ... fill array with new Timer() ...
- * array.ordered(true, (Timer a) { return a.get(); }); // should return true
+ * array.sorted(true, (Timer a) { return a.get(); }); // should return true
  * -------------------------------- 
  */ 
-bool ordered(T)(T[] array, bool increasing=true)
-{	return ordered(array, increasing, (T a) { return a; });
+bool sorted(T)(T[] array, bool increasing=true)
+{	return sorted(array, increasing, (T a) { return a; });
 }
 
 /// Ditto
-bool ordered(T, K)(T[] array, bool increasing=true, K delegate(T elem) getKey=null)
+bool sorted(T, K)(T[] array, bool increasing, K delegate(T elem) getKey)
 {	if (array.length <= 1)
 		return true;
 	
@@ -69,9 +120,9 @@ bool ordered(T, K)(T[] array, bool increasing=true, K delegate(T elem) getKey=nu
 	return true;
 }
 unittest
-{	assert(ordered([-1, 0, 1, 2, 2, 5]) == true);
-	assert(ordered([-1, 0, 1, 2, 1, 5]) == false);
-	assert(ordered([5, 3, 3, 3, 2, -1], false) == true);
+{	assert(sorted([-1, 0, 1, 2, 2, 5]) == true);
+	assert(sorted([-1, 0, 1, 2, 1, 5]) == false);
+	assert(sorted([5, 3, 3, 3, 2, -1], false) == true);
 }
 
 /**

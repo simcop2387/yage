@@ -140,15 +140,17 @@ int main()
 	while(1)
 	{
 		float dtime = delta.get();
+		// Cap framerate
+		//if (dtime < 1/90.0)
+		//{	std.c.time.usleep(cast(uint)1000.0);
+		//	continue;
+		//}
 		delta.reset();
-
-		//earth.getModel().getMeshes()[0].getMaterial().getLayers()[1].getTextures()[0].position.x -= dtime/1024;
 
 		Input.processInput();
 		camera.toTexture();
 		disp.render();
-		
-		
+
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)
@@ -159,10 +161,7 @@ int main()
 			frame.reset();
 			fps = 0;
 		}
-
-		// Cap framerate
-		//if (dtime < 1/60.0)
-			std.c.time.usleep(cast(uint)(1000));
+		
 		scene.swapTransformRead();
 	}
 

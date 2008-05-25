@@ -222,21 +222,19 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(Vec3f <span class="funcparam">scale</span>);
-<br>void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">scale</span>);
+<span class="currsymbol">scale</span>
+<script type="text/javascript">explorer.outline.addDecl('scale');</script>
+(Vec3f 
+<span class="currsymbol">scale</span>
+<script type="text/javascript">explorer.outline.addDecl('scale');</script>
+);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Overridden to cache the radius if changed by the scale.
+<dd>Overridden to cache the radius if changed by the 
+<span class="currsymbol">scale</span>
+<script type="text/javascript">explorer.outline.addDecl('scale');</script>
+.
 <br><br>
 
 </dd>
@@ -245,7 +243,7 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">setTextureFunction</span>
 <script type="text/javascript">explorer.outline.addDecl('setTextureFunction');</script>
-(Vec!(float,2) delegate(float r, float s) <span class="funcparam">texfunc</span>);
+(Vec!(2,float) delegate(float r, float s) <span class="funcparam">texfunc</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -316,7 +314,7 @@ useful for a cylinder, for example.
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 17 17:35:22 2008
+		on Sun May 25 15:02:03 2008
 
 	</div>
 	
@@ -326,6 +324,8 @@ useful for a cylinder, for example.
 	explorer.packageExplorer.addModule("yage.core.all");
 
 	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
 

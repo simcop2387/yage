@@ -100,6 +100,7 @@ template MoveableNode()
 	}
 	void setPosition(Vec3f position)
 	{	transform.v[12..15] = position.v[0..3];
+		setTransformDirty();
 	}
 	
 	/**

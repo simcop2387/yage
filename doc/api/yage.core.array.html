@@ -104,6 +104,47 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">addSorted</span>
+<script type="text/javascript">explorer.outline.addDecl('addSorted');</script>
+(T)(ref T[] <span class="funcparam">array</span>, T <span class="funcparam">value</span>, bool <span class="funcparam">increasing</span> = true);
+<br>void 
+<span class="currsymbol">addSorted</span>
+<script type="text/javascript">explorer.outline.addDecl('addSorted');</script>
+(T,K)(ref T[] <span class="funcparam">array</span>, T <span class="funcparam">value</span>, bool <span class="funcparam">increasing</span>, K delegate(T elem) <span class="funcparam">getKey</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Add an element to an already sorted array, maintaining the same sort order.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">array</td>
+
+               
+<td>The array to use.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">value</td>
+
+               
+<td>Value to add.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">increasing</td>
+
+               
+<td>The elements are stored in increasing order.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">getKey</td>
+
+               
+<td>A function to return a key of type K for each element.
+     			K must be either a primitive type or a type that impelments opCmp.
+              Only required for arrays of classes and structs. </td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">T 
 <span class="currsymbol">amax</span>
 <script type="text/javascript">explorer.outline.addDecl('amax');</script>
@@ -131,19 +172,19 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">bool 
-<span class="currsymbol">ordered</span>
-<script type="text/javascript">explorer.outline.addDecl('ordered');</script>
+<span class="currsymbol">sorted</span>
+<script type="text/javascript">explorer.outline.addDecl('sorted');</script>
 (T)(T[] <span class="funcparam">array</span>, bool <span class="funcparam">increasing</span> = true);
 <br>bool 
-<span class="currsymbol">ordered</span>
-<script type="text/javascript">explorer.outline.addDecl('ordered');</script>
-(T,K)(T[] <span class="funcparam">array</span>, bool <span class="funcparam">increasing</span> = true, K delegate(T elem) <span class="funcparam">getKey</span> = null);
+<span class="currsymbol">sorted</span>
+<script type="text/javascript">explorer.outline.addDecl('sorted');</script>
+(T,K)(T[] <span class="funcparam">array</span>, bool <span class="funcparam">increasing</span>, K delegate(T elem) <span class="funcparam">getKey</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Is the array 
-<span class="currsymbol">ordered</span>
-<script type="text/javascript">explorer.outline.addDecl('ordered');</script>
+<span class="currsymbol">sorted</span>
+<script type="text/javascript">explorer.outline.addDecl('sorted');</script>
 ?
 <br><br>
 <b>Params:</b><br>
@@ -156,12 +197,13 @@ Eric Poggel
 <td nowrap valign="top" style="padding-right: 8px">getKey</td>
 
                
-<td>a function to get a key.</td></tr>
+<td>A function to return a key of type K for each element.
+          Only required for arrays of classes and structs.</td></tr>
 </table><br>
 <b>Example:</b><br>
 <pre class="d_code"> Timer[] array;
  <font color=green>// ... fill array with new Timer() ...
-</font> array.<b>ordered</b>(<font color=blue>true</font>, (Timer a) { <font color=blue>return</font> a.get(); }); <font color=green>// should return true
+</font> array.<b>sorted</b>(<font color=blue>true</font>, (Timer a) { <font color=blue>return</font> a.get(); }); <font color=green>// should return true
 </font></pre>
  
 <br><br>
@@ -287,7 +329,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 17 17:35:21 2008
+		on Sun May 25 15:02:03 2008
 
 	</div>
 	
@@ -297,6 +339,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.core.all");
 
 	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
 

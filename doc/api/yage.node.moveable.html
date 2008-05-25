@@ -108,6 +108,26 @@ yage.node.Node
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">transformation</span>
+<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
+(Matrix <span class="funcparam">t</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Move and rotate by the 
+<span class="currsymbol">transformation</span>
+<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
+ Matrix.
+ In other words, apply <span class="funcparam">t</span> as a 
+<span class="currsymbol">transformation</span>
+<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
+ Matrix. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Matrix* 
 <span class="currsymbol">getTransformPtr</span>
 <script type="text/javascript">explorer.outline.addDecl('getTransformPtr');</script>
@@ -138,6 +158,10 @@ yage.node.Node
 <span class="currsymbol">getTransform</span>
 <script type="text/javascript">explorer.outline.addDecl('getTransform');</script>
 (bool <span class="funcparam">cached</span> = false);
+<br>void 
+<span class="currsymbol">setTransform</span>
+<script type="text/javascript">explorer.outline.addDecl('setTransform');</script>
+(Matrix <span class="funcparam">transform</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -184,7 +208,7 @@ yage.node.Node
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the position of this Node relative to its parent's location.
+<dd>Get / set the position of this Node relative to its parent's location.
  Note that changing the values of the return vector will not affect the Node's position. 
 <br><br>
 
@@ -209,6 +233,10 @@ yage.node.Node
 <span class="currsymbol">getRotation</span>
 <script type="text/javascript">explorer.outline.addDecl('getRotation');</script>
 ();
+<br>void 
+<span class="currsymbol">setRotation</span>
+<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
+(Vec3f <span class="funcparam">axis</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -234,148 +262,17 @@ yage.node.Node
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">setTransform</span>
-<script type="text/javascript">explorer.outline.addDecl('setTransform');</script>
-(Matrix <span class="funcparam">transform</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set this Node's relative transformation Matrix.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setPosition</span>
-<script type="text/javascript">explorer.outline.addDecl('setPosition');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">setPosition</span>
-<script type="text/javascript">explorer.outline.addDecl('setPosition');</script>
-(Vec3f <span class="funcparam">position</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the position of this node relative to its parent's position and rotation.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setRotation</span>
-<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">setRotation</span>
-<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the rotation of this Node relative to its parent's rotation, using an axis angle.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">transformation</span>
-<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
-(Matrix <span class="funcparam">t</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Move and rotate by the 
-<span class="currsymbol">transformation</span>
-<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
- Matrix.
- In other words, apply <span class="funcparam">t</span> as a 
-<span class="currsymbol">transformation</span>
-<script type="text/javascript">explorer.outline.addDecl('transformation');</script>
- Matrix. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">move</span>
-<script type="text/javascript">explorer.outline.addDecl('move');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">move</span>
-<script type="text/javascript">explorer.outline.addDecl('move');</script>
-(Vec3f <span class="funcparam">distance</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Move this Node relative to its parent.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">moveRelative</span>
-<script type="text/javascript">explorer.outline.addDecl('moveRelative');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">moveRelative</span>
-<script type="text/javascript">explorer.outline.addDecl('moveRelative');</script>
-(Vec3f <span class="funcparam">direction</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Move this Node relative to the direction it's pointing (relative to its rotation).
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rotate</span>
-<script type="text/javascript">explorer.outline.addDecl('rotate');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">rotate</span>
-<script type="text/javascript">explorer.outline.addDecl('rotate');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Rotate this Node relative to its current rotation axis, using an axis angle
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rotateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">rotateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Rotate this Node around the absolute worldspace axis, using an axis angle.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f 
+<span class="currsymbol">setVelocity</span>
+<script type="text/javascript">explorer.outline.addDecl('setVelocity');</script>
+(Vec3f <span class="funcparam">velocity</span>);
+<br>Vec3f 
 <span class="currsymbol">getVelocity</span>
 <script type="text/javascript">explorer.outline.addDecl('getVelocity');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the velocity of this Node relative to its parent.
+<dd>Get / set the <span class="funcparam">velocity</span> of this Node relative to its parent's linear and angular <span class="funcparam">velocity</span>.
 <br><br>
 
 </dd>
@@ -394,41 +291,10 @@ yage.node.Node
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('setVelocity');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">setVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('setVelocity');</script>
-(Vec3f <span class="funcparam">velocity</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the velocity of this Node relative to its parent's linear and angular velocity.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Vec3f 
 <span class="currsymbol">getAngularVelocity</span>
 <script type="text/javascript">explorer.outline.addDecl('getAngularVelocity');</script>
 ();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return the angular velocity axis; the Node rotates around this axis and
- the length of this is the rotations per second in radians. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setAngularVelocity</span>
-<script type="text/javascript">explorer.outline.addDecl('setAngularVelocity');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
 <br>void 
 <span class="currsymbol">setAngularVelocity</span>
 <script type="text/javascript">explorer.outline.addDecl('setAngularVelocity');</script>
@@ -436,17 +302,67 @@ yage.node.Node
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the angular velocity axis relative to this Node's current rotation.
+<dd>Get/set this Node's angular velocity relative to it's parent's rotation and angular velocity.
+ This is represented in an axis-angle vector where the direction is the axis of rotation and the
+ length is the rotation in radians. 
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">accelerate</span>
-<script type="text/javascript">explorer.outline.addDecl('accelerate');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
+<span class="currsymbol">move</span>
+<script type="text/javascript">explorer.outline.addDecl('move');</script>
+(Vec3f <span class="funcparam">distance</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Move this Node relative to its parent.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">moveRelative</span>
+<script type="text/javascript">explorer.outline.addDecl('moveRelative');</script>
+(Vec3f <span class="funcparam">direction</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Move this Node relative to the <span class="funcparam">direction</span> it's pointing (relative to its rotation).
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">rotate</span>
+<script type="text/javascript">explorer.outline.addDecl('rotate');</script>
+(Vec3f <span class="funcparam">axis</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Rotate this Node relative to its current rotation <span class="funcparam">axis</span>, using an <span class="funcparam">axis</span> angle
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">rotateAbsolute</span>
+<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
+(Vec3f <span class="funcparam">axis</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Rotate this Node around the absolute worldspace <span class="funcparam">axis</span>, using an <span class="funcparam">axis</span> angle.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
 <span class="currsymbol">accelerate</span>
 <script type="text/javascript">explorer.outline.addDecl('accelerate');</script>
 (Vec3f <span class="funcparam">v</span>);
@@ -462,10 +378,6 @@ yage.node.Node
 <dt><span class="decl">void 
 <span class="currsymbol">accelerateRelative</span>
 <script type="text/javascript">explorer.outline.addDecl('accelerateRelative');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">accelerateRelative</span>
-<script type="text/javascript">explorer.outline.addDecl('accelerateRelative');</script>
 (Vec3f <span class="funcparam">v</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -479,15 +391,11 @@ yage.node.Node
 <dt><span class="decl">void 
 <span class="currsymbol">angularAccelerate</span>
 <script type="text/javascript">explorer.outline.addDecl('angularAccelerate');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">angularAccelerate</span>
-<script type="text/javascript">explorer.outline.addDecl('angularAccelerate');</script>
 (Vec3f <span class="funcparam">axis</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Accelerate the angular velocity of the Node by this axis.
+<dd>Accelerate the angular velocity of the Node by this <span class="funcparam">axis</span>.
 <br><br>
 
 </dd>
@@ -496,15 +404,11 @@ yage.node.Node
 <dt><span class="decl">void 
 <span class="currsymbol">angularAccelerateAbsolute</span>
 <script type="text/javascript">explorer.outline.addDecl('angularAccelerateAbsolute');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">angularAccelerateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('angularAccelerateAbsolute');</script>
 (Vec3f <span class="funcparam">axis</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Accelerate the rotation of this Node, interpreting the acceleration axis
+<dd>Accelerate the rotation of this Node, interpreting the acceleration <span class="funcparam">axis</span>
  in terms of absolute worldspace coordinates. 
 <br><br>
 
@@ -528,7 +432,7 @@ yage.node.Node
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 17 17:35:22 2008
+		on Sun May 25 15:02:03 2008
 
 	</div>
 	
@@ -538,6 +442,8 @@ yage.node.Node
 	explorer.packageExplorer.addModule("yage.core.all");
 
 	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
 

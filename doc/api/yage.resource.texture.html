@@ -240,7 +240,7 @@ the TEXTURE_FILTER_* constants in yage.system.constant
 <dt><span class="decl">static Texture 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
-(GPUTexture <span class="funcparam">texture</span>, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 300, Vec!(float,2) <span class="funcparam">position</span> = zero, float <span class="funcparam">rotation</span> = cast(float)0, Vec!(float,2) <span class="funcparam">scale</span> = one);
+(GPUTexture <span class="funcparam">texture</span>, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 300, Vec!(2,float) <span class="funcparam">position</span> = zero, float <span class="funcparam">rotation</span> = cast(float)0, Vec!(2,float) <span class="funcparam">scale</span> = one);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -488,7 +488,7 @@ yage.system.constant
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 17 17:35:22 2008
+		on Sun May 25 15:02:03 2008
 
 	</div>
 	
@@ -498,6 +498,8 @@ yage.system.constant
 	explorer.packageExplorer.addModule("yage.core.all");
 
 	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
 

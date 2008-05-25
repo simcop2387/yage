@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <material>
-  <layer ambient="FFFFFF" specular="202020" specularity="64">
-  	<texture src="rocky1.jpg" name="tex_diffuse"/>
-  	<shader src="diffuse.vert" type="vertex" />
-	<shader src="diffuse-hdr.frag" type="fragment" />
-  </layer>
+	<layer ambient="FFFFFF" specular="202020" specularity="64">
+		<texture src="rocky1.jpg" name="tex_diffuse"/>
+		<shader src="diffuse.vert" type="vertex" />
+		<shader src="diffuse-hdr.frag" type="fragment" />
+	</layer>
 </material>

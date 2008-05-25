@@ -65,7 +65,7 @@ class Node : BaseNode
 	protected float lifetime = float.infinity;	// in seconds
 
 	protected LightNode[] lights;		// Lights that affect this Node
-	protected float[]     intensities;	// stores the brightness of each light on this Node.
+	//protected float[]     intensities;	// stores the brightness of each light on this Node.
 
 	/// Construct this Node as a child of parent.
 	this(BaseNode parent)
@@ -148,9 +148,8 @@ class Node : BaseNode
 	{	lifetime = seconds; 
 	}
 	
-	
-	/// Get an array of lights that were enabled in the last call to enableLights().
-LightNode[] getLights()
+	/// Get an array of lights that were enabled in the last call to enableLights().	
+	LightNode[] getLights()
 	{	return lights;
 	}
 
@@ -192,7 +191,6 @@ LightNode[] getLights()
 	{	return visible;
 	}
 	
-
 	/// Remove this Node.  This function should be used instead of delete.
 	void remove()
 	{	
@@ -223,7 +221,6 @@ LightNode[] getLights()
 		return this;
 	}
 
-
 	/*
 	 * Update the position and rotation of this node based on its velocity and angular velocity.
 	 * This function is called automatically as a Scene's update() function recurses through Nodes.
@@ -249,6 +246,7 @@ LightNode[] getLights()
 
 	/*
 	 * Enable the lights that most affect this Node.
+	 * This should only be called from the rendering thread.
 	 * All lights that affect this Node can't always be enabled, due to hardware and performance
 	 * reasons, so only the lights that affect the node the most are enabled.
 	 * This function is used internally by the engine and should not be called manually or exported.
@@ -260,51 +258,30 @@ LightNode[] getLights()
 	{	
 		if (number>Device.getLimit(DEVICE_MAX_LIGHTS))
 			number = Device.getLimit(DEVICE_MAX_LIGHTS);
-
-		LightNode[] all_lights = scene.getLights();
-		lights.length = max(cast(int)number, cast(int)all_lights.length);
-		intensities.length = max(cast(int)number, cast(int)all_lights.length);
-
-		// clear out old values
-		for (int i=0; i<lights.length; i++)
-		{	lights[i] = null;
-			intensities[i] = 0;
-		}
-
-		// Calculate the intensity of all lights on this node
-		Vec3f position;
-		position.set(getAbsoluteTransform(true));
-		for (int i=0; i<all_lights.length; i++)
-		{	LightNode l = all_lights[i];
-
-			// Add to the array of limited lights if bright enough
-			float intensity = l.getBrightness(position, getRadius()).vec3f.average();
-			intensities[i] = intensity;
-			if (intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
-			{	for (int j=0; j<number; j++)
-				{	// If first light
-					if (lights[j] is null)
-					{	lights[j] = l;
-						break;
-					}else // add to array of lights and shift others
-					{	if (intensities[j] < intensity)
-						{	// put this light at this spot in the array and shift the others
-							for (int n=number-2; n>=j; n--)
-								lights[n+1] = lights[n];
-							lights[j] = l;
-							break;
-		}	}	}	}	}
-
+		lights.length = 0;
+		
+		// Prevent add/remove from array while calculating, since this is typically called from the rendering thread.
+		synchronized (scene.lights_mutex)	
+		{		
+			LightNode[] all_lights = scene.getLights().values;
+			
+			// Calculate the intensity of all lights on this node
+			Vec3f position;
+			position.set(getAbsoluteTransform(true));
+			for (int i=0; i<all_lights.length; i++)
+			{	LightNode l = all_lights[i];
+	
+				// Add to the array of limited lights if bright enough
+				l.intensity = l.getBrightness(position, getRadius()).vec3f.average();
+				if (l.intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
+					lights.addSorted(l, false, (LightNode a) { return a.intensity; } );
+		}	}
+		
 		// Enable the apropriate lights
 		for (int i=0; i<number; i++)
 			glDisable(GL_LIGHT0+i);
-		for (int i=0; i<number; i++)
-		{	if (lights[i] !is null)
-				lights[i].apply(i);
-			else	// Make lights array just as long as it needs to be and no more.
-			{	lights.length = i;
-				break;
-		}	}
+		for (int i=0; i<min(number, lights.length); i++)
+			lights[i].apply(i);
 	}
 
 	/*

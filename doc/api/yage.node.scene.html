@@ -148,7 +148,7 @@ Each
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">LightNode[] 
+<dt><span class="decl">LightNode[LightNode] 
 <span class="currsymbol">getLights</span>
 <script type="text/javascript">explorer.outline.addDecl('getLights');</script>
 ();
@@ -165,10 +165,16 @@ Each
 <span class="currsymbol">getClearColor</span>
 <script type="text/javascript">explorer.outline.addDecl('getClearColor');</script>
 ();
+<br>void 
+<span class="currsymbol">setClearColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setClearColor');</script>
+(Color <span class="funcparam">color</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get / set the background color when no skybox is specified.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -189,10 +195,16 @@ Each
 <span class="currsymbol">getFogColor</span>
 <script type="text/javascript">explorer.outline.addDecl('getFogColor');</script>
 ();
+<br>void 
+<span class="currsymbol">setFogColor</span>
+<script type="text/javascript">explorer.outline.addDecl('setFogColor');</script>
+(Color <span class="funcparam">fog_color</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get / set the color of global scene fog, when fog is enabled.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -200,10 +212,17 @@ Each
 <span class="currsymbol">getFogDensity</span>
 <script type="text/javascript">explorer.outline.addDecl('getFogDensity');</script>
 ();
+<br>void 
+<span class="currsymbol">setFogDensity</span>
+<script type="text/javascript">explorer.outline.addDecl('setFogDensity');</script>
+(float <span class="funcparam">density</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get / set the thickness (density) of the Scene's global fog, when fog is enabled.
+ Depending on the scale of your scene, decent values range between .001 and .1.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -211,10 +230,19 @@ Each
 <span class="currsymbol">getFogEnabled</span>
 <script type="text/javascript">explorer.outline.addDecl('getFogEnabled');</script>
 ();
+<br>void 
+<span class="currsymbol">setFogEnabled</span>
+<script type="text/javascript">explorer.outline.addDecl('setFogEnabled');</script>
+(bool <span class="funcparam">enabled</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get / set whether global distance fog is enabled for this scene.
+ For best results, use no skybox and set the clear color the same as the fog color.
+ For improved performance, set the cameras' max view distance to just beyond
+ where objects become completely obscured by the fog. 
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -222,10 +250,16 @@ Each
 <span class="currsymbol">getGlobalAmbient</span>
 <script type="text/javascript">explorer.outline.addDecl('getGlobalAmbient');</script>
 ();
+<br>void 
+<span class="currsymbol">setGlobalAmbient</span>
+<script type="text/javascript">explorer.outline.addDecl('setGlobalAmbient');</script>
+(Color <span class="funcparam">ambient</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get / set the color of the scene's global ambient light.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -233,10 +267,16 @@ Each
 <span class="currsymbol">getSkybox</span>
 <script type="text/javascript">explorer.outline.addDecl('getSkybox');</script>
 ();
+<br>void 
+<span class="currsymbol">setSkybox</span>
+<script type="text/javascript">explorer.outline.addDecl('setSkybox');</script>
+(Scene <span class="funcparam">_skybox</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the Scene that is used as the skybox.
+<dd>Get / set skybox.
+ A Scene can have another heirarchy of nodes that will be
+ rendered as a skybox by any camera. 
 <br><br>
 
 </dd>
@@ -246,10 +286,16 @@ Each
 <span class="currsymbol">getSpeedOfSound</span>
 <script type="text/javascript">explorer.outline.addDecl('getSpeedOfSound');</script>
 ();
+<br>void 
+<span class="currsymbol">setSpeedOfSound</span>
+<script type="text/javascript">explorer.outline.addDecl('setSpeedOfSound');</script>
+(float <span class="funcparam">speed</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get / set the speed of sound (in game units) variable that will be passed to OpenAL.
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -270,129 +316,24 @@ Each
 <span class="currsymbol">getUpdateCount</span>
 <script type="text/javascript">explorer.outline.addDecl('getUpdateCount');</script>
 ();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the number of times the Scene has been updated since start() was called.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setClearColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setClearColor');</script>
-(Color <span class="funcparam">color</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the background <span class="funcparam">color</span> when no skybox is specified.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setFogColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setFogColor');</script>
-(Color <span class="funcparam">fog_color</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the color of fog, when fog is enabled.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setFogDensity</span>
-<script type="text/javascript">explorer.outline.addDecl('setFogDensity');</script>
-(float <span class="funcparam">density</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the thickness (<span class="funcparam">density</span>) of the Scene's global fog, when fog is enabled.
- Depending on the scale of your scene, decent values range between .001 and .1.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setFogEnabled</span>
-<script type="text/javascript">explorer.outline.addDecl('setFogEnabled');</script>
-(bool <span class="funcparam">enabled</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Enable global distance fog for this scene.
- For best results, use no skybox and set the clear color the same as the fog color.
- For improved performance, set the cameras' max view distance to just beyond
- where objects become completely obscured by the fog. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setGlobalAmbient</span>
-<script type="text/javascript">explorer.outline.addDecl('setGlobalAmbient');</script>
-(Color <span class="funcparam">ambient</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the color of the scene's global <span class="funcparam">ambient</span> light.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setSkybox</span>
-<script type="text/javascript">explorer.outline.addDecl('setSkybox');</script>
-(Scene <span class="funcparam">_skybox</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>A Scene can have another heirarchy of nodes that will be
- rendered as a skybox by any camera. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setSpeedOfSound</span>
-<script type="text/javascript">explorer.outline.addDecl('setSpeedOfSound');</script>
-(float <span class="funcparam">speed</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">speed</span> of sound variable that will be passed to OpenAL.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
+<br>void 
 <span class="currsymbol">setUpdateCount</span>
 <script type="text/javascript">explorer.outline.addDecl('setUpdateCount');</script>
 (int <span class="funcparam">count</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the target for update the number of updates.
- A number higher than the current <span class="funcparam">count</span> will cause the Updater to pause until
- enough time has passed that the update counter should be at that <span class="funcparam">count</span>.
- A number smaller than the current <span class="funcparam">count</span> will cause the updater to repeatedly
- update until the <span class="funcparam">count</span> is back to what it should be. 
+<dd>Get / set the target for update the number of updates.
+ A number higher than the current count will cause the Updater to pause until
+ enough time has passed that the update counter should be at that count.
+ A number smaller than the current count will cause the updater to repeatedly
+ update until the count is back to what it should be. 
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">synchronized void 
+<dt><span class="decl">void 
 <span class="currsymbol">start</span>
 <script type="text/javascript">explorer.outline.addDecl('start');</script>
 (float <span class="funcparam">frequency</span> = cast(float)90);
@@ -414,7 +355,7 @@ Each
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">synchronized void 
+<dt><span class="decl">void 
 <span class="currsymbol">stop</span>
 <script type="text/javascript">explorer.outline.addDecl('stop');</script>
 ();
@@ -427,7 +368,7 @@ Each
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">synchronized void 
+<dt><span class="decl">void 
 <span class="currsymbol">swapTransformRead</span>
 <script type="text/javascript">explorer.outline.addDecl('swapTransformRead');</script>
 ();
@@ -441,7 +382,7 @@ Each
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">synchronized void 
+<dt><span class="decl">void 
 <span class="currsymbol">swapTransformWrite</span>
 <script type="text/javascript">explorer.outline.addDecl('swapTransformWrite');</script>
 ();
@@ -500,7 +441,7 @@ Each
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat May 17 17:35:22 2008
+		on Sun May 25 15:02:03 2008
 
 	</div>
 	
@@ -510,6 +451,8 @@ Each
 	explorer.packageExplorer.addModule("yage.core.all");
 
 	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
 

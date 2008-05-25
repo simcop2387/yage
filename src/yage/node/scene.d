@@ -38,7 +38,7 @@ import yage.node.base;
 class Scene : BaseNode
 {
 	protected Scene skybox;
-	protected LightNode[] lights;
+	protected LightNode[LightNode] lights;
 
 	protected Timer delta; 					// time since the last time this Scene was updated.
 	protected float delta_time;
@@ -49,7 +49,8 @@ class Scene : BaseNode
 	protected bool  fog_enabled = false;
 	protected float speed_of_sound = 343;	// 343m/s is the speed of sound in air at sea level.
 	
-	protected Object transform_mutex;		// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
+	package Object transform_mutex;		// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
+	package Object lights_mutex;
 
 	protected long timestamp[3];
 	package int transform_read=0, transform_write=1;
@@ -64,9 +65,12 @@ class Scene : BaseNode
 		background = Color("black");	// OpenGL default clear color
 		fog_color = Color("gray");
 		repeater = new Repeater(&update);
+		
 		transform_mutex = new Object;
+		lights_mutex = new Object;
 	}
 
+	/// Destroctor, stops the Scene's thread.
 	~this()
 	{	try { // since order of destruction is unpredictable.
 			repeater.stop();
@@ -90,13 +94,16 @@ class Scene : BaseNode
 
 
 	/// Get an array that contains all lights that are children of this Scene.
-	LightNode[] getLights()
+	LightNode[LightNode] getLights()
 	{	return lights;
 	}
 
-	///
+	/// Get / set the background color when no skybox is specified.
 	Color getClearColor()
 	{	return background;
+	}	
+	void setClearColor(Color color) /// Ditto
+	{	this.background = background;
 	}
 
 	/// Return the amount of time since the last time update() was called for this Scene.
@@ -104,34 +111,62 @@ class Scene : BaseNode
 	{	return delta_time;
 	}
 
-	///
+	/// Get / set the color of global scene fog, when fog is enabled.
 	Color getFogColor()
 	{	return fog_color;
+	}	
+	void setFogColor(Color fog_color) /// Ditto
+	{	this.fog_color = fog_color;
 	}
-
-	///
+	
+	/**
+	 * Get / set the thickness (density) of the Scene's global fog, when fog is enabled.
+	 * Depending on the scale of your scene, decent values range between .001 and .1.*/
 	float getFogDensity()
 	{	return fog_density;
 	}
+	void setFogDensity(float density) /// Ditto
+	{	fog_density = density;
+	}
 
-	///
+	/**
+	 * Get / set whether global distance fog is enabled for this scene.
+	 * For best results, use no skybox and set the clear color the same as the fog color.
+	 * For improved performance, set the cameras' max view distance to just beyond
+	 * where objects become completely obscured by the fog. */
 	bool getFogEnabled()
 	{	return fog_enabled;
 	}
-
-	///
+	void setFogEnabled(bool enabled) /// Ditto
+	{	fog_enabled = enabled;
+	}
+	
+	/// Get / set the color of the scene's global ambient light.
 	Color getGlobalAmbient()
 	{	return ambient;
+	}	
+	void setGlobalAmbient(Color ambient) /// Ditto
+	{	this.ambient = ambient;
 	}
 
-	/// Get the Scene that is used as the skybox.
+	/**
+	 * Get / set skybox.
+	 * A Scene can have another heirarchy of nodes that will be
+	 * rendered as a skybox by any camera. */
 	Scene getSkybox()
 	{	return skybox;
+	}	
+	void setSkybox(Scene _skybox) /// Ditto
+	{	skybox = _skybox;
 	}
-
-	///
+	
+	/// Get / set the speed of sound (in game units) variable that will be passed to OpenAL.
 	float getSpeedOfSound()
 	{	return speed_of_sound;
+	}	
+	void setSpeedOfSound(float speed) /// Ditto
+	{	speed_of_sound = speed;
+		alDopplerVelocity(speed/343.3);
 	}
 
 	/// Get the the number of seconds since the last time start() was called.
@@ -139,63 +174,16 @@ class Scene : BaseNode
 	{	return repeater.getStartTime();
 	}
 
-	/// Get the number of times the Scene has been updated since start() was called.
-	int getUpdateCount()
-	{	return repeater.getCallCount();
-	}
-
-
-	/// Set the background color when no skybox is specified.
-	void setClearColor(Color color)
-	{	this.background = background;
-	}
-
-	/// Set the color of fog, when fog is enabled.
-	void setFogColor(Color fog_color)
-	{	this.fog_color = fog_color;
-	}
-
 	/**
-	 * Set the thickness (density) of the Scene's global fog, when fog is enabled.
-	 * Depending on the scale of your scene, decent values range between .001 and .1.*/
-	void setFogDensity(float density)
-	{	fog_density = density;
-	}
-
-	/**
-	 * Enable global distance fog for this scene.
-	 * For best results, use no skybox and set the clear color the same as the fog color.
-	 * For improved performance, set the cameras' max view distance to just beyond
-	 * where objects become completely obscured by the fog. */
-	void setFogEnabled(bool enabled)
-	{	fog_enabled = enabled;
-	}
-
-	/// Set the color of the scene's global ambient light.
-	void setGlobalAmbient(Color ambient)
-	{	this.ambient = ambient;
-	}
-
-	/**
-	 * A Scene can have another heirarchy of nodes that will be
-	 * rendered as a skybox by any camera. */
-	void setSkybox(Scene _skybox)
-	{	skybox = _skybox;
-	}
-
-	/// Set the speed of sound variable that will be passed to OpenAL.
-	void setSpeedOfSound(float speed)
-	{	speed_of_sound = speed;
-		alDopplerVelocity(speed/343.3);
-	}
-
-	/**
-	 * Set the target for update the number of updates.
+	 * Get / set the target for update the number of updates.
 	 * A number higher than the current count will cause the Updater to pause until
 	 * enough time has passed that the update counter should be at that count.
 	 * A number smaller than the current count will cause the updater to repeatedly
 	 * update until the count is back to what it should be. */
-	void setUpdateCount(int count)
+	int getUpdateCount()
+	{	return repeater.getCallCount();
+	}
+	void setUpdateCount(int count) /// Ditto
 	{	repeater.setCallCount(count);
 	}
 
@@ -205,12 +193,12 @@ class Scene : BaseNode
 	 * gets behind, it will always attempt to catch up.
 	 * Params:
 	 * frequency = The scene will be updated this many times per second.*/
-	synchronized void start(float frequency=90)
+	void start(float frequency=90)
 	{	repeater.start(frequency);
 	}
 
 	/// Stop updating the Scene.
-	synchronized void stop(){
+	void stop(){
 		repeater.stop();
 	}
 
@@ -276,21 +264,14 @@ class Scene : BaseNode
 	 * A list of lights in the scene are mainained here only for faster lookups.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	void addLight(LightNode light)
-	{	lights ~= light;
-		light.setLightIndex(lights.length-1);
+	{	synchronized (lights_mutex) lights[light] = light;	
 	}
 
 	/*
 	 * Remove the light with the given light index.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
-	synchronized void removeLight(int light_index)
-	{	if (light_index != -1)
-		{	LightNode goodbye = lights[light_index];
-			lights.remove(light_index, false);
-			if (light_index < lights.length) // set the index of the light that was moved over the one just deleted.
-				lights[light_index].setLightIndex(light_index);
-			goodbye.setLightIndex(-1); // prevent multiple removals.
-		}
+	synchronized void removeLight(LightNode light)
+	{	synchronized (lights_mutex) lights.remove(light);
 	}
 
 }

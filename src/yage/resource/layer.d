@@ -227,7 +227,7 @@ class Layer
 		// Material
 		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.vec4f.scale(color.vec4f).v.ptr);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse.vec4f.scale(color.vec4f).v.ptr);
-		glMaterialfv(GL_FRONT, GL_SPECULAR, specular.vec4f.v.ptr);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, specular.vec4f.scale(color.vec4f).v.ptr);
 		glMaterialfv(GL_FRONT, GL_EMISSION, emissive.vec4f.scale(color.vec4f).v.ptr);
 		glMaterialfv(GL_FRONT, GL_SHININESS, &specularity);
 

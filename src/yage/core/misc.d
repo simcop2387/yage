@@ -15,12 +15,6 @@ import std.random;
 import std.string;
 import std.stdio;
 
-// Just because it's so useful
-// extern (C) void *memcpy(void *, void *, uint);
-
-
-
-
 /// Given relative path rel_path, returns an absolute path.
 char[] absPath(char[] rel_path)
 {
@@ -72,7 +66,7 @@ char[] cleanPath(char[] path)
 	return path;
 }
 
-///
+/// Probaly won't work on multicore machines.
 long getCPUCount()
 {	uint loword, hiword;
 	asm
@@ -84,7 +78,7 @@ long getCPUCount()
 }
 
 
-/// Print out the bools that make a 32-bool number
+/// Print out the bits that make a 32-bit number
 void printBits(void* a)
 {	for (int i=31; i>=0; i--)
 	{	bool r = cast(bool)(*cast(int*)a & (1<<i));
