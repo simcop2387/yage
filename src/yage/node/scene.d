@@ -48,6 +48,8 @@ class Scene : BaseNode
 	protected float fog_density = 0.1;
 	protected bool  fog_enabled = false;
 	protected float speed_of_sound = 343;	// 343m/s is the speed of sound in air at sea level.
+	
+	protected Object transform_mutex;		// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
 
 	protected long timestamp[3];
 	package int transform_read=0, transform_write=1;
@@ -62,6 +64,7 @@ class Scene : BaseNode
 		background = Color("black");	// OpenGL default clear color
 		fog_color = Color("gray");
 		repeater = new Repeater(&update);
+		transform_mutex = new Object;
 	}
 
 	~this()
@@ -214,24 +217,28 @@ class Scene : BaseNode
 	/**
 	 * Swap the transform buffer cache for each Node to the latest that's not currently
 	 * being written to.*/
-	synchronized void swapTransformRead()
+	void swapTransformRead()
 	out
 	{	assert(transform_read < 3);
 		assert(transform_read != transform_write);
 	}body
-	{	int next = 3-(transform_read+transform_write);
-		if (timestamp[next] > timestamp[transform_read])
-			transform_read = 3 - (transform_read+transform_write);
+	{	synchronized (transform_mutex)
+		{	int next = 3-(transform_read+transform_write);
+			if (timestamp[next] > timestamp[transform_read])
+				transform_read = 3 - (transform_read+transform_write);
+		}
 	}
 
 	/// Start writing to the transform buffer cache that's not currently being read.
-	synchronized void swapTransformWrite()
+	void swapTransformWrite()
 	out
 	{	assert(transform_read < 3);
 		assert(transform_read != transform_write);
 	}body
-	{	timestamp[transform_write] = getCPUCount();
-		transform_write = 3 - (transform_read+transform_write);
+	{	synchronized (transform_mutex)
+		{	timestamp[transform_write] = getCPUCount();
+			transform_write = 3 - (transform_read+transform_write);
+		}
 	}
 
 	/// Update all Nodes by the time that has passed since update() was last called.

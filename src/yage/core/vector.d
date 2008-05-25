@@ -12,28 +12,29 @@ import yage.core.parse;
 import yage.core.matrix;
 import yage.core.math;
 import yage.core.quatrn;
+
 /**
  * This is a template to create a vector of any type with any number of elements.
  * Use Vec.v[0..n] to access the vector's elements directly, or a-d to access
  * elements of vector's of size less than or equal to four.
  * Example:
  * --------------------------------
- * Vec!(real, 4) a; // a is a four-component real vector.
+ * Vec!(4, real) a; // a is a four-component real vector.
  * --------------------------------*/
-struct Vec(T, int K)
+struct Vec(int S, T)
 {
-	alias Vec!(T, K) VTK;
+	alias Vec!(S, T) VST;
 
 	union
-	{	T v[K] = 0; // same as x, y, z, etc.
-		static if(K==2)
+	{	T v[S] = 0; // same as x, y, z, etc.
+		static if(S==2)
 		{	struct { T x, y; }
 		}
-		static if(K==3)
+		static if(S==3)
 		{	struct { T x, y, z; }
 			struct { T r, g, b; }
 		}
-		static if(K==4)
+		static if(S==4)
 		{	struct { T r, g, b, a; }
 			struct { T x, y, z, w; }
 		}
@@ -45,51 +46,51 @@ struct Vec(T, int K)
 	}
 
 	/// Create a zero vector
-	static VTK opCall()
-	{	VTK res;
+	static VST opCall()
+	{	VST res;
 		return res;
 	}
 
 	/// Create a vector with all values as s.
-	static VTK opCall(T s)
-	{	VTK res;
+	static VST opCall(T s)
+	{	VST res;
 		foreach(inout T e; res.v)
 			e = s;
 		return res;
 	}
 
 	/// Create a new vector with the values s0, s1, s2, ...
-	static VTK opCall(T[K] s ...)
-	{	VTK res;
-		res.v[0..K] = s[0..K];
+	static VST opCall(T[S] s ...)
+	{	VST res;
+		res.v[0..S] = s[0..S];
 		return res;
 	}
 
-	/// Create a new vector with the values of s; s must be at least of length K.
-	static VTK opCall(T[] s)
-	{	assert(s.length>=K);
-		VTK res;
-		res.v[0..K] = s[0..K];
+	/// Create a new vector with the values of s; s must be at least of length S.
+	static VST opCall(T[] s)
+	{	assert(s.length>=S);
+		VST res;
+		res.v[0..S] = s[0..S];
 		return res;
 	}
 
 	///
-	VTK add(VTK s)
-	{	VTK res;
+	VST add(VST s)
+	{	VST res;
 		for (int i=0; i<v.length; i++)
 			res.v[i] = v[i]+s.v[i];
 		return res;
 	}
 
 	/// The _angle between this vector and s, in radians.
-	float angle(VTK s)
+	float angle(VST s)
 	{	return acos(dot(s)/(length()*s.length()));
 	}
 
-	///
-	VTK clamp(T min, T max)
-	{	VTK res;
-		for (int i=0; i<K; i++)
+	/// Clamp all values between min and max.
+	VST clamp(T min, T max)
+	{	VST res;
+		for (int i=0; i<S; i++)
 		{	if (res.v[i]<min) res.v[i] = min;
 			else if (res.v[i]>max) res.v[i] = max;
 			else res.v[i] = v[i];
@@ -99,7 +100,7 @@ struct Vec(T, int K)
 
 
 	/// Return the _dot product of this vector and s.
-	float dot(VTK s)
+	float dot(VST s)
 	{	float res=0;
 		for (int i=0; i<v.length; i++)
 			res += v[i]*s.v[i];
@@ -130,24 +131,25 @@ struct Vec(T, int K)
 	}
 
 	/// Create a new vector with the values of s; s must be at least of length 3.
-	VTK projection(VTK s)
+	VST projection(VST s)
 	{	return s.scale(dot(s)/s.length2());
 	}
 
+	///
 	T* ptr()
 	{	return v.ptr;		
 	}
 	
 	/// Scale (multiply) this vector.
-	VTK scale(float s)
-	{	VTK res = *this;
+	VST scale(float s)
+	{	VST res = *this;
 		for (int i=0; i<v.length; i++)
 			res.v[i] *= s;
 		return res;
 	}
 	/// ditto
-	VTK scale(VTK s)
-	{	VTK res = *this;
+	VST scale(VST s)
+	{	VST res = *this;
 		for (int i=0; i<v.length; i++)
 			res.v[i] *= s.v[i];
 		return res;
@@ -159,31 +161,31 @@ struct Vec(T, int K)
 			e = s;
 	}
 	/// ditto
-	void set(VTK s)
-	{	v[0..K] = s.v[0..K];
+	void set(VST s)
+	{	v[0..S] = s.v[0..S];
 	}
 
 	/// ditto
-	void set(T[K] s ...)
-	{	v[0..K] = s[0..K];
+	void set(T[S] s ...)
+	{	v[0..S] = s[0..S];
 	}
 
 	/// Return a string representation of this vector for human reading.
 	char[] toString()
 	{	char[] result = "<";
-		for (int i=0; i<K; i++)
+		for (int i=0; i<S; i++)
 			result ~= formatString("%.4f ", v[i]);
 		result ~= ">";
 		return result;
 	}
 }
 
-alias Vec!(int, 2) Vec2i;		/// A two-component int Vec
-alias Vec!(int, 3) Vec3i;		/// A three-component int Vec
-alias Vec!(int, 4) Vec4i;		/// A four-component int Vec
-alias Vec!(float, 2) Vec2f;		/// A two-component float Vec
+alias Vec!(2, int) Vec2i;		/// A two-component int Vec
+alias Vec!(3, int) Vec3i;		/// A three-component int Vec
+alias Vec!(4, int) Vec4i;		/// A four-component int Vec
+alias Vec!(2, float) Vec2f;		/// A two-component float Vec
 //alias Vec3f Vec3f;			// Defined below
-alias Vec!(float, 4) Vec4f;		/// A four-component float Vec
+alias Vec!(4, float) Vec4f;		/// A four-component float Vec
 
 /**
  * A 3D vector class.  This is defined as a struct instead of a

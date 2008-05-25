@@ -58,9 +58,7 @@ class Ship : GameObject
 	}
 
 	void update(float delta)
-	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
-		super.update(delta);
+	{	super.update(delta);
 
 		// Set the acceleration speed
 		float speed = 50*delta;
@@ -82,17 +80,14 @@ class Ship : GameObject
 			
 			void fade(BaseNode self)
 			{	SpriteNode node = cast(SpriteNode)self;
-				node.setColor(1, 1, 1, node.getLifetime()/5);
+				node.setColor(Color(1, 1, 1, node.getLifetime()/5));
 				float scale = std.math.sqrt(5.0f)-std.math.sqrt(node.getLifetime()) + .4;
 				node.setScale(scale);
-				node.setVelocity(node.getVelocity().scale(max(1-delta*ldamp*2, 0.0f)));
 			}
 			puff.onUpdate(&fade);
 
 			puff = new SpriteNode(ship.getScene(), puff);
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-			
-			
 			
 			
 			sound.play();

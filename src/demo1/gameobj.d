@@ -11,7 +11,7 @@ module demo1.gameobj;
 import std.math;
 import std.stdio;
 import yage.core.timer;
-import yage.core.types;
+import yage.core.color;
 import yage.core.vector;
 import yage.resource.resource;
 import yage.resource.model;

@@ -46,12 +46,8 @@ class Flyer
 	}
 
 	void accelerate(Vec3f acc)
-	{	accelerate(acc.x, acc.y, acc.z);
-	}
-
-	void accelerate(float x, float y, float z)
-	{	Vec3f acc = Vec3f(x, y, z).rotate(pivot.getTransform()).rotate(base.getTransform());
-		base.accelerate(acc);
+	{	Vec3f acc2 = acc.rotate(pivot.getTransform()).rotate(base.getTransform());
+		base.accelerate(acc2);
 	}
 
 	void angularAccelerate(float x, float y)
@@ -63,9 +59,6 @@ class Flyer
 	{	base.setPosition(pos);
 	}
 
-	void setPosition(float x, float y, float z)
-	{	base.setPosition(x, y, z);
-	}
 
 	void setRotation(float x, float y)
 	{	base.setRotation(Vec3f(0, x, 0));
@@ -91,13 +84,13 @@ class Flyer
 		float speed = 2000*delta;
 
 		if (Input.keydown[SDLK_w] || Input.keydown[SDLK_UP])
-			accelerate(0, 0, -speed);
+			accelerate(Vec3f(0, 0, -speed));
 		if (Input.keydown[SDLK_s] || Input.keydown[SDLK_DOWN])
-			accelerate(0, 0, speed);
+			accelerate(Vec3f(0, 0, speed));
 		if (Input.keydown[SDLK_a] || Input.keydown[SDLK_LEFT])
-			accelerate(-speed, 0, 0);
+			accelerate(Vec3f(-speed, 0, 0));
 		if (Input.keydown[SDLK_d] || Input.keydown[SDLK_RIGHT])
-			accelerate(speed, 0, 0);
+			accelerate(Vec3f(speed, 0, 0));
 
 // 		if (Input.getGrabMouse())
 // 		{	Vec2f movement = Input.getMouseDelta();

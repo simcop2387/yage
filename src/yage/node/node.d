@@ -130,19 +130,27 @@ class Node : BaseNode
 	 * Material colors of the Node are combined (multiplied) with this color.
 	 * This provides an easy way to change the color of a Node without having to modify all materials individually.
 	 * Default color is white and opaque (all 1's).*/
-	Color getColor() { return color; }
-	void setColor(Color color) { this.color = color; } /// Ditto
-	void setColor(float r, float g, float b, float a=1)	{ color = Color(r, g, b, a); }	/// Ditto
+	Color getColor() 
+	{	return color;
+	}
+	void setColor(Color color) /// Ditto
+	{	this.color = color; 
+	}	
 	
 	/**
 	 * Get / set the lifeime of a Node (in seconds).
 	 * The default value is float.infinity, but a lower number will cause the Node to be removed
 	 * from the scene graph after that amount of time, as its lifetime is decreased with every Scene update.*/	
-	float getLifetime() { return lifetime; }
-	void setLifetime(float seconds) { lifetime = seconds; } /// Ditto
-
+	float getLifetime() 
+	{	return lifetime; 
+	}
+	void setLifetime(float seconds)  /// Ditto
+	{	lifetime = seconds; 
+	}
+	
+	
 	/// Get an array of lights that were enabled in the last call to enableLights().
-	LightNode[] getLights()
+LightNode[] getLights()
 	{	return lights;
 	}
 
@@ -161,26 +169,39 @@ class Node : BaseNode
 	/**
 	 * Get / set the scale of this Node in the x, y, and z directions.
 	 * The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. */	
-	void setScale(float x, float y, float z) { scale.set(x, y, z); }
-	void setScale(Vec3f scale) { setScale(scale.x, scale.y, scale.z); } /// ditto
-	void setScale(float scale){	setScale(scale, scale, scale); } /// ditto
-	Vec3f getScale() { return scale; } /// ditto
+	void setScale(float x, float y, float z) 
+	{	scale.set(x, y, z); 
+	}
+	void setScale(Vec3f scale) /// ditto
+	{	setScale(scale.x, scale.y, scale.z); 
+	}
+	void setScale(float scale) /// ditto
+	{	setScale(scale, scale, scale); 
+	} 
+	Vec3f getScale() /// ditto
+	{	return scale; 
+	}
 
 	/** 
 	 * Gt /set whether this Node will be rendered.  This has nothing to do with frustum culling.
 	 * Setting a Node as invisible will not make its children invisible also. */
-	void setVisible(bool visible) {	this.visible = visible;	}
-	bool getVisible() { return visible; } /// ditto
+	void setVisible(bool visible) 
+	{	this.visible = visible;
+	}
+	bool getVisible()  /// ditto
+	{	return visible;
+	}
 	
 
 	/// Remove this Node.  This function should be used instead of delete.
 	void remove()
-	{	if (parent && this in parent.children)
-			parent.children.remove(this);
-		
+	{	
 		// this needs to happen because some children (like lights) may need to do more in their remove() function.
 		foreach(Node c; children)
 			c.remove();
+		
+		if (parent && this in parent.children)
+			parent.children.remove(this);
 	}
 
 	/**
@@ -190,7 +211,8 @@ class Node : BaseNode
 	Node setParent(BaseNode _parent)
 	in { assert(_parent !is null);
 	}body
-	{	if (parent && this in parent.children)
+	{			
+		if (parent && this in parent.children)
 			parent.children.remove(this);
 		
 		// Add to new parent
@@ -207,7 +229,8 @@ class Node : BaseNode
 	 * This function is called automatically as a Scene's update() function recurses through Nodes.
 	 * It normally doesn't need to be called manually.*/
 	void update(float delta)
-	{	lifetime-= delta;
+	{	
+		lifetime-= delta;
 
 		// Move by linear velocity if not zero.
 		if (linear_velocity.length2() != 0)

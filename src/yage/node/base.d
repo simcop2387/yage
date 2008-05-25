@@ -99,7 +99,9 @@ abstract class BaseNode
 	 * recurse = Print this Node's children as well. */
 	char[] toString() { return toString(false); }
 	char[] toString(bool recurse) /// Ditto
-	{	static int indent;
+	{	
+		
+		static int indent;
 		char[] pad = new char[indent*3];
 		pad[0..length] = ' ';
 
@@ -128,7 +130,8 @@ abstract class BaseNode
 	 * Update the positions and rotations of this Node and all children by delta seconds.
 	 */ 
 	void update(float delta)
-	{	// Cache the current relative and absolute position/rotation for rendering.
+	{	
+		// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.
 		cache[scene.transform_write].transform = transform;
 		cache[scene.transform_write].transform_abs = getAbsoluteTransform();

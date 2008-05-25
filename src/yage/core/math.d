@@ -22,7 +22,8 @@ public const float _180_PI = 57.2957795130823; // 180 / pi
  * numbers with an absolute difference less than or equal to fudge will always
  * compare equal.  This allows 0.00001 and 0 to be almost equal. */
 bool almostEqual(float a, float b, float fudge=0.0001)
-{	if (fabs(a-b) <= fudge)
+{	
+	if (fabs(a-b) <= fudge)
 		return true;
 
 	if (fabs(b) > fabs(a))
@@ -32,6 +33,8 @@ bool almostEqual(float a, float b, float fudge=0.0001)
 		if (fabs((a-b)/b) <= fudge)
 			return true;
 	return false;
+	
+	//return fdim(a, b) < fudge;
 }
 unittest
 {	assert(almostEqual(0, 0.0001));

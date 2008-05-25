@@ -83,7 +83,7 @@ class LightNode : Node
 
 	/// Overridden to remove the light from the Scene's arary of lights
 	void remove()
-	{	debug scope( failure ) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
+	{	
 		scene.removeLight(light_index);
 		super.remove();
 	}

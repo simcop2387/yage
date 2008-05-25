@@ -95,7 +95,7 @@ int main(){
 		}
 		
 		if(key == SDLK_c){
-			std.gc.fullCollect();  //FIX!
+			std.gc.fullCollect(); 
 			writefln("garbage collected");
 		}
 	}

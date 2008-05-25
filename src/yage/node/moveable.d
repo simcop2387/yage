@@ -31,7 +31,7 @@ template MoveableNode()
 	protected Vec3f		angular_velocity_abs;
 	protected bool		velocity_dirty=true;	// The absolute velocity vectors need to be recalculated.
 
-	// Suppose rendering and scene-graph updating are in different threads
+	// Rendering and scene-graph updates run in different threads.
 	// If the scene is rendered halfway through updating, rendering glitches may occur.
 	// Therefore, the scene-graph implements a sort of "triple buffering".
 	// Each node has three extra copies of its relative and absolute transform matrices.
@@ -43,16 +43,12 @@ template MoveableNode()
 	}
 	protected Cache cache[3];
 
-	// Incomplete
-	void lookAt(Vec3f target, Vec3f up)
-	{	Vec3f f = target.normalize();
-		up = up.normalize();
-
-		Vec3f s = f.cross(up).normalize();
-		Vec3f u = s.cross(f);
-
-		setRotation(0, 0, 0);
-		rotate(u);
+	/**
+	 * Move and rotate by the transformation Matrix.
+	 * In other words, apply t as a transformation Matrix. */
+	void transformation(Matrix t)
+	{	transform.postMultiply(t);
+		setTransformDirty();
 	}
 
 	/// Return a pointer to the transformation Matrix of this Node.  This is faster than returning a copy.
@@ -66,7 +62,7 @@ template MoveableNode()
 			calcTransform();
 		return &transform_abs;
 	}
-
+	
 	/**
 	 * Return the relative transformation Matrix of this Node.  This Matrix stores the position
 	 * and rotation relative to its parent.
@@ -78,41 +74,52 @@ template MoveableNode()
 			return cache[getScene().transform_read].transform;
 		return transform;
 	}
+	void setTransform(Matrix transform) /// Ditto
+	{	this.transform = transform;
+		setTransformDirty();
+	}
+	
 	/**
 	 * Get the absolute transformation Matrix of this Node, calculating it if necessary.
 	 * Params:
 	 * cached = Get the absolute transformation Matrix cached after the last complete scenegraph update,
 	 * instead of the current version.  This can be used to avoid working with a half-updated scenegraph.*/
 	Matrix getAbsoluteTransform(bool cached = false)
-	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
-
-		if (cached) // the transform_abs cache is never dirty
+	{	if (cached) // the transform_abs cache is never dirty
 			return cache[scene.transform_read].transform_abs;
 		if (transform_dirty)
 			calcTransform();
 		return transform_abs;
 	}
-
+	
 	/**
-	 * Get the position of this Node relative to its parent's location.
+	 * Get / set the position of this Node relative to its parent's location.
 	 * Note that changing the values of the return vector will not affect the Node's position. */
 	Vec3f getPosition()
 	{	return Vec3f(transform.v[12..15]);
 	}
+	void setPosition(Vec3f position)
+	{	transform.v[12..15] = position.v[0..3];
+	}
+	
 	/**
 	 * Get the absolute position of this Node, calculating it if necessary.
 	 * Note that changing the values of the return vector will not affect the Node's position. */
 	Vec3f getAbsolutePosition()
 	{	return Vec3f(getAbsoluteTransform().v[12..15]);
 	}
-
-
+	
 	/**
 	 * Get the rotation of this Node relative to its parent's rotation.
 	 * Note that changing the values of the return vector will not affect the Node's rotation. */
 	Vec3f getRotation()
 	{	return transform.toAxis();
 	}
+	void setRotation(Vec3f axis) /// Ditto
+	{	transform.set(axis);
+		setTransformDirty();
+	}
+	
 	/**
 	 * Get the absolute rotation of this Node, calculating it if necessary.
 	 * Note that changing the values of the return vector will not affect the Node's rotation. */
@@ -120,93 +127,11 @@ template MoveableNode()
 	{	return getAbsoluteTransform().toAxis();
 	}
 
-
-	/// Set this Node's relative transformation Matrix.
-	void setTransform(Matrix transform)
-	{	this.transform = transform;
-		setTransformDirty();
-	}
-
-
-	/// Set the position of this node relative to its parent's position and rotation.
-	void setPosition(float x, float y, float z)
-	{	transform.v[12]=x;
-		transform.v[13]=y;
-		transform.v[14]=z;
-		setTransformDirty();
-	}
-	/// Ditto
-	void setPosition(Vec3f position)
-	{	setPosition(position.x, position.y, position.z);
-	}
-
-
-	/// Set the rotation of this Node relative to its parent's rotation, using an axis angle.
-	void setRotation(float x, float y, float z)
-	{	setRotation(Vec3f(x, y, z));
-	}
-	/// Ditto
-	void setRotation(Vec3f axis)
-	{	transform.set(axis);
-		setTransformDirty();
-	}
-
-
-	/**
-	 * Move and rotate by the transformation Matrix.
-	 * In other words, apply t as a transformation Matrix. */
-	void transformation(Matrix t)
-	{	transform.postMultiply(t);
-		setTransformDirty();
-	}
-
-	/// Move this Node relative to its parent.
-	void move(float x, float y, float z)
-	{	move(Vec3f(x, y, z));
-	}
-	/// Ditto
-	void move(Vec3f distance)
-	{	transform.v[12]+=distance.x;
-		transform.v[13]+=distance.y;
-		transform.v[14]+=distance.z;
-		setTransformDirty();
-	}
-
-	/// Move this Node relative to the direction it's pointing (relative to its rotation).
-	void moveRelative(float x, float y, float z)
-	{	moveRelative(Vec3f(x, y, z));
-	}
-	/// Ditto
-	void moveRelative(Vec3f direction)
-	{	transform = transform.moveRelative(direction);
-		setTransformDirty();
-	}
-
-
-	/// Rotate this Node relative to its current rotation axis, using an axis angle
-	void rotate(float x, float y, float z)
-	{	rotate(Vec3f(x, y, z));
-	}
-	/// Ditto
-	void rotate(Vec3f axis)
-	{	transform = transform.rotate(axis);
-		setTransformDirty();
-	}
-
-
-	/// Rotate this Node around the absolute worldspace axis, using an axis angle.
-	void rotateAbsolute(float x, float y, float z)
-	{	rotateAbsolute(Vec3f(x, y, z));
-	}
-	/// Ditto
-	void rotateAbsolute(Vec3f axis)
-	{	transform = transform.rotateAbsolute(axis);
-		setTransformDirty();
-	}
-
-
-	/// Get the velocity of this Node relative to its parent.
-	Vec3f getVelocity()
+	/// Get / set the velocity of this Node relative to its parent's linear and angular velocity.
+	void setVelocity(Vec3f velocity)
+	{	linear_velocity = velocity; 
+	} 
+	Vec3f getVelocity() /// Ditto
 	{	return linear_velocity;
 	}
 
@@ -217,71 +142,77 @@ template MoveableNode()
 		return linear_velocity_abs;
 	}
 
-	/// Set the velocity of this Node relative to its parent's linear and angular velocity.
-	void setVelocity(float x, float y, float z)
-	{	linear_velocity.set(x, y, z);
-	}
-	/// Ditto
-	void setVelocity(Vec3f velocity)
-	{	linear_velocity = velocity;
-	}
-
 	/**
-	 * Return the angular velocity axis; the Node rotates around this axis and
-	 * the length of this is the rotations per second in radians. */
-	Vec3f getAngularVelocity()
+	 * Get/set this Node's angular velocity relative to it's parent's rotation and angular velocity.
+	 * This is represented in an axis-angle vector where the direction is the axis of rotation and the 
+	 * length is the rotation in radians. */
+	Vec3f getAngularVelocity() 
 	{	return angular_velocity;
+	}	
+	void setAngularVelocity(Vec3f axis) /// Ditto
+	{	angular_velocity = axis; 
+	}
+	
+	
+	
+	// Incomplete
+	// Might also consider a function to return a rotation vector needed to rotate to look at target.
+	void lookAt(Vec3f target, Vec3f up)
+	{	Vec3f f = target.normalize();
+		up = up.normalize();
+
+		Vec3f s = f.cross(up).normalize();
+		Vec3f u = s.cross(f);
+
+		setRotation(Vec3f(0, 0, 0));
+		rotate(u);
 	}
 
-	/// Set the angular velocity axis relative to this Node's current rotation.
-	void setAngularVelocity(float x, float y, float z)
-	{	angular_velocity.set(x, y, z);
+	/// Move this Node relative to its parent.
+	void move(Vec3f distance)
+	{	transform.v[12]+=distance.x;
+		transform.v[13]+=distance.y;
+		transform.v[14]+=distance.z;
+		setTransformDirty();
 	}
-	/// Ditto
-	void setAngularVelocity(Vec3f axis)
-	{	angular_velocity = axis;
+
+	/// Move this Node relative to the direction it's pointing (relative to its rotation).
+	void moveRelative(Vec3f direction) 
+	{	transform = transform.moveRelative(direction);
+		setTransformDirty();
+	}
+
+	/// Rotate this Node relative to its current rotation axis, using an axis angle
+	void rotate(Vec3f axis)
+	{	transform = transform.rotate(axis);
+		setTransformDirty();
+	}
+
+	/// Rotate this Node around the absolute worldspace axis, using an axis angle.
+	void rotateAbsolute(Vec3f axis) 
+	{	transform = transform.rotateAbsolute(axis);
+		setTransformDirty();
 	}
 
 	/// Accelerate the Node in the direction specified
-	void accelerate(float x, float y, float z)
-	{	accelerate(Vec3f(x, y, z));
-	}
-	/// Ditto
 	void accelerate(Vec3f v)
-	{	linear_velocity += v;
+	{	linear_velocity += v; 
 	}
 
 	/// Accelerate relative to the way this Node is rotated (pointed).
-	void accelerateRelative(float x, float y, float z)
-	{	accelerateRelative(Vec3f(x, y, z));
-	}
-	/// Ditto
 	void accelerateRelative(Vec3f v)
-	{	linear_velocity += v.rotate(transform);
+	{	linear_velocity += v.rotate(transform); 
 	}
 
 	/// Accelerate the angular velocity of the Node by this axis.
-	void angularAccelerate(float x, float y, float z)
-	{	angularAccelerate(Vec3f(x, y, z));
-	}
-	/// Ditto
 	void angularAccelerate(Vec3f axis)
-	{	angular_velocity += axis;
+	{	angular_velocity += axis; 
 	}
 
 	/**
 	 * Accelerate the rotation of this Node, interpreting the acceleration axis
 	 * in terms of absolute worldspace coordinates. */
-	void angularAccelerateAbsolute(float x, float y, float z)
-	{	angularAccelerateAbsolute(Vec3f(x, y, z));
-	}
-	/// Ditto
 	void angularAccelerateAbsolute(Vec3f axis)
-	{	angular_velocity += axis.rotate(getAbsoluteTransform().inverse());
+	{	angular_velocity += axis.rotate(getAbsoluteTransform().inverse()); 
 	}
-
-
-
-
-
 }

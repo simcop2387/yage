@@ -325,9 +325,9 @@ template ObjLoader(){
 			
 			//matl.getLayers[0].blend = BLEND_AVERAGE; //FIX!
 
-			matl.getLayers()[0].ambient = yage.core.types.Color(g.mtl.ambient);
-			matl.getLayers()[0].diffuse = yage.core.types.Color(g.mtl.diffuse);
-			matl.getLayers()[0].specular = yage.core.types.Color(g.mtl.specular);
+			matl.getLayers()[0].ambient = yage.core.color.Color(g.mtl.ambient);
+			matl.getLayers()[0].diffuse = yage.core.color.Color(g.mtl.diffuse);
+			matl.getLayers()[0].specular = yage.core.color.Color(g.mtl.specular);
 			matl.getLayers()[0].specularity = g.mtl.shininess;
 			
 			meshes[m].setMaterial(matl);

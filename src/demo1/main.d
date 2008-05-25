@@ -20,8 +20,7 @@ import demo1.ship;
 
 // Current program entry point.  This may change in the future.
 int main()
-{
-
+{	
   	// Init (resolution, depth, fullscreen, aa-samples)
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
@@ -52,7 +51,7 @@ int main()
 	// Ship
 	Ship ship = new Ship(scene);
 	ship.setPosition(Vec3f(0, 50, -950));
-	ship.getCameraSpot().setPosition(0, 1000, 3000);
+	ship.getCameraSpot().setPosition(Vec3f(0, 1000, 3000));
 
 	// Camera
 	CameraNode camera = new CameraNode(ship.getCameraSpot());
@@ -84,6 +83,11 @@ int main()
 	void onKeydown(Surface self, byte key){
 		if (Input.keydown[SDLK_ESCAPE])
 			Device.exit(0);
+		
+		if(key == SDLK_c){
+			std.gc.fullCollect(); 
+			writefln("garbage collected");
+		}
 	}
 	
 	disp.onMousedown = &onMousedown;	
@@ -101,7 +105,7 @@ int main()
 	LightNode l1 = new LightNode(scene);
 	l1.setDiffuse(Color(1, .85, .7));
 	l1.setLightRadius(7000);
-	l1.setPosition(0, 0, -6000);
+	l1.setPosition(Vec3f(0, 0, -6000));
 
 	// Star
 	SpriteNode star = new SpriteNode(l1);
@@ -112,7 +116,7 @@ int main()
 	auto planet = new ModelNode(scene);
 	planet.setModel("space/planet.ms3d");
 	planet.scale = Vec3f(60);
-	planet.setAngularVelocity(0, -0.01, 0);
+	planet.setAngularVelocity(Vec3f(0, -0.01, 0));
 	
 	//planet.getModel().clearAttribute("gl_Normal");
 	

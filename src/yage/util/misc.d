@@ -32,7 +32,7 @@ void createArray(Node instance, float spacing, float x, float y=1, float z=1)
 					a = new LightNode(instance.getParent(), cast(LightNode)instance);
 				if (instance.getType() == "SpriteNode")
 					a = new SpriteNode(instance.getParent(), cast(SpriteNode)instance);
-				a.setPosition(i*spacing+position[0], j*spacing+position[1], k*spacing+position[2]);
+				a.setPosition(Vec3f(i*spacing+position[0], j*spacing+position[1], k*spacing+position[2]));
 
 			}
 }
@@ -48,14 +48,15 @@ void asteroidBelt(int number, float radius, BaseNode scene)
 		float value5 = rand()/4294967296.0f;
 
 		ModelNode a = new ModelNode(scene);
-		a.setPosition(	sin(value*6.282)*radius + pow(value2*2-1, 3.0)*radius/4,
+		a.setPosition(Vec3f(
+						sin(value*6.282)*radius + pow(value2*2-1, 3.0)*radius/4,
 						pow(value3*2-1, 3.0)*radius/16,
-						cos(value*6.282)*radius + pow(value4*2-1, 3.0)*radius/4);
+						cos(value*6.282)*radius + pow(value4*2-1, 3.0)*radius/4));
 		
 		a.setModel(Resource.model("space/asteroid1.ms3d"));
 		a.scale = Vec3f(value5*value5*value5*value5*value5*value5*value5*1.1 + .2);
 		a.rotate(Vec3f(value4*12, value2*12, value3*12));
-		a.setAngularVelocity(random(-.2, .2), random(-.2, .2), random(-.2, .2));
+		a.setAngularVelocity(Vec3f(random(-.2, .2), random(-.2, .2), random(-.2, .2)));
 	}
 }
 
@@ -69,7 +70,7 @@ void asteroidField(int number, float radius, Node scene)
 		float value5 = rand()/4294967296.0f;
 
 		ModelNode a = new ModelNode(scene);
-		a.setPosition((value-.5)*radius, (value2-.5)*radius, (value3-.5)*radius);
+		a.setPosition(Vec3f((value-.5)*radius, (value2-.5)*radius, (value3-.5)*radius));
 
 		a.setModel(Resource.model("../media/planet/phobos.ms3d"));
 		a.scale = Vec3f(value5*value5*.4 + .2);

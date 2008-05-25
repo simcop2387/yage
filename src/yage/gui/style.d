@@ -3,7 +3,7 @@
  */
 module yage.gui.style;
 
-import yage.core.types;
+import yage.core.color;
 import yage.core.vector;
 import yage.resource.material;
 
