@@ -12,16 +12,16 @@
 module yage.node.all;
 
 public
-{	import yage.node.base;
+{	import yage.node.movable;
 	import yage.node.camera;
 	import yage.node.graph;
 	import yage.node.light;
 	import yage.node.model;
 	import yage.node.node;
+	import yage.node.base;
+	import yage.node.movable;
 	import yage.node.scene;
 	import yage.node.sprite;
 	import yage.node.sound;
 	import yage.node.terrain;
 }
-public import yage.node.node: Node;
-public import yage.node.camera: CameraNode;

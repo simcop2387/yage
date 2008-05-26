@@ -12,7 +12,7 @@ import std.bind;
 import yage.core.all;
 import yage.node.node;
 import yage.node.scene;
-import yage.node.moveable;
+import yage.node.movable;
 
 /**
  * Node and Scene both inherit from BaseNode and this abastract class defines
@@ -25,14 +25,35 @@ abstract class BaseNode
 	Scene		scene;			// The Scene that this node belongs to.
 	BaseNode	parent;
 	Node[Node]	children;	
+	
+	protected Matrix	transform;				// The position and rotation of this node relative to its parent
+	protected Matrix	transform_abs;			// The position and rotation of this node in worldspace coordinates
+	protected bool		transform_dirty=true;	// The absolute transformation matrix needs to be recalculated.
+
+	protected Vec3f		linear_velocity;
+	protected Vec3f		angular_velocity;
+	protected Vec3f		linear_velocity_abs;	// Store a cached version of the absolute linear velocity.
+	protected Vec3f		angular_velocity_abs;
+	protected bool		velocity_dirty=true;	// The absolute velocity vectors need to be recalculated.
+
+	// Rendering and scene-graph updates run in different threads.
+	// If the scene is rendered halfway through updating, rendering glitches may occur.
+	// Therefore, the scene-graph implements a sort of "triple buffering".
+	// Each node has three extra copies of its relative and absolute transform matrices.
+	// The renderer simply uses the copy (buffer) that isn't being updated.  A third copy
+	// exists so neither the renderer or updater need to wait on one another.
+	struct Cache
+	{	Matrix transform;
+		Matrix transform_abs;
+	}
+	protected Cache cache[3];
+
 
 	protected void delegate(BaseNode self) on_update = null;	// called on update
-	
-	mixin MoveableNode;
 
 	/// Prohibit manual deletion of Nodes.  node.remove() must be used.
 	delete(void* p)
-	{	throw new Exception("Nodes cannot be deleted.");
+	{	throw new Exception("Nodes cannot be deleted.  Use remove().");
 	}
 
 	/**
@@ -134,7 +155,9 @@ abstract class BaseNode
 		// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.
 		cache[scene.transform_write].transform = transform;
-		cache[scene.transform_write].transform_abs = getAbsoluteTransform();
+		if (transform_dirty)
+			calcTransform();
+		cache[scene.transform_write].transform_abs = transform_abs;
 
 		// Call the onUpdate() function
 		if (on_update !is null)

@@ -18,7 +18,7 @@ import yage.node.all;
 import yage.node.scene;
 import yage.node.light;
 import yage.node.base;
-import yage.node.moveable;
+import yage.node.movable;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.input;
@@ -33,11 +33,11 @@ import yage.system.input;
  * to its parent.  Rendering is done recursively from the Scene down
  * through every child node.  Likewise, updating of position and rotation
  * occurs recusively from Scene's update() method.  All Node methods that deal
- * with position or velocity are separated into yage.node.moveable to keep things
+ * with position or velocity are separated into yage.node.movable to keep things
  * tidier.
  *
  * See_Also:
- * yage.node.MoveableNode
+ * yage.node.MovableNode
  * yage.node.BaseNode
  *
  * Example:
@@ -56,7 +56,7 @@ import yage.system.input;
  *                            //to 0, 0, 0, instead of a.
  * --------------------------------
  */
-class Node : BaseNode
+class Node : MovableNode
 {
 	protected bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
 	protected bool 	visible = true;

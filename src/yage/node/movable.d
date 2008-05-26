@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.moveable;
+module yage.node.movable;
 
 import std.stdio;
 import yage.core.matrix;
@@ -19,30 +19,8 @@ import yage.core.misc;
  * See_Also:
  * yage.node.Node
  * yage.node.BaseNode */
-template MoveableNode()
+class MovableNode : BaseNode
 {
-	protected Matrix	transform;				// The position and rotation of this node relative to its parent
-	protected Matrix	transform_abs;			// The position and rotation of this node in worldspace coordinates
-	protected bool		transform_dirty=true;	// The absolute transformation matrix needs to be recalculated.
-
-	protected Vec3f		linear_velocity;
-	protected Vec3f		angular_velocity;
-	protected Vec3f		linear_velocity_abs;	// Store a cached version of the absolute linear velocity.
-	protected Vec3f		angular_velocity_abs;
-	protected bool		velocity_dirty=true;	// The absolute velocity vectors need to be recalculated.
-
-	// Rendering and scene-graph updates run in different threads.
-	// If the scene is rendered halfway through updating, rendering glitches may occur.
-	// Therefore, the scene-graph implements a sort of "triple buffering".
-	// Each node has three extra copies of its relative and absolute transform matrices.
-	// The renderer simply uses the copy (buffer) that isn't being updated.  A third copy
-	// exists so neither the renderer or updater need to wait on one another.
-	struct Cache
-	{	Matrix transform;
-		Matrix transform_abs;
-	}
-	protected Cache cache[3];
-
 	/**
 	 * Move and rotate by the transformation Matrix.
 	 * In other words, apply t as a transformation Matrix. */
