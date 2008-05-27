@@ -50,7 +50,7 @@ int main(){
 	// Ship
 	Ship ship = new Ship(scene);
 	ship.setPosition(Vec3f(0, 50, -950));
-	ship.getCameraSpot().setPosition(0, 1000, 3000);
+	ship.getCameraSpot().setPosition(Vec3f(0, 1000, 3000));
 
 	// Camera
 	CameraNode camera = new CameraNode(ship.getCameraSpot());
@@ -196,7 +196,7 @@ int main(){
 	LightNode l1 = new LightNode(scene);
 	l1.setDiffuse(Color(1, .85, .7));
 	l1.setLightRadius(7000);
-	l1.setPosition(0, 0, -6000);
+	l1.setPosition(Vec3f(0, 0, -6000));
 
 	// Star
 	SpriteNode star = new SpriteNode(l1);
@@ -207,13 +207,13 @@ int main(){
 	auto planet = new ModelNode(scene);
 	planet.setModel("space/planet.ms3d");
 	planet.scale = Vec3f(600);
-	planet.setAngularVelocity(0, -0.01, 0);
+	planet.setAngularVelocity(Vec3f(0, -0.01, 0));
 	
 	// Asteroids
 	asteroidBelt(800, 1400, planet);
 
 	// Add to the scene's update loop
-	void update(BaseNode self){
+	void update(Node self){
 		ship.getSpring().update(1/60.0f);
 	}
 	scene.onUpdate(&update);

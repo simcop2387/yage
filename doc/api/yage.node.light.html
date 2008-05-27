@@ -93,7 +93,7 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">LightNode</span>
 <script type="text/javascript">explorer.outline.addDecl('LightNode');</script>
-: yage.node.node.Node;
+: yage.node.movable.MovableNode;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -112,7 +112,7 @@ All color values are floating point in the range from 0 to 1 and in the order
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(BaseNode <span class="funcparam">parent</span>);
+<dt><span class="decl">this(Node <span class="funcparam">parent</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -122,7 +122,7 @@ All color values are floating point in the range from 0 to 1 and in the order
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(BaseNode <span class="funcparam">parent</span>, LightNode <span class="funcparam">original</span>);
+<dt><span class="decl">this(Node <span class="funcparam">parent</span>, LightNode <span class="funcparam">original</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -130,7 +130,7 @@ All color values are floating point in the range from 0 to 1 and in the order
 <br><br>
 <b>Params:</b><br>
 <table><tr>
-<td nowrap valign="top" style="padding-right: 8px">BaseNode <span class="funcparam">parent</span></td>
+<td nowrap valign="top" style="padding-right: 8px">Node <span class="funcparam">parent</span></td>
 
                
 <td>This Node will be a child of <span class="funcparam">parent</span>.</td></tr>
@@ -144,10 +144,10 @@ All color values are floating point in the range from 0 to 1 and in the order
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Node 
+<dt><span class="decl">LightNode 
 <span class="currsymbol">setParent</span>
 <script type="text/javascript">explorer.outline.addDecl('setParent');</script>
-(BaseNode <span class="funcparam">parent</span>);
+(Node <span class="funcparam">parent</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -373,7 +373,7 @@ Color.
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun May 25 15:02:03 2008
+		on Mon May 26 22:21:35 2008
 
 	</div>
 	
@@ -418,8 +418,6 @@ Color.
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.base");
-
 	explorer.packageExplorer.addModule("yage.node.camera");
 
 	explorer.packageExplorer.addModule("yage.node.graph");
@@ -428,7 +426,7 @@ Color.
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
-	explorer.packageExplorer.addModule("yage.node.moveable");
+	explorer.packageExplorer.addModule("yage.node.movable");
 
 	explorer.packageExplorer.addModule("yage.node.node");
 
@@ -439,6 +437,8 @@ Color.
 	explorer.packageExplorer.addModule("yage.node.sprite");
 
 	explorer.packageExplorer.addModule("yage.node.terrain");
+
+	explorer.packageExplorer.addModule("yage.node.visible");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

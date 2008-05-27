@@ -16,13 +16,13 @@ import yage.node.all;
 import yage.core.all;
 
 
-void createArray(Node instance, float spacing, float x, float y=1, float z=1)
+void createArray(VisibleNode instance, float spacing, float x, float y=1, float z=1)
 {
 	Vec3f position = instance.getPosition();
 	for(int i=0; i<x; i++)
 		for(int j=0; j<y; j++)
 			for(int k=0; k<z; k++)
-			{	Node a;
+			{	MovableNode a;
 
 				if (instance.getType() == "SoundNode")
 					a = new SoundNode(instance.getParent(), cast(SoundNode)instance);
@@ -38,7 +38,7 @@ void createArray(Node instance, float spacing, float x, float y=1, float z=1)
 }
 
 
-void asteroidBelt(int number, float radius, BaseNode scene)
+void asteroidBelt(int number, float radius, Node scene)
 {
 	for (int i=0; i<number; i++)
 	{	float value = rand()/4294967296.0f;
@@ -60,7 +60,7 @@ void asteroidBelt(int number, float radius, BaseNode scene)
 	}
 }
 
-void asteroidField(int number, float radius, Node scene)
+void asteroidField(int number, float radius, VisibleNode scene)
 {
 	for (int i=0; i<number; i++)
 	{	float value = rand()/4294967296.0f;
@@ -78,7 +78,7 @@ void asteroidField(int number, float radius, Node scene)
 	}
 }
 
-void asteroidPlane(int number, float radius, Node scene)
+void asteroidPlane(int number, float radius, VisibleNode scene)
 {
 	for (int i=0; i<number; i++)
 	{	float value = rand()/4294967296.0f;

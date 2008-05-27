@@ -12,8 +12,8 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.all;
 import yage.resource.material;
-import yage.node.base;
 import yage.node.node;
+import yage.node.movable;
 import yage.node.scene;
 import yage.system.device;
 import yage.system.constant;
@@ -30,7 +30,7 @@ import yage.node.camera: CameraNode;
  * All color values are floating point in the range from 0 to 1 and in the order
  * of red, green, blue and alpha.  For example,
  * (1, .5, 0, 0) is orange, since it is 100% red and 50% green.*/
-class LightNode : Node
+class LightNode : MovableNode
 {
 	protected float	quad_attenuation	= 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
  	protected int type 			= LIGHT_POINT;
@@ -45,7 +45,7 @@ class LightNode : Node
 
 	/**
 	 * Construct this Node as the child of parent.*/
-	this(BaseNode parent)
+	this(Node parent)
 	{	super(parent); // calls setParent, which adds it to the Scene's light list.
 		diffuse = Color("white");
 		specular= Color("white");
@@ -56,7 +56,7 @@ class LightNode : Node
 	 * Params:
 	 * parent = This Node will be a child of parent.
 	 * original = This Node will be an exact copy of original.*/
-	this (BaseNode parent, LightNode original)
+	this (Node parent, LightNode original)
 	{	super(parent, original);
 		ambient = original.ambient;
 		diffuse = original.diffuse;
@@ -70,7 +70,7 @@ class LightNode : Node
 	/**
 	 * Overridden from Node's setParent() to ensure that the Scene's list of lights
 	 * is updated if the Light is moved from one scene to another. */
-	Node setParent(BaseNode parent)
+	LightNode setParent(Node parent)
 	{	Scene old = scene;
 		super.setParent(parent);
 		if (old !is scene)

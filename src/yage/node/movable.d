@@ -9,18 +9,31 @@ module yage.node.movable;
 import std.stdio;
 import yage.core.matrix;
 import yage.core.vector;
-import yage.node.base;
-import yage.node.node;
 import yage.core.misc;
+import yage.node.all;
+import yage.node.scene;
+import yage.node.light;
+import yage.node.node;
+import yage.node.movable;
+
 
 /**
- * Nodes have numerous methods for changing position and velocity.
- * They are separated into this templated mixin to reduce the length of base.d and keep things better organized.
+ * This class adds numerous methods for getting and setting position, rotation, velocity, and angular velocity.
  * See_Also:
- * yage.node.Node
- * yage.node.BaseNode */
-class MovableNode : BaseNode
+ * yage.node.visible
+ * yage.node.node */
+class MovableNode : Node
 {
+	/// Construct as a child of parent.
+	this(Node parent)
+	{	super(parent);
+	}
+	
+	/// Construct as a child of parent, a copy of original and recursivly copy all children.
+	this(Node parent, MovableNode original)
+	{	super(parent, original);		
+	}
+	
 	/**
 	 * Move and rotate by the transformation Matrix.
 	 * In other words, apply t as a transformation Matrix. */
@@ -193,5 +206,23 @@ class MovableNode : BaseNode
 	 * in terms of absolute worldspace coordinates. */
 	void angularAccelerateAbsolute(Vec3f axis)
 	{	angular_velocity += axis.rotate(getAbsoluteTransform().inverse()); 
+	}
+	
+	/*
+	 * Update the position and rotation of this node based on its velocity and angular velocity.
+	 * This function is called automatically as a Scene's update() function recurses through Nodes.
+	 * It normally doesn't need to be called manually.*/
+	void update(float delta)
+	{	
+		// Move by linear velocity if not zero.
+		if (linear_velocity.length2() != 0)
+			move(linear_velocity*delta);
+
+		// Rotate if angular velocity is not zero.
+		if (angular_velocity.length2() !=0)
+			rotate(angular_velocity*delta);
+
+		// Recurse through children
+		super.update(delta);
 	}
 }

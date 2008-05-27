@@ -16,14 +16,14 @@ import yage.node.all;
 // Totally wigs out if stiffness is greater than the framerate?
 class Spring
 {
-	Node		head;
-	Node		tail;
+	MovableNode		head;
+	MovableNode		tail;
 	Vec3f		distance;
 	float		stiffness = 16; // arbitrary
 
-	this(Node head)
+	this(VisibleNode head)
 	{	this.head = head;
-		tail = new Node(head.getScene());
+		tail = new MovableNode(head.getScene());
 		distance = Vec3f(0, 2, 6);
 	}
 
@@ -43,11 +43,11 @@ class Spring
 	{	stiffness = s;
 	}
 
-	Node getHead()
+	MovableNode getHead()
 	{	return head;
 	}
 
-	Node getTail()
+	MovableNode getTail()
 	{	return tail;
 	}
 

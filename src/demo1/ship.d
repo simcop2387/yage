@@ -14,7 +14,7 @@ import demo1.gameobj;
 
 class Ship : GameObject
 {
-	Node pitch;			// attached to this node to look up and down
+	MovableNode pitch;			// attached to this node to look up and down
 	ModelNode ship;		// attached to pitch and rolls left & right
 	Spring spring;		// spring to attach camera
 	SoundNode sound;
@@ -24,13 +24,13 @@ class Ship : GameObject
 
 	float ldamp=.5, xdamp=2, ydamp=2;
 
-	synchronized this(BaseNode parent)
+	synchronized this(Node parent)
 	{
 		super(parent);
 		new Material("fx/smoke.xml");
 		new Material("fx/flare1.xml");
 
-		pitch = new Node(this);
+		pitch = new MovableNode(this);
 
 		ship = new ModelNode(pitch);
 		ship.setModel("scifi/fighter.ms3d");
@@ -49,7 +49,7 @@ class Ship : GameObject
 	{	return ship;
 	}
 
-	Node getCameraSpot()
+	MovableNode getCameraSpot()
 	{	return spring.getTail();
 	}
 
@@ -78,7 +78,7 @@ class Ship : GameObject
 			//puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 			
-			void fade(BaseNode self)
+			void fade(Node self)
 			{	SpriteNode node = cast(SpriteNode)self;
 				node.setColor(Color(1, 1, 1, node.getLifetime()/5));
 				float scale = std.math.sqrt(5.0f)-std.math.sqrt(node.getLifetime()) + .4;

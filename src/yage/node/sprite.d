@@ -8,19 +8,19 @@ module yage.node.sprite;
 
 import yage.resource.resource;
 import yage.resource.material;
-import yage.node.base;
 import yage.node.node;
+import yage.node.visible;
 
 
 /**
  * A SpriteNode is a rectangle that always faces the camera.
  * It is useful for special effects such as dust and flares. */
-class SpriteNode : Node
+class SpriteNode : VisibleNode
 {
 	protected Material material;
 
 	/// Create this Node as a child of parent.
-	this(BaseNode parent)
+	this(Node parent)
 	{	super(parent);
 		visible = true;
 	}
@@ -30,7 +30,7 @@ class SpriteNode : Node
 	 * Params:
 	 * parent = This Node will be a child of parent.
 	 * original = This Node will be an exact copy of original.*/
-	this (BaseNode parent, SpriteNode original)
+	this (Node parent, SpriteNode original)
 	{	super(parent, original);
 		material = original.material;
 	}

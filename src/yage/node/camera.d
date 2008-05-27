@@ -16,9 +16,10 @@ import yage.core.matrix;
 import yage.core.plane;
 import yage.core.vector;
 import yage.resource.texture;
+import yage.node.visible;
 import yage.node.node;
-import yage.node.base;
 import yage.node.scene;
+import yage.node.movable;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.render;
@@ -31,7 +32,7 @@ import yage.system.render;
  * this will be dropped for a more robust but less backward-compatible solution.
  * Node that two Cameras cannot render concurrently since OpenGL itself
  * isn't threadsafe.*/
-class CameraNode : Node
+class CameraNode : MovableNode
 {
 	protected:
 	uint  xres		= 0;		// special values of 0 to stretch to current display size.
@@ -56,11 +57,10 @@ class CameraNode : Node
 	/**
 	 * Construct as the child of another node and initialize
 	 * the capture Texture for rendering.*/
-	this(BaseNode _parent)
+	this(Node _parent)
 	{	super(_parent);
 		capture = new GPUTexture();
 		setResolution(xres, yres);
-		visible = false;
 	}
 
 	/**
@@ -68,7 +68,7 @@ class CameraNode : Node
 	 * Params:
 	 * parent = This Node will be a child of parent.
 	 * original = This Node will be an exact copy of original.*/
-	this (BaseNode parent, CameraNode original)
+	this (Node parent, CameraNode original)
 	{	super(parent, original);
 		xres = original.xres;
 		yres = original.yres;
@@ -121,7 +121,7 @@ class CameraNode : Node
 	 * Return the closest Node to the Camera in the Camera's Scene at the x, y
 	 * coordinates in the Camera's Texture.  This will not return any Nodes from
 	 * the Scene's skybox.  Returns null if no Node is at the position.*/
-	Node getNodeAtCoordinate(int x, int y)
+	VisibleNode getNodeAtCoordinate(int x, int y)
 	{	return null;
 	}
 
@@ -295,22 +295,24 @@ class CameraNode : Node
 	protected void addNodesToRender(Node node)
 	{
 		if (node.getVisible())
-		{	node.setOnscreen(true);
+		{	VisibleNode vnode = cast(VisibleNode)node;
+			
+			vnode.setOnscreen(true);
 
-			float r = -node.getRadius();
+			float r = -vnode.getRadius();
 			Matrix cam_abs  = getAbsoluteTransform(true);
-			Matrix node_abs = node.getAbsoluteTransform(true);
+			Matrix node_abs = vnode.getAbsoluteTransform(true);
 			// Cull nodes that are not inside the frustum
 			for (int i=0; i<frustum.length; i++)
 			{	// formula for the plane distance-to-point function, expanded in-line.
 				if (frustum[i].x*node_abs.v[12] + frustum[i].y*node_abs.v[13] + frustum[i].z*node_abs.v[14] + frustum[i].d < r)
-				{	node.setOnscreen(false);
+				{	vnode.setOnscreen(false);
 					break;
 				}
 			}
 
 			// cull nodes that are too small to see.
-			if (node.getOnscreen())
+			if (vnode.getOnscreen())
 			{	float x = cam_abs.v[12]-node_abs.v[12];
 				float y = cam_abs.v[13]-node_abs.v[13];
 				float z = cam_abs.v[14]-node_abs.v[14];
@@ -319,9 +321,9 @@ class CameraNode : Node
 				if (height==0)
 					height = Device.getHeight();
 				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
-					node.setOnscreen(false);
+					vnode.setOnscreen(false);
 				else // Onscreen and big enough to draw
-				{	Render.add(node);
+				{	Render.add(vnode);
 
 					// Statistics
 					node_count++;

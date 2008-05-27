@@ -17,8 +17,8 @@ public
 	import yage.node.graph;
 	import yage.node.light;
 	import yage.node.model;
+	import yage.node.visible;
 	import yage.node.node;
-	import yage.node.base;
 	import yage.node.movable;
 	import yage.node.scene;
 	import yage.node.sprite;

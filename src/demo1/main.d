@@ -37,7 +37,7 @@ int main()
 	// Create and start a Scene
 	Log.write("Starting update loop.");
 	Scene scene = new Scene();
-	//scene.start(60); // update 60 times per second
+	scene.start(60); // update 60 times per second
 	
 	Device.onExit = &scene.stop;
 	
@@ -124,7 +124,7 @@ int main()
 	asteroidBelt(800, 1400, planet);
 
 	// Add to the scene's update loop
-	void update(BaseNode self){
+	void update(Node self){
 		ship.getSpring().update(1/60.0f);
 	}
 	scene.onUpdate(&update);
@@ -146,7 +146,6 @@ int main()
 		//	continue;
 		//}
 		delta.reset();
-		scene.update(dtime);
 
 		Input.processInput();
 		camera.toTexture();

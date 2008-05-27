@@ -9,9 +9,9 @@ module yage.node.scene;
 import derelict.opengl.gl;
 import derelict.openal.al;
 import yage.core.all;
-import yage.node.node;
+import yage.node.visible;
 import yage.node.light;
-import yage.node.base;
+import yage.node.node;
 
 
 /**
@@ -35,7 +35,7 @@ import yage.node.base;
  * scene.setSkybox(skybox);
  * --------------------------------
  */
-class Scene : BaseNode
+class Scene : Node
 {
 	protected Scene skybox;
 	protected LightNode[LightNode] lights;
@@ -59,7 +59,8 @@ class Scene : BaseNode
 
 	/// Construct an empty Scene.
 	this()
-	{	delta	= new Timer();
+	{	super();
+		delta	= new Timer();
 		scene	= this;
 		ambient	= Color("333333"); // OpenGL default global ambient light.
 		background = Color("black");	// OpenGL default clear color
@@ -78,8 +79,8 @@ class Scene : BaseNode
 	}
 
 	/*
-	 * Construct this Scene as an exact copy original and make copies of all
-	 * children.*/
+	 * Construct this Scene as an exact copy original and make copies of all children.
+	 * Unfinished! */
 	this (Scene original)
 	{	this();
 		setSkybox(original.skybox);

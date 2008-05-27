@@ -93,7 +93,7 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">GraphNode</span>
 <script type="text/javascript">explorer.outline.addDecl('GraphNode');</script>
-: yage.node.node.Node;
+: yage.node.visible.VisibleNode;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -119,7 +119,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(BaseNode <span class="funcparam">parent</span>);
+<dt><span class="decl">this(Node <span class="funcparam">parent</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -129,7 +129,7 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(BaseNode <span class="funcparam">parent</span>, GraphNode <span class="funcparam">original</span>);
+<dt><span class="decl">this(Node <span class="funcparam">parent</span>, GraphNode <span class="funcparam">original</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -137,7 +137,7 @@ Eric Poggel
 <br><br>
 <b>Params:</b><br>
 <table><tr>
-<td nowrap valign="top" style="padding-right: 8px">BaseNode <span class="funcparam">parent</span></td>
+<td nowrap valign="top" style="padding-right: 8px">Node <span class="funcparam">parent</span></td>
 
                
 <td>This GraphNode will be a child of <span class="funcparam">parent</span>.</td></tr>
@@ -314,7 +314,7 @@ useful for a cylinder, for example.
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun May 25 15:02:03 2008
+		on Mon May 26 22:21:35 2008
 
 	</div>
 	
@@ -359,8 +359,6 @@ useful for a cylinder, for example.
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.base");
-
 	explorer.packageExplorer.addModule("yage.node.camera");
 
 	explorer.packageExplorer.addModule("yage.node.graph");
@@ -369,7 +367,7 @@ useful for a cylinder, for example.
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
-	explorer.packageExplorer.addModule("yage.node.moveable");
+	explorer.packageExplorer.addModule("yage.node.movable");
 
 	explorer.packageExplorer.addModule("yage.node.node");
 
@@ -380,6 +378,8 @@ useful for a cylinder, for example.
 	explorer.packageExplorer.addModule("yage.node.sprite");
 
 	explorer.packageExplorer.addModule("yage.node.terrain");
+
+	explorer.packageExplorer.addModule("yage.node.visible");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

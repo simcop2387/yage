@@ -17,8 +17,8 @@ import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
 import yage.resource.image;
-import yage.node.base;
 import yage.node.node;
+import yage.node.visible;
 import yage.core.matrix;
 import yage.core.vector;
 import yage.system.constant;
@@ -37,14 +37,14 @@ import yage.system.log;
  * a.setHeightMap("terrain/islands-height.png");
  * --------------------------------
  */
-class TerrainNode : Node
+class TerrainNode : VisibleNode
 {
 	protected Model model;
 	protected float radius;
 	protected int width=0;
 
 	/// Construct as a child of parent
-	this(BaseNode parent)
+	this(Node parent)
 	{	super(parent);
 		model = new Model();
 		model.setMeshes([new Mesh()]);
@@ -57,7 +57,7 @@ class TerrainNode : Node
 	 * Params:
 	 * parent = This TerrainNode will be a child of parent.
 	 * original = This TerrainNode will be an exact copy of original.*/
-	this (BaseNode parent, TerrainNode original)
+	this (Node parent, TerrainNode original)
 	{	super(parent, original);
 
 		model = new Model(original.model);

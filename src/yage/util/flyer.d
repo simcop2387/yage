@@ -7,9 +7,9 @@
 module yage.util.flyer;
 
 import yage.core.all;
-import yage.node.base;
-import yage.node.camera;
 import yage.node.node;
+import yage.node.camera;
+import yage.node.movable;
 import yage.system.input;
 
 /**
@@ -17,31 +17,31 @@ import yage.system.input;
 class Flyer
 {
 
-	Node base;
-	Node pivot;
+	MovableNode base;
+	MovableNode pivot;
 	float ldamp, xdamp, ydamp;
 
 
-	this(BaseNode parent)
-	{	base = new Node(parent);
-		pivot = new Node(base);
+	this(Node parent)
+	{	base = new MovableNode(parent);
+		pivot = new MovableNode(base);
 		ldamp = 16;
 		xdamp = ydamp = 24;
 	}
 
-	void setBase(Node base)
+	void setBase(MovableNode base)
 	{	base = this.base;
 	}
 
-	Node getBase()
+	MovableNode getBase()
 	{	return base;
 	}
 
-	Node getPivot()
+	MovableNode getPivot()
 	{	return pivot;
 	}
 
-	void setParent(Node parent)
+	void setParent(MovableNode parent)
 	{	base.setParent(parent);
 	}
 

@@ -12,18 +12,18 @@ import yage.system.log;
 import yage.resource.resource;
 import yage.resource.model;
 import yage.resource.material;
+import yage.node.visible;
 import yage.node.node;
-import yage.node.base;
 
 
 /// A node used for rendering a 3D model.
-class ModelNode : Node
+class ModelNode : VisibleNode
 {
 	protected Model model;	// The 3D model used by this node
 	protected float radius=0;	// cached radius
 
 	/// Construct this Node as a child of parent.
-	this(BaseNode parent)
+	this(Node parent)
 	{	super(parent);
 		visible = true;
 	}
@@ -33,7 +33,7 @@ class ModelNode : Node
 	 * Params:
 	 * parent = This Node will be a child of parent.
 	 * original = This Node will be an exact copy of original.*/
-	this (BaseNode parent, ModelNode original)
+	this (Node parent, ModelNode original)
 	{	super(parent, original);
 		model = original.model;
 		radius = original.radius;

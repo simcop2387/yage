@@ -27,7 +27,7 @@ private struct Attribute2
 
 /// Used for translucent polygon rendering
 private struct AlphaTriangle
-{	Node node;
+{	VisibleNode node;
 	Model model;
 	Mesh mesh;
 	Material matl;
@@ -48,7 +48,7 @@ private struct AlphaTriangle
  * and rendered in a second pass. */
 class Render
 {
-	protected static Node[] nodes;	
+	protected static VisibleNode[] nodes;	
 	protected static AlphaTriangle[] alpha;
 
 	// Basic shapes
@@ -64,7 +64,7 @@ class Render
 
 
 	/// Add a node to the queue for rendering.
-	static void add(Node node)
+	static void add(VisibleNode node)
 	{	nodes ~= node;
 	}
 
@@ -78,7 +78,7 @@ class Render
 			generate();
 
 		// Loop through all nodes in the queue and render them
-		foreach (Node n; nodes)
+		foreach (VisibleNode n; nodes)
 		{
 			glPushMatrix();
 			glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
@@ -155,7 +155,7 @@ class Render
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
 	 * Rotation can optionally be supplied to rotate sprites so they face the camera. */
-	protected static void model(Model model, Node node, Vec3f rotation = Vec3f(0))
+	protected static void model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0))
 	{
 		model.bind();
 		Vec3f[] v = model.getAttribute("gl_Vertex").vec3f;
@@ -264,13 +264,13 @@ class Render
 
 	
 	// Render a cube
-	protected static void cube(Node node)
+	protected static void cube(VisibleNode node)
 	{	model(mcube, node);
 		// (cast(LightNode)n).getDiffuse().add((cast(LightNode)n).getAmbient())
 	}
 
 	// Render a sprite
-	protected static void sprite(Material material, Node node)
+	protected static void sprite(Material material, VisibleNode node)
 	{	msprite.getMeshes()[0].setMaterial(material);
 		model(msprite, node, current_camera.getAbsoluteTransform(true).toAxis());
 	}

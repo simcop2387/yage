@@ -14,7 +14,7 @@ import demo2.gameobj;
 
 class Ship : GameObject
 {
-	Node pitch;			// attached to this node to look up and down
+	MovableNode pitch;			// attached to this node to look up and down
 	ModelNode ship;		// attached to pitch and rolls left & right
 	Spring spring;		// spring to attach camera
 	
@@ -23,13 +23,13 @@ class Ship : GameObject
 
 	float ldamp=.5, xdamp=2, ydamp=2;
 
-	synchronized this(BaseNode parent)
+	synchronized this(Node parent)
 	{
 		super(parent);
 		new Material("fx/smoke.xml");
 		new Material("fx/flare1.xml");
 
-		pitch = new Node(this);
+		pitch = new MovableNode(this);
 
 		ship = new ModelNode(pitch);
 		ship.setModel("obj/tie2.obj");
@@ -44,7 +44,7 @@ class Ship : GameObject
 	{	return ship;
 	}
 
-	Node getCameraSpot()
+	MovableNode getCameraSpot()
 	{	return spring.getTail();
 	}
 

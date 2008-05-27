@@ -14,8 +14,8 @@ import yage.resource.resource;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.model;
-import yage.node.base;
 import yage.node.node;
+import yage.node.visible;
 import yage.node.scene;
 
 /**
@@ -32,7 +32,7 @@ import yage.node.scene;
  * plot.regenerate(); // required to generate the graph.
  * --------------------------------
  */
-class GraphNode : Node
+class GraphNode : VisibleNode
 {
 	protected float	smin, smax, tmin, tmax, step_s, step_t;
 	protected bool  swrap, twrap;
@@ -42,7 +42,7 @@ class GraphNode : Node
 	protected float radius = 0;	// Store the distance of the furthest point
 
 	/// Construct this Node as a child of parent.
-	this(BaseNode parent)
+	this(Node parent)
 	{	super(parent);
 		visible = true;
 		setWindow(-1, 1, -1, 1);
@@ -56,7 +56,7 @@ class GraphNode : Node
 	 * Params:
 	 * parent = This GraphNode will be a child of parent.
 	 * original = This GraphNode will be an exact copy of original.*/
-	this (BaseNode parent, GraphNode original)
+	this (Node parent, GraphNode original)
 	{	super(parent, original);
 
 		model = new Model();

@@ -13,13 +13,13 @@ import derelict.openal.al;
 import yage.core.math;
 import yage.resource.resource;
 import yage.resource.sound;
-import yage.node.base;
 import yage.node.node;
+import yage.node.movable;
 import yage.node.scene;
 
 
 /// A node that emits a sound.
-class SoundNode : Node
+class SoundNode : MovableNode
 {	protected:
 
 	uint		al_source;		// OpenAL index of this Sound Resource
@@ -40,7 +40,7 @@ class SoundNode : Node
 	public:
 
 	/// Construct this Node as a child parent.
-	this(BaseNode parent)
+	this(Node parent)
 	{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
 		super(parent);
 		setSoundRadius(radius);
@@ -51,7 +51,7 @@ class SoundNode : Node
 	 * Params:
 	 * parent = This Node will be a child of parent.
 	 * original = This Node will be an exact copy of original.*/
-	this (BaseNode parent, SoundNode original)
+	this (Node parent, SoundNode original)
 	{
 		alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
 		super(parent, original);

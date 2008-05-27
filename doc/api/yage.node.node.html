@@ -93,101 +93,109 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">Node</span>
 <script type="text/javascript">explorer.outline.addDecl('Node');</script>
-: yage.node.base.BaseNode;
+;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A 
-<span class="currsymbol">Node</span>
-<script type="text/javascript">explorer.outline.addDecl('Node');</script>
- is an instance of some tpe of object in a Scene.
- Every node has an array of child nodes as well as a parent node, with
- the obvious exception of a Scene whose parent is null
-.  When one node
- is moved or rotated, all of its child nodes move and rotate as well.
- Likewise, setting the position or rotation of a node does so relative
- to its parent.  Rendering is done recursively from the Scene down
- through every child node.  Likewise, updating of position and rotation
- occurs recusively from Scene's update() method.  All 
-<span class="currsymbol">Node</span>
-<script type="text/javascript">explorer.outline.addDecl('Node');</script>
- methods that deal
- with position or velocity are separated into yage.node.moveable to keep things
- tidier.
+<dd>All other Nodes extend this class.
+ Methods for modifying the hierarchy of Nodes (parents, children) are defined here.
 <br><br>
-<b>See Also:</b><br>
-yage.node.MoveableNode
- yage.node.BaseNode
+Every node has an array of child nodes as well as a parent node, with
+ the exception of a Scene that exists at the top of the scene graph and has no parent.
+ When one node is moved or rotated, all of its child nodes move and rotate as well.
+ Likewise, setting the position or rotation of a node does so relative to its parent.
+ Rendering is done recursively from the Scene down through every child node.
+ Likewise, updating of position and rotation occurs recusively from Scene's update() method.
 
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> Scene s = <font color=blue>new</font> Scene();
- <b>Node</b> a = <font color=blue>new</font> <b>Node</b>(s);      <font color=green>// a is a child of s, it exists in Scene s.
-</font> a.setPosition(3, 5, 0);    <font color=green>// Position is set relative to 0, 0, 0 of the entire scene.
-</font> a.setRotation(0, 3.14, 0); <font color=green>// a is rotated PI radians (180 degrees) around the Y axis.
+ ModelNode a = <font color=blue>new</font> ModelNode(s);   <font color=green>// a is a child of s, it exists in Scene s.
+</font> a.setPosition(3, 5, 0);           <font color=green>// Position is set relative to 0, 0, 0 of the entire scene.
+</font> a.setRotation(0, 3.14, 0);        <font color=green>// a is rotated PI radians (180 degrees) around the Y axis.
 </font>
- <b>Node</b> b = <font color=blue>new</font> <b>Node</b>(a);      <font color=green>// b is a child of a, therefore,
-</font> b.setPosition(5, 0, 0);    <font color=green>// it's positoin and rotation are relative to a's.
-</font> b.getAbsolutePosition();   <font color=green>// Returns Vec3f(-2, 5, 0), b's position relative to the origin.
+ SpriteNode b = <font color=blue>new</font> SpriteNode(a); <font color=green>// b is a child of a, therefore,
+</font> b.setPosition(5, 0, 0);           <font color=green>// its positoin and rotation are relative to a's.
+</font> b.getAbsolutePosition();          <font color=green>// Returns Vec3f(-2, 5, 0), b's position relative to the origin.
 </font>
- b.setParent(s);            <font color=green>// B is now a child of s.
-</font> b.getAbsolutePosition();   <font color=green>// Returns Vec3f(5, 0, 0), since it's position is relative
-</font>                            <font color=green>//to 0, 0, 0, instead of a.
+ b.setParent(s);                   <font color=green>// b is now a child of s.
+</font> b.getAbsolutePosition();          <font color=green>// Returns Vec3f(5, 0, 0), since it's position is relative
+</font>                                   <font color=green>// to 0, 0, 0, instead of a.
 </font></pre>
- 
 <br><br>
 
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(BaseNode <span class="funcparam">parent</span>);
+<dt><span class="decl">this();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct this Node as a child of <span class="funcparam">parent</span>.
+<dd>Constructor
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(BaseNode <span class="funcparam">parent</span>, Node <span class="funcparam">original</span>);
+<dt><span class="decl">this(Node <span class="funcparam">parent</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct this Node as a copy of another Node and recursively copy all children.
+<dd>Construct as a child of <span class="funcparam">parent</span>.
 <br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">BaseNode <span class="funcparam">parent</span></td>
-
-               
-<td>This Node will be a child of <span class="funcparam">parent</span>.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">Node <span class="funcparam">original</span></td>
-
-               
-<td>This Node will be an exact copy of <span class="funcparam">original</span>.</td></tr>
-</table><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Color 
-<span class="currsymbol">getColor</span>
-<script type="text/javascript">explorer.outline.addDecl('getColor');</script>
+<dt><span class="decl">this(Node <span class="funcparam">parent</span>, MovableNode <span class="funcparam">original</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Construct as a child of <span class="funcparam">parent</span>, a copy of <span class="funcparam">original</span> and recursivly copy all children.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static void 
+<span class="currsymbol">delete</span>
+<script type="text/javascript">explorer.outline.addDecl('delete');</script>
+(void* <span class="funcparam">p</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Prohibit manual deletion of Nodes.  Use node.remove() instead.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Node 
+<span class="currsymbol">addChild</span>
+<script type="text/javascript">explorer.outline.addDecl('addChild');</script>
+(VisibleNode <span class="funcparam">child</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Add a <span class="funcparam">child</span> Node.
+ Automatically detaches it from any other nodes.
+<br><br>
+<b>Returns:</b><br>
+A self reference.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Node[Node] 
+<span class="currsymbol">getChildren</span>
+<script type="text/javascript">explorer.outline.addDecl('getChildren');</script>
 ();
-<br>void 
-<span class="currsymbol">setColor</span>
-<script type="text/javascript">explorer.outline.addDecl('setColor');</script>
-(Color <span class="funcparam">color</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get / Set the color of the Node.
- Material colors of the Node are combined (multiplied) with this color.
- This provides an easy way to change the color of a Node without having to modify all materials individually.
- Default color is white and opaque (all 1's).
+<dd>Get an array of this Node's children
 <br><br>
 
 </dd>
@@ -204,94 +212,133 @@ yage.node.MoveableNode
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get / set the lifeime of a Node (in seconds).
- The default value is float.infinity, but a lower number will cause the Node to be removed
+<dd>Get / set the lifeime of a VisibleNode (in seconds).
+ The default value is float.infinity, but a lower number will cause the VisibleNode to be removed
  from the scene graph after that amount of time, as its lifetime is decreased with every Scene update.
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">LightNode[] 
-<span class="currsymbol">getLights</span>
-<script type="text/javascript">explorer.outline.addDecl('getLights');</script>
+<dt><span class="decl">Node 
+<span class="currsymbol">getParent</span>
+<script type="text/javascript">explorer.outline.addDecl('getParent');</script>
+();
+<br>Node 
+<span class="currsymbol">setParent</span>
+<script type="text/javascript">explorer.outline.addDecl('setParent');</script>
+(Node <span class="funcparam">_parent</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get / set the parent of this Node (what it's attached to).
+ Setting a new parent removes it from its old parent's children and returns a self-reference. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Scene 
+<span class="currsymbol">getScene</span>
+<script type="text/javascript">explorer.outline.addDecl('getScene');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get an array of lights that were enabled in the last call to enableLights().	
+<dd>Get the Scene at the top of the tree that this node belongs to.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">getType</span>
+<script type="text/javascript">explorer.outline.addDecl('getType');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the type of this Node as a string; i.e. "yage.node.visible.ModelNode".
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">bool 
-<span class="currsymbol">getOnscreen</span>
-<script type="text/javascript">explorer.outline.addDecl('getOnscreen');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get whether this node is inside the view frustum and large enough to be drawn by
- the last camera that rendered it. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">getRadius</span>
-<script type="text/javascript">explorer.outline.addDecl('getRadius');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the radius of this Node's culling sphere.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>, float <span class="funcparam">z</span>);
-<br>void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(Vec3f <span class="funcparam">scale</span>);
-<br>void 
-<span class="currsymbol">setScale</span>
-<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
-(float <span class="funcparam">scale</span>);
-<br>Vec3f 
-<span class="currsymbol">getScale</span>
-<script type="text/javascript">explorer.outline.addDecl('getScale');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get / set the scale of this Node in the <span class="funcparam">x</span>, <span class="funcparam">y</span>, and <span class="funcparam">z</span> directions.
- The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setVisible</span>
-<script type="text/javascript">explorer.outline.addDecl('setVisible');</script>
-(bool <span class="funcparam">visible</span>);
-<br>bool 
 <span class="currsymbol">getVisible</span>
 <script type="text/javascript">explorer.outline.addDecl('getVisible');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Gt /set whether this Node will be rendered.  This has nothing to do with frustum culling.
- Setting a Node as invisible will not make its children invisible also. 
+<dd>Always returns false
+ unless overridden.
 <br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">onUpdate</span>
+<script type="text/javascript">explorer.outline.addDecl('onUpdate');</script>
+(void delegate(Node self) <span class="funcparam">on_update</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set a function that will be called every time this Node is updated.
+ Specifically, the supplied function is called after a Node's matrices
+ are updated and before its children are updated and before it's removed if
+ it's lifetime is zero.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">void delegate(Node self) <span class="funcparam">on_update</span></td>
+
+               
+<td>the function that will be called.  Use null
+ as an argument to clear
+ the function.</td></tr>
+</table><br>
+<font color=red>BUGS:</font><br>
+Certain Node methods cause access violations.  Perhaps this is a dmd bug?
+<br><br>
+<b>Example:</b><br>
+<pre class="d_code"> SpriteNode s = <font color=blue>new</font> SpriteNode(scene);
+ s.setMaterial(<span style="color: purple">"something.xml"</span>);
+
+ <font color=green>// Gradually fade to transparent as lifetime decreases.
+</font> <font color=blue>void</font> fade(Node self)
+ {   SpriteNode node = <font color=blue>cast</font>(SpriteNode)self;
+     node.setColor(1, 1, 1, node.getLifetime()/5);
+ }
+ s.setLifetime(5);
+ s.<b>onUpdate</b>(&amp;fade);
+</pre>
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+<br>char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+(bool <span class="funcparam">recurse</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return a string representation of this Node for human reading.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">recurse</td>
+
+               
+<td>Print this Node's children as well. </td></tr>
+</table><br>
 
 </dd>
 
@@ -309,18 +356,14 @@ yage.node.MoveableNode
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Node 
-<span class="currsymbol">setParent</span>
-<script type="text/javascript">explorer.outline.addDecl('setParent');</script>
-(BaseNode <span class="funcparam">_parent</span>);
+<dt><span class="decl">void 
+<span class="currsymbol">update</span>
+<script type="text/javascript">explorer.outline.addDecl('update');</script>
+(float <span class="funcparam">delta</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the parent of this Node (what it's attached to) and remove
- it from its previous parent.
-<br><br>
-<b>Returns:</b><br>
-A self reference.
+<dd>Update the positions and rotations of this Node and all children by <span class="funcparam">delta</span> seconds.
 <br><br>
 
 </dd>
@@ -343,7 +386,7 @@ A self reference.
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun May 25 15:02:03 2008
+		on Mon May 26 22:21:35 2008
 
 	</div>
 	
@@ -388,8 +431,6 @@ A self reference.
 
 	explorer.packageExplorer.addModule("yage.node.all");
 
-	explorer.packageExplorer.addModule("yage.node.base");
-
 	explorer.packageExplorer.addModule("yage.node.camera");
 
 	explorer.packageExplorer.addModule("yage.node.graph");
@@ -398,7 +439,7 @@ A self reference.
 
 	explorer.packageExplorer.addModule("yage.node.model");
 
-	explorer.packageExplorer.addModule("yage.node.moveable");
+	explorer.packageExplorer.addModule("yage.node.movable");
 
 	explorer.packageExplorer.addModule("yage.node.node");
 
@@ -409,6 +450,8 @@ A self reference.
 	explorer.packageExplorer.addModule("yage.node.sprite");
 
 	explorer.packageExplorer.addModule("yage.node.terrain");
+
+	explorer.packageExplorer.addModule("yage.node.visible");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 

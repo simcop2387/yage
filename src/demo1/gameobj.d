@@ -18,11 +18,11 @@ import yage.resource.model;
 import yage.node.all;
 
 
-abstract class GameObject : Node
+abstract class GameObject : VisibleNode
 {
 	float mass=0;
 
-	this (BaseNode parent)
+	this (Node parent)
 	{	super(parent);
 	}
 }
@@ -34,7 +34,7 @@ class Asteroid : GameObject
 	
 	float radius; // cached
 
-	this (BaseNode parent)
+	this (Node parent)
 	{	super(parent);
 		rock = new ModelNode(this);
 		rock.setModel(Resource.model("space/asteroid1.ms3d"));
@@ -56,7 +56,7 @@ class Flare : GameObject
 	static Timer timer;
 
 
-	this (BaseNode parent)
+	this (Node parent)
 	{	super(parent);
 		this.setLifetime(4);
 
