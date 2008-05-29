@@ -54,9 +54,9 @@ void asteroidBelt(int number, float radius, Node scene)
 						cos(value*6.282)*radius + pow(value4*2-1, 3.0)*radius/4));
 		
 		a.setModel(Resource.model("space/asteroid1.ms3d"));
-		a.scale = Vec3f(value5*value5*value5*value5*value5*value5*value5*1.1 + .2);
+		a.setSize(Vec3f(value5*value5*value5*value5*value5*value5*value5*1.1 + .2));
 		a.rotate(Vec3f(value4*12, value2*12, value3*12));
-		a.setAngularVelocity(Vec3f(random(-.2, .2), random(-.2, .2), random(-.2, .2)));
+	//	a.setAngularVelocity(Vec3f(random(-.2, .2), random(-.2, .2), random(-.2, .2)));
 	}
 }
 
@@ -73,7 +73,7 @@ void asteroidField(int number, float radius, VisibleNode scene)
 		a.setPosition(Vec3f((value-.5)*radius, (value2-.5)*radius, (value3-.5)*radius));
 
 		a.setModel(Resource.model("../media/planet/phobos.ms3d"));
-		a.scale = Vec3f(value5*value5*.4 + .2);
+		a.setSize(Vec3f(value5*value5*.4 + .2));
 		a.rotate(Vec3f(value4*12, value2*7, value3*11));
 	}
 }
@@ -90,7 +90,7 @@ void asteroidPlane(int number, float radius, VisibleNode scene)
 		a.setPosition(Vec3f((value-.5)*radius, 0, (value2-.5)*radius));
 
 		a.setModel(Resource.model("../media/planet/phobos.ms3d"));
-		a.scale = Vec3f(value5*value5*.4 + .2);
+		a.setSize(Vec3f(value5*value5*.4 + .2));
 		a.rotate(Vec3f(value4*12, value2*7, value*11));
 	}
 

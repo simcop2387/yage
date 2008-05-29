@@ -6,8 +6,7 @@
  * Xml contains functions and classes for reading, parsing, and writing xml
  * documents.
  *
- * It might eventually be good to rewrite this to throw Exceptions on any parse
- * errors--it already catches some.
+ * This hasn't been profiled and probably isn't that efficient.
  *
  * History:
  * Most of the code in this module originally came from Andy Friesen's Xmld.

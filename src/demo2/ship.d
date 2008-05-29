@@ -33,7 +33,7 @@ class Ship : GameObject
 
 		ship = new ModelNode(pitch);
 		ship.setModel("obj/tie2.obj");
-		ship.scale = Vec3f(.25);
+		ship.setSize(Vec3f(.25));
 
 		spring = new Spring(ship);
 		spring.setDistance(Vec3f(0, 4, 12));

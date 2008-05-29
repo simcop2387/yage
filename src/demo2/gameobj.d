@@ -46,7 +46,7 @@ class Asteroid : GameObject
 
 	void setMass(float mass)
 	{	this.mass = mass;
-		rock.setScale(Vec3f(pow(mass, .33333)/2));
+		rock.setSize(Vec3f(pow(mass, .33333)/2));
 		radius = pow(mass, .3333)*.75*4;
 	}
 }
@@ -62,7 +62,7 @@ class Flare : GameObject
 
 		SpriteNode flare = new SpriteNode(this);
 		flare.setMaterial("fx/flare1.xml");
-		flare.setScale(Vec3f(2));
+		flare.setSize(Vec3f(2));
 
 		if (timer is null)
 		{	timer = new Timer();

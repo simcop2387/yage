@@ -100,13 +100,12 @@ class GraphNode : VisibleNode
 
 
 	/// Overridden to cache the radius if changed by the scale.
-	void scale(Vec3f scale)
-	{	this.scale = scale;
-		radius = model.getDimensions().scale(scale).length();
-	}
-	
-	Vec3f scale()
-	{	return super.scale;		
+	void setSize(Vec3f size)
+	{	this.size = size;
+		radius = model.getDimensions().scale(size).length();
+	}	
+	Vec3f getSize() /// Ditto
+	{	return super.size;		
 	}
 
 	/// Set a function of two variables to generate texture coordinates.
@@ -228,7 +227,7 @@ class GraphNode : VisibleNode
 		model.setAttribute("gl_Normal", normals);
 		model.getMeshes()[0].setTriangles(triangles);
 
-		radius = model.getDimensions().scale(scale).max();
+		radius = model.getDimensions().scale(size).max();
 
 		// Cache model in video memory
 		//model.upload();

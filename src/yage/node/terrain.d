@@ -32,7 +32,7 @@ import yage.system.log;
  * Example:
  * --------------------------------
  * TerrainNode a = new TerrainNode(scene);  // Child of scene
- * a.setScale(1000, 100, 1000);             // Make it a decent size
+ * a.setSize(1000, 100, 1000);             // Make it a decent size
  * a.setMaterial("terrain/islands.xml");
  * a.setHeightMap("terrain/islands-height.png");
  * --------------------------------
@@ -83,7 +83,7 @@ class TerrainNode : VisibleNode
 	/**
 	 * Generate the 3D landscape rendered for this Node, from a heighmap image.
 	 * The terrain generated always fits inside a 1x1x1 cube.
-	 * Use setScale() to adjust to a comfortable size.
+	 * Use setSize() to adjust to a comfortable size.
 	 * Params:
 	 * grayscale = An image to load.  It will be converted to a grayscale image
 	 * if necessary.  Whiter regions will be higher altitudes.
@@ -156,7 +156,7 @@ class TerrainNode : VisibleNode
 	}
 	
 	Vec3f scale()
-	{	return super.scale;		
+	{	return super.size;		
 	}
 	
 	

@@ -10,6 +10,7 @@ import std.stdio;
 import std.traits;
 import std.bind;
 import yage.core.all;
+import yage.core.tree;
 import yage.node.visible;
 import yage.node.scene;
 import yage.node.movable;
@@ -43,12 +44,10 @@ import yage.node.node;
  * b.getAbsolutePosition();          // Returns Vec3f(5, 0, 0), since it's position is relative
  *                                   // to 0, 0, 0, instead of a.
  * --------------------------------*/
-abstract class Node
+abstract class Node : Tree!(Node)
 {
 	// These are public for easy internal access.
 	Scene	scene;			// The Scene that this node belongs to.
-	Node	parent;
-	Node[Node]	children;
 	protected float lifetime = float.infinity;	// in seconds
 	protected void delegate(Node self) on_update = null;	// called on update
 	
@@ -88,7 +87,7 @@ abstract class Node
 	}
 
 	/// Construct as a child of parent, a copy of original and recursivly copy all children.
-	this(Node parent, MovableNode original)
+	this(Node parent, Node original)
 	{	this(parent);
 
 		lifetime = original.lifetime;
@@ -134,22 +133,6 @@ abstract class Node
 	}
 
 	/**
-	 * Add a child Node.
-	 * Automatically detaches it from any other nodes.
-	 * Returns: A self reference.*/
-	Node addChild(VisibleNode child)
-	in {assert(child !is this);}
-	body
-	{	child.setParent(this);
-		return this;
-	}
-
-	/// Get an array of this Node's children
-	Node[Node] getChildren()
-	{	return children;
-	}
-
-	/**
 	 * Get / set the lifeime of a VisibleNode (in seconds).
 	 * The default value is float.infinity, but a lower number will cause the VisibleNode to be removed
 	 * from the scene graph after that amount of time, as its lifetime is decreased with every Scene update.*/	
@@ -161,24 +144,11 @@ abstract class Node
 	}
 	
 	/**
-	 * Get / set the parent of this Node (what it's attached to).
-	 * Setting a new parent removes it from its old parent's children and returns a self-reference. */
-	Node getParent()
-	{	return parent;
-	}	
+	 * Overridden from Tree to set scene and mark transform dirty. */
 	Node setParent(Node _parent) /// Ditto
-	in { assert(_parent !is null);
-	}body
-	{			
-		if (parent && this in parent.children)
-			parent.children.remove(this);
-		
-		// Add to new parent
-		parent = _parent;
-		parent.children[this] = this;
-		scene = parent.scene;
+	{	scene = _parent.scene;
 		setTransformDirty();
-		return this;
+		return super.setParent(_parent);
 	}
 
 
@@ -254,16 +224,6 @@ abstract class Node
 			indent--;
 		}
 		return result;
-	}
-	
-	/// Remove this Node.  This function should be used instead of delete.
-	void remove()
-	{	// this needs to happen because some children (like lights) may need to do more in their remove() function.
-		foreach(Node c; children)
-			c.remove();
-		
-		if (parent && this in parent.children)
-			parent.children.remove(this);
 	}
 
 	/**

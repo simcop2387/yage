@@ -82,13 +82,13 @@ class Render
 		{
 			glPushMatrix();
 			glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
-			glScalef(n.getScale().x, n.getScale().y, n.getScale().z);
+			Vec3f size = n.getSize();
+			glScalef(size.x, size.y, size.z);
 			n.enableLights();
 
 			switch(n.getType())
 			{	case "yage.node.model.ModelNode":
 					model((cast(ModelNode)n).getModel(), n);
-					//writefln((cast(ModelNode)n).getModel().getSource());
 					break;
 				case "yage.node.sprite.SpriteNode":
 					sprite((cast(SpriteNode)n).getMaterial(), n);
@@ -139,7 +139,7 @@ class Render
 		}
 		/*
 		for (int i=0; i<3; i++)
-		{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getScale());
+		{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getSize());
 			at.texcoords[i] = &t[tri.v[i]];
 			at.normals[i] = &n[tri.v[i]];
 		}*/
@@ -210,7 +210,7 @@ class Render
 						// Add to translucent
 						{	AlphaTriangle at;
 							for (int i=0; i<3; i++)
-							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getScale());
+							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getSize());
 								at.texcoords[i] = &t[tri.v[i]];
 								at.normals[i] = &n[tri.v[i]];
 							}

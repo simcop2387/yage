@@ -27,20 +27,22 @@ enum{
 float third = 1.0/3.0;
 
 /** 
- * A surface will be similar to an HTML DOM element, including having text inside it, 
+ * Surfaces are similar to HTML DOM elements, including having text inside it, 
  * margin, padding, a border, and a background texture, including textures from a camera. 
  * Surfaces will exist in a hierarchical structure, with each having a parent and an array of children. 
- * The children will be positioned relative to the borders of their parent. */
+ * Surfacs are positioned relative to their parent. 
+ * A style struct defines most of the styles associated with the Surface. */
 class Surface{
 	static final Style defaultStyle;
 	Style style;
 	
 	//Change from GPUTexture to Texture or Material
-	private GPUTexture texture;
+	protected GPUTexture texture;
 	
-	Surface[] subs;
-	//Not sure if I should have a reference to Parent or not, but for now, I will.
 	Surface parent;
+	Surface[] children;
+	//Not sure if I should have a reference to Parent or not, but for now, I will.
+	
 	
 	Vec2f topLeft;//rid self of these
 	Vec2f bottomRight;
@@ -51,7 +53,7 @@ class Surface{
 	Vec2i size;
 	
 	//these are for calculating
-	private Vec2i locationAdd;
+	protected Vec2i locationAdd;
 	
 	//used for the texture
 	Vec2f portion;
@@ -138,11 +140,11 @@ class Surface{
 	this(Surface p){
 		parent = p;
 		if(parent is null){
-			Device.subs ~= this;
+			Device.children ~= this;
 			this.recalculate();
 		}
 		else{
-			parent.subs ~= this;
+			parent.children ~= this;
 			this.recalculate();
 		}
 	}
@@ -170,7 +172,7 @@ class Surface{
 	}
 	
 	private void recalculateSubs(){
-		foreach(sub ;this.subs)
+		foreach(sub; this.children)
 			sub.recalculate(position1, position2, size);
 	}
 	
@@ -479,7 +481,7 @@ class Surface{
 			//if (!subs.ordered(true, (Surface s){return s.style.zIndex;} ))
 			//	subs.radixSort((Surface s){return s.style.zIndex;} );
 			
-			foreach(sub; subs)
+			foreach(sub; children)
 				sub.draw();
 		}
 	}
@@ -490,16 +492,16 @@ class Surface{
 	
 	void raise(){ //Could be cleaner, whatever, I'll fix it later
 		if(parent is null){
-			uint index = findIndex(this, Device.subs);
-			for(; index < Device.subs.length - 1; index++)
-				Device.subs[index] = Device.subs[index+1];
-			Device.subs[$-1] = this;
+			uint index = findIndex(this, Device.children);
+			for(; index < Device.children.length - 1; index++)
+				Device.children[index] = Device.children[index+1];
+			Device.children[$-1] = this;
 		}
 		else{
-			uint index = findIndex(this, parent.subs);
-			for(; index < parent.subs.length - 1; index++)
-				parent.subs[index] = parent.subs[index+1];
-			parent.subs[$-1] = this;
+			uint index = findIndex(this, parent.children);
+			for(; index < parent.children.length - 1; index++)
+				parent.children[index] = parent.children[index+1];
+			parent.children[$-1] = this;
 		}
 		if(onFocus) onFocus(this);
 	}
@@ -533,7 +535,7 @@ class Surface{
 	}
 		
 	bool isSub(Surface surf){
-		foreach(sub; subs){
+		foreach(sub; children){
 			if (sub == surf) return true;
 		}
 		return false;
@@ -543,7 +545,7 @@ class Surface{
 //Perhaps put into yage.system.input
 //Could be better, a method perhaps...
 Surface findSurface(int x, int y){
-	foreach_reverse(sub; Device.subs){
+	foreach_reverse(sub; Device.children){
 		if(sub.position1.x <= x && x <= sub.position2.x && sub.position1.y <= y && y <= sub.position2.y){
 			return findSurface(sub, x, y);
 		}
@@ -552,7 +554,7 @@ Surface findSurface(int x, int y){
 }
 //Could be better, a method perhaps...
 Surface findSurface(Surface surface,int x, int y){
-	foreach_reverse(sub; surface.subs){
+	foreach_reverse(sub; surface.children){
 		if(sub.position1.x <= x && x <= sub.position2.x && sub.position1.y <= y && y <= sub.position2.y){
 			return findSurface(sub, x, y);
 		}

@@ -56,11 +56,11 @@ class Spring
 	void update(float delta){
 		tail.setRotation(head.getAbsoluteRotation());
 
-		Vec3f dist = head.getAbsolutePosition() - tail.getAbsolutePosition() + distance.rotate(head.getAbsoluteTransform());
-		Vec3f vel = dist.scale(min(stiffness, 1/delta)); // scale by 1/delta when framerate is low to prevent jerkiness.
+		Vec3f dist = head.getAbsolutePosition() + distance.rotate(head.getAbsoluteTransform()) - tail.getAbsolutePosition();		
+		Vec3f vel = dist.scale(stiffness); 
 
 		if (vel.length*delta > dist.length)
-			vel = dist;
-		tail.setVelocity(vel);
+			vel = dist;		
+		tail.move(vel*delta);
 	}
 }

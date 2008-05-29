@@ -24,6 +24,7 @@ public
 	import yage.core.quatrn;
 	import yage.core.repeater;
 	import yage.core.timer;
+	import yage.core.tree;
 	import yage.core.types;
 	import yage.core.vector;
 	import yage.core.xml;

@@ -62,7 +62,7 @@ abstract class Device
 	
 	public:
 	
-	static Surface[] subs;
+	static Surface[] children;
 	
 	/// Unload SDL at exit.
 	static ~this()
@@ -337,10 +337,10 @@ abstract class Device
 	{	size.x = width;
 		size.y = height;
 		
-		foreach(sub ;this.subs)	sub.recalculate(Vec2i(0, 0), size, size);
+		foreach(sub ;this.children)	sub.recalculate(Vec2i(0, 0), size, size);
 		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
-		// larger than the current screen. (need to try this with latest version of SDL, alsy try SDL lock surface)
+		// larger than the current screen. (need to try this with latest version of SDL, also try SDL lock surface)
 		// This same code would crash the engine on windows.
 		// This code may now be un-needed and needs to be retested.
 		// See http://www.libsdl.org/cgi/docwiki.cgi/SDL_5fResizeEvent

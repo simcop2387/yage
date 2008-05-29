@@ -47,7 +47,7 @@ class ModelNode : VisibleNode
 	/// Set the 3D model used by this Node.
 	void setModel(Model model)
 	{	this.model = model;
-		radius = model.getDimensions().scale(scale).length();
+		radius = model.getDimensions().scale(size).length();
 	}
 
 	/**
@@ -59,14 +59,13 @@ class ModelNode : VisibleNode
 	}
 
 	/// Overridden to cache the radius if changed by the scale.
-	void scale(Vec3f s)
-	{	super.scale = Vec3f(s.x, s.y, s.z);
+	void setSize(Vec3f s)
+	{	super.size = Vec3f(s.x, s.y, s.z);
 		if (model)
-			radius = model.getDimensions().scale(scale).max();
-	}
-	
-	Vec3f scale()
-	{	return super.scale;		
+			radius = model.getDimensions().scale(size).max();
+	}	
+	Vec3f getSize() /// Ditto
+	{	return super.size;		
 	}
 
 

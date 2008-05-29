@@ -32,7 +32,7 @@ import yage.system.input;
 abstract class VisibleNode : MovableNode
 {	
 	protected bool 	visible = true;
-	protected Vec3f	scale;
+	protected Vec3f	size;
 	protected Color color;				// RGBA, used for glColor4f()
 	
 	protected bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
@@ -41,7 +41,7 @@ abstract class VisibleNode : MovableNode
 	/// Construct as a child of parent.
 	this(Node parent)
 	{	visible = false;
-		scale = Vec3f(1);
+		size = Vec3f(1);
 		color = Color("white");
 		super(parent);
 	}
@@ -50,7 +50,7 @@ abstract class VisibleNode : MovableNode
 	this(Node parent, VisibleNode original)
 	{	super(parent, original);
 		visible = original.visible;
-		scale = original.scale;
+		size = original.size;
 		color = original.color;
 	}
 
@@ -87,23 +87,23 @@ abstract class VisibleNode : MovableNode
 
 	/// Get the radius of this VisibleNode's culling sphere.
 	float getRadius()
-	{	return 1.732050807*scale.max();	// a value of zero would not be rendered since it's always smaller than the pixel threshold.
+	{	return 1.732050807*size.max();	// a value of zero would not be rendered since it's always smaller than the pixel threshold.
 	}									// This is the radius of a 1x1x1 cube
 
 	/**
 	 * Get / set the scale of this VisibleNode in the x, y, and z directions.
 	 * The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. */	
-	void setScale(float x, float y, float z) 
-	{	scale.set(x, y, z); 
+	void setSize(float x, float y, float z) 
+	{	size.set(x, y, z); 
 	}
-	void setScale(Vec3f scale) /// ditto
-	{	setScale(scale.x, scale.y, scale.z); 
+	void setSize(Vec3f size) /// ditto
+	{	setSize(size.x, size.y, size.z); 
 	}
-	void setScale(float scale) /// ditto
-	{	setScale(scale, scale, scale); 
+	void setSize(float size) /// ditto
+	{	setSize(size, size, size); 
 	} 
-	Vec3f getScale() /// ditto
-	{	return scale; 
+	Vec3f getSize() /// ditto
+	{	return size; 
 	}
 
 	/** 

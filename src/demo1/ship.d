@@ -34,7 +34,7 @@ class Ship : GameObject
 
 		ship = new ModelNode(pitch);
 		ship.setModel("scifi/fighter.ms3d");
-		ship.scale = Vec3f(.25);
+		ship.setSize(Vec3f(.25));
 
 		spring = new Spring(ship);
 		spring.setDistance(Vec3f(0, 4, 12));
@@ -74,7 +74,7 @@ class Ship : GameObject
 			SpriteNode puff = new SpriteNode(ship.getScene());
 			puff.setMaterial(Resource.material("fx/smoke.xml"));
 			puff.setLifetime(5);
-			puff.setScale(Vec3f(.4));
+			puff.setSize(Vec3f(.4));
 			//puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 			
@@ -82,7 +82,7 @@ class Ship : GameObject
 			{	SpriteNode node = cast(SpriteNode)self;
 				node.setColor(Color(1, 1, 1, node.getLifetime()/5));
 				float scale = std.math.sqrt(5.0f)-std.math.sqrt(node.getLifetime()) + .4;
-				node.setScale(scale);
+				node.setSize(scale);
 			}
 			puff.onUpdate(&fade);
 
