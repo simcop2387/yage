@@ -25,8 +25,7 @@ class ModelNode : VisibleNode
 	/// Construct this Node as a child of parent.
 	this(Node parent)
 	{	super(parent);
-		visible = true;
-	}
+	}	
 
 	/**
 	 * Construct this Node as a copy of another Node and recursively copy all children.

@@ -9,8 +9,9 @@
  * 
  * This script can either use precompiled derelict libraries in the lib folder
  * or build the derelict source directly with the engine.  The former is
- * of course faster, but the latter can be achieved by setting ign_path and
- * lib_path to empty strings in the compilation options below.
+ * of course faster, but the latter can be achieved by setting 
+ * lib_path to empty string and adding ../src/derelict to the src_path
+ * in the compilation options below.
  * 
  * This script can easily be expanded to compile and generate docs for most
  * things by changing the path variables below.

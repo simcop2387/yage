@@ -118,10 +118,15 @@ int main()
 	planet.setSize(Vec3f(60));
 	planet.setAngularVelocity(Vec3f(0, -0.01, 0));
 	
+	
+	
+	
 	//planet.getModel().clearAttribute("gl_Normal");
 	
 	// Asteroids
 	asteroidBelt(800, 1400, planet);
+	
+	//delete planet;
 
 	// Add to the scene's update loop
 	void update(Node self){

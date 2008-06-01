@@ -5,6 +5,7 @@
  */
 module yage.core.tree;
 
+import std.gc;
 
 /**
  * Implements an element that can be used in a tree, with parents and children.
@@ -19,9 +20,9 @@ class Tree(T)
 	T parent;
 	T[T] children;
 	
-	/// Prohibit manual deletion of Tree elements.  Use .remove() instead.
-	delete(void* p)
-	{	throw new Exception("Tree elements cannot be deleted.  Use remove().");
+	/// Ensure that child is removed from its parent.
+	~this()
+	{	remove();		
 	}
 	
 	/**
@@ -29,8 +30,10 @@ class Tree(T)
 	 * Automatically detaches it from any other element's children.
 	 * Returns: A self reference.*/
 	T addChild(T child)
-	in {assert(child !is this);}
-	body
+	in {
+		assert(child != this);
+		assert(child !is null);
+	}body
 	{	child.setParent(cast(T)this);
 		return cast(T)this;
 	}
@@ -45,12 +48,11 @@ class Tree(T)
 	 * Setting a new parent removes it from its old parent's children and returns a self-reference. */
 	T getParent()
 	{	return parent;
-	}	
+	}
 	T setParent(T _parent) /// Ditto
 	in { assert(_parent !is null);
 	}body
-	{			
-		if (parent && cast(T)this in parent.children)
+	{	if (parent && cast(T)this in parent.children)
 			parent.children.remove(cast(T)this);
 		
 		// Add to new parent
@@ -59,7 +61,12 @@ class Tree(T)
 		return cast(T)this;
 	}
 	
-	/// Remove this element.  This function should be used instead of delete.
+	/// Is elem a child of this element?
+	bool isChild(T elem)
+	{	return cast(bool)(elem in children);
+	}
+	
+	/// Remove this element from its parent
 	void remove()
 	{	// this needs to happen because some children (like lights) may need to do more in their remove() function.
 		foreach(T c; children)

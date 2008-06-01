@@ -126,11 +126,6 @@ abstract class Node : Tree!(Node)
 			*/
 		}
 	}
-	
-	/// Prohibit manual deletion of Nodes.  Use node.remove() instead.
-	delete(void* p)
-	{	throw new Exception("Nodes cannot be deleted.  Use remove().");
-	}
 
 	/**
 	 * Get / set the lifeime of a VisibleNode (in seconds).
