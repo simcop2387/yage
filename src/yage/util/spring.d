@@ -8,7 +8,7 @@ module yage.util.spring;
 
 import std.stdio;
 import yage.core.all;
-import yage.node.all;
+import yage.scene.all;
 
 
 // Can be used to attach one node to another in a springy way.

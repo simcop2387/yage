@@ -68,12 +68,35 @@ unittest
 
 
 
-/// Return the maximum value of an array.
-T amax(T)(T[] array)
+/// Return the element with the maximum value of an array.
+T amax(T)(T[] array, )
 {	T m = array[0];
 	foreach (T a; array)
 		if (a>m)
 			m=a;	
+	return m;
+}
+/// 
+T amax(T, K)(T[] array, K delegate(T elem) getKey)
+{	T m = array[0];
+	K mk = getKey(array[0]);
+	foreach (T a; array)
+		if (getKey(a)>mk)
+			m=a;	
+	return m;
+}
+T amax(T, K)(T[T] array, K delegate(T elem) getKey)
+{	T m;
+	K mk;
+	foreach (T a; array)
+	{	m = a;
+		mk = getKey(a);
+		break;		
+	}
+	foreach (T a; array)
+	{	if (getKey(a)>mk)
+			m=a;	
+	}
 	return m;
 }
 
@@ -168,12 +191,12 @@ void reserve(T)(inout T[] array, int length)
  * array.radixSort((Timer a) { return a.get(); });
  * -------------------------------- 
  */
-void radixSort(T)(inout T[] array)
-{	radixSort(array, (T a) { return a; });
+void radixSort(T)(inout T[] array, bool increasing=true)
+{	radixSort(array, increasing, (T a) { return a; });
 }
 
 /// ditto
-void radixSort(T, K)(inout T[] array, K delegate(T elem) getKey, bool signed=true)
+void radixSort(T, K)(inout T[] array, bool increasing, K delegate(T elem) getKey, bool signed=true)
 {	// Are we sorting floats?
 	bool isfloat = false;
 	static if (is(K == float) || is(K == double) || is(K == real) || 
@@ -254,12 +277,22 @@ void radixSort(T, K)(inout T[] array, K delegate(T elem) getKey, bool signed=tru
 
 	// Move everything back again
 	// Radix is not in place, if odd number of passes, move data back to return buffer
-	static if (K.sizeof % 2 == 1)
-		for (size_t i=0; i<count; i++)
-			array[i] = elem_copy[i].data;
+	if (increasing)
+	{	static if (K.sizeof % 2 == 1)
+			for (size_t i=0; i<count; i++)
+				array[i] = elem_copy[i].data;
+		else
+			for (size_t i=0; i<count; i++)
+				array[i] = elem[i].data;
+	}
 	else
-		for (size_t i=0; i<count; i++)
-			array[i] = elem[i].data;
+	{	static if (K.sizeof % 2 == 1)
+			for (size_t i=0; i<count; i++)
+				array[count-i-1] = elem_copy[i].data;
+		else
+			for (size_t i=0; i<count; i++)
+				array[count-i-1] = elem[i].data;
+	}
 
 	// free memory
 	std.c.stdlib.free(elem);
@@ -280,6 +313,8 @@ unittest
 	int[] test2 = [3, 5, 2, 0, -1, 7, -4];
 	test2.radixSort();
 	assert(test2 == [-4, -1, 0, 2, 3, 5, 7]);
+	test2.radixSort(false);
+	assert(test2 == [7, 5, 3, 2, 0, -1, -4]);
 	
 	// Sort doubles
 	double[] test3 = [3.0, 5, 2, 0, -1, 7, -4];

@@ -237,7 +237,8 @@ abstract class Device
 
 	/**
 	 * Get the number from the hardware specified by constant.
-	 * Params: constant is a DEVICE constant defined in yage.device.constant.*/
+	 * Params: constant is a DEVICE constant defined in yage.device.constant, can be
+	 * DEVICE_MAX_LIGHTS, DEVICE_MAX_TEXTURE_SIZE, or DEVICE_MAX_TEXTURES. */
 	static int getLimit(int constant)
 	{	int result;
 		switch (constant)

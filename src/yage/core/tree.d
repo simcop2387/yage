@@ -6,6 +6,8 @@
 module yage.core.tree;
 
 import std.gc;
+import std.stdio;
+import yage.core.array;
 
 /**
  * Implements an element that can be used in a tree, with parents and children.
@@ -18,12 +20,13 @@ import std.gc;
 class Tree(T)
 {	
 	T parent;
-	T[T] children;
+	T[] children;
+	int index=-1;
 	
 	/// Ensure that child is removed from its parent.
-	~this()
-	{	remove();		
-	}
+//	~this()
+//	{	remove();		
+//	}
 	
 	/**
 	 * Add a child element.
@@ -39,7 +42,7 @@ class Tree(T)
 	}
 	
 	/// Get an array of this element's children
-	T[T] getChildren()
+	T[] getChildren()
 	{	return children;
 	}
 	
@@ -52,26 +55,35 @@ class Tree(T)
 	T setParent(T _parent) /// Ditto
 	in { assert(_parent !is null);
 	}body
-	{	if (parent && cast(T)this in parent.children)
-			parent.children.remove(cast(T)this);
+	{	if (parent && parent.isChild(cast(T)this))
+			yage.core.array.remove(parent.children, index);
 		
 		// Add to new parent
 		parent = _parent;
-		parent.children[cast(T)this] = cast(T)this;
+		parent.children ~= cast(T)this;
+		index = parent.children.length-1;
 		return cast(T)this;
 	}
 	
 	/// Is elem a child of this element?
 	bool isChild(T elem)
-	{	return cast(bool)(elem in children);
+	{	if (elem.index < 0 || elem.index >= children.length)
+			return false;
+		return cast(bool)(children[elem.index] == elem);
 	}
 	
 	/// Remove this element from its parent
 	void remove()
 	{	// this needs to happen because some children (like lights) may need to do more in their remove() function.
-		foreach(T c; children)
+		foreach_reverse(T c; children)
 			c.remove();
-		if (parent && cast(T)this in parent.children)
-			parent.children.remove(cast(T)this);
+		
+		if (index > 0)
+		{	yage.core.all.remove(parent.children, index, false);
+			if (index < parent.children.length)
+				parent.children[index].index = index;
+			index = -1; // so remove can't be called twice.
+		}
+
 	}
 }

@@ -4,12 +4,12 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.sprite;
+module yage.scene.sprite;
 
 import yage.resource.resource;
 import yage.resource.material;
-import yage.node.node;
-import yage.node.visible;
+import yage.scene.node;
+import yage.scene.visible;
 
 
 /**

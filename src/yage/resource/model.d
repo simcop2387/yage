@@ -20,7 +20,7 @@ import yage.core.vector;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.resource;
-import yage.node.visible;
+import yage.scene.visible;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;

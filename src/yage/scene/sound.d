@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.sound;
+module yage.scene.sound;
 
 import std.math;
 import std.string;
@@ -13,9 +13,9 @@ import derelict.openal.al;
 import yage.core.math;
 import yage.resource.resource;
 import yage.resource.sound;
-import yage.node.node;
-import yage.node.movable;
-import yage.node.scene;
+import yage.scene.node;
+import yage.scene.movable;
+import yage.scene.scene;
 
 
 /// A node that emits a sound.

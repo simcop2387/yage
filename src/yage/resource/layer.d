@@ -20,7 +20,7 @@ import yage.resource.model;
 import yage.resource.texture;
 import yage.resource.resource;
 import yage.resource.shader;
-import yage.node.light;
+import yage.scene.light;
 
 // Used as default values for function params
 private const Vec2f one = {v:[1.0f, 1.0f]};

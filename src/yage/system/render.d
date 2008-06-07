@@ -17,8 +17,8 @@ import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
-import yage.node.all;
-import yage.node.camera: CameraNode;
+import yage.scene.all;
+import yage.scene.camera: CameraNode;
 
 private struct Attribute2
 {	char[] name;
@@ -87,19 +87,19 @@ class Render
 			n.enableLights();
 
 			switch(n.getType())
-			{	case "yage.node.model.ModelNode":
+			{	case "yage.scene.model.ModelNode":
 					model((cast(ModelNode)n).getModel(), n);
 					break;
-				case "yage.node.sprite.SpriteNode":
+				case "yage.scene.sprite.SpriteNode":
 					sprite((cast(SpriteNode)n).getMaterial(), n);
 					break;
-				case "yage.node.graph.GraphNode":
+				case "yage.scene.graph.GraphNode":
 					model((cast(GraphNode)n).getModel(), n);
 					break;
-				case "yage.node.terrain.TerrainNode":
+				case "yage.scene.terrain.TerrainNode":
 					model((cast(TerrainNode)n).getModel(), n);
 					break;
-				case "yage.node.terrain.LightNode":
+				case "yage.scene.terrain.LightNode":
 					cube(n);	// todo: render as color of light?
 					break;
 				default:

@@ -32,15 +32,16 @@ float third = 1.0/3.0;
  * Surfaces will exist in a hierarchical structure, with each having a parent and an array of children. 
  * Surfacs are positioned relative to their parent. 
  * A style struct defines most of the styles associated with the Surface. */
-class Surface{
+class Surface : Tree!(Surface)
+{
 	static final Style defaultStyle;
 	Style style;
 	
 	//Change from GPUTexture to Texture or Material
 	protected GPUTexture texture;
 	
-	Surface parent;
-	Surface[] children;
+	//Surface parent;
+	//Surface[] children;
 	//Not sure if I should have a reference to Parent or not, but for now, I will.
 	
 	
@@ -105,7 +106,7 @@ class Surface{
 	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseleave;
 	void mouseleave(Surface next, byte buttons, Vec2i coordinates){
 		if(mouseIn == true){
-			if(isSub(next))
+			if(isChild(next))
 				return;
 			else{
 				mouseIn = false;
@@ -476,13 +477,19 @@ class Surface{
 				glEnd();
 			}
 			
-			//I am clueless about this, so it's commented
-			// Sort subs
-			//if (!subs.ordered(true, (Surface s){return s.style.zIndex;} ))
-			//	subs.radixSort((Surface s){return s.style.zIndex;} );
+			// Using a zbuffer might make this unecessary.  tradeoffs?
+			if (!children.sorted(true, (Surface s){return s.style.zIndex;} ))
+				children.radixSort(true, (Surface s){return s.style.zIndex;} );
 			
-			foreach(sub; children)
-				sub.draw();
+			if (children.length)
+			{	writefln("zIndices:");
+				foreach(surf; children)
+					writefln(surf.style.zIndex);
+				writefln("end");
+			}
+			
+			foreach(surf; children)
+				surf.draw();
 		}
 	}
 	
@@ -490,20 +497,9 @@ class Surface{
 		visible = v;
 	}
 	
-	void raise(){ //Could be cleaner, whatever, I'll fix it later
-		if(parent is null){
-			uint index = findIndex(this, Device.children);
-			for(; index < Device.children.length - 1; index++)
-				Device.children[index] = Device.children[index+1];
-			Device.children[$-1] = this;
-		}
-		else{
-			uint index = findIndex(this, parent.children);
-			for(; index < parent.children.length - 1; index++)
-				parent.children[index] = parent.children[index+1];
-			parent.children[$-1] = this;
-		}
-		if(onFocus) onFocus(this);
+	void raise()
+	{	this.style.zIndex = amax(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex + 1;
+		writefln(this.style.zIndex);
 	}
 	
 	//Events will be forwarded to the locked surface
@@ -533,38 +529,58 @@ class Surface{
 		}
 		Input.grabbed = grab;
 	}
-		
-	bool isSub(Surface surf){
-		foreach(sub; children){
-			if (sub == surf) return true;
-		}
-		return false;
-	}
+
 }
 
 //Perhaps put into yage.system.input
 //Could be better, a method perhaps...
+/*
 Surface findSurface(int x, int y){
-	foreach_reverse(sub; Device.children){
+	foreach(sub; Device.children){
 		if(sub.position1.x <= x && x <= sub.position2.x && sub.position1.y <= y && y <= sub.position2.y){
 			return findSurface(sub, x, y);
 		}
 	}
 	return null;
 }
+*/
 //Could be better, a method perhaps...
+//TODO: Modify to search from highest to lowest z-index.
+/*
 Surface findSurface(Surface surface,int x, int y){
-	foreach_reverse(sub; surface.children){
+	foreach(sub; surface.children){
 		if(sub.position1.x <= x && x <= sub.position2.x && sub.position1.y <= y && y <= sub.position2.y){
 			return findSurface(sub, x, y);
 		}
 	}
 	return surface;
 }
+*/
 
+
+Surface findSurface(int x, int y, Surface self=null)
+{	// Get children as array.
+	Surface[] children_sorted;
+	if (self is null)
+		children_sorted = Device.children;
+	else	
+		children_sorted = self.children;
+	
+	// Sort
+	if (!children_sorted.sorted(false, (Surface s){return s.style.zIndex;} ))
+		children_sorted.radixSort(false, (Surface s){return s.style.zIndex;} );
+	
+	foreach(surf; children_sorted)
+		if(surf.position1.x <= x && x <= surf.position2.x && surf.position1.y <= y && y <= surf.position2.y)
+			return findSurface(x, y, surf);	
+	return self;
+}
+
+/*
 uint findIndex(Surface surface, Surface[] array){ //perhaps put into a template
 	foreach(uint index, Surface current; array){
 		if(current == surface) return  index;
 	}
 	return 1 << 8;  //Implement this for not in subs
 }
+*/

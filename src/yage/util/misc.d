@@ -12,7 +12,7 @@ import std.math;
 import std.random;
 import yage.resource.resource;
 import yage.system.input;
-import yage.node.all;
+import yage.scene.all;
 import yage.core.all;
 
 
@@ -26,7 +26,7 @@ void createArray(VisibleNode instance, float spacing, float x, float y=1, float 
 
 				if (instance.getType() == "SoundNode")
 					a = new SoundNode(instance.getParent(), cast(SoundNode)instance);
-				if (instance.getType() == "yage.node.model.ModelNode")
+				if (instance.getType() == "yage.scene.model.ModelNode")
 					a = new ModelNode(instance.getParent(), cast(ModelNode)instance);
 				if (instance.getType() == "LightNode")
 					a = new LightNode(instance.getParent(), cast(LightNode)instance);

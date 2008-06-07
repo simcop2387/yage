@@ -4,24 +4,24 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.movable;
+module yage.scene.movable;
 
 import std.stdio;
 import yage.core.matrix;
 import yage.core.vector;
 import yage.core.misc;
-import yage.node.all;
-import yage.node.scene;
-import yage.node.light;
-import yage.node.node;
-import yage.node.movable;
+import yage.scene.all;
+import yage.scene.scene;
+import yage.scene.light;
+import yage.scene.node;
+import yage.scene.movable;
 
 
 /**
  * This class adds numerous methods for getting and setting position, rotation, velocity, and angular velocity.
  * See_Also:
- * yage.node.visible
- * yage.node.node */
+ * yage.scene.visible
+ * yage.scene.node */
 class MovableNode : Node
 {
 	/// Construct as a child of parent.

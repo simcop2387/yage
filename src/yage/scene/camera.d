@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.camera;
+module yage.scene.camera;
 
 import std.math;
 import derelict.opengl.gl;
@@ -16,10 +16,10 @@ import yage.core.matrix;
 import yage.core.plane;
 import yage.core.vector;
 import yage.resource.texture;
-import yage.node.visible;
-import yage.node.node;
-import yage.node.scene;
-import yage.node.movable;
+import yage.scene.visible;
+import yage.scene.node;
+import yage.scene.scene;
+import yage.scene.movable;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.render;

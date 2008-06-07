@@ -15,7 +15,7 @@ import yage.core.color;
 import yage.core.vector;
 import yage.resource.resource;
 import yage.resource.model;
-import yage.node.all;
+import yage.scene.all;
 
 
 abstract class GameObject : VisibleNode

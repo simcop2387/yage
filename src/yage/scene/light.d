@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.light;
+module yage.scene.light;
 
 import std.math;
 import std.stdio;
@@ -12,13 +12,13 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.all;
 import yage.resource.material;
-import yage.node.node;
-import yage.node.movable;
-import yage.node.scene;
+import yage.scene.node;
+import yage.scene.movable;
+import yage.scene.scene;
 import yage.system.device;
 import yage.system.constant;
 import yage.system.render;
-import yage.node.camera: CameraNode;
+import yage.scene.camera: CameraNode;
 
 /**
  * LightNodes are Nodes that emit light.

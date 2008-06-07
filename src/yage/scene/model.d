@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.model;
+module yage.scene.model;
 
 import yage.core.vector;
 import yage.system.device;
@@ -12,8 +12,8 @@ import yage.system.log;
 import yage.resource.resource;
 import yage.resource.model;
 import yage.resource.material;
-import yage.node.visible;
-import yage.node.node;
+import yage.scene.visible;
+import yage.scene.node;
 
 
 /// A node used for rendering a 3D model.

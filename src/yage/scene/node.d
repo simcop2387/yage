@@ -4,19 +4,19 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.node;
+module yage.scene.node;
 
 import std.stdio;
 import std.traits;
 import std.bind;
 import yage.core.all;
 import yage.core.tree;
-import yage.node.visible;
-import yage.node.scene;
-import yage.node.movable;
-import yage.node.all;
-import yage.node.light;
-import yage.node.node;
+import yage.scene.visible;
+import yage.scene.scene;
+import yage.scene.movable;
+import yage.scene.all;
+import yage.scene.light;
+import yage.scene.node;
 
 /**
  * All other Nodes extend this class.
@@ -106,13 +106,13 @@ abstract class Node : Tree!(Node)
 		{	// Scene and Node are never children
 			// Is there a better way to do this?
 			switch (c.classinfo.name)
-			{	case "yage.node.camera.CameraNode": new CameraNode(this, cast(CameraNode)c); break;
-				case "yage.node.graph.GraphNode": new GraphNode(this, cast(GraphNode)c); break;
-				case "yage.node.light.LightNode": new LightNode(this, cast(LightNode)c); break;
-				case "yage.node.model.ModelNode": new ModelNode(this, cast(ModelNode)c); break;
-				case "yage.node.sound.SoundNode": new SoundNode(this, cast(SoundNode)c); break;
-				case "yage.node.sprite.SpriteNode": new SpriteNode(this, cast(SpriteNode)c); break;
-				case "yage.node.terrain.TerrainNode": new TerrainNode(this, cast(TerrainNode)c); break;				
+			{	case "yage.scene.camera.CameraNode": new CameraNode(this, cast(CameraNode)c); break;
+				case "yage.scene.graph.GraphNode": new GraphNode(this, cast(GraphNode)c); break;
+				case "yage.scene.light.LightNode": new LightNode(this, cast(LightNode)c); break;
+				case "yage.scene.model.ModelNode": new ModelNode(this, cast(ModelNode)c); break;
+				case "yage.scene.sound.SoundNode": new SoundNode(this, cast(SoundNode)c); break;
+				case "yage.scene.sprite.SpriteNode": new SpriteNode(this, cast(SpriteNode)c); break;
+				case "yage.scene.terrain.TerrainNode": new TerrainNode(this, cast(TerrainNode)c); break;				
 				default:
 			}
 			/*
@@ -152,7 +152,7 @@ abstract class Node : Tree!(Node)
 	{	return scene;
 	}
 
-	/// Get the type of this Node as a string; i.e. "yage.node.visible.ModelNode".
+	/// Get the type of this Node as a string; i.e. "yage.scene.visible.ModelNode".
 	char[] getType()
 	{	return this.classinfo.name;
 	}
@@ -236,7 +236,11 @@ abstract class Node : Tree!(Node)
 		if (on_update !is null)
 			on_update(this);
 
-		foreach(Node c; children)
+		// We iterate in reverse in case a child deletes itself.
+		// What about one child deleting another?
+		// I guess the preferred way to remove an object would be to set its lifetime to 0.
+		// Perhaps we should override remove to do this so that items are removed in a controlled way?
+		foreach_reverse(Node c; children)
 			c.update(delta);
 		
 		lifetime-= delta;

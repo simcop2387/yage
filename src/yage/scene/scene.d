@@ -4,14 +4,14 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.scene;
+module yage.scene.scene;
 
 import derelict.opengl.gl;
 import derelict.openal.al;
 import yage.core.all;
-import yage.node.visible;
-import yage.node.light;
-import yage.node.node;
+import yage.scene.visible;
+import yage.scene.light;
+import yage.scene.node;
 
 
 /**

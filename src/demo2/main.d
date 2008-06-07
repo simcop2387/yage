@@ -19,8 +19,43 @@ import derelict.opengl.glext;
 import demo2.ship;
 import demo2.gameobj;
 
-// Current program entry point.  This may change in the future.
-int main(){
+// program entry point.
+int main()
+{
+	/*
+	Object[] array1;
+	Object[uint] array2;
+	
+	Timer a = new Timer();
+	for (int j=0; j<100; j++)
+	for (int i=0; i<1000; i++)
+		array1 ~= new Object();
+	writefln("array create: " ~ a.toString());
+
+	
+	a.reset();
+	for (int j=0; j<100; j++)
+	for (int i=0; i<1000; i++)
+	{};	
+	writefln("array loop: " ~ a.toString());
+	
+	a.reset();
+	for (int j=0; j<100; j++)
+	for (int i=0; i<1000; i++)
+	{	Object b = new Object;
+		array2[b.toHash()] = b;	
+	}
+	writefln("aa create: " ~ a.toString());
+	//array2.rehash;
+
+	Timer c = new Timer();
+	for (int j=0; j<100; j++)
+	foreach (i; array2)
+	{}
+	writefln("aa loop: " ~ c.toString());
+	
+	return 0;
+	*/
 	
 	// Init (resolution, depth, fullscreen, aa-samples)
 	Device.init(800, 600, 32, false, 1);

@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.terrain;
+module yage.scene.terrain;
 
 import std.conv;
 import std.file;
@@ -17,8 +17,8 @@ import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
 import yage.resource.image;
-import yage.node.node;
-import yage.node.visible;
+import yage.scene.node;
+import yage.scene.visible;
 import yage.core.matrix;
 import yage.core.vector;
 import yage.system.constant;

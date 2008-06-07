@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.graph;
+module yage.scene.graph;
 
 import std.stdio;
 import std.math;
@@ -14,9 +14,9 @@ import yage.resource.resource;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.model;
-import yage.node.node;
-import yage.node.visible;
-import yage.node.scene;
+import yage.scene.node;
+import yage.scene.visible;
+import yage.scene.scene;
 
 /**
  * A GraphNode can be set to an arboolrary parametric equation of two variables

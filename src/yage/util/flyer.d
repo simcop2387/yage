@@ -7,9 +7,9 @@
 module yage.util.flyer;
 
 import yage.core.all;
-import yage.node.node;
-import yage.node.camera;
-import yage.node.movable;
+import yage.scene.node;
+import yage.scene.camera;
+import yage.scene.movable;
 import yage.system.input;
 
 /**

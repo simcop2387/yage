@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.node.visible;
+module yage.scene.visible;
 
 import std.math;
 import std.stdio;
@@ -14,11 +14,11 @@ import derelict.opengl.glu;
 import derelict.opengl.glext;
 import derelict.sdl.sdl;
 import yage.core.all;
-import yage.node.all;
-import yage.node.scene;
-import yage.node.light;
-import yage.node.node;
-import yage.node.movable;
+import yage.scene.all;
+import yage.scene.scene;
+import yage.scene.light;
+import yage.scene.node;
+import yage.scene.movable;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.input;
@@ -27,8 +27,8 @@ import yage.system.input;
 /**
  * VisibleNode is the parent of all Nodes that are visible and can be rendered.
  * See_Also:
- * yage.node.MovableNode
- * yage.node.Node */
+ * yage.scene.MovableNode
+ * yage.scene.Node */
 abstract class VisibleNode : MovableNode
 {	
 	protected bool 	visible = true;
