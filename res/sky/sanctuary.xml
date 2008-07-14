@@ -1,5 +1,5 @@
 <material>
-  <layer emissive="FFFFFF">
-    <map src="sanctuary.jpg" mipmap="false" compress="false"/>
-  </layer>
+	<layer emissive="FFFFFF">
+		<map src="sanctuary.jpg" mipmap="false" compress="false"/>
+	</layer>
 </material>

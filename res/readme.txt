@@ -17,6 +17,8 @@ license unless otherwise noted.
 [Resource]					[Author / License]
 fx/flare*.xml				Eric Poggel, public domain
 fx/smoke.xml				Eric Poggel, public domain
+gui/skins/*					Deformative, license unknown
+gui/font/*					Bitstream, Inc, see Vera-Copyright.txt
 medieval/house.ms3d			Eric Poggel, public domain, textures by Nvidia
 music/celery - pages.ogg	Paul Sweeny and Jeff Stevens
 							http://www.myspace.com/celerycelery
