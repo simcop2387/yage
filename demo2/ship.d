@@ -6,18 +6,17 @@
  * This module is not technically part of the engine, but merely uses it.
  */
 
-module demo1.ship;
+module demo2.ship;
 
 import std.stdio;
 import yage.all;
-import demo1.gameobj;
+import demo2.gameobj;
 
 class Ship : GameObject
 {
 	MovableNode pitch;			// attached to this node to look up and down
 	ModelNode ship;		// attached to pitch and rolls left & right
 	Spring spring;		// spring to attach camera
-	SoundNode sound;
 	
 	Vec2i mouseDelta;
 	bool input = false;
@@ -33,16 +32,12 @@ class Ship : GameObject
 		pitch = new MovableNode(this);
 
 		ship = new ModelNode(pitch);
-		ship.setModel("scifi/fighter.ms3d");
+		ship.setModel("obj/tie2.obj");
 		ship.setSize(Vec3f(.25));
 
 		spring = new Spring(ship);
 		spring.setDistance(Vec3f(0, 4, 12));
 		spring.setStiffness(1);
-
-		sound = new SoundNode(ship);
-		sound.setSound("sound/ship_eng.ogg");
-		sound.setLooping(true);
 	}
 
 	ModelNode getShip()
@@ -58,42 +53,19 @@ class Ship : GameObject
 	}
 
 	void update(float delta)
-	{	super.update(delta);
+	{	debug scope(failure) writef("Backtrace xx ",__FILE__,"(",__LINE__,")\n");
+
+		super.update(delta);
 
 		// Set the acceleration speed
-		float speed = 50*delta;
-		if (Input.keyDown[SDLK_q])
-			speed *= 20; // Hyperdrive
+		float speed = 250*delta;
 
 		// Accelerate forward
 		if (Input.keyDown[SDLK_UP] || Input.keyDown[SDLK_w])
 		{
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
-
-			// Engine smoke
-			SpriteNode puff = new SpriteNode(ship.getScene());
-			puff.setMaterial(Resource.material("fx/smoke.xml"));
-			puff.setLifetime(5);
-			puff.setSize(Vec3f(.4));
-			//puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
-			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-			
-			void fade(Node self)
-			{	SpriteNode node = cast(SpriteNode)self;
-				node.setColor(Color(1, 1, 1, node.getLifetime()/5));
-				float scale = std.math.sqrt(5.0f)-std.math.sqrt(node.getLifetime()) + .4;
-				node.setSize(scale);
-			}
-			puff.onUpdate(&fade);
-
-			puff = new SpriteNode(ship.getScene(), puff);
-			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-			
-			
-			sound.play();
+			Vec3f vel = Vec3f(0, 0, -.8).rotate(pitch.getAbsoluteRotation()).scale(getVelocity().length());
 		}
-		else
-			sound.stop();
 
 		// Accelerate left, right, and backward
 		if (Input.keyDown[SDLK_LEFT] || Input.keyDown[SDLK_a])
@@ -109,6 +81,7 @@ class Ship : GameObject
 			pitch.angularAccelerate(Vec3f(mouseDelta.y/24.0, 0, 0));
 			mouseDelta.x = mouseDelta.y = 0;
 		}
+
 
 		// Bank on turn
 		float turn = getAngularVelocity().y;
@@ -130,18 +103,5 @@ class Ship : GameObject
 		// Update the spring
 		if (spring.getStiffness()<50)
 			spring.setStiffness(spring.getStiffness*(delta+1));
-		// Fire a flare
-		if (Input.keyDown[SDLK_SPACE])
-		{
-			Flare flare = new Flare(ship.getScene());
-			flare.setPosition(ship.getAbsolutePosition());
-			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getAbsoluteTransform())+getVelocity());
-
-			SoundNode zap = new SoundNode(ship);
-			zap.setSound("sound/laser.wav");
-			zap.setVolume(.3);
-			zap.setLifetime(2);
-			zap.play();
-		}
 	}
 }
