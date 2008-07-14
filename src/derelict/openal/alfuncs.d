@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -153,10 +153,7 @@ static this() {
 }
 
 
-/*    version(Windows)
-    extern(Windows):
-else
-*/     extern(C):
+extern(C):
 
 typedef void function(ALenum) pfalEnable;
 typedef void function(ALenum) pfalDisable;
@@ -295,7 +292,7 @@ pfalcGetString                          alcGetString;
 pfalcGetIntegerv                        alcGetIntegerv;
 
 typedef ALCdevice* function(char*) pfalcOpenDevice;
-typedef ALCvoid function(ALCdevice*) pfalcCloseDevice;
+typedef ALCboolean function(ALCdevice*) pfalcCloseDevice;
 pfalcOpenDevice                         alcOpenDevice;
 pfalcCloseDevice                        alcCloseDevice;
 

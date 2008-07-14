@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,18 +78,8 @@ enum : GLenum
     GL_MAX_ELEMENTS_INDICES_EXT        = 0x80E9,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLuint, GLuint, GLsizei, GLenum, GLvoid*) pfglDrawRangeElementsEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLuint, GLuint, GLsizei, GLenum, GLvoid*) pfglDrawRangeElementsEXT;
 
 pfglDrawRangeElementsEXT        glDrawRangeElementsEXT;

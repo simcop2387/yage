@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,20 +99,10 @@ enum : GLuint
     GL_MULTISAMPLE_BIT_EXT      = 0x20000000
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLclampf,GLboolean) pfglSampleMaskEXT;
-    typedef void function(GLenum) pfglSamplePatternEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLclampf,GLboolean) pfglSampleMaskEXT;
+typedef void function(GLenum) pfglSamplePatternEXT;
 
 pfglSampleMaskEXT           glSampleMaskEXT;
 pfglSamplePatternEXT        glSamplePatternEXT;

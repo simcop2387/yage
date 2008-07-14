@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -133,24 +133,14 @@ enum : GLenum
     GL_RGBA_INTEGER_MODE_EXT    = 0x8D9E,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLint,GLint,GLint,GLint) pfglClearColorIiEXT;
-    typedef void function(GLuint,GLuint,GLuint,GLuint) pfglClearColorIuiEXT;
-    typedef void function(GLenum,GLenum,GLint*) pfglGetTexParameterIivEXT;
-    typedef void function(GLenum,GLenum,GLuint*) pfglGetTexParameterIuivEXT;
-    typedef void function(GLenum,GLenum,GLint*) pfglTexParameterIivEXT;
-    typedef void function(GLenum,GLenum,GLuint*) pfglTexParameterIuivEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLint,GLint,GLint,GLint) pfglClearColorIiEXT;
+typedef void function(GLuint,GLuint,GLuint,GLuint) pfglClearColorIuiEXT;
+typedef void function(GLenum,GLenum,GLint*) pfglGetTexParameterIivEXT;
+typedef void function(GLenum,GLenum,GLuint*) pfglGetTexParameterIuivEXT;
+typedef void function(GLenum,GLenum,GLint*) pfglTexParameterIivEXT;
+typedef void function(GLenum,GLenum,GLuint*) pfglTexParameterIuivEXT;
 
 pfglClearColorIiEXT         glClearColorIiEXT;
 pfglClearColorIuiEXT        glClearColorIuiEXT;

@@ -108,7 +108,7 @@ Eric Poggel
 <dt><span class="decl">static void 
 <span class="currsymbol">init</span>
 <script type="text/javascript">explorer.outline.addDecl('init');</script>
-(int <span class="funcparam">width</span>, int <span class="funcparam">height</span>, ubyte <span class="funcparam">depth</span>, bool <span class="funcparam">fullscreen</span>, ubyte <span class="funcparam">samples</span> = cast(ubyte)32);
+(int <span class="funcparam">width</span>, int <span class="funcparam">height</span>, ubyte <span class="funcparam">depth</span>, bool <span class="funcparam">fullscreen</span>, ubyte <span class="funcparam">samples</span> = cast(ubyte)1);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -174,6 +174,19 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static float 
+<span class="currsymbol">getAspectRatio</span>
+<script type="text/javascript">explorer.outline.addDecl('getAspectRatio');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return the aspect ratio (width/height) of the rendering window.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static int 
 <span class="currsymbol">getLimit</span>
 <script type="text/javascript">explorer.outline.addDecl('getLimit');</script>
@@ -204,14 +217,14 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static float 
-<span class="currsymbol">getAspectRatio</span>
-<script type="text/javascript">explorer.outline.addDecl('getAspectRatio');</script>
+<dt><span class="decl">static Surface 
+<span class="currsymbol">getSurface</span>
+<script type="text/javascript">explorer.outline.addDecl('getSurface');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return the aspect ratio (width/height) of the rendering window.
+<dd>Get / Set the parent Surface that all others use. 
 <br><br>
 
 </dd>
@@ -250,8 +263,9 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Resize the viewport to the given size.  Special values of
-  zero scale the viewport to the window size. 
+<dd>Resize the viewport to the given size.
+ Special values of zero scale the viewport to the window size.
+ This is usually called by Camera. 
 <br><br>
 
 </dd>
@@ -288,7 +302,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon May 26 22:21:35 2008
+		on Sun Jul 13 22:15:41 2008
 
 	</div>
 	
@@ -319,6 +333,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.tree");
+
 	explorer.packageExplorer.addModule("yage.core.types");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
@@ -331,31 +347,11 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
-	explorer.packageExplorer.addModule("yage.node.all");
-
-	explorer.packageExplorer.addModule("yage.node.camera");
-
-	explorer.packageExplorer.addModule("yage.node.graph");
-
-	explorer.packageExplorer.addModule("yage.node.light");
-
-	explorer.packageExplorer.addModule("yage.node.model");
-
-	explorer.packageExplorer.addModule("yage.node.movable");
-
-	explorer.packageExplorer.addModule("yage.node.node");
-
-	explorer.packageExplorer.addModule("yage.node.scene");
-
-	explorer.packageExplorer.addModule("yage.node.sound");
-
-	explorer.packageExplorer.addModule("yage.node.sprite");
-
-	explorer.packageExplorer.addModule("yage.node.terrain");
-
-	explorer.packageExplorer.addModule("yage.node.visible");
-
 	explorer.packageExplorer.addModule("yage.resource.all");
+
+	explorer.packageExplorer.addModule("yage.resource.exception");
+
+	explorer.packageExplorer.addModule("yage.resource.font");
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
@@ -379,6 +375,30 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.resource.texture");
 
+	explorer.packageExplorer.addModule("yage.scene.all");
+
+	explorer.packageExplorer.addModule("yage.scene.camera");
+
+	explorer.packageExplorer.addModule("yage.scene.graph");
+
+	explorer.packageExplorer.addModule("yage.scene.light");
+
+	explorer.packageExplorer.addModule("yage.scene.model");
+
+	explorer.packageExplorer.addModule("yage.scene.movable");
+
+	explorer.packageExplorer.addModule("yage.scene.node");
+
+	explorer.packageExplorer.addModule("yage.scene.scene");
+
+	explorer.packageExplorer.addModule("yage.scene.sound");
+
+	explorer.packageExplorer.addModule("yage.scene.sprite");
+
+	explorer.packageExplorer.addModule("yage.scene.terrain");
+
+	explorer.packageExplorer.addModule("yage.scene.visible");
+
 	explorer.packageExplorer.addModule("yage.system.all");
 
 	explorer.packageExplorer.addModule("yage.system.constant");
@@ -390,6 +410,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
+
+	explorer.packageExplorer.addModule("yage.system.rendertarget");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

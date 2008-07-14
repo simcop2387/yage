@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -309,13 +309,12 @@ private void load(SharedLib lib)
         bindFunc(SDL_GetWMInfo)("SDL_GetWMInfo", lib);
 }
 
-
 GenericLoader DerelictSDL;
 static this() {
     DerelictSDL.setup(
         "sdl.dll",
         "libSDL.so, libSDL.so.0, libSDL-1.2.so, libSDL-1.2.so.0",
-        "",
+        "../Frameworks/SDL.framework/SDL, /Library/Frameworks/SDL.framework/SDL, /System/Library/Frameworks/SDL.framework/SDL",
         &load
     );
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -98,25 +98,15 @@ enum : GLenum
     GL_COMPRESSED_TEXTURE_FORMATS_ARB      = 0x86A3,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage3DARB;
-    typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage2DARB;
-    typedef void function(GLenum, GLint, GLenum, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage1DARB;
-    typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage3DARB;
-    typedef void function(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage2DARB;
-    typedef void function(GLenum, GLint, GLint, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage1DARB;
-    typedef void function(GLenum, GLint, GLvoid*) pfglGetCompressedTexImageARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage3DARB;
+typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage2DARB;
+typedef void function(GLenum, GLint, GLenum, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage1DARB;
+typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage3DARB;
+typedef void function(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage2DARB;
+typedef void function(GLenum, GLint, GLint, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage1DARB;
+typedef void function(GLenum, GLint, GLvoid*) pfglGetCompressedTexImageARB;
 
 pfglCompressedTexImage3DARB         glCompressedTexImage3DARB;
 pfglCompressedTexImage2DARB         glCompressedTexImage2DARB;

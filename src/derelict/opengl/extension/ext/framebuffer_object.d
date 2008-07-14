@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -158,35 +158,25 @@ enum : GLenum
     GL_INVALID_FRAMEBUFFER_OPERATION_EXT                   = 0x0506,
 }
 
-private const char[] Funcs =
-"
-    typedef GLboolean function(GLuint) pfglIsRenderbufferEXT;
-    typedef GLvoid function(GLenum, GLuint) pfglBindRenderbufferEXT;
-    typedef GLvoid function(GLsizei, GLuint*) pfglDeleteRenderbuffersEXT;
-    typedef GLvoid function(GLsizei, GLuint*) pfglGenRenderbuffersEXT;
-    typedef GLvoid function(GLenum, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageEXT;
-    typedef GLvoid function(GLenum, GLenum, GLint*) pfglGetRenderbufferParameterivEXT;
-    typedef GLboolean function(GLuint) pfglIsFramebufferEXT;
-    typedef GLvoid function(GLenum, GLuint) pfglBindFramebufferEXT;
-    typedef GLvoid function(GLsizei, GLuint*) pfglDeleteFramebuffersEXT;
-    typedef GLvoid function(GLsizei, GLuint*) pfglGenFramebuffersEXT;
-    typedef GLenum function(GLenum) pfglCheckFramebufferStatusEXT;
-    typedef GLvoid function(GLenum, GLenum, GLenum, GLuint, GLint) pfglFramebufferTexture1DEXT;
-    typedef GLvoid function(GLenum, GLenum, GLenum, GLuint, GLint) pfglFramebufferTexture2DEXT;
-    typedef GLvoid function(GLenum, GLenum, GLenum, GLuint, GLint, GLint) pfglFramebufferTexture3DEXT;
-    typedef GLvoid function(GLenum, GLenum, GLenum, GLuint) pfglFramebufferRenderbufferEXT;
-    typedef GLvoid function(GLenum, GLenum, GLenum, GLint*) pfglGetFramebufferAttachmentParameterivEXT;
-    typedef GLvoid function(GLenum) pfglGenerateMipmapEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef GLboolean function(GLuint) pfglIsRenderbufferEXT;
+typedef GLvoid function(GLenum, GLuint) pfglBindRenderbufferEXT;
+typedef GLvoid function(GLsizei, GLuint*) pfglDeleteRenderbuffersEXT;
+typedef GLvoid function(GLsizei, GLuint*) pfglGenRenderbuffersEXT;
+typedef GLvoid function(GLenum, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageEXT;
+typedef GLvoid function(GLenum, GLenum, GLint*) pfglGetRenderbufferParameterivEXT;
+typedef GLboolean function(GLuint) pfglIsFramebufferEXT;
+typedef GLvoid function(GLenum, GLuint) pfglBindFramebufferEXT;
+typedef GLvoid function(GLsizei, GLuint*) pfglDeleteFramebuffersEXT;
+typedef GLvoid function(GLsizei, GLuint*) pfglGenFramebuffersEXT;
+typedef GLenum function(GLenum) pfglCheckFramebufferStatusEXT;
+typedef GLvoid function(GLenum, GLenum, GLenum, GLuint, GLint) pfglFramebufferTexture1DEXT;
+typedef GLvoid function(GLenum, GLenum, GLenum, GLuint, GLint) pfglFramebufferTexture2DEXT;
+typedef GLvoid function(GLenum, GLenum, GLenum, GLuint, GLint, GLint) pfglFramebufferTexture3DEXT;
+typedef GLvoid function(GLenum, GLenum, GLenum, GLuint) pfglFramebufferRenderbufferEXT;
+typedef GLvoid function(GLenum, GLenum, GLenum, GLint*) pfglGetFramebufferAttachmentParameterivEXT;
+typedef GLvoid function(GLenum) pfglGenerateMipmapEXT;
 
 pfglIsRenderbufferEXT                       glIsRenderbufferEXT;
 pfglBindRenderbufferEXT                     glBindRenderbufferEXT;

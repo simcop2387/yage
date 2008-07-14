@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -325,111 +325,101 @@ enum : GLenum
     GL_STENCIL_BACK_WRITEMASK          = 0x8CA5,
 }
 
-private const char[] Funcs =
-"
-    typedef GLvoid function(GLenum, GLenum) pfglBlendEquationSeparate;
-    typedef GLvoid function(GLsizei, GLenum*) pfglDrawBuffers;
-    typedef GLvoid function(GLenum, GLenum, GLenum, GLenum) pfglStencilOpSeparate;
-    typedef GLvoid function(GLenum, GLenum, GLint, GLuint) pfglStencilFuncSeparate;
-    typedef GLvoid function(GLenum, GLuint) pfglStencilMaskSeparate;
-    typedef GLvoid function(GLuint, GLuint) pfglAttachShader;
-    typedef GLvoid function(GLuint, GLuint, GLchar*) pfglBindAttribLocation;
-    typedef GLvoid function(GLuint) pfglCompileShader;
-    typedef GLuint function() pfglCreateProgram;
-    typedef GLuint function(GLenum) pfglCreateShader;
-    typedef GLvoid function(GLuint) pfglDeleteProgram;
-    typedef GLvoid function(GLuint) pfglDeleteShader;
-    typedef GLvoid function(GLuint, GLuint) pfglDetachShader;
-    typedef GLvoid function(GLuint) pfglDisableVertexAttribArray;
-    typedef GLvoid function(GLuint) pfglEnableVertexAttribArray;
-    typedef GLvoid function(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*) pfglGetActiveAttrib;
-    typedef GLvoid function(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*) pfglGetActiveUniform;
-    typedef GLvoid function(GLuint, GLsizei, GLsizei*, GLuint*) pfglGetAttachedShaders;
-    typedef GLint function(GLuint, GLchar*) pfglGetAttribLocation;
-    typedef GLvoid function(GLuint, GLenum, GLint*) pfglGetProgramiv;
-    typedef GLvoid function(GLuint, GLsizei, GLsizei*, GLchar*) pfglGetProgramInfoLog;
-    typedef GLvoid function(GLuint, GLenum, GLint *) pfglGetShaderiv;
-    typedef GLvoid function(GLuint, GLsizei, GLsizei*, GLchar*) pfglGetShaderInfoLog;
-    typedef GLvoid function(GLuint, GLsizei, GLsizei*, GLchar*) pfglGetShaderSource;
-    typedef GLint function(GLuint, GLchar*) pfglGetUniformLocation;
-    typedef GLvoid function(GLuint, GLint, GLfloat*) pfglGetUniformfv;
-    typedef GLvoid function(GLuint, GLint, GLint*) pfglGetUniformiv;
-    typedef GLvoid function(GLuint, GLenum, GLdouble*) pfglGetVertexAttribdv;
-    typedef GLvoid function(GLuint, GLenum, GLfloat*) pfglGetVertexAttribfv;
-    typedef GLvoid function(GLuint, GLenum, GLint*) pfglGetVertexAttribiv;
-    typedef GLvoid function(GLuint, GLenum, GLvoid**) pfglGetVertexAttribPointerv;
-    typedef GLboolean function(GLuint) pfglIsProgram;
-    typedef GLboolean function(GLuint) pfglIsShader;
-    typedef GLvoid function(GLuint) pfglLinkProgram;
-    typedef GLvoid function(GLuint, GLsizei, GLchar**, GLint*) pfglShaderSource;
-    typedef GLvoid function(GLuint) pfglUseProgram;
-    typedef GLvoid function(GLint, GLfloat) pfglUniform1f;
-    typedef GLvoid function(GLint, GLfloat, GLfloat) pfglUniform2f;
-    typedef GLvoid function(GLint, GLfloat, GLfloat, GLfloat) pfglUniform3f;
-    typedef GLvoid function(GLint, GLfloat, GLfloat, GLfloat, GLfloat) pfglUniform4f;
-    typedef GLvoid function(GLint, GLint) pfglUniform1i;
-    typedef GLvoid function(GLint, GLint, GLint) pfglUniform2i;
-    typedef GLvoid function(GLint, GLint, GLint, GLint) pfglUniform3i;
-    typedef GLvoid function(GLint, GLint, GLint, GLint, GLint) pfglUniform4i;
-    typedef GLvoid function(GLint, GLsizei, GLfloat*) pfglUniform1fv;
-    typedef GLvoid function(GLint, GLsizei, GLfloat*) pfglUniform2fv;
-    typedef GLvoid function(GLint, GLsizei, GLfloat*) pfglUniform3fv;
-    typedef GLvoid function(GLint, GLsizei, GLfloat*) pfglUniform4fv;
-    typedef GLvoid function(GLint, GLsizei, GLint*) pfglUniform1iv;
-    typedef GLvoid function(GLint, GLsizei, GLint*) pfglUniform2iv;
-    typedef GLvoid function(GLint, GLsizei, GLint*) pfglUniform3iv;
-    typedef GLvoid function(GLint, GLsizei, GLint*) pfglUniform4iv;
-    typedef GLvoid function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix2fv;
-    typedef GLvoid function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix3fv;
-    typedef GLvoid function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix4fv;
-    typedef GLvoid function(GLuint) pfglValidateProgram;
-    typedef GLvoid function(GLuint, GLdouble) pfglVertexAttrib1d;
-    typedef GLvoid function(GLuint, GLdouble*) pfglVertexAttrib1dv;
-    typedef GLvoid function(GLuint, GLfloat) pfglVertexAttrib1f;
-    typedef GLvoid function(GLuint, GLfloat*) pfglVertexAttrib1fv;
-    typedef GLvoid function(GLuint, GLshort) pfglVertexAttrib1s;
-    typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib1sv;
-    typedef GLvoid function(GLuint, GLdouble, GLdouble) pfglVertexAttrib2d;
-    typedef GLvoid function(GLuint, GLdouble*) pfglVertexAttrib2dv;
-    typedef GLvoid function(GLuint, GLfloat, GLfloat) pfglVertexAttrib2f;
-    typedef GLvoid function(GLuint, GLfloat*) pfglVertexAttrib2fv;
-    typedef GLvoid function(GLuint, GLshort, GLshort) pfglVertexAttrib2s;
-    typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib2sv;
-    typedef GLvoid function(GLuint, GLdouble, GLdouble, GLdouble) pfglVertexAttrib3d;
-    typedef GLvoid function(GLuint, GLdouble*) pfglVertexAttrib3dv;
-    typedef GLvoid function(GLuint, GLfloat, GLfloat, GLfloat) pfglVertexAttrib3f;
-    typedef GLvoid function(GLuint, GLfloat*) pfglVertexAttrib3fv;
-    typedef GLvoid function(GLuint, GLshort, GLshort, GLshort) pfglVertexAttrib3s;
-    typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib3sv;
-    typedef GLvoid function(GLuint, GLbyte*) pfglVertexAttrib4Nbv;
-    typedef GLvoid function(GLuint, GLint*) pfglVertexAttrib4Niv;
-    typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib4Nsv;
-    typedef GLvoid function(GLuint, GLubyte, GLubyte, GLubyte, GLubyte) pfglVertexAttrib4Nub;
-    typedef GLvoid function(GLuint, GLubyte*) pfglVertexAttrib4Nubv;
-    typedef GLvoid function(GLuint, GLuint*) pfglVertexAttrib4Nuiv;
-    typedef GLvoid function(GLuint, GLushort*) pfglVertexAttrib4Nusv;
-    typedef GLvoid function(GLuint, GLbyte*) pfglVertexAttrib4bv;
-    typedef GLvoid function(GLuint, GLdouble, GLdouble, GLdouble, GLdouble) pfglVertexAttrib4d;
-    typedef GLvoid function(GLuint, GLdouble*) pfglVertexAttrib4dv;
-    typedef GLvoid function(GLuint, GLfloat, GLfloat, GLfloat, GLfloat) pfglVertexAttrib4f;
-    typedef GLvoid function(GLuint, GLfloat*) pfglVertexAttrib4fv;
-    typedef GLvoid function(GLuint, GLint*) pfglVertexAttrib4iv;
-    typedef GLvoid function(GLuint, GLshort, GLshort, GLshort, GLshort) pfglVertexAttrib4s;
-    typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib4sv;
-    typedef GLvoid function(GLuint, GLubyte*) pfglVertexAttrib4ubv;
-    typedef GLvoid function(GLuint, GLuint*) pfglVertexAttrib4uiv;
-    typedef GLvoid function(GLuint, GLushort*) pfglVertexAttrib4usv;
-    typedef GLvoid function(GLuint, GLint, GLenum, GLboolean, GLsizei, GLvoid*) pfglVertexAttribPointer;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef GLvoid function(GLenum, GLenum) pfglBlendEquationSeparate;
+typedef GLvoid function(GLsizei, GLenum*) pfglDrawBuffers;
+typedef GLvoid function(GLenum, GLenum, GLenum, GLenum) pfglStencilOpSeparate;
+typedef GLvoid function(GLenum, GLenum, GLint, GLuint) pfglStencilFuncSeparate;
+typedef GLvoid function(GLenum, GLuint) pfglStencilMaskSeparate;
+typedef GLvoid function(GLuint, GLuint) pfglAttachShader;
+typedef GLvoid function(GLuint, GLuint, GLchar*) pfglBindAttribLocation;
+typedef GLvoid function(GLuint) pfglCompileShader;
+typedef GLuint function() pfglCreateProgram;
+typedef GLuint function(GLenum) pfglCreateShader;
+typedef GLvoid function(GLuint) pfglDeleteProgram;
+typedef GLvoid function(GLuint) pfglDeleteShader;
+typedef GLvoid function(GLuint, GLuint) pfglDetachShader;
+typedef GLvoid function(GLuint) pfglDisableVertexAttribArray;
+typedef GLvoid function(GLuint) pfglEnableVertexAttribArray;
+typedef GLvoid function(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*) pfglGetActiveAttrib;
+typedef GLvoid function(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*) pfglGetActiveUniform;
+typedef GLvoid function(GLuint, GLsizei, GLsizei*, GLuint*) pfglGetAttachedShaders;
+typedef GLint function(GLuint, GLchar*) pfglGetAttribLocation;
+typedef GLvoid function(GLuint, GLenum, GLint*) pfglGetProgramiv;
+typedef GLvoid function(GLuint, GLsizei, GLsizei*, GLchar*) pfglGetProgramInfoLog;
+typedef GLvoid function(GLuint, GLenum, GLint *) pfglGetShaderiv;
+typedef GLvoid function(GLuint, GLsizei, GLsizei*, GLchar*) pfglGetShaderInfoLog;
+typedef GLvoid function(GLuint, GLsizei, GLsizei*, GLchar*) pfglGetShaderSource;
+typedef GLint function(GLuint, GLchar*) pfglGetUniformLocation;
+typedef GLvoid function(GLuint, GLint, GLfloat*) pfglGetUniformfv;
+typedef GLvoid function(GLuint, GLint, GLint*) pfglGetUniformiv;
+typedef GLvoid function(GLuint, GLenum, GLdouble*) pfglGetVertexAttribdv;
+typedef GLvoid function(GLuint, GLenum, GLfloat*) pfglGetVertexAttribfv;
+typedef GLvoid function(GLuint, GLenum, GLint*) pfglGetVertexAttribiv;
+typedef GLvoid function(GLuint, GLenum, GLvoid**) pfglGetVertexAttribPointerv;
+typedef GLboolean function(GLuint) pfglIsProgram;
+typedef GLboolean function(GLuint) pfglIsShader;
+typedef GLvoid function(GLuint) pfglLinkProgram;
+typedef GLvoid function(GLuint, GLsizei, GLchar**, GLint*) pfglShaderSource;
+typedef GLvoid function(GLuint) pfglUseProgram;
+typedef GLvoid function(GLint, GLfloat) pfglUniform1f;
+typedef GLvoid function(GLint, GLfloat, GLfloat) pfglUniform2f;
+typedef GLvoid function(GLint, GLfloat, GLfloat, GLfloat) pfglUniform3f;
+typedef GLvoid function(GLint, GLfloat, GLfloat, GLfloat, GLfloat) pfglUniform4f;
+typedef GLvoid function(GLint, GLint) pfglUniform1i;
+typedef GLvoid function(GLint, GLint, GLint) pfglUniform2i;
+typedef GLvoid function(GLint, GLint, GLint, GLint) pfglUniform3i;
+typedef GLvoid function(GLint, GLint, GLint, GLint, GLint) pfglUniform4i;
+typedef GLvoid function(GLint, GLsizei, GLfloat*) pfglUniform1fv;
+typedef GLvoid function(GLint, GLsizei, GLfloat*) pfglUniform2fv;
+typedef GLvoid function(GLint, GLsizei, GLfloat*) pfglUniform3fv;
+typedef GLvoid function(GLint, GLsizei, GLfloat*) pfglUniform4fv;
+typedef GLvoid function(GLint, GLsizei, GLint*) pfglUniform1iv;
+typedef GLvoid function(GLint, GLsizei, GLint*) pfglUniform2iv;
+typedef GLvoid function(GLint, GLsizei, GLint*) pfglUniform3iv;
+typedef GLvoid function(GLint, GLsizei, GLint*) pfglUniform4iv;
+typedef GLvoid function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix2fv;
+typedef GLvoid function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix3fv;
+typedef GLvoid function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix4fv;
+typedef GLvoid function(GLuint) pfglValidateProgram;
+typedef GLvoid function(GLuint, GLdouble) pfglVertexAttrib1d;
+typedef GLvoid function(GLuint, GLdouble*) pfglVertexAttrib1dv;
+typedef GLvoid function(GLuint, GLfloat) pfglVertexAttrib1f;
+typedef GLvoid function(GLuint, GLfloat*) pfglVertexAttrib1fv;
+typedef GLvoid function(GLuint, GLshort) pfglVertexAttrib1s;
+typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib1sv;
+typedef GLvoid function(GLuint, GLdouble, GLdouble) pfglVertexAttrib2d;
+typedef GLvoid function(GLuint, GLdouble*) pfglVertexAttrib2dv;
+typedef GLvoid function(GLuint, GLfloat, GLfloat) pfglVertexAttrib2f;
+typedef GLvoid function(GLuint, GLfloat*) pfglVertexAttrib2fv;
+typedef GLvoid function(GLuint, GLshort, GLshort) pfglVertexAttrib2s;
+typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib2sv;
+typedef GLvoid function(GLuint, GLdouble, GLdouble, GLdouble) pfglVertexAttrib3d;
+typedef GLvoid function(GLuint, GLdouble*) pfglVertexAttrib3dv;
+typedef GLvoid function(GLuint, GLfloat, GLfloat, GLfloat) pfglVertexAttrib3f;
+typedef GLvoid function(GLuint, GLfloat*) pfglVertexAttrib3fv;
+typedef GLvoid function(GLuint, GLshort, GLshort, GLshort) pfglVertexAttrib3s;
+typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib3sv;
+typedef GLvoid function(GLuint, GLbyte*) pfglVertexAttrib4Nbv;
+typedef GLvoid function(GLuint, GLint*) pfglVertexAttrib4Niv;
+typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib4Nsv;
+typedef GLvoid function(GLuint, GLubyte, GLubyte, GLubyte, GLubyte) pfglVertexAttrib4Nub;
+typedef GLvoid function(GLuint, GLubyte*) pfglVertexAttrib4Nubv;
+typedef GLvoid function(GLuint, GLuint*) pfglVertexAttrib4Nuiv;
+typedef GLvoid function(GLuint, GLushort*) pfglVertexAttrib4Nusv;
+typedef GLvoid function(GLuint, GLbyte*) pfglVertexAttrib4bv;
+typedef GLvoid function(GLuint, GLdouble, GLdouble, GLdouble, GLdouble) pfglVertexAttrib4d;
+typedef GLvoid function(GLuint, GLdouble*) pfglVertexAttrib4dv;
+typedef GLvoid function(GLuint, GLfloat, GLfloat, GLfloat, GLfloat) pfglVertexAttrib4f;
+typedef GLvoid function(GLuint, GLfloat*) pfglVertexAttrib4fv;
+typedef GLvoid function(GLuint, GLint*) pfglVertexAttrib4iv;
+typedef GLvoid function(GLuint, GLshort, GLshort, GLshort, GLshort) pfglVertexAttrib4s;
+typedef GLvoid function(GLuint, GLshort*) pfglVertexAttrib4sv;
+typedef GLvoid function(GLuint, GLubyte*) pfglVertexAttrib4ubv;
+typedef GLvoid function(GLuint, GLuint*) pfglVertexAttrib4uiv;
+typedef GLvoid function(GLuint, GLushort*) pfglVertexAttrib4usv;
+typedef GLvoid function(GLuint, GLint, GLenum, GLboolean, GLsizei, GLvoid*) pfglVertexAttribPointer;
 
 pfglBlendEquationSeparate       glBlendEquationSeparate;
 pfglDrawBuffers                 glDrawBuffers;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,20 +81,10 @@ enum : GLenum
     GL_POINT_DISTANCE_ATTENUATION_ARB = 0x8129,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLfloat) pfglPointParameterfARB;
-    typedef void function(GLenum, GLfloat*) pfglPointParameterfvARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLfloat) pfglPointParameterfARB;
+typedef void function(GLenum, GLfloat*) pfglPointParameterfvARB;
 
 pfglPointParameterfARB          glPointParameterfARB;
 pfglPointParameterfvARB         glPointParameterfvARB;

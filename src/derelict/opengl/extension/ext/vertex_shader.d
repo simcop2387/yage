@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -268,60 +268,50 @@ enum : GLenum
     GL_LOCAL_CONSTANT_DATATYPE_EXT    = 0x87ED,
 }
 
-private const char[] Funcs =
-"
-    typedef void function() pfglBeginVertexShaderEXT;
-    typedef void function() pfglEndVertexShaderEXT;
-    typedef void function(GLuint) pfglBindVertexShaderEXT;
-    typedef GLuint function(GLuint) pfglGenVertexShadersEXT;
-    typedef void function(GLuint) pfglDeleteVertexShaderEXT;
-    typedef void function(GLenum,GLuint,GLuint) pfglShaderOp1EXT;
-    typedef void function(GLenum,GLuint,GLuint,GLuint) pfglShaderOp2EXT;
-    typedef void function(GLenum,GLuint,GLuint,GLuint,GLuint) pfglShaderOp3EXT;
-    typedef void function(GLuint,GLuint,GLenum,GLenum,GLenum,GLenum) pfglSwizzleEXT;
-    typedef void function(GLuint,GLuint,GLenum,GLenum,GLenum,GLenum) pfglWriteMaskEXT;
-    typedef void function(GLuint,GLuint,GLuint) pfglInsertComponentEXT;
-    typedef void function(GLuint,GLuint,GLuint) pfglExtractComponentEXT;
-    typedef GLuint function(GLenum,GLenum,GLenum,GLuint) pfglGenSymbolsEXT;
-    typedef void function(GLuint,GLenum,GLvoid*) pfglSetInvariantEXT;
-    typedef void function(GLuint,GLenum,GLvoid*) pfglSetLocalConstantEXT;
-    typedef void function(GLuint,GLbyte*) pfglVariantbvEXT;
-    typedef void function(GLuint,GLshort*) pfglVariantsvEXT;
-    typedef void function(GLuint,GLint*) pfglVariantivEXT;
-    typedef void function(GLuint,GLfloat*) pfglVariantfvEXT;
-    typedef void function(GLuint,GLdouble*) pfglVariantdvEXT;
-    typedef void function(GLuint,GLubyte*) pfglVariantubvEXT;
-    typedef void function(GLuint,GLushort*) pfglVariantusvEXT;
-    typedef void function(GLuint,GLuint*) pfglVariantuivEXT;
-    typedef void function(GLuint,GLenum,GLuint,GLvoid*) pfglVariantPointerEXT;
-    typedef void function(GLuint) pfglEnableVariantClientStateEXT;
-    typedef void function(GLuint) pfglDisableVariantClientStateEXT;
-    typedef GLuint function(GLenum,GLenum) pfglBindLightParameterEXT;
-    typedef GLuint function(GLenum,GLenum) pfglBindMaterialParameterEXT;
-    typedef GLuint function(GLenum,GLenum,GLenum) pfglBindTexGenParameterEXT;
-    typedef GLuint function(GLenum,GLenum) pfglBindTextureUnitParameterEXT;
-    typedef GLuint function(GLenum) pfglBindParameterEXT;
-    typedef GLboolean function(GLuint,GLenum) pfglIsVariantEnabledEXT;
-    typedef void function(GLuint,GLenum,GLboolean*) pfglGetVariantBooleanvEXT;
-    typedef void function(GLuint,GLenum,GLint*) pfglGetVariantIntegervEXT;
-    typedef void function(GLuint,GLenum,GLfloat*) pfglGetVariantFloatvEXT;
-    typedef void function(GLuint,GLenum,GLvoid*) pfglGetVariantPointervEXT;
-    typedef void function(GLuint,GLenum,GLboolean*) pfglGetInvariantBooleanvEXT;
-    typedef void function(GLuint,GLenum,GLint*) pfglGetInvariantIntegervEXT;
-    typedef void function(GLuint,GLenum,GLfloat*) pfglGetInvariantFloatvEXT;
-    typedef void function(GLuint,GLenum,GLboolean*) pfglGetLocalConstantBooleanvEXT;
-    typedef void function(GLuint,GLenum,GLint*) pfglGetLocalConstantIntegervEXT;
-    typedef void function(GLuint,GLenum,GLfloat*) pfglGetLocalConstantFloatvEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function() pfglBeginVertexShaderEXT;
+typedef void function() pfglEndVertexShaderEXT;
+typedef void function(GLuint) pfglBindVertexShaderEXT;
+typedef GLuint function(GLuint) pfglGenVertexShadersEXT;
+typedef void function(GLuint) pfglDeleteVertexShaderEXT;
+typedef void function(GLenum,GLuint,GLuint) pfglShaderOp1EXT;
+typedef void function(GLenum,GLuint,GLuint,GLuint) pfglShaderOp2EXT;
+typedef void function(GLenum,GLuint,GLuint,GLuint,GLuint) pfglShaderOp3EXT;
+typedef void function(GLuint,GLuint,GLenum,GLenum,GLenum,GLenum) pfglSwizzleEXT;
+typedef void function(GLuint,GLuint,GLenum,GLenum,GLenum,GLenum) pfglWriteMaskEXT;
+typedef void function(GLuint,GLuint,GLuint) pfglInsertComponentEXT;
+typedef void function(GLuint,GLuint,GLuint) pfglExtractComponentEXT;
+typedef GLuint function(GLenum,GLenum,GLenum,GLuint) pfglGenSymbolsEXT;
+typedef void function(GLuint,GLenum,GLvoid*) pfglSetInvariantEXT;
+typedef void function(GLuint,GLenum,GLvoid*) pfglSetLocalConstantEXT;
+typedef void function(GLuint,GLbyte*) pfglVariantbvEXT;
+typedef void function(GLuint,GLshort*) pfglVariantsvEXT;
+typedef void function(GLuint,GLint*) pfglVariantivEXT;
+typedef void function(GLuint,GLfloat*) pfglVariantfvEXT;
+typedef void function(GLuint,GLdouble*) pfglVariantdvEXT;
+typedef void function(GLuint,GLubyte*) pfglVariantubvEXT;
+typedef void function(GLuint,GLushort*) pfglVariantusvEXT;
+typedef void function(GLuint,GLuint*) pfglVariantuivEXT;
+typedef void function(GLuint,GLenum,GLuint,GLvoid*) pfglVariantPointerEXT;
+typedef void function(GLuint) pfglEnableVariantClientStateEXT;
+typedef void function(GLuint) pfglDisableVariantClientStateEXT;
+typedef GLuint function(GLenum,GLenum) pfglBindLightParameterEXT;
+typedef GLuint function(GLenum,GLenum) pfglBindMaterialParameterEXT;
+typedef GLuint function(GLenum,GLenum,GLenum) pfglBindTexGenParameterEXT;
+typedef GLuint function(GLenum,GLenum) pfglBindTextureUnitParameterEXT;
+typedef GLuint function(GLenum) pfglBindParameterEXT;
+typedef GLboolean function(GLuint,GLenum) pfglIsVariantEnabledEXT;
+typedef void function(GLuint,GLenum,GLboolean*) pfglGetVariantBooleanvEXT;
+typedef void function(GLuint,GLenum,GLint*) pfglGetVariantIntegervEXT;
+typedef void function(GLuint,GLenum,GLfloat*) pfglGetVariantFloatvEXT;
+typedef void function(GLuint,GLenum,GLvoid*) pfglGetVariantPointervEXT;
+typedef void function(GLuint,GLenum,GLboolean*) pfglGetInvariantBooleanvEXT;
+typedef void function(GLuint,GLenum,GLint*) pfglGetInvariantIntegervEXT;
+typedef void function(GLuint,GLenum,GLfloat*) pfglGetInvariantFloatvEXT;
+typedef void function(GLuint,GLenum,GLboolean*) pfglGetLocalConstantBooleanvEXT;
+typedef void function(GLuint,GLenum,GLint*) pfglGetLocalConstantIntegervEXT;
+typedef void function(GLuint,GLenum,GLfloat*) pfglGetLocalConstantFloatvEXT;
 
 pfglBeginVertexShaderEXT            glBeginVertexShaderEXT;
 pfglEndVertexShaderEXT              glEndVertexShaderEXT;

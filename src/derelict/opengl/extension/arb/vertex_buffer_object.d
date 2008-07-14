@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -129,29 +129,19 @@ enum : GLenum
     GL_DYNAMIC_COPY_ARB                            = 0x88EA,
 }
 
-private const char[] Funcs =
-"
-	typedef void function(GLenum, GLuint) pfglBindBufferARB;
-	typedef void function(GLsizei, GLuint*) pfglDeleteBuffersARB;
-	typedef void function(GLsizei, GLuint*) pfglGenBuffersARB;
-	typedef GLboolean function(GLuint) pfglIsBufferARB;
-	typedef void function(GLenum, GLsizeiptrARB, GLvoid*, GLenum) pfglBufferDataARB;
-	typedef void function(GLenum, GLintptrARB, GLsizeiptrARB, GLvoid*) pfglBufferSubDataARB;
-	typedef void function(GLenum, GLintptrARB, GLsizeiptrARB, GLvoid*) pfglGetBufferSubDataARB;
-	typedef GLvoid* function(GLenum, GLenum) pfglMapBufferARB;
-	typedef GLboolean function(GLenum) pfglUnmapBufferARB;
-	typedef void function(GLenum, GLenum, GLint*) pfglGetBufferParameterivARB;
-	typedef void function(GLenum, GLenum, GLvoid*) pfglGetBufferPointervARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLuint) pfglBindBufferARB;
+typedef void function(GLsizei, GLuint*) pfglDeleteBuffersARB;
+typedef void function(GLsizei, GLuint*) pfglGenBuffersARB;
+typedef GLboolean function(GLuint) pfglIsBufferARB;
+typedef void function(GLenum, GLsizeiptrARB, GLvoid*, GLenum) pfglBufferDataARB;
+typedef void function(GLenum, GLintptrARB, GLsizeiptrARB, GLvoid*) pfglBufferSubDataARB;
+typedef void function(GLenum, GLintptrARB, GLsizeiptrARB, GLvoid*) pfglGetBufferSubDataARB;
+typedef GLvoid* function(GLenum, GLenum) pfglMapBufferARB;
+typedef GLboolean function(GLenum) pfglUnmapBufferARB;
+typedef void function(GLenum, GLenum, GLint*) pfglGetBufferParameterivARB;
+typedef void function(GLenum, GLenum, GLvoid*) pfglGetBufferPointervARB;
 
 pfglBindBufferARB               glBindBufferARB;
 pfglDeleteBuffersARB            glDeleteBuffersARB;

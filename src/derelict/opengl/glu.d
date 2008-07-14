@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,8 @@ static this() {
     DerelictGLU.setup(
         "glu32.dll",
         "libGLU.so,libGLU.so.1",
-        "/System/Library/Frameworks/OpenGL.framework/OpenGL",
+        // on Mac, the GLU functions are in the OpenGL framework
+        "../Frameworks/OpenGL.framework/OpenGL, /Library/Frameworks/OpenGL.framework/OpenGL, /System/Library/Frameworks/OpenGL.framework/OpenGL",
         &load
     );
 }
@@ -294,88 +295,72 @@ typedef GLUquadric GLUquadricObj;
 typedef GLUtesselator GLUtesselatorObj;
 typedef GLUtesselator GLUtriangulatorObj;
 
-version(Windows)
-{
-    extern(Windows) typedef void function() _GLUfuncptr;
-}
-else
-{
-    extern(C) typedef void function() _GLUfuncptr;
-}
+extern(System) typedef void function() _GLUfuncptr;
+
 //==============================================================================
 // DLL FUNCTIONS
 //==============================================================================
-private const char[] Funcs =
-"
-	typedef GLint function(GLenum,GLint,GLsizei,GLenum,GLenum,GLint,GLint,GLint,void*) pfgluBuild1DMipmapLevels;
-	typedef GLint function(GLenum,GLint,GLsizei,GLenum,GLenum,void*) pfgluBuild1DMipmaps;
-	typedef GLint function(GLenum,GLint,GLsizei,GLsizei,GLenum,GLenum,GLint,GLint,GLint,void*) pfgluBuild2DMipmapLevels;
-	typedef GLint function(GLenum,GLint,GLsizei,GLsizei,GLenum,GLenum,void*) pfgluBuild2DMipmaps;
-	typedef GLint function(GLenum,GLint,GLsizei,GLsizei,GLsizei,GLenum,GLenum,GLint,GLint,GLint,void*) pfgluBuild3DMipmapLevels;
-	typedef GLint function(GLenum,GLint,GLsizei,GLsizei,GLsizei,GLenum,GLenum,void*) pfgluBuild3DMipmaps;
-	typedef GLboolean function(GLubyte*,GLubyte*) pfgluCheckExtension;
-	typedef GLubyte* function(GLenum) pfgluErrorString;
-	typedef GLubyte* function(GLenum) pfgluGetString;
-	typedef void function(GLUquadric*,GLdouble,GLdouble,GLdouble,GLint,GLint) pfgluCylinder;
-	typedef void function(GLUquadric*,GLdouble,GLdouble,GLint,GLint) pfgluDisk;
-	typedef void function(GLUquadric*,GLdouble,GLdouble,GLint,GLint,GLdouble,GLdouble) pfgluPartialDisk;
-	typedef void function(GLUquadric*,GLdouble,GLint,GLint) pfgluSphere;
-	typedef void function(GLUnurbs*) pfgluBeginCurve;
-	typedef void function(GLUtesselator*) pfgluBeginPolygon;
-	typedef void function(GLUnurbs*) pfgluBeginSurface;
-	typedef void function(GLUnurbs*) pfgluBeginTrim;
-	typedef void function(GLUnurbs*) pfgluEndCurve;
-	typedef void function(GLUtesselator*) pfgluEndPolygon;
-	typedef void function(GLUnurbs*) pfgluEndSurface;
-	typedef void function(GLUnurbs*) pfgluEndTrim;
-	typedef void function(GLUnurbs*) pfgluDeleteNurbsRenderer;
-	typedef void function(GLUquadric*) pfgluDeleteQuadric;
-	typedef void function(GLUtesselator*) pfgluDeleteTess;
-	typedef void function(GLUnurbs*,GLenum,GLfloat*) pfgluGetNurbsProperty;
-	typedef void function(GLUtesselator*,GLenum,GLdouble*) pfgluGetTessProperty;
-	typedef void function(GLUnurbs*,GLfloat*,GLfloat*,GLint*) pfgluLoadSamplingMatrices;
-	typedef GLUnurbs* function() pfgluNewNurbsRenderer;
-	typedef GLUquadric* function() pfgluNewQuadric;
-	typedef GLUtesselator* function() pfgluNewTess;
-	typedef void function(GLUtesselator*,GLenum) pfgluNextContour;
-	typedef void function(GLUnurbs*,GLenum,_GLUfuncptr) pfgluNurbsCallback;
-	typedef void function(GLUnurbs*,GLvoid*) pfgluNurbsCallbackData;
-	typedef void function(GLUnurbs*,GLvoid*) pfgluNurbsCallbackDataEXT;
-	typedef void function(GLUnurbs*,GLint,GLfloat*,GLint,GLfloat*,GLint,GLenum) pfgluNurbsCurve;
-	typedef void function(GLUnurbs*,GLenum,GLfloat) pfgluNurbsProperty;
-	typedef void function(GLUnurbs*,GLint,GLfloat*,GLint,GLfloat*,GLint,GLint,GLfloat*,GLint,GLint,GLenum) pfgluNurbsSurface;
-	typedef void function(GLUnurbs*,GLint,GLfloat*,GLint,GLenum) pfgluPwlCurve;
-	typedef void function(GLUquadric*,GLenum,_GLUfuncptr) pfgluQuadricCallback;
-	typedef void function(GLUquadric*,GLenum) pfgluQuadricDrawStyle;
-	typedef void function(GLUquadric*,GLenum) pfgluQuadricNormals;
-	typedef void function(GLUquadric*,GLenum) pfgluQuadricOrientation;
-	typedef void function(GLUquadric*,GLboolean) pfgluQuadricTexture;
-	typedef void function(GLUtesselator*) pfgluTessBeginContour;
-	typedef void function(GLUtesselator*,GLvoid*) pfgluTessBeginPolygon;
-	typedef void function(GLUtesselator*,GLenum,_GLUfuncptr) pfgluTessCallback;
-	typedef void function(GLUtesselator*) pfgluTessEndContour;
-	typedef void function(GLUtesselator*) pfgluTessEndPolygon;
-	typedef void function(GLUtesselator*,GLdouble,GLdouble,GLdouble) pfgluTessNormal;
-	typedef void function(GLUtesselator*,GLenum,GLdouble) pfgluTessProperty;
-	typedef void function(GLUtesselator*,GLdouble*,GLvoid*) pfgluTessVertex;
-	typedef void function(GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble) pfgluLookAt;
-	typedef void function(GLdouble,GLdouble,GLdouble,GLdouble) pfgluOrtho2D;
-	typedef void function(GLdouble,GLdouble,GLdouble,GLdouble) pfgluPerspective;
-	typedef void function(GLdouble,GLdouble,GLdouble,GLdouble,GLint*) pfgluPickMatrix;
-	typedef GLint function(GLdouble,GLdouble,GLdouble,GLdouble*,GLdouble*,GLint*,GLdouble*,GLdouble*,GLdouble*) pfgluProject;
-	typedef GLint function(GLenum,GLsizei,GLsizei,GLenum,void*,GLsizei,GLsizei,GLenum,GLvoid*) pfgluScaleImage;
-	typedef GLint function(GLdouble,GLdouble,GLdouble,GLdouble*,GLdouble*,GLint*,GLdouble*,GLdouble*,GLdouble*) pfgluUnProject;
-	typedef GLint function(GLdouble,GLdouble,GLdouble,GLdouble,GLdouble*,GLdouble*,GLint*,GLdouble,GLdouble,GLdouble*,GLdouble*,GLdouble*,GLdouble*) pfgluUnProject4;
-";
+extern(System):
 
-version(Windows)
-{
-	extern(Windows): mixin(Funcs);
-}
-else
-{
-	extern(C): mixin(Funcs);
-}
+typedef GLint function(GLenum,GLint,GLsizei,GLenum,GLenum,GLint,GLint,GLint,void*) pfgluBuild1DMipmapLevels;
+typedef GLint function(GLenum,GLint,GLsizei,GLenum,GLenum,void*) pfgluBuild1DMipmaps;
+typedef GLint function(GLenum,GLint,GLsizei,GLsizei,GLenum,GLenum,GLint,GLint,GLint,void*) pfgluBuild2DMipmapLevels;
+typedef GLint function(GLenum,GLint,GLsizei,GLsizei,GLenum,GLenum,void*) pfgluBuild2DMipmaps;
+typedef GLint function(GLenum,GLint,GLsizei,GLsizei,GLsizei,GLenum,GLenum,GLint,GLint,GLint,void*) pfgluBuild3DMipmapLevels;
+typedef GLint function(GLenum,GLint,GLsizei,GLsizei,GLsizei,GLenum,GLenum,void*) pfgluBuild3DMipmaps;
+typedef GLboolean function(GLubyte*,GLubyte*) pfgluCheckExtension;
+typedef GLubyte* function(GLenum) pfgluErrorString;
+typedef GLubyte* function(GLenum) pfgluGetString;
+typedef void function(GLUquadric*,GLdouble,GLdouble,GLdouble,GLint,GLint) pfgluCylinder;
+typedef void function(GLUquadric*,GLdouble,GLdouble,GLint,GLint) pfgluDisk;
+typedef void function(GLUquadric*,GLdouble,GLdouble,GLint,GLint,GLdouble,GLdouble) pfgluPartialDisk;
+typedef void function(GLUquadric*,GLdouble,GLint,GLint) pfgluSphere;
+typedef void function(GLUnurbs*) pfgluBeginCurve;
+typedef void function(GLUtesselator*) pfgluBeginPolygon;
+typedef void function(GLUnurbs*) pfgluBeginSurface;
+typedef void function(GLUnurbs*) pfgluBeginTrim;
+typedef void function(GLUnurbs*) pfgluEndCurve;
+typedef void function(GLUtesselator*) pfgluEndPolygon;
+typedef void function(GLUnurbs*) pfgluEndSurface;
+typedef void function(GLUnurbs*) pfgluEndTrim;
+typedef void function(GLUnurbs*) pfgluDeleteNurbsRenderer;
+typedef void function(GLUquadric*) pfgluDeleteQuadric;
+typedef void function(GLUtesselator*) pfgluDeleteTess;
+typedef void function(GLUnurbs*,GLenum,GLfloat*) pfgluGetNurbsProperty;
+typedef void function(GLUtesselator*,GLenum,GLdouble*) pfgluGetTessProperty;
+typedef void function(GLUnurbs*,GLfloat*,GLfloat*,GLint*) pfgluLoadSamplingMatrices;
+typedef GLUnurbs* function() pfgluNewNurbsRenderer;
+typedef GLUquadric* function() pfgluNewQuadric;
+typedef GLUtesselator* function() pfgluNewTess;
+typedef void function(GLUtesselator*,GLenum) pfgluNextContour;
+typedef void function(GLUnurbs*,GLenum,_GLUfuncptr) pfgluNurbsCallback;
+typedef void function(GLUnurbs*,GLvoid*) pfgluNurbsCallbackData;
+typedef void function(GLUnurbs*,GLvoid*) pfgluNurbsCallbackDataEXT;
+typedef void function(GLUnurbs*,GLint,GLfloat*,GLint,GLfloat*,GLint,GLenum) pfgluNurbsCurve;
+typedef void function(GLUnurbs*,GLenum,GLfloat) pfgluNurbsProperty;
+typedef void function(GLUnurbs*,GLint,GLfloat*,GLint,GLfloat*,GLint,GLint,GLfloat*,GLint,GLint,GLenum) pfgluNurbsSurface;
+typedef void function(GLUnurbs*,GLint,GLfloat*,GLint,GLenum) pfgluPwlCurve;
+typedef void function(GLUquadric*,GLenum,_GLUfuncptr) pfgluQuadricCallback;
+typedef void function(GLUquadric*,GLenum) pfgluQuadricDrawStyle;
+typedef void function(GLUquadric*,GLenum) pfgluQuadricNormals;
+typedef void function(GLUquadric*,GLenum) pfgluQuadricOrientation;
+typedef void function(GLUquadric*,GLboolean) pfgluQuadricTexture;
+typedef void function(GLUtesselator*) pfgluTessBeginContour;
+typedef void function(GLUtesselator*,GLvoid*) pfgluTessBeginPolygon;
+typedef void function(GLUtesselator*,GLenum,_GLUfuncptr) pfgluTessCallback;
+typedef void function(GLUtesselator*) pfgluTessEndContour;
+typedef void function(GLUtesselator*) pfgluTessEndPolygon;
+typedef void function(GLUtesselator*,GLdouble,GLdouble,GLdouble) pfgluTessNormal;
+typedef void function(GLUtesselator*,GLenum,GLdouble) pfgluTessProperty;
+typedef void function(GLUtesselator*,GLdouble*,GLvoid*) pfgluTessVertex;
+typedef void function(GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble) pfgluLookAt;
+typedef void function(GLdouble,GLdouble,GLdouble,GLdouble) pfgluOrtho2D;
+typedef void function(GLdouble,GLdouble,GLdouble,GLdouble) pfgluPerspective;
+typedef void function(GLdouble,GLdouble,GLdouble,GLdouble,GLint*) pfgluPickMatrix;
+typedef GLint function(GLdouble,GLdouble,GLdouble,GLdouble*,GLdouble*,GLint*,GLdouble*,GLdouble*,GLdouble*) pfgluProject;
+typedef GLint function(GLenum,GLsizei,GLsizei,GLenum,void*,GLsizei,GLsizei,GLenum,GLvoid*) pfgluScaleImage;
+typedef GLint function(GLdouble,GLdouble,GLdouble,GLdouble*,GLdouble*,GLint*,GLdouble*,GLdouble*,GLdouble*) pfgluUnProject;
+typedef GLint function(GLdouble,GLdouble,GLdouble,GLdouble,GLdouble*,GLdouble*,GLint*,GLdouble,GLdouble,GLdouble*,GLdouble*,GLdouble*,GLdouble*) pfgluUnProject4;
 
 //pfgluBuild1DMipmapLevels  gluBuild1DMipmapLevels;
 pfgluBuild1DMipmaps         gluBuild1DMipmaps;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,25 +93,15 @@ enum : GLenum
     GL_SAMPLES_PASSED_ARB             = 0x8914,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLsizei, GLuint*) pfglGenOcclusionQueriesNV;
-    typedef void function(GLsizei, GLuint*) pfglDeleteOcclusionQueriesNV;
-    typedef GLboolean function(GLuint) pfglIsOcclusionQueryNV;
-    typedef void function(GLuint) pfglBeginOcclusionQueryNV;
-    typedef void function() pfglEndOcclusionQueryNV;
-    typedef void function(GLuint, GLenum, GLint*) pfglGetOcclusionQueryivNV;
-    typedef void function(GLuint, GLenum, GLuint*) pfglGetOcclusionQueryuivNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLsizei, GLuint*) pfglGenOcclusionQueriesNV;
+typedef void function(GLsizei, GLuint*) pfglDeleteOcclusionQueriesNV;
+typedef GLboolean function(GLuint) pfglIsOcclusionQueryNV;
+typedef void function(GLuint) pfglBeginOcclusionQueryNV;
+typedef void function() pfglEndOcclusionQueryNV;
+typedef void function(GLuint, GLenum, GLint*) pfglGetOcclusionQueryivNV;
+typedef void function(GLuint, GLenum, GLuint*) pfglGetOcclusionQueryuivNV;
 
 pfglGenOcclusionQueriesNV           glGenOcclusionQueriesNV;
 pfglDeleteOcclusionQueriesNV        glDeleteOcclusionQueriesNV;

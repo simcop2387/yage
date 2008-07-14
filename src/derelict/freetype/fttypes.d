@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,15 +29,28 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/** This module is a collection of all types (alias/struct/union), enum constants and
+ * macros (enums or functions here) defined in the freetype 2 header files.
+ *
+ * It is missing some of the C macros (in particular lots of truetype identifiers), but should
+ * otherwise be fairly complete as of freetype version 2.3.5.
+ *
+ * Comments show which files the definitions are from; brackets show which C macros include the
+ * file (excluding the inclusion of freetype.h in most files).
+ */
 module derelict.freetype.fttypes;
 
+//BEGIN Basic types
+// config/ftconfig.h (FT_CONFIG_CONFIG_H, FT_FREETYPE_H)
 alias short             FT_Int16;
 alias ushort            FT_UInt16;
 alias int               FT_Int32;
 alias uint              FT_UInt32;
 alias int               FT_Fast;
 alias uint              FT_UFast;
-alias int               FT_Pos;
+
+// fttypes.h (FT_FREETYPE_H, FT_TYPES_H)
 alias byte              FT_Bool;
 alias short             FT_FWord;
 alias ushort            FT_UFWord;
@@ -51,7 +64,9 @@ alias ushort            FT_UShort;
 alias int               FT_Int;
 alias uint              FT_UInt;
 
-version(CPU64BIT)
+// The C long type corresponds to either D's int or long type.
+// But it might depend on compiler as well as architechture?
+version(X86_64)
 {
     alias long          FT_Long;
     alias ulong         FT_ULong;
@@ -61,28 +76,31 @@ version(CPU64BIT)
 }
 
 alias short             FT_F2Dot14;
-alias int               FT_F26Dot6;
-alias int               FT_Fixed;
+alias FT_Long           FT_F26Dot6;
+alias FT_Long           FT_Fixed;
 alias int               FT_Error;
 alias void*             FT_Pointer;
 
+alias size_t            FT_Offset;
+alias ptrdiff_t         FT_PtrDist;
 
-version(CPU64BIT)
-{
-    alias ulong         FT_Offset;
-    alias long          FT_PtrDist;
-}
-else
-{
-    alias uint          FT_Offset;
-    alias int           FT_PtrDist;
-}
+// ftimage.h (FT_FREETYPE_H, FT_TYPES_H, FT_IMAGE_H)
+alias FT_Long           FT_Pos;
+//END Basic types
 
+//BEGIN Other aliases
+// ftsystem.h (FT_FREETYPE_H, FT_TYPES_H, FT_SYSTEM_H)
 alias FT_MemoryRec*         FT_Memory;
 alias FT_StreamRec*         FT_Stream;
+
+// ftimage.h (FT_FREETYPE_H, FT_TYPES_H, FT_IMAGE_H)
 alias FT_RasterRec*         FT_Raster;
+
+// fttypes.h (FT_FREETYPE_H, FT_TYPES_H)
 alias FT_ListNodeRec*       FT_ListNode;
 alias FT_ListRec*           FT_List;
+
+// freetype.h (FT_FREETYPE_H)
 alias FT_LibraryRec*        FT_Library;
 alias FT_ModuleRec*         FT_Module;
 alias FT_DriverRec*         FT_Driver;
@@ -95,34 +113,38 @@ alias FT_Face_InternalRec*  FT_Face_Internal;
 alias FT_Size_InternalRec*  FT_Size_Internal;
 alias FT_SubGlyphRec*       FT_SubGlyph;
 alias FT_Slot_InternalRec*  FT_Slot_Internal;
+alias FT_Size_RequestRec*   FT_Size_Request;
 
+// ftmodapi.h (FT_MODULE_H, FT_RENDER_H)
 alias FT_Pointer            FT_Module_Interface;
-// alias FT_Glyph_Class_ FT_Glyph_Class;
+
+// t1tables.h (FT_TYPE1_TABLES_H)
+alias PS_FontInfoRec*       PS_FontInfo;
+deprecated alias PS_FontInfoRec        T1_FontInfo;
+alias PS_PrivateRec*        PS_Private;
+deprecated alias PS_PrivateRec         T1_Private;
+alias PS_DesignMapRec*      PS_DesignMap;
+deprecated alias PS_DesignMapRec       T1_DesignMap;
+alias PS_BlendRec*          PS_Blend;
+deprecated alias PS_BlendRec           T1_Blend;
+alias CID_FaceDictRec*      CID_FaceDict;
+deprecated alias CID_FaceDictRec       CID_FontDict;
+alias CID_FaceInfoRec*      CID_FaceInfo;
+deprecated alias CID_FaceInfoRec       CID_Info;
+
+// ftbdf.h (FT_BDF_H)
+alias BDF_PropertyRec*      BDF_Property;
+
+// ftwinfnt.h (FT_WINFONTS_H)
+alias FT_WinFNT_HeaderRec*  FT_WinFNT_Header;
+
+// ftglyph.h (FT_GLYPH_H, FT_CACHE_H, FT_STROKER_H)
 alias FT_GlyphRec*          FT_Glyph;
 alias FT_BitmapGlyphRec*    FT_BitmapGlyph;
 alias FT_OutlineGlyphRec*   FT_OutlineGlyph;
 
-alias PS_FontInfoRec*       PS_FontInfo;
-alias PS_FontInfoRec        T1_FontInfo;
-alias PS_PrivateRec*        PS_Private;
-alias PS_PrivateRec         T1_Private;
-alias PS_DesignMap_         PS_DesignMapRec;
-alias PS_DesignMap_*        PS_DesignMap;
-alias PS_DesignMapRec       T1_DesignMap;
-alias PS_BlendRec*          PS_Blend;
-alias PS_BlendRec           T1_Blend;
-
-alias CID_FaceDictRec*      CID_FaceDict;
-alias CID_FaceDictRec       CID_FontDict;
-alias CID_FaceInfoRec*      CID_FaceInfo;
-alias CID_FaceInfoRec       CID_Info;
-
-alias BDF_PropertyRec*      BDF_Property;
-
-alias FT_WinFNT_HeaderRec*  FT_WinFNT_Header;
-
-alias FTC_FaceIDRec_*       FTC_FaceID;
-alias FTC_FontRec*          FTC_Font;
+// ftcache.h (FT_CACHE_H)
+alias FTC_FaceIDRec*        FTC_FaceID;
 alias FTC_ManagerRec*       FTC_Manager;
 alias FTC_NodeRec*          FTC_Node;
 alias FTC_ScalerRec*        FTC_Scaler;
@@ -132,9 +154,18 @@ alias FTC_ImageCacheRec*    FTC_ImageCache;
 alias FTC_SBitRec*          FTC_SBit;
 alias FTC_SBitCacheRec*     FTC_SBitCache;
 
-alias FT_Fixed              FT_Angle;
+// ftstroke.h (FT_STROKER_H)
 alias FT_StrokerRec*        FT_Stroker;
 
+// fttrigon.h (FT_TRIGONOMETRY_H)
+alias FT_Fixed              FT_Angle;
+
+// ftincrem.h (FT_INCREMENTAL_H)
+alias FT_IncrementalRec*    FT_Incremental;
+alias FT_Incremental_MetricsRec* FT_Incremental_Metrics;
+alias FT_Incremental_InterfaceRec* FT_Incremental_Interface;
+
+/+ other
 alias FTC_MruNodeRec*       FTC_MruNode;
 alias FTC_MruListRec*       FTC_MruList;
 alias FTC_MruListClassRec*  FTC_MruListClass;
@@ -149,8 +180,7 @@ alias FTC_INodeRec*         FTC_INode;
 alias FTC_IFamilyClassRec*  FTC_IFamilyClass;
 alias FTC_SNodeRec*         FTC_SNode;
 alias FTC_SFamilyClassRec*  FTC_SFamilyClass;
-alias FT_IncrementalRec*    FT_Incremental;
-alias FT_Incremental_MetricsRec* FT_Incremental_Metrics;
+
 alias FT_GlyphLoaderRec*    FT_GlyphLoader ;
 alias FT_GlyphLoadRec*      FT_GlyphLoad;
 alias FT_Driver_ClassRec*   FT_Driver_Class;
@@ -218,18 +248,77 @@ alias T1_CMap_ClassesRec*   T1_CMap_Classes;
 alias PSAux_ServiceRec*     PSAux_Service;
 alias PSAux_ServiceRec      PSAux_Interface;
 alias TT_LoaderRec*         TT_Loader;
++/
+//END Other aliases
 
 
+//BEGIN Enums
 /********************************************************************
  *  Freetype constants
  ********************************************************************/
-version(Windows)
+// freetype.h (FT_FREETYPE_H)
+enum FT_Encoding
 {
-    enum  { _JBLEN = 16 }
+  FT_ENCODING_NONE = ( ( cast(FT_UInt32)(0) << 24 ) | ( cast(FT_UInt32)(0) << 16 ) | ( cast(FT_UInt32)(0) << 8 ) | cast(FT_UInt32)(0) ) ,
+  FT_ENCODING_MS_SYMBOL = ( ( cast(FT_UInt32)('s') << 24 ) | ( cast(FT_UInt32)('y') << 16 ) | ( cast(FT_UInt32)('m') << 8 ) | cast(FT_UInt32)('b') ) ,
+  FT_ENCODING_UNICODE = ( ( cast(FT_UInt32)('u') << 24 ) | ( cast(FT_UInt32)('n') << 16 ) | ( cast(FT_UInt32)('i') << 8 ) | cast(FT_UInt32)('c') ) ,
+  FT_ENCODING_SJIS = ( ( cast(FT_UInt32)('s') << 24 ) | ( cast(FT_UInt32)('j') << 16 ) | ( cast(FT_UInt32)('i') << 8 ) | cast(FT_UInt32)('s') ) ,
+  FT_ENCODING_GB2312 = ( ( cast(FT_UInt32)('g') << 24 ) | ( cast(FT_UInt32)('b') << 16 ) | ( cast(FT_UInt32)(' ') << 8 ) | cast(FT_UInt32)(' ') ) ,
+  FT_ENCODING_BIG5 = ( ( cast(FT_UInt32)('b') << 24 ) | ( cast(FT_UInt32)('i') << 16 ) | ( cast(FT_UInt32)('g') << 8 ) | cast(FT_UInt32)('5') ) ,
+  FT_ENCODING_WANSUNG = ( ( cast(FT_UInt32)('w') << 24 ) | ( cast(FT_UInt32)('a') << 16 ) | ( cast(FT_UInt32)('n') << 8 ) | cast(FT_UInt32)('s') ) ,
+  FT_ENCODING_JOHAB = ( ( cast(FT_UInt32)('j') << 24 ) | ( cast(FT_UInt32)('o') << 16 ) | ( cast(FT_UInt32)('h') << 8 ) | cast(FT_UInt32)('a') ) ,
+  FT_ENCODING_MS_SJIS = FT_ENCODING_SJIS,
+  FT_ENCODING_MS_GB2312 = FT_ENCODING_GB2312,
+  FT_ENCODING_MS_BIG5 = FT_ENCODING_BIG5,
+  FT_ENCODING_MS_WANSUNG = FT_ENCODING_WANSUNG,
+  FT_ENCODING_MS_JOHAB = FT_ENCODING_JOHAB,
+  FT_ENCODING_ADOBE_STANDARD = ( ( cast(FT_UInt32)('A') << 24 ) | ( cast(FT_UInt32)('D') << 16 ) | ( cast(FT_UInt32)('O') << 8 ) | cast(FT_UInt32)('B') ) ,
+  FT_ENCODING_ADOBE_EXPERT = ( ( cast(FT_UInt32)('A') << 24 ) | ( cast(FT_UInt32)('D') << 16 ) | ( cast(FT_UInt32)('B') << 8 ) | cast(FT_UInt32)('E') ) ,
+  FT_ENCODING_ADOBE_CUSTOM = ( ( cast(FT_UInt32)('A') << 24 ) | ( cast(FT_UInt32)('D') << 16 ) | ( cast(FT_UInt32)('B') << 8 ) | cast(FT_UInt32)('C') ) ,
+  FT_ENCODING_ADOBE_LATIN_1 = ( ( cast(FT_UInt32)('l') << 24 ) | ( cast(FT_UInt32)('a') << 16 ) | ( cast(FT_UInt32)('t') << 8 ) | cast(FT_UInt32)('1') ) ,
+  FT_ENCODING_OLD_LATIN_2 = ( ( cast(FT_UInt32)('l') << 24 ) | ( cast(FT_UInt32)('a') << 16 ) | ( cast(FT_UInt32)('t') << 8 ) | cast(FT_UInt32)('2') ) ,
+  FT_ENCODING_APPLE_ROMAN = ( ( cast(FT_UInt32)('a') << 24 ) | ( cast(FT_UInt32)('r') << 16 ) | ( cast(FT_UInt32)('m') << 8 ) | cast(FT_UInt32)('n') )
 }
-else
+
+enum : FT_Long
 {
-    enum { _JBLEN = 10 }
+    FT_FACE_FLAG_SCALABLE         = 1 << 0,
+    FT_FACE_FLAG_FIXED_SIZES      = 1 << 1,
+    FT_FACE_FLAG_FIXED_WIDTH      = 1 << 2,
+    FT_FACE_FLAG_SFNT             = 1 << 3,
+    FT_FACE_FLAG_HORIZONTAL       = 1 << 4,
+    FT_FACE_FLAG_VERTICAL         = 1 << 5,
+    FT_FACE_FLAG_KERNING          = 1 << 6,
+    FT_FACE_FLAG_FAST_GLYPHS      = 1 << 7,
+    FT_FACE_FLAG_MULTIPLE_MASTERS = 1 << 8,
+    FT_FACE_FLAG_GLYPH_NAMES      = 1 << 9,
+    FT_FACE_FLAG_EXTERNAL_STREAM  = 1 << 10,
+    FT_FACE_FLAG_HINTER           = 1 << 11,
+}
+
+enum
+{
+    FT_STYLE_FLAG_ITALIC          = 1 << 0,
+    FT_STYLE_FLAG_BOLD            = 1 << 1,
+}
+
+enum FT_Size_Request_Type
+{
+    FT_SIZE_REQUEST_TYPE_NOMINAL,
+    FT_SIZE_REQUEST_TYPE_REAL_DIM,
+    FT_SIZE_REQUEST_TYPE_BBOX,
+    FT_SIZE_REQUEST_TYPE_CELL,
+    FT_SIZE_REQUEST_TYPE_SCALES,
+    FT_SIZE_REQUEST_TYPE_MAX
+}
+
+enum : uint
+{
+    FT_OPEN_MEMORY           = 0x1,
+    FT_OPEN_STREAM           = 0x2,
+    FT_OPEN_DRIVER           = 0x4,
+    FT_OPEN_PATHNAME         = 0x8,
+    FT_OPEN_PARAMS           = 0x10,
 }
 
 enum : uint
@@ -248,26 +337,71 @@ enum : uint
     FT_LOAD_IGNORE_TRANSFORM = 0x800,
     FT_LOAD_MONOCHROME       = 0x1000,
     FT_LOAD_LINEAR_DESIGN    = 0x2000,
-}
 
-  /* temporary hack! */
-enum : uint
-{
+    /* temporary hack! */
     FT_LOAD_SBITS_ONLY       = 0x4000,
     FT_LOAD_NO_AUTOHINT      = 0x8000U,
+}
 
-    FT_OPEN_MEMORY           = 0x1,
-    FT_OPEN_STREAM           = 0x2,
-    FT_OPEN_DRIVER           = 0x4,
-    FT_OPEN_PATHNAME         = 0x8,
-    FT_OPEN_PARAMS           = 0x10,
+enum FT_Render_Mode
+{
+ FT_RENDER_MODE_NORMAL = 0,
+ FT_RENDER_MODE_LIGHT,
+ FT_RENDER_MODE_MONO,
+ FT_RENDER_MODE_LCD,
+ FT_RENDER_MODE_LCD_V,
+ FT_RENDER_MODE_MAX
+}
 
-    FT_CURVE_TAG_ON          = 1,
-    FT_CURVE_TAG_CONIC       = 0,
-    FT_CURVE_TAG_CUBIC       = 2,
-    FT_CURVE_TAG_TOUCH_X     = 8,
-    FT_CURVE_TAG_TOUCH_Y     = 16,
+enum
+{
+    FT_LOAD_TARGET_NORMAL    = ( FT_Render_Mode.FT_RENDER_MODE_NORMAL & 15 ) << 16,
+    FT_LOAD_TARGET_LIGHT     = ( FT_Render_Mode.FT_RENDER_MODE_LIGHT & 15 ) << 16,
+    FT_LOAD_TARGET_MONO      = ( FT_Render_Mode.FT_RENDER_MODE_MONO & 15 ) << 16,
+    FT_LOAD_TARGET_LCD       = ( FT_Render_Mode.FT_RENDER_MODE_LCD & 15 ) << 16,
+    FT_LOAD_TARGET_LCD_V     = ( FT_Render_Mode.FT_RENDER_MODE_LCD_V & 15 ) << 16,
+}
 
+enum FT_Kerning_Mode
+{
+ FT_KERNING_DEFAULT = 0,
+ FT_KERNING_UNFITTED,
+ FT_KERNING_UNSCALED
+}
+
+enum
+{
+    FT_SUBGLYPH_FLAG_ARGS_ARE_WORDS     = 1,
+    FT_SUBGLYPH_FLAG_ARGS_ARE_XY_VALUES = 2,
+    FT_SUBGLYPH_FLAG_ROUND_XY_TO_GRID   = 4,
+    FT_SUBGLYPH_FLAG_SCALE              = 8,
+    FT_SUBGLYPH_FLAG_XY_SCALE           = 0x40,
+    FT_SUBGLYPH_FLAG_2X2                = 0x80,
+    FT_SUBGLYPH_FLAG_USE_MY_METRICS     = 0x200,
+}
+
+enum    // FreeType version
+{
+    FREETYPE_MAJOR  = 2,
+    FREETYPE_MINOR  = 3,
+    FREETYPE_PATCH  = 5,
+}
+
+// ftimage.h (FT_FREETYPE_H, FT_TYPES_H, FT_IMAGE_H)
+enum FT_Pixel_Mode
+{
+    FT_PIXEL_MODE_NONE = 0,
+    FT_PIXEL_MODE_MONO,
+    FT_PIXEL_MODE_GRAY,
+    FT_PIXEL_MODE_GRAY2,
+    FT_PIXEL_MODE_GRAY4,
+    FT_PIXEL_MODE_LCD,
+    FT_PIXEL_MODE_LCD_V,
+    FT_PIXEL_MODE_MAX
+}
+
+enum : uint
+{
     FT_OUTLINE_NONE            = 0x0,
     FT_OUTLINE_OWNER           = 0x1,
     FT_OUTLINE_EVEN_ODD_FILL   = 0x2,
@@ -277,25 +411,54 @@ enum : uint
     FT_OUTLINE_SINGLE_PASS     = 0x200,
 }
 
-enum : FT_Long
+enum
 {
-    FT_FACE_FLAG_SCALABLE         = 1 << 0,
-    FT_FACE_FLAG_FIXED_SIZES      = 1 << 1,
-    FT_FACE_FLAG_FIXED_WIDTH      = 1 << 2,
-    FT_FACE_FLAG_SFNT             = 1 << 3,
-    FT_FACE_FLAG_HORIZONTAL       = 1 << 4,
-    FT_FACE_FLAG_VERTICAL         = 1 << 5,
-    FT_FACE_FLAG_KERNING          = 1 << 6,
-    FT_FACE_FLAG_FAST_GLYPHS      = 1 << 7,
-    FT_FACE_FLAG_MULTIPLE_MASTERS = 1 << 8,
-    FT_FACE_FLAG_GLYPH_NAMES      = 1 << 9,
-    FT_FACE_FLAG_EXTERNAL_STREAM  = 1 << 10,
-    FT_FACE_FLAG_HINTER           = 1 << 11,
-
-    FT_STYLE_FLAG_ITALIC          = 1 << 0,
-    FT_STYLE_FLAG_BOLD            = 1 << 1,
+    FT_CURVE_TAG_ON          = 1,
+    FT_CURVE_TAG_CONIC       = 0,
+    FT_CURVE_TAG_CUBIC       = 2,
+    FT_CURVE_TAG_TOUCH_X     = 8,
+    FT_CURVE_TAG_TOUCH_Y     = 16,
+    FT_CURVE_TAG_TOUCH_BOTH  = FT_CURVE_TAG_TOUCH_X | FT_CURVE_TAG_TOUCH_Y,
 }
 
+enum FT_Glyph_Format
+{
+  FT_GLYPH_FORMAT_NONE = ( ( cast(uint)0 << 24 ) | ( cast(uint)0 << 16 ) | ( cast(uint)0 << 8 ) | cast(uint)0 ) ,
+  FT_GLYPH_FORMAT_COMPOSITE = ( ( cast(uint)'c' << 24 ) | ( cast(uint)'o' << 16 ) | ( cast(uint)'m' << 8 ) | cast(uint)'p' ) ,
+  FT_GLYPH_FORMAT_BITMAP = ( ( cast(uint)'b' << 24 ) | ( cast(uint)'i' << 16 ) | ( cast(uint)'t' << 8 ) | cast(uint)'s' ) ,
+  FT_GLYPH_FORMAT_OUTLINE = ( ( cast(uint)'o' << 24 ) | ( cast(uint)'u' << 16 ) | ( cast(uint)'t' << 8 ) | cast(uint)'l' ) ,
+  FT_GLYPH_FORMAT_PLOTTER = ( ( cast(uint)'p' << 24 ) | ( cast(uint)'l' << 16 ) | ( cast(uint)'o' << 8 ) | cast(uint)'t' )
+}
+
+enum
+{
+    FT_RASTER_FLAG_DEFAULT  = 0x0,
+    FT_RASTER_FLAG_AA       = 0x1,
+    FT_RASTER_FLAG_DIRECT   = 0x2,
+    FT_RASTER_FLAG_CLIP     = 0x4
+}
+
+// ftmodapi.h (FT_MODULE_H, FT_RENDER_H)
+enum
+{
+    FT_MODULE_FONT_DRIVER       = 1,
+    FT_MODULE_RENDERER          = 2,
+    FT_MODULE_HINTER            = 4,
+    FT_MODULE_STYLER            = 8,
+    FT_MODULE_DRIVER_SCALABLE   = 0x100,
+    FT_MODULE_DRIVER_NO_OUTLINES= 0x200,
+    FT_MODULE_DRIVER_HAS_HINTER = 0x400
+}
+
+enum FT_TrueTypeEngineType
+{
+    FT_TRUETYPE_ENGINE_TYPE_NONE = 0,
+    FT_TRUETYPE_ENGINE_TYPE_UNPATENTED,
+    FT_TRUETYPE_ENGINE_TYPE_PATENTED
+
+}
+
+// ftmoderr.h (FT_FREETYPE_H, FT_ERRORS_H, FT_MODULE_ERRORS_H)
 enum
 {
   FT_Mod_Err_Base  = 0,
@@ -322,6 +485,165 @@ enum
   FT_Mod_Err_Max
 }
 
+// ftoutln (FT_OUTLINE_H, FT_STROKER_H)
+enum FT_Orientation
+{
+    FT_ORIENTATION_TRUETYPE = 0,
+    FT_ORIENTATION_POSTSCRIPT = 1,
+    FT_ORIENTATION_FILL_RIGHT = FT_ORIENTATION_TRUETYPE,
+    FT_ORIENTATION_FILL_LEFT = FT_ORIENTATION_POSTSCRIPT
+}
+
+// t1tables.h (FT_TYPE1_TABLES_H)
+enum T1_Blend_Flags
+ {
+ T1_BLEND_UNDERLINE_POSITION = 0,
+ T1_BLEND_UNDERLINE_THICKNESS,
+ T1_BLEND_ITALIC_ANGLE,
+ T1_BLEND_BLUE_VALUES,
+ T1_BLEND_OTHER_BLUES,
+ T1_BLEND_STANDARD_WIDTH,
+ T1_BLEND_STANDARD_HEIGHT,
+ T1_BLEND_STEM_SNAP_WIDTHS,
+ T1_BLEND_STEM_SNAP_HEIGHTS,
+ T1_BLEND_BLUE_SCALE,
+ T1_BLEND_BLUE_SHIFT,
+ T1_BLEND_FAMILY_BLUES,
+ T1_BLEND_FAMILY_OTHER_BLUES,
+ T1_BLEND_FORCE_BOLD,
+ T1_BLEND_MAX
+}
+
+// ttnameid.h (FT_TRUETYPE_IDS_H)
+// NOTE: _lots_ of missing #defines which _could_ be made into enums
+
+// tttables.h (FT_TRUETYPE_TABLES_H)
+enum FT_Sfnt_Tag
+{
+    ft_sfnt_head = 0,
+    ft_sfnt_maxp = 1,
+    ft_sfnt_os2  = 2,
+    ft_sfnt_hhea = 3,
+    ft_sfnt_vhea = 4,
+    ft_sfnt_post = 5,
+    ft_sfnt_pclt = 6,
+    sfnt_max
+}
+
+// ftbdf.h (FT_BDF_H)
+enum BDF_PropertyType
+{
+ BDF_PROPERTY_TYPE_NONE = 0,
+ BDF_PROPERTY_TYPE_ATOM = 1,
+ BDF_PROPERTY_TYPE_INTEGER = 2,
+ BDF_PROPERTY_TYPE_CARDINAL = 3
+}
+
+// ftglyph.h (FT_GLYPH_H, FT_CACHE_H, FT_STROKER_H)
+enum FT_Glyph_BBox_Mode
+{
+ FT_GLYPH_BBOX_UNSCALED = 0,
+ FT_GLYPH_BBOX_SUBPIXELS = 0,
+ FT_GLYPH_BBOX_GRIDFIT = 1,
+ FT_GLYPH_BBOX_TRUNCATE = 2,
+ FT_GLYPH_BBOX_PIXELS = 3
+}
+
+// ftotval.h (FT_OPENTYPE_VALIDATE_H)
+enum
+{
+  FT_VALIDATE_BASE = 0x0100,
+  FT_VALIDATE_GDEF = 0x0200,
+  FT_VALIDATE_GPOS = 0x0400,
+  FT_VALIDATE_GSUB = 0x0800,
+  FT_VALIDATE_JSTF = 0x1000,
+  FT_VALIDATE_OT   = FT_VALIDATE_BASE | FT_VALIDATE_GDEF | FT_VALIDATE_GPOS | FT_VALIDATE_GSUB | FT_VALIDATE_JSTF
+}
+
+// ftgxval.h (FT_GX_VALIDATE_H)
+enum
+{
+  // pulled just a few #defines (some aren't for external use anyway)
+  FT_VALIDATE_GX_LENGTH = 10,
+  FT_VALIDATE_GX_START = 0x4000,
+
+  FT_VALIDATE_feat = FT_VALIDATE_GX_START << 0,
+  FT_VALIDATE_mort = FT_VALIDATE_GX_START << 1,
+  FT_VALIDATE_morx = FT_VALIDATE_GX_START << 2,
+  FT_VALIDATE_bsln = FT_VALIDATE_GX_START << 3,
+  FT_VALIDATE_just = FT_VALIDATE_GX_START << 4,
+  FT_VALIDATE_kern = FT_VALIDATE_GX_START << 5,
+  FT_VALIDATE_opbd = FT_VALIDATE_GX_START << 6,
+  FT_VALIDATE_trak = FT_VALIDATE_GX_START << 7,
+  FT_VALIDATE_prop = FT_VALIDATE_GX_START << 8,
+  FT_VALIDATE_lcar = FT_VALIDATE_GX_START << 9,
+  FT_VALIDATE_GX = FT_VALIDATE_feat | FT_VALIDATE_mort | FT_VALIDATE_morx | FT_VALIDATE_bsln | FT_VALIDATE_just | FT_VALIDATE_kern | FT_VALIDATE_opbd | FT_VALIDATE_trak | FT_VALIDATE_prop | FT_VALIDATE_lcar,
+
+  FT_VALIDATE_MS = FT_VALIDATE_GX_START << 0,
+  FT_VALIDATE_APPLE = FT_VALIDATE_GX_START << 1,
+  FT_VALIDATE_CKERN = FT_VALIDATE_MS | FT_VALIDATE_APPLE
+}
+
+// ftstroke.h (FT_STROKER_H)
+enum FT_Stroker_LineJoin
+{
+ FT_STROKER_LINEJOIN_ROUND = 0,
+ FT_STROKER_LINEJOIN_BEVEL,
+ FT_STROKER_LINEJOIN_MITER
+}
+
+enum FT_Stroker_LineCap
+{
+ FT_STROKER_LINECAP_BUTT = 0,
+ FT_STROKER_LINECAP_ROUND,
+ FT_STROKER_LINECAP_SQUARE
+}
+
+enum FT_StrokerBorder
+{
+ FT_STROKER_BORDER_LEFT = 0,
+ FT_STROKER_BORDER_RIGHT
+}
+
+// fttrigon.h (FT_TRIGONOMETRY_H)
+enum
+{
+    FT_ANGLE_PI     = 180 << 16,
+    FT_ANGLE_2PI    = FT_ANGLE_PI * 2,
+    FT_ANGLE_PI2    = FT_ANGLE_PI / 2,
+    FT_ANGLE_PI4    = FT_ANGLE_PI / 4
+}
+
+// ftlcdfil.h (FT_LCD_FILTER_H)
+enum FT_LcdFilter
+{
+ FT_LCD_FILTER_NONE    = 0,
+ FT_LCD_FILTER_DEFAULT = 1,
+ FT_LCD_FILTER_LIGHT   = 2,
+ FT_LCD_FILTER_LEGACY  = 16,
+ FT_LCD_FILTER_MAX
+}
+
+// ftgasp.h (FT_GASP_H)
+enum
+{
+    FT_GASP_NO_TABLE        = -1,
+    FT_GASP_DO_GRIDFIT      = 0x01,
+    FT_GASP_DO_GRAY         = 0x02,
+    FT_GASP_SYMMETRIC_SMOOTHING = 0x08,
+    FT_GASP_SYMMETRIC_GRIDFIT   = 0x10
+}
+
+/+ other
+version(Windows)
+{
+    enum  { _JBLEN = 16 }
+}
+else
+{
+    enum { _JBLEN = 10 }
+}
++/
 enum
 {
   FT_Err_Ok  = 0x00,
@@ -408,145 +730,7 @@ enum
   FT_Err_Missing_Bbx_Field  = 0xB6 + 0 ,
   FT_Err_Max
 }
-
-enum FT_Render_Mode
-{
- FT_RENDER_MODE_NORMAL = 0,
- FT_RENDER_MODE_LIGHT,
- FT_RENDER_MODE_MONO,
- FT_RENDER_MODE_LCD,
- FT_RENDER_MODE_LCD_V,
- FT_RENDER_MODE_MAX
-}
-
-enum FT_Kerning_Mode
-{
- FT_KERNING_DEFAULT = 0,
- FT_KERNING_UNFITTED,
- FT_KERNING_UNSCALED
-}
-
-
-enum FT_Pixel_Mode
-{
- FT_PIXEL_MODE_NONE = 0,
- FT_PIXEL_MODE_MONO,
- FT_PIXEL_MODE_GRAY,
- FT_PIXEL_MODE_GRAY2,
- FT_PIXEL_MODE_GRAY4,
- FT_PIXEL_MODE_LCD,
- FT_PIXEL_MODE_LCD_V,
- FT_PIXEL_MODE_MAX
-}
-
-enum FT_Glyph_Format
-{
-  FT_GLYPH_FORMAT_NONE = ( ( cast(uint)0 << 24 ) | ( cast(uint)0 << 16 ) | ( cast(uint)0 << 8 ) | cast(uint)0 ) ,
-  FT_GLYPH_FORMAT_COMPOSITE = ( ( cast(uint)'c' << 24 ) | ( cast(uint)'o' << 16 ) | ( cast(uint)'m' << 8 ) | cast(uint)'p' ) ,
-  FT_GLYPH_FORMAT_BITMAP = ( ( cast(uint)'b' << 24 ) | ( cast(uint)'i' << 16 ) | ( cast(uint)'t' << 8 ) | cast(uint)'s' ) ,
-  FT_GLYPH_FORMAT_OUTLINE = ( ( cast(uint)'o' << 24 ) | ( cast(uint)'u' << 16 ) | ( cast(uint)'t' << 8 ) | cast(uint)'l' ) ,
-  FT_GLYPH_FORMAT_PLOTTER = ( ( cast(uint)'p' << 24 ) | ( cast(uint)'l' << 16 ) | ( cast(uint)'o' << 8 ) | cast(uint)'t' )
-}
-
-enum FT_Encoding
-{
-  FT_ENCODING_NONE = ( ( cast(FT_UInt32)(0) << 24 ) | ( cast(FT_UInt32)(0) << 16 ) | ( cast(FT_UInt32)(0) << 8 ) | cast(FT_UInt32)(0) ) ,
-  FT_ENCODING_MS_SYMBOL = ( ( cast(FT_UInt32)('s') << 24 ) | ( cast(FT_UInt32)('y') << 16 ) | ( cast(FT_UInt32)('m') << 8 ) | cast(FT_UInt32)('b') ) ,
-  FT_ENCODING_UNICODE = ( ( cast(FT_UInt32)('u') << 24 ) | ( cast(FT_UInt32)('n') << 16 ) | ( cast(FT_UInt32)('i') << 8 ) | cast(FT_UInt32)('c') ) ,
-  FT_ENCODING_SJIS = ( ( cast(FT_UInt32)('s') << 24 ) | ( cast(FT_UInt32)('j') << 16 ) | ( cast(FT_UInt32)('i') << 8 ) | cast(FT_UInt32)('s') ) ,
-  FT_ENCODING_GB2312 = ( ( cast(FT_UInt32)('g') << 24 ) | ( cast(FT_UInt32)('b') << 16 ) | ( cast(FT_UInt32)(' ') << 8 ) | cast(FT_UInt32)(' ') ) ,
-  FT_ENCODING_BIG5 = ( ( cast(FT_UInt32)('b') << 24 ) | ( cast(FT_UInt32)('i') << 16 ) | ( cast(FT_UInt32)('g') << 8 ) | cast(FT_UInt32)('5') ) ,
-  FT_ENCODING_WANSUNG = ( ( cast(FT_UInt32)('w') << 24 ) | ( cast(FT_UInt32)('a') << 16 ) | ( cast(FT_UInt32)('n') << 8 ) | cast(FT_UInt32)('s') ) ,
-  FT_ENCODING_JOHAB = ( ( cast(FT_UInt32)('j') << 24 ) | ( cast(FT_UInt32)('o') << 16 ) | ( cast(FT_UInt32)('h') << 8 ) | cast(FT_UInt32)('a') ) ,
-  FT_ENCODING_MS_SJIS = FT_ENCODING_SJIS,
-  FT_ENCODING_MS_GB2312 = FT_ENCODING_GB2312,
-  FT_ENCODING_MS_BIG5 = FT_ENCODING_BIG5,
-  FT_ENCODING_MS_WANSUNG = FT_ENCODING_WANSUNG,
-  FT_ENCODING_MS_JOHAB = FT_ENCODING_JOHAB,
-  FT_ENCODING_ADOBE_STANDARD = ( ( cast(FT_UInt32)('A') << 24 ) | ( cast(FT_UInt32)('D') << 16 ) | ( cast(FT_UInt32)('O') << 8 ) | cast(FT_UInt32)('B') ) ,
-  FT_ENCODING_ADOBE_EXPERT = ( ( cast(FT_UInt32)('A') << 24 ) | ( cast(FT_UInt32)('D') << 16 ) | ( cast(FT_UInt32)('B') << 8 ) | cast(FT_UInt32)('E') ) ,
-  FT_ENCODING_ADOBE_CUSTOM = ( ( cast(FT_UInt32)('A') << 24 ) | ( cast(FT_UInt32)('D') << 16 ) | ( cast(FT_UInt32)('B') << 8 ) | cast(FT_UInt32)('C') ) ,
-  FT_ENCODING_ADOBE_LATIN_1 = ( ( cast(FT_UInt32)('l') << 24 ) | ( cast(FT_UInt32)('a') << 16 ) | ( cast(FT_UInt32)('t') << 8 ) | cast(FT_UInt32)('1') ) ,
-  FT_ENCODING_OLD_LATIN_2 = ( ( cast(FT_UInt32)('l') << 24 ) | ( cast(FT_UInt32)('a') << 16 ) | ( cast(FT_UInt32)('t') << 8 ) | cast(FT_UInt32)('2') ) ,
-  FT_ENCODING_APPLE_ROMAN = ( ( cast(FT_UInt32)('a') << 24 ) | ( cast(FT_UInt32)('r') << 16 ) | ( cast(FT_UInt32)('m') << 8 ) | cast(FT_UInt32)('n') )
-}
-
-enum FT_Orientation
-{
- FT_ORIENTATION_TRUETYPE = 0,
- FT_ORIENTATION_POSTSCRIPT = 1,
- FT_ORIENTATION_FILL_RIGHT = FT_ORIENTATION_TRUETYPE,
- FT_ORIENTATION_FILL_LEFT = FT_ORIENTATION_POSTSCRIPT
-}
-
-enum FT_Glyph_BBox_Mode
-{
- FT_GLYPH_BBOX_UNSCALED = 0,
- FT_GLYPH_BBOX_SUBPIXELS = 0,
- FT_GLYPH_BBOX_GRIDFIT = 1,
- FT_GLYPH_BBOX_TRUNCATE = 2,
- FT_GLYPH_BBOX_PIXELS = 3
-}
-
-enum T1_Blend_Flags
- {
- T1_BLEND_UNDERLINE_POSITION = 0,
- T1_BLEND_UNDERLINE_THICKNESS,
- T1_BLEND_ITALIC_ANGLE,
- T1_BLEND_BLUE_VALUES,
- T1_BLEND_OTHER_BLUES,
- T1_BLEND_STANDARD_WIDTH,
- T1_BLEND_STANDARD_HEIGHT,
- T1_BLEND_STEM_SNAP_WIDTHS,
- T1_BLEND_STEM_SNAP_HEIGHTS,
- T1_BLEND_BLUE_SCALE,
- T1_BLEND_BLUE_SHIFT,
- T1_BLEND_FAMILY_BLUES,
- T1_BLEND_FAMILY_OTHER_BLUES,
- T1_BLEND_FORCE_BOLD,
- T1_BLEND_MAX
-}
-
-enum FT_Sfnt_Tag
-{
- ft_sfnt_head = 0,
- ft_sfnt_maxp = 1,
- ft_sfnt_os2 = 2,
- ft_sfnt_hhea = 3,
- ft_sfnt_vhea = 4,
- ft_sfnt_post = 5,
- ft_sfnt_pclt = 6,
- sfnt_max
-}
-
-enum BDF_PropertyType
-{
- BDF_PROPERTY_TYPE_NONE = 0,
- BDF_PROPERTY_TYPE_ATOM = 1,
- BDF_PROPERTY_TYPE_INTEGER = 2,
- BDF_PROPERTY_TYPE_CARDINAL = 3
-}
-
-enum FT_Stroker_LineJoin
-{
- FT_STROKER_LINEJOIN_ROUND = 0,
- FT_STROKER_LINEJOIN_BEVEL,
- FT_STROKER_LINEJOIN_MITER
-}
-
-enum FT_Stroker_LineCap
-{
- FT_STROKER_LINECAP_BUTT = 0,
- FT_STROKER_LINECAP_ROUND,
- FT_STROKER_LINECAP_SQUARE
-}
-
-enum FT_StrokerBorder
-{
- FT_STROKER_BORDER_LEFT = 0,
- FT_STROKER_BORDER_RIGHT
-}
-
+/+
 enum FT_Frame_Op
 {
  ft_frame_end = 0,
@@ -627,44 +811,36 @@ enum T1_ParseState
  T1_Parse_Have_Moveto,
  T1_Parse_Have_Path
 }
-
-enum FT_LcdFilter
-{
- FT_LCD_FILTER_NONE    = 0,
- FT_LCD_FILTER_DEFAULT = 1,
- FT_LCD_FILTER_LIGHT   = 2,
- FT_LCD_FILTER_LEGACY  = 16
-}
++/
+//END Enums
 
 
+//BEGIN Structs
 /********************************************************************
  * Freetype structures
  ********************************************************************/
 
-// Opaque types
-struct FT_RasterRec {}
-//struct FT_LibraryRec;
-//struct FT_ModuleRec;
-//struct FT_DriverRec;
-//struct FT_RendererRec;
-//struct FT_Face_InternalRec;
-struct FT_Size_InternalRec {}
-//struct FT_SubGlyphRec;
-//struct FT_Slot_InternalRec;
+// Opaque types (not defined anywhere)
+struct FT_RasterRec;
+struct FT_LibraryRec;
+struct FT_ModuleRec {}
+struct FT_DriverRec;
+struct FT_RendererRec {}
+struct FT_Face_InternalRec;
+struct FT_Size_InternalRec;
+struct FT_SubGlyphRec;
+struct FT_Slot_InternalRec;
 
-struct FTC_FaceIDRec_ {}
-struct FTC_CMapCacheRec {}
-struct FTC_ImageCacheRec {}
-struct FTC_SBitCacheRec {}
-struct FT_StrokerRec {}
-struct FT_IncrementalRec {}
-struct FT_AutoHinterRec {}
-struct GX_BlendRec {}
-struct TT_ExecContextRec {}
-struct PSH_GlobalsRec {}
-struct T1_HintsRec {}
-struct T2_HintsRec {}
+struct FTC_FaceIDRec;
+struct FTC_ManagerRec;
+struct FTC_NodeRec;
+struct FTC_CMapCacheRec;
+struct FTC_ImageCacheRec;
+struct FTC_SBitCacheRec;
+struct FT_StrokerRec;
+struct FT_IncrementalRec;
 
+// ftsystem.h (FT_FREETYPE_H, FT_TYPES_H, FT_SYSTEM_H)
 union FT_StreamDesc
 {
  int value;
@@ -693,6 +869,7 @@ struct FT_StreamRec
  ubyte* limit;
 }
 
+// ftimage.h (FT_FREETYPE_H, FT_TYPES_H, FT_IMAGE_H)
 struct FT_Vector
 {
  FT_Pos x;
@@ -767,6 +944,7 @@ struct FT_Raster_Funcs
  FT_Raster_DoneFunc raster_done;
 }
 
+// fttypes.h (FT_FREETYPE_H, FT_TYPES_H)
 struct FT_UnitVector
 {
  FT_F2Dot14 x;
@@ -804,6 +982,7 @@ struct FT_ListRec
  FT_ListNode tail;
 }
 
+// freetype.h (FT_FREETYPE_H)
 struct FT_Glyph_Metrics
 {
  FT_Pos width;
@@ -934,6 +1113,16 @@ struct FT_Open_Args
  FT_Parameter* params;
 }
 
+struct FT_Size_RequestRec
+{
+    FT_Size_Request_Type  type;
+    FT_Long               width;
+    FT_Long               height;
+    FT_UInt               horiResolution;
+    FT_UInt               vertResolution;
+}
+
+// ftmodapi.h (FT_MODULE_H, FT_RENDER_H)
 struct FT_Module_Class
 {
  FT_ULong module_flags;
@@ -947,29 +1136,8 @@ struct FT_Module_Class
  FT_Module_Requester get_interface;
 }
 
-struct FT_GlyphRec
-{
- FT_Library library;
- FT_Glyph_Class* clazz;
- FT_Glyph_Format format;
- FT_Vector advance;
-}
-
-struct FT_BitmapGlyphRec
-{
- FT_GlyphRec root;
- FT_Int left;
- FT_Int top;
- FT_Bitmap bitmap;
-}
-
-struct FT_OutlineGlyphRec
-{
- FT_GlyphRec root;
- FT_Outline outline;
-}
-
-struct FT_Glyph_Class
+// ftrender.h (FT_RENDER_H)
+struct FT_Glyph_Class   // typedef'd in ftglyph.h
 {
  FT_Long glyph_size;
  FT_Glyph_Format glyph_format;
@@ -992,6 +1160,7 @@ struct FT_Renderer_Class
  FT_Raster_Funcs* raster_class;
 }
 
+// t1tables.h (FT_TYPE1_TABLES_H)
 struct PS_FontInfoRec
  {
  FT_String* _version;
@@ -1034,7 +1203,7 @@ struct PS_PrivateRec
  FT_Short[2] min_feature;
 }
 
-struct PS_DesignMap_
+struct PS_DesignMapRec
 {
  FT_Byte num_points;
  FT_Long* design_points;
@@ -1094,6 +1263,7 @@ struct CID_FaceInfoRec
  FT_ULong data_offset;
 }
 
+// tttables.h (FT_TRUETYPE_TABLES_H)
 struct TT_Header
 {
  FT_Fixed Table_Version;
@@ -1247,7 +1417,7 @@ struct TT_MaxProfile
  FT_UShort maxComponentDepth;
 }
 
-
+// ftbdf.h (FT_BDF_H)
 struct BDF_PropertyRec
 {
  BDF_PropertyType type;
@@ -1259,6 +1429,7 @@ struct BDF_PropertyRec
  }
 }
 
+// ftwinfnt.h (FT_WINFONTS_H)
 struct FT_WinFNT_HeaderRec
 {
  FT_UShort _version;
@@ -1299,13 +1470,30 @@ struct FT_WinFNT_HeaderRec
  FT_ULong[4] reserved1;
 }
 
-struct FTC_FontRec
+// ftglyph.h (FT_GLYPH_H, FT_CACHE_H, FT_STROKER_H)
+struct FT_GlyphRec
 {
- FTC_FaceID face_id;
- FT_UShort pix_width;
- FT_UShort pix_height;
+ FT_Library library;
+ FT_Glyph_Class* clazz;
+ FT_Glyph_Format format;
+ FT_Vector advance;
 }
 
+struct FT_BitmapGlyphRec
+{
+ FT_GlyphRec root;
+ FT_Int left;
+ FT_Int top;
+ FT_Bitmap bitmap;
+}
+
+struct FT_OutlineGlyphRec
+{
+ FT_GlyphRec root;
+ FT_Outline outline;
+}
+
+// ftcache.h (FT_CACHE_H)
 struct FTC_ScalerRec
 {
  FTC_FaceID face_id;
@@ -1338,6 +1526,7 @@ struct FTC_SBitRec
  FT_Byte* buffer;
 }
 
+// ftmm.h (FT_MULTIPLE_MASTERS_H)
 struct FT_MM_Axis
 {
  FT_String* name;
@@ -1377,6 +1566,7 @@ struct FT_MM_Var
  FT_Var_Named_Style* namedstyle;
 }
 
+// ftsnames.h (FT_SFNT_NAMES_H)
 struct FT_SfntName
 {
  FT_UShort platform_id;
@@ -1387,6 +1577,28 @@ struct FT_SfntName
  FT_UInt string_len;
 }
 
+// ftincrem.h (FT_INCREMENTAL_H)
+struct FT_Incremental_MetricsRec
+{
+ FT_Long bearing_x;
+ FT_Long bearing_y;
+ FT_Long advance;
+}
+
+struct FT_Incremental_FuncsRec
+{
+ FT_Incremental_GetGlyphDataFunc get_glyph_data;
+ FT_Incremental_FreeGlyphDataFunc free_glyph_data;
+ FT_Incremental_GetGlyphMetricsFunc get_glyph_metrics;
+}
+
+struct FT_Incremental_InterfaceRec
+{
+ FT_Incremental_FuncsRec* funcs;
+ FT_Incremental object;
+}
+
+/+ other
 struct FTC_MruNodeRec
 {
  FTC_MruNode next;
@@ -1519,26 +1731,6 @@ struct FTC_SFamilyClassRec
  FTC_MruListClassRec clazz;
  FTC_SFamily_GetCountFunc family_get_count;
  FTC_SFamily_LoadGlyphFunc family_load_glyph;
-}
-
-struct FT_Incremental_MetricsRec
-{
- FT_Long bearing_x;
- FT_Long bearing_y;
- FT_Long advance;
-}
-
-struct FT_Incremental_FuncsRec
-{
- FT_Incremental_GetGlyphDataFunc get_glyph_data;
- FT_Incremental_FreeGlyphDataFunc free_glyph_data;
- FT_Incremental_GetGlyphMetricsFunc get_glyph_metrics;
-}
-
-struct FT_Incremental_InterfaceRec
-{
- FT_Incremental_FuncsRec* funcs;
- FT_Incremental object;
 }
 
 struct FT_SubGlyphRec
@@ -2334,11 +2526,14 @@ struct PSAux_ServiceRec
  void function( FT_Byte* buffer, FT_Offset length, FT_UShort seed ) t1_decrypt;
  T1_CMap_Classes t1_cmap_classes;
 }
++/
+//END Structs
 
+//BEGIN Callbacks
 /********************************************************************
  *   Freetype Function Callback Types
  ********************************************************************/
-
+// ftsystem.h (FT_FREETYPE_H, FT_TYPES_H, FT_SYSTEM_H)
 alias void* function( FT_Memory memory, int size )
     FT_Alloc_Func;
 alias void  function( FT_Memory memory, void* block )
@@ -2351,6 +2546,7 @@ alias uint function( FT_Stream stream, uint offset, ubyte* buffer, uint count )
 alias void           function( FT_Stream stream )
     FT_Stream_CloseFunc;
 
+// ftimage.h (FT_FREETYPE_H, FT_TYPES_H, FT_IMAGE_H)
 alias int function( FT_Vector* to, void* user )
     FT_Outline_MoveToFunc;
 alias int function( FT_Vector* to, void* user )
@@ -2359,7 +2555,6 @@ alias int function( FT_Vector* control, FT_Vector* to, void* user )
     FT_Outline_ConicToFunc;
 alias int function( FT_Vector* control1, FT_Vector* control2, FT_Vector* to, void* user )
     FT_Outline_CubicToFunc;
-
 
 alias void function( int y, int count, FT_Span* spans, void* user )
     FT_SpanFunc;
@@ -2379,17 +2574,22 @@ alias int function( FT_Raster raster,uint mode, void* args )
 alias int function( FT_Raster raster, FT_Raster_Params* params )
     FT_Raster_RenderFunc;
 
+// fttypes.h (FT_FREETYPE_H, FT_TYPES_H)
 alias void function(void* object)
     FT_Generic_Finalizer;
 
+// ftlist.h (FT_LIST_H)
 alias FT_Error function( FT_ListNode node, void* user ) FT_List_Iterator;
 alias void     function( FT_Memory memory, void* data, void* user ) FT_List_Destructor;
+
+// ftmodapi.h (FT_MODULE_H, FT_RENDER_H)
 alias FT_Error     function( FT_Module mod ) FT_Module_Constructor;
 alias void         function( FT_Module mod ) FT_Module_Destructor;
 alias FT_Module_Interface function( FT_Module mod, char* name ) FT_Module_Requester;
 
 alias void function( void* arg ) FT_DebugHook_Func;
 
+// ftrender.h (FT_RENDER_H)
 alias FT_Error function( FT_Glyph glyph, FT_GlyphSlot slot ) FT_Glyph_InitFunc;
 alias void function( FT_Glyph glyph ) FT_Glyph_DoneFunc;
 alias void function( FT_Glyph glyph, FT_Matrix* matrix, FT_Vector* delta ) FT_Glyph_TransformFunc;
@@ -2402,8 +2602,15 @@ alias FT_Error function( FT_Renderer renderer, FT_GlyphSlot slot, FT_Matrix* mat
 alias void function( FT_Renderer renderer, FT_GlyphSlot slot, FT_BBox* cbox ) FT_Renderer_GetCBoxFunc;
 alias FT_Error function( FT_Renderer renderer, FT_ULong mode_tag, FT_Pointer mode_ptr ) FT_Renderer_SetModeFunc;
 
+// ftcache.h (FT_CACHE_H)
 alias FT_Error function( FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face* aface ) FTC_Face_Requester;
 
+// ftincrem.h (FT_INCREMENTAL_H)
+alias FT_Error function( FT_Incremental incremental, FT_UInt glyph_index, FT_Data* adata ) FT_Incremental_GetGlyphDataFunc;
+alias void      function( FT_Incremental incremental, FT_Data* data ) FT_Incremental_FreeGlyphDataFunc;
+alias FT_Error function( FT_Incremental incremental, FT_UInt glyph_index, FT_Bool vertical, FT_Incremental_MetricsRec *ametrics ) FT_Incremental_GetGlyphMetricsFunc;
+
+/+ other
 alias FT_Bool function( FTC_MruNode node, FT_Pointer key ) FTC_MruNode_CompareFunc;
 alias FT_Error function( FTC_MruNode node, FT_Pointer key, FT_Pointer data ) FTC_MruNode_InitFunc;
 alias FT_Error function( FTC_MruNode node, FT_Pointer key, FT_Pointer data ) FTC_MruNode_ResetFunc;
@@ -2420,10 +2627,6 @@ alias FT_Error function( FTC_Family family, FT_UInt gindex, FTC_Cache cache, FT_
 
 alias FT_UInt     function( FTC_Family family, FTC_Manager manager ) FTC_SFamily_GetCountFunc;
 alias FT_Error function( FTC_Family family, FT_UInt gindex, FTC_Manager manager, FT_Face *aface ) FTC_SFamily_LoadGlyphFunc;
-
-alias FT_Error function( FT_Incremental incremental, FT_UInt glyph_index, FT_Data* adata ) FT_Incremental_GetGlyphDataFunc;
-alias void      function( FT_Incremental incremental, FT_Data* data ) FT_Incremental_FreeGlyphDataFunc;
-alias FT_Error function( FT_Incremental incremental, FT_UInt glyph_index, FT_Bool vertical, FT_Incremental_MetricsRec *ametrics ) FT_Incremental_GetGlyphMetricsFunc;
 
 alias FT_Error function( FT_Stream stream, FT_Face face, FT_Int typeface_index, FT_Int num_params, FT_Parameter* parameters ) FT_Face_InitFunc;
 alias void     function( FT_Face face ) FT_Face_DoneFunc;
@@ -2514,18 +2717,22 @@ alias FT_Error function( T1_Builder builder, FT_Pos x, FT_Pos y ) T1_Builder_Sta
 alias void     function( T1_Builder builder ) T1_Builder_Close_Contour_Func;
 
 alias FT_Error function( T1_Decoder decoder, FT_UInt glyph_index ) T1_Decoder_Callback;
++/
+//END Callbacks
 
+//BEGIN Macros
 //==============================================================================
 // macros
 //==============================================================================
-FT_Int32 FT_LOAD_TARGET_( int x )
+// freetype.h (FT_FREETYPE_H)
+int FT_LOAD_TARGET_( int x )
 {
-    return ( cast(FT_Int32)( x & 15 ) << 16 );
+    return ( ( x & 15 ) << 16 );
 }
 
-FT_Int32 FT_LOAD_TARGET_MODE( int x )
+int FT_LOAD_TARGET_MODE( int x )
 {
-    return ( cast(FT_Render_Mode)( ( x >> 16 ) & 15 ) );
+    return ( ( x >> 16 ) & 15 );
 }
 
 int FT_HAS_HORIZONTAL(FT_FaceRec* face)
@@ -2548,12 +2755,17 @@ int FT_IS_SCALABLE(FT_FaceRec* face)
     return face.face_flags & FT_FACE_FLAG_SCALABLE;
 }
 
+int FT_IS_SFNT(FT_FaceRec* face)
+{
+    return face.face_flags & FT_FACE_FLAG_SFNT;
+}
+
 int FT_IS_FIXED_WIDTH(FT_FaceRec* face)
 {
     return face.face_flags & FT_FACE_FLAG_FIXED_WIDTH;
 }
 
-int FT_HAS_FIXED_SIZED(FT_FaceRec* face)
+int FT_HAS_FIXED_SIZES(FT_FaceRec* face)
 {
     return face.face_flags & FT_FACE_FLAG_FIXED_SIZES;
 }
@@ -2573,11 +2785,21 @@ int FT_HAS_MULTIPLE_MASTERS(FT_FaceRec* face)
     return face.face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS;
 }
 
+// Other macros. Second version is D-specific, but works fine.
+template FT_MAKE_TAG(char x1, char x2, char x3, char x4) {
+    const uint FT_MAKE_TAG = ((cast(uint)x1) << 24) + ((cast(uint)x2) << 16) + ((cast(uint)x3) << 8) + x4;
+}
+
+template FT_MAKE_TAG(char[4] x) {
+    const uint FT_MAKE_TAG = ((cast(uint)x[0]) << 24) + ((cast(uint)x[1]) << 16) + ((cast(uint)x[2]) << 8) + x[3];
+}
+
 /***********************************************************************
  * Extra macros carried over from Freetype.  Something needs to be done?
  ***********************************************************************/
 
- /*
+/+ fterrdef.h (FT_ERROR_DEFINITIONS_H)
+// (list not updated to version 2.3.5)
  FT_NOERRORDEF_( Ok, 0x00, "no error" )
  FT_ERRORDEF_( Cannot_Open_Resource, 0x01, "cannot open resource" )
  FT_ERRORDEF_( Unknown_File_Format, 0x02, "unknown file format" )
@@ -2660,92 +2882,5 @@ int FT_HAS_MULTIPLE_MASTERS(FT_FaceRec* face)
  FT_ERRORDEF_( Missing_Startchar_Field, 0xB4, "`STARTCHAR' field missing" )
  FT_ERRORDEF_( Missing_Encoding_Field, 0xB5, "`ENCODING' field missing" )
  FT_ERRORDEF_( Missing_Bbx_Field, 0xB6, "`BBX' field missing" )
- */
-
-/*
-FT_TRACE_DEF( any )
-FT_TRACE_DEF( calc )
-FT_TRACE_DEF( memory )
-FT_TRACE_DEF( stream )
-FT_TRACE_DEF( io )
-FT_TRACE_DEF( list )
-FT_TRACE_DEF( init )
-FT_TRACE_DEF( objs )
-FT_TRACE_DEF( outline )
-FT_TRACE_DEF( glyph )
-FT_TRACE_DEF( raster )
-FT_TRACE_DEF( smooth )
-FT_TRACE_DEF( mm )
-FT_TRACE_DEF( raccess )
-FT_TRACE_DEF( cache )
-FT_TRACE_DEF( sfobjs )
-FT_TRACE_DEF( ttcmap )
-FT_TRACE_DEF( ttkern )
-FT_TRACE_DEF( ttload )
-FT_TRACE_DEF( ttpost )
-FT_TRACE_DEF( ttsbit )
-FT_TRACE_DEF( ttdriver )
-FT_TRACE_DEF( ttgload )
-FT_TRACE_DEF( ttinterp )
-FT_TRACE_DEF( ttobjs )
-FT_TRACE_DEF( ttpload )
-FT_TRACE_DEF( ttgxvar )
-FT_TRACE_DEF( t1driver )
-FT_TRACE_DEF( t1gload )
-FT_TRACE_DEF( t1hint )
-FT_TRACE_DEF( t1load )
-FT_TRACE_DEF( t1objs )
-FT_TRACE_DEF( t1parse )
-FT_TRACE_DEF( t1decode )
-FT_TRACE_DEF( psobjs )
-FT_TRACE_DEF( pshrec )
-FT_TRACE_DEF( pshalgo1 )
-FT_TRACE_DEF( pshalgo2 )
-FT_TRACE_DEF( cffdriver )
-FT_TRACE_DEF( cffgload )
-FT_TRACE_DEF( cffload )
-FT_TRACE_DEF( cffobjs )
-FT_TRACE_DEF( cffparse )
-FT_TRACE_DEF( t42 )
-FT_TRACE_DEF( cidafm )
-FT_TRACE_DEF( ciddriver )
-FT_TRACE_DEF( cidgload )
-FT_TRACE_DEF( cidload )
-FT_TRACE_DEF( cidobjs )
-FT_TRACE_DEF( cidparse )
-FT_TRACE_DEF( winfnt )
-FT_TRACE_DEF( pcfdriver )
-FT_TRACE_DEF( pcfread )
-FT_TRACE_DEF( bdfdriver )
-FT_TRACE_DEF( bdflib )
-FT_TRACE_DEF( pfr )
-FT_TRACE_DEF( otvmodule )
-FT_TRACE_DEF( otvcommon )
-FT_TRACE_DEF( otvbase )
-FT_TRACE_DEF( otvgdef )
-FT_TRACE_DEF( otvgpos )
-FT_TRACE_DEF( otvgsub )
-FT_TRACE_DEF( otvjstf )
-*/
-
-/*
-FT_USE_MODULE(autofit_module_class)
-FT_USE_MODULE(tt_driver_class)
-FT_USE_MODULE(t1_driver_class)
-FT_USE_MODULE(cff_driver_class)
-FT_USE_MODULE(t1cid_driver_class)
-FT_USE_MODULE(pfr_driver_class)
-FT_USE_MODULE(t42_driver_class)
-FT_USE_MODULE(winfnt_driver_class)
-FT_USE_MODULE(pcf_driver_class)
-FT_USE_MODULE(psaux_module_class)
-FT_USE_MODULE(psnames_module_class)
-FT_USE_MODULE(pshinter_module_class)
-FT_USE_MODULE(ft_raster1_renderer_class)
-FT_USE_MODULE(sfnt_module_class)
-FT_USE_MODULE(ft_smooth_renderer_class)
-FT_USE_MODULE(ft_smooth_lcd_renderer_class)
-FT_USE_MODULE(ft_smooth_lcdv_renderer_class)
-FT_USE_MODULE(otv_module_class)
-FT_USE_MODULE(bdf_driver_class)
-*/
++/
+//END Macros

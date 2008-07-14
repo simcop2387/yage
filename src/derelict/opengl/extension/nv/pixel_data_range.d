@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,20 +84,10 @@ enum : GLenum
     GL_READ_PIXEL_DATA_RANGE_POINTER_NV     = 0x887D,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLsizei, GLvoid*) pfglPixelDataRangeNV;
-    typedef void function(GLenum) pfglFlushPixelDataRangeNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLsizei, GLvoid*) pfglPixelDataRangeNV;
+typedef void function(GLenum) pfglFlushPixelDataRangeNV;
 
 pfglPixelDataRangeNV        glPixelDataRangeNV;
 pfglFlushPixelDataRangeNV   glFlushPixelDataRangeNV;

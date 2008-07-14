@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -108,28 +108,18 @@ enum : GLenum
     GL_TABLE_TOO_LARGE_EXT            = 0x8031,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLboolean, GLenum, GLenum, GLvoid*) pfglGetHistogramEXT;
-    typedef void function(GLenum, GLenum, GLfloat*) pfglGetHistogramParameterfvEXT;
-    typedef void function(GLenum, GLenum, GLint*) pfglGetHistogramParameterivEXT;
-    typedef void function(GLenum, GLboolean, GLenum, GLenum, GLvoid*) pfglGetMinmaxEXT;
-    typedef void function(GLenum, GLenum, GLfloat*) pfglGetMinmaxParameterfvEXT;
-    typedef void function(GLenum, GLsizei, GLenum, GLint*) pfglGetMinmaxParameterivEXT;
-    typedef void function(GLenum, GLsizei, GLenum, GLboolean) pfglHistogramEXT;
-    typedef void function(GLenum, GLenum, GLboolean) pfglMinmaxEXT;
-    typedef void function(GLenum) pfglResetHistogramEXT;
-    typedef void function(GLenum) pfglResetMinmaxEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLboolean, GLenum, GLenum, GLvoid*) pfglGetHistogramEXT;
+typedef void function(GLenum, GLenum, GLfloat*) pfglGetHistogramParameterfvEXT;
+typedef void function(GLenum, GLenum, GLint*) pfglGetHistogramParameterivEXT;
+typedef void function(GLenum, GLboolean, GLenum, GLenum, GLvoid*) pfglGetMinmaxEXT;
+typedef void function(GLenum, GLenum, GLfloat*) pfglGetMinmaxParameterfvEXT;
+typedef void function(GLenum, GLsizei, GLenum, GLint*) pfglGetMinmaxParameterivEXT;
+typedef void function(GLenum, GLsizei, GLenum, GLboolean) pfglHistogramEXT;
+typedef void function(GLenum, GLenum, GLboolean) pfglMinmaxEXT;
+typedef void function(GLenum) pfglResetHistogramEXT;
+typedef void function(GLenum) pfglResetMinmaxEXT;
 
 pfglGetHistogramEXT             glGetHistogramEXT;
 pfglGetHistogramParameterfvEXT  glGetHistogramParameterfvEXT;

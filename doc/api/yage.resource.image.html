@@ -98,7 +98,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>A class for loading and manipulating images.
- Supports loading images from any format supported by SDL_Image.
+ Supports loading images from any channels supported by SDL_Image.
  Currently supports grayscale, RGB, and RGBA image data.
 <br><br>
 <font color=red>BUGS:</font><br>
@@ -110,56 +110,131 @@ An RGB image will often be returned when loading grayscale images.  Use setForma
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(char[] <span class="funcparam">filename</span>);
+<dt><span class="decl">const int 
+<span class="currsymbol">FORMAT_GRAYSCALE</span>
+<script type="text/javascript">explorer.outline.addDecl('FORMAT_GRAYSCALE');</script>
+;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct and load image data from <span class="funcparam">filename</span>.
+<dd>A grayscale image
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(ubyte[] <span class="funcparam">image</span>, uint <span class="funcparam">width</span>, uint <span class="funcparam">height</span>, int <span class="funcparam">format</span>);
+<dt><span class="decl">const int 
+<span class="currsymbol">FORMAT_RGB</span>
+<script type="text/javascript">explorer.outline.addDecl('FORMAT_RGB');</script>
+;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct from <span class="funcparam">image</span> data in memory
+<dd>An image with red, green, and blue color channels
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">const int 
+<span class="currsymbol">FORMAT_RGBA</span>
+<script type="text/javascript">explorer.outline.addDecl('FORMAT_RGBA');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>An image with Red, green, blue, and alpha color channels
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this(ubyte[] <span class="funcparam">data</span>, int <span class="funcparam">channels</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span> = 0);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Construct from image <span class="funcparam">data</span> in memory.  This does not create a copy of the <span class="funcparam">data</span>.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
-<td nowrap valign="top" style="padding-right: 8px">ubyte[] <span class="funcparam">image</span></td>
+<td nowrap valign="top" style="padding-right: 8px">image</td>
 
                
-<td>a 1-dimensional array of raw <span class="funcparam">image</span> data</td></tr>
+<td>array of raw image <span class="funcparam">data</span></td></tr>
 <tr>
-<td nowrap valign="top" style="padding-right: 8px">uint <span class="funcparam">width</span></td>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">width</span></td>
 
                
-<td><span class="funcparam">height</span> in pixels</td></tr>
+<td><span class="funcparam">width</span> in pixels</td></tr>
 <tr>
-<td nowrap valign="top" style="padding-right: 8px">uint <span class="funcparam">height</span></td>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">height</span></td>
 
                
-<td><span class="funcparam">height</span> in pixels</td></tr>
+<td><span class="funcparam">height</span> in pixels, if 0 it is auto-calculated from <span class="funcparam">width</span>, <span class="funcparam">channels</span>, and <span class="funcparam">data</span>'s length.</td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this(char[] <span class="funcparam">filename</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Construct and load image data from a file.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">filename</span></td>
+
+               
+<td>absolute or relative path of an image file supported by sdl_image.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+An image with the number of channels of the source image.  Paletted images are converted to nonpaletted.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Pixel!(4) 
+<span class="currsymbol">bilinearFilter</span>
+<script type="text/javascript">explorer.outline.addDecl('bilinearFilter');</script>
+(float <span class="funcparam">u</span>, float <span class="funcparam">v</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the pixel color value at the coordinates using bilinear interpolation.
+<br><br>
+<b>See:</b><br>
+<br><br>
+<b>http:</b><br>
+//en.wikipedia.org/wiki/Bilinear_filtering
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">u</span></td>
+
+               
+<td>A value betwen 0 and 1.</td></tr>
 <tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">format</span></td>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">v</span></td>
 
                
-<td>one of the IMAGE_FORMAT_* constants from yage.system.constant</td></tr>
+<td>A value betwen 0 and 1.</td></tr>
 </table><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">ubyte[] 
-<span class="currsymbol">get</span>
-<script type="text/javascript">explorer.outline.addDecl('get');</script>
+<span class="currsymbol">getData</span>
+<script type="text/javascript">explorer.outline.addDecl('getData');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Return the raw image data.
+ The array length is always width*height*C.
  Row-major order is used.  This means that the array contains all of row 1's
  pixels, followed by row 2's pixels, etc.
 <br><br>
@@ -168,42 +243,13 @@ An RGB image will often be returned when loading grayscale images.  Use setForma
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">int 
-<span class="currsymbol">getFormat</span>
-<script type="text/javascript">explorer.outline.addDecl('getFormat');</script>
+<span class="currsymbol">getChannels</span>
+<script type="text/javascript">explorer.outline.addDecl('getChannels');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the format of the image.
-<br><br>
-<b>See Also:</b><br>
-The IMAGE_FORMAT_* constants in system.constant. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">getHeight</span>
-<script type="text/javascript">explorer.outline.addDecl('getHeight');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the height of the image in pixels.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">getSource</span>
-<script type="text/javascript">explorer.outline.addDecl('getSource');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the name of the file the image was loaded from, or an empty string if loaded from memory.
+<dd>Get the number of color channels.
 <br><br>
 
 </dd>
@@ -216,7 +262,20 @@ The IMAGE_FORMAT_* constants in system.constant.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the width of the image in pixels.
+<dd>Get the width or height of the image in pixels.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">getHeight</span>
+<script type="text/javascript">explorer.outline.addDecl('getHeight');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>ditto.
 <br><br>
 
 </dd>
@@ -226,10 +285,14 @@ The IMAGE_FORMAT_* constants in system.constant.
 <span class="currsymbol">opIndex</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
 (uint <span class="funcparam">i</span>);
+<br>ubyte[] 
+<span class="currsymbol">opIndexAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opIndexAssign');</script>
+(ubyte[] <span class="funcparam">val</span>, uint <span class="funcparam">i</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the ith pixel in the image.
+<dd>Get or set the ith pixel in the image.
 <br><br>
 
 </dd>
@@ -239,10 +302,14 @@ The IMAGE_FORMAT_* constants in system.constant.
 <span class="currsymbol">opIndex</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
 (uint <span class="funcparam">x</span>, uint <span class="funcparam">y</span>);
+<br>ubyte[] 
+<span class="currsymbol">opIndexAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opIndexAssign');</script>
+(ubyte[] <span class="funcparam">val</span>, uint <span class="funcparam">x</span>, uint <span class="funcparam">y</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the pixel at the given coordinates.
+<dd>Get or set the pixel at the given coordinates.
 <br><br>
 
 </dd>
@@ -255,43 +322,38 @@ The IMAGE_FORMAT_* constants in system.constant.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Return a c-style pointer to the image data.
+ The length of the array is always width*height*channels. 
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
+<dt><span class="decl">Image 
 <span class="currsymbol">resize</span>
 <script type="text/javascript">explorer.outline.addDecl('resize');</script>
-(int <span class="funcparam">new_width</span>, int <span class="funcparam">new_height</span>);
+(int <span class="funcparam">width</span>, int <span class="funcparam">height</span> = 0);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Resize the image via glu.
-<br><br>
-<font color=red>BUGS:</font><br>
-This function often produces weird results if <span class="funcparam">new_width</span> is not a multiple of 4. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setFormat</span>
-<script type="text/javascript">explorer.outline.addDecl('setFormat');</script>
-(int <span class="funcparam">format</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">format</span> of the image data.
- This is an in-place operation.
+<dd>Resize this image using bilinear interpolation.
+ This is 5.5x faster than gluScaleImage (which also uses a bilinear filter when enlarging) in resizing from 32x32 to 512x512.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">format</span></td>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">width</span></td>
 
                
-<td>one of the IMAGE_FORMAT_* constants from yage.system.constant </td></tr>
+<td>The new <span class="funcparam">width</span>.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">height</span></td>
+
+               
+<td>The new <span class="funcparam">height</span>.  If 0, <span class="funcparam">height</span> will be calculated automatically with aspect ratio maintained.</td></tr>
 </table><br>
+<b>Returns:</b><br>
+A new image of the same type.
+<br><br>
 
 </dd>
 
@@ -304,6 +366,9 @@ This function often produces weird results if <span class="funcparam">new_width<
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Return a new image that is a sub-image of this image.
+<br><br>
+<b>TODO:</b><br>
+Replace this with crop.
  The four parameters should be in pixels.
  The sub-image will start with the pixels including <span class="funcparam">top</span> and <span class="funcparam">left</span>
  and stop just before pixels specified by <span class="funcparam">bottom</span> and <span class="funcparam">right</span>. 
@@ -329,7 +394,7 @@ This function often produces weird results if <span class="funcparam">new_width<
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon May 26 22:21:35 2008
+		on Sun Jul 13 22:15:40 2008
 
 	</div>
 	
@@ -360,6 +425,8 @@ This function often produces weird results if <span class="funcparam">new_width<
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.tree");
+
 	explorer.packageExplorer.addModule("yage.core.types");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
@@ -372,31 +439,11 @@ This function often produces weird results if <span class="funcparam">new_width<
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
-	explorer.packageExplorer.addModule("yage.node.all");
-
-	explorer.packageExplorer.addModule("yage.node.camera");
-
-	explorer.packageExplorer.addModule("yage.node.graph");
-
-	explorer.packageExplorer.addModule("yage.node.light");
-
-	explorer.packageExplorer.addModule("yage.node.model");
-
-	explorer.packageExplorer.addModule("yage.node.movable");
-
-	explorer.packageExplorer.addModule("yage.node.node");
-
-	explorer.packageExplorer.addModule("yage.node.scene");
-
-	explorer.packageExplorer.addModule("yage.node.sound");
-
-	explorer.packageExplorer.addModule("yage.node.sprite");
-
-	explorer.packageExplorer.addModule("yage.node.terrain");
-
-	explorer.packageExplorer.addModule("yage.node.visible");
-
 	explorer.packageExplorer.addModule("yage.resource.all");
+
+	explorer.packageExplorer.addModule("yage.resource.exception");
+
+	explorer.packageExplorer.addModule("yage.resource.font");
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
@@ -420,6 +467,30 @@ This function often produces weird results if <span class="funcparam">new_width<
 
 	explorer.packageExplorer.addModule("yage.resource.texture");
 
+	explorer.packageExplorer.addModule("yage.scene.all");
+
+	explorer.packageExplorer.addModule("yage.scene.camera");
+
+	explorer.packageExplorer.addModule("yage.scene.graph");
+
+	explorer.packageExplorer.addModule("yage.scene.light");
+
+	explorer.packageExplorer.addModule("yage.scene.model");
+
+	explorer.packageExplorer.addModule("yage.scene.movable");
+
+	explorer.packageExplorer.addModule("yage.scene.node");
+
+	explorer.packageExplorer.addModule("yage.scene.scene");
+
+	explorer.packageExplorer.addModule("yage.scene.sound");
+
+	explorer.packageExplorer.addModule("yage.scene.sprite");
+
+	explorer.packageExplorer.addModule("yage.scene.terrain");
+
+	explorer.packageExplorer.addModule("yage.scene.visible");
+
 	explorer.packageExplorer.addModule("yage.system.all");
 
 	explorer.packageExplorer.addModule("yage.system.constant");
@@ -431,6 +502,8 @@ This function often produces weird results if <span class="funcparam">new_width<
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
+
+	explorer.packageExplorer.addModule("yage.system.rendertarget");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

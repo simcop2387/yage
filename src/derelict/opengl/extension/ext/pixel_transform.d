@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,22 +91,12 @@ enum : GLenum
     GL_PIXEL_TRANSFORM_2D_MATRIX_EXT           = 0x8338,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLenum, GLint) pfglPixelTransformParameteriEXT;
-    typedef void function(GLenum, GLenum, GLfloat) pfglPixelTransformParameterfEXT;
-    typedef void function(GLenum, GLenum, GLint*) pfglPixelTransformParameterivEXT;
-    typedef void function(GLenum, GLenum, GLfloat*) pfglPixelTransformParameterfvEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLenum, GLint) pfglPixelTransformParameteriEXT;
+typedef void function(GLenum, GLenum, GLfloat) pfglPixelTransformParameterfEXT;
+typedef void function(GLenum, GLenum, GLint*) pfglPixelTransformParameterivEXT;
+typedef void function(GLenum, GLenum, GLfloat*) pfglPixelTransformParameterfvEXT;
 
 pfglPixelTransformParameteriEXT     glPixelTransformParameteriEXT;
 pfglPixelTransformParameterfEXT     glPixelTransformParameterfEXT;

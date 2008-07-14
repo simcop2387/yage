@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -114,34 +114,24 @@ enum : GLenum
     GL_MAX_PROGRAM_GENERIC_RESULTS_NV      = 0x8DA6,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLuint, GLint, GLint, GLint, GLint) pfglProgramLocalParameterI4iNV;
-    typedef void function(GLenum, GLuint, GLint*) pfglProgramLocalParameterI4ivNV;
-    typedef void function(GLenum, GLuint, GLsizei, GLint*) pfglProgramLocalParametersI4ivNV;
-    typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint) pfglProgramLocalParameterI4uiNV;
-    typedef void function(GLenum, GLuint, GLuint*) pfglProgramLocalParameterI4uivNV;
-    typedef void function(GLenum, GLuint, GLsizei, GLuint*) pfglProgramLocalParametersI4uivNV;
-    typedef void function(GLenum, GLuint,. GLint, GLint, GLint, GLint) pfglProgramEnvParameterI4iNV;
-    typedef void function(GLenum, GLuint, GLint*) pfglProgramEnvParameterI4ivNV;
-    typedef void function(GLenum, GLuint, GLsizei, GLint*) pfglProgramEnvParametersI4ivNV;
-    typedef void function(GLenum, GLuint,. GLuint, GLuint, GLuint, GLuint) pfglProgramEnvParameterI4uiNV;
-    typedef void function(GLenum, GLuint, GLuint*) pfglProgramEnvParameterI4uivNV;
-    typedef void function(GLenum, GLuint, GLsizei, GLuint*) pfglProgramEnvParametersI4uivNV;
-    typedef void function(GLenum, GLuint, GLint*) pfglGetProgramLocalParameterIivNV;
-    typedef void function(GLenum, GLuint, GLuint*) pfglGetProgramLocalParameterIuivNV;
-    typedef void function(GLenum, GLuint, GLint*) pfglGetProgramEnvParameterIivNV;
-    typedef void function(GLenum, GLuint, GLuint*) pfglGetProgramEnvParameterIuivNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLuint, GLint, GLint, GLint, GLint) pfglProgramLocalParameterI4iNV;
+typedef void function(GLenum, GLuint, GLint*) pfglProgramLocalParameterI4ivNV;
+typedef void function(GLenum, GLuint, GLsizei, GLint*) pfglProgramLocalParametersI4ivNV;
+typedef void function(GLenum, GLuint, GLuint, GLuint, GLuint, GLuint) pfglProgramLocalParameterI4uiNV;
+typedef void function(GLenum, GLuint, GLuint*) pfglProgramLocalParameterI4uivNV;
+typedef void function(GLenum, GLuint, GLsizei, GLuint*) pfglProgramLocalParametersI4uivNV;
+typedef void function(GLenum, GLuint,. GLint, GLint, GLint, GLint) pfglProgramEnvParameterI4iNV;
+typedef void function(GLenum, GLuint, GLint*) pfglProgramEnvParameterI4ivNV;
+typedef void function(GLenum, GLuint, GLsizei, GLint*) pfglProgramEnvParametersI4ivNV;
+typedef void function(GLenum, GLuint,. GLuint, GLuint, GLuint, GLuint) pfglProgramEnvParameterI4uiNV;
+typedef void function(GLenum, GLuint, GLuint*) pfglProgramEnvParameterI4uivNV;
+typedef void function(GLenum, GLuint, GLsizei, GLuint*) pfglProgramEnvParametersI4uivNV;
+typedef void function(GLenum, GLuint, GLint*) pfglGetProgramLocalParameterIivNV;
+typedef void function(GLenum, GLuint, GLuint*) pfglGetProgramLocalParameterIuivNV;
+typedef void function(GLenum, GLuint, GLint*) pfglGetProgramEnvParameterIivNV;
+typedef void function(GLenum, GLuint, GLuint*) pfglGetProgramEnvParameterIuivNV;
 
 pfglProgramLocalParameterI4iNV      glProgramLocalParameterI4iNV;
 pfglProgramLocalParameterI4ivNV     glProgramLocalParameterI4ivNV;

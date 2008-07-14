@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,20 +87,10 @@ enum : GLenum
     GL_MAX_3D_TEXTURE_SIZE_EXT        = 0x8073,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLvoid*) pfglTexImage3DEXT;
-    typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglTexSubImage3DEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLvoid*) pfglTexImage3DEXT;
+typedef void function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglTexSubImage3DEXT;
 
 pfglTexImage3DEXT       glTexImage3DEXT;
 pfglTexSubImage3DEXT    glTexSubImage3DEXT;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,20 +82,10 @@ enum : GLenum
     GL_TIME_ELAPSED_EXT = 0x88BF
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjecti64vEXT;
-    typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjectui64vEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjecti64vEXT;
+typedef void function(GLuint, GLenum, GLint64EXT*) pfglGetQueryObjectui64vEXT;
 
 pfglGetQueryObjecti64vEXT       glGetQueryObjecti64vEXT;
 pfglGetQueryObjectui64vEXT      glGetQueryObjectui64vEXT;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,20 +74,10 @@ else
     }
 }
 
-private const char[] Funcs =
-"
-    typedef GLvoid* function(GLuint) pfglMapObjectBufferATI;
-    typedef void function(GLuint) pfglUnmapObjectBufferATI;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef GLvoid* function(GLuint) pfglMapObjectBufferATI;
+typedef void function(GLuint) pfglUnmapObjectBufferATI;
 
 pfglMapObjectBufferATI     glMapObjectBufferATI;
 pfglUnmapObjectBufferATI     glUnmapObjectBufferATI;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,7 +125,7 @@ union GLXEvent
 
 // Function pointer variables
 
-typedef XVisualInfo*            function(Display*,int,int)
+typedef XVisualInfo*            function(Display*,int,int*)
                             pfglXChooseVisual;
 typedef void                    function(Display*,GLXContext,GLXContext,uint)
                             pfglXCopyContext;

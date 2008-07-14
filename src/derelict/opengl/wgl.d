@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,24 +47,24 @@ version(Windows)
     extern(Windows)
     {
         // WGL functions
-        typedef BOOL function(HGLRC,HGLRC) pfwglCopyContext;
-        typedef HGLRC function(HDC) pfwglCreateContext;
-        typedef HGLRC function(HDC,int) pfwglCreateLayerContext;
-        typedef BOOL function(HGLRC) pfwglDeleteContext;
-        typedef BOOL function(HDC,int,int,UINT,LAYERPLANEDESCRIPTOR*) pfwglDescribeLayerPlane;
-        typedef HGLRC function() pfwglGetCurrentContext;
-        typedef HDC function() pfwglGetCurrentDC;
-        typedef int function(HDC,int,int,int,COLORREF*) pfwglGetLayerPaletteEntries;
+        typedef BOOL function(void*,void*) pfwglCopyContext;
+        typedef void* function(void*) pfwglCreateContext;
+        typedef void* function(void*,int) pfwglCreateLayerContext;
+        typedef BOOL function(void*) pfwglDeleteContext;
+        typedef BOOL function(void*,int,int,UINT,LAYERPLANEDESCRIPTOR*) pfwglDescribeLayerPlane;
+        typedef void* function() pfwglGetCurrentContext;
+        typedef void* function() pfwglGetCurrentDC;
+        typedef int function(void*,int,int,int,COLORREF*) pfwglGetLayerPaletteEntries;
         typedef FARPROC function(LPCSTR) pfwglGetProcAddress;
-        typedef BOOL function(HDC,HGLRC) pfwglMakeCurrent;
-        typedef BOOL function(HDC,int,BOOL) pfwglRealizeLayerPalette;
-        typedef int function(HDC,int,int,int,COLORREF*) pfwglSetLayerPaletteEntries;
-        typedef BOOL function(HGLRC,HGLRC) pfwglShareLists;
-        typedef BOOL function(HDC,UINT) pfwglSwapLayerBuffers;
-        typedef BOOL function(HDC,DWORD,DWORD,DWORD) pfwglUseFontBitmapsA;
-        typedef BOOL function(HDC,DWORD,DWORD,DWORD,FLOAT,FLOAT,int,GLYPHMETRICSFLOAT*) pfwglUseFontOutlinesA;
-        typedef BOOL function(HDC,DWORD,DWORD,DWORD) pfwglUseFontBitmapsW;
-        typedef BOOL function(HDC,DWORD,DWORD,DWORD,FLOAT,FLOAT,int,GLYPHMETRICSFLOAT*) pfwglUseFontOutlinesW;
+        typedef BOOL function(void*,void*) pfwglMakeCurrent;
+        typedef BOOL function(void*,int,BOOL) pfwglRealizeLayerPalette;
+        typedef int function(void*,int,int,int,COLORREF*) pfwglSetLayerPaletteEntries;
+        typedef BOOL function(void*,void*) pfwglShareLists;
+        typedef BOOL function(void*,UINT) pfwglSwapLayerBuffers;
+        typedef BOOL function(void*,DWORD,DWORD,DWORD) pfwglUseFontBitmapsA;
+        typedef BOOL function(void*,DWORD,DWORD,DWORD,FLOAT,FLOAT,int,GLYPHMETRICSFLOAT*) pfwglUseFontOutlinesA;
+        typedef BOOL function(void*,DWORD,DWORD,DWORD) pfwglUseFontBitmapsW;
+        typedef BOOL function(void*,DWORD,DWORD,DWORD,FLOAT,FLOAT,int,GLYPHMETRICSFLOAT*) pfwglUseFontOutlinesW;
         pfwglCopyContext            wglCopyContext;
         pfwglCreateContext          wglCreateContext;
         pfwglCreateLayerContext     wglCreateLayerContext;

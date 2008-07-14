@@ -50,290 +50,180 @@ else version(Unix)
     version = Nix;
 }
 
-version (DerelictUseStdLoader) {
-    version(Tango)
+version (Nix) 
+{
+	// for people using DSSS, tell it to link the executable with libdl
+    version(build) 
     {
-        static assert(0, "Cannot use std.loader with Tango");
+        pragma(link, "dl");
+    }
+}
+
+
+private alias void* SharedLibHandle;
+
+//==============================================================================
+class SharedLib
+{
+public:
+    char[] name()
+    {
+        return _name;
     }
 
-    import std.loader;
+private:
+    SharedLibHandle _handle;
+    char[] _name;
 
-    //==============================================================================
-    class SharedLib
+    this(SharedLibHandle handle, char[] name)
     {
-    public:
-        char[] name()
-        {
-            return _name;
-        }
-
-    private:
-        char[]      _name;
-
-        void* delegate(in char[] symbolName)    getSymbolDg;
-        Object theLib;
-
-        private void unload() {
-            if (theLib) {
-                delete theLib;
-                theLib = null;
-                getSymbolDg = null;
-            }
-        }
-
-
-        void* getSymbol(char[] symName) {
-            if (theLib !is null) return getSymbolDg(symName);
-            else return null;
-        }
-
-
-        this(Object theLib, void* delegate(in char[])   getSymbolDg, char[] name)
-        in {
-            assert (theLib !is null);
-            assert (getSymbolDg !is null);
-        }
-        body {
-            this.theLib = theLib;
-            this.getSymbolDg = getSymbolDg;
-            this._name = name;
-        }
+        _handle = handle;
+        _name = name;
     }
-    //==============================================================================
-    SharedLib Derelict_LoadSharedLib(char[] libName)
-    in
-    {
-        assert(libName !is null);
-    }
-    body
-    {
-        try {
-            auto ExeModule exeMod = new ExeModule(libName);
-            auto res = new SharedLib(exeMod, &exeMod.getSymbol, libName);
-            exeMod = null;      // fool the auto
-            return res;
-        }
-        catch (ExeModuleException exc) {
-            throw new SharedLibLoadException(libName);
-        }
-    }
-
-    //==============================================================================
-    SharedLib Derelict_LoadSharedLib(char[][] libNames)
-    in
-    {
-        assert(libNames !is null);
-    }
-    body
-    {
-        SharedLibLoadException exception = null;
-        SharedLib lib = null;
-
-        foreach(char[] libName; libNames)
-        {
-            try
-            {
-                lib = Derelict_LoadSharedLib(libName);
-            }
-            catch(SharedLibLoadException slle)
-            {
-                exception = slle;
-            }
-        }
-        if(lib is null)
-            throw exception;
-
-        return lib;
-    }
-
-    //==============================================================================
-    void Derelict_UnloadSharedLib(SharedLib lib)
-    {
-        if(lib !is null) lib.unload();
-    }
-    //==============================================================================
-    void* Derelict_GetProc(SharedLib lib, char[] procName)
-    in
-    {
-        assert(lib !is null);
-        assert(procName !is null);
-    }
-    body
-    {
-        void* proc = lib.getSymbol(procName);
-        if (proc is null) {
-            Derelict_HandleMissingProc(lib._name, procName);
-        }
-        return proc;
-    }
-    //==============================================================================
 }
 //==============================================================================
-else {
-    private alias void* SharedLibHandle;
+SharedLib Derelict_LoadSharedLib(char[] libName)
+in
+{
+    assert(libName !is null);
+}
+body
+{
+    return Platform_LoadSharedLib(libName);
+}
 
-    //==============================================================================
-    class SharedLib
+//==============================================================================
+SharedLib Derelict_LoadSharedLib(char[][] libNames)
+in
+{
+    assert(libNames !is null);
+}
+body
+{
+    SharedLibLoadException exception = null;
+    SharedLib lib = null;
+
+    foreach(char[] libName; libNames)
     {
-    public:
-        char[] name()
+        try
         {
-            return _name;
+            lib = Derelict_LoadSharedLib(libName);
+            if(lib !is null) break;
         }
-
-    private:
-        SharedLibHandle _handle;
-        char[] _name;
-
-        this(SharedLibHandle handle, char[] name)
+        catch(SharedLibLoadException slle)
         {
-            _handle = handle;
-            _name = name;
+            exception = slle;
         }
     }
-    //==============================================================================
-    SharedLib Derelict_LoadSharedLib(char[] libName)
-    in
+    if(lib is null)
+        throw exception;
+
+    return lib;
+}
+
+//==============================================================================
+void Derelict_UnloadSharedLib(SharedLib lib)
+{
+    if(lib !is null && lib._handle !is null)
+        Platform_UnloadSharedLib(lib);
+}
+//==============================================================================
+void* Derelict_GetProc(SharedLib lib, char[] procName)
+in
+{
+    assert(lib !is null);
+    assert(procName !is null);
+}
+body
+{
+    if(lib._handle is null)
+        throw new InvalidSharedLibHandleException(lib._name);
+    return Platform_GetProc(lib, procName);
+}
+//==============================================================================
+version(Windows)
+{
+    private import derelict.util.wintypes;
+
+    SharedLib Platform_LoadSharedLib(char[] libName)
     {
-        assert(libName !is null);
+        HMODULE hlib = LoadLibraryA(toCString(libName));
+        if(null is hlib)
+            throw new SharedLibLoadException(libName);
+
+        return new SharedLib(hlib, libName);
     }
-    body
+
+    void Platform_UnloadSharedLib(SharedLib lib)
     {
-        return Platform_LoadSharedLib(libName);
+        FreeLibrary(cast(HMODULE)lib._handle);
+        lib._handle = null;
     }
 
-    //==============================================================================
-    SharedLib Derelict_LoadSharedLib(char[][] libNames)
-    in
+    void* Platform_GetProc(SharedLib lib, char[] procName)
     {
-        assert(libNames !is null);
-    }
-    body
-    {
-        SharedLibLoadException exception = null;
-        SharedLib lib = null;
+        void* proc = GetProcAddress(cast(HMODULE)lib._handle, toCString(procName));
+        if(null is proc)
+            Derelict_HandleMissingProc(lib._name, procName);
 
-        foreach(char[] libName; libNames)
-        {
-            try
-            {
-                lib = Derelict_LoadSharedLib(libName);
-            }
-            catch(SharedLibLoadException slle)
-            {
-                exception = slle;
-            }
-        }
-        if(lib is null)
-            throw exception;
-
-        return lib;
+        return proc;
     }
 
-    //==============================================================================
-    void Derelict_UnloadSharedLib(SharedLib lib)
+}
+else version(Nix)
+{
+    version(Tango)
     {
-        if(lib !is null && lib._handle !is null)
-            Platform_UnloadSharedLib(lib);
+        private import tango.sys.Common;
     }
-    //==============================================================================
-    void* Derelict_GetProc(SharedLib lib, char[] procName)
-    in
+    else version(linux)
     {
-        assert(lib !is null);
-        assert(procName !is null);
-    }
-    body
-    {
-        if(lib._handle is null)
-            throw new InvalidSharedLibHandleException(lib._name);
-        return Platform_GetProc(lib, procName);
-    }
-    //==============================================================================
-    version(Windows)
-    {
-        private import derelict.util.wintypes;
-
-        SharedLib Platform_LoadSharedLib(char[] libName)
-        {
-            HMODULE hlib = LoadLibraryA(toCString(libName));
-            if(null is hlib)
-                throw new SharedLibLoadException(libName);
-
-            return new SharedLib(hlib, libName);
-        }
-
-        void Platform_UnloadSharedLib(SharedLib lib)
-        {
-            FreeLibrary(cast(HMODULE)lib._handle);
-            lib._handle = null;
-        }
-
-        void* Platform_GetProc(SharedLib lib, char[] procName)
-        {
-            void* proc = GetProcAddress(cast(HMODULE)lib._handle, toCString(procName));
-            if(null is proc)
-                Derelict_HandleMissingProc(lib._name, procName);
-
-            return proc;
-        }
-
-    }
-    else version(Nix)
-    {
-        version(Tango)
-        {
-            private import tango.sys.Common;
-        }
-        else version(linux)
-        {
-            private import std.c.linux.linux;
-        }
-        else
-        {
-            extern(C)
-            {
-                /* From <dlfcn.h>
-                *  See http://www.opengroup.org/onlinepubs/007908799/xsh/dlsym.html
-                */
-
-                const int RTLD_NOW = 2;
-
-                void *dlopen(char* file, int mode);
-                int dlclose(void* handle);
-                void *dlsym(void* handle, char* name);
-                char* dlerror();
-            }
-        }
-
-        SharedLib Platform_LoadSharedLib(char[] libName)
-        {
-            void* hlib = dlopen(toCString(libName), RTLD_NOW);
-            if(null is hlib)
-                throw new SharedLibLoadException("Failed to load shared library " ~ libName);
-
-            return new SharedLib(hlib, libName);
-        }
-
-        void Platform_UnloadSharedLib(SharedLib lib)
-        {
-            dlclose(lib._handle);
-            lib._handle = null;
-        }
-
-        void* Platform_GetProc(SharedLib lib, char[] procName)
-        {
-            void* proc = dlsym(lib._handle, toCString(procName));
-            if(null is proc)
-                Derelict_HandleMissingProc(lib._name, procName);
-
-            return proc;
-        }
+        private import std.c.linux.linux;
     }
     else
     {
-        static assert(0);
+        extern(C)
+        {
+            /* From <dlfcn.h>
+            *  See http://www.opengroup.org/onlinepubs/007908799/xsh/dlsym.html
+            */
+
+            const int RTLD_NOW = 2;
+
+            void *dlopen(char* file, int mode);
+            int dlclose(void* handle);
+            void *dlsym(void* handle, char* name);
+            char* dlerror();
+        }
     }
+
+    SharedLib Platform_LoadSharedLib(char[] libName)
+    {
+        void* hlib = dlopen(toCString(libName), RTLD_NOW);
+        if(null is hlib)
+            throw new SharedLibLoadException("Failed to load shared library " ~ libName);
+
+        return new SharedLib(hlib, libName);
+    }
+
+    void Platform_UnloadSharedLib(SharedLib lib)
+    {
+        dlclose(lib._handle);
+        lib._handle = null;
+    }
+
+    void* Platform_GetProc(SharedLib lib, char[] procName)
+    {
+        void* proc = dlsym(lib._handle, toCString(procName));
+        if(null is proc)
+            Derelict_HandleMissingProc(lib._name, procName);
+
+        return proc;
+    }
+}
+else
+{
+    static assert(0);
 }
 
 //==============================================================================
@@ -366,12 +256,12 @@ struct GenericLoader {
                 libNameString = linLibs;
             }
             else version(darwin) {
-	            libNameString = macLibs;
+                libNameString = macLibs;
             }
-            
+
             if(libNameString is null || libNameString == "")
             {
-	            throw new DerelictException("Invalid library name");
+                throw new DerelictException("Invalid library name");
             }
         }
 
@@ -380,12 +270,17 @@ struct GenericLoader {
             l = l.stripWhiteSpace();
         }
 
+        load(libNames);
+    }
+
+    void load(char[][] libNames)
+    {
         myLib = Derelict_LoadSharedLib(libNames);
-        
+
         if(userLoad is null)
         {
-	        // this should never, ever, happen
-	        throw new DerelictException("Something is horribly wrong -- internal load function not configured");
+            // this should never, ever, happen
+            throw new DerelictException("Something is horribly wrong -- internal load function not configured");
         }
         userLoad(myLib);
     }
@@ -401,6 +296,16 @@ struct GenericLoader {
             Derelict_UnloadSharedLib(myLib);
             myLib = null;
         }
+    }
+
+    bool loaded()
+    {
+        return (myLib !is null);
+    }
+
+    char[] libName()
+    {
+        return loaded ? myLib.name : null;
     }
 
     static ~this()
@@ -434,14 +339,10 @@ struct GenericDependentLoader {
         this.userLoad = userLoad;
     }
 
-    private SharedLib myLib() {
-        return dependence.myLib;
-    }
-
     void load()
     {
-        assert (myLib !is null);
-        userLoad(myLib);
+        assert (dependence.loaded);
+        userLoad(dependence.myLib);
     }
 
     char[] versionString()
@@ -453,42 +354,21 @@ struct GenericDependentLoader {
     {
     }
 
+    bool loaded()
+    {
+        return dependence.loaded;
+    }
+
+    char[] libName()
+    {
+        return dependence.libName;
+    }
+
     private {
         GenericLoader*              dependence;
         void function(SharedLib)    userLoad;
     }
 }
-
-//==============================================================================
-
-struct GenericStaticLoader {
-    void setup(void function() userLoad = null, char[] versionStr = "") {
-        this.userLoad = userLoad;
-        this.versionStr = versionStr;
-    }
-
-    void load()
-    {
-        if (userLoad !is null) {
-            userLoad();
-        }
-    }
-
-    char[] versionString()
-    {
-        return versionString;
-    }
-
-    void unload()
-    {
-    }
-
-    private {
-        char[]          versionStr;
-        void function() userLoad;
-    }
-}
-
 
 //==============================================================================
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ char* toCString(char[] str)
 {
     version(Tango)
     {
-        return toUtf8z(str);
+        return toStringz(str);
     }
     else
     {
@@ -66,7 +66,8 @@ char[] toDString(char* cstr)
 {
     version(Tango)
     {
-        return fromUtf8z(cstr);
+	    static if(is(typeof(&fromStringz))) { return fromStringz(cstr); }
+		else { return fromUtf8z(cstr); } 
     }
     else
     {

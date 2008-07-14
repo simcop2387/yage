@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,20 +82,10 @@ enum : GLenum
     GL_STENCIL_BACK_PASS_DEPTH_PASS_ATI  = 0x8803,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLenum, GLenum, GLenum) pfglStencilOpSeparateATI;
-    typedef void function(GLenum, GLenum, GLint, GLuint) pfglStencilFuncSeparateATI;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLenum, GLenum, GLenum) pfglStencilOpSeparateATI;
+typedef void function(GLenum, GLenum, GLint, GLuint) pfglStencilFuncSeparateATI;
 
 pfglStencilOpSeparateATI       glStencilOpSeparateATI;
 pfglStencilFuncSeparateATI     glStencilFuncSeparateATI;

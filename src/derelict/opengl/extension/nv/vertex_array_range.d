@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,20 +83,10 @@ enum : GLenum
     GL_VERTEX_ARRAY_RANGE_POINTER_NV        = 0x8521,
 }
 
-private const char[] Funcs =
-"
-    typedef void function() pfglFlushVertexArrayRangeNV;
-    typedef void function(GLsizei,GLvoid*) pfglVertexArrayRangeNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function() pfglFlushVertexArrayRangeNV;
+typedef void function(GLsizei,GLvoid*) pfglVertexArrayRangeNV;
 
 pfglFlushVertexArrayRangeNV     glFlushVertexArrayRangeNV;
 pfglVertexArrayRangeNV          glVertexArrayRangeNV;

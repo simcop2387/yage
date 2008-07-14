@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,21 +89,11 @@ enum : GLenum
     GL_TEXTURE_MATERIAL_PARAMETER_EXT = 0x8352,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum) pfglApplyTextureEXT;
-    typedef void function(GLenum) pfglTextureLightEXT;
-    typedef void function(GLenum, GLenum) pfglTextureMaterialEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum) pfglApplyTextureEXT;
+typedef void function(GLenum) pfglTextureLightEXT;
+typedef void function(GLenum, GLenum) pfglTextureMaterialEXT;
 
 pfglApplyTextureEXT     glApplyTextureEXT;
 pfglTextureLightEXT     glTextureLightEXT;

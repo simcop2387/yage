@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,23 +93,13 @@ enum : GLenum
     GL_MATRIX_INDEX_ARRAY_POINTER_ARB       = 0x8849,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLint) pfglCurrentPaletteMatrixARB;
-    typedef void function(GLint, GLubyte*) pfglMatrixIndexubvARB;
-    typedef void function(GLint, GLushort*) pfglMatrixIndexusvARB;
-    typedef void function(GLint, GLuint*) pfglMatrixIndexuivARB;
-    typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglMatrixIndexPointerARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLint) pfglCurrentPaletteMatrixARB;
+typedef void function(GLint, GLubyte*) pfglMatrixIndexubvARB;
+typedef void function(GLint, GLushort*) pfglMatrixIndexusvARB;
+typedef void function(GLint, GLuint*) pfglMatrixIndexuivARB;
+typedef void function(GLint, GLenum, GLsizei, GLvoid*) pfglMatrixIndexPointerARB;
 
 pfglCurrentPaletteMatrixARB         glCurrentPaletteMatrixARB;
 pfglMatrixIndexubvARB               glMatrixIndexubvARB;

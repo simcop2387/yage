@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,22 +89,12 @@ enum : GLenum
     GL_TEXTURE_INDEX_SIZE_EXT         = 0x80ED,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLenum, GLsizei, GLenum, GLenum, GLvoid*) pfglColorTableEXT;
-    typedef void function(GLenum, GLenum, GLenum, GLvoid*) pfglGetColorTableEXT;
-    typedef void function(GLenum, GLenum, GLint*) pfglGetColorTableParameterivEXT;
-    typedef void function(GLenum, GLenum, GLfloat*) pfglGetColorTableParameterfvEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLenum, GLsizei, GLenum, GLenum, GLvoid*) pfglColorTableEXT;
+typedef void function(GLenum, GLenum, GLenum, GLvoid*) pfglGetColorTableEXT;
+typedef void function(GLenum, GLenum, GLint*) pfglGetColorTableParameterivEXT;
+typedef void function(GLenum, GLenum, GLfloat*) pfglGetColorTableParameterfvEXT;
 
 pfglColorTableEXT               glColorTableEXT;
 pfglGetColorTableEXT            glGetColorTableEXT;

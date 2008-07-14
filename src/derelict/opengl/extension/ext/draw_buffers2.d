@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,24 +82,14 @@ else
     }
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLuint,GLboolean,GLboolean,GLboolean,GLboolean) pfglColorMaskIndexedEXT;
-    typedef void function(GLenum,GLuint) pfglDisableIndexedEXT;
-    typedef void function(GLenum,GLuint) pfglEnableIndexedEXT;
-    typedef void function(GLenum,GLuint,GLboolean*) pfglGetBooleanIndexedvEXT;
-    typedef void function(GLenum,GLuint,GLint*) pfglGetIntegerIndexedvEXT;
-    typedef GLboolean function(GLenum,GLuint) pfglIsEnabledIndexedEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLuint,GLboolean,GLboolean,GLboolean,GLboolean) pfglColorMaskIndexedEXT;
+typedef void function(GLenum,GLuint) pfglDisableIndexedEXT;
+typedef void function(GLenum,GLuint) pfglEnableIndexedEXT;
+typedef void function(GLenum,GLuint,GLboolean*) pfglGetBooleanIndexedvEXT;
+typedef void function(GLenum,GLuint,GLint*) pfglGetIntegerIndexedvEXT;
+typedef GLboolean function(GLenum,GLuint) pfglIsEnabledIndexedEXT;
 
 pfglColorMaskIndexedEXT         glColorMaskIndexedEXT;
 pfglDisableIndexedEXT           glDisableIndexedEXT;

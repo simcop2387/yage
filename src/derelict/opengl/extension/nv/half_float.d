@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -171,64 +171,54 @@ enum : GLenum
     GL_HALF_FLOAT_NV = 0x140B
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLhalfNV, GLhalfNV) pfglVertex2hNV;
-    typedef void function(GLhalfNV*) pfglVertex2hvNV;
-    typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglVertex3hNV;
-    typedef void function(GLhalfNV*) pfglVertex3hvNV;
-    typedef void function(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglVertex4hNV;
-    typedef void function(GLhalfNV*) pfglVertex4hvNV;
-    typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglNormal3hNV;
-    typedef void function(GLhalfNV*) pfglNormal3hvNV;
-    typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglColor3hNV;
-    typedef void function(GLhalfNV*) pfglColor3hvNV;
-    typedef void function(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglColor4hNV;
-    typedef void function(GLhalfNV*) pfglColor4hvNV;
-    typedef void function(GLhalfNV) pfglTexCoord1hNV;
-    typedef void function(GLhalfNV*) pfglTexCoord1hvNV;
-    typedef void function(GLhalfNV, GLhalfNV) pfglTexCoord2hNV;
-    typedef void function(GLhalfNV*) pfglTexCoord2hvNV;
-    typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglTexCoord3hNV;
-    typedef void function(GLhalfNV*) pfglTexCoord3hvNV;
-    typedef void function(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglTexCoord4hNV;
-    typedef void function(GLhalfNV*) pfglTexCoord4hvNV;
-    typedef void function(GLenum, GLhalfNV) pfglMultiTexCoord1hNV;
-    typedef void function(GLenum, GLhalfNV*) pfglMultiTexCoord1hvNV;
-    typedef void function(GLenum, GLhalfNV, GLhalfNV) pfglMultiTexCoord2hNV;
-    typedef void function(GLenum, GLhalfNV*) pfglMultiTexCoord2hvNV;
-    typedef void function(GLenum, GLhalfNV, GLhalfNV, GLhalfNV) pfglMultiTexCoord3hNV;
-    typedef void function(GLenum, GLhalfNV*) pfglMultiTexCoord3hvNV;
-    typedef void function(GLenum, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglMultiTexCoord4hNV;
-    typedef void function(GLenum, GLhalfNV*) pfglMultiTexCoord4hvNV;
-    typedef void function(GLhalfNV) pfglFogCoordhNV;
-    typedef void function(GLhalfNV*) pfglFogCoordhvNV;
-    typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglSecondaryColor3hNV;
-    typedef void function(GLhalfNV*) pfglSecondaryColor3hvNV;
-    typedef void function(GLhalfNV) pfglVertexWeighthNV;
-    typedef void function(GLhalfNV*) pfglVertexWeighthvNV;
-    typedef void function(GLuint, GLhalfNV) pfglVertexAttrib1hNV;
-    typedef void function(GLuint, GLhalfNV*) pfglVertexAttrib1hvNV;
-    typedef void function(GLuint, GLhalfNV, GLhalfNV) pfglVertexAttrib2hNV;
-    typedef void function(GLuint, GLhalfNV*) pfglVertexAttrib2hvNV;
-    typedef void function(GLuint, GLhalfNV, GLhalfNV, GLhalfNV) pfglVertexAttrib3hNV;
-    typedef void function(GLuint, GLhalfNV*) pfglVertexAttrib3hvNV;
-    typedef void function(GLuint, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglVertexAttrib4hNV;
-    typedef void function(GLuint, GLhalfNV*) pfglVertexAttrib4hvNV;
-    typedef void function(GLuint, GLsizei, GLhalfNV*) pfglVertexAttribs1hvNV;
-    typedef void function(GLuint, GLsizei, GLhalfNV*) pfglVertexAttribs2hvNV;
-    typedef void function(GLuint, GLsizei, GLhalfNV*) pfglVertexAttribs3hvNV;
-    typedef void function(GLuint, GLsizei, GLhalfNV*) pfglVertexAttribs4hvNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLhalfNV, GLhalfNV) pfglVertex2hNV;
+typedef void function(GLhalfNV*) pfglVertex2hvNV;
+typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglVertex3hNV;
+typedef void function(GLhalfNV*) pfglVertex3hvNV;
+typedef void function(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglVertex4hNV;
+typedef void function(GLhalfNV*) pfglVertex4hvNV;
+typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglNormal3hNV;
+typedef void function(GLhalfNV*) pfglNormal3hvNV;
+typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglColor3hNV;
+typedef void function(GLhalfNV*) pfglColor3hvNV;
+typedef void function(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglColor4hNV;
+typedef void function(GLhalfNV*) pfglColor4hvNV;
+typedef void function(GLhalfNV) pfglTexCoord1hNV;
+typedef void function(GLhalfNV*) pfglTexCoord1hvNV;
+typedef void function(GLhalfNV, GLhalfNV) pfglTexCoord2hNV;
+typedef void function(GLhalfNV*) pfglTexCoord2hvNV;
+typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglTexCoord3hNV;
+typedef void function(GLhalfNV*) pfglTexCoord3hvNV;
+typedef void function(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglTexCoord4hNV;
+typedef void function(GLhalfNV*) pfglTexCoord4hvNV;
+typedef void function(GLenum, GLhalfNV) pfglMultiTexCoord1hNV;
+typedef void function(GLenum, GLhalfNV*) pfglMultiTexCoord1hvNV;
+typedef void function(GLenum, GLhalfNV, GLhalfNV) pfglMultiTexCoord2hNV;
+typedef void function(GLenum, GLhalfNV*) pfglMultiTexCoord2hvNV;
+typedef void function(GLenum, GLhalfNV, GLhalfNV, GLhalfNV) pfglMultiTexCoord3hNV;
+typedef void function(GLenum, GLhalfNV*) pfglMultiTexCoord3hvNV;
+typedef void function(GLenum, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglMultiTexCoord4hNV;
+typedef void function(GLenum, GLhalfNV*) pfglMultiTexCoord4hvNV;
+typedef void function(GLhalfNV) pfglFogCoordhNV;
+typedef void function(GLhalfNV*) pfglFogCoordhvNV;
+typedef void function(GLhalfNV, GLhalfNV, GLhalfNV) pfglSecondaryColor3hNV;
+typedef void function(GLhalfNV*) pfglSecondaryColor3hvNV;
+typedef void function(GLhalfNV) pfglVertexWeighthNV;
+typedef void function(GLhalfNV*) pfglVertexWeighthvNV;
+typedef void function(GLuint, GLhalfNV) pfglVertexAttrib1hNV;
+typedef void function(GLuint, GLhalfNV*) pfglVertexAttrib1hvNV;
+typedef void function(GLuint, GLhalfNV, GLhalfNV) pfglVertexAttrib2hNV;
+typedef void function(GLuint, GLhalfNV*) pfglVertexAttrib2hvNV;
+typedef void function(GLuint, GLhalfNV, GLhalfNV, GLhalfNV) pfglVertexAttrib3hNV;
+typedef void function(GLuint, GLhalfNV*) pfglVertexAttrib3hvNV;
+typedef void function(GLuint, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV) pfglVertexAttrib4hNV;
+typedef void function(GLuint, GLhalfNV*) pfglVertexAttrib4hvNV;
+typedef void function(GLuint, GLsizei, GLhalfNV*) pfglVertexAttribs1hvNV;
+typedef void function(GLuint, GLsizei, GLhalfNV*) pfglVertexAttribs2hvNV;
+typedef void function(GLuint, GLsizei, GLhalfNV*) pfglVertexAttribs3hvNV;
+typedef void function(GLuint, GLsizei, GLhalfNV*) pfglVertexAttribs4hvNV;
 
 pfglVertex2hNV                  glVertex2hNV;
 pfglVertex2hvNV                 glVertex2hvNV;

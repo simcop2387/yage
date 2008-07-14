@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,20 +74,10 @@ else
     }
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLuint, GLsizei, GLfloat*) pfglProgramEnvParameters4fvEXT;
-    typedef void function(GLenum, GLuint, GLsizei, GLfloat*) pfglProgramLocalParameters4fvEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLuint, GLsizei, GLfloat*) pfglProgramEnvParameters4fvEXT;
+typedef void function(GLenum, GLuint, GLsizei, GLfloat*) pfglProgramLocalParameters4fvEXT;
 
 pfglProgramEnvParameters4fvEXT      glProgramEnvParameters4fvEXT;
 pfglProgramLocalParameters4fvEXT    glProgramLocalParameters4fvEXT;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,21 +92,11 @@ private
     alias uint GLhandleARB;
 }
 
-private const char[] Funcs =
-"
-    typedef void function (GLhandleARB, GLuint, GLcharARB*) pfglBindAttribLocationARB;
-    typedef void function (GLhandleARB, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLcharARB*) pfglGetActiveAttribARB;
-    typedef GLint function (GLhandleARB, GLcharARB* name) pfglGetAttribLocationARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function (GLhandleARB, GLuint, GLcharARB*) pfglBindAttribLocationARB;
+typedef void function (GLhandleARB, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLcharARB*) pfglGetActiveAttribARB;
+typedef GLint function (GLhandleARB, GLcharARB* name) pfglGetAttribLocationARB;
 
 pfglBindAttribLocationARB           glBindAttribLocationARB;
 pfglGetActiveAttribARB              glGetActiveAttribARB;

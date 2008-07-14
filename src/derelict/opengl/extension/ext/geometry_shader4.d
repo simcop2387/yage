@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -102,22 +102,12 @@ enum : GLenum
     GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS_EXT = 0x8DE1,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum,GLenum,GLuint,GLint) pfglFramebufferTextureEXT;
-    typedef void function(GLenum,GLenum,GLuint,GLint,GLenum) pfglFramebufferTextureFaceEXT;
-    typedef void function(GLenum,GLenum,GLuint,GLint,GLint) pfglFramebufferTextureLayerEXT;
-    typedef void function(GLuint,GLenum,GLint) pfglProgramParameteriEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum,GLenum,GLuint,GLint) pfglFramebufferTextureEXT;
+typedef void function(GLenum,GLenum,GLuint,GLint,GLenum) pfglFramebufferTextureFaceEXT;
+typedef void function(GLenum,GLenum,GLuint,GLint,GLint) pfglFramebufferTextureLayerEXT;
+typedef void function(GLuint,GLenum,GLint) pfglProgramParameteriEXT;
 
 pfglFramebufferTextureEXT           glFramebufferTextureEXT;
 pfglFramebufferTextureFaceEXT       glFramebufferTextureFaceEXT;

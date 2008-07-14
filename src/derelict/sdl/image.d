@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -147,7 +147,7 @@ static this() {
     DerelictSDLImage.setup(
         "SDL_image.dll",
         "libSDL_image.so, libSDL_image-1.2.so, libSDL_image-1.2.so.0",
-        "",
+        "../Frameworks/SDL_image.framework/SDL_image, /Library/Frameworks/SDL_image.framework/SDL_image, /System/Library/Frameworks/SDL_image.framework/SDL_image",
         &load
     );
 }

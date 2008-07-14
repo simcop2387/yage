@@ -165,17 +165,6 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VST 
-<span class="currsymbol">add</span>
-<script type="text/javascript">explorer.outline.addDecl('add');</script>
-(VST <span class="funcparam">s</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
 <span class="currsymbol">angle</span>
 <script type="text/javascript">explorer.outline.addDecl('angle');</script>
@@ -215,6 +204,22 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">inside</span>
+<script type="text/javascript">explorer.outline.addDecl('inside');</script>
+(VST <span class="funcparam">topLeft</span>, VST <span class="funcparam">bottomRight</span>, bool <span class="funcparam">inclusive</span> = true);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Is this Vector 
+<span class="currsymbol">inside</span>
+<script type="text/javascript">explorer.outline.addDecl('inside');</script>
+ a box/cube/etc. defined by <span class="funcparam">topLeft</span> and <span class="funcparam">bottomRight</span>
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
 <span class="currsymbol">length</span>
 <script type="text/javascript">explorer.outline.addDecl('length');</script>
@@ -241,10 +246,35 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">VST 
+<span class="currsymbol">opAdd</span>
+<script type="text/javascript">explorer.outline.addDecl('opAdd');</script>
+(VST <span class="funcparam">s</span>);
+<br>void 
+<span class="currsymbol">opAddAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opAddAssign');</script>
+(VST <span class="funcparam">s</span>);
+<br>VST 
+<span class="currsymbol">opSub</span>
+<script type="text/javascript">explorer.outline.addDecl('opSub');</script>
+(VST <span class="funcparam">s</span>);
+<br>void 
+<span class="currsymbol">opSubAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opSubAssign');</script>
+(VST <span class="funcparam">s</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Allow for linnear additions and subtractions among Vectors of the same size and type.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
 <span class="currsymbol">opIndex</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
-(ubyte <span class="funcparam">i</span>);
+(size_t <span class="funcparam">i</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -257,7 +287,7 @@ Eric Poggel
 <dt><span class="decl">float 
 <span class="currsymbol">opIndexAssign</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndexAssign');</script>
-(T <span class="funcparam">value</span>, ubyte <span class="funcparam">i</span>);
+(T <span class="funcparam">value</span>, size_t <span class="funcparam">i</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -430,8 +460,8 @@ Eric Poggel
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">__unittest13</span>
-<script type="text/javascript">explorer.outline.addDecl('__unittest13');</script>
+<span class="currsymbol">__unittest14</span>
+<script type="text/javascript">explorer.outline.addDecl('__unittest14');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -1105,7 +1135,7 @@ Eric Poggel
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon May 26 22:21:35 2008
+		on Sun Jul 13 22:15:40 2008
 
 	</div>
 	
@@ -1136,6 +1166,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.tree");
+
 	explorer.packageExplorer.addModule("yage.core.types");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
@@ -1148,31 +1180,11 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
-	explorer.packageExplorer.addModule("yage.node.all");
-
-	explorer.packageExplorer.addModule("yage.node.camera");
-
-	explorer.packageExplorer.addModule("yage.node.graph");
-
-	explorer.packageExplorer.addModule("yage.node.light");
-
-	explorer.packageExplorer.addModule("yage.node.model");
-
-	explorer.packageExplorer.addModule("yage.node.movable");
-
-	explorer.packageExplorer.addModule("yage.node.node");
-
-	explorer.packageExplorer.addModule("yage.node.scene");
-
-	explorer.packageExplorer.addModule("yage.node.sound");
-
-	explorer.packageExplorer.addModule("yage.node.sprite");
-
-	explorer.packageExplorer.addModule("yage.node.terrain");
-
-	explorer.packageExplorer.addModule("yage.node.visible");
-
 	explorer.packageExplorer.addModule("yage.resource.all");
+
+	explorer.packageExplorer.addModule("yage.resource.exception");
+
+	explorer.packageExplorer.addModule("yage.resource.font");
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
@@ -1196,6 +1208,30 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.resource.texture");
 
+	explorer.packageExplorer.addModule("yage.scene.all");
+
+	explorer.packageExplorer.addModule("yage.scene.camera");
+
+	explorer.packageExplorer.addModule("yage.scene.graph");
+
+	explorer.packageExplorer.addModule("yage.scene.light");
+
+	explorer.packageExplorer.addModule("yage.scene.model");
+
+	explorer.packageExplorer.addModule("yage.scene.movable");
+
+	explorer.packageExplorer.addModule("yage.scene.node");
+
+	explorer.packageExplorer.addModule("yage.scene.scene");
+
+	explorer.packageExplorer.addModule("yage.scene.sound");
+
+	explorer.packageExplorer.addModule("yage.scene.sprite");
+
+	explorer.packageExplorer.addModule("yage.scene.terrain");
+
+	explorer.packageExplorer.addModule("yage.scene.visible");
+
 	explorer.packageExplorer.addModule("yage.system.all");
 
 	explorer.packageExplorer.addModule("yage.system.constant");
@@ -1207,6 +1243,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
+
+	explorer.packageExplorer.addModule("yage.system.rendertarget");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

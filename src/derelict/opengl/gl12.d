@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -103,22 +103,12 @@ enum : GLenum
     GL_TEXTURE_BINDING_3D              = 0x806A,
 }
 
-private const char[] Funcs =
-"
-    typedef GLvoid function(GLenum, GLuint, GLuint, GLsizei, GLenum, GLvoid*) pfglDrawRangeElements;
-    typedef GLvoid function(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLvoid*) pfglTexImage3D;
-    typedef GLvoid function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglTexSubImage3D;
-    typedef GLvoid function(GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei) pfglCopyTexSubImage3D;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef GLvoid function(GLenum, GLuint, GLuint, GLsizei, GLenum, GLvoid*) pfglDrawRangeElements;
+typedef GLvoid function(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLvoid*) pfglTexImage3D;
+typedef GLvoid function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLvoid*) pfglTexSubImage3D;
+typedef GLvoid function(GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei) pfglCopyTexSubImage3D;
 
 pfglDrawRangeElements       glDrawRangeElements;
 pfglTexImage3D              glTexImage3D;

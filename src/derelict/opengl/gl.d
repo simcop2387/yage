@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,11 +49,11 @@ private
     import derelict.util.exception;
     import derelict.util.wrapper;
 
-    version(Windows) 
+    version(Windows)
     {
         import derelict.opengl.wgl;
         import derelict.util.wintypes;
-        alias HGLRC DerelictGLContext;
+        alias void* DerelictGLContext;
     }
     else version(linux)
     {
@@ -61,7 +61,8 @@ private
     }
     else version(darwin)
     {
-	    void loadPlatformGL(SharedLib lib) {}
+        import derelict.opengl.cgl;
+        alias CGLContextObj DerelictGLContext;
     }
 
     version(UsingGLX)
@@ -89,11 +90,19 @@ enum GLVersion
     HighestSupported = 21
 }
 
+version(darwin)
+{
+	// this needs to be shared with GLU on Mac
+	package GenericLoader GLLoader;
+}
+else
+{
+	private GenericLoader GLLoader;
+}
+
 
 private
 {
-    GenericLoader GLLoader;
-
     typedef bool function(char[]) ExtensionLoader;
     ExtensionLoader[] loaders;
     bool versionsOnce           = false;
@@ -104,10 +113,10 @@ private
     {
         version(DigitalMars)
         {
-            pragma(lib, "gdi32.lib");
+           pragma(lib, "gdi32.lib");
         }
 
-        extern(Windows) export int GetPixelFormat(HDC hdc);
+        extern(Windows) export int GetPixelFormat(void* hdc);
         int currentPixelFormat      = 0;
     }
 
@@ -115,7 +124,7 @@ private
     {
         version(Windows)
         {
-            HDC hdc = wglGetCurrentDC();
+            void* hdc = wglGetCurrentDC();
             if(hdc is null)
                 throw new DerelictException("Could not obtain a device context for the current OpenGL context");
 
@@ -140,6 +149,11 @@ private
     }
 }
 
+/*
+ This is less than ideal, since some of the functionality of GenericLoader has to be replicated here. It would be nicer
+ to move to classes for the loaders so that we can use inheritance here. Is that not possible with the templated loader
+ setup?
+*/
 struct DerelictGL
 {
     static void setup(char[] winLibs, char[] linLibs, char[] macLibs, void function(SharedLib) userLoad, char[] versionStr = "")
@@ -152,6 +166,11 @@ struct DerelictGL
         GLLoader.load(libNameString);
     }
 
+    static void load(char[][] libs)
+    {
+        GLLoader.load(libs);
+    }
+
     static char[] versionString()
     {
         return GLLoader.versionString();
@@ -160,6 +179,16 @@ struct DerelictGL
     static void unload()
     {
         GLLoader.unload();
+    }
+
+    static bool loaded()
+    {
+        return GLLoader.loaded;
+    }
+
+    static char[] libName()
+    {
+        return GLLoader.libName;
     }
 
     static bool hasValidContext()
@@ -174,16 +203,22 @@ struct DerelictGL
             if(glXGetCurrentContext() is null)
                 return false;
         }
+        else version(darwin)
+        {
+            if(CGLGetCurrentContext() is null)
+                return false;
+        }
         else throw new DerelictException("DerelictGL.hasValidContext is unimplemented for this platform");
-        
+
         return true;
     }
-    
+
     static DerelictGLContext getCurrentContext()
     {
-	    version(Windows) return wglGetCurrentContext();
-	    else version(UsingGLX) return glXGetCurrentContext();
-	    else throw new DerelictException("DerelictGL.getCurrentContext is Unimplemented for this platform");
+        version(Windows) return wglGetCurrentContext();
+        else version(UsingGLX) return glXGetCurrentContext();
+        else version(darwin) return CGLGetCurrentContext();
+        else throw new DerelictException("DerelictGL.getCurrentContext is Unimplemented for this platform");
     }
 
     static void loadVersions(GLVersion minVersion)
@@ -204,12 +239,12 @@ struct DerelictGL
 
         if(GLVersion.VersionNone == maxVersionAvail)
             setVersion();
-         
+
         if(GLVersion.Version11 == maxVersionAvail)
         {
-	        loadedVersion = GLVersion.Version11;
-        	return;
-    	}
+            loadedVersion = GLVersion.Version11;
+            return;
+        }
 
         try
         {
@@ -232,10 +267,10 @@ struct DerelictGL
             // version 2.0
             if(minVersion >= GLVersion.Version20)
                 loadVersion(&loadGL20, GLVersion.Version20);
-                
+
             // version 2.1
             if(minVersion >= GLVersion.Version21)
-            	loadVersion(&loadGL21, GLVersion.Version21);
+                loadVersion(&loadGL21, GLVersion.Version21);
         }
         catch(SharedLibProcLoadException slple)
         {
@@ -346,8 +381,8 @@ struct DerelictGL
 static this () {
     DerelictGL.setup (
         "opengl32.dll",
-        "libGL.so,libGL.so.1",
-        "/System/Library/Frameworks/OpenGL.framework/OpenGL",
+        "libGL.so.2,libGL.so.1,libGL.so",
+        "../Frameworks/OpenGL.framework/OpenGL, /Library/Frameworks/OpenGL.framework/OpenGL, /System/Library/Frameworks/OpenGL.framework/OpenGL",
         &loadAll
     );
 }

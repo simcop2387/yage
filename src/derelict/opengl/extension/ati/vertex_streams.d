@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -174,68 +174,58 @@ enum : GLenum
     GL_VERTEX_SOURCE_ATI              = 0x8774,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLshort)             pfglVertexStream1sATI;
-    typedef void function(GLenum, GLshort *)           pfglVertexStream1svATI;
-    typedef void function(GLenum, GLint)               pfglVertexStream1iATI;
-    typedef void function(GLenum, GLint *)             pfglVertexStream1ivATI;
-    typedef void function(GLenum, GLfloat)             pfglVertexStream1fATI;
-    typedef void function(GLenum, GLfloat *)           pfglVertexStream1fvATI;
-    typedef void function(GLenum, GLdouble)            pfglVertexStream1dATI;
-    typedef void function(GLenum, GLdouble *)          pfglVertexStream1dvATI;
+extern(System):
 
-    typedef void function(GLenum, GLshort, GLshort)    pfglVertexStream2sATI;
-    typedef void function(GLenum, GLshort *)           pfglVertexStream2svATI;
-    typedef void function(GLenum, GLint, GLint)        pfglVertexStream2iATI;
-    typedef void function(GLenum, GLint *)             pfglVertexStream2ivATI;
-    typedef void function(GLenum, GLfloat, GLfloat)    pfglVertexStream2fATI;
-    typedef void function(GLenum, GLfloat *)           pfglVertexStream2fvATI;
-    typedef void function(GLenum, GLdouble, GLdouble)  pfglVertexStream2dATI;
-    typedef void function(GLenum, GLdouble *)          pfglVertexStream2dvATI;
+typedef void function(GLenum, GLshort)             pfglVertexStream1sATI;
+typedef void function(GLenum, GLshort *)           pfglVertexStream1svATI;
+typedef void function(GLenum, GLint)               pfglVertexStream1iATI;
+typedef void function(GLenum, GLint *)             pfglVertexStream1ivATI;
+typedef void function(GLenum, GLfloat)             pfglVertexStream1fATI;
+typedef void function(GLenum, GLfloat *)           pfglVertexStream1fvATI;
+typedef void function(GLenum, GLdouble)            pfglVertexStream1dATI;
+typedef void function(GLenum, GLdouble *)          pfglVertexStream1dvATI;
 
-    typedef void function(GLenum, GLshort, GLshort, GLshort)    pfglVertexStream3sATI;
-    typedef void function(GLenum, GLshort *)                    pfglVertexStream3svATI;
-    typedef void function(GLenum, GLint, GLint, GLint)          pfglVertexStream3iATI;
-    typedef void function(GLenum, GLint *)                      pfglVertexStream3ivATI;
-    typedef void function(GLenum, GLfloat, GLfloat, GLfloat)    pfglVertexStream3fATI;
-    typedef void function(GLenum, GLfloat *)                    pfglVertexStream3fvATI;
-    typedef void function(GLenum, GLdouble, GLdouble, GLdouble) pfglVertexStream3dATI;
-    typedef void function(GLenum, GLdouble *)                   pfglVertexStream3dvATI;
+typedef void function(GLenum, GLshort, GLshort)    pfglVertexStream2sATI;
+typedef void function(GLenum, GLshort *)           pfglVertexStream2svATI;
+typedef void function(GLenum, GLint, GLint)        pfglVertexStream2iATI;
+typedef void function(GLenum, GLint *)             pfglVertexStream2ivATI;
+typedef void function(GLenum, GLfloat, GLfloat)    pfglVertexStream2fATI;
+typedef void function(GLenum, GLfloat *)           pfglVertexStream2fvATI;
+typedef void function(GLenum, GLdouble, GLdouble)  pfglVertexStream2dATI;
+typedef void function(GLenum, GLdouble *)          pfglVertexStream2dvATI;
 
-    typedef void function(GLenum, GLshort, GLshort, GLshort, GLshort)     pfglVertexStream4sATI;
-    typedef void function(GLenum, GLshort *)                              pfglVertexStream4svATI;
-    typedef void function(GLenum, GLint, GLint, GLint, GLint)             pfglVertexStream4iATI;
-    typedef void function(GLenum, GLint *)                                pfglVertexStream4ivATI;
-    typedef void function(GLenum, GLfloat, GLfloat, GLfloat, GLfloat)     pfglVertexStream4fATI;
-    typedef void function(GLenum, GLfloat *)                              pfglVertexStream4fvATI;
-    typedef void function(GLenum, GLdouble, GLdouble, GLdouble, GLdouble) pfglVertexStream4dATI;
-    typedef void function(GLenum, GLdouble *)                             pfglVertexStream4dvATI;
+typedef void function(GLenum, GLshort, GLshort, GLshort)    pfglVertexStream3sATI;
+typedef void function(GLenum, GLshort *)                    pfglVertexStream3svATI;
+typedef void function(GLenum, GLint, GLint, GLint)          pfglVertexStream3iATI;
+typedef void function(GLenum, GLint *)                      pfglVertexStream3ivATI;
+typedef void function(GLenum, GLfloat, GLfloat, GLfloat)    pfglVertexStream3fATI;
+typedef void function(GLenum, GLfloat *)                    pfglVertexStream3fvATI;
+typedef void function(GLenum, GLdouble, GLdouble, GLdouble) pfglVertexStream3dATI;
+typedef void function(GLenum, GLdouble *)                   pfglVertexStream3dvATI;
 
-    typedef void function(GLenum, GLbyte, GLbyte, GLbyte)       pfglNormalStream3bATI;
-    typedef void function(GLenum, GLbyte *)                     pfglNormalStream3bvATI;
-    typedef void function(GLenum, GLshort, GLshort, GLshort)    pfglNormalStream3sATI;
-    typedef void function(GLenum, GLshort *)                    pfglNormalStream3svATI;
-    typedef void function(GLenum, GLint, GLint, GLint)          pfglNormalStream3iATI;
-    typedef void function(GLenum, GLint *)                      pfglNormalStream3ivATI;
-    typedef void function(GLenum, GLfloat, GLfloat, GLfloat)    pfglNormalStream3fATI;
-    typedef void function(GLenum, GLfloat *)                    pfglNormalStream3fvATI;
-    typedef void function(GLenum, GLdouble, GLdouble, GLdouble) pfglNormalStream3dATI;
-    typedef void function(GLenum, GLdouble *)                   pfglNormalStream3dvATI;
+typedef void function(GLenum, GLshort, GLshort, GLshort, GLshort)     pfglVertexStream4sATI;
+typedef void function(GLenum, GLshort *)                              pfglVertexStream4svATI;
+typedef void function(GLenum, GLint, GLint, GLint, GLint)             pfglVertexStream4iATI;
+typedef void function(GLenum, GLint *)                                pfglVertexStream4ivATI;
+typedef void function(GLenum, GLfloat, GLfloat, GLfloat, GLfloat)     pfglVertexStream4fATI;
+typedef void function(GLenum, GLfloat *)                              pfglVertexStream4fvATI;
+typedef void function(GLenum, GLdouble, GLdouble, GLdouble, GLdouble) pfglVertexStream4dATI;
+typedef void function(GLenum, GLdouble *)                             pfglVertexStream4dvATI;
 
-    typedef void function(GLenum)                   pfglClientActiveVertexStreamATI;
-    typedef void function(GLenum, GLint)            pfglVertexBlendEnviATI;
-    typedef void function(GLenum, GLfloat)          pfglVertexBlendEnvfATI;
-";
+typedef void function(GLenum, GLbyte, GLbyte, GLbyte)       pfglNormalStream3bATI;
+typedef void function(GLenum, GLbyte *)                     pfglNormalStream3bvATI;
+typedef void function(GLenum, GLshort, GLshort, GLshort)    pfglNormalStream3sATI;
+typedef void function(GLenum, GLshort *)                    pfglNormalStream3svATI;
+typedef void function(GLenum, GLint, GLint, GLint)          pfglNormalStream3iATI;
+typedef void function(GLenum, GLint *)                      pfglNormalStream3ivATI;
+typedef void function(GLenum, GLfloat, GLfloat, GLfloat)    pfglNormalStream3fATI;
+typedef void function(GLenum, GLfloat *)                    pfglNormalStream3fvATI;
+typedef void function(GLenum, GLdouble, GLdouble, GLdouble) pfglNormalStream3dATI;
+typedef void function(GLenum, GLdouble *)                   pfglNormalStream3dvATI;
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum)                   pfglClientActiveVertexStreamATI;
+typedef void function(GLenum, GLint)            pfglVertexBlendEnviATI;
+typedef void function(GLenum, GLfloat)          pfglVertexBlendEnvfATI;
 
 pfglVertexStream1sATI       glVertexStream1sATI;
 pfglVertexStream1svATI      glVertexStream1svATI;

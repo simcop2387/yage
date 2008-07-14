@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,20 +80,10 @@ enum : GLenum
     GL_PRIMITIVE_RESTART_INDEX_NV     = 0x8559,
 }
 
-private const char[] Funcs =
-"
-    typedef void function() pfglPrimitiveRestartNV;
-    typedef void function(GLuint) pfglPrimitiveRestartIndexNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function() pfglPrimitiveRestartNV;
+typedef void function(GLuint) pfglPrimitiveRestartIndexNV;
 
 pfglPrimitiveRestartNV          glPrimitiveRestartNV;
 pfglPrimitiveRestartIndexNV     glPrimitiveRestartIndexNV;

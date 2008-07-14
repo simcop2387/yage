@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,7 @@ package void loadGL13(SharedLib lib)
         wglBindFunc(cast(void**)&glMultiTexCoord2i, "glMultiTexCoord2i", lib);
         wglBindFunc(cast(void**)&glMultiTexCoord2iv, "glMultiTexCoord2iv", lib);
         wglBindFunc(cast(void**)&glMultiTexCoord2s, "glMultiTexCoord2s", lib);
-        wglBindFunc(cast(void**)&glMultiTexCoord2sv, "glMultiTexCoord2s", lib);
+        wglBindFunc(cast(void**)&glMultiTexCoord2sv, "glMultiTexCoord2sv", lib);
         wglBindFunc(cast(void**)&glMultiTexCoord3d, "glMultiTexCoord3d", lib);
         wglBindFunc(cast(void**)&glMultiTexCoord3dv, "glMultiTexCoord3d", lib);
         wglBindFunc(cast(void**)&glMultiTexCoord3f, "glMultiTexCoord3f", lib);
@@ -242,64 +242,54 @@ enum : GLenum
     GL_CLAMP_TO_BORDER             = 0x812D,
 }
 
-private const char[] Funcs =
-"
-    typedef GLvoid function(GLenum) pfglActiveTexture;
-    typedef GLvoid function(GLenum) pfglClientActiveTexture;
-    typedef GLvoid function(GLenum, GLdouble) pfglMultiTexCoord1d;
-    typedef GLvoid function(GLenum, GLdouble*) pfglMultiTexCoord1dv;
-    typedef GLvoid function(GLenum, GLfloat) pfglMultiTexCoord1f;
-    typedef GLvoid function(GLenum, GLfloat*) pfglMultiTexCoord1fv;
-    typedef GLvoid function(GLenum, GLint) pfglMultiTexCoord1i;
-    typedef GLvoid function(GLenum, GLint*) pfglMultiTexCoord1iv;
-    typedef GLvoid function(GLenum, GLshort) pfglMultiTexCoord1s;
-    typedef GLvoid function(GLenum, GLshort*) pfglMultiTexCoord1sv;
-    typedef GLvoid function(GLenum, GLdouble, GLdouble) pfglMultiTexCoord2d;
-    typedef GLvoid function(GLenum, GLdouble*) pfglMultiTexCoord2dv;
-    typedef GLvoid function(GLenum, GLfloat, GLfloat) pfglMultiTexCoord2f;
-    typedef GLvoid function(GLenum, GLfloat*) pfglMultiTexCoord2fv;
-    typedef GLvoid function(GLenum, GLint, GLint) pfglMultiTexCoord2i;
-    typedef GLvoid function(GLenum, GLint*) pfglMultiTexCoord2iv;
-    typedef GLvoid function(GLenum, GLshort, GLshort) pfglMultiTexCoord2s;
-    typedef GLvoid function(GLenum, GLshort*) pfglMultiTexCoord2sv;
-    typedef GLvoid function(GLenum, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord3d;
-    typedef GLvoid function(GLenum, GLdouble*) pfglMultiTexCoord3dv;
-    typedef GLvoid function(GLenum, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord3f;
-    typedef GLvoid function(GLenum, GLfloat*) pfglMultiTexCoord3fv;
-    typedef GLvoid function(GLenum, GLint, GLint, GLint) pfglMultiTexCoord3i;
-    typedef GLvoid function(GLenum, GLint*) pfglMultiTexCoord3iv;
-    typedef GLvoid function(GLenum, GLshort, GLshort, GLshort) pfglMultiTexCoord3s;
-    typedef GLvoid function(GLenum, GLshort*) pfglMultiTexCoord3sv;
-    typedef GLvoid function(GLenum, GLdouble, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord4d;
-    typedef GLvoid function(GLenum, GLdouble*) pfglMultiTexCoord4dv;
-    typedef GLvoid function(GLenum, GLfloat, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord4f;
-    typedef GLvoid function(GLenum, GLfloat*) pfglMultiTexCoord4fv;
-    typedef GLvoid function(GLenum, GLint, GLint, GLint, GLint) pfglMultiTexCoord4i;
-    typedef GLvoid function(GLenum, GLint*) pfglMultiTexCoord4iv;
-    typedef GLvoid function(GLenum, GLshort, GLshort, GLshort, GLshort) pfglMultiTexCoord4s;
-    typedef GLvoid function(GLenum, GLshort*) pfglMultiTexCoord4sv;
-    typedef GLvoid function(GLdouble[16]) pfglLoadTransposeMatrixd;
-    typedef GLvoid function(GLfloat[16]) pfglLoadTransposeMatrixf;
-    typedef GLvoid function(GLdouble[16]) pfglMultTransposeMatrixd;
-    typedef GLvoid function(GLfloat[16]) pfglMultTransposeMatrixf;
-    typedef GLvoid function(GLclampf, GLboolean) pfglSampleCoverage;
-    typedef GLvoid function(GLenum, GLint, GLenum, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage1D;
-    typedef GLvoid function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage2D;
-    typedef GLvoid function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei depth, GLint, GLsizei, GLvoid*) pfglCompressedTexImage3D;
-    typedef GLvoid function(GLenum, GLint, GLint, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage1D;
-    typedef GLvoid function(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage2D;
-    typedef GLvoid function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage3D;
-    typedef GLvoid function(GLenum, GLint, GLvoid*) pfglGetCompressedTexImage;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef GLvoid function(GLenum) pfglActiveTexture;
+typedef GLvoid function(GLenum) pfglClientActiveTexture;
+typedef GLvoid function(GLenum, GLdouble) pfglMultiTexCoord1d;
+typedef GLvoid function(GLenum, GLdouble*) pfglMultiTexCoord1dv;
+typedef GLvoid function(GLenum, GLfloat) pfglMultiTexCoord1f;
+typedef GLvoid function(GLenum, GLfloat*) pfglMultiTexCoord1fv;
+typedef GLvoid function(GLenum, GLint) pfglMultiTexCoord1i;
+typedef GLvoid function(GLenum, GLint*) pfglMultiTexCoord1iv;
+typedef GLvoid function(GLenum, GLshort) pfglMultiTexCoord1s;
+typedef GLvoid function(GLenum, GLshort*) pfglMultiTexCoord1sv;
+typedef GLvoid function(GLenum, GLdouble, GLdouble) pfglMultiTexCoord2d;
+typedef GLvoid function(GLenum, GLdouble*) pfglMultiTexCoord2dv;
+typedef GLvoid function(GLenum, GLfloat, GLfloat) pfglMultiTexCoord2f;
+typedef GLvoid function(GLenum, GLfloat*) pfglMultiTexCoord2fv;
+typedef GLvoid function(GLenum, GLint, GLint) pfglMultiTexCoord2i;
+typedef GLvoid function(GLenum, GLint*) pfglMultiTexCoord2iv;
+typedef GLvoid function(GLenum, GLshort, GLshort) pfglMultiTexCoord2s;
+typedef GLvoid function(GLenum, GLshort*) pfglMultiTexCoord2sv;
+typedef GLvoid function(GLenum, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord3d;
+typedef GLvoid function(GLenum, GLdouble*) pfglMultiTexCoord3dv;
+typedef GLvoid function(GLenum, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord3f;
+typedef GLvoid function(GLenum, GLfloat*) pfglMultiTexCoord3fv;
+typedef GLvoid function(GLenum, GLint, GLint, GLint) pfglMultiTexCoord3i;
+typedef GLvoid function(GLenum, GLint*) pfglMultiTexCoord3iv;
+typedef GLvoid function(GLenum, GLshort, GLshort, GLshort) pfglMultiTexCoord3s;
+typedef GLvoid function(GLenum, GLshort*) pfglMultiTexCoord3sv;
+typedef GLvoid function(GLenum, GLdouble, GLdouble, GLdouble, GLdouble) pfglMultiTexCoord4d;
+typedef GLvoid function(GLenum, GLdouble*) pfglMultiTexCoord4dv;
+typedef GLvoid function(GLenum, GLfloat, GLfloat, GLfloat, GLfloat) pfglMultiTexCoord4f;
+typedef GLvoid function(GLenum, GLfloat*) pfglMultiTexCoord4fv;
+typedef GLvoid function(GLenum, GLint, GLint, GLint, GLint) pfglMultiTexCoord4i;
+typedef GLvoid function(GLenum, GLint*) pfglMultiTexCoord4iv;
+typedef GLvoid function(GLenum, GLshort, GLshort, GLshort, GLshort) pfglMultiTexCoord4s;
+typedef GLvoid function(GLenum, GLshort*) pfglMultiTexCoord4sv;
+typedef GLvoid function(GLdouble*) pfglLoadTransposeMatrixd;
+typedef GLvoid function(GLfloat*) pfglLoadTransposeMatrixf;
+typedef GLvoid function(GLdouble*) pfglMultTransposeMatrixd;
+typedef GLvoid function(GLfloat*) pfglMultTransposeMatrixf;
+typedef GLvoid function(GLclampf, GLboolean) pfglSampleCoverage;
+typedef GLvoid function(GLenum, GLint, GLenum, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage1D;
+typedef GLvoid function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLsizei, GLvoid*) pfglCompressedTexImage2D;
+typedef GLvoid function(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei depth, GLint, GLsizei, GLvoid*) pfglCompressedTexImage3D;
+typedef GLvoid function(GLenum, GLint, GLint, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage1D;
+typedef GLvoid function(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage2D;
+typedef GLvoid function(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, GLvoid*) pfglCompressedTexSubImage3D;
+typedef GLvoid function(GLenum, GLint, GLvoid*) pfglGetCompressedTexImage;
 
 pfglActiveTexture           glActiveTexture;
 pfglClientActiveTexture     glClientActiveTexture;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,25 +91,15 @@ enum : GLenum
     GL_FENCE_CONDITION_NV             = 0x84F4,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLsizei, GLuint*) pfglDeleteFencesNV;
-    typedef void function(GLsizei, GLuint*) pfglGenFencesNV;
-    typedef GLboolean function(GLuint) pfglIsFenceNV;
-    typedef GLboolean function(GLuint) pfglTestFenceNV;
-    typedef void function(GLuint, GLenum, GLint*) pfglGetFenceivNV;
-    typedef void function(GLuint) pfglFinishFenceNV;
-    typedef void function(GLuint, GLenum) pfglSetFenceNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLsizei, GLuint*) pfglDeleteFencesNV;
+typedef void function(GLsizei, GLuint*) pfglGenFencesNV;
+typedef GLboolean function(GLuint) pfglIsFenceNV;
+typedef GLboolean function(GLuint) pfglTestFenceNV;
+typedef void function(GLuint, GLenum, GLint*) pfglGetFenceivNV;
+typedef void function(GLuint) pfglFinishFenceNV;
+typedef void function(GLuint, GLenum) pfglSetFenceNV;
 
 pfglDeleteFencesNV          glDeleteFencesNV;
 pfglGenFencesNV             glGenFencesNV;

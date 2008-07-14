@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,5 +34,12 @@ module derelict.freetype.ft;
 public
 {
     import derelict.freetype.fttypes;
-    import derelict.freetype.ftfuncs;
+    version(DerelictFT_Static)
+    {
+        import derelict.freetype.sftfuncs;
+    }
+    else
+    {
+        import derelict.freetype.ftfuncs;
+    }
 }

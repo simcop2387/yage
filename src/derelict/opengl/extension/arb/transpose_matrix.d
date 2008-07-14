@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,22 +85,12 @@ enum : GLenum
     GL_TRANSPOSE_COLOR_MATRIX_ARB      = 0x84E6,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLfloat*) pfglLoadTransposeMatrixfARB;
-    typedef void function(GLdouble*) pfglLoadTransposeMatrixdARB;
-    typedef void function(GLfloat*) pfglMultTransposeMatrixfARB;
-    typedef void function(GLdouble*) pfglMultTransposeMatrixdARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLfloat*) pfglLoadTransposeMatrixfARB;
+typedef void function(GLdouble*) pfglLoadTransposeMatrixdARB;
+typedef void function(GLfloat*) pfglMultTransposeMatrixfARB;
+typedef void function(GLdouble*) pfglMultTransposeMatrixdARB;
 
 pfglLoadTransposeMatrixfARB             glLoadTransposeMatrixfARB;
 pfglLoadTransposeMatrixdARB             glLoadTransposeMatrixdARB;

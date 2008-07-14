@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,7 +125,7 @@ typedef SDL_audiostatus function() pfSDL_GetAudioStatus;
 typedef void function(int) pfSDL_PauseAudio;
 typedef SDL_AudioSpec* function(SDL_RWops*,int,SDL_AudioSpec*,Uint8**,Uint32*) pfSDL_LoadWAV_RW;
 typedef void function(Uint8*) pfSDL_FreeWAV;
-typedef void function(SDL_AudioCVT*,Uint16,Uint8,int,Uint16,Uint8,int) pfSDL_BuildAudioCVT;
+typedef int function(SDL_AudioCVT*,Uint16,Uint8,int,Uint16,Uint8,int) pfSDL_BuildAudioCVT;
 typedef int function(SDL_AudioCVT*) pfSDL_ConvertAudio;
 typedef void function(Uint8*,Uint8*,Uint32,int) pfSDL_MixAudio;
 typedef void function() pfSDL_LockAudio;

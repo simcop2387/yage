@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,21 +83,11 @@ enum : GLenum
     GL_ELEMENT_ARRAY_POINTER_ATI   = 0x876A,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLvoid*) pfglElementPointerATI;
-    typedef void function(GLenum, GLsizei) pfglDrawElementArrayATI;
-    typedef void function(GLenum, GLuint, GLuint, GLsizei) pfglDrawRangeElementArrayATI;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLvoid*) pfglElementPointerATI;
+typedef void function(GLenum, GLsizei) pfglDrawElementArrayATI;
+typedef void function(GLenum, GLuint, GLuint, GLsizei) pfglDrawRangeElementArrayATI;
 
 pfglElementPointerATI           glElementPointerATI;
 pfglDrawElementArrayATI         glDrawElementArrayATI;

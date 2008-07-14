@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,13 @@ private
     version(Windows)
         import derelict.opengl.wgl;
     else version(linux)
-        version = UsingGLX;
-
-    version(UsingGLX)
         import derelict.opengl.glx;
+    else version(darwin)
+    {
+        import derelict.util.loader;
+        import derelict.util.exception;
+        import derelict.opengl.glfuncs;
+    }
 
     import derelict.util.wrapper;
 }
@@ -50,6 +53,17 @@ bool glBindExtFunc(void **ptr, char[] funcName)
         *ptr = wglGetProcAddress(toCString(funcName));
     else version(UsingGLX)
         *ptr = glXGetProcAddress(toCString(funcName));
+    else version(darwin)
+    {
+        try
+        {
+            *ptr = Derelict_GetProc(glLib, funcName);
+        }
+        catch(DerelictException ex)
+        {
+            return false;
+        }
+    }
     return (*ptr !is null);
 }
 

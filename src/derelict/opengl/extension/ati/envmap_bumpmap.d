@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,22 +90,12 @@ enum : GLenum
     GL_BUMP_TARGET_ATI                = 0x877C,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLint *) pfglTexBumpParameterivATI;
-    typedef void function(GLenum, GLfloat *) pfglTexBumpParameterfvATI;
-    typedef void function(GLenum, GLint *) pfglGetTexBumpParameterivATI;
-    typedef void function(GLenum, GLfloat *) pfglGetTexBumpParameterfvATI;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLint *) pfglTexBumpParameterivATI;
+typedef void function(GLenum, GLfloat *) pfglTexBumpParameterfvATI;
+typedef void function(GLenum, GLint *) pfglGetTexBumpParameterivATI;
+typedef void function(GLenum, GLfloat *) pfglGetTexBumpParameterfvATI;
 
 pfglTexBumpParameterivATI       glTexBumpParameterivATI;
 pfglTexBumpParameterfvATI       glTexBumpParameterfvATI;

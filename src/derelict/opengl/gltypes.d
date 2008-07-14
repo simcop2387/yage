@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -268,11 +268,7 @@ enum : GLenum
     GL_DST_COLOR                           = 0x0306,
     GL_ONE_MINUS_DST_COLOR                 = 0x0307,
     GL_SRC_ALPHA_SATURATE                  = 0x0308,
-    GL_CONSTANT_COLOR                      = 0x8001,
-    GL_ONE_MINUS_CONSTANT_COLOR            = 0x8002,
-    GL_CONSTANT_ALPHA                      = 0x8003,
-    GL_ONE_MINUS_CONSTANT_ALPHA            = 0x8004,
-
+    
     // Render Mode
     GL_FEEDBACK                            = 0x1C01,
     GL_RENDER                              = 0x1C00,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,18 +80,8 @@ enum : GLenum
     GL_DRAW_FRAMEBUFFER_BINDING_EXT    = 0x8CAA,
 }
 
-private const char[] Funcs =
-"
- typedef void function(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum) pfglBlitFramebufferEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum) pfglBlitFramebufferEXT;
 
 pfglBlitFramebufferEXT      glBlitFramebufferEXT;

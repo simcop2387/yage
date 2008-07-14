@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,20 +79,10 @@ enum : GLenum
     GL_PER_STAGE_CONSTANTS_NV = 0x8535
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLenum, GLfloat*) pfglCombinerStageParameterfvNV;
-    typedef void function(GLenum, GLenum, GLfloat*) pfglGetCombinerStageParameterfvNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLenum, GLfloat*) pfglCombinerStageParameterfvNV;
+typedef void function(GLenum, GLenum, GLfloat*) pfglGetCombinerStageParameterfvNV;
 
 pfglCombinerStageParameterfvNV      glCombinerStageParameterfvNV;
 pfglGetCombinerStageParameterfvNV   glGetCombinerStageParameterfvNV;

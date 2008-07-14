@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,18 +80,8 @@ enum : GLenum
     GL_BLEND_SRC_ALPHA_EXT            = 0x80CB,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLenum, GLenum, GLenum) pfglBlendFuncSeparateEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLenum, GLenum, GLenum) pfglBlendFuncSeparateEXT;
 
 pfglBlendFuncSeparateEXT    glBlendFuncSeparateEXT;

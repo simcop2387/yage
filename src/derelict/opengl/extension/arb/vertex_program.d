@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -276,80 +276,70 @@ enum : GLenum
     GL_MATRIX31_ARB                            = 0x88DF,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLuint, GLdouble) pfglVertexAttrib1dARB;
-    typedef void function(GLuint, GLdouble*) pfglVertexAttrib1dvARB;
-    typedef void function(GLuint, GLfloat) pfglVertexAttrib1fARB;
-    typedef void function(GLuint, GLfloat*) pfglVertexAttrib1fvARB;
-    typedef void function(GLuint, GLshort) pfglVertexAttrib1sARB;
-    typedef void function(GLuint, GLshort*) pfglVertexAttrib1svARB;
-    typedef void function(GLuint, GLdouble, GLdouble) pfglVertexAttrib2dARB;
-    typedef void function(GLuint, GLdouble*) pfglVertexAttrib2dvARB;
-    typedef void function(GLuint, GLfloat, GLfloat) pfglVertexAttrib2fARB;
-    typedef void function(GLuint, GLfloat*) pfglVertexAttrib2fvARB;
-    typedef void function(GLuint, GLshort, GLshort) pfglVertexAttrib2sARB;
-    typedef void function(GLuint, GLshort*) pfglVertexAttrib2svARB;
-    typedef void function(GLuint, GLdouble, GLdouble, GLdouble) pfglVertexAttrib3dARB;
-    typedef void function(GLuint, GLdouble*) pfglVertexAttrib3dvARB;
-    typedef void function(GLuint, GLfloat, GLfloat, GLfloat) pfglVertexAttrib3fARB;
-    typedef void function(GLuint, GLfloat*) pfglVertexAttrib3fvARB;
-    typedef void function(GLuint, GLshort, GLshort, GLshort) pfglVertexAttrib3sARB;
-    typedef void function(GLuint, GLshort*) pfglVertexAttrib3svARB;
-    typedef void function(GLuint, GLbyte*) pfglVertexAttrib4NbvARB;
-    typedef void function(GLuint, GLint*) pfglVertexAttrib4NivARB;
-    typedef void function(GLuint, GLshort*) pfglVertexAttrib4NsvARB;
-    typedef void function(GLuint, GLubyte, GLubyte, GLubyte, GLubyte) pfglVertexAttrib4NubARB;
-    typedef void function(GLuint, GLubyte*) pfglVertexAttrib4NubvARB;
-    typedef void function(GLuint, GLuint*) pfglVertexAttrib4NuivARB;
-    typedef void function(GLuint, GLushort*) pfglVertexAttrib4NusvARB;
-    typedef void function(GLuint, GLbyte*) pfglVertexAttrib4bvARB;
-    typedef void function(GLuint, GLdouble, GLdouble, GLdouble, GLdouble) pfglVertexAttrib4dARB;
-    typedef void function(GLuint, GLdouble*) pfglVertexAttrib4dvARB;
-    typedef void function(GLuint, GLfloat, GLfloat, GLfloat, GLfloat) pfglVertexAttrib4fARB;
-    typedef void function(GLuint, GLfloat*) pfglVertexAttrib4fvARB;
-    typedef void function(GLuint, GLint*) pfglVertexAttrib4ivARB;
-    typedef void function(GLuint, GLshort, GLshort, GLshort, GLshort) pfglVertexAttrib4sARB;
-    typedef void function(GLuint, GLshort*) pfglVertexAttrib4svARB;
-    typedef void function(GLuint, GLubyte*) pfglVertexAttrib4ubvARB;
-    typedef void function(GLuint, GLuint*) pfglVertexAttrib4uivARB;
-    typedef void function(GLuint, GLushort*) pfglVertexAttrib4usvARB;
-    typedef void function(GLuint, GLint, GLenum, GLboolean, GLsizei, GLvoid*) pfglVertexAttribPointerARB;
-    typedef void function(GLuint) pfglEnableVertexAttribArrayARB;
-    typedef void function(GLuint) pfglDisableVertexAttribArrayARB;
-    typedef void function(GLenum, GLenum, GLsizei, GLvoid*) pfglProgramStringARB;
-    typedef void function(GLenum, GLuint) pfglBindProgramARB;
-    typedef void function(GLsizei, GLuint*) pfglDeleteProgramsARB;
-    typedef void function(GLsizei, GLuint*) pfglGenProgramsARB;
-    typedef void function(GLenum, GLuint, GLdouble, GLdouble, GLdouble, GLdouble) pfglProgramEnvParameter4dARB;
-    typedef void function(GLenum, GLuint, GLdouble*) pfglProgramEnvParameter4dvARB;
-    typedef void function(GLenum, GLuint, GLfloat, GLfloat, GLfloat, GLfloat) pfglProgramEnvParameter4fARB;
-    typedef void function(GLenum, GLuint, GLfloat*) pfglProgramEnvParameter4fvARB;
-    typedef void function(GLenum, GLuint, GLdouble, GLdouble, GLdouble, GLdouble) pfglProgramLocalParameter4dARB;
-    typedef void function(GLenum, GLuint, GLdouble*) pfglProgramLocalParameter4dvARB;
-    typedef void function(GLenum, GLuint, GLfloat, GLfloat, GLfloat, GLfloat) pfglProgramLocalParameter4fARB;
-    typedef void function(GLenum, GLuint, GLfloat*) pfglProgramLocalParameter4fvARB;
-    typedef void function(GLenum, GLuint, GLdouble*) pfglGetProgramEnvParameterdvARB;
-    typedef void function(GLenum, GLuint, GLfloat*) pfglGetProgramEnvParameterfvARB;
-    typedef void function(GLenum, GLuint, GLdouble*) pfglGetProgramLocalParameterdvARB;
-    typedef void function(GLenum, GLuint, GLfloat*) pfglGetProgramLocalParameterfvARB;
-    typedef void function(GLenum, GLenum, GLint*) pfglGetProgramivARB;
-    typedef void function(GLenum, GLenum, GLvoid*) pfglGetProgramStringARB;
-    typedef void function(GLuint, GLenum, GLdouble*) pfglGetVertexAttribdvARB;
-    typedef void function(GLuint, GLenum, GLfloat*) pfglGetVertexAttribfvARB;
-    typedef void function(GLuint, GLenum, GLint*) pfglGetVertexAttribivARB;
-    typedef void function(GLuint, GLenum, GLvoid*) pfglGetVertexAttribPointervARB;
-    typedef GLboolean function(GLuint) pfglIsProgramARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLuint, GLdouble) pfglVertexAttrib1dARB;
+typedef void function(GLuint, GLdouble*) pfglVertexAttrib1dvARB;
+typedef void function(GLuint, GLfloat) pfglVertexAttrib1fARB;
+typedef void function(GLuint, GLfloat*) pfglVertexAttrib1fvARB;
+typedef void function(GLuint, GLshort) pfglVertexAttrib1sARB;
+typedef void function(GLuint, GLshort*) pfglVertexAttrib1svARB;
+typedef void function(GLuint, GLdouble, GLdouble) pfglVertexAttrib2dARB;
+typedef void function(GLuint, GLdouble*) pfglVertexAttrib2dvARB;
+typedef void function(GLuint, GLfloat, GLfloat) pfglVertexAttrib2fARB;
+typedef void function(GLuint, GLfloat*) pfglVertexAttrib2fvARB;
+typedef void function(GLuint, GLshort, GLshort) pfglVertexAttrib2sARB;
+typedef void function(GLuint, GLshort*) pfglVertexAttrib2svARB;
+typedef void function(GLuint, GLdouble, GLdouble, GLdouble) pfglVertexAttrib3dARB;
+typedef void function(GLuint, GLdouble*) pfglVertexAttrib3dvARB;
+typedef void function(GLuint, GLfloat, GLfloat, GLfloat) pfglVertexAttrib3fARB;
+typedef void function(GLuint, GLfloat*) pfglVertexAttrib3fvARB;
+typedef void function(GLuint, GLshort, GLshort, GLshort) pfglVertexAttrib3sARB;
+typedef void function(GLuint, GLshort*) pfglVertexAttrib3svARB;
+typedef void function(GLuint, GLbyte*) pfglVertexAttrib4NbvARB;
+typedef void function(GLuint, GLint*) pfglVertexAttrib4NivARB;
+typedef void function(GLuint, GLshort*) pfglVertexAttrib4NsvARB;
+typedef void function(GLuint, GLubyte, GLubyte, GLubyte, GLubyte) pfglVertexAttrib4NubARB;
+typedef void function(GLuint, GLubyte*) pfglVertexAttrib4NubvARB;
+typedef void function(GLuint, GLuint*) pfglVertexAttrib4NuivARB;
+typedef void function(GLuint, GLushort*) pfglVertexAttrib4NusvARB;
+typedef void function(GLuint, GLbyte*) pfglVertexAttrib4bvARB;
+typedef void function(GLuint, GLdouble, GLdouble, GLdouble, GLdouble) pfglVertexAttrib4dARB;
+typedef void function(GLuint, GLdouble*) pfglVertexAttrib4dvARB;
+typedef void function(GLuint, GLfloat, GLfloat, GLfloat, GLfloat) pfglVertexAttrib4fARB;
+typedef void function(GLuint, GLfloat*) pfglVertexAttrib4fvARB;
+typedef void function(GLuint, GLint*) pfglVertexAttrib4ivARB;
+typedef void function(GLuint, GLshort, GLshort, GLshort, GLshort) pfglVertexAttrib4sARB;
+typedef void function(GLuint, GLshort*) pfglVertexAttrib4svARB;
+typedef void function(GLuint, GLubyte*) pfglVertexAttrib4ubvARB;
+typedef void function(GLuint, GLuint*) pfglVertexAttrib4uivARB;
+typedef void function(GLuint, GLushort*) pfglVertexAttrib4usvARB;
+typedef void function(GLuint, GLint, GLenum, GLboolean, GLsizei, GLvoid*) pfglVertexAttribPointerARB;
+typedef void function(GLuint) pfglEnableVertexAttribArrayARB;
+typedef void function(GLuint) pfglDisableVertexAttribArrayARB;
+typedef void function(GLenum, GLenum, GLsizei, GLvoid*) pfglProgramStringARB;
+typedef void function(GLenum, GLuint) pfglBindProgramARB;
+typedef void function(GLsizei, GLuint*) pfglDeleteProgramsARB;
+typedef void function(GLsizei, GLuint*) pfglGenProgramsARB;
+typedef void function(GLenum, GLuint, GLdouble, GLdouble, GLdouble, GLdouble) pfglProgramEnvParameter4dARB;
+typedef void function(GLenum, GLuint, GLdouble*) pfglProgramEnvParameter4dvARB;
+typedef void function(GLenum, GLuint, GLfloat, GLfloat, GLfloat, GLfloat) pfglProgramEnvParameter4fARB;
+typedef void function(GLenum, GLuint, GLfloat*) pfglProgramEnvParameter4fvARB;
+typedef void function(GLenum, GLuint, GLdouble, GLdouble, GLdouble, GLdouble) pfglProgramLocalParameter4dARB;
+typedef void function(GLenum, GLuint, GLdouble*) pfglProgramLocalParameter4dvARB;
+typedef void function(GLenum, GLuint, GLfloat, GLfloat, GLfloat, GLfloat) pfglProgramLocalParameter4fARB;
+typedef void function(GLenum, GLuint, GLfloat*) pfglProgramLocalParameter4fvARB;
+typedef void function(GLenum, GLuint, GLdouble*) pfglGetProgramEnvParameterdvARB;
+typedef void function(GLenum, GLuint, GLfloat*) pfglGetProgramEnvParameterfvARB;
+typedef void function(GLenum, GLuint, GLdouble*) pfglGetProgramLocalParameterdvARB;
+typedef void function(GLenum, GLuint, GLfloat*) pfglGetProgramLocalParameterfvARB;
+typedef void function(GLenum, GLenum, GLint*) pfglGetProgramivARB;
+typedef void function(GLenum, GLenum, GLvoid*) pfglGetProgramStringARB;
+typedef void function(GLuint, GLenum, GLdouble*) pfglGetVertexAttribdvARB;
+typedef void function(GLuint, GLenum, GLfloat*) pfglGetVertexAttribfvARB;
+typedef void function(GLuint, GLenum, GLint*) pfglGetVertexAttribivARB;
+typedef void function(GLuint, GLenum, GLvoid*) pfglGetVertexAttribPointervARB;
+typedef GLboolean function(GLuint) pfglIsProgramARB;
 
 pfglVertexAttrib1dARB               glVertexAttrib1dARB;
 pfglVertexAttrib1dvARB              glVertexAttrib1dvARB;

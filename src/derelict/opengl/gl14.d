@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -198,65 +198,55 @@ enum : GLenum
     GL_FUNC_REVERSE_SUBTRACT           = 0x800B,
 }
 
-private const char[] Funcs =
-"
-    typedef GLvoid function(GLenum, GLenum, GLenum, GLenum) pfglBlendFuncSeparate;
-    typedef GLvoid function(GLfloat) pfglFogCoordf;
-    typedef GLvoid function(GLfloat*) pfglFogCoordfv;
-    typedef GLvoid function(GLdouble) pfglFogCoordd;
-    typedef GLvoid function(GLdouble*) pfglFogCoorddv;
-    typedef GLvoid function(GLenum, GLsizei,GLvoid*) pfglFogCoordPointer;
-    typedef GLvoid function(GLenum, GLint*, GLsizei*, GLsizei) pfglMultiDrawArrays;
-    typedef GLvoid function(GLenum, GLsizei*, GLenum, GLvoid**, GLsizei) pfglMultiDrawElements;
-    typedef GLvoid function(GLenum, GLfloat) pfglPointParameterf;
-    typedef GLvoid function(GLenum, GLfloat*) pfglPointParameterfv;
-    typedef GLvoid function(GLenum, GLint) pfglPointParameteri;
-    typedef GLvoid function(GLenum, GLint*) pfglPointParameteriv;
-    typedef GLvoid function(GLbyte, GLbyte, GLbyte) pfglSecondaryColor3b;
-    typedef GLvoid function(GLbyte*) pfglSecondaryColor3bv;
-    typedef GLvoid function(GLdouble, GLdouble, GLdouble) pfglSecondaryColor3d;
-    typedef GLvoid function(GLdouble*) pfglSecondaryColor3dv;
-    typedef GLvoid function(GLfloat, GLfloat, GLfloat) pfglSecondaryColor3f;
-    typedef GLvoid function(GLfloat*) pfglSecondaryColor3fv;
-    typedef GLvoid function(GLint, GLint, GLint) pfglSecondaryColor3i;
-    typedef GLvoid function(GLint*) pfglSecondaryColor3iv;
-    typedef GLvoid function(GLshort, GLshort, GLshort) pfglSecondaryColor3s;
-    typedef GLvoid function(GLshort*) pfglSecondaryColor3sv;
-    typedef GLvoid function(GLubyte, GLubyte, GLubyte) pfglSecondaryColor3ub;
-    typedef GLvoid function(GLubyte*) pfglSecondaryColor3ubv;
-    typedef GLvoid function(GLuint, GLuint, GLuint) pfglSecondaryColor3ui;
-    typedef GLvoid function(GLuint*) pfglSecondaryColor3uiv;
-    typedef GLvoid function(GLushort, GLushort, GLushort) pfglSecondaryColor3us;
-    typedef GLvoid function(GLushort*) pfglSecondaryColor3usv;
-    typedef GLvoid function(GLint, GLenum, GLsizei, GLvoid*) pfglSecondaryColorPointer;
-    typedef GLvoid function(GLdouble, GLdouble) pfglWindowPos2d;
-    typedef GLvoid function(GLdouble*) pfglWindowPos2dv;
-    typedef GLvoid function(GLfloat, GLfloat) pfglWindowPos2f;
-    typedef GLvoid function(GLfloat*) pfglWindowPos2fv;
-    typedef GLvoid function(GLint, GLint) pfglWindowPos2i;
-    typedef GLvoid function(GLint*) pfglWindowPos2iv;
-    typedef GLvoid function(GLshort, GLshort) pfglWindowPos2s;
-    typedef GLvoid function(GLshort*) pfglWindowPos2sv;
-    typedef GLvoid function(GLdouble, GLdouble, GLdouble) pfglWindowPos3d;
-    typedef GLvoid function(GLdouble*) pfglWindowPos3dv;
-    typedef GLvoid function(GLfloat, GLfloat, GLfloat) pfglWindowPos3f;
-    typedef GLvoid function(GLfloat*) pfglWindowPos3fv;
-    typedef GLvoid function(GLint, GLint, GLint) pfglWindowPos3i;
-    typedef GLvoid function(GLint*) pfglWindowPos3iv;
-    typedef GLvoid function(GLshort, GLshort, GLshort) pfglWindowPos3s;
-    typedef GLvoid function(GLshort*) pfglWindowPos3sv;
-    typedef GLvoid function(GLclampf, GLclampf, GLclampf, GLclampf) pfglBlendColor;
-    typedef GLvoid function(GLenum) pfglBlendEquation;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef GLvoid function(GLenum, GLenum, GLenum, GLenum) pfglBlendFuncSeparate;
+typedef GLvoid function(GLfloat) pfglFogCoordf;
+typedef GLvoid function(GLfloat*) pfglFogCoordfv;
+typedef GLvoid function(GLdouble) pfglFogCoordd;
+typedef GLvoid function(GLdouble*) pfglFogCoorddv;
+typedef GLvoid function(GLenum, GLsizei,GLvoid*) pfglFogCoordPointer;
+typedef GLvoid function(GLenum, GLint*, GLsizei*, GLsizei) pfglMultiDrawArrays;
+typedef GLvoid function(GLenum, GLsizei*, GLenum, GLvoid**, GLsizei) pfglMultiDrawElements;
+typedef GLvoid function(GLenum, GLfloat) pfglPointParameterf;
+typedef GLvoid function(GLenum, GLfloat*) pfglPointParameterfv;
+typedef GLvoid function(GLenum, GLint) pfglPointParameteri;
+typedef GLvoid function(GLenum, GLint*) pfglPointParameteriv;
+typedef GLvoid function(GLbyte, GLbyte, GLbyte) pfglSecondaryColor3b;
+typedef GLvoid function(GLbyte*) pfglSecondaryColor3bv;
+typedef GLvoid function(GLdouble, GLdouble, GLdouble) pfglSecondaryColor3d;
+typedef GLvoid function(GLdouble*) pfglSecondaryColor3dv;
+typedef GLvoid function(GLfloat, GLfloat, GLfloat) pfglSecondaryColor3f;
+typedef GLvoid function(GLfloat*) pfglSecondaryColor3fv;
+typedef GLvoid function(GLint, GLint, GLint) pfglSecondaryColor3i;
+typedef GLvoid function(GLint*) pfglSecondaryColor3iv;
+typedef GLvoid function(GLshort, GLshort, GLshort) pfglSecondaryColor3s;
+typedef GLvoid function(GLshort*) pfglSecondaryColor3sv;
+typedef GLvoid function(GLubyte, GLubyte, GLubyte) pfglSecondaryColor3ub;
+typedef GLvoid function(GLubyte*) pfglSecondaryColor3ubv;
+typedef GLvoid function(GLuint, GLuint, GLuint) pfglSecondaryColor3ui;
+typedef GLvoid function(GLuint*) pfglSecondaryColor3uiv;
+typedef GLvoid function(GLushort, GLushort, GLushort) pfglSecondaryColor3us;
+typedef GLvoid function(GLushort*) pfglSecondaryColor3usv;
+typedef GLvoid function(GLint, GLenum, GLsizei, GLvoid*) pfglSecondaryColorPointer;
+typedef GLvoid function(GLdouble, GLdouble) pfglWindowPos2d;
+typedef GLvoid function(GLdouble*) pfglWindowPos2dv;
+typedef GLvoid function(GLfloat, GLfloat) pfglWindowPos2f;
+typedef GLvoid function(GLfloat*) pfglWindowPos2fv;
+typedef GLvoid function(GLint, GLint) pfglWindowPos2i;
+typedef GLvoid function(GLint*) pfglWindowPos2iv;
+typedef GLvoid function(GLshort, GLshort) pfglWindowPos2s;
+typedef GLvoid function(GLshort*) pfglWindowPos2sv;
+typedef GLvoid function(GLdouble, GLdouble, GLdouble) pfglWindowPos3d;
+typedef GLvoid function(GLdouble*) pfglWindowPos3dv;
+typedef GLvoid function(GLfloat, GLfloat, GLfloat) pfglWindowPos3f;
+typedef GLvoid function(GLfloat*) pfglWindowPos3fv;
+typedef GLvoid function(GLint, GLint, GLint) pfglWindowPos3i;
+typedef GLvoid function(GLint*) pfglWindowPos3iv;
+typedef GLvoid function(GLshort, GLshort, GLshort) pfglWindowPos3s;
+typedef GLvoid function(GLshort*) pfglWindowPos3sv;
+typedef GLvoid function(GLclampf, GLclampf, GLclampf, GLclampf) pfglBlendColor;
+typedef GLvoid function(GLenum) pfglBlendEquation;
 
 pfglBlendFuncSeparate       glBlendFuncSeparate;
 pfglFogCoordf               glFogCoordf;

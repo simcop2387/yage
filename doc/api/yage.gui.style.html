@@ -91,14 +91,134 @@
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Specifies the style of a Surface.
- Inspired by the CSS specification (http://www.w3schools.com/css/css_reference.asp).
- Defined here to keep things well separated.
- Styles that have a top, right, bottom, left (like margin, border) are stored in arrays of length 4.
+ Inspired by the <a href="http://www.w3schools.com/css/css_reference.asp">CSS specification</a>.
+<br><br>
+This struct is not fully documented. 
 <br><br>
 
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl></dl>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">PX</span>
+<script type="text/javascript">explorer.outline.addDecl('PX');</script>
+<br>
+<span class="currsymbol">PERCENT</span>
+<script type="text/javascript">explorer.outline.addDecl('PERCENT');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Enumeration values used to set units for measurements, such as width, padding, etc. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">NONE</span>
+<script type="text/javascript">explorer.outline.addDecl('NONE');</script>
+<br>
+<span class="currsymbol">STRETCH</span>
+<script type="text/javascript">explorer.outline.addDecl('STRETCH');</script>
+<br>
+<span class="currsymbol">NINESLICE</span>
+<script type="text/javascript">explorer.outline.addDecl('NINESLICE');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Enumeration values used to set backgroundRepeat
+<br><br>
+<b>See:</b><br>
+<br><br>
+<b>http:</b><br>
+//livedocs.adobe.com/flash/9.0/UsingFlash/help.html?content=WSd60f23110762d6b883b18f10cb1fe1af6-7db8.html
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">top</span>
+<script type="text/javascript">explorer.outline.addDecl('top');</script>
+;
+<br>float 
+<span class="currsymbol">right</span>
+<script type="text/javascript">explorer.outline.addDecl('right');</script>
+;
+<br>float 
+<span class="currsymbol">bottom</span>
+<script type="text/javascript">explorer.outline.addDecl('bottom');</script>
+;
+<br>float 
+<span class="currsymbol">left</span>
+<script type="text/javascript">explorer.outline.addDecl('left');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Distance of an edge from its parent, use float.nan to leave unset.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Edge!(4,float) 
+<span class="currsymbol">dimension</span>
+<script type="text/javascript">explorer.outline.addDecl('dimension');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Store all four 
+<span class="currsymbol">dimension</span>
+<script type="text/javascript">explorer.outline.addDecl('dimension');</script>
+ properties in one struct (top, left, bottom, right).
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">visible</span>
+<script type="text/javascript">explorer.outline.addDecl('visible');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set whether the element is 
+<span class="currsymbol">visible</span>
+<script type="text/javascript">explorer.outline.addDecl('visible');</script>
+. visibility is an alias of 
+<span class="currsymbol">visible</span>
+<script type="text/javascript">explorer.outline.addDecl('visible');</script>
+ for CSS compatibility.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">set</span>
+<script type="text/javascript">explorer.outline.addDecl('set');</script>
+(char[] <span class="funcparam">style</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set properties from a string of text, css <span class="funcparam">style</span>.
+<br><br>
+<b>TODO:</b><br>
+Fix this function so it cleans up its garbage.
+<br><br>
+<b>Example:</b><br>
+<span class="funcparam">style</span>.
+<span class="currsymbol">set</span>
+<script type="text/javascript">explorer.outline.addDecl('set');</script>
+("border: 2px solid black; font-family: arial.ttf; color: white");
+<br><br>
+
+</dd>
+</dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
 
@@ -117,7 +237,7 @@
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon May 26 22:21:35 2008
+		on Sun Jul 13 22:15:40 2008
 
 	</div>
 	
@@ -148,6 +268,8 @@
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.tree");
+
 	explorer.packageExplorer.addModule("yage.core.types");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
@@ -160,31 +282,11 @@
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
-	explorer.packageExplorer.addModule("yage.node.all");
-
-	explorer.packageExplorer.addModule("yage.node.camera");
-
-	explorer.packageExplorer.addModule("yage.node.graph");
-
-	explorer.packageExplorer.addModule("yage.node.light");
-
-	explorer.packageExplorer.addModule("yage.node.model");
-
-	explorer.packageExplorer.addModule("yage.node.movable");
-
-	explorer.packageExplorer.addModule("yage.node.node");
-
-	explorer.packageExplorer.addModule("yage.node.scene");
-
-	explorer.packageExplorer.addModule("yage.node.sound");
-
-	explorer.packageExplorer.addModule("yage.node.sprite");
-
-	explorer.packageExplorer.addModule("yage.node.terrain");
-
-	explorer.packageExplorer.addModule("yage.node.visible");
-
 	explorer.packageExplorer.addModule("yage.resource.all");
+
+	explorer.packageExplorer.addModule("yage.resource.exception");
+
+	explorer.packageExplorer.addModule("yage.resource.font");
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
@@ -208,6 +310,30 @@
 
 	explorer.packageExplorer.addModule("yage.resource.texture");
 
+	explorer.packageExplorer.addModule("yage.scene.all");
+
+	explorer.packageExplorer.addModule("yage.scene.camera");
+
+	explorer.packageExplorer.addModule("yage.scene.graph");
+
+	explorer.packageExplorer.addModule("yage.scene.light");
+
+	explorer.packageExplorer.addModule("yage.scene.model");
+
+	explorer.packageExplorer.addModule("yage.scene.movable");
+
+	explorer.packageExplorer.addModule("yage.scene.node");
+
+	explorer.packageExplorer.addModule("yage.scene.scene");
+
+	explorer.packageExplorer.addModule("yage.scene.sound");
+
+	explorer.packageExplorer.addModule("yage.scene.sprite");
+
+	explorer.packageExplorer.addModule("yage.scene.terrain");
+
+	explorer.packageExplorer.addModule("yage.scene.visible");
+
 	explorer.packageExplorer.addModule("yage.system.all");
 
 	explorer.packageExplorer.addModule("yage.system.constant");
@@ -219,6 +345,8 @@
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
+
+	explorer.packageExplorer.addModule("yage.system.rendertarget");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

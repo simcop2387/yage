@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,20 +81,10 @@ enum : GLenum
     GL_POINT_SPRITE_R_MODE_NV         = 0x8863,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLint) pfglPointParameteriNV;
-    typedef void function(GLenum, GLint*) pfglPointParameterivNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLint) pfglPointParameteriNV;
+typedef void function(GLenum, GLint*) pfglPointParameterivNV;
 
 pfglPointParameteriNV       glPointParameteriNV;
 pfglPointParameterivNV      glPointParameterivNV;

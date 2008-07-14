@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,20 +81,10 @@ enum : GLenum
     GL_CULL_VERTEX_OBJECT_POSITION_EXT = 0x81AC,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLdouble*) pfglCullParameterdvEXT;
-    typedef void function(GLenum, GLfloat*) pfglCullParameterfvEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLdouble*) pfglCullParameterdvEXT;
+typedef void function(GLenum, GLfloat*) pfglCullParameterfvEXT;
 
 pfglCullParameterdvEXT      glCullParameterdvEXT;
 pfglCullParameterfvEXT      glCullParameterfvEXT;

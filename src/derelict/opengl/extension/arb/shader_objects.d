@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -188,57 +188,47 @@ enum : GLenum
 alias char GLcharARB;
 alias uint GLhandleARB;
 
-private const char[] Funcs =
-"
-    typedef void function(GLhandleARB) pfglDeleteObjectARB;
-    typedef GLhandleARB function(GLenum) pfglGetHandleARB;
-    typedef void function(GLhandleARB, GLhandleARB) pfglDetachObjectARB;
-    typedef GLhandleARB function(GLenum) pfglCreateShaderObjectARB;
-    typedef void function(GLhandleARB, GLsizei, GLcharARB**, GLint*) pfglShaderSourceARB;
-    typedef void function(GLhandleARB) pfglCompileShaderARB;
-    typedef GLhandleARB function() pfglCreateProgramObjectARB;
-    typedef void function(GLhandleARB, GLhandleARB) pfglAttachObjectARB;
-    typedef void function(GLhandleARB) pfglLinkProgramARB;
-    typedef void function(GLhandleARB) pfglUseProgramObjectARB;
-    typedef void function(GLhandleARB) pfglValidateProgramARB;
-    typedef void function(GLint, GLfloat) pfglUniform1fARB;
-    typedef void function(GLint, GLfloat, GLfloat) pfglUniform2fARB;
-    typedef void function(GLint, GLfloat, GLfloat, GLfloat) pfglUniform3fARB;
-    typedef void function(GLint, GLfloat, GLfloat, GLfloat, GLfloat) pfglUniform4fARB;
-    typedef void function(GLint, GLint) pfglUniform1iARB;
-    typedef void function(GLint, GLint, GLint) pfglUniform2iARB;
-    typedef void function(GLint, GLint, GLint, GLint) pfglUniform3iARB;
-    typedef void function(GLint, GLint, GLint, GLint, GLint) pfglUniform4iARB;
-    typedef void function(GLint, GLsizei, GLfloat*) pfglUniform1fvARB;
-    typedef void function(GLint, GLsizei, GLfloat*) pfglUniform2fvARB;
-    typedef void function(GLint, GLsizei, GLfloat*) pfglUniform3fvARB;
-    typedef void function(GLint, GLsizei, GLfloat*) pfglUniform4fvARB;
-    typedef void function(GLint, GLsizei, GLint*) pfglUniform1ivARB;
-    typedef void function(GLint, GLsizei, GLint*) pfglUniform2ivARB;
-    typedef void function(GLint, GLsizei, GLint*) pfglUniform3ivARB;
-    typedef void function(GLint, GLsizei, GLint*) pfglUniform4ivARB;
-    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix2fvARB;
-    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix3fvARB;
-    typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix4fvARB;
-    typedef void function(GLhandleARB, GLenum, GLfloat*) pfglGetObjectParameterfvARB;
-    typedef void function(GLhandleARB, GLenum, GLint*) pfglGetObjectParameterivARB;
-    typedef void function(GLhandleARB, GLsizei, GLsizei*, GLcharARB*) pfglGetInfoLogARB;
-    typedef void function(GLhandleARB, GLsizei, GLsizei*, GLhandleARB*) pfglGetAttachedObjectsARB;
-    typedef GLint function(GLhandleARB, GLcharARB*) pfglGetUniformLocationARB;
-    typedef void function(GLhandleARB, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLcharARB*) pfglGetActiveUniformARB;
-    typedef void function(GLhandleARB, GLint, GLfloat*) pfglGetUniformfvARB;
-    typedef void function(GLhandleARB, GLint, GLint*) pfglGetUniformivARB;
-    typedef void function(GLhandleARB, GLsizei, GLsizei*, GLcharARB*) pfglGetShaderSourceARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLhandleARB) pfglDeleteObjectARB;
+typedef GLhandleARB function(GLenum) pfglGetHandleARB;
+typedef void function(GLhandleARB, GLhandleARB) pfglDetachObjectARB;
+typedef GLhandleARB function(GLenum) pfglCreateShaderObjectARB;
+typedef void function(GLhandleARB, GLsizei, GLcharARB**, GLint*) pfglShaderSourceARB;
+typedef void function(GLhandleARB) pfglCompileShaderARB;
+typedef GLhandleARB function() pfglCreateProgramObjectARB;
+typedef void function(GLhandleARB, GLhandleARB) pfglAttachObjectARB;
+typedef void function(GLhandleARB) pfglLinkProgramARB;
+typedef void function(GLhandleARB) pfglUseProgramObjectARB;
+typedef void function(GLhandleARB) pfglValidateProgramARB;
+typedef void function(GLint, GLfloat) pfglUniform1fARB;
+typedef void function(GLint, GLfloat, GLfloat) pfglUniform2fARB;
+typedef void function(GLint, GLfloat, GLfloat, GLfloat) pfglUniform3fARB;
+typedef void function(GLint, GLfloat, GLfloat, GLfloat, GLfloat) pfglUniform4fARB;
+typedef void function(GLint, GLint) pfglUniform1iARB;
+typedef void function(GLint, GLint, GLint) pfglUniform2iARB;
+typedef void function(GLint, GLint, GLint, GLint) pfglUniform3iARB;
+typedef void function(GLint, GLint, GLint, GLint, GLint) pfglUniform4iARB;
+typedef void function(GLint, GLsizei, GLfloat*) pfglUniform1fvARB;
+typedef void function(GLint, GLsizei, GLfloat*) pfglUniform2fvARB;
+typedef void function(GLint, GLsizei, GLfloat*) pfglUniform3fvARB;
+typedef void function(GLint, GLsizei, GLfloat*) pfglUniform4fvARB;
+typedef void function(GLint, GLsizei, GLint*) pfglUniform1ivARB;
+typedef void function(GLint, GLsizei, GLint*) pfglUniform2ivARB;
+typedef void function(GLint, GLsizei, GLint*) pfglUniform3ivARB;
+typedef void function(GLint, GLsizei, GLint*) pfglUniform4ivARB;
+typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix2fvARB;
+typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix3fvARB;
+typedef void function(GLint, GLsizei, GLboolean, GLfloat*) pfglUniformMatrix4fvARB;
+typedef void function(GLhandleARB, GLenum, GLfloat*) pfglGetObjectParameterfvARB;
+typedef void function(GLhandleARB, GLenum, GLint*) pfglGetObjectParameterivARB;
+typedef void function(GLhandleARB, GLsizei, GLsizei*, GLcharARB*) pfglGetInfoLogARB;
+typedef void function(GLhandleARB, GLsizei, GLsizei*, GLhandleARB*) pfglGetAttachedObjectsARB;
+typedef GLint function(GLhandleARB, GLcharARB*) pfglGetUniformLocationARB;
+typedef void function(GLhandleARB, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLcharARB*) pfglGetActiveUniformARB;
+typedef void function(GLhandleARB, GLint, GLfloat*) pfglGetUniformfvARB;
+typedef void function(GLhandleARB, GLint, GLint*) pfglGetUniformivARB;
+typedef void function(GLhandleARB, GLsizei, GLsizei*, GLcharARB*) pfglGetShaderSourceARB;
 
 pfglDeleteObjectARB                     glDeleteObjectARB;
 pfglGetHandleARB                        glGetHandleARB;

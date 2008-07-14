@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,23 +92,13 @@ enum : GLenum
     GL_FOG_COORDINATE_ARRAY_EXT            = 0x8457,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLfloat) pfglFogCoordfEXT;
-    typedef void function(GLfloat*) pfglFogCoordfvEXT;
-    typedef void function(GLdouble) pfglFogCoorddEXT;
-    typedef void function(GLdouble*) pfglFogCoorddvEXT;
-    typedef void function(GLenum, GLsizei, GLvoid*) pfglFogCoordPointerEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLfloat) pfglFogCoordfEXT;
+typedef void function(GLfloat*) pfglFogCoordfvEXT;
+typedef void function(GLdouble) pfglFogCoorddEXT;
+typedef void function(GLdouble*) pfglFogCoorddvEXT;
+typedef void function(GLenum, GLsizei, GLvoid*) pfglFogCoordPointerEXT;
 
 pfglFogCoordfEXT            glFogCoordfEXT;
 pfglFogCoordfvEXT           glFogCoordfvEXT;

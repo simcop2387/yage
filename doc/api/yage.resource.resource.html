@@ -305,7 +305,7 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 <dt><span class="decl">static Texture 
 <span class="currsymbol">texture</span>
 <script type="text/javascript">explorer.outline.addDecl('texture');</script>
-(char[] <span class="funcparam">source</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true);
+(char[] <span class="funcparam">source</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 11);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -313,10 +313,9 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
   If a 
 <span class="currsymbol">texture</span>
 <script type="text/javascript">explorer.outline.addDecl('texture');</script>
- with the given properties already been loaded, the in-memory
-  copy will be returned.  If not, it will be loaded, uploaded to video memory,
-  and stored in the resource pool.  This function is called automatically
-  for each of a material's textures when loading a material.
+ with the given properties already been loaded, the in-memory copy will be returned.
+  If not, it will be loaded, uploaded to video memory, and stored in the resource pool.
+  This function is called automatically for each of a material's textures when loading a material.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
@@ -413,7 +412,7 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Mon May 26 22:21:35 2008
+		on Sun Jul 13 22:15:40 2008
 
 	</div>
 	
@@ -444,6 +443,8 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 
 	explorer.packageExplorer.addModule("yage.core.timer");
 
+	explorer.packageExplorer.addModule("yage.core.tree");
+
 	explorer.packageExplorer.addModule("yage.core.types");
 
 	explorer.packageExplorer.addModule("yage.core.vector");
@@ -456,31 +457,11 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
-	explorer.packageExplorer.addModule("yage.node.all");
-
-	explorer.packageExplorer.addModule("yage.node.camera");
-
-	explorer.packageExplorer.addModule("yage.node.graph");
-
-	explorer.packageExplorer.addModule("yage.node.light");
-
-	explorer.packageExplorer.addModule("yage.node.model");
-
-	explorer.packageExplorer.addModule("yage.node.movable");
-
-	explorer.packageExplorer.addModule("yage.node.node");
-
-	explorer.packageExplorer.addModule("yage.node.scene");
-
-	explorer.packageExplorer.addModule("yage.node.sound");
-
-	explorer.packageExplorer.addModule("yage.node.sprite");
-
-	explorer.packageExplorer.addModule("yage.node.terrain");
-
-	explorer.packageExplorer.addModule("yage.node.visible");
-
 	explorer.packageExplorer.addModule("yage.resource.all");
+
+	explorer.packageExplorer.addModule("yage.resource.exception");
+
+	explorer.packageExplorer.addModule("yage.resource.font");
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
@@ -504,6 +485,30 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 
 	explorer.packageExplorer.addModule("yage.resource.texture");
 
+	explorer.packageExplorer.addModule("yage.scene.all");
+
+	explorer.packageExplorer.addModule("yage.scene.camera");
+
+	explorer.packageExplorer.addModule("yage.scene.graph");
+
+	explorer.packageExplorer.addModule("yage.scene.light");
+
+	explorer.packageExplorer.addModule("yage.scene.model");
+
+	explorer.packageExplorer.addModule("yage.scene.movable");
+
+	explorer.packageExplorer.addModule("yage.scene.node");
+
+	explorer.packageExplorer.addModule("yage.scene.scene");
+
+	explorer.packageExplorer.addModule("yage.scene.sound");
+
+	explorer.packageExplorer.addModule("yage.scene.sprite");
+
+	explorer.packageExplorer.addModule("yage.scene.terrain");
+
+	explorer.packageExplorer.addModule("yage.scene.visible");
+
 	explorer.packageExplorer.addModule("yage.system.all");
 
 	explorer.packageExplorer.addModule("yage.system.constant");
@@ -515,6 +520,8 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 	explorer.packageExplorer.addModule("yage.system.log");
 
 	explorer.packageExplorer.addModule("yage.system.render");
+
+	explorer.packageExplorer.addModule("yage.system.rendertarget");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 

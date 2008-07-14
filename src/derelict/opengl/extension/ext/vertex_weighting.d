@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,21 +93,11 @@ enum : GLenum
     GL_VERTEX_WEIGHT_ARRAY_POINTER_EXT  = 0x8510,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLfloat) pfglVertexWeightfEXT;
-    typedef void function(GLfloat*) pfglVertexWeightfvEXT;
-    typedef void function(GLsizei,GLenum,GLsizei,GLvoid*) pfglVertexWeightPointerEXT;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLfloat) pfglVertexWeightfEXT;
+typedef void function(GLfloat*) pfglVertexWeightfvEXT;
+typedef void function(GLsizei,GLenum,GLsizei,GLvoid*) pfglVertexWeightPointerEXT;
 
 pfglVertexWeightfEXT        glVertexWeightfEXT;
 pfglVertexWeightfvEXT       glVertexWeightfvEXT;

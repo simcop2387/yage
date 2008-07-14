@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,34 +101,24 @@ else
     }
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLdouble, GLdouble) pfglWindowPos2dARB;
-    typedef void function(GLdouble*) pfglWindowPos2dvARB;
-    typedef void function(GLfloat, GLfloat) pfglWindowPos2fARB;
-    typedef void function(GLfloat*) pfglWindowPos2fvARB;
-    typedef void function(GLint, GLint) pfglWindowPost2iARB;
-    typedef void function(GLint*) pfglWindowPos2ivARB;
-    typedef void function(GLshort, GLshort) pfglWindowPos2sARB;
-    typedef void function(GLshort*) pfglWindowPos2svARB;
-    typedef void function(GLdouble, GLdouble, GLdouble) pfglWindowPos3dARB;
-    typedef void function(GLdouble*) pfglWindowPos3dvARB;
-    typedef void function(GLfloat, GLfloat, GLfloat) pfglWindowPos3fARB;
-    typedef void function(GLfloat*) pfglWindowPos3fvARB;
-    typedef void function(GLint, GLint, GLint) pfglWindowPos3iARB;
-    typedef void function(GLint*) pfglWindowPos3ivARB;
-    typedef void function(GLshort, GLshort, GLshort) pfglWindowPos3sARB;
-    typedef void function(GLshort*) pfglWindowPos3svARB;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLdouble, GLdouble) pfglWindowPos2dARB;
+typedef void function(GLdouble*) pfglWindowPos2dvARB;
+typedef void function(GLfloat, GLfloat) pfglWindowPos2fARB;
+typedef void function(GLfloat*) pfglWindowPos2fvARB;
+typedef void function(GLint, GLint) pfglWindowPost2iARB;
+typedef void function(GLint*) pfglWindowPos2ivARB;
+typedef void function(GLshort, GLshort) pfglWindowPos2sARB;
+typedef void function(GLshort*) pfglWindowPos2svARB;
+typedef void function(GLdouble, GLdouble, GLdouble) pfglWindowPos3dARB;
+typedef void function(GLdouble*) pfglWindowPos3dvARB;
+typedef void function(GLfloat, GLfloat, GLfloat) pfglWindowPos3fARB;
+typedef void function(GLfloat*) pfglWindowPos3fvARB;
+typedef void function(GLint, GLint, GLint) pfglWindowPos3iARB;
+typedef void function(GLint*) pfglWindowPos3ivARB;
+typedef void function(GLshort, GLshort, GLshort) pfglWindowPos3sARB;
+typedef void function(GLshort*) pfglWindowPos3svARB;
 
 pfglWindowPos2dARB          glWindowPos2dARB;
 pfglWindowPos2dvARB         glWindowPos2dvARB;

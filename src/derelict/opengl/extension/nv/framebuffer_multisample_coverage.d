@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2007 Derelict Developers
+ * Copyright (c) 2004-2008 Derelict Developers
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,18 +82,8 @@ enum : GLenum
     GL_MULTISAMPLE_COVERAGE_MODES_NV           = 0x8E13,
 }
 
-private const char[] Funcs =
-"
-    typedef void function(GLenum, GLsizei, GLsizei, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageMultsampleCoverageNV;
-";
+extern(System):
 
-version(Windows)
-{
-    extern(Windows): mixin(Funcs);
-}
-else
-{
-    extern(C): mixin(Funcs);
-}
+typedef void function(GLenum, GLsizei, GLsizei, GLenum, GLsizei, GLsizei) pfglRenderbufferStorageMultsampleCoverageNV;
 
 pfglRenderbufferStorageMultsampleCoverageNV     glRenderbufferStorageMultsampleCoverageNV;
