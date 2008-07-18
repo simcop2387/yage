@@ -14,6 +14,7 @@ enum {
 	DEVICE_NON_2_TEXTURE,		/// Hardware support for textures of arbitrary size
 	DEVICE_SHADER,				/// Hardware support for openGl vertex and fragment shaders
 	DEVICE_VBO,					/// Hardware support for caching vertex data in video memory (Vertex Buffer Object)
+	DEVICE_BLEND_COLOR,
 
 	DEVICE_MAX_LIGHTS,			/// Maximum number of lights that can be used at one time
 	DEVICE_MAX_TEXTURE_SIZE,	/// Maximum allowed size for a texture

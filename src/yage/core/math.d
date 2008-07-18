@@ -9,6 +9,7 @@ module yage.core.math;
 
 import std.math;
 import std.random;
+import std.intrinsic;
 
 public const float PI_180 = 0.01745329251994;	// PI / 180
 public const float _180_PI = 57.2957795130823; // 180 / pi

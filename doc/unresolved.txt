@@ -21,8 +21,6 @@ How do I enable key repeating?  SDL_EnableKeyRepeat doesn't seem to work.
 Quaternion bug when rotating around exactly 360 degrees on a single axis?
 fixed?
 
-Dmd has trouble compiling incrementally with -O
-
 There is jumpiness in the rendering.  Every 10th or so frame takes almost exactly twice as long to render
 than others, when rendering the same thing.  Especially noticable when rendering lots of models
 The issue is in my timing code.  Lots of time spent in opengl functions makes

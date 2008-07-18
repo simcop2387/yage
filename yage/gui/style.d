@@ -9,6 +9,7 @@ import std.stdio;
 import std.conv;
 import yage.core.color;
 import yage.core.vector;
+import yage.resource.font;
 import yage.resource.resource;
 import yage.resource.material;
 import yage.resource.texture;
@@ -153,11 +154,11 @@ struct Style
 		Edge!(2, Unit) sizeUnits;
 	}
 	// Font
-	//Font  fontFamily;
-	//float fontSize;
-	//byte fontSizeUnit;
+	Font fontFamily;
+	float fontSize = 12;
+	Unit fontSizeUnit = Style.PX;
 	//float fontWeight;
-	//Color color;
+	Color color;
 		
 	// Padding
 	//float paddingTop, paddingRight, paddingBottom, paddingLeft;
@@ -241,6 +242,8 @@ struct Style
 			
 			switch (property)
 			{	/// TODO: Lots more properties
+				case "color":				color = Color(tokens[1]); break;
+			
 				case "backgroundcolor":		backgroundColor = Color(tokens[1]); break;
 				case "backgroundrepeat":	backgroundRepeat = translate[tokens[1]]; break;
 				case "backgroundmaterial":	backgroundMaterial = Resource.texture(removeUrl(tokens[1])).texture; break;

@@ -171,6 +171,8 @@ struct Texture
 		// Blend
 		if (blend != BLEND_MULTIPLY)
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	///
@@ -204,8 +206,12 @@ class GPUTexture
 	///
 	this()
 	{	glGenTextures(1, &gl_index);
-		Texture(this).bind();
-		Texture(this).unbind();
+	
+		// For some reason these need to be called or everything runs slowly.
+		glBindTexture(GL_TEXTURE_2D, gl_index);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	/**
@@ -295,6 +301,8 @@ class GPUTexture
 		}
 
 	    // Upload image
+		// TODO: Use image's built in resizer instead of glu.
+		// glu has resizing issues with non power of two source textures.
 	    if (mipmap)
 	    {	//writefln(GL_TEXTURE_2D, " ", glinternalformat, " ", image.getWidth(), " ", image.getHeight(), " ", glformat, " ", GL_UNSIGNED_BYTE, " ", image.getData().length);
 			gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
@@ -315,7 +323,8 @@ class GPUTexture
 			}
 
 			// Resize if necessary
-			image = image.resize(min(newwidth, max), min(newheight, max));			
+			if (newwidth != width || newheight != height)
+				image = image.resize(min(newwidth, max), min(newheight, max));			
 			glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
 
 	    }

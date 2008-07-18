@@ -16,7 +16,8 @@ import derelict.sdl.image;
  * Currently supports grayscale, RGB, and RGBA image data.
  * Bugs:
  * An RGB image will often be returned when loading grayscale images.  Use setFormat(IMAGE_FORMAT_GRAYSCALE) to correct this.
- * The load and resize functions seem to have images with widths that aren't a multiple of 4.*/
+ * 
+ * TODO: Add convolution support: http://www.php.net/manual/en/function.imageconvolution.php#77818 */
 class Image
 {
 	// Types
@@ -42,19 +43,35 @@ class Image
 	}	
 
 	/**
+	 * Create a new emtpy image.
+	 * Params:
+	 *     channels = number of color channels.
+	 *     width = width in pixels
+	 *     height = height in pixel */
+	this(int channels, int width, int height)
+	{	data.length = channels*width*height;
+		this.channels = channels;
+		this.width = width;
+		this.height = height;
+	}
+	
+	/**
 	 * Construct from image data in memory.  This does not create a copy of the data.
 	 * Params:
-	 * image = array of raw image data
-	 * width = width in pixels
-	 * height = height in pixels, if 0 it is auto-calculated from width, channels, and data's length.*/	
+	 *     image = array of raw image data
+	 *     channels = number of color channels.
+	 *     width = width in pixels
+	 *     height = height in pixels, if 0 it is auto-calculated from width, channels, and data's length.*/	
 	this(ubyte[] data, int channels, int width, int height=0)
 	{	this.data = data;
 		this.channels = channels;
 		this.width = width;
 		if (height)
 			this.height = height;
-		else
+		else if (width && channels)
 			this.height = data.length / (width*channels);
+		else
+			this.height = 0;
 	}
 	
 	/**
@@ -186,16 +203,42 @@ class Image
 	in { assert(x<width && y<height); }
 	body
 	{	int i = (y*width+x)*channels;
-		//std.stdio.writefln(i, "..", i+channels);
 		return data[i..(i+channels)];
 	}
 	ubyte[] opIndexAssign(ubyte[] val, size_t x, size_t y)	/// ditto
 	in { assert(x<width && y<height); }
 	body
-	{	int i = (y*width*+x)*channels;
+	{	int i = (y*width+x)*channels;
 		return data[i..(i+channels)] = val[0..channels];
 	}
 
+	/**
+	 * Paste another image on top of this one.
+	 * This does not make a copy. */
+	void overlay(Image img, int xoffset=0, int yoffset=0)
+	{
+		for (int x=0; x<img.width; x++)
+		{	int xoffsetx = xoffset + x;
+			if (xoffsetx < width && xoffsetx > 0)
+			{	for (int y=0; y<img.height; y++)
+				{	int yoffsety = yoffset+y;
+					if (yoffsety < height && yoffsety > 0)
+						this[xoffsetx, yoffsety][0..channels] = img[x, y][0..channels]; // TODO: convert format
+		}	}	}
+	}
+	
+	void overlayAndFlip(Image img, int xoffset=0, int yoffset=0)
+	{
+		for (int x=0; x<img.width; x++)
+		{	int xoffsetx = xoffset + x;
+			if (xoffsetx < width && xoffsetx > 0)
+			{	for (int y=0; y<img.height; y++)
+				{	int yoffsety = yoffset+y;
+					if (yoffsety < height && yoffsety > 0)
+						this[xoffsetx, yoffsety][0..channels] = img[x, img.height-y-1][0..channels];
+		}	}	}
+	}
+	
 	/**
 	 * Return a c-style pointer to the image data.
 	 * The length of the array is always width*height*channels. */
@@ -209,17 +252,23 @@ class Image
 	 * Params:
 	 *     width = The new width.
 	 *     height = The new height.  If 0, height will be calculated automatically with aspect ratio maintained.
-	 * Returns: A new image of the same type.*/
+	 * Returns: A new image of the same type and of the new size, or an exact copy if the dimensions are the same. */
 	Image resize(int width, int height=0)
 	{	Image result = new Image();
 		result.width = width;
 		if (height)
 			result.height = height;
 		else
-			result.height = width*this.height/this.width;
+			result.height = width*this.height/this.width;		
 		result.channels = channels;
-		result.data.length = width*height*channels;
 		
+		// Return a copy if there's nothing to resize.
+		if (result.width == this.width && result.height == this.height)
+		{	result.data = this.data.dup;
+			return this;
+		}
+		
+		result.data.length = width*height*channels;
 		float width1 = 1/(width-1.0f);
 		float height1= 1/(height-1.0f);		
 		
@@ -234,19 +283,23 @@ class Image
 	} 
 
 	// TODO: modify this to return a new image in the given format.
-	void setFormat(int channels)
+	Image setFormat(int channels)
 	{	if (channels == this.channels)
-			return;
+			return this;
 
-		ubyte[] result;
+		Image result = new Image(channels, width, height);
 	
 		switch (channels)
 		{
 			case 1:
 				// Set each pixel to the average of RGB, dropping alpha if present
-				for (int i=0; i<data.length-2; i+=channels)
-					data[i/channels] = cast(ubyte)((data[i] + data[i+1] + data[i+2]) / 3);
-				data.length = width*height;
+				for (int i=0; i<data.length-this.channels-1; i+=this.channels)
+				{	int sum=0;
+					for (int j=0; j<this.channels; j++)
+						sum += data[i+j];
+					result.data[i/this.channels] = cast(ubyte)(sum / this.channels);
+				}
+				this = result;
 				break;
 			case 3:
 				// Copy gray channel into RGB
@@ -276,6 +329,8 @@ class Image
 	
 		}
 		this.channels = channels;
+		
+		return this;
 	}
 	/**
 	 * Return a new image that is a sub-image of this image.

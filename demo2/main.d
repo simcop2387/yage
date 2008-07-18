@@ -101,7 +101,7 @@ int main()
 
 	
 	
-	// Create
+	// Create some windows
 	void onMouseDown2(Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
 		self.focus();
@@ -121,22 +121,27 @@ int main()
 	}
 
 	auto window1 = new Surface(view);	
-	window1.style.set("top: 5%; right: 3%; width: 160; height: 120; background-position: 5px 5px; " ~ 
+	window1.style.set("top: 0; right: 0; width: 400; height: 60; background-position: 5px 5px; " ~ 
 		"background-repeat: nineslice; background-material: url('gui/skin/clear2.png')");
 	window1.onMouseDown = &onMouseDown2;
 	window1.onMouseMove = &onMouseMove2;
 	window1.onMouseUp = &onMouseUp2;
-	window1.onMouseOver = &onMouseOver;
-	window1.onMouseOut = &onMouseOut;
+	//window1.onMouseOver = &onMouseOver;
+	//window1.onMouseOut = &onMouseOut;
 	
 	auto window2 = new Surface(window1);
-	window2.style.set("top: 10; right: 10; width: 50; height: 30; background-position: 5px 5px; " ~ 
+	window2.style.set("top: 30; right: 0; width: 50; height: 30; background-position: 5px 5px; " ~ 
 		"background-repeat: nineslice; background-material: url('gui/skin/clear2.png')");
 	window2.onMouseDown = &onMouseDown2;
 	window2.onMouseMove = &onMouseMove2;
 	window2.onMouseUp = &onMouseUp2;
 	window2.onMouseOver = &onMouseOver;
 	window2.onMouseOut = &onMouseOut;
+	
+
+	window1.style.fontFamily = Resource.font("gui/font/Vera.ttf");
+	window1.style.fontSize = 12;
+	window1.style.color = Color("black");
 
 	// Music
 	auto music = new SoundNode(camera);
@@ -189,10 +194,10 @@ int main()
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)
-		{	char[] caption = formatString("Yage Test (%.2f fps) (%d objects, %d polygons, %d vertices rendered)\0",
+		{	char[] caption = formatString("(%.2f fps) (%d objects, %d polygons, %d vertices)",
 				fps/frame.get(), camera.getNodeCount(), camera.getPolyCount(), camera.getVertexCount());
-			SDL_WM_SetCaption(caption.ptr, null);
-			//delete caption;
+			SDL_WM_SetCaption((caption ~"\0").ptr, null);
+			window1.text = caption;
 			frame.reset();
 			fps = 0;
 		}

@@ -122,29 +122,40 @@ struct Vec(int S, T)
 	}
 
 
-	/// Allow for linnear additions and subtractions among Vectors of the same size and type.
+	/// Allow for linear additions, subtractions, multiplcations, and divisions among Vectors of the same size and type.
 	VST opAdd(VST s)
 	{	VST res;
 		for (int i=0; i<v.length; i++)
 			res.v[i] = v[i]+s.v[i];
 		return res;
 	}
-	/// Ditto
+	/// ditto
 	void opAddAssign(VST s)
 	{	for (int i=0; i<v.length; i++)
 			v[i] += s.v[i];
 	}	
-	/// Ditto
+	/// ditto
 	VST opSub(VST s)
 	{	VST res;
 		for (int i=0; i<v.length; i++)
 			res.v[i] = v[i]-s.v[i];
 		return res;
 	}
-	/// Ditto
+	/// ditto
 	void opSubAssign(VST s)
 	{	for (int i=0; i<v.length; i++)
 			v[i] -= s.v[i];
+	}
+	
+	/// Allow for additions, subtractions, multiplcations, and divisions where a scalar is applied to each vector component.
+	void opMulAssign(float s)
+	{	for (int i=0; i<v.length; i++)
+			v[i] += s;
+	}
+	/// ditto
+	void opDivAssign(float s)
+	{	for (int i=0; i<v.length; i++)
+			v[i] /= s;
 	}
 	
 	/// Allow casting to float where appropriate

@@ -40,6 +40,7 @@ extern(C) {
  * checking OpenGL extensions, and other utility and lower level tasks.*/
 abstract class Device
 {
+	
 	// Video
 	protected static SDL_Surface* sdl_surface; // Holds a reference to the main (and only) SDL surface
 
@@ -152,6 +153,14 @@ abstract class Device
 			Log.write("GL_ARB_vertex_buffer_object support enabled.");
 		}else
 			Log.write("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
+		
+		// Attempt to load blend color extension
+		if (getSupport(DEVICE_BLEND_COLOR))
+		{	if (!EXTBlendColor.load("GL_EXT_blend_color"))
+				throw new Exception("GL_EXT_blend_color extension detected but it could not be loaded.");
+			Log.write("GL_EXT_blend_color support enabled.");
+		}else
+			Log.write("GL_EXT_blend_color not supported.  This is still ok.");
 
 		// OpenGL options
 		// These are the engine defaults.  Any function that
@@ -225,8 +234,8 @@ abstract class Device
 	 * Searches to see if the given extension is supported in hardware.*/
 	static bool checkExtension(char[] name)
 	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
-	    int result = find(toupper(exts), toupper(name)~" ");
-	    delete exts;
+	    int result = find(tolower(exts), tolower(name)~" "); 
+	    delete exts; // [above] append space to ensure we're not matching part of another extension.
 		if (result>=0)
 			return true;
 	    return false;
@@ -272,7 +281,7 @@ abstract class Device
 	 * Params: constant is a DEVICE_* constant defined in yage.device.constant.*/
 	static bool getSupport(int constant)
 	{	//return false;
-		static int shader=-1, vbo=-1, mt=-1, np2=-1;	// so support only has to be found once
+		static int shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1;	// so lookup only has to occur once.
 		switch (constant)
 		{	case DEVICE_SHADER:
 				version(linux)		// Shaders often fail on linux due to poor driver support!  :(
@@ -293,6 +302,10 @@ abstract class Device
 				if (np2==-1)
 					np2 = checkExtension("GL_ARB_texture_non_power_of_two");
 				return cast(bool)np2;
+			case DEVICE_BLEND_COLOR:
+				if (bc==-1)
+					bc = checkExtension("GL_EXT_blend_color");
+				return cast(bool)bc;
 			default:
 				throw new Exception("Unknown Device.getSupport() constant: '" ~
 									.toString(constant) ~ "'.");

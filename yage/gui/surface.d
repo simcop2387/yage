@@ -12,11 +12,13 @@ import derelict.opengl.gl;
 import derelict.sdl.sdl;
 import derelict.opengl.glext;
 import derelict.opengl.glu;
+import derelict.opengl.extension.ext.blend_color; // opengl 1.2
 import yage.core.all;
 import yage.system.device;
 import yage.system.constant;
 import yage.system.input;
 import yage.resource.texture;
+import yage.resource.image;
 import yage.gui.style;
 import yage.system.rendertarget;
 
@@ -32,17 +34,21 @@ const float third = 1.0/3.0;
 class Surface : Tree!(Surface)
 {
 	static final Style defaultStyle;
-	Style style;	
+	Style style;
+	char[] text;
+	Image textImage;
+	Texture textTexture;
 	
 	// internal values
 	Vec2f topLeft;		// pixel distance of the topleft corner from parent's top left
 	Vec2f bottomRight;	// pixel distance of the bottom right corner from parent's top left
 	Vec2f offset;		// pixel distance of top left from the window's top left at 0, 0
 	
-	bool mouseIn; // is this used?
+	bool mouseIn; // used to track mouseover/mouseout
 	
 	protected Style old_style; // Used for comparison to see if dirty.
 	protected Surface old_parent;
+	protected char[] old_text;
 	
 	protected float[72] vertices = 0; // Used for rendering
 	protected float[72] tex_coords = 0;
@@ -93,7 +99,8 @@ class Surface : Tree!(Surface)
 
 
 	/**
-	 * Recalculate all properties of this Surface based on its style.*/
+	 * Recalculate all properties of this Surface based on its style.
+	 * TODO: Ensure vertex and tex coord assignments are 100% on the stack (see array literals).*/
 	void calculate()
 	{			
 		// Calculate real values from percents
@@ -184,7 +191,7 @@ class Surface : Tree!(Surface)
 					float w = this.width();
 					float h = this.height();
 					vertices[0..8] = [0.0f, h, w, h, w, 0, 0, 0];
-					tex_coords[0..8] = [0.0f, 0, portion.x, 0, portion.x, portion.y, 0, portion.y];						
+					tex_coords[0..8] = [0.0f, 0, portion.x, 0, portion.x, portion.y, 0, portion.y];
 					break;
 				case Style.NINESLICE:
 					
@@ -200,7 +207,6 @@ class Surface : Tree!(Surface)
 					// |	^
 					// V	|
 					// 1<---2
-					// TODO: Use same array for both using glScalef, once portion becomes unnecessary.
 					// TODO: Ensure this operation is 100% on the stack.
 					vertices[0..72] = [
 						0.0f, 0, 0, vert1.y, vert1.x, vert1.y, vert1.x, 0,						// top left
@@ -280,7 +286,7 @@ class Surface : Tree!(Surface)
 		glDisable(GL_LIGHTING);		
 		
 		glEnable(GL_BLEND);
- 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			
 		//This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -296,48 +302,117 @@ class Surface : Tree!(Surface)
 		//	rt.unbind();
 	}
 	
+	
+	
 	void draw()
 	{
-		if(style.visible)
+		void drawQuad(int style)
+		{	switch(style)
+			{	case Style.NONE:
+		
+				case Style.STRETCH:
+					glDrawArrays(GL_QUADS, 0, 4);
+					break;
+				case Style.NINESLICE:
+					glDrawArrays(GL_QUADS, 0, 36);
+					break;
+				default:
+					throw new Exception("Not a valid fill type");
+					break;	
+			}
+		}
+		
+		
+		if (style.visible)
 		{
-			if (dirty)
+			// Update positions
+			if (dirty())
 				calculate();
 			
-			
+			// Update Text
+			// Todo: check style font properties for changes also.
+			if (style.fontFamily && text != old_text)
+			{	Timer a = new Timer();
+				textImage = style.fontFamily.render(text, cast(int)style.fontSize, cast(int)style.fontSize, -1, -1, true);
+				writefln(a, textImage.getWidth(), textImage.getHeight());
+				a.reset();
+				if (textTexture.texture)
+					delete textTexture.texture;
 				
+				writefln(a);
+				a.reset();
+				textTexture = Texture(new GPUTexture(textImage, false, false), true, TEXTURE_FILTER_BILINEAR);
+				
+				writefln(a);
+				
+				old_text = text;
+			}
+			
+			// Translate to the topleft corner of this 
 			glPushMatrix();
 			glTranslatef(topLeft.x, topLeft.y, 0);
-			glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
-			glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);	
 			
-			void draw2()
-			{	switch(style.backgroundRepeat)
-				{	case Style.STRETCH:
-						glDrawArrays(GL_QUADS, 0, 4);						
-						break;
-					case Style.NINESLICE:
-						glDrawArrays(GL_QUADS, 0, 36);
-						break;
-					default:
-						throw new Exception("Not a valid fill type");
-						break;	
-				}
-			}
-			
+			// Draw background color
 			if (style.backgroundColor.a > 0) // If backgroundColor alpha.
 			{	glColor4ubv(style.backgroundColor.ub.ptr);
-				draw2();
-				glColor4ubv(Color(0xFFFFFFFF).ub.ptr);				
+				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
+				drawQuad(Style.STRETCH);
+				glColor4f(1, 1, 1, 1);
 			}
 			
+			// Draw background material
 			if (style.backgroundMaterial !is null)
 			{	glEnable(GL_TEXTURE_2D);
-				Texture(style.backgroundMaterial, true, TEXTURE_FILTER_BILINEAR).bind();
-				draw2();
-				glDisable(GL_TEXTURE_2D);
-				Texture(style.backgroundMaterial, true, TEXTURE_FILTER_BILINEAR).unbind();
+				Texture tex = Texture(style.backgroundMaterial, true, TEXTURE_FILTER_BILINEAR);
+				tex.bind();
+				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
+				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
+				drawQuad(style.backgroundRepeat);				
+				tex.unbind();
 			}
 			
+			// Draw Text
+			if (textTexture.texture)
+			{					
+				float ws = textImage.getWidth();
+				float hs = textImage.getHeight();				
+				float[8] vertices = [0.0f, hs, ws, hs, ws, 0, 0, 0];
+				float[8] tex_coords=[0.0f, 1, 1, 1, 1, 0, 0, 0];
+				
+				// Apply States
+				glEnable(GL_TEXTURE_2D);
+				textTexture.bind();
+				
+				glPushMatrix();
+				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
+				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
+				
+				// This extension is available as of OpenGL 1.1 or 1.2 and allows drawing text in a single pass.
+				if (Device.getSupport(DEVICE_BLEND_COLOR))
+				{	
+					// Apply states
+					Vec4f color = style.color.vec4f;	
+					glBlendFunc(GL_CONSTANT_COLOR_EXT, GL_ONE_MINUS_SRC_COLOR);
+					glBlendColorEXT(color.r, color.g, color.b, 1);
+					glColor3f(color.a, color.a, color.a);
+				
+					glDrawArrays(GL_QUADS, 0, 4);
+					
+					// Revert states
+					glColor4f(1, 1, 1, 1);
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // reset blend function
+				} else
+				{
+					/// TODO: see http://dsource.org/projects/arclib/browser/trunk/arclib/freetype/freetype/font.d
+				}
+				
+				// Revert States
+				glPopMatrix();
+				textTexture.unbind();
+			}			
+			
+			glDisable(GL_TEXTURE_2D);
+				
 			// Using a zbuffer might make this unecessary.  tradeoffs?
 			if (!children.sorted(true, (Surface s){return s.style.zIndex;} ))
 				children.radixSort(true, (Surface s){return s.style.zIndex;} );

@@ -10,6 +10,7 @@ import std.path;
 import std.stdio;
 import yage.core.array;
 import yage.core.misc;
+import yage.resource.font;
 import yage.resource.model;
 import yage.resource.material;
 import yage.resource.texture;
@@ -31,6 +32,7 @@ abstract class Resource
 {
 	static char[][] paths = [""];		// paths to look for resources
 
+	private static Font[char[]]		fonts;
 	private static GPUTexture[char[]][2][2]  textures; // [source][clamped][compressed][mipmapped][filter]
 	private static Shader[char[]]	shaders;
 	private static Material[char[]] materials;
@@ -118,12 +120,27 @@ abstract class Resource
 	{	return sounds;
 	}
 
-	/** Acquire and return the given Model.
-	 *  If it has already been loaded, the in-memory copy will be returned.
-	 *  If not, it will be loaded and uploaded to video memory.
-	 *  All associated Materials, Textures, and Shaders will be loaded into
-	 *  the resource pool as well.
-	 *  Params: source = The 3D Model file that will be loaded. */
+	/** 
+	 * Acquire and return the given Font.
+	 * If it has already been loaded, the in-memory copy will be returned.
+	 * If not, it will be loaded and then returned.
+	 * Params: source = The Font file that will be loaded. */
+	static Font font(char[] source)
+	{	if (source in fonts)
+			return fonts[source];
+		Timer t = new Timer();
+		fonts[source] = new Font(source);
+		Log.write(Log.RESOURCE, "Resource ", source ~ " loaded in ", t, " seconds.");
+		return fonts[source];
+	}
+	
+	/** 
+	 * Acquire and return the given Model.
+	 * If it has already been loaded, the in-memory copy will be returned.
+	 * If not, it will be loaded and uploaded to video memory.
+	 * All associated Materials, Textures, and Shaders will be loaded into
+	 * the resource pool as well.
+	 * Params: source = The 3D Model file that will be loaded. */
 	static Model model(char[] source)
 	{	if (source in models)
 			return models[source];
