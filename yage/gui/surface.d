@@ -332,20 +332,13 @@ class Surface : Tree!(Surface)
 			// Update Text
 			// Todo: check style font properties for changes also.
 			if (style.fontFamily && text != old_text)
-			{	Timer a = new Timer();
-				textImage = style.fontFamily.render(text, cast(int)style.fontSize, cast(int)style.fontSize, -1, -1, true);
-				writefln(a, textImage.getWidth(), textImage.getHeight());
-				a.reset();
-				if (textTexture.texture)
-					delete textTexture.texture;
-				
-				writefln(a);
-				a.reset();
-				textTexture = Texture(new GPUTexture(textImage, false, false), true, TEXTURE_FILTER_BILINEAR);
-				
-				writefln(a);
-				
+			{	textImage = style.fontFamily.render(text, cast(int)style.fontSize, cast(int)style.fontSize, -1, -1, true);
+				if (!textTexture.texture)
+					textTexture = Texture(new GPUTexture(textImage, false, false), true, TEXTURE_FILTER_BILINEAR);
+				else
+					textTexture.texture.upload(textImage, false, false);
 				old_text = text;
+				
 			}
 			
 			// Translate to the topleft corner of this 

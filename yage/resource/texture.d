@@ -304,10 +304,8 @@ class GPUTexture
 		// TODO: Use image's built in resizer instead of glu.
 		// glu has resizing issues with non power of two source textures.
 	    if (mipmap)
-	    {	//writefln(GL_TEXTURE_2D, " ", glinternalformat, " ", image.getWidth(), " ", image.getHeight(), " ", glformat, " ", GL_UNSIGNED_BYTE, " ", image.getData().length);
-			gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
-	    }
-		else
+	    	gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
+	    else
 		{
 			uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
 			uint newwidth = image.getWidth();
@@ -324,10 +322,9 @@ class GPUTexture
 
 			// Resize if necessary
 			if (newwidth != width || newheight != height)
-				image = image.resize(min(newwidth, max), min(newheight, max));			
+				image = image.resize(min(newwidth, max), min(newheight, max));
 			glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
-
-	    }
+		    }
 	    if(this.requested_width == 0) this.requested_width = this.getWidth();
 	    if(this.requested_height == 0) this.requested_height = this.getHeight();
 	}

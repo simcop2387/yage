@@ -40,7 +40,7 @@ abstract class Resource
 	private static Sound[char[]]	sounds;
 
 	/// Get the array of path strings
-	static char[][] getPath()
+	static char[][] getPaths()
 	{	return paths;
 	}
 
