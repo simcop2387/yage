@@ -83,13 +83,13 @@ class Flyer
 
 		float speed = 2000*delta;
 
-		if (Input.keydown[SDLK_w] || Input.keydown[SDLK_UP])
+		if (Input.keyDown[SDLK_w] || Input.keyDown[SDLK_UP])
 			accelerate(Vec3f(0, 0, -speed));
-		if (Input.keydown[SDLK_s] || Input.keydown[SDLK_DOWN])
+		if (Input.keyDown[SDLK_s] || Input.keyDown[SDLK_DOWN])
 			accelerate(Vec3f(0, 0, speed));
-		if (Input.keydown[SDLK_a] || Input.keydown[SDLK_LEFT])
+		if (Input.keyDown[SDLK_a] || Input.keyDown[SDLK_LEFT])
 			accelerate(Vec3f(-speed, 0, 0));
-		if (Input.keydown[SDLK_d] || Input.keydown[SDLK_RIGHT])
+		if (Input.keyDown[SDLK_d] || Input.keyDown[SDLK_RIGHT])
 			accelerate(Vec3f(speed, 0, 0));
 
 // 		if (Input.getGrabMouse())

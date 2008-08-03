@@ -123,7 +123,7 @@ int main()
 	Timer frame = new Timer();
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
-	std.gc.fullCollect();
+	std.gc.fullCollect();	
 	while(1)
 	{
 		float dtime = delta.get();

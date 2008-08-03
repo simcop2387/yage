@@ -1,7 +1,7 @@
 /**
  * Copyright:  (c) 2005-2007 Eric Poggel
- * Authors:    Eric Poggel
- * License:    <a href="lgpl.txt">LGPL</a>
+ * Authors:	Eric Poggel
+ * License:	<a href="lgpl.txt">LGPL</a>
  */
 
 module yage.resource.ms3dloader;
@@ -14,6 +14,7 @@ import yage.core.all;
 import yage.core.types;
 import yage.core.color;
 import yage.resource.all;
+import yage.resource.exception;
 import yage.system.log;
 
 import std.c.string : memcpy;
@@ -26,15 +27,19 @@ private struct MS3D
 {
 	// Ms3d Data structures.  See the Ms3D SDK for details.
 	// Ms3d Vertices
+	
+	// Warning, see: http://www.digitalmars.com/d/1.0/garbage.html
+	// Do not misalign pointers if those pointers may point into the gc heap
+	
 	struct Vertex
 	{	align(1) byte		flags;			// SELECTED | SELECTED2 | HIDDEN
 		align(1) float[3]	vertex;
-		align(1) byte    	boneId;			// -1 = no bone
-		align(1) byte    	referenceCount;
+		align(1) byte		boneId;			// -1 = no bone
+		align(1) byte		referenceCount;
 	}
 	// Ms3d Triangles
 	struct Triangle
-	{	align(1) ushort    	flags;			// SELECTED | SELECTED2 | HIDDEN
+	{	align(1) ushort		flags;			// SELECTED | SELECTED2 | HIDDEN
 		align(1) ushort[3]	vertexIndices;
 		align(1) float[9]	vertexNormals;
 		align(1) float[3]	s;
@@ -63,11 +68,37 @@ private struct MS3D
 		align(1) char[128]	texture;		// texture.bmp
 		align(1) char[128]	alphamap;		// alpha.bmp
 	}
+	
+	struct KeyframeRotation
+	{	align(1) float				time;			// time in seconds
+		align(1) float[3]			rotation;		// x, y, z angles
+	}
+
+	struct KeyframePosition
+	{	align(1) float				time;			// time in seconds
+		align(1) float[3]			position;		// local position
+	}
+
+	struct Joint
+	{	align(1) byte				flags;			// SELECTED | DIRTY
+		align(1) char[32]			name;
+		align(1) char[32]			parentName;
+		align(1) float[3]			rotation;		// local reference matrix
+		align(1) float[3]			position;
+		align(1) short				numKeyFramesRot;
+		align(1) short				numKeyFramesTrans;
+		KeyframeRotation[] keyFramesRot;	// local animation matrices
+		KeyframePosition[] keyFramesTrans;	// local animation matrices
+		Joint* parent;	// not part of the original data, but useful for rebuilding relationships. 
+	}
 
 	Vertex[]	vertices;
 	Triangle[]	triangles;
 	Group[]		groups;
 	Material[]	materials;
+	Joint[]		joints;
+	
+	float fps;
 
 	/**
 	 * Load a Milkshape 3D model into this struct. */
@@ -124,7 +155,32 @@ private struct MS3D
 		{	memcpy(&materials[m], &file[idx], 361);
 			idx+=361;
 		}
-
+		
+		// Joints
+		memcpy(&fps, &file[idx], 4);		
+		idx += 12; // skip float fCurrentTime, int iTotalFrames
+		memcpy(&size, &file[idx], 2);
+		joints.length = size;
+		idx += 2;
+		
+		// Loop thorugh joints
+		for (int i=0; i<size; i++)
+		{	memcpy(&joints[i], &file[idx], 93);
+			idx += 93;
+			joints[i].keyFramesRot.length = joints[i].numKeyFramesRot;
+			joints[i].keyFramesTrans.length = joints[i].numKeyFramesTrans;
+			
+			// Loop through rotation and position keyframes for this joint.
+			for (int j=0; j<joints[i].keyFramesRot.length; j++)
+			{	memcpy(&joints[i].keyFramesRot[j], &file[idx], 16);
+				idx += 16;
+			}
+			
+			for (int j=0; j<joints[i].keyFramesTrans.length; j++)
+			{	memcpy(&joints[i].keyFramesTrans[j], &file[idx], 16);
+				idx += 16;
+			}			
+		}
 		//delete file;
 	}
 }
@@ -147,21 +203,25 @@ template Ms3dLoader()
 		char[] path = source[0 .. rfind(source, "/") + 1]; // path stripped of filename
 
 		// Load the Ms3d model into the MS3D struct.
+		// After that, we translate the MS3D struct to Yage's internal model format.
 		MS3D ms3d;
 		ms3d.load(source);
 		
 		Vec3f[] vertices, normals;
 		Vec2f[] texcoords;
-
+		
+		
 		// Vertices
 		vertices.length  = ms3d.vertices.length;
 		texcoords.length = ms3d.vertices.length;
 		normals.length   = ms3d.vertices.length;
+		joint_indices.length= ms3d.vertices.length;
 
 		for (int v; v<ms3d.vertices.length; v++)
 		{	vertices[v].x = ms3d.vertices[v].vertex[0];
 			vertices[v].y = ms3d.vertices[v].vertex[1];
 			vertices[v].z = ms3d.vertices[v].vertex[2];
+			joint_indices[v] = ms3d.vertices[v].boneId;
 		}
 
 		// Meshes
@@ -170,15 +230,15 @@ template Ms3dLoader()
 		{	meshes[m] = new Mesh();
 			Vec3i[] triangles = meshes[m].getTriangles();
 			triangles.length = ms3d.groups[m].numtriangles;
-
+			
 			// Material
 			if (ms3d.groups[m].materialIndex != -1)
-			{	// The filename exists in the system?
-
-				char[] name = ms3d.materials[ms3d.groups[m].materialIndex].name;
-				if (exists(path~name))
+			{	
+				// Load xml material file from mesh's name, if it's an xml file.
+				char[] name = .toString(ms3d.materials[ms3d.groups[m].materialIndex].name.ptr);
+				if (name.length>4 && name[length-4..length]==".xml" && exists(path~name))
 					meshes[m].setMaterial(path~name);
-				else // create new material
+				else // load ms3d material
 				{	Material matl = new Material();
 					matl.addLayer(new Layer());
 
@@ -203,7 +263,7 @@ template Ms3dLoader()
 						meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ ms3d.materials[midx].alphamap));
 				}
 			}
-
+			
 			// Triangles
 			for (int t; t<triangles.length; t++)
 			{	//printf( "%d\n", ms3d.groups[m].triangleIndices[t]);
@@ -230,8 +290,7 @@ template Ms3dLoader()
 				normals[triangles[t].z].y = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[7];
 				normals[triangles[t].z].z = ms3d.triangles[ms3d.groups[m].triangleIndices[t]].vertexNormals[8];
 			}
-
-
+			
 			// In the MS3D format, texture coordinate and normal data is stored per triangle, while the vertex
 			// position is stored per vertex.  This allows two triangles that reference the same vertex to have
 			// different texture and normal coordinates, but is incompatible with the OpenGL vertex format.  
@@ -247,7 +306,7 @@ template Ms3dLoader()
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
 					vertices.length = texcoords.length = normals.length = vertices.length+1;
-					memcpy(&vertices[length-1], &vertices[ms3d.triangles[tindex].vertexIndices[0]], 12);
+					vertices[length-1] = vertices[ms3d.triangles[tindex].vertexIndices[0]];
 					memcpy(&normals[length-1], &ms3d.triangles[tindex].vertexNormals[0], 12);
 					texcoords[length-1].x = ms3d.triangles[tindex].s[0];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[0];
@@ -261,7 +320,7 @@ template Ms3dLoader()
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
 					vertices.length = texcoords.length = normals.length = vertices.length+1;
-					memcpy(&vertices[length-1], &vertices[ms3d.triangles[tindex].vertexIndices[1]], 12);
+					vertices[length-1] = vertices[ms3d.triangles[tindex].vertexIndices[1]];
 					memcpy(&normals[length-1], &ms3d.triangles[tindex].vertexNormals[3], 12);
 					texcoords[length-1].x = ms3d.triangles[tindex].s[1];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[1];
@@ -275,7 +334,7 @@ template Ms3dLoader()
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
 					vertices.length = texcoords.length = normals.length = vertices.length+1;
-					memcpy(&vertices[length-1], &vertices[ms3d.triangles[tindex].vertexIndices[2]], 12);
+					vertices[length-1] = vertices[ms3d.triangles[tindex].vertexIndices[2]];
 					memcpy(&normals[length-1], &ms3d.triangles[tindex].vertexNormals[6], 12);
 					texcoords[length-1].x = ms3d.triangles[tindex].s[2];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[2];
@@ -291,14 +350,79 @@ template Ms3dLoader()
 			}
 			meshes[m].setTriangles(triangles);
 		}
-		//delete ms3d.vertices;
-		//delete ms3d.triangles;
-		//delete ms3d.groups;
-		//delete ms3d.materials;
+	
+		// Joints			
+		joints.length = ms3d.joints.length;
+		for (int j=0; j<ms3d.joints.length; j++)
+		{	joints[j] = new Joint();
+			joints[j].name = .toString(ms3d.joints[j].name.ptr);
+			joints[j].parentName = .toString(ms3d.joints[j].parentName.ptr);
+			joints[j].startPosition.v[0..3] = ms3d.joints[j].position[0..3];
+			joints[j].startRotation.v[0..3] = ms3d.joints[j].rotation[0..3];
+
+			joints[j].positions.length = ms3d.joints[j].keyFramesTrans.length;
+			joints[j].rotations.length = ms3d.joints[j].keyFramesRot.length;				
+			for (int k=0; k<joints[j].positions.length; k++)
+			{	joints[j].positions[k].time = ms3d.joints[j].keyFramesTrans[k].time;
+				joints[j].positions[k].value.v[0..3] = ms3d.joints[j].keyFramesTrans[k].position[0..3];
+				if (joints[j].positions[k].time > max_time)
+					max_time = joints[j].positions[k].time;
+			}
+			for (int k=0; k<joints[j].rotations.length; k++)
+			{	joints[j].rotations[k].time = ms3d.joints[j].keyFramesRot[k].time;
+				joints[j].rotations[k].value.v[0..3] = ms3d.joints[j].keyFramesRot[k].rotation[0..3];
+				if (joints[j].rotations[k].time > max_time)
+					max_time = joints[j].rotations[k].time;
+			}
+		}
 		
+		// Link joint parent relationships.
+		for (int j=0; j<joints.length; j++)
+		{	Joint current = joints[j];			
+			if (current.parentName.length) // if parent name
+			{	for (int t=0; t<joints.length; t++)
+				{	if (joints[t].name == current.parentName)
+					{	current.parent = joints[t];
+						break;
+				}	}			
+				if (!current.parent)
+					throw new ResourceLoadException("Unable to link bone " ~ .toString(j) ~ " of model " ~ filename ~ "!");
+		}	}
+		
+		// Joint children relationshps
+		foreach (j; joints)			
+			if (j.parent)
+				j.parent.children ~= j;			
+		
+		if (joints.length)
+		{	
+			// Sets up each joint's transformation matrices
+			foreach(joint; joints)
+			{	
+				// create transformation matrix from position and rotation
+				joint.transform = Matrix();
+				joint.transform.setEuler(joint.startRotation);
+				joint.transform.setPosition(joint.startPosition);
+
+				if (!joint.parent)
+					joint.transformAbs = joint.transform;				
+				else
+					joint.transformAbs = joint.transform * joint.parent.transformAbs;
+			}
+
+			// Inverse transform each vertex and inverse rotate each normal by the joint's Matrix.
+			for (int i; i<vertices.length; i++)
+			{	if ( joint_indices[i] != -1 )
+				{	Matrix matrix = joints[joint_indices[i]].transformAbs;
+					vertices[i] = vertices[i].inverseTransform(matrix);			
+			}	}
+		}	
+				
 		setAttribute("gl_Vertex", vertices);
 		setAttribute("gl_TexCoord", texcoords);
 		setAttribute("gl_Normal", normals);
+		setAttribute("gl_VertexOriginal", vertices.dup); // a copy of these
+		setAttribute("gl_NormalOriginal", vertices.dup); // is required for skeletal animation.
 	}
 }
 

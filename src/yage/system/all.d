@@ -13,4 +13,6 @@ public
 	import yage.system.device;
 	import yage.system.input;
 	import yage.system.log;
+	import yage.system.render;
+	import yage.system.rendertarget;
 }

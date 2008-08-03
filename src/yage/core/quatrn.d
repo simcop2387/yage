@@ -259,13 +259,38 @@ struct Quatrn
 	{	*this = r.toQuatrn();
 	}
 
-	/// Set the rotation using a Vec3f of Euler angles.
+	/// Set the rotation using a Vec3f of Euler angles. TODO: replace with code below.
 	void setEuler(Vec3f euler)
 	{	*this =
 		   (Quatrn(sin(euler.x*0.5), 0, 0, cos(euler.x*0.5)) // x
 		  * Quatrn(0, sin(euler.y*0.5), 0, cos(euler.y*0.5))) // y
 		  * Quatrn(0, 0, sin(euler.z*0.5), cos(euler.z*0.5)); // z
 	}
+	/*
+	inline void quatrn::fromvector(vector rot)
+	{
+		float hlf;
+		double sr, sp, sy, cr, cp, cy;
+
+		hlf = rot[2]*0.5f;
+		sy = sin(hlf);
+		cy = cos(hlf);
+		hlf = rot[1]*0.5f;
+		sp = sin(hlf);
+		cp = cos(hlf);
+		hlf = rot[0]*0.5f;
+		sr = sin(hlf);
+		cr = cos(hlf);
+
+		double crcp = cr*cp;
+		double srsp = sr*sp;
+		double srcp = sr*cp;
+
+		v[0] = float(srcp*cy- cr*sp*sy);
+		v[1] = float(cr*sp*cy+ srcp*sy);
+		v[2] = float(crcp*sy - srsp*cy);
+		v[3] = float(crcp*cy + srsp*sy);
+	}*/
 
 	/**
 	 * Return a rotation that is interpolated between this Quaternion and

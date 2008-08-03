@@ -7,6 +7,7 @@
 module yage.system.log;
 
 import std.stdio;
+import std.stdarg;
 
 
 /**
@@ -14,6 +15,15 @@ import std.stdio;
  * output or a file. */
 abstract class Log
 {
+	enum
+	{	GENERIC = 65536,	///
+		INIT = 131072,		///
+		RESOURCE = 131072*2	///
+	}
+	
+	protected static int types = GENERIC | RESOURCE;
+	protected const int all_types = GENERIC | RESOURCE;
+	
 	/*
 	Stream target;
 
@@ -33,15 +43,45 @@ abstract class Log
 
 		);
 	}
+	
+	/**
+	 * Set the types of messages that will be logged.
+	 * Params: 
+	 *    types Binary OR of types that will be logged, defaults to all types.
+	static void setTypes(int types = GENERIC | RESOURCE)
+	{	this.types = types;
+	}
 
-	/// Write to the log.
-	static void write(...)
+	/**
+	 * Write a message to the log.  This ignores message types.*/
+	static void write(char[] first, ...)
+	{	char[] res;
+	
+		void putchar(dchar c)
+		{	res~= c;
+		}
+		
+		std.format.doFormat(&putchar, _arguments, _argptr);
+		writef(first);
+		writef(res);
+		writefln("");
+	}
+	
+	/**
+	 * Write a typed message to the Log.
+	 * Params: 
+	 *    type The type of this message. */
+	static void write(int type, ...)
 	{	char[] res;
 		void putchar(dchar c)
 		{	res~= c;
 		}
-		std.format.doFormat(&putchar, _arguments, _argptr);
-		writefln(res);
+	
+		// If message is in types or type isn't a valid type, log.
+		if (type & types || !(type & all_types))
+		{	std.format.doFormat(&putchar, _arguments, _argptr);
+			writefln(res);
+		}
 	}
 }
 

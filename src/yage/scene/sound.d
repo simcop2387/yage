@@ -183,8 +183,9 @@ class SoundNode : MovableNode
 	{	setPaused(true);
 	}
 
-	/** Seek to the position in the track.  Seek has a precision of .05 seconds.
-	 *  seek() throws an exception if the value is outside the range of the Sound. */
+	/** 
+	 * Seek to the position in the track.  Seek has a precision of .05 seconds.
+	 * @throws Exception if the value is outside the range of the Sound. */
 	void seek(double seconds)
 	{	if (sound is null)
 			throw new Exception("You cannot seek a SoundNode without first calling setSound().");

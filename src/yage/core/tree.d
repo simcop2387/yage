@@ -16,29 +16,28 @@ import yage.core.array;
  * class Node : Tree!(Node) {}
  * auto n = new Node();
  * n.addChild(new Node());
- * -------------------------------- */
+ * -------------------------------- 
+ */
 class Tree(T)
 {	
-	T parent;
-	T[] children;
-	int index=-1;
-	
-	/// Ensure that child is removed from its parent.
-//	~this()
-//	{	remove();		
-//	}
-	
+	protected T parent;			// reference to parent
+	protected T[] children;		// array of this element's children.
+	protected int index=-1;		// index of this element in its parent's array, -1 if no parent.
+
 	/**
 	 * Add a child element.
 	 * Automatically detaches it from any other element's children.
-	 * Returns: A self reference.*/
+	 * Params:
+	 *     child = 
+	 * Returns: A reference to the child.
+	 */
 	T addChild(T child)
 	in {
 		assert(child != this);
 		assert(child !is null);
 	}body
 	{	child.setParent(cast(T)this);
-		return cast(T)this;
+		return child;
 	}
 	
 	/// Get an array of this element's children
@@ -52,7 +51,7 @@ class Tree(T)
 	T getParent()
 	{	return parent;
 	}
-	T setParent(T _parent) /// Ditto
+	T setParent(T _parent) /// ditto
 	in { assert(_parent !is null);
 	}body
 	{	if (parent && parent.isChild(cast(T)this))
@@ -65,14 +64,16 @@ class Tree(T)
 		return cast(T)this;
 	}
 	
-	/// Is elem a child of this element?
+	/**
+	 * Is elem a child of this element?
+	 * This function will also return false if elem is null. */ 
 	bool isChild(T elem)
-	{	if (elem.index < 0 || elem.index >= children.length)
+	{	if (!elem || elem.index < 0 || elem.index >= children.length)
 			return false;
 		return cast(bool)(children[elem.index] == elem);
 	}
 	
-	/// Remove this element from its parent
+	/// Remove this element from its parent.
 	void remove()
 	{	// this needs to happen because some children (like lights) may need to do more in their remove() function.
 		foreach_reverse(T c; children)

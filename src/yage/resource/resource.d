@@ -10,6 +10,7 @@ import std.path;
 import std.stdio;
 import yage.core.array;
 import yage.core.misc;
+import yage.resource.font;
 import yage.resource.model;
 import yage.resource.material;
 import yage.resource.texture;
@@ -17,6 +18,7 @@ import yage.resource.shader;
 import yage.resource.sound;
 import yage.core.timer;
 import yage.system.log;
+import yage.system.constant;
 import std.string;
 
 
@@ -28,21 +30,17 @@ import std.string;
  * a check should first be made with the resource manager.*/
 abstract class Resource
 {
-	static char[][] paths;		// paths to look for resources
+	static char[][] paths = [""];		// paths to look for resources
 
+	private static Font[char[]]		fonts;
 	private static GPUTexture[char[]][2][2]  textures; // [source][clamped][compressed][mipmapped][filter]
 	private static Shader[char[]]	shaders;
 	private static Material[char[]] materials;
 	private static Model[char[]]	models;
 	private static Sound[char[]]	sounds;
 
-	/// Initialize
-	static this()
-	{	paths ~= "";
-	}
-
 	/// Get the array of path strings
-	static char[][] getPath()
+	static char[][] getPaths()
 	{	return paths;
 	}
 
@@ -122,18 +120,33 @@ abstract class Resource
 	{	return sounds;
 	}
 
-	/** Acquire and return the given Model.
-	 *  If it has already been loaded, the in-memory copy will be returned.
-	 *  If not, it will be loaded and uploaded to video memory.
-	 *  All associated Materials, Textures, and Shaders will be loaded into
-	 *  the resource pool as well.
-	 *  Params: source = The 3D Model file that will be loaded. */
+	/** 
+	 * Acquire and return the given Font.
+	 * If it has already been loaded, the in-memory copy will be returned.
+	 * If not, it will be loaded and then returned.
+	 * Params: source = The Font file that will be loaded. */
+	static Font font(char[] source)
+	{	if (source in fonts)
+			return fonts[source];
+		Timer t = new Timer();
+		fonts[source] = new Font(source);
+		Log.write(Log.RESOURCE, "Resource ", source ~ " loaded in ", t, " seconds.");
+		return fonts[source];
+	}
+	
+	/** 
+	 * Acquire and return the given Model.
+	 * If it has already been loaded, the in-memory copy will be returned.
+	 * If not, it will be loaded and uploaded to video memory.
+	 * All associated Materials, Textures, and Shaders will be loaded into
+	 * the resource pool as well.
+	 * Params: source = The 3D Model file that will be loaded. */
 	static Model model(char[] source)
 	{	if (source in models)
 			return models[source];
-		Timer a = new Timer();
+		Timer t = new Timer();
 		models[source] = new Model(source);
-		Log.write(source ~ " loaded in ", .toString(a.get()), "seconds.");
+		Log.write(Log.RESOURCE, "Resource ", source ~ " loaded in ", t, " seconds.");
 		return models[source];
 	}
 
@@ -145,21 +158,25 @@ abstract class Resource
 	static Material material(char[] source)
 	{	if (source in materials)
 			return materials[source];
-		return materials[source] = new Material(source);
+		Timer t = new Timer();
+		materials[source] = new Material(source);
+		Log.write(Log.RESOURCE, "Resource ", source ~ " loaded in ", t, " seconds.");
+		return materials[source];
 	}
 
 	/** Acquire and return the given Yexture.
-	 *  If a texture with the given properties already been loaded, the in-memory
-	 *  copy will be returned.  If not, it will be loaded, uploaded to video memory,
-	 *  and stored in the resource pool.  This function is called automatically
-	 *  for each of a material's textures when loading a material.
+	 *  If a texture with the given properties already been loaded, the in-memory copy will be returned.  
+	 *  If not, it will be loaded, uploaded to video memory, and stored in the resource pool.  
+	 *  This function is called automatically for each of a material's textures when loading a material.
 	 *  Params: source = The Texture image file that will be loaded. */
-	static Texture texture(char[] source, bool compress=true, bool mipmap=true)
+	static Texture texture(char[] source, bool compress=true, bool mipmap=true, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT)
 	{	// Remember that multidimensional arrays must be accessed in reverse.
 		if (source in textures[mipmap][compress])
 			return Texture(textures[mipmap][compress][source]);
-		return  Texture(textures[mipmap][compress][source] = new GPUTexture(source, compress, mipmap));
-
+		Timer t = new Timer();
+		textures[mipmap][compress][source] = new GPUTexture(source, compress, mipmap);
+		Log.write(Log.RESOURCE, "Resource ", source ~ " loaded in ", t, " seconds.");
+		return Texture(textures[mipmap][compress][source], clamp, filter);
 	}
 
 	/** Acquire and return the given Shader.
@@ -170,7 +187,10 @@ abstract class Resource
 	static Shader shader(char[] source, bool type)
 	{	if (source in shaders)
 			return shaders[source];
-		return shaders[source] = new Shader(source, type);
+		Timer t = new Timer();
+		shaders[source] = new Shader(source, type);
+		Log.write(Log.RESOURCE, "Resource ", source ~ " loaded in ", t, " seconds.");
+		return shaders[source];
 	}
 
 	/** Acquire and return the given Sound.
@@ -180,7 +200,10 @@ abstract class Resource
 	static Sound sound(char[] source)
 	{	if (source in sounds)
 			return sounds[source];
-		return sounds[source] = new Sound(source);
+		Timer t = new Timer();
+		sounds[source] = new Sound(source);
+		Log.write(Log.RESOURCE, "Resource ", source ~ " loaded in ", t, " seconds.");
+		return sounds[source];
 	}
 
 

@@ -165,13 +165,11 @@ class CameraNode : MovableNode
 	void setResolution(uint width, uint height)
 	{	xres = width;
 		yres = height;
-
+		
 		// Ensure our new resolution is below the maximum texture size
 		uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
 		if (xres > max)	xres = max;
 		if (yres > max)	yres = max;
-
-		aspect = cast(float)width / cast(float)height;
 	}
 
 	/**
@@ -181,8 +179,7 @@ class CameraNode : MovableNode
 	 * far = Nothing further away than this will be rendered.  The default is 100,000.
 	 * fov = The field of view of the camera, in degrees.  The default is 45.
 	 * apsect = The aspect ratio of the camera.  A special value of zero allows for
-	 * it to be set automatically by the size of the window (Device.getWidth() /
-	 * Device.getHeight()).  Zero is also the default value.
+	 * it to be set automatically by the Camera resolution.  Zero is also the default value.
 	 * threshold = Minimum size of a node in pixels before it's rendered.  The default
 	 * is 0.667 (2/3rds of a pixel).*/
 	void setView(float near=1, float far=100000, float fov=45, float aspect=0, float threshold=0.667)
@@ -200,13 +197,15 @@ class CameraNode : MovableNode
 	void toTexture()
 	{	node_count = poly_count = vertex_count = 0;
 		Render.setCurrentCamera(this);
+		
 
 		// Precalculate the inverse of the Camera's absolute transformation Matrix.
 		Matrix xform = getAbsoluteTransform(true);
 		inverse_absolute = xform.inverse();
 
 		// Resize viewport
-		Device.resizeViewport(xres, yres, near, far, fov, aspect);
+		float aspect2 = aspect ? aspect : xres/cast(float)yres;
+		Device.resizeViewport(xres, yres, near, far, fov, aspect2);
 		glLoadIdentity();
 
 		// Rotate in reverse

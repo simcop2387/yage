@@ -40,11 +40,6 @@ struct Vec(int S, T)
 		}
 	}
 
-	invariant
-	{	foreach (T t; v)
-			assert(t != float.nan);
-	}
-
 	/// Create a zero vector
 	static VST opCall()
 	{	VST res;
@@ -74,14 +69,6 @@ struct Vec(int S, T)
 		return res;
 	}
 
-	///
-	VST add(VST s)
-	{	VST res;
-		for (int i=0; i<v.length; i++)
-			res.v[i] = v[i]+s.v[i];
-		return res;
-	}
-
 	/// The _angle between this vector and s, in radians.
 	float angle(VST s)
 	{	return acos(dot(s)/(length()*s.length()));
@@ -107,6 +94,20 @@ struct Vec(int S, T)
 		return res;
 	}
 
+	/// Is this Vector inside a box/cube/etc. defined by topLeft and bottomRight
+	bool inside(VST topLeft, VST bottomRight, bool inclusive=true)
+	{	if (inclusive)
+		{	for (int i=0; i<v.length; i++)
+				if (v[i] <= topLeft[i] || v[i] >= bottomRight[i])
+					return false;
+		} else
+		{	for (int i=0; i<v.length; i++)
+				if (v[i] < topLeft[i] || v[i] > bottomRight[i])
+					return false;
+		}					
+		return true;
+	}
+	
 	/// Return the _length of the vector (the magnitude).
 	float length()
 	{	return sqrt(length2());
@@ -120,13 +121,59 @@ struct Vec(int S, T)
 		return sum;
 	}
 
+
+	/// Allow for linear additions, subtractions, multiplcations, and divisions among Vectors of the same size and type.
+	VST opAdd(VST s)
+	{	VST res;
+		for (int i=0; i<v.length; i++)
+			res.v[i] = v[i]+s.v[i];
+		return res;
+	}
+	/// ditto
+	void opAddAssign(VST s)
+	{	for (int i=0; i<v.length; i++)
+			v[i] += s.v[i];
+	}	
+	/// ditto
+	VST opSub(VST s)
+	{	VST res;
+		for (int i=0; i<v.length; i++)
+			res.v[i] = v[i]-s.v[i];
+		return res;
+	}
+	/// ditto
+	void opSubAssign(VST s)
+	{	for (int i=0; i<v.length; i++)
+			v[i] -= s.v[i];
+	}
+	
+	/// Allow for additions, subtractions, multiplcations, and divisions where a scalar is applied to each vector component.
+	void opMulAssign(float s)
+	{	for (int i=0; i<v.length; i++)
+			v[i] += s;
+	}
+	/// ditto
+	void opDivAssign(float s)
+	{	for (int i=0; i<v.length; i++)
+			v[i] /= s;
+	}
+	
+	/// Allow casting to float where appropriate
+	static if (is(T : float))	// if T can be implicitly cast to float
+	{	Vec!(S, float) opCast()
+		{	Vec!(S, float) result;
+			for (int i=0; i<v.length; i++)
+				result.v[i] = v[i];
+			return result;
+	}	}
+	
 	/// Get the element at i
-	float opIndex(ubyte i)
+	float opIndex(size_t i)
 	{	return v[i];
 	}
 
 	/// Assign value to the element at i
-	float opIndexAssign(T value, ubyte i)
+	float opIndexAssign(T value, size_t i)
 	{	return v[i] = value;
 	}
 
@@ -199,11 +246,6 @@ struct Vec3f
 		struct
 		{	float x, y, z;
 	}	}
-
-	invariant
-	{	foreach (float t; v)
-			assert(t != float.nan);
-	}
 
 	/** Test some of the more common and more complex functions. */
 	unittest
@@ -332,6 +374,31 @@ struct Vec3f
 	///
 	Vec3f inverse()
 	{	return Vec3f(1/x, 1/y, 1/z);
+	}
+	
+	/**
+	 * Unlike a transformation, we first apply the translation and then the rotation. */
+	Vec3f inverseTransform(Matrix m)
+	{	Vec3f copy = Vec3f(x-m[12], y-m[13], z-m[14]); // apply translation in reverse
+		return Vec3f(
+			copy.x*m[0] + copy.y*m[1] + copy.z*m[2],
+			copy.x*m[4] + copy.y*m[5] + copy.z*m[6],
+			copy.x*m[8] + copy.y*m[9] + copy.z*m[10]
+		);
+	}
+	
+	///
+	Vec3f inverseRotate(Matrix m)
+	{	Vec3f result;
+		result.v[0] = v[0]*m[0] + v[1]*m[1] + v[2]*m[2];
+		result.v[1] = v[0]*m[4] + v[1]*m[5] + v[2]*m[6];
+		result.v[2] = v[0]*m[8] + v[1]*m[9] + v[2]*m[10];
+		return result;
+	}
+
+	///
+	Vec3f inverseTranslate(Matrix m)
+	{	return Vec3f(x-m[12], y-m[13], z-m[14]);
 	}
 
 	/// Return the length of the vector (the magnitude).
@@ -466,7 +533,7 @@ struct Vec3f
 		res.z = x*m.v[2] + y*m.v[6] + z*m.v[10];
 		return res;
 	}
-
+	
 	/// Return a copy of this vector with each component scaled by s.
 	Vec3f scale(float s)
 	{	if (s == float.infinity)
@@ -516,8 +583,7 @@ struct Vec3f
 	}
 
 	/**
-	 * Interpret the values of this vector as a rotation axis and convert to
-	 * a Quatrn.*/
+	 * Interpret the values of this vector as a rotation axis and convert to a Quatrn.*/
 	Quatrn toQuatrn()
 	{	Quatrn res;
 		float angle = length;
@@ -534,8 +600,7 @@ struct Vec3f
 	}
 
 	/**
-	 * Interpret the values of this vector as a rotation axis and convert to
-	 * a rotation Matrix.*/
+	 * Interpret the values of this vector as a rotation axis and convert to a rotation Matrix.*/
 	Matrix toMatrix()
 	{	Matrix res;
 		float phi = length();
@@ -559,5 +624,21 @@ struct Vec3f
 	/// Return a string representation of this vector for human reading.
 	char[] toString()
 	{	return formatString("<%.4f %.4f %.4f>", x, y, z);
+	}
+
+	///
+	void translate(Matrix m)
+	{	x += m.v[12];
+		y += m.v[13];
+		z += m.v[14];
+	}
+	
+	/// Return a copy of this vector transformed by Matrix m.
+	Vec3f transform(Matrix m)
+	{	return Vec3f(
+			x*m.v[0] + y*m.v[4] + z*m.v[8] + m.v[12],
+			x*m.v[1] + y*m.v[5] + z*m.v[9] + m.v[13],
+			x*m.v[2] + y*m.v[6] + z*m.v[10]+ m.v[14]
+		);
 	}
 }

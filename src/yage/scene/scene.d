@@ -73,7 +73,8 @@ class Scene : Node
 
 	/// Destroctor, stops the Scene's thread.
 	~this()
-	{	try { // since order of destruction is unpredictable.
+	{	std.stdio.writefln("Scene destructor");
+		try { // since order of destruction is unpredictable.
 			repeater.stop();
 		} catch {}
 	}

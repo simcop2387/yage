@@ -13,8 +13,12 @@
 module yage.resource.all;
 
 public
-{	import yage.resource.image;
+{	import yage.resource.exception;
+	import yage.resource.font;
+	import yage.resource.image;
+	import yage.resource.layer;
 	import yage.resource.material;
+	import yage.resource.mesh;
 	import yage.resource.model;
 	import yage.resource.resource;
 	import yage.resource.shader;

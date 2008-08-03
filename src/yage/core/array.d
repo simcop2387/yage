@@ -68,7 +68,7 @@ unittest
 
 
 
-/// Return the element with the maximum value of an array.
+/// Return the element with the minimum or maximum value of an array.
 T amax(T)(T[] array, )
 {	T m = array[0];
 	foreach (T a; array)
@@ -76,7 +76,7 @@ T amax(T)(T[] array, )
 			m=a;	
 	return m;
 }
-/// 
+/// ditto
 T amax(T, K)(T[] array, K delegate(T elem) getKey)
 {	T m = array[0];
 	K mk = getKey(array[0]);
@@ -85,22 +85,7 @@ T amax(T, K)(T[] array, K delegate(T elem) getKey)
 			m=a;	
 	return m;
 }
-T amax(T, K)(T[T] array, K delegate(T elem) getKey)
-{	T m;
-	K mk;
-	foreach (T a; array)
-	{	m = a;
-		mk = getKey(a);
-		break;		
-	}
-	foreach (T a; array)
-	{	if (getKey(a)>mk)
-			m=a;	
-	}
-	return m;
-}
-
-/// Return the minimum value of an array.
+/// ditto
 T amin(T)(T[] array)
 {	T m = array[0];
 	foreach (T a; array)
@@ -108,6 +93,16 @@ T amin(T)(T[] array)
 			m=a;	
 	return m;
 }
+/// ditto
+T amin(T, K)(T[] array, K delegate(T elem) getKey)
+{	T m = array[0];
+	K mk = getKey(array[0]);
+	foreach (T a; array)
+		if (getKey(a)<mk)
+			m=a;	
+	return m;
+}
+
 
 /**
  * Is the array sorted?

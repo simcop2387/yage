@@ -17,7 +17,7 @@ import derelict.sdl.sdl;
 import derelict.sdl.image;
 import derelict.ogg.vorbis;
 import derelict.ogg.vorbisfile;
-//import yage.resource.texture;
+import derelict.freetype.ft;
 import yage.gui.surface;
 import yage.system.log;
 import yage.system.constant;
@@ -40,29 +40,28 @@ extern(C) {
  * checking OpenGL extensions, and other utility and lower level tasks.*/
 abstract class Device
 {
-	protected:
+	
 	// Video
-	static SDL_Surface* sdl_surface; // Holds a reference to the main (and only) SDL surface
+	protected static SDL_Surface* sdl_surface; // Holds a reference to the main (and only) SDL surface
 
-	static Vec2i		size;	// The width/height of the window.
-	static uint 		viewport_width; // The width of the current viewport
-	static uint 		viewport_height;// The height of the current viewport
-	static ubyte 		depth;
-	static bool 		fullscreen;
+	protected static Vec2i		size;			// The width/height of the window.
+	protected static uint 		viewport_width; // The width of the current viewport
+	protected static uint 		viewport_height;// The height of the current viewport
+	protected static ubyte 		depth;
+	protected static bool 		fullscreen;
 
 	// Audio
-	static ALCdevice	*al_device;
-	static ALCcontext	*al_context;
+	protected static ALCdevice	*al_device;
+	protected static ALCcontext	*al_context;
 
 	// Misc
-	static bool initialized=0;			// true if init() has been called
+	protected static bool initialized=0;			// true if init() has been called
 
-	// The texture that is rendered to the screen.
-	//static CameraTexture texture;
 	
-	public:
+	protected static Surface surface;
 	
-	static Surface[] children;
+	
+	//static Surface[] children;
 	
 	/// Unload SDL at exit.
 	static ~this()
@@ -86,7 +85,7 @@ abstract class Device
 	 * depth = Color depth of each pixel (should be 16, 24 or 32)
 	 * fullscreen = The window is fullscreen if true; windowed otherwise.
 	 * samples = The level of anti-aliasing. */
-	static void init(int width, int height, ubyte depth, bool fullscreen, ubyte samples=32)
+	static void init(int width, int height, ubyte depth, bool fullscreen, ubyte samples=1)
 	in
 	{	assert(depth==16 || depth==24 || depth==32);
 		assert(width>0 && height>0);
@@ -103,6 +102,7 @@ abstract class Device
 		DerelictGLU.load();
 		DerelictSDL.load();
 		DerelictSDLImage.load();
+		DerelictFT.load();
 		DerelictAL.load();
 		DerelictVorbis.load();
 		DerelictVorbisFile.load();
@@ -153,6 +153,14 @@ abstract class Device
 			Log.write("GL_ARB_vertex_buffer_object support enabled.");
 		}else
 			Log.write("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
+		
+		// Attempt to load blend color extension
+		if (getSupport(DEVICE_BLEND_COLOR))
+		{	if (!EXTBlendColor.load("GL_EXT_blend_color"))
+				throw new Exception("GL_EXT_blend_color extension detected but it could not be loaded.");
+			Log.write("GL_EXT_blend_color support enabled.");
+		}else
+			Log.write("GL_EXT_blend_color not supported.  This is still ok.");
 
 		// OpenGL options
 		// These are the engine defaults.  Any function that
@@ -178,12 +186,13 @@ abstract class Device
 		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 
-		// Enable Vertex arrays
+		// Enable support for vertex arrays
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 		// Enable texture coordinate arrays for each texture unit
+		// This crashes some machines.
 		/*if (Device.getSupport(DEVICE_MULTITEXTURE))
 			for (int i=Device.getLimit(DEVICE_MAX_TEXTURES)-1; i>=0; i--)
 			{	glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
@@ -192,7 +201,8 @@ abstract class Device
 				glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 				glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 			}
-*/
+		*/
+		
 		// Input options
 		SDL_EnableUNICODE(true);
 		SDL_EnableKeyRepeat(1, 100);
@@ -204,6 +214,8 @@ abstract class Device
 		if (alGetError()!=0)
 			throw new Exception("There was an error when initializing OpenAL.");
 
+		surface = new Surface();
+		
 		initialized = true;
 		Log.write("Yage has been initialized.");
 	}
@@ -222,8 +234,8 @@ abstract class Device
 	 * Searches to see if the given extension is supported in hardware.*/
 	static bool checkExtension(char[] name)
 	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
-	    int result = find(toupper(exts), toupper(name)~" ");
-	    delete exts;
+	    int result = find(tolower(exts), tolower(name)~" "); 
+	    delete exts; // [above] append space to ensure we're not matching part of another extension.
 		if (result>=0)
 			return true;
 	    return false;
@@ -233,6 +245,12 @@ abstract class Device
 	static char[][] getExtensions()
 	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
 		return split(exts, " ");
+	}
+
+	/// Return the aspect ratio (width/height) of the rendering window.
+	static float getAspectRatio()
+	{	if (size.y==0) size.y=1;
+		return size.x/cast(float)size.x;
 	}
 
 	/**
@@ -263,7 +281,7 @@ abstract class Device
 	 * Params: constant is a DEVICE_* constant defined in yage.device.constant.*/
 	static bool getSupport(int constant)
 	{	//return false;
-		static int shader=-1, vbo=-1, mt=-1, np2=-1;	// so support only has to be found once
+		static int shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1;	// so lookup only has to occur once.
 		switch (constant)
 		{	case DEVICE_SHADER:
 				version(linux)		// Shaders often fail on linux due to poor driver support!  :(
@@ -273,6 +291,7 @@ abstract class Device
 					shader = checkExtension("GL_ARB_shader_objects") && checkExtension("GL_ARB_vertex_shader");
 				return cast(bool)shader;
 			case DEVICE_VBO: //return false; // true breaks custom vertex attributes
+				return false;
 				if (vbo==-1)
 					vbo = checkExtension("GL_ARB_vertex_buffer_object");
 				return cast(bool)vbo;
@@ -284,6 +303,10 @@ abstract class Device
 				if (np2==-1)
 					np2 = checkExtension("GL_ARB_texture_non_power_of_two");
 				return cast(bool)np2;
+			case DEVICE_BLEND_COLOR:
+				if (bc==-1)
+					bc = checkExtension("GL_EXT_blend_color");
+				return cast(bool)bc;
 			default:
 				throw new Exception("Unknown Device.getSupport() constant: '" ~
 									.toString(constant) ~ "'.");
@@ -291,12 +314,15 @@ abstract class Device
 		return false;
 	}
 
-	/// Return the aspect ratio (width/height) of the rendering window.
-	static float getAspectRatio()
-	{	if (size.y==0) size.y=1;
-		return size.x/cast(float)size.x;
+	/**
+	 * Get / Set the parent Surface that all others use. */
+	static Surface getSurface()
+	{	return surface;
 	}
-
+	static void setSurface(Surface s)
+	{	surface = s;	
+	}
+	
 	/// Return the current width of the window in pixels.
 	static uint getWidth()
 	{	return size.x;
@@ -306,8 +332,10 @@ abstract class Device
 	{	return size.y;
 	}
 
-	/** Resize the viewport to the given size.  Special values of
-	 *  zero scale the viewport to the window size. */
+	/** 
+	 * Resize the viewport to the given size.  
+	 * Special values of zero scale the viewport to the window size. 
+	 * This is usually called by Camera. */
 	static void resizeViewport(int _width, int _height, float near, float far, float fov, float aspect)
 	{	viewport_width = _width;
 		viewport_height = _height;
@@ -337,8 +365,9 @@ abstract class Device
 	static void resizeWindow(int width, int height)
 	{	size.x = width;
 		size.y = height;
+		Vec2f dsize = Vec2f(size.x, size.y);
 		
-		foreach(sub ;this.children)	sub.recalculate(Vec2i(0, 0), size, size);
+		surface.calculate();
 		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, also try SDL lock surface)

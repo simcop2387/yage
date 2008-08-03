@@ -18,7 +18,7 @@ import std.intrinsic;
  * Note that uints and dwords store the bytes in reverse,
  * so Color(0x6633ff00).hex == "00FF3366"
  * All Colors default to transparent black.
- * TODO: Convert to using four floats for better arithmetic
+ * TODO: Convert to using four floats for better arithmetic?
  * 
  * Example:
  * --------------------------------
@@ -30,7 +30,7 @@ import std.intrinsic;
  */
 struct Color
 {
-	private static real frac = 1.0f/255;
+	private const real frac = 1.0f/255;
 	
 	union
 	{	ubyte[4] ub;/// Get the Color as an array of ubyte
@@ -135,13 +135,17 @@ struct Color
 			case "white":	return Color(0xFFFFFFFF);
 			case "yellow":	return Color(0xFF00FFFF);
 			default: break;
-		}		
-	
+		}
+		
+		// Allow hex colors to start with hash.
+		if (string[0] == '#')
+			string = string[1..length];
+			
 		// Append alpha to 6-digit hex string.
 		if (string.length == 6)
-			string ~= "FF";		
+			string ~= "FF"; // creates garbage!
 		
-		// Convert string one char at a a time.
+		// Convert string one char at a time.
 		Color result;
 		int digit;
 		foreach (int i, char h; string)
@@ -209,7 +213,7 @@ struct Color
 	
 	unittest
 	{	assert(Color.sizeof == 4);
-		
+			
 		// Test initializers
 		assert(Color([0, 102, 51, 255]).hex == "006633FF");
 		assert(Color([0.0f, 0.4f, 0.2f, 1.0f]).hex == "006633FF");

@@ -18,8 +18,8 @@ import yage.gui.surface;
 class Input
 {
 
-	static bool[1024] keyup;		/// The key was down and has been released.
-	static bool[1024] keydown;		/// The key is currently being held down.
+	static bool[1024] keyUp;		/// The key was down and has been released.
+	static bool[1024] keyDown;		/// The key is currently being held down.
 //	static uint keymod;				/// Modifier key (currently unused)
 
 	static int mousex, mousey;		/// The current pixel location of the mouse cursor; (0, 0) is top left.
@@ -37,7 +37,7 @@ class Input
 	//static wchar[] stream;		/// Recently typed text (unicode)
 	static bool grabbed=false;		/// The window grabs the mouse.
 
-	static Surface surfaceLock;
+	static Surface surfaceLock;		// Surface that is grabbing all input.
 	static Surface currentSurface;
 
 	/** This function fills the above fields with the current intput data.
@@ -59,23 +59,23 @@ class Input
 		switch(event.type){
 			// Standard keyboard
 			case SDL_KEYDOWN:
-				keydown[event.key.keysym.sym] = true;
-				keyup[event.key.keysym.sym] = false;
+				keyDown[event.key.keysym.sym] = true;
+				keyUp[event.key.keysym.sym] = false;
 
 				auto surface = getSurface();
 				
 				if(surface !is null)
- 					surface.keydown(event.key.keysym.sym);
+ 					surface.keyDown(event.key.keysym.sym);
 				
 				break;
 			case SDL_KEYUP:
-    				keyup[event.key.keysym.sym] = true;
-    				keydown[event.key.keysym.sym] = false;
+    			keyUp[event.key.keysym.sym] = true;
+    			keyDown[event.key.keysym.sym] = false;
 					
 				auto surface = getSurface();
 
 				if(surface !is null)
-					surface.keyup(event.key.keysym.sym);
+					surface.keyUp(event.key.keysym.sym);
 				
 				break;
 				// Mouse
@@ -88,7 +88,7 @@ class Input
 				auto surface = getSurface();
 
 				if(surface !is null) 
-					surface.mousedown(event.button.button, Vec2i(mousex,mousey));
+					surface.mouseDown(event.button.button, Vec2i(mousex,mousey));
 
 				break;
 			case SDL_MOUSEBUTTONUP:
@@ -100,7 +100,7 @@ class Input
 				auto surface = getSurface();
 
 				if(surface !is null)
- 					surface.mouseup(event.button.button, Vec2i(mousex,mousey));
+ 					surface.mouseUp(event.button.button, Vec2i(mousex,mousey));
 
 				break;
 			case SDL_MOUSEMOTION:
@@ -108,8 +108,7 @@ class Input
 				if(grabbed){
 					if(event.motion.x != mousex || event.motion.y != mousey)
 						SDL_WarpMouse(mousex, mousey);
-					else break;
-					
+					else break;					
 				}
 				else{
 					mousex = event.motion.x;
@@ -119,22 +118,19 @@ class Input
 				auto surface = getSurface();
 
 				//if the surface that the mouse is in has changed
-				if(currentSurface !is surface){
-					//If the old surface is not device
-					if(currentSurface !is null)
-						//Tell it that the mouse left
-						currentSurface.mouseleave(surface, event.button.button, Vec2i(mousex,mousey));
-					//If the new surface is not device
-					if(surface !is null)
-						//Tell it that the mosue entered
-						surface.mouseenter(event.button.button, Vec2i(mousex,mousey));
+				if(currentSurface !is surface)
+				{	
+					if(currentSurface) //Tell it that the mouse left
+						currentSurface.mouseOut(surface, event.button.button, Vec2i(mousex,mousey));
+					if(surface) //Tell it that the mosue entered
+						surface.mouseOver(event.button.button, Vec2i(mousex,mousey));
 						
-						//The new current surface
-						currentSurface = surface;
+					//The new current surface
+					currentSurface = surface;
 				}
 				//Needs to be changed so that check is run once
-				if(surface !is null)
-					surface.mousemove(event.button.button, Vec2i(event.motion.xrel, event.motion.yrel));
+				if(surface)
+					surface.mouseMove(event.button.button, Vec2i(event.motion.xrel, event.motion.yrel));
 					
 				break;
 
@@ -157,8 +153,9 @@ class Input
 	}
 	
 	static Surface getSurface(){
-		if(surfaceLock) return surfaceLock;
-		return findSurface(mousex, mousey);
+		if(surfaceLock) 
+			return surfaceLock;
+		return Device.getSurface().findSurface(cast(float)mousex, cast(float)mousey);
 	}
 	//Releases the locked surface, now the appropriate surface will recieve events rather than the locked
 	void unlock(){

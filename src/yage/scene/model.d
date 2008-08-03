@@ -6,6 +6,7 @@
 
 module yage.scene.model;
 
+import yage.core.timer;
 import yage.core.vector;
 import yage.system.device;
 import yage.system.log;
@@ -21,6 +22,8 @@ class ModelNode : VisibleNode
 {
 	protected Model model;	// The 3D model used by this node
 	protected float radius=0;	// cached radius
+	
+	protected Timer animation_timer;
 
 	/// Construct this Node as a child of parent.
 	this(Node parent)
@@ -38,20 +41,58 @@ class ModelNode : VisibleNode
 		radius = original.radius;
 	}
 
-	/// Get the 3D model that is being used by this Node.
+	
+	void setAnimation(float from, float to, bool looping=true)
+	{	if (!animation_timer)
+			animation_timer = new Timer();
+		
+	}
+	
+	/// Alias of setPaused(false);
+	void play()
+	{	if (!animation_timer)
+			animation_timer = new Timer();
+	}
+
+	/// Alias of setPaused(true);
+	void pause()
+	{	if (!animation_timer)
+			animation_timer = new Timer();
+	}
+
+	/** Seek to the position in the track.  Seek has a precision of .05 seconds.
+	 *  seek() throws an exception if the value is outside the range of the Sound. */
+	void seek(double seconds)
+	{	if (!animation_timer)
+			animation_timer = new Timer();
+	}
+
+	/// Tell the position of the playback of the current sound file, in seconds.
+	double tell()
+	{	if (!animation_timer)
+			animation_timer = new Timer();
+		return 1.0;
+	}
+
+	/// Stop the SoundNode from playing and rewind it to the beginning.
+	void stop()
+	{	if (!animation_timer)
+			animation_timer = new Timer();
+	}
+
+	
+	
+	/// Get / set the 3D model that is being used by this Node.
 	Model getModel()
 	{	return model;
 	}
-
-	/// Set the 3D model used by this Node.
-	void setModel(Model model)
+	void setModel(Model model) /// ditto
 	{	this.model = model;
 		radius = model.getDimensions().scale(size).length();
 	}
 
 	/**
-	 * Set the 3D model used by this Node, using the Resource Manager
-	 * to ensure that no Model is loaded twice.
+	 * Set the 3D model used by this Node, using the Resource Manager to ensure that no Model is loaded twice.
 	 * Equivalent of setModel(Resource.model(filename)); */
 	void setModel(char[] filename)
 	{	setModel(Resource.model(filename));

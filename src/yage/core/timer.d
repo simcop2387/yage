@@ -6,6 +6,7 @@
 
 module yage.core.timer;
 
+import std.c.math;
 import std.perf;
 import std.string;
 //import derelict.sdl.sdl;
@@ -28,9 +29,9 @@ version (Windows)
 class Timer
 {
 	protected bool 		paused	= false;
-	//protected real	min		= 0;
-	//protected real 	max		= real.infinity;
-	//protected real	speed	= 1.0;
+	protected double	min		= 0;
+	protected double 	max		= real.infinity;
+	//protected double	speed	= 1.0;
 	protected ulong		us		= 0;		// microsecond counter
 	protected PerformanceCounter hpc;
 
@@ -54,11 +55,19 @@ class Timer
 		{	if (!paused)
 			{	hpc.stop();
 				us +=  hpc.microseconds();
-				real result = us*0.000001;
 				hpc.start();
 			}
-			return us*0.000001;
-	}	}
+		}
+		double relative = us*0.000001;
+		
+		real range = max-min;
+		if (relative > max)
+			relative = min + fmod(relative-min, range);
+		if (relative < min)
+			relative = max + fmod(relative-max, range);
+
+		return relative;
+	}	
 
 	/// Is the Timer paused?
 	bool getPaused()
@@ -104,6 +113,19 @@ class Timer
 	{	us = cast(ulong)(time*1000000);
 	}
 
+	
+	/**
+	 * Set the timers rollunder and rollover values.
+	 * Provide no arguments to reset them to the defaults of 0 and infinity.
+	 * Params:
+	 *     min = The timer will never be less than this value.
+	 *     max = The timer will never be greater than this value and will rollover back to min after crossing it.*/
+	void setBounds(double min=0, double max=double.infinity)
+	{	this.min = min;
+		this.max = max;		
+	}
+	
+	
 	char[] toString()
 	{	return .toString(get());
 	}

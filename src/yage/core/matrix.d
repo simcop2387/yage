@@ -276,11 +276,16 @@ struct Matrix
 		return *this;
 	}
 
-	/// Perform Matrix multiplication in reverse (since Matrix multiplication is not cummulative.)
+	/// Perform Matrix multiplication in reverse (since Matrix multiplication is not cummulative.) Is this backwards?
 	Matrix postMultiply(Matrix b)
 	{	return *this*b;
 	}
 
+	///
+	Vec3f position()
+	{	return Vec3f(v[12..15]);		
+	}
+	
 	///
 	void *ptr()
 	{	return v.ptr;
@@ -424,11 +429,30 @@ struct Matrix
 		v[10]= cx*cy;
 	}
 
-	/// Set the rotation values of this Matrix from another Matrix
+	///
+	void setPosition(Vec3f position)
+	{	v[12..15] = position.v[0..3];
+	}
+	
+	/// Set the rotation values of this Matrix from another Matrix or Quatrn.
 	void setRotation(Matrix rot)
 	{	v[0..3]  = rot.v[0..3];
 		v[4..7]  = rot.v[4..7];
 		v[8..11] = rot.v[8..11];
+	}
+	/// ditto
+	void setRotation(Quatrn rot)
+	{	v[0] = 1-2*(rot.y*rot.y + rot.z*rot.z);
+		v[1] =   2*(rot.x*rot.y + rot.z*rot.w);
+		v[2] =   2*(rot.x*rot.z - rot.y*rot.w);
+		//v[3] =   0;
+		v[4] =   2*(rot.x*rot.y - rot.z*rot.w);
+		v[5] = 1-2*(rot.x*rot.x + rot.z*rot.z);
+		v[6] =   2*(rot.y*rot.z + rot.x*rot.w);
+		//v[7] =   0;
+		v[8] =   2*(rot.x*rot.z + rot.y*rot.w);
+		v[9] =   2*(rot.y*rot.z - rot.x*rot.w);
+		v[10] = 1-2*(rot.x*rot.x + rot.y*rot.y);
 	}
 
 	/**
@@ -466,7 +490,6 @@ struct Matrix
 		}
 		return res;
     }
-
 
 	/** Convert the rotation part of the Matrix to Euler angles.
 	 *  This may be inaccurate and perhaps suffers from other faults. */

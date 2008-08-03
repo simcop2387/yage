@@ -61,18 +61,18 @@ class Ship : GameObject
 		float speed = 250*delta;
 
 		// Accelerate forward
-		if (Input.keydown[SDLK_UP] || Input.keydown[SDLK_w])
+		if (Input.keyDown[SDLK_UP] || Input.keyDown[SDLK_w])
 		{
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
 			Vec3f vel = Vec3f(0, 0, -.8).rotate(pitch.getAbsoluteRotation()).scale(getVelocity().length());
 		}
 
 		// Accelerate left, right, and backward
-		if (Input.keydown[SDLK_LEFT] || Input.keydown[SDLK_a])
+		if (Input.keyDown[SDLK_LEFT] || Input.keyDown[SDLK_a])
 			accelerate(Vec3f(-speed/6, 0, 0).rotate(pitch.getTransform()).rotate(getTransform()));
-		if (Input.keydown[SDLK_RIGHT] || Input.keydown[SDLK_d])
+		if (Input.keyDown[SDLK_RIGHT] || Input.keyDown[SDLK_d])
 			accelerate(Vec3f(speed/6, 0, 0).rotate(pitch.getTransform()).rotate(getTransform()));
-		if (Input.keydown[SDLK_DOWN] || Input.keydown[SDLK_s])
+		if (Input.keyDown[SDLK_DOWN] || Input.keyDown[SDLK_s])
 			accelerate(Vec3f(0, 0, speed/3).rotate(pitch.getTransform()).rotate(getTransform()));
 
 		// Rotate

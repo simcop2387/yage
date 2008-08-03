@@ -75,11 +75,12 @@ class Sound
 
 	/// Tell OpenAL to release the sound, close the file, and delete associated memory.
 	~this()
-	{	freeBuffers(0, buffer_num);	// ensure every buffer is released
+	{	std.stdio.writefln("Sound deconstructor");
+		freeBuffers(0, buffer_num);	// ensure every buffer is released
 		delete sound_file;
 	}
 
-	/// Get the frequency of the sound (usually 22050 or 44100)
+	/// Get the frequency of the sound (often 22050 or 44100)
 	uint getFrequency()
 	{	return sound_file.frequency;
 	}

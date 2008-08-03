@@ -15,8 +15,11 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.matrix;
 import yage.core.misc;
+import yage.core.parse;
+import yage.core.quatrn;
 import yage.core.vector;
 
+import yage.resource.exception;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.resource;
@@ -50,8 +53,50 @@ struct Attribute
 	}
 }
 
+struct KeyFrame
+{	float time;
+	Vec3f value;
+	
+	char[] toString()
+	{
+		char[] result = formatString(
+			"%ss, %s",
+			time, value);
+		return result;
+	}
+};
+
+class Joint
+{	char[]	name;
+	char[]	parentName;
+	Joint	parent;				// pointer to parent bone (or null)
+	Joint[] children;
+	Vec3f	startPosition;
+	Vec3f	startRotation;
+	Matrix	transform;			// fixed transformation matrix relative to parent 
+	Matrix	transformAbs;		// absolute in accordance to animation	
+	KeyFrame[] positions;	
+	KeyFrame[] rotations;
+	
+	char[] toString()
+	{
+		char[] result = formatString(
+			"Name: %s\n" ~
+			"Parent: %s\n" ~
+			"Start Position: %s\n" ~
+			"Start Rotation: %s\n",
+			name, parentName, startPosition, startRotation);		
+		foreach (i, k; positions)		
+			result ~= formatString("Position %d: %s\n", i, k.toString());
+		foreach (i, k; rotations)		
+			result ~= formatString("Rotation %d: %s\n", i, k.toString());
+		return result;
+	}
+};
+
+
 /**
- * A Model is a 3D object, typically loaded from a file.
+ * A Model is a 3D object, often loaded from a file.
  *
  * Each model is divided into one or more Meshes; each Mesh has its own material
  * and an array of triangle indices that correspond to vertices in the Model's vertex array.  
@@ -62,6 +107,12 @@ class Model
 	protected Mesh[] meshes;
 	protected Attribute[char[]] attributes;	// An associative array to store as many attributes as necessary
 
+	protected float fps=24;
+	protected float animation_time=0;
+	protected float max_time=0;
+	protected Joint[] joints; // used for skeletal animation
+	protected int[] joint_indices;
+	
 	mixin Ms3dLoader;
 	mixin ObjLoader;
 
@@ -107,8 +158,97 @@ class Model
 			clearAttribute(name);
 	}
 
+	
+	
+	///
+	void animate(float time)
+	{
+		real temp = max_time;
+		while (time > max_time)
+			time-= max_time; // since modf doesn't seem to work right.
+		
+		// TODO: check time constraints		
+		foreach(j, joint; joints)
+		{
+			float deltatime;	// time between frames	
+			float fraction;		// percent between frames
+			Matrix m_rel = Matrix();		// relative matx  for this frame
+			Matrix m_frame = Matrix();		// final matx for this frame
+			
+			// Find appropriate position keyframe
+			int i=0;
+			while ((i<joint.positions.length) && (joint.positions[i].time < time))
+				i++;
+			
+			// Interpolate between 2 keyframes
+			if (i>0 && i < joint.positions.length-1)
+			{	
+				deltatime = joint.positions[i].time - joint.positions[i-1].time;
+				fraction = (time - joint.positions[i-1].time) / deltatime;
+				assert(fraction > 0 && fraction <= 1);
+								
+				m_frame.v[12] = joint.positions[i-1].value.x + fraction * (joint.positions[i].value.x - joint.positions[i-1].value.x);
+				m_frame.v[13] = joint.positions[i-1].value.y + fraction * (joint.positions[i].value.y - joint.positions[i-1].value.y);
+				m_frame.v[14] = joint.positions[i-1].value.z + fraction * (joint.positions[i].value.z - joint.positions[i-1].value.z);
+			}
+			else if (i==0)
+				m_frame.setPosition(joint.positions[0].value);
+			else // i==joints.positions.length
+				m_frame.setPosition(joint.positions[length-1].value);
+						
+			// Find appropriate rotation keyframe
+			i=0;
+			while ((i<joint.rotations.length) && (joint.rotations[i].time < time))
+				i++;
+			// Interpolate between 2 keyframes
+			if (i>0 && i<joint.rotations.length-1)
+			{	
+				deltatime = joint.rotations[i].time - joint.rotations[i-1].time;				
+				fraction = (time - joint.rotations[i-1].time) / deltatime;
+				assert(fraction > 0 && fraction <= 1);
+								
+				Quatrn prev, next;
+				prev.setEuler(joint.rotations[i-1].value);
+				next.setEuler(joint.rotations[i].value);
+				Quatrn finl = prev.slerp(next, fraction);
+												
+				m_frame.setRotation(finl);
+			} else if (i==0)
+				m_frame.setEuler(joint.rotations[0].value);
+			else // i==joints.rotations.length
+				m_frame.setEuler(joint.rotations[length-1].value);
+			
+			m_rel.setEuler(joint.startRotation); 
+			m_rel.v[12..15] = joint.startPosition.v[0..3];			
+			m_rel = m_frame*m_rel;
+			
+			if (!joint.parent)
+				joint.transformAbs = m_rel;
+			else
+				joint.transformAbs = m_rel * joint.parent.transformAbs;					
+		}
+		
+		// Update vertex positions based on joints.
+		Vec3f[] vertices = getAttribute("gl_Vertex").vec3f;
+		Vec3f[] vertices_original = getAttribute("gl_VertexOriginal").vec3f;
+		for (int v=0; v<vertices.length; v++)
+		{	if (joint_indices[v] != -1)
+			{	
+				//writefln(joint_indices[v]);
+				Matrix cmatx = joints[joint_indices[v]].transformAbs; 
+				vertices[v] = vertices_original[v].transform(cmatx);
+				
+				// TODO: Normals
+				// TODO: only reassign cmatx if joint_indices[v] has changed.
+			}				
+		}
+				
+		setAttribute("gl_Vertex", vertices);
+		
+	}	
+	
+	
 	/// This can only be called before upload()
-
 	/// Bind the Vertex, Texture, and Normal VBO's for use.
 	void bind()
 	{	foreach (name, attrib; attributes)
@@ -170,6 +310,13 @@ class Model
 		return result;
 	}
 
+	/**
+	 * Get an array of all of the Model's Joints, which are used for skeletal animation.
+	 * This can be traversed as an array, or as a tree since each Joint references its parent and children. */
+	Joint[] getJoints()
+	{	return joints;		
+	}
+	
 	/// Get the array of meshes that compose this model.
 	Mesh[] getMeshes()
 	{	return meshes;
@@ -191,11 +338,11 @@ class Model
 		switch (tolower(ext))
 		{	case "ms3d":
 				loadMs3d(filename);
-				std.gc.fullCollect();
+				//std.gc.genCollect();
 				break;
 			case "obj":
 				loadObj(filename);
-				std.gc.fullCollect();
+				//std.gc.genCollect();
 				break;
 			default:
 				throw new Exception("Unrecognized file format '"~ext~"'.");
@@ -216,8 +363,7 @@ class Model
 	 * the values of the attribute will be bound automaticallyat runtime and can
 	 * then be accessed by the shader.
 	 * Params:
-	 * name = the name of the attribute, should be the same as the attribute
-	 * variable name in the vertex shader.
+	 * name = the name of the attribute, should be the same as the attribute variable name in the vertex shader.
 	 * values = an array of values; should be the same length as the number of
 	 * vertices for the model.*/
 	void setAttribute(char[] name, float[] values)
@@ -238,15 +384,19 @@ class Model
 
 	/**
 	 * Return a string representation of this Model and all of its data. */
-	char[] toString()
+	char[] toString(bool detailed=false)
 	{	char[] result;
 		result ~= "Model:  '"~source~"'\n";
+
+		foreach (j; joints)
+			result ~= j.toString();
+		
 		return result;
 	}
 
 	// Used by the other setAttribute functions.
-	private void setAttribute(char[] name, float[] values, int width){
-		
+	protected void setAttribute(char[] name, float[] values, int width)
+	{		
 		if (!(name in attributes))
 		{	Attribute a;
 			attributes[name] = a;
@@ -260,7 +410,7 @@ class Model
 		if (Device.getSupport(DEVICE_VBO))
 		{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attributes[name].vbo);
 			glBufferDataARB(GL_ARRAY_BUFFER_ARB, attributes[name].values.length*float.sizeof, attributes[name].values.ptr, GL_STATIC_DRAW);
-			//glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+			//glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0); // unbind
 			attributes[name].cached = true;
 		}
 	}

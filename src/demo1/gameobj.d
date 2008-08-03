@@ -66,7 +66,7 @@ class Flare : GameObject
 
 		if (timer is null)
 		{	timer = new Timer();
-			timer.set(1);
+			timer.set(1);			
 		}
 
 		// don't create a new light more than 5 times per second

@@ -16,6 +16,7 @@ import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
 import yage.core.math;
+import yage.core.timer;
 import yage.core.vector;
 import yage.resource.resource;
 import yage.resource.image;
@@ -45,7 +46,7 @@ struct Texture
 	/// See_Also: <a href="http://en.wikipedia.org/wiki/Texel_%28graphics%29">The Wikipedia entry for texel</a>
 	bool clamp = false;
 
-	///
+	/// Environment map?
 	bool reflective = false;
 
 	/// Property to set the type of filtering used for the textures of this layer.
@@ -64,7 +65,7 @@ struct Texture
 	///
 	Vec2f scale = {v:[1.0f, 1.0f]};
 
-	/// A pointer to the actual Texture used.
+	/// A pointer to the actual GPUTexture used.
 	GPUTexture texture;
 
 	/// Create a new TextureInstance with the parameters specified.
@@ -84,7 +85,7 @@ struct Texture
 	/// Bind the Texture as the current OpenGL texture and apply its properties to the OpenGL state machine.
 	void bind()
 	{
-		// Used to ranslate yage blending constants to opengl
+		// Used to translate yage blending constants to opengl
 		if (!translate.length)
 		{	translate[BLEND_NONE] = GL_MODULATE;
 			translate[BLEND_ADD] = GL_ADD;	// should GL_EXT_texture_env_add support be checked?
@@ -171,6 +172,8 @@ struct Texture
 		// Blend
 		if (blend != BLEND_MULTIPLY)
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	///
@@ -204,8 +207,12 @@ class GPUTexture
 	///
 	this()
 	{	glGenTextures(1, &gl_index);
-		Texture(this).bind();
-		Texture(this).unbind();
+	
+		// For some reason these need to be called or everything runs slowly.
+		glBindTexture(GL_TEXTURE_2D, gl_index);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	/**
@@ -213,7 +220,8 @@ class GPUTexture
 	 * This is equivalent to calling the default constructor followed by upload().*/
 	this(char[] filename, bool compress=true, bool mipmap=true)
 	{	this();
-		upload(new Image(filename), compress, mipmap);
+		source = Resource.resolvePath(filename);
+		upload(new Image(source), compress, mipmap);
 	}
 
 	/// Ditto
@@ -226,7 +234,8 @@ class GPUTexture
 	~this()
 	{	Log.write("Removing texture '" ~ source ~ "' from video memory.");
 		try // Because of a conflict with SDL_Quit();
-		{	glDeleteTextures(1, &gl_index); }
+		{	glDeleteTextures(1, &gl_index); 
+		}
 		catch {}
 	}
 
@@ -267,39 +276,38 @@ class GPUTexture
 	{
 		this.compress = compress;
 		this.mipmap = mipmap;
-		this.format = image.getFormat();
+		this.format = image.getChannels();
 		this.width = image.getWidth();
-		this.height = image.getHeight();
-		this.source = image.getSource();
+		this.height = image.getHeight();		
 
-		Log.write("Uploading image '" ~ source ~ "' to video memory.");
 		glBindTexture(GL_TEXTURE_2D, gl_index);
 
 		// Calculate formats
 		uint glformat, glinternalformat;
 		switch(format)
-		{	case IMAGE_FORMAT_GRAYSCALE:
+		{	case Image.FORMAT_GRAYSCALE:
 				glformat = GL_LUMINANCE;
 				glinternalformat = compress ? GL_COMPRESSED_LUMINANCE : GL_LUMINANCE;
 				break;
-			case IMAGE_FORMAT_RGB:
+			case Image.FORMAT_RGB:
 				glformat = GL_RGB;
 				glinternalformat = compress ? GL_COMPRESSED_RGB : GL_RGB;
 				break;
-			case IMAGE_FORMAT_RGBA:
+			case Image.FORMAT_RGBA:
 				glformat = GL_RGBA;
-				glinternalformat = compress ? GL_COMPRESSED_RGBA : GL_RGBA;;
+				glinternalformat = compress ? GL_COMPRESSED_RGBA : GL_RGBA;
 				break;
 			default:
-				throw new Exception("Unknown image format.");
+				throw new Exception("Unknown image format" ~ .toString(format));
 		}
 
 	    // Upload image
+		// TODO: Use image's built in resizer instead of glu.
+		// glu has resizing issues with non power of two source textures.
 	    if (mipmap)
-			gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.get().ptr);
-		else
-		{
-			uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
+	    	gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
+	    else
+		{	uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
 			uint newwidth = image.getWidth();
 			uint newheight= image.getHeight();
 
@@ -313,10 +321,13 @@ class GPUTexture
 			}
 
 			// Resize if necessary
-			image.resize(min(newwidth, max), min(newheight, max));
-			glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.get().ptr);
+			if (newwidth != width || newheight != height)
+				image = image.resize(min(newwidth, max), min(newheight, max));
 
-	    }
+			// Uploading the texture to video memory is by far the slowest part of this function.
+			glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
+
+		}
 	    if(this.requested_width == 0) this.requested_width = this.getWidth();
 	    if(this.requested_height == 0) this.requested_height = this.getHeight();
 	}
@@ -336,7 +347,7 @@ class GPUTexture
 
 		glBindTexture(GL_TEXTURE_2D, gl_index);
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, this.width, this.height, 0);
-		format = IMAGE_FORMAT_RGB;
+		format = 3;
 		
 		requested_width  = width;
 		requested_height = height;

@@ -90,7 +90,7 @@ class TerrainNode : VisibleNode
 	 * repeat = The material texture coordinates will be repeated this many times. */
 	void setHeightMap(Image grayscale, float repeat=1)
 	{	// just to be sure
-		grayscale.setFormat(IMAGE_FORMAT_GRAYSCALE);
+		grayscale.setFormat(1);
 
 		// Allocate vertex data
 		int w = grayscale.getWidth();

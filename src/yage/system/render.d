@@ -143,6 +143,10 @@ class Render
 			at.texcoords[i] = &t[tri.v[i]];
 			at.normals[i] = &n[tri.v[i]];
 		}*/
+		
+		// Unbind current VBO
+		if(Device.getSupport(DEVICE_VBO))
+			glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 		nodes.length = 0;
 		alpha.length = 0;
@@ -154,8 +158,9 @@ class Render
 	/*
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
-	 * Rotation can optionally be supplied to rotate sprites so they face the camera. */
-	protected static void model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0))
+	 * Rotation can optionally be supplied to rotate sprites so they face the camera. 
+	 * TODO: Remove dependence on node. */
+	protected static void model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)
 	{
 		model.bind();
 		Vec3f[] v = model.getAttribute("gl_Vertex").vec3f;
@@ -174,7 +179,7 @@ class Render
 		foreach (Mesh mesh; model.getMeshes())
 		{
 			// Bind and draw the triangles
-			void draw()
+			void drawTriangles()
 			{	if (mesh.getCached()){
 					glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTrianglesVBO());
 					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, null);
@@ -201,20 +206,19 @@ class Render
 					// If not translucent
 					if (!sort)
 					{	l.bind(node.getLights(), node.getColor(), model);
-						draw();
+					drawTriangles();
 						l.unbind();
 
 					} else
 					{
-						foreach (int index, Vec3i tri; mesh.getTriangles())
 						// Add to translucent
+						foreach (int index, Vec3i tri; mesh.getTriangles())						
 						{	AlphaTriangle at;
 							for (int i=0; i<3; i++)
 							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getSize());
 								at.texcoords[i] = &t[tri.v[i]];
 								at.normals[i] = &n[tri.v[i]];
 							}
-
 							// New
 							at.node 	= node;
 							at.model	= model;
@@ -223,32 +227,66 @@ class Render
 							at.triangle = index;						
 							
 							alpha ~= at;
-						}
-					}
+					}	}
 					num++;
 				}
-
-				/*
-				// Draw normals
-				foreach (Vec3i tri; mesh.getTriangles())
-				// Add to translucent
-				{	AlphaTriangle at;
-					for (int i=0; i<3; i++)
-					{	Vec3f vertex = v[tri.v[i]];
-						Vec3f normal = n[tri.v[i]];
-						glColor3f(0, 1, 1);
-						glDisable(GL_LIGHTING);
-						glBegin(GL_LINES);
-							glVertex3fv(vertex.ptr);
-							glVertex3fv((vertex+normal.scale(.01)).ptr);
-						glEnd();
-						glEnable(GL_LIGHTING);
-						glColor3f(1, 1, 1);
-					}
-				}*/
 			}
 			else // render with no material
-				draw();
+				drawTriangles();
+
+			
+			if (_debug)
+			{	// Draw normals
+				glColor3f(0, 1, 1);
+				glDisable(GL_LIGHTING);
+				foreach (Vec3i tri; mesh.getTriangles())
+				{	for (int i=0; i<3; i++)
+					{	Vec3f vertex = v[tri.v[i]];
+						Vec3f normal = n[tri.v[i]];						
+						glBegin(GL_LINES);
+							glVertex3fv(vertex.ptr);
+							glVertex3fv((vertex+normal.scale(.5)).ptr);
+						glEnd();
+				}	}	
+				
+				glEnable(GL_LIGHTING);
+				glColor3f(1, 1, 1);
+			}			
+		}
+		
+		// Draw joints
+		if (true)
+		{	glDisable(GL_DEPTH_TEST);
+			glDisable(GL_LIGHTING);
+			foreach (cb; model.getJoints())
+			{
+				Vec3f vec, parentvec;
+				vec = vec.transform(cb.transformAbs);
+			
+				// Joint connections.
+				if (cb.parent)
+				{	parentvec = parentvec.transform(cb.parent.transformAbs);	
+					glLineWidth(2.0);
+					glColor3f(0.0, 1.0, 0.0);
+					glBegin(GL_LINES);
+					glVertex3fv(vec.ptr);
+					glVertex3fv(parentvec.ptr);
+					glEnd();
+				}
+	
+				// Joints
+				glPointSize(8.0);
+				glColor3f(1.0, 0, 1.0);
+				glBegin(GL_POINTS);
+					glVertex3fv(vec.ptr);
+				glEnd();
+				
+				glLineWidth(1.0);
+				glPointSize(1.0);
+				glColor3f(1.0, 1.0, 1.0);
+			}
+			glEnable(GL_LIGHTING);
+			glEnable(GL_DEPTH_TEST);
 		}
 	}
 
