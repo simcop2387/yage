@@ -102,7 +102,7 @@ class GraphNode : VisibleNode
 	/// Overridden to cache the radius if changed by the scale.
 	void setSize(Vec3f size)
 	{	this.size = size;
-		radius = model.getDimensions().scale(size).length();
+		radius = model.getRadius() * size.max();
 	}	
 	Vec3f getSize() /// Ditto
 	{	return super.size;		
@@ -227,7 +227,7 @@ class GraphNode : VisibleNode
 		model.setAttribute("gl_Normal", normals);
 		model.getMeshes()[0].setTriangles(triangles);
 
-		radius = model.getDimensions().scale(size).max();
+		radius = model.getRadius()*size.max();
 
 		// Cache model in video memory
 		//model.upload();

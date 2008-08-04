@@ -6,6 +6,7 @@
 
 module yage.resource.model;
 
+import std.c.math : fmod;
 import std.string;
 import std.file;
 import std.math;
@@ -18,18 +19,16 @@ import yage.core.misc;
 import yage.core.parse;
 import yage.core.quatrn;
 import yage.core.vector;
-
-import yage.resource.exception;
+import yage.system.exceptions;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.resource;
-import yage.scene.visible;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
-
 import yage.resource.ms3dloader;
 import yage.resource.objloader;
+import yage.scene.visible;
 
 
 /**
@@ -108,8 +107,9 @@ class Model
 	protected Attribute[char[]] attributes;	// An associative array to store as many attributes as necessary
 
 	protected float fps=24;
-	protected float animation_time=0;
-	protected float max_time=0;
+	protected bool animated = false;
+	protected double animation_time=0;
+	protected double animation_max_time=0;
 	protected Joint[] joints; // used for skeletal animation
 	protected int[] joint_indices;
 	
@@ -160,12 +160,19 @@ class Model
 
 	
 	
-	///
-	void animate(float time)
+	/**
+	 * Advance this Model's animation to time.
+	 * Params:
+	 *     time =
+	 */
+	void animateTo(double time)
 	{
-		real temp = max_time;
-		while (time > max_time)
-			time-= max_time; // since modf doesn't seem to work right.
+		// If nothing to do.
+		if (animation_time == time)
+			return;
+		
+		time = fmod(time, animation_max_time);		
+		animation_time = time;
 		
 		// TODO: check time constraints		
 		foreach(j, joint; joints)
@@ -294,20 +301,22 @@ class Model
 	{	return attributes;
 	}
 	
-	///
+	/**
+	 * Get the requested attribute.
+	 * @throws Exception if the attribute is not defined. */
 	Attribute getAttribute(char[] name)
 	{	return attributes[name];
 	}
 
-	/// Get the dimensions of a box, centered at the origin, that can contain this Model.
-	Vec3f getDimensions()
-	{	Vec3f result;
+	/// Get radius of a sphere, centered at the model's origin, that can contain this Model.
+	float getRadius()
+	{	float result=0;
 		foreach (Vec3f v; getAttribute("gl_Vertex").vec3f)
-		{	if (abs(v.x) > result.x) result.x=v.x;
-			if (abs(v.y) > result.y) result.y=v.y;
-			if (abs(v.z) > result.z) result.z=v.z;
+		{	float length2 = v.length2();
+			if (length2 > result)
+				result = length2;
 		}
-		return result;
+		return sqrt(result);
 	}
 
 	/**
@@ -315,6 +324,19 @@ class Model
 	 * This can be traversed as an array, or as a tree since each Joint references its parent and children. */
 	Joint[] getJoints()
 	{	return joints;		
+	}
+	
+	/**
+	 * Get whether this model is animated. */
+	bool getAnimated()
+	{	return animated;		
+	}
+	
+	
+	/**
+	 * Get the time in seconds of the end of this Model's skeletal animation.*/
+	double getAnimationMax()
+	{	return animation_max_time;		
 	}
 	
 	/// Get the array of meshes that compose this model.

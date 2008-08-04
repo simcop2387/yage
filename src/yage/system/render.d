@@ -18,6 +18,7 @@ import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
 import yage.scene.all;
+import yage.scene.model;
 import yage.scene.camera: CameraNode;
 
 private struct Attribute2
@@ -168,6 +169,20 @@ class Render
 		Vec2f[] t = model.getAttribute("gl_TexCoord").vec2f;
 		Matrix abs_transform = node.getAbsoluteTransform(true);
 		vertex_count += v.length;
+		
+		// Apply skeletal animation.
+		if (cast(ModelNode)node)
+		{
+			if (model.getAnimated())
+			{	auto mnode = cast(ModelNode)node;
+				model.animateTo(mnode.getAnimationTimer().tell());
+			
+				// Forces an update of the node's culling radius.
+				// This isn't perfect, since this is after CameraNode's culling, but a model's radius is
+				// usually temporaly coherent so this takes advantage of that for the next render.
+				mnode.setModel(model); 
+			}
+		}
 
 		// Rotate if rotation is nonzero.
 		if (rotation.length2())

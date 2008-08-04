@@ -152,14 +152,12 @@ class TerrainNode : VisibleNode
 	void scale(Vec3f scale)
 	{	this.scale = scale;
 		if (width != 0) // if heightmap loaded
-			radius = model.getDimensions().scale(scale).length();
+			radius = model.getRadius()*scale.max();
 	}
 	
 	Vec3f scale()
 	{	return super.size;		
 	}
-	
-	
 
 	/*
 	 * Recalculate the terrain's normals and culling sphere radius.*/
@@ -198,6 +196,6 @@ class TerrainNode : VisibleNode
 		//model.setAttribute("gl_Vertex", vertices);
 		model.setAttribute("gl_Normal", normals);
 		
-		radius = model.getDimensions().scale(scale).length();
+		radius = model.getRadius()*size.max();
 	}
 }

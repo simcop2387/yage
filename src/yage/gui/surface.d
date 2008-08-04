@@ -20,7 +20,7 @@ import yage.system.input;
 import yage.resource.texture;
 import yage.resource.image;
 import yage.gui.style;
-import yage.system.rendertarget;
+import yage.system.interfaces;
 
 
 const float third = 1.0/3.0;

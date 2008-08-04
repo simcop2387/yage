@@ -14,7 +14,7 @@ import yage.core.math;
 import yage.core.timer;
 import yage.core.types;
 import yage.core.parse;
-import yage.resource.exception;
+import yage.system.exceptions;
 import yage.resource.resource;
 import yage.resource.image;
 import yage.resource.texture;

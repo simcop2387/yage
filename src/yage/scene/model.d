@@ -10,6 +10,7 @@ import yage.core.timer;
 import yage.core.vector;
 import yage.system.device;
 import yage.system.log;
+import yage.system.interfaces;
 import yage.resource.resource;
 import yage.resource.model;
 import yage.resource.material;
@@ -24,6 +25,7 @@ class ModelNode : VisibleNode
 	protected float radius=0;	// cached radius
 	
 	protected Timer animation_timer;
+	protected bool animation_looping = false;
 
 	/// Construct this Node as a child of parent.
 	this(Node parent)
@@ -42,45 +44,33 @@ class ModelNode : VisibleNode
 	}
 
 	
-	void setAnimation(float from, float to, bool looping=true)
+	/**
+	 * Get the timer used for the skeletal animation of this model.
+	 * If the model has no joints and keyframes for skeletal animation, modifying this timer will do nothing.
+	 * TODO: Implement a similar interface for SoundNode?
+	 * 
+	 * See: yage.core.timer
+	 * 
+	 * Example:
+	 * --------------------------------
+	 * // Continuously play the model's skeletal animation from 5 to 12 seconds.
+	 * Timer t1 = myModel.getAnimationTimer();
+	 * t1.setRange(5, 12);
+	 * t1.play();
+	 * 
+	 * // Play the animation from 0 to 60 seconds and then stop.
+	 * Timer t2 = myModel.getAnimationTimer();
+	 * t2.setRange(0, 60);
+	 * t2.pauseAfter(60);
+	 * t2.play(); 
+	 * --------------------------------
+	 */
+	Timer getAnimationTimer()
 	{	if (!animation_timer)
-			animation_timer = new Timer();
-		
-	}
-	
-	/// Alias of setPaused(false);
-	void play()
-	{	if (!animation_timer)
-			animation_timer = new Timer();
-	}
-
-	/// Alias of setPaused(true);
-	void pause()
-	{	if (!animation_timer)
-			animation_timer = new Timer();
-	}
-
-	/** Seek to the position in the track.  Seek has a precision of .05 seconds.
-	 *  seek() throws an exception if the value is outside the range of the Sound. */
-	void seek(double seconds)
-	{	if (!animation_timer)
-			animation_timer = new Timer();
-	}
-
-	/// Tell the position of the playback of the current sound file, in seconds.
-	double tell()
-	{	if (!animation_timer)
-			animation_timer = new Timer();
-		return 1.0;
+			animation_timer = new Timer(false);
+		return animation_timer;
 	}
 
-	/// Stop the SoundNode from playing and rewind it to the beginning.
-	void stop()
-	{	if (!animation_timer)
-			animation_timer = new Timer();
-	}
-
-	
 	
 	/// Get / set the 3D model that is being used by this Node.
 	Model getModel()
@@ -88,7 +78,7 @@ class ModelNode : VisibleNode
 	}
 	void setModel(Model model) /// ditto
 	{	this.model = model;
-		radius = model.getDimensions().scale(size).length();
+		radius = model.getRadius()*size.max();
 	}
 
 	/**
@@ -100,9 +90,9 @@ class ModelNode : VisibleNode
 
 	/// Overridden to cache the radius if changed by the scale.
 	void setSize(Vec3f s)
-	{	super.size = Vec3f(s.x, s.y, s.z);
+	{	super.size = s;
 		if (model)
-			radius = model.getDimensions().scale(size).max();
+			radius = model.getRadius()*size.max();
 	}	
 	Vec3f getSize() /// Ditto
 	{	return super.size;		

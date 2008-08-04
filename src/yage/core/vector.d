@@ -20,7 +20,8 @@ import yage.core.quatrn;
  * Example:
  * --------------------------------
  * Vec!(4, real) a; // a is a four-component real vector.
- * --------------------------------*/
+ * --------------------------------
+ */
 struct Vec(int S, T)
 {
 	alias Vec!(S, T) VST;

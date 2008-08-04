@@ -17,6 +17,8 @@
 module yage.core.array;
 
 import std.stdio;
+import std.random;
+import yage.core.types;
 
 /**
  * Add an element to an already sorted array, maintaining the same sort order. 

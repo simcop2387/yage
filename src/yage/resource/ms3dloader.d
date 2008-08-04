@@ -14,7 +14,7 @@ import yage.core.all;
 import yage.core.types;
 import yage.core.color;
 import yage.resource.all;
-import yage.resource.exception;
+import yage.system.exceptions;
 import yage.system.log;
 
 import std.c.string : memcpy;
@@ -365,14 +365,14 @@ template Ms3dLoader()
 			for (int k=0; k<joints[j].positions.length; k++)
 			{	joints[j].positions[k].time = ms3d.joints[j].keyFramesTrans[k].time;
 				joints[j].positions[k].value.v[0..3] = ms3d.joints[j].keyFramesTrans[k].position[0..3];
-				if (joints[j].positions[k].time > max_time)
-					max_time = joints[j].positions[k].time;
+				if (joints[j].positions[k].time > animation_max_time)
+					animation_max_time = joints[j].positions[k].time;
 			}
 			for (int k=0; k<joints[j].rotations.length; k++)
 			{	joints[j].rotations[k].time = ms3d.joints[j].keyFramesRot[k].time;
 				joints[j].rotations[k].value.v[0..3] = ms3d.joints[j].keyFramesRot[k].rotation[0..3];
-				if (joints[j].rotations[k].time > max_time)
-					max_time = joints[j].rotations[k].time;
+				if (joints[j].rotations[k].time > animation_max_time)
+					animation_max_time = joints[j].rotations[k].time;
 			}
 		}
 		
@@ -395,7 +395,8 @@ template Ms3dLoader()
 				j.parent.children ~= j;			
 		
 		if (joints.length)
-		{	
+		{	animated = true;
+			
 			// Sets up each joint's transformation matrices
 			foreach(joint; joints)
 			{	
@@ -416,13 +417,15 @@ template Ms3dLoader()
 				{	Matrix matrix = joints[joint_indices[i]].transformAbs;
 					vertices[i] = vertices[i].inverseTransform(matrix);			
 			}	}
+			
+			
 		}	
 				
 		setAttribute("gl_Vertex", vertices);
 		setAttribute("gl_TexCoord", texcoords);
 		setAttribute("gl_Normal", normals);
 		setAttribute("gl_VertexOriginal", vertices.dup); // a copy of these
-		setAttribute("gl_NormalOriginal", vertices.dup); // is required for skeletal animation.
+		setAttribute("gl_NormalOriginal", normals.dup); // is required for skeletal animation.
 	}
 }
 

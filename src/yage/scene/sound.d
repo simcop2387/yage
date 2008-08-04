@@ -11,6 +11,7 @@ import std.string;
 import std.stdio;
 import derelict.openal.al;
 import yage.core.math;
+import yage.system.interfaces;
 import yage.resource.resource;
 import yage.resource.sound;
 import yage.scene.node;
@@ -19,7 +20,7 @@ import yage.scene.scene;
 
 
 /// A node that emits a sound.
-class SoundNode : MovableNode
+class SoundNode : MovableNode, ITemporal
 {	protected:
 
 	uint		al_source;		// OpenAL index of this Sound Resource
@@ -29,7 +30,7 @@ class SoundNode : MovableNode
 	float		radius = 256;	// The radius of the Sound that plays.
 	float		volume = 1.0;
 	bool		looping = false;
-	bool		paused  = true;	// true if paused or stopped
+	bool		_paused  = true;	// true if paused or stopped
 
 	int			size;			// number of buffers that we use at one time
 	bool		enqueue = true;	// Keep enqueue'ing more buffers, false if no loop and at end of track.
@@ -63,7 +64,10 @@ class SoundNode : MovableNode
 		setSoundRadius(original.radius);
 		setVolume(original.volume);
 		setLooping(original.looping);
-		setPaused(original.paused);
+		if (original._paused)
+			pause();
+		else
+			play();
 	}
 
 	/// Remove the Sound Node, overridden for OpenAL cleanup.
@@ -89,7 +93,10 @@ class SoundNode : MovableNode
 		int sec = sound.getBuffersPerSecond();
 		size = len < sec ? len : sec;
 
-		setPaused(tpaused);
+		if (tpaused)
+			pause();
+		else
+			play();
 	}
 
 	/** Set the Sound used by this Node, using the Resource Manager
@@ -154,33 +161,30 @@ class SoundNode : MovableNode
 	}
 
 	/// Is the sound currently paused (or stopped?)
-	bool getPaused()
-	{	return paused;
-	}
-
-	/// Set whether the playback of the SoundNode is paused.
-	void setPaused(bool paused=true)
-	{	// Only do something if changing states
-		if (this.paused != paused)
-		{	this.paused = paused;
-			if (paused)
-				alSourcePause(al_source);
-			else
-			{	if (sound is null)
-					throw new Exception("You cannot play or unpause a SoundNode without first calling setSound().");
-				alSourcePlay(al_source);
-				enqueue = true;
-		}	}
+	bool paused()
+	{	return _paused;
 	}
 
 	/// Alias of setPaused(false);
 	void play()
-	{	setPaused(false);
+	{	// Only do something if changing states
+		if (_paused)
+		{	_paused = false;
+			if (sound is null)
+				throw new Exception("You cannot play or unpause a SoundNode without first calling setSound().");
+			alSourcePlay(al_source);
+			enqueue = true;
+		}	
 	}
 
 	/// Alias of setPaused(true);
 	void pause()
-	{	setPaused(true);
+	{	// Only do something if changing states
+		if (!_paused)
+		{	_paused = true;
+			if (paused)
+				alSourcePause(al_source);
+		}
 	}
 
 	/** 
@@ -203,7 +207,10 @@ class SoundNode : MovableNode
 		}
 
 		buffer_start = buffer_end = secs;
-		setPaused(paused);
+		if (_paused)
+			pause();
+		else
+			play();
 	}
 
 	/// Tell the position of the playback of the current sound file, in seconds.
@@ -216,7 +223,7 @@ class SoundNode : MovableNode
 
 	/// Stop the SoundNode from playing and rewind it to the beginning.
 	void stop()
-	{	paused		= true;
+	{	pause();
 		enqueue		= false;
 		if (sound !is null)
 		{	alSourceStop(al_source);
