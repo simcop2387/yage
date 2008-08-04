@@ -216,18 +216,22 @@ template Ms3dLoader()
 		texcoords.length = ms3d.vertices.length;
 		normals.length   = ms3d.vertices.length;
 		joint_indices.length= ms3d.vertices.length;
-
+		
 		for (int v; v<ms3d.vertices.length; v++)
 		{	vertices[v].x = ms3d.vertices[v].vertex[0];
 			vertices[v].y = ms3d.vertices[v].vertex[1];
 			vertices[v].z = ms3d.vertices[v].vertex[2];
 			joint_indices[v] = ms3d.vertices[v].boneId;
 		}
+		
+		
 
 		// Meshes
 		meshes.length = ms3d.groups.length;
 		for (int m; m<meshes.length; m++)
-		{	meshes[m] = new Mesh();
+		{
+			
+			meshes[m] = new Mesh();
 			Vec3i[] triangles = meshes[m].getTriangles();
 			triangles.length = ms3d.groups[m].numtriangles;
 			
@@ -305,11 +309,12 @@ template Ms3dLoader()
 					(texcoords[triangles[t].x].y != ms3d.triangles[tindex].t[0]))
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
-					vertices.length = texcoords.length = normals.length = vertices.length+1;
+					vertices.length = texcoords.length = normals.length = joint_indices.length = vertices.length+1;
 					vertices[length-1] = vertices[ms3d.triangles[tindex].vertexIndices[0]];
 					memcpy(&normals[length-1], &ms3d.triangles[tindex].vertexNormals[0], 12);
 					texcoords[length-1].x = ms3d.triangles[tindex].s[0];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[0];
+					joint_indices[length-1] = joint_indices[ms3d.triangles[tindex].vertexIndices[1]];
 					// Assign this new vertex to the triangle
 					triangles[t].x = vertices.length-1;
 				}
@@ -319,11 +324,12 @@ template Ms3dLoader()
 					(texcoords[triangles[t].y].y != ms3d.triangles[tindex].t[1]))
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
-					vertices.length = texcoords.length = normals.length = vertices.length+1;
+					vertices.length = texcoords.length = normals.length = joint_indices.length = vertices.length+1;
 					vertices[length-1] = vertices[ms3d.triangles[tindex].vertexIndices[1]];
 					memcpy(&normals[length-1], &ms3d.triangles[tindex].vertexNormals[3], 12);
 					texcoords[length-1].x = ms3d.triangles[tindex].s[1];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[1];
+					joint_indices[length-1] = joint_indices[ms3d.triangles[tindex].vertexIndices[1]];
 					// Assign this new vertex to the triangle
 					triangles[t].y = vertices.length-1;
 				}
@@ -333,16 +339,17 @@ template Ms3dLoader()
 					(texcoords[triangles[t].z].y != ms3d.triangles[tindex].t[2]))
 				{
 					// Duplicate vertex from original and copy new texutre and normal coordinates into it.
-					vertices.length = texcoords.length = normals.length = vertices.length+1;
+					vertices.length = texcoords.length = normals.length = joint_indices.length = vertices.length+1;
 					vertices[length-1] = vertices[ms3d.triangles[tindex].vertexIndices[2]];
 					memcpy(&normals[length-1], &ms3d.triangles[tindex].vertexNormals[6], 12);
 					texcoords[length-1].x = ms3d.triangles[tindex].s[2];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[2];
+					joint_indices[length-1] = joint_indices[ms3d.triangles[tindex].vertexIndices[1]];
 					// Assign this new vertex to the triangle
 					triangles[t].z = vertices.length-1;
 				}
 			}
-
+		
 			// Find meshes with material of -1 (no material) and assign them the default material
 			if (ms3d.groups[m].materialIndex==-1)
 			{	meshes[m].setMaterial(new Material());
@@ -375,6 +382,8 @@ template Ms3dLoader()
 					animation_max_time = joints[j].rotations[k].time;
 			}
 		}
+		
+		
 		
 		// Link joint parent relationships.
 		for (int j=0; j<joints.length; j++)
@@ -413,9 +422,10 @@ template Ms3dLoader()
 
 			// Inverse transform each vertex and inverse rotate each normal by the joint's Matrix.
 			for (int i; i<vertices.length; i++)
-			{	if ( joint_indices[i] != -1 )
+			{	if (joint_indices[i] != -1 )
 				{	Matrix matrix = joints[joint_indices[i]].transformAbs;
-					vertices[i] = vertices[i].inverseTransform(matrix);			
+					vertices[i] = vertices[i].inverseTransform(matrix);		
+					normals[i] = normals[i].inverseRotate(matrix);		
 			}	}
 			
 			

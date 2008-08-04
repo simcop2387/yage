@@ -291,7 +291,6 @@ abstract class Device
 					shader = checkExtension("GL_ARB_shader_objects") && checkExtension("GL_ARB_vertex_shader");
 				return cast(bool)shader;
 			case DEVICE_VBO: //return false; // true breaks custom vertex attributes
-				return false;
 				if (vbo==-1)
 					vbo = checkExtension("GL_ARB_vertex_buffer_object");
 				return cast(bool)vbo;

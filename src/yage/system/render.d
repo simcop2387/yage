@@ -270,7 +270,7 @@ class Render
 		}
 		
 		// Draw joints
-		if (true)
+		if (_debug)
 		{	glDisable(GL_DEPTH_TEST);
 			glDisable(GL_LIGHTING);
 			foreach (cb; model.getJoints())

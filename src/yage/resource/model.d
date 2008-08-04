@@ -174,7 +174,10 @@ class Model
 		time = fmod(time, animation_max_time);		
 		animation_time = time;
 		
-		// TODO: check time constraints		
+		
+		
+		// TODO: check time constraints
+		int i =0;
 		foreach(j, joint; joints)
 		{
 			float deltatime;	// time between frames	
@@ -183,12 +186,12 @@ class Model
 			Matrix m_frame = Matrix();		// final matx for this frame
 			
 			// Find appropriate position keyframe
-			int i=0;
+			i=0;
 			while ((i<joint.positions.length) && (joint.positions[i].time < time))
 				i++;
 			
 			// Interpolate between 2 keyframes
-			if (i>0 && i < joint.positions.length-1)
+			if (i>0 && i < joint.positions.length)
 			{	
 				deltatime = joint.positions[i].time - joint.positions[i-1].time;
 				fraction = (time - joint.positions[i-1].time) / deltatime;
@@ -201,14 +204,14 @@ class Model
 			else if (i==0)
 				m_frame.setPosition(joint.positions[0].value);
 			else // i==joints.positions.length
-				m_frame.setPosition(joint.positions[length-1].value);
+				m_frame.setPosition(joint.positions[length].value);
 						
 			// Find appropriate rotation keyframe
 			i=0;
 			while ((i<joint.rotations.length) && (joint.rotations[i].time < time))
 				i++;
 			// Interpolate between 2 keyframes
-			if (i>0 && i<joint.rotations.length-1)
+			if (i>0 && i<joint.rotations.length)
 			{	
 				deltatime = joint.rotations[i].time - joint.rotations[i-1].time;				
 				fraction = (time - joint.rotations[i-1].time) / deltatime;
@@ -223,7 +226,7 @@ class Model
 			} else if (i==0)
 				m_frame.setEuler(joint.rotations[0].value);
 			else // i==joints.rotations.length
-				m_frame.setEuler(joint.rotations[length-1].value);
+				m_frame.setEuler(joint.rotations[length].value);
 			
 			m_rel.setEuler(joint.startRotation); 
 			m_rel.v[12..15] = joint.startPosition.v[0..3];			
@@ -235,9 +238,18 @@ class Model
 				joint.transformAbs = m_rel * joint.parent.transformAbs;					
 		}
 		
+		//writefln(time, " ", i);
+		
 		// Update vertex positions based on joints.
 		Vec3f[] vertices = getAttribute("gl_Vertex").vec3f;
 		Vec3f[] vertices_original = getAttribute("gl_VertexOriginal").vec3f;
+		
+		Vec3f[] normals;
+		Vec3f[] normals_original;
+		if (hasAttribute("gl_Normal"))
+		{	normals = getAttribute("gl_Normal").vec3f;
+			normals_original = getAttribute("gl_NormalOriginal").vec3f;		
+		}
 		for (int v=0; v<vertices.length; v++)
 		{	if (joint_indices[v] != -1)
 			{	
@@ -245,13 +257,17 @@ class Model
 				Matrix cmatx = joints[joint_indices[v]].transformAbs; 
 				vertices[v] = vertices_original[v].transform(cmatx);
 				
+				
+				if (normals.length)
+					normals[v] = normals_original[v].rotate(cmatx);
 				// TODO: Normals
 				// TODO: only reassign cmatx if joint_indices[v] has changed.
 			}				
 		}
 				
 		setAttribute("gl_Vertex", vertices);
-		
+		if (normals.length)
+			setAttribute("gl_Normal", normals);
 	}	
 	
 	

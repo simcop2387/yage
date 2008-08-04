@@ -141,21 +141,6 @@ int main()
 	window1.style.fontSize = 12;
 	window1.style.color = Color("black");
 	
-	// Beast
-	
-	auto beast = new ModelNode(scene);
-	beast.setModel("beast/beast.ms3d");
-	beast.setPosition(Vec3f(0, 25, -1000));
-	beast.setRotation(Vec3f(0, 1.507, 0));
-	
-	
-	void animate(Node self)
-	{	ModelNode node = cast(ModelNode)self;
-		node.getModel().animate(node.getScene().getStartTime());
-	}
-	beast.onUpdate(&animate);
-
-	
 	// Music
 	auto music = new SoundNode(camera);
 	music.setSound("music/celery - pages.ogg");
@@ -193,19 +178,13 @@ int main()
 	Timer frame = new Timer();
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
-	//std.gc.fullCollect();
-	
-	
-	Timer total = new Timer();
-	total.setBounds(3, 5.0);
-	
+	std.gc.fullCollect();
+
 	while(1)
 	{
-		writefln(total);
-		
 		float dtime = delta.get();
 		delta.reset();
-
+		
 		Input.processInput();
 		camera.toTexture();
 		view.render();
