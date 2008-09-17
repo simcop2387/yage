@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -26,7 +26,7 @@ version (Windows)
  * real b = a.get();		// b stores the current time.
  * --------------------------------
  */
-class Timer /* implements ITemporal */ // This would require core to depend on system.
+class Timer
 {
 	protected bool 		_paused	= false;
 	protected double	pause_after = double.infinity;
@@ -35,11 +35,14 @@ class Timer /* implements ITemporal */ // This would require core to depend on s
 	//protected double	speed	= 1.0;
 	protected ulong		us		= 0;		// microsecond counter
 	protected PerformanceCounter hpc;
+	
+	protected Timer source;
 
 	/// Initialize and start the Timer.
 	this(bool start=true)
 	{	hpc = new PerformanceCounter();
 		_paused = !start;
+		us = 0;
 		if (start)
 			hpc.start();
 	}
@@ -55,6 +58,24 @@ class Timer /* implements ITemporal */ // This would require core to depend on s
 			pause();
 		else
 			play();
+	}
+	
+	// TODO: This timer will use another timer as its source.
+	this (Timer source, bool as_source)
+	{
+		
+	}
+	
+	// Get the timer's time, ignoring loop settings.
+	protected double rawTime()
+	{	if (source)
+			return source.tell();
+		if (!_paused)
+		{	hpc.stop();
+			us +=  hpc.microseconds(); // Update our microsecond counter
+			hpc.start();
+		}
+		return us*0.000001;
 	}
 	
 	/**
@@ -87,24 +108,29 @@ class Timer /* implements ITemporal */ // This would require core to depend on s
 	{	synchronized(this)
 		{	_paused = true;
 			hpc.stop();
-			us = cast(ulong)(min*1000000);
+			us = cast(ulong)(min*1_000_000);
 		}
 	}
 	
 	/**
 	 * Pause the timer when it reaches this amount. 
 	 * Must be between (inclusive) the arguments of setRange(min, max) or else it will be ignored. 
-	 * Use pauseAfter(double.infinity) to clear pauseAfter. */
-	void pauseAfter(double seconds)
+	 * Use pauseAfter() with no arguments to clear pauseAfter. */
+	void setPauseAfter(double seconds=double.infinity)
 	{	pause_after = seconds;		
 	}
+	double getPauseAfter() /// ditto
+	{	return pause_after;		
+	}
+	
+	
 	
 	/** 
 	 * Set the Timer. */
 	void seek(double seconds)
 	in { assert(seconds>=0); }
 	body
-	{	us = cast(ulong)(seconds*1000000);
+	{	us = cast(ulong)(seconds*1_000_000);
 	}
 	
 	/**
@@ -137,7 +163,7 @@ class Timer /* implements ITemporal */ // This would require core to depend on s
 	}
 	
 	/**
-	 * Set the timers roll-under and roll-over values.
+	 * Set the timer's roll-under and roll-over values.
 	 * Provide no arguments to reset them to the defaults of 0 and infinity.
 	 * Params:
 	 *     min = The timer will never be less than this value.

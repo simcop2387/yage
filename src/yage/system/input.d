@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -9,6 +9,7 @@ module yage.system.input;
 public import derelict.sdl.sdl;
 
 import std.stdio;
+import std.utf;
 import yage.core.vector;
 import yage.system.device;
 import yage.gui.surface;
@@ -18,27 +19,23 @@ import yage.gui.surface;
 class Input
 {
 
-	static bool[1024] keyUp;		/// The key was down and has been released.
+	static bool[1024] keyUp;		/// The key was down and has been released TODO: replace with something else.
 	static bool[1024] keyDown;		/// The key is currently being held down.
-//	static uint keymod;				/// Modifier key (currently unused)
-
 	static int mousex, mousey;		/// The current pixel location of the mouse cursor; (0, 0) is top left.
-	
-	/// A structure to track various state variables associated with each mouse button.
-	struct Buttons
-	{	bool down;					/// True if the button is currently down.
-		bool up;					/// True if the button was pressed and is now up.
-		int xdown;					/// The x location of the mouse when this button was last pressed.
-		int ydown;					/// The y location of the mouse when this button was last pressed.
-		int xup;					/// The x location of the mouse when this button was last released.
-		int yup;					/// The y location of the mouse when this button was last released.
-	}
-	static Buttons[8] button;		/// An array to track the state of the mouse buttons
-	//static wchar[] stream;		/// Recently typed text (unicode)
+
 	static bool grabbed=false;		/// The window grabs the mouse.
+	static bool previously_grabbed = false;
 
 	static Surface surfaceLock;		// Surface that is grabbing all input.
 	static Surface currentSurface;
+	
+	bool shift;
+	bool ctrl;
+	bool alt;
+	
+	// With multiple keydowns, SDL sends keydowns only when they first occur.
+	// This keeps track of all keys that are being held down.
+	//protected static ushort key_down[ushort];
 
 	/** This function fills the above fields with the current intput data.
 	 *  See the descriptions of each field for more details.  If this function is not called,
@@ -46,45 +43,40 @@ class Input
 	 *  for details on manual SDL input processing. */
 	static void processInput()
 	{
-		//SDL_EnableKeyRepeat(100, 100);	// why doesn't this work? Need to try again since I have the latest version of SDL
-
+		// Disable key repeating, we'll handle that manually.
+		//SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);	// why doesn't this work? Need to try again since I have the latest version of SDL
+		SDL_EnableUNICODE(1);
+				
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
-		{
-			processEvent(event);
-		}
+			processEvent(event);		
 	}
 	
 	static void processEvent(SDL_Event event){
-		switch(event.type){
+		switch(event.type)
+		{
 			// Standard keyboard
 			case SDL_KEYDOWN:
 				keyDown[event.key.keysym.sym] = true;
 				keyUp[event.key.keysym.sym] = false;
-
+				
 				auto surface = getSurface();
-				
-				if(surface !is null)
- 					surface.keyDown(event.key.keysym.sym);
-				
+				if(surface)
+				{	surface.keyDown(event.key.keysym.sym, event.key.keysym.mod);		
+					//surface.text ~= toUTF8([cast(dchar)(event.key.keysym.sym)]);
+				}
 				break;
 			case SDL_KEYUP:
     			keyUp[event.key.keysym.sym] = true;
     			keyDown[event.key.keysym.sym] = false;
-					
-				auto surface = getSurface();
-
-				if(surface !is null)
-					surface.keyUp(event.key.keysym.sym);
+    			
+    			auto surface = getSurface();
+				if(surface)
+					surface.keyUp(event.key.keysym.sym, event.key.keysym.mod);
 				
 				break;
 				// Mouse
 			case SDL_MOUSEBUTTONDOWN:
-				button[event.button.button].down = true;
-				button[event.button.button].up = false;
-				button[event.button.button].xdown = mousex;
-				button[event.button.button].ydown = mousey;
-
 				auto surface = getSurface();
 
 				if(surface !is null) 
@@ -92,11 +84,6 @@ class Input
 
 				break;
 			case SDL_MOUSEBUTTONUP:
-				button[event.button.button].down = false;
-				button[event.button.button].up = true;
-				button[event.button.button].xup = mousex;
-				button[event.button.button].yup = mousey;
-
 				auto surface = getSurface();
 
 				if(surface !is null)
@@ -104,18 +91,22 @@ class Input
 
 				break;
 			case SDL_MOUSEMOTION:
+				auto surface = getSurface();
 					
-				if(grabbed){
+				if(grabbed) {				
+					
 					if(event.motion.x != mousex || event.motion.y != mousey)
-						SDL_WarpMouse(mousex, mousey);
-					else break;					
+					{	mousex = cast(ushort)(surface.width()/2);
+						mousey = cast(ushort)(surface.height()/2);						
+						SDL_WarpMouse(mousex, mousey); // warp back to where it was before.
+					}
+					else 
+						break;								
 				}
 				else{
 					mousex = event.motion.x;
-					mousey = event.motion.y;
+					mousey = event.motion.y;				
 				}
-				
-				auto surface = getSurface();
 
 				//if the surface that the mouse is in has changed
 				if(currentSurface !is surface)
@@ -128,10 +119,10 @@ class Input
 					//The new current surface
 					currentSurface = surface;
 				}
-				//Needs to be changed so that check is run once
-				if(surface)
+				if(surface && previously_grabbed==grabbed)
 					surface.mouseMove(event.button.button, Vec2i(event.motion.xrel, event.motion.yrel));
-					
+				previously_grabbed = grabbed;				
+				
 				break;
 
 				// System

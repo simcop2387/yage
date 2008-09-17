@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -25,7 +25,12 @@ private struct Letter
 	int top;
 	int left;
 	int advancex;
-	int advancey;	
+	int advancey;
+	dchar letter;
+	
+	char[] toString()
+	{	return toUTF8([letter]);		
+	}
 }
 
 // Used as a key to lookup cached letters.
@@ -46,6 +51,11 @@ private struct Key
     }
 }
 
+private struct Line
+{	Letter[] letters;
+	int width;
+}
+
 /**
  * An instance of a loaded Font.
  * Fonts are typically used to render strings of text to an image. */
@@ -54,9 +64,17 @@ class Font
 	protected static FT_Library library;
 	protected static bool freetype_initialized = false;
 	
+	protected static char[] br_char = " *()-+=/\\,.;:|()[]{}<>";
+	
 	protected FT_Face face;
 	protected char[] source;
 	protected Letter[Key] cache; // Using this cache of rendered character images increases performance by about 5x.
+	
+	enum TextAlign
+	{	LEFT = 0,
+		CENTER = 1,
+		RIGHT = 2		
+	}
 	
 	/**
 	 * Construct and load the font file specified by filename.
@@ -82,7 +100,6 @@ class Font
 	///
 	~this()
 	{	// Do freetype libraries not require any type of cleanup?
-		std.stdio.writefln("Font destructor");
 	}
 	
 	/**
@@ -102,19 +119,20 @@ class Font
 	 *     text = A string of text to render, can be utf-8 or unencoded unicode (dchar[]).
 	 *     width = The horizontal pixel size of the font to render.
 	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.
-	 *     line_width = Letters will wrap to the next line after this amount (breaking on spaces), unsupported
+	 *     line_width = Letters will wrap to the next line after this many pixels (breaking on spaces), unsupported
 	 *     line_height = This much space will occur between each line, defaults to 1.5x height, unsupported
+	 *     align = unsupported
 	 *     image_pow2 = If true, the image returned will always have its dimensions as powers of two. */
-	Image render(char[] utf8, int width, int height=0, int line_width=-1, int line_height=-1, bool image_pow2=false)
+	Image render(char[] utf8, int width, int height=0, int line_width=-1, int line_height=-1, uint text_align=TextAlign.LEFT, bool image_pow2=false)
 	{	dchar[] unicode = toUTF32(utf8);
-		Image result = render(unicode, width, height, line_width, line_height, image_pow2);
+		Image result = render(unicode, width, height, line_width, line_height, text_align, image_pow2);
 		delete unicode;
 		return result;
 	}
 	
 	/// ditto
-	Image render(dchar[] text, int width, int height=0, int line_width=-1, int line_height=-1, bool image_pow2=false) 
-	{		
+	Image render(dchar[] text, int width, int height=0, int line_width=-1, int line_height=-1, uint text_align=TextAlign.LEFT, bool image_pow2=false) 
+	{
 		// Calculate parameters
 		if (line_height==-1)
 			line_height = cast(int)(height*1.5);
@@ -130,13 +148,10 @@ class Font
 		 * First, we render (or retrieve from cache) all letters into an array of Letter.
 		 * This allows us to calculate dimensinal information like total width/height, number of lines etc.
 		 * We then allocate an image of appropriate size, composite the letters onto it, and then return it. */
-		Letter[] letters; 
-		int total_width = 0;
-		int total_height = 0;
-		int image_height = 0;
-		int lines=1;	// number of lines of text.
+		Letter[] letters;
 		
 		// Create a glyph for each letter and store its parameters
+		int current_line_width = 0;
 		foreach (c; text)
 		{	
 			Key key = Key(c, width, height);
@@ -158,29 +173,83 @@ class Font
 				letter.left = face.glyph.bitmap_left;
 				letter.advancex = face.glyph.advance.x>>6;
 				letter.advancey = face.glyph.advance.y>>6;
+    			letter.letter = c;
 				
 				cache[key] = letter;
 			}
 			
 			letters ~= letter;
-			total_width+= letter.advancex;
-			total_height+= letter.advancey;
+		}
+		
+		// Convert letters to lines
+		Line[] lines;
+		lines.length = lines.length + 1;
+		foreach (i, letter; letters)
+		{	
+			// Advance to next line if necessary
+			if (lines[$-1].width + letter.advancex > line_width)
+				lines.length = lines.length + 1;
+			if (letter.letter == '\n')
+			{	lines.length = lines.length + 1;
+				continue;
+			}
+	
+			// If a possible breaking character
+			if (find(br_char, letter.letter) != -1) // if this letter is a breaking charater
+			{	int line_width2 = lines[$-1].width;
+				bool skip = false;
+				for (int j=i+1; j<letters.length; j++) // look ahead for more breaking characters
+				{					
+					// if there are more before the line is too long, continue
+					if (find(br_char, letters[j].letter) != -1) 
+						break;
+					
+					// if not, break on this character
+					line_width2 += letters[j].advancex;
+					if (line_width2 > line_width)
+					{	lines.length = lines.length + 1;
+						skip = true;
+						break;
+					}
+				}
+				if (skip)
+					continue;
+			}
+			
+			// If a printable character, add it to the line.
+			if (letter.letter > 31)
+			{	Line* line = &lines[$-1];			
+				line.letters ~= letter;
+				line.width += letter.advancex;
+			}
 		}
 		
 		
-		// Composite all glyph images into a single image.
-		// We have to do this here since we need to render them before calculating sizes.
-		int img_width = image_pow2 ? nextPow2(total_width) : total_width;
-		int img_height = image_pow2 ? nextPow2(line_height*lines) : line_height*lines;
+		// Create image target where glyphs will be compisited.
+		int img_width = image_pow2 ? nextPow2(line_width) : line_width;
+		int img_height = image_pow2 ? nextPow2(line_height*lines.length) : line_height*lines.length;
 		Image result = new Image(1, img_width, img_height);
 		
-		int advancex=0, advancey=0;
-		for (int i=0; i<letters.length; i++)
-		{	result.overlay(letters[i].image, advancex+letters[i].left, (advancey-letters[i].top+height));			
-			advancex+= letters[i].advancex;
-			advancey+= letters[i].advancey;
+		
+		foreach (i, line; lines)
+		{				
+			// Calculate align offset
+			int align_offset = 0;
+			if (text_align == TextAlign.CENTER)
+				align_offset = (line_width-line.width) / 2;
+			else if (text_align == TextAlign.RIGHT)
+				align_offset = (line_width-line.width);
+			
+			// Composite letters onto main image.
+			int advancex=0, advancey=0;
+			foreach (j, letter; line.letters)
+			{	result.overlay(letter.image, align_offset+advancex+letter.left, i*line_height + (advancey-letter.top+height));			
+				advancex+= letter.advancex;
+				advancey+= letter.advancey;
+			}
 		}
 		
+		delete lines;
 		delete letters;
 	
 		return result;

@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:	Eric Poggel
  * License:	<a href="lgpl.txt">LGPL</a>
  */
@@ -157,7 +157,7 @@ private struct MS3D
 		}
 		
 		// Joints
-		memcpy(&fps, &file[idx], 4);		
+		memcpy(&fps, &file[idx], 4);
 		idx += 12; // skip float fCurrentTime, int iTotalFrames
 		memcpy(&size, &file[idx], 2);
 		joints.length = size;
@@ -225,12 +225,10 @@ template Ms3dLoader()
 		}
 		
 		
-
 		// Meshes
 		meshes.length = ms3d.groups.length;
 		for (int m; m<meshes.length; m++)
-		{
-			
+		{			
 			meshes[m] = new Mesh();
 			Vec3i[] triangles = meshes[m].getTriangles();
 			triangles.length = ms3d.groups[m].numtriangles;
@@ -314,7 +312,7 @@ template Ms3dLoader()
 					memcpy(&normals[length-1], &ms3d.triangles[tindex].vertexNormals[0], 12);
 					texcoords[length-1].x = ms3d.triangles[tindex].s[0];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[0];
-					joint_indices[length-1] = joint_indices[ms3d.triangles[tindex].vertexIndices[1]];
+					joint_indices[length-1] = joint_indices[ms3d.triangles[tindex].vertexIndices[0]];
 					// Assign this new vertex to the triangle
 					triangles[t].x = vertices.length-1;
 				}
@@ -344,7 +342,7 @@ template Ms3dLoader()
 					memcpy(&normals[length-1], &ms3d.triangles[tindex].vertexNormals[6], 12);
 					texcoords[length-1].x = ms3d.triangles[tindex].s[2];
 					texcoords[length-1].y = ms3d.triangles[tindex].t[2];
-					joint_indices[length-1] = joint_indices[ms3d.triangles[tindex].vertexIndices[1]];
+					joint_indices[length-1] = joint_indices[ms3d.triangles[tindex].vertexIndices[2]];
 					// Assign this new vertex to the triangle
 					triangles[t].z = vertices.length-1;
 				}
@@ -358,7 +356,8 @@ template Ms3dLoader()
 			meshes[m].setTriangles(triangles);
 		}
 	
-		// Joints			
+		// Joints
+		fps = ms3d.fps;
 		joints.length = ms3d.joints.length;
 		for (int j=0; j<ms3d.joints.length; j++)
 		{	joints[j] = new Joint();

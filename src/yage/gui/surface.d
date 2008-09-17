@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:	Joe Pusderis (deformative0@gmail.com), Eric Poggel
  * License:	<a href="lgpl.txt">LGPL</a> 
  */
@@ -14,6 +14,7 @@ import derelict.opengl.glext;
 import derelict.opengl.glu;
 import derelict.opengl.extension.ext.blend_color; // opengl 1.2
 import yage.core.all;
+import yage.core.matrix;
 import yage.system.device;
 import yage.system.constant;
 import yage.system.input;
@@ -39,40 +40,72 @@ class Surface : Tree!(Surface)
 	Image textImage;
 	Texture textTexture;
 	
+	/// This is a mirror of SDLMod (SDL's modifier key struct
+	enum ModifierKey
+	{	NONE  = 0x0000,
+		LSHIFT= 0x0001,
+		RSHIFT= 0x0002,
+		LCTRL = 0x0040,
+		RCTRL = 0x0080,
+		LALT  = 0x0100,
+		RALT  = 0x0200,
+		LMETA = 0x0400,
+		RMETA = 0x0800,
+		NUM   = 0x1000,
+		CAPS  = 0x2000,
+		MODE  = 0x4000,
+		RESERVED = 0x8000,
+		CTRL  = LCTRL | RCTRL,
+		SHIFT = LSHIFT | RSHIFT,
+		ALT   = LALT | RALT,
+		META  = LMETA | RMETA
+	};
+	
 	// internal values
 	Vec2f topLeft;		// pixel distance of the topleft corner from parent's top left
 	Vec2f bottomRight;	// pixel distance of the bottom right corner from parent's top left
 	Vec2f offset;		// pixel distance of top left from the window's top left at 0, 0
 	
 	bool mouseIn; // used to track mouseover/mouseout
+	bool _grabbed;
 	
 	protected Style old_style; // Used for comparison to see if dirty.
 	protected Surface old_parent;
+	protected float old_parent_width;
+	protected float old_parent_height;
 	protected char[] old_text;
 	
 	protected float[72] vertices = 0; // Used for rendering
 	protected float[72] tex_coords = 0;
 
 	/// Callback functions
-	void delegate(typeof(this) self) onBlur; ///
-	void delegate(typeof(this) self) onFocus; ///
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onClick; /// unfinished
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
-	void delegate(typeof(this) self, byte key) onKeyDown; ///
-	void delegate(typeof(this) self, byte key) onKeyUp; ///
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseDown; ///
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseUp; ///
-	void delegate(typeof(this) self, byte buttons, Vec2i amount) onMouseMove; ///
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseOver; ///
-	void delegate(typeof(this) self, byte buttons, Vec2i coordinates) onMouseOut; ///
-	void delegate(typeof(this) self, Vec2f amount) onResize; ///
+	// TODO convert these to private and have functions to set them with such names as onBlur();
+	void delegate(Surface self) onBlur; ///
+	void delegate(Surface self) onDraw; ///
+	void delegate(Surface self) onFocus; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onClick; /// unfinished
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
+	void delegate(Surface self, int key, int modifier) onKeyDown; ///
+	void delegate(Surface self, int key, int modifier) onKeyUp; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseDown; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseUp; ///
+	void delegate(Surface self, byte buttons, Vec2i amount) onMouseMove; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOver; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOut; ///
+	void delegate(Surface self, Vec2f amount) onResize; ///
+
 
 	/// Constructor
 	this(Surface p=null){
 		parent = p;
 		if(!(parent is null))
 			parent.addChild(this);
-		calculate();
+		update();
+	}
+	
+	~this()
+	{
+		// free textures?  should be done automatically by gc?
 	}
 	
 	// Set style dimensions from pixels.
@@ -94,14 +127,12 @@ class Surface : Tree!(Surface)
 	
 	/// Get dimensions of this Surface's parent in pixels
 	float parentWidth() { return parent ? parent.width()  : Device.getWidth(); }
-	float parentHeight(){ return parent ? parent.height() : Device.getHeight(); }	/// Ditto
-	
-
+	float parentHeight(){ return parent ? parent.height() : Device.getHeight(); }	/// Ditto	
 
 	/**
 	 * Recalculate all properties of this Surface based on its style.
 	 * TODO: Ensure vertex and tex coord assignments are 100% on the stack (see array literals).*/
-	void calculate()
+	void update()
 	{			
 		// Calculate real values from percents
 		float parent_width = parentWidth();
@@ -117,11 +148,19 @@ class Surface : Tree!(Surface)
 		Vec2f resized_by = Vec2f(this.width(), this.height());
 		Vec2f offset_by = offset;
 		
-		// Ensure top and left are set if bottom and right are not.
-		if (isnan(left) && isnan(right))
-			left = 0.0f;
-		if (isnan(top) && isnan(bottom))
-			top = 0.0f;
+		// Ensure at least 4 of the 6 dimensions are set.
+		if (isnan(left))
+		{	if (isnan(right))
+				left = 0.0f;
+			if (isnan(width))
+				width = parent_width;			
+		}	
+		if (isnan(top))
+		{	if (isnan(bottom))
+				top = 0.0f;
+			if (isnan(height))
+				height = parent_height;				
+		}	
 
 		// If left side is anchored
 		if (!isnan(left))
@@ -172,103 +211,94 @@ class Surface : Tree!(Surface)
 		float resized_length2 = resized_by.length2();
 		if (resized_length2 > 0 || offset_by.length2() > 0)
 		{	
-			// Calculate vertices
-			Vec2f portion;
-			
-			// Portion of the Texture to use for drawing
-			// This won't be necessary when we support rectangular textures.
-			if (style.backgroundMaterial)
-			{	portion.x = style.backgroundMaterial.requested_width/cast(float)style.backgroundMaterial.getWidth();
-				portion.y = style.backgroundMaterial.requested_height/cast(float)style.backgroundMaterial.getHeight();
-			} else
-			{	portion.x = 1;
-				portion.y = 1;
-			}
-			
-			switch(style.backgroundRepeat)
-			{
-				case Style.STRETCH:
-					float w = this.width();
-					float h = this.height();
-					vertices[0..8] = [0.0f, h, w, h, w, 0, 0, 0];
-					tex_coords[0..8] = [0.0f, 0, portion.x, 0, portion.x, portion.y, 0, portion.y];
-					break;
-				case Style.NINESLICE:
-					
-					// For vertex cooordinates
-					Vec2f vert1 = Vec2f(style.backgroundPositionX, style.backgroundPositionY);
-					Vec2f vert2 = Vec2f(width-style.backgroundPositionX, height-style.backgroundPositionY);
-					
-					// For texture coordinates
-					Vec2f tex1 = Vec2f(portion.x*third, portion.y*third);
-					Vec2f tex2 = Vec2f(portion.x*third*2, portion.y*third*2);
-					
-					// 0    3
-					// |	^
-					// V	|
-					// 1<---2
-					// TODO: Ensure this operation is 100% on the stack.
-					vertices[0..72] = [
-						0.0f, 0, 0, vert1.y, vert1.x, vert1.y, vert1.x, 0,						// top left
-						vert1.x, 0, vert1.x, vert1.y, vert2.x, vert1.y, vert2.x, 0,				// top
-						vert2.x, 0, vert2.x, vert1.y, width, vert1.y, width, 0,					// top right							
-						0.0f, vert1.y, 0, vert2.y, vert1.x, vert2.y, vert1.x, vert1.y,			// left
-						vert1.x, vert1.y, vert1.x, vert2.y, vert2.x, vert2.y, vert2.x, vert1.y,	// center
-						vert2.x, vert1.y, vert2.x, vert2.y, width, vert2.y, width, vert1.y,		// right							
-						0.0f, vert2.y, 0, height, vert1.x, height, vert1.x, vert2.y,			// bottom left			
-						vert1.x, vert2.y, vert1.x, height, vert2.x, height, vert2.x, vert2.y,	// bottom
-						vert2.x, vert2.y, vert2.x, height, width, height, width, vert2.y		// bottom right
-						];						
-					tex_coords[0..72] = [
-						0.0f, 0, 0, tex1.y, tex1.x, tex1.y, tex1.x, 0,							// top left
-						tex1.x, 0, tex1.x, tex1.y, tex2.x, tex1.y, tex2.x, 0,					// top
-						tex2.x, 0, tex2.x, tex1.y, portion.x, tex1.y, portion.x, 0,				// top right	
-						0.0f, tex1.y, 0, tex2.y, tex1.x, tex2.y, tex1.x, tex1.y,				// left
-						tex1.x, tex1.y, tex1.x, tex2.y, tex2.x, tex2.y, tex2.x, tex1.y,			// center
-						tex2.x, tex1.y, tex2.x, tex2.y, portion.x, tex2.y, portion.x, tex1.y,	// right				
-						0.0f, tex2.y, 0, portion.y, tex1.x, portion.y, tex1.x, tex2.y,			// bottom left
-						tex1.x, tex2.y, tex1.x, portion.y, tex2.x, portion.y, tex2.x, tex2.y,	// bottom
-						tex2.x, tex2.y, tex2.x, portion.y, portion.x, portion.y, portion.x, tex2.y // bottom right
-						];
-					break;
-			}			
+			calculateVertices();
 			
 			// Calculate children to update positions and offset.
 			foreach (c; children)
-				c.calculate();			
+				c.update();			
 			// Call resize if resized.
 			if (resized_length2 > 0)
 				resize(resized_by);
 		}
 	}
 	
-	/*
-	 * Set this Surface as non dirty. 
-	 * Returns: Was the surface previously dirty? */
-	protected bool dirty()
-	{	bool result = false;
-		if (style != old_style)
-		{	old_style = style;			
-			result = true;
+	protected void calculateVertices()
+	{
+		// Calculate vertices
+		Vec2f portion;
+		
+		// Portion of the Texture to use for drawing
+		// This won't be necessary when we support rectangular textures.
+		if (style.backgroundMaterial)
+		{	portion.x = style.backgroundMaterial.requested_width/cast(float)style.backgroundMaterial.getWidth();
+			portion.y = style.backgroundMaterial.requested_height/cast(float)style.backgroundMaterial.getHeight();
+		} else
+		{	portion.x = 1;
+			portion.y = 1;
 		}
-		if (parent !is old_parent)
-		{	old_parent = parent;
-			result = true;
-		}
-		return result;
+		
+		switch(style.backgroundRepeat)
+		{
+			case Style.STRETCH:
+				float w = this.width();
+				float h = this.height();
+				vertices[0..8] = [0.0f, h, w, h, w, 0, 0, 0];
+				tex_coords[0..8] = [0.0f, portion.y, portion.x, portion.y, portion.x, 0, 0, 0];
+				break;
+			case Style.NINESLICE:
+				
+				// For vertex cooordinates
+				Vec2f vert1 = Vec2f(style.backgroundPositionX, style.backgroundPositionY);
+				Vec2f vert2 = Vec2f(width-style.backgroundPositionX, height-style.backgroundPositionY);
+				
+				// For texture coordinates
+				Vec2f tex1 = Vec2f(portion.x*third, portion.y*third);
+				Vec2f tex2 = Vec2f(portion.x*third*2, portion.y*third*2);
+				
+				// 0    3
+				// |	^
+				// V	|
+				// 1<---2
+				// static arrays to ensure this operation is 100% on the stack.
+				float[72] vertices_temp = [
+					0.0f, 0, 0, vert1.y, vert1.x, vert1.y, vert1.x, 0,						// top left
+					vert1.x, 0, vert1.x, vert1.y, vert2.x, vert1.y, vert2.x, 0,				// top
+					vert2.x, 0, vert2.x, vert1.y, width, vert1.y, width, 0,					// top right							
+					0.0f, vert1.y, 0, vert2.y, vert1.x, vert2.y, vert1.x, vert1.y,			// left
+					vert1.x, vert1.y, vert1.x, vert2.y, vert2.x, vert2.y, vert2.x, vert1.y,	// center
+					vert2.x, vert1.y, vert2.x, vert2.y, width, vert2.y, width, vert1.y,		// right							
+					0.0f, vert2.y, 0, height, vert1.x, height, vert1.x, vert2.y,			// bottom left			
+					vert1.x, vert2.y, vert1.x, height, vert2.x, height, vert2.x, vert2.y,	// bottom
+					vert2.x, vert2.y, vert2.x, height, width, height, width, vert2.y		// bottom right
+					];						
+				float[72] tex_coords_temp = [
+					0.0f, 0, 0, tex1.y, tex1.x, tex1.y, tex1.x, 0,							// top left
+					tex1.x, 0, tex1.x, tex1.y, tex2.x, tex1.y, tex2.x, 0,					// top
+					tex2.x, 0, tex2.x, tex1.y, portion.x, tex1.y, portion.x, 0,				// top right	
+					0.0f, tex1.y, 0, tex2.y, tex1.x, tex2.y, tex1.x, tex1.y,				// left
+					tex1.x, tex1.y, tex1.x, tex2.y, tex2.x, tex2.y, tex2.x, tex1.y,			// center
+					tex2.x, tex1.y, tex2.x, tex2.y, portion.x, tex2.y, portion.x, tex1.y,	// right				
+					0.0f, tex2.y, 0, portion.y, tex1.x, portion.y, tex1.x, tex2.y,			// bottom left
+					tex1.x, tex2.y, tex1.x, portion.y, tex2.x, portion.y, tex2.x, tex2.y,	// bottom
+					tex2.x, tex2.y, tex2.x, portion.y, portion.x, portion.y, portion.x, tex2.y // bottom right
+					];
+				vertices[0..72] = vertices_temp[0..72];
+				tex_coords[0..72] = tex_coords_temp[0..72];
+				
+				break;
+		}		
 	}
 	
 	/**
-	 * Render this Surface 
+	 * Render this Surface a rendering target.
+	 * TODO: Move this to Window?
 	 * Params:
 	 *     rt = TODO: Render to this target.*/
 	void render(IRenderTarget rt=null) 
 	{
 		//if (rt)
 		//	rt.bind();
-		
-		//calculate(); // TODO: use dirty flag to only calculate when necessary.
-		
+
 		glPushAttrib(0xFFFFFFFF);	// all attribs
 		glDisableClientState(GL_NORMAL_ARRAY);
 		
@@ -302,122 +332,54 @@ class Surface : Tree!(Surface)
 		//	rt.unbind();
 	}
 	
-	
-	
-	void draw()
-	{
-		void drawQuad(int style)
-		{	switch(style)
-			{	case Style.NONE:
-		
-				case Style.STRETCH:
-					glDrawArrays(GL_QUADS, 0, 4);
-					break;
-				case Style.NINESLICE:
-					glDrawArrays(GL_QUADS, 0, 36);
-					break;
-				default:
-					throw new Exception("Not a valid fill type");
-					break;	
-			}
-		}
-		
-		
-		if (style.visible)
-		{
-			// Update positions
-			if (dirty())
-				calculate();
+	/**
+	 * Find the surface at the given coordinates.
+	 * Surfaces are ordered by zIndex with higher values appearing on top.
+	 * This function recurses through children and will return children, grandchildren, etc. as necessary.
+	 * TODO: Add relative argument.
+	 * Returns: The surface, or self if no surface at the coordinates, or null if coordinates are outside self. */
+	Surface findSurface(float x, float y)
+	{	if (Vec2f(x, y).inside(offset, offset - topLeft + bottomRight))
+		{	// Sort if necessary
+			if (!children.sorted(false, (Surface s){return s.style.zIndex;}))
+				children.radixSort(false, (Surface s){return s.style.zIndex;});
 			
-			// Update Text
-			// Todo: check style font properties for changes also.
-			if (style.fontFamily && text != old_text)
-			{	textImage = style.fontFamily.render(text, cast(int)style.fontSize, cast(int)style.fontSize, -1, -1, true);
-				if (!textTexture.texture)
-					textTexture = Texture(new GPUTexture(textImage, false, false), true, TEXTURE_FILTER_BILINEAR);
-				else
-					textTexture.texture.upload(textImage, false, false);
-				old_text = text;
-			}
-			
-			// Translate to the topleft corner of this 
-			glPushMatrix();
-			glTranslatef(topLeft.x, topLeft.y, 0);
-			
-			// Draw background color
-			if (style.backgroundColor.a > 0) // If backgroundColor alpha.
-			{	glColor4ubv(style.backgroundColor.ub.ptr);
-				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
-				drawQuad(Style.STRETCH);
-				glColor4f(1, 1, 1, 1);
-			}
-			
-			// Draw background material
-			if (style.backgroundMaterial !is null)
-			{	glEnable(GL_TEXTURE_2D);
-				Texture tex = Texture(style.backgroundMaterial, true, TEXTURE_FILTER_BILINEAR);
-				tex.bind();
-				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
-				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
-				drawQuad(style.backgroundRepeat);				
-				tex.unbind();
-			}
-			
-			// Draw Text
-			if (textTexture.texture)
-			{					
-				float ws = textImage.getWidth();
-				float hs = textImage.getHeight();				
-				float[8] vertices = [0.0f, hs, ws, hs, ws, 0, 0, 0];
-				float[8] tex_coords=[0.0f, 1, 1, 1, 1, 0, 0, 0];
-				
-				// Apply States
-				glEnable(GL_TEXTURE_2D);
-				textTexture.bind();
-				
-				glPushMatrix();
-				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
-				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
-				
-				// This extension is available as of OpenGL 1.1 or 1.2 and allows drawing text in a single pass.
-				if (Device.getSupport(DEVICE_BLEND_COLOR))
-				{	
-					// Apply states
-					Vec4f color = style.color.vec4f;	
-					glBlendFunc(GL_CONSTANT_COLOR_EXT, GL_ONE_MINUS_SRC_COLOR);
-					glBlendColorEXT(color.r, color.g, color.b, 1);
-					glColor3f(color.a, color.a, color.a);
-				
-					glDrawArrays(GL_QUADS, 0, 4);
-					
-					// Revert states
-					glColor4f(1, 1, 1, 1);
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // reset blend function
-				} else
-				{
-					/// TODO: see http://dsource.org/projects/arclib/browser/trunk/arclib/freetype/freetype/font.d
-				}
-				
-				// Revert States
-				glPopMatrix();
-				textTexture.unbind();
-			}			
-			
-			glDisable(GL_TEXTURE_2D);
-				
-			// Using a zbuffer might make this unecessary.  tradeoffs?
-			if (!children.sorted(true, (Surface s){return s.style.zIndex;} ))
-				children.radixSort(true, (Surface s){return s.style.zIndex;} );
-			
+			// Recurse
 			foreach(surf; children)
-				surf.draw();
-			
-			glPopMatrix();
+			{	Surface result = surf.findSurface(x, y);
+				if (result)
+					return result;
+			}
+			return this;
 		}
+		return null;
+	}
+	
+	/** 
+	 * If enabled, the mousecursor will be hidden and grabbed by the application.
+	 * This also allows for mouse position changes to be registered in a relative fashion,
+	 * i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching
+	 * the mouse to the look direction of a first or third-person camera. */
+	void grabMouse(bool grab) {
+		if (grab){
+			focus();
+			SDL_WM_GrabInput(SDL_GRAB_ON);
+			SDL_ShowCursor(false);
+		}
+		else{
+			blur(); // should this be done?
+			SDL_WM_GrabInput(SDL_GRAB_OFF);
+			SDL_ShowCursor(true);
+		}
+		Input.grabbed = this._grabbed = grab;
+	}
+	
+	bool grabbed()
+	{	return _grabbed;		
 	}
 	
 	/**
-	 * Set the zIndex of this Surface to the highest or lowest of its siblings. */
+	 * Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. */
 	void raise()
 	{	this.style.zIndex = amax(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex + 1;
 	}
@@ -459,7 +421,7 @@ class Surface : Tree!(Surface)
 		if (constrain)	
 		{
 			// The constraints require the current calculations.
-			calculate();
+			update();
 			
 			if (!isnan(style.left))
 			{	if (style.left < 0)
@@ -488,48 +450,6 @@ class Surface : Tree!(Surface)
 		}
 	}
 	
-	/** If enabled, the mousecursor will be hidden and grabbed by the application.
-	 *  This also allows for mouse position changes to be registered in a relative fashion,
-	 *  i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching
-	 *  the mouse to the look direction of a first or third-person camera. */
-	void grabMouse(bool grab) {
-		if (grab){
-			focus();
-			SDL_WM_GrabInput(SDL_GRAB_ON);
-			SDL_ShowCursor(false);
-		}
-		else{
-			blur(); // should this be done?
-			SDL_WM_GrabInput(SDL_GRAB_OFF);
-			SDL_ShowCursor(true);
-		}
-		Input.grabbed = grab;
-	}
-	
-	/**
-	 * Find the surface at the given coordinates.
-	 * Surfaces are ordered by zIndex with higher values appearing on top.
-	 * This function recurses through children and will return children, grandchildren, etc. as necessary.
-	 * TODO: Add relative argument.
-	 * Returns: The surface, or self if no surface at the coordinates, or null if coordinates are outside self. */
-	Surface findSurface(float x, float y)
-	{	if (Vec2f(x, y).inside(offset, offset - topLeft + bottomRight))
-		{	// Sort if necessary
-			if (!children.sorted(false, (Surface s){return s.style.zIndex;}))
-				children.radixSort(false, (Surface s){return s.style.zIndex;});
-			
-			// Recurse
-			foreach(surf; children)
-			{	Surface result = surf.findSurface(x, y);
-				if (result)
-					return result;
-			}
-			return this;
-		}
-		return null;
-	}
-	
-	
 	/**
 	 * Give focus to this Surface.  Only one Surface can have focus at a time.
 	 * All keyboard/mouse events will be forwarded to the surface that has focus.
@@ -542,6 +462,174 @@ class Surface : Tree!(Surface)
 	}
 	
 	/**
+	 * Draw this Surface and call the Surface's onDraw method if it is not null.
+	 * When finished, the draw methods of all of this Surface's children are called. */
+	void draw()
+	{
+		if (onDraw)
+			onDraw(this);
+		
+		// Draw the quad for this surface.
+		void drawQuad(int style)
+		{	
+			// In case something else didn't leave it bound as 0.
+			if(Device.getSupport(DEVICE_VBO))
+				glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+			
+			switch(style)
+			{	case Style.NONE:
+		
+				case Style.STRETCH:
+					glDrawArrays(GL_QUADS, 0, 4);
+					break;
+				case Style.NINESLICE:
+					glDrawArrays(GL_QUADS, 0, 36);
+					break;
+				default:
+					throw new Exception("Not a valid fill type");
+					break;	
+			}
+		}
+		
+		/*
+		 * Set this Surface as non dirty and return whether it was previously dirty */
+		bool dirty()
+		{	
+			// doesn't catch parent resizes
+			
+			bool result = false;
+			if (style != old_style)
+			{	old_style = style;			
+				result = true;
+			}
+			if (parent !is old_parent)
+			{	old_parent = parent;
+				result = true;
+			}
+			if (old_parent_width != parentWidth())
+			{	old_parent_width = parentWidth();
+				result = true;
+			}
+			if (old_parent_height != parentHeight())
+			{	old_parent_height = parentHeight();
+				result = true;
+			}
+			return result;
+		}
+		
+		
+		if (style.visible)
+		{			
+			// Update positions
+			bool is_dirty = dirty();
+			if (is_dirty)
+				update();			
+			
+			// Must be called at every draw because the surface's texture's material can have its portion change.
+			// TODO: Figure out a way to only recalculate that when dirty.
+			calculateVertices();
+			
+			// Translate to the topleft corner of this 
+			glPushMatrix();
+			glTranslatef(topLeft.x, topLeft.y, 0);
+			
+			// Draw background color
+			if (style.backgroundColor.a > 0) // If backgroundColor alpha.
+			{	glColor4ubv(style.backgroundColor.ub.ptr);
+				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
+				drawQuad(Style.STRETCH);
+				glColor4f(1, 1, 1, 1);
+			}
+			
+			// Draw background material
+			if (style.backgroundMaterial !is null)
+			{	glEnable(GL_TEXTURE_2D);
+				Texture tex = Texture(style.backgroundMaterial, false, TEXTURE_FILTER_BILINEAR);				
+							
+				if (style.backgroundMaterial.flipped) // TODO: fix this horrible hack!
+				{	tex.transform = Matrix([
+						1f, 0, 0, 0,
+						0,-1, 0, 0,
+						0, 0, 1, 0,
+						0, 0, 0, 1
+					]);
+					float portion = style.backgroundMaterial.requested_height/cast(float)style.backgroundMaterial.getHeight();
+					tex.position = Vec2f(0, -1 + portion);
+				}
+				tex.bind();
+				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
+				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
+				drawQuad(style.backgroundRepeat);				
+				tex.unbind();
+			}
+			
+			// Update Text
+			// TODO: check style font properties for changes also; font size, family, text align
+			if (style.fontFamily)
+				if (is_dirty || text != old_text)
+				{	textImage = style.fontFamily.render(text, cast(int)style.fontSize, cast(int)style.fontSize, cast(int)width(), -1, style.textAlign, true);
+					if (!textTexture.texture)
+						textTexture = Texture(new GPUTexture(textImage, false, false, text), true, TEXTURE_FILTER_BILINEAR);
+					else
+						textTexture.texture.upload(textImage, false, false);
+					old_text = text;
+				}
+			
+			// Draw Text
+			if (textTexture.texture)
+			{					
+				float ws = textImage.getWidth();
+				float hs = textImage.getHeight();				
+				float[8] vertices = [0.0f, hs, ws, hs, ws, 0, 0, 0];
+				float[8] tex_coords=[0.0f, 1, 1, 1, 1, 0, 0, 0];
+				
+				// Apply States
+				glEnable(GL_TEXTURE_2D);
+				textTexture.bind();
+				
+				glPushMatrix();
+				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
+				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
+				
+				// This extension is available as of OpenGL 1.1 or 1.2 and allows drawing colored text in a single pass.
+				if (Device.getSupport(DEVICE_BLEND_COLOR))
+				{	
+					// Apply states
+					Vec4f color = style.color.vec4f;	
+					glBlendFunc(GL_CONSTANT_COLOR_EXT, GL_ONE_MINUS_SRC_COLOR);
+					glBlendColorEXT(color.r, color.g, color.b, 1);
+					glColor3f(color.a, color.a, color.a);
+				
+					glDrawArrays(GL_QUADS, 0, 4);
+					
+					// Revert states
+					glColor4f(1, 1, 1, 1);
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // reset blend function
+				} else
+				{
+					/// TODO: see http://dsource.org/projects/arclib/browser/trunk/arclib/freetype/freetype/font.d
+				}
+				
+				// Revert States
+				glPopMatrix();
+				textTexture.unbind();
+			}			
+			
+			glDisable(GL_TEXTURE_2D);
+				
+			// Using a zbuffer might make this unecessary.  tradeoffs?
+			if (!children.sorted(true, (Surface s){return s.style.zIndex;} ))
+				children.radixSort(true, (Surface s){return s.style.zIndex;} );
+			
+			// Recurse through and draw children.
+			foreach(surf; children)
+				surf.draw();
+			
+			glPopMatrix();
+		}
+	}
+	
+	/**
 	 * Release focus from this surface and call the onBlur callback function if set. */
 	void blur(){
 		if(onBlur)
@@ -550,25 +638,28 @@ class Surface : Tree!(Surface)
 	}
 	
 	/**
-	 * Trigger a keyDown event and call the onKeyDown callback function if set. */ 
-	void keyDown(byte key){
-		if(onKeyDown)
-			onKeyDown(this, key);
+	 * Trigger a keyDown event and call the onKeyDown callback function if set. 
+	 * If the onKeyDown function is not set, call the parent's keyDown function. */ 
+	void keyDown(int key, int mod=ModifierKey.NONE)
+	{	if(onKeyDown)
+			onKeyDown(this, key, mod);
 		else if(parent !is null) 
-			parent.keyDown(key);
+			parent.keyDown(key, mod);
 	}
 	
 	/**
-	 * Trigger a keyUp event and call the onKeyUp callback function if set. */ 
-	void keyUp(byte key){
-		if(onKeyUp)
-			onKeyUp(this, key);
+	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
+	 * If the onKeyUp function is not set, call the parent's keyUp function.*/ 
+	void keyUp(int key, int mod=ModifierKey.NONE)
+	{	if(onKeyUp)
+			onKeyUp(this, key, mod);
 		else if(parent !is null) 
-			parent.keyUp(key);
+			parent.keyUp(key, mod);
 	}
 
 	/**
-	 * Trigger a mouseDown event and call the onMouseDown callback function if set. */ 
+	 * Trigger a mouseDown event and call the onMouseDown callback function if set. 
+	 * If the onMouseDown function is not set, call the parent's mouseDown function.*/ 
 	void mouseDown(byte buttons, Vec2i coordinates){ 
 		if(onMouseDown)
 			onMouseDown(this, buttons, coordinates);
@@ -577,7 +668,8 @@ class Surface : Tree!(Surface)
 	}
 	
 	/**
-	 * Trigger a mouseUp event and call the onMouseUp callback function if set. */ 
+	 * Trigger a mouseUp event and call the onMouseUp callback function if set. 
+	 * If the onMouseUp function is not set, call the parent's mouseUp function.*/ 
 	void mouseUp(byte buttons, Vec2i coordinates){ 
 		if(onMouseUp)
 			onMouseUp(this, buttons, coordinates);
@@ -588,8 +680,8 @@ class Surface : Tree!(Surface)
 	/**
 	 * Trigger a mouseOver event and call the onMouseOver callback function if set. */ 
 	void mouseOver(byte buttons, Vec2i coordinates){
-		if(mouseIn == false){
-			if(parent !is null) 
+		if(!mouseIn )
+		{	if(parent !is null) 
 				parent.mouseOver(buttons, coordinates);			
 			mouseIn = true;
 			if(onMouseOver) 
@@ -611,14 +703,12 @@ class Surface : Tree!(Surface)
 	void mouseOut(Surface next, byte buttons, Vec2i coordinates)
 	{
 		if(mouseIn)
-		{
-			if(isChild(next))
+		{	if(isChild(next))
 				return;
 			else
 			{	mouseIn = false;
 				if(onMouseOut)
-					onMouseOut(this, buttons, coordinates);
-			
+					onMouseOut(this, buttons, coordinates);			
 				if(next !is parent && parent !is null)
 					parent.mouseOut(next, buttons, coordinates);
 			}
@@ -626,7 +716,8 @@ class Surface : Tree!(Surface)
 	}
 
 	/**
-	 * Trigger a resize event and call the onResize callback function if set */ 
+	 * Trigger a resize event and call the onResize callback function if set.
+	 * This is called automatically after the resize occurs. */ 
 	void resize(Vec2f amount)
 	{	if (onResize)
 			onResize(this, amount);

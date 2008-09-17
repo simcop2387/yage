@@ -7,11 +7,7 @@ known, it shouldn't appear on this list.
 
 When the window is sized below about 1/4th the size of it's starting size,
 SDL's grab input mode freezes the application until the mouse is released
-    
-It looks like an SDL_VIDEORESIZE event isn't sent when the window is
-maximized or minimized, but only when the borders are resized.\
-This causes viewport sizing problems.
-	
+
 How can I get the state of mouse buttons 6+ with SDL?
 
 How can I use the scroll wheel (mouse buttons 4-5)?

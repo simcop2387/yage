@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -68,7 +68,9 @@ struct Color
 	
 	/// Convert uint to Color
 	static Color opCall(uint ui)
-	{	return Color(dword(ui));
+	{	Color res;
+		res.ui = ui;
+		return res;
 	}
 	
 	/// Convert ubyte[] to Color
@@ -166,7 +168,10 @@ struct Color
 		return result;
 	}
 	
-	
+	/// Is this useful?
+	uint opCast()
+	{	return ui;		
+	}
 	
 	/// Get the Color as an array of float.
 	float[] f()

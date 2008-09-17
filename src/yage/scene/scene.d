@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -35,7 +35,7 @@ import yage.scene.node;
  * scene.setSkybox(skybox);
  * --------------------------------
  */
-class Scene : Node
+class Scene : Node//, ITemporal
 {
 	protected Scene skybox;
 	protected LightNode[LightNode] lights;
@@ -65,17 +65,19 @@ class Scene : Node
 		ambient	= Color("333333"); // OpenGL default global ambient light.
 		background = Color("black");	// OpenGL default clear color
 		fog_color = Color("gray");
-		repeater = new Repeater(&update);
+		repeater = new Repeater();
+		//repeater.setFunction(&update);
+		repeater.func = &update;
 		
-		transform_mutex = new Object;
-		lights_mutex = new Object;
+		transform_mutex = new Object();
+		lights_mutex = new Object();
 	}
 
-	/// Destroctor, stops the Scene's thread.
+	/// Destructor, stops the Scene's thread.
 	~this()
 	{	std.stdio.writefln("Scene destructor");
 		try { // since order of destruction is unpredictable.
-			repeater.stop();
+			//repeater.stop();
 		} catch {}
 	}
 
@@ -104,8 +106,8 @@ class Scene : Node
 	Color getClearColor()
 	{	return background;
 	}	
-	void setClearColor(Color color) /// Ditto
-	{	this.background = background;
+	void setClearColor(Color color) /// ditto
+	{	this.background = color;
 	}
 
 	/// Return the amount of time since the last time update() was called for this Scene.
@@ -117,7 +119,7 @@ class Scene : Node
 	Color getFogColor()
 	{	return fog_color;
 	}	
-	void setFogColor(Color fog_color) /// Ditto
+	void setFogColor(Color fog_color) /// ditto
 	{	this.fog_color = fog_color;
 	}
 	
@@ -127,7 +129,7 @@ class Scene : Node
 	float getFogDensity()
 	{	return fog_density;
 	}
-	void setFogDensity(float density) /// Ditto
+	void setFogDensity(float density) /// ditto
 	{	fog_density = density;
 	}
 
@@ -139,7 +141,7 @@ class Scene : Node
 	bool getFogEnabled()
 	{	return fog_enabled;
 	}
-	void setFogEnabled(bool enabled) /// Ditto
+	void setFogEnabled(bool enabled) /// ditto
 	{	fog_enabled = enabled;
 	}
 	
@@ -147,7 +149,7 @@ class Scene : Node
 	Color getGlobalAmbient()
 	{	return ambient;
 	}	
-	void setGlobalAmbient(Color ambient) /// Ditto
+	void setGlobalAmbient(Color ambient) /// ditto
 	{	this.ambient = ambient;
 	}
 
@@ -158,7 +160,7 @@ class Scene : Node
 	Scene getSkybox()
 	{	return skybox;
 	}	
-	void setSkybox(Scene _skybox) /// Ditto
+	void setSkybox(Scene _skybox) /// ditto
 	{	skybox = _skybox;
 	}
 	
@@ -166,42 +168,50 @@ class Scene : Node
 	float getSpeedOfSound()
 	{	return speed_of_sound;
 	}	
-	void setSpeedOfSound(float speed) /// Ditto
+	void setSpeedOfSound(float speed) /// ditto
 	{	speed_of_sound = speed;
 		alDopplerVelocity(speed/343.3);
 	}
-
-	/// Get the the number of seconds since the last time start() was called.
-	real getStartTime()
-	{	return repeater.getStartTime();
-	}
-
 	/**
-	 * Get / set the target for update the number of updates.
-	 * A number higher than the current count will cause the Updater to pause until
-	 * enough time has passed that the update counter should be at that count.
-	 * A number smaller than the current count will cause the updater to repeatedly
-	 * update until the count is back to what it should be. */
-	int getUpdateCount()
-	{	return repeater.getCallCount();
-	}
-	void setUpdateCount(int count) /// Ditto
-	{	repeater.setCallCount(count);
-	}
-
-	/**
-	 * Start updating the positions and rotations of all Nodes in this Scene.
+	 * Implement the time control functions of ITemporal.
+	 * TODO: replace with getRepeater() ?
+	 * When the scene's timer (implementd as a repeater) runs, it updates
+	 * the positions and rotations of all Nodes in this Scene.
 	 * Each Scene is updated in its own thread.  If the updating thread
-	 * gets behind, it will always attempt to catch up.
-	 * Params:
-	 * frequency = The scene will be updated this many times per second.*/
-	void start(float frequency=90)
-	{	repeater.start(frequency);
+	 * gets behind, it will always attempt to catch up by updating more frequently.*/
+	void play()
+	{	repeater.play();
+	}
+	void pause2() /// ditto
+	{	repeater.pause2();		
+	}	
+	bool paused() /// ditto
+	{	return repeater.paused();
+	}	
+	void stop() /// ditto
+	{	repeater.pause2();
+	}
+	/*
+	void seek(double seconds) /// ditto
+	{	repeater.seek(seconds);		
+	}
+	*/	
+	double tell() /// ditto
+	{	return repeater.tell();		
 	}
 
-	/// Stop updating the Scene.
-	void stop(){
-		repeater.stop();
+	/**
+	 * Get the Repeater that calls update in its own thread.
+	 * This allows more advanced interaction than the shorthand functions implemented above. */
+	Repeater getUpdater()
+	{	return repeater;		
+	}
+	
+	
+	void remove()
+	{	repeater.remove(); // blocks until the repeater's thread terminates.
+		super.remove();
+		delete this;
 	}
 
 	/**
@@ -231,13 +241,11 @@ class Scene : Node
 		}
 	}
 
-	/// Update all Nodes by the time that has passed since update() was last called.
-	void update()
-	{	update(delta.get());
-	}
-
-	/// Update all Nodes in the scene by delta seconds.
-	void update(float delta)
+	/**
+	 * Update all Nodes in the scene by delta seconds.
+	 * Params:
+	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
+	void update(float delta = delta.get())
 	{	super.update(delta);
 		delta_time = delta;
 		this.delta.reset();
@@ -247,7 +255,9 @@ class Scene : Node
 
 	/*
 	 * Apply OpenGL options specific to this Scene.  This function is used internally by
-	 * the engine and doesn't normally need to be called.*/
+	 * the engine and doesn't normally need to be called.
+	 * TODO: Rename to bind?
+	 * */
 	void apply()
 	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.vec4f.ptr);
 		glClearColor(background.r, background.g, background.b, background.a);
@@ -272,7 +282,7 @@ class Scene : Node
 	/*
 	 * Remove the light with the given light index.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
-	synchronized void removeLight(LightNode light)
+	void removeLight(LightNode light)
 	{	synchronized (lights_mutex) lights.remove(light);
 	}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -7,11 +7,11 @@
 module yage.scene.camera;
 
 import std.math;
+import std.stdio;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
 import derelict.openal.al;
-import derelict.sdl.sdl;
 import yage.core.matrix;
 import yage.core.plane;
 import yage.core.vector;
@@ -43,7 +43,7 @@ class CameraNode : MovableNode
 	float aspect	= 0;		// aspect ratio of the view
 	float threshold = 2.25;		// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
-	GPUTexture capture;		// The camera renders to this Texture
+	GPUTexture capture;			// The camera renders to this Texture
 	Plane[6] frustum;
 	Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
 
@@ -68,7 +68,7 @@ class CameraNode : MovableNode
 	 * Params:
 	 * parent = This Node will be a child of parent.
 	 * original = This Node will be an exact copy of original.*/
-	this (Node parent, CameraNode original)
+	this(Node parent, CameraNode original)
 	{	super(parent, original);
 		xres = original.xres;
 		yres = original.yres;
@@ -147,7 +147,8 @@ class CameraNode : MovableNode
 
 	/// Get the Texture that the camera renders to.
 	GPUTexture getTexture()
-	{	return capture;
+	{	capture.flipped = true;
+		return capture;
 	}
 
 	/// x and y in screen coordinates, z is distance from camera. Unfinished
@@ -198,14 +199,21 @@ class CameraNode : MovableNode
 	{	node_count = poly_count = vertex_count = 0;
 		Render.setCurrentCamera(this);
 		
+		// Get Size
+		int modified_xres=xres, modified_yres=yres;
+		if (modified_xres > Device.getWidth()) modified_xres=Device.getWidth();
+		if (modified_yres > Device.getHeight()) modified_yres=Device.getHeight();
+		if (modified_xres ==0) modified_xres=Device.getWidth();
+		if (modified_yres ==0) modified_yres=Device.getHeight();
+		
 
 		// Precalculate the inverse of the Camera's absolute transformation Matrix.
 		Matrix xform = getAbsoluteTransform(true);
 		inverse_absolute = xform.inverse();
 
 		// Resize viewport
-		float aspect2 = aspect ? aspect : xres/cast(float)yres;
-		Device.resizeViewport(xres, yres, near, far, fov, aspect2);
+		float aspect2 = aspect ? aspect : modified_xres/cast(float)modified_yres;
+		Device.resizeViewport(modified_xres, modified_yres, near, far, fov, aspect2);
 		glLoadIdentity();
 
 		// Rotate in reverse
@@ -241,22 +249,9 @@ class CameraNode : MovableNode
 		addNodesToRender(scene);
 		Render.all(poly_count, vertex_count);
 
-
 		// Copy framebuffer to our texture.
-		//int modified_xres=xres, modified_yres=yres;
-		//if (modified_xres ==0) modified_xres=Device.getWidth();
-		//if (modified_yres ==0) modified_yres=Device.getHeight();
-		//capture.loadFrameBuffer(min(xres, Device.getWidth()), min(xres, Device.getHeight()));
-
-		// Copy framebuffer to our texture.
-		int modified_xres=xres, modified_yres=yres;
-		if (modified_xres > Device.getWidth()) modified_xres=Device.getWidth();
-		if (modified_yres > Device.getHeight()) modified_yres=Device.getHeight();
-		if (modified_xres ==0) modified_xres=Device.getWidth();
-		if (modified_yres ==0) modified_yres=Device.getHeight();
-
 		capture.loadFrameBuffer(modified_xres, modified_yres);
-
+		
 		frame_count++;
 	}
 
@@ -293,9 +288,9 @@ class CameraNode : MovableNode
 	// Ditto
 	protected void addNodesToRender(Node node)
 	{
-		if (node.getVisible())
-		{	VisibleNode vnode = cast(VisibleNode)node;
-			
+		VisibleNode vnode = cast(VisibleNode)node;
+		if (node.getVisible() && vnode)
+		{	
 			vnode.setOnscreen(true);
 
 			float r = -vnode.getRadius();

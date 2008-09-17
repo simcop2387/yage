@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -190,35 +190,9 @@ abstract class Node : Tree!(Node)
 	}
 
 	/**
-	 * Return a string representation of this Node for human reading.
-	 * Params:
-	 * recurse = Print this Node's children as well. */
-	char[] toString() { return toString(false); }
-	char[] toString(bool recurse) /// Ditto
-	{	
-		
-		static int indent;
-		char[] pad = new char[indent*3];
-		pad[0..length] = ' ';
-
-		char[] result = pad ~ "[" ~ getType() ~ "]\n";
-		if(parent)
-			result ~= pad~"Parent  : " ~ parent.getType() ~ "\n";
-		/*
-		result ~= pad~"Position: " ~ Vec3f(transform.v[12..15]).toString() ~ "\n";
-		result ~= pad~"Rotation: " ~ transform.toAxis().toString() ~ "\n";
-		result ~= pad~"Velocity: " ~ transform.toAxis().toString() ~ "\n";
-		result ~= pad~"Angular : " ~ transform.toAxis().toString() ~ "\n";*/
-		result ~= pad~"Children: " ~ std.string.toString(children.length) ~ "\n";
-		delete pad;
-
-		if (recurse)
-		{	indent++;
-			foreach (Node c; children)
-				result ~= c.toString(recurse);
-			indent--;
-		}
-		return result;
+	 * Return a string representation of this Node for human reading. */	
+	char[] toString()
+	{	return formatString("<%s children=\"%d\"/>", getType(), children.length);
 	}
 
 	/**

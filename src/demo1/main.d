@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -37,7 +37,7 @@ int main()
 	// Create and start a Scene
 	Log.write("Starting update loop.");
 	Scene scene = new Scene();
-	scene.start(60); // update 60 times per second
+	scene.play(); // update 60 times per second
 	
 	Device.onExit = &scene.stop;
 	
@@ -64,7 +64,7 @@ int main()
 	Device.setSurface(view);
 
 	// Events for main surface.
-	view.onKeyDown = delegate void (Surface self, byte key){
+	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			Device.exit(0);
 		

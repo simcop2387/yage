@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -12,6 +12,7 @@ public
 {	import yage.system.constant;
 	import yage.system.device;
 	import yage.system.exceptions;
+	import yage.system.window;
 	import yage.system.input;
 	import yage.system.interfaces;
 	import yage.system.log;

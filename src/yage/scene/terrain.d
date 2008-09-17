@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel & Joe (Deformative) Pusdesris
  * License:    <a href="lgpl.txt">LGPL</a>
  */

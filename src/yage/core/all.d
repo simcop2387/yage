@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -14,8 +14,10 @@ module yage.core.all;
 
 public
 {	import yage.core.array;
+	import yage.core.async;
 	import yage.core.color;
 	import yage.core.freelist;
+	import yage.core.interfaces;
 	import yage.core.math;
 	import yage.core.matrix;
 	import yage.core.misc;

@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -31,7 +31,7 @@ char[] floatToHex(float[] vec)
 	return result;
 }
 
-/// An improved, D compatible, scanf()
+/// An improved, D compatible, sprintf(), this should probably be in a different module.
 char[] formatString(...)
 {	char[] res;
     void putchar(dchar c)

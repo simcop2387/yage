@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -70,7 +70,7 @@ struct Vec(int S, T)
 		return res;
 	}
 
-	/// The _angle between this vector and s, in radians.
+	/// The angle between this vector and s, in radians.
 	float angle(VST s)
 	{	return acos(dot(s)/(length()*s.length()));
 	}
@@ -159,6 +159,60 @@ struct Vec(int S, T)
 			v[i] /= s;
 	}
 	
+	/* Postponed until D array operations are stable.
+	/// Allow for linear additions, subtractions, multiplcations, and divisions among Vectors of the same size and type.
+	VecST opAdd(T s)
+	{	return Vec!(S, T)(v[] + s);	
+	}
+	VecST opAdd(T s) /// ditto
+	{	return Vec!(S, T)(v[] + s);	
+	}
+	void opAddAssign(float s) /// ditto
+	{	v[] += cast(T)s;
+	}
+	void opAddAssign(VecST s) /// ditto
+	{	v[] += s.v[];
+	}
+	VecST opSub(T s) /// ditto
+	{	return Vec!(S, T)(v[] - s);	
+	}
+	VecST opSub(VecST s) /// ditto
+	{	return Vec!(S, T)(v[] - s.v[]);
+	}
+	void opSubAssign(float s) /// ditto
+	{	v[] -= cast(T)s;
+	}
+	void opSubAssign(VecST s) /// ditto
+	{	v[] -= s.v[];
+	}
+	
+	/// Allow for additions, subtractions, multiplcations, and divisions where a scalar is applied to each vector component.
+	VecST opMul(T s)
+	{	return Vec!(S, T)(v[] * s);	
+	}
+	VecST opMul(VecST s) /// ditto
+	{	return Vec!(S, T)(v[] * s.v[]);	
+	}
+	void opMulAssign(float s) /// ditto
+	{	v[] *= cast(T)s;
+	}
+	void opMulAssign(VecST s) /// ditto
+	{	v[] *= s.v[];
+	}
+	VecST opDiv(T s) /// ditto
+	{	return Vec!(S, T)(v[] / s);	
+	}
+	VecST opDiv(VecST s) /// ditto
+	{	return Vec!(S, T)(v[] / s.v[]);	
+	}
+	void opDivAssign(float s) /// ditto
+	{	v[] /= cast(T)s;
+	}
+	void opDivAssign(VecST s) /// ditto
+	{	v[] /= s.v[];
+	}
+	*/
+	
 	/// Allow casting to float where appropriate
 	static if (is(T : float))	// if T can be implicitly cast to float
 	{	Vec!(S, float) opCast()
@@ -178,7 +232,7 @@ struct Vec(int S, T)
 	{	return v[i] = value;
 	}
 
-	/// Create a new vector with the values of s; s must be at least of length 3.
+	/// Create a new vector with the values of s
 	VST projection(VST s)
 	{	return s.scale(dot(s)/s.length2());
 	}
@@ -222,7 +276,10 @@ struct Vec(int S, T)
 	char[] toString()
 	{	char[] result = "<";
 		for (int i=0; i<S; i++)
-			result ~= formatString("%.4f ", v[i]);
+			static if (is (T : int))
+				result ~= formatString("%d ", v[i]);
+			else
+				result ~= formatString("%.4f ", v[i]);
 		result ~= ">";
 		return result;
 	}
@@ -232,14 +289,12 @@ alias Vec!(2, int) Vec2i;		/// A two-component int Vec
 alias Vec!(3, int) Vec3i;		/// A three-component int Vec
 alias Vec!(4, int) Vec4i;		/// A four-component int Vec
 alias Vec!(2, float) Vec2f;		/// A two-component float Vec
-//alias Vec3f Vec3f;			// Defined below
+alias Vec!(3, float) Vec3f2;			// Defined below
 alias Vec!(4, float) Vec4f;		/// A four-component float Vec
 
 /**
- * A 3D vector class.  This is defined as a struct instead of a
- * class so it can be created and destroyed without dynamic memory allocation.
- * This is a higher-performance version of Vec (although it hasn't been profiled).
- * This may be merged with Vec in the future. */
+ * A 3D vector class. 
+ * This can be merged with the templated version above when D fixed the forward template declaration bugs. */
 struct Vec3f
 {
 	union
@@ -342,6 +397,10 @@ struct Vec3f
 		return true;
 	}
 
+	float angle(Vec3f s)
+	{	return acos(dot(s)/(length()*s.length())); // sqrt(length2*s.length2) would be faster, but untested
+	}
+	
 	/// Return the average of the x, y, and z components.
 	float average()
 	{	return (x+y+z)*0.3333333333f;
@@ -350,6 +409,10 @@ struct Vec3f
 	///
 	Vec3f clamp(float l, float u)
 	{	return Vec3f(.clamp(x, l, u), .clamp(y, l, u), .clamp(z, l, u));
+	}
+	///
+	Vec3f clamp(Vec3f l, Vec3f u)
+	{	return Vec3f(.clamp(x, l.x, u.x), .clamp(y, l.y, u.y), .clamp(z, l.z, u.z));		
 	}
 
 	/// Return the cross product of this vector with another vector.
@@ -502,6 +565,11 @@ struct Vec3f
 	///
 	float *ptr()
 	{	return v.ptr;
+	}
+	
+	/// Create a new vector with the values of s
+	Vec3f projection(Vec3f s)
+	{	return s.scale(dot(s)/s.length2());
 	}
 
 	/// Return a vector in a random direction between length -r and r.

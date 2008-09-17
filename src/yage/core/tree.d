@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -84,6 +84,7 @@ class Tree(T)
 			if (index < parent.children.length)
 				parent.children[index].index = index;
 			index = -1; // so remove can't be called twice.
+			parent = null;
 		}
 
 	}

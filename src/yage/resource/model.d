@@ -1,5 +1,5 @@
-/**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ /**
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -108,7 +108,7 @@ class Model
 
 	protected float fps=24;
 	protected bool animated = false;
-	protected double animation_time=0;
+	protected double animation_time=-1;
 	protected double animation_max_time=0;
 	protected Joint[] joints; // used for skeletal animation
 	protected int[] joint_indices;
@@ -162,6 +162,7 @@ class Model
 	
 	/**
 	 * Advance this Model's animation to time.
+	 * This still has bugs somehow.
 	 * Params:
 	 *     time =
 	 */
@@ -175,9 +176,8 @@ class Model
 		animation_time = time;
 		
 		
-		
 		// TODO: check time constraints
-		int i =0;
+		int i=0;
 		foreach(j, joint; joints)
 		{
 			float deltatime;	// time between frames	
@@ -238,8 +238,6 @@ class Model
 				joint.transformAbs = m_rel * joint.parent.transformAbs;					
 		}
 		
-		//writefln(time, " ", i);
-		
 		// Update vertex positions based on joints.
 		Vec3f[] vertices = getAttribute("gl_Vertex").vec3f;
 		Vec3f[] vertices_original = getAttribute("gl_VertexOriginal").vec3f;
@@ -253,14 +251,11 @@ class Model
 		for (int v=0; v<vertices.length; v++)
 		{	if (joint_indices[v] != -1)
 			{	
-				//writefln(joint_indices[v]);
 				Matrix cmatx = joints[joint_indices[v]].transformAbs; 
-				vertices[v] = vertices_original[v].transform(cmatx);
-				
+				vertices[v] = vertices_original[v].transform(cmatx);				
 				
 				if (normals.length)
 					normals[v] = normals_original[v].rotate(cmatx);
-				// TODO: Normals
 				// TODO: only reassign cmatx if joint_indices[v] has changed.
 			}				
 		}

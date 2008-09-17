@@ -1,6 +1,9 @@
 /**
- * 
+ * Copyright:  (c) 2005-2008 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl.txt">LGPL</a> 
  */
+
 module yage.gui.style;
 
 import std.regexp;
@@ -41,6 +44,13 @@ struct Style
 		HIDDEN=false,
 		VISIBLE=true		
 	}
+	
+	enum TextAlign
+	{	LEFT = 0,
+		CENTER = 1,
+		RIGHT = 2		
+	}
+	
 	// Associative arrays used for translation
 	static int[char[]] translate;
 	static this()
@@ -157,15 +167,17 @@ struct Style
 	Font fontFamily;
 	float fontSize = 12;
 	Unit fontSizeUnit = Style.PX;
-	//float fontWeight;
-	Color color;
-		
+	
+	union { // Default color to black opaque.
+		uint color_ui = 0xFF000000;
+		Color color;
+	}
 	// Padding
 	//float paddingTop, paddingRight, paddingBottom, paddingLeft;
 	//Unit paddingTopUnit, paddingRightUnit, paddingBottomUnit, paddingLeftUnit;
 
 	// Text
-	//byte  textAlign;
+	TextAlign textAlign = TextAlign.LEFT;
 	//byte  textDecoration;
 	//float lineHeight;
 	//byte  lineHeightUnits;
@@ -186,9 +198,22 @@ struct Style
 	void set(char[] style)
 	{	
 		/*
-		 * Populate values and units from string.
-		 * Not sure if returning values through arguments w/o inout is future-proof. */ 
-		void toEdge(char[] string, float[] edge, Unit[] edge_units)
+		 * Populate values and units from string.*/ 
+		void parseUnit(char[] string, inout float value, inout Unit value_unit)
+		body
+		{	value = float.nan;
+			if (std.string.rfind(string, "%") != -1)
+				value_unit = Style.PERCENT;
+			else
+				value_unit = Style.PX;
+			char[] num = std.regexp.sub(string, "[^0-9]+", "", "g");
+			if (num.length) // val=="auto" leaves the value as float.nan
+				value = toFloat(num);
+			else if (string != "auto") // entire string is already toLower'd
+				throw new Exception("Could not parse CSS value: '" ~ string ~"`"); // garbage!				
+		}
+		
+		void parseUnits(char[] string, float[] edge, Unit[] edge_units)
 		in { assert(edge_units.length >= edge.length); }
 		body
 		{	char[][] values = std.regexp.split(string, "\\s+");
@@ -199,15 +224,8 @@ struct Style
 			
 			// Loop through and set what we can parse.
 			for (int i=0; i<values.length && i<edge.length; i++)
-			{	char[] num = std.regexp.sub(values[i], "[^0-9]+", "", "g");
-				if (num.length) // val=="auto" leaves the value as float.nan
-					edge[i] = toFloat(num);
-				else if (values[i] != "auto") // entire string is already toLower'd
-					throw new Exception("Could not parse CSS value: '" ~ values[i] ~"`"); // garbage!
-				if (std.string.rfind(values[i], "%") != -1)
-					edge_units[i] = Style.PERCENT;
-				//delete num; // This causes problems, but std.regexp.sub should've made a copy, right?
-			}
+				parseUnit(values[i], edge[i], edge_units[i]);
+			
 			// If only specified 2 values and edge has 4 values.		
 			if (values.length==2 && edge.length >=4)
 			{	edge[2] = edge[0];
@@ -216,6 +234,8 @@ struct Style
 				edge_units[3] = edge_units[1];
 			}
 		}
+		
+		
 		
 		/*
 		 * Remove the url('...') from a css path, if it's present.
@@ -246,21 +266,25 @@ struct Style
 			
 				case "backgroundcolor":		backgroundColor = Color(tokens[1]); break;
 				case "backgroundrepeat":	backgroundRepeat = translate[tokens[1]]; break;
-				case "backgroundmaterial":	backgroundMaterial = Resource.texture(removeUrl(tokens[1])).texture; break;
+				case "backgroundmaterial":	backgroundMaterial = Resource.texture(removeUrl(tokens[1])).texture; break;				
+			
+				case "backgroundpositionx":parseUnits(tokens[1], backgroundPosition.values[0..1], backgroundPositionUnits.values[0..1]); break;
+				case "backgroundpositiony":parseUnits(tokens[1], backgroundPosition.values[1..2], backgroundPositionUnits.values[1..2]); break;
+				case "backgroundposition": parseUnits(tokens[1], backgroundPosition.values, backgroundPositionUnits.values); break;
 				
+				//case 
+				case "font":		/*todo */ break;
+				case "fontsize":	parseUnit(tokens[1], fontSize, fontSizeUnit); break;
+				case "fontfamily":	fontFamily = Resource.font(removeUrl(tokens[1])); break;		
 			
-				case "backgroundpositionx":toEdge(tokens[1], backgroundPosition.values[0..1], backgroundPositionUnits.values[0..1]); break;
-				case "backgroundpositiony":toEdge(tokens[1], backgroundPosition.values[1..2], backgroundPositionUnits.values[1..2]); break;
-				case "backgroundposition": toEdge(tokens[1], backgroundPosition.values, backgroundPositionUnits.values); break;
-			
-				case "top":			toEdge(tokens[1], dimension.values[0..1], dimensionUnits.values[0..1]); break;
-				case "right":		toEdge(tokens[1], dimension.values[1..2], dimensionUnits.values[1..2]); break;
-				case "bottom":		toEdge(tokens[1], dimension.values[2..3], dimensionUnits.values[2..3]); break;
-				case "left":		toEdge(tokens[1], dimension.values[3..4], dimensionUnits.values[3..4]); break;
-				case "dimension":	toEdge(tokens[1], dimension.values, dimensionUnits.values); break;
-				case "width":		toEdge(tokens[1], size.values[0..1], sizeUnits.values[0..1]); break;
-				case "height":		toEdge(tokens[1], size.values[1..2], sizeUnits.values[1..2]); break;
-				case "size": 		toEdge(tokens[1], size.values, sizeUnits.values); break;	
+				case "top":			parseUnits(tokens[1], dimension.values[0..1], dimensionUnits.values[0..1]); break;
+				case "right":		parseUnits(tokens[1], dimension.values[1..2], dimensionUnits.values[1..2]); break;
+				case "bottom":		parseUnits(tokens[1], dimension.values[2..3], dimensionUnits.values[2..3]); break;
+				case "left":		parseUnits(tokens[1], dimension.values[3..4], dimensionUnits.values[3..4]); break;
+				case "dimension":	parseUnits(tokens[1], dimension.values, dimensionUnits.values); break;
+				case "width":		parseUnits(tokens[1], size.values[0..1], sizeUnits.values[0..1]); break;
+				case "height":		parseUnits(tokens[1], size.values[1..2], sizeUnits.values[1..2]); break;
+				case "size": 		parseUnits(tokens[1], size.values, sizeUnits.values); break;	
 				
 				case "zIndex":		zIndex = toInt(tokens[1]); break;
 				case "visible":

@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -205,12 +205,12 @@ struct Matrix
 	}
 
 	/// Get element i from the Matrix
-	float opIndex(ubyte i)
+	float opIndex(size_t i)
 	{	return v[i];
 	}
 
 	/// Assign a value to element i.
-	float opIndexAssign(float value, ubyte i)
+	float opIndexAssign(float value, size_t i)
 	{	return v[i] = value;
 	}
 

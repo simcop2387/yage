@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -86,26 +86,20 @@ class Render
 			Vec3f size = n.getSize();
 			glScalef(size.x, size.y, size.z);
 			n.enableLights();
-
-			switch(n.getType())
-			{	case "yage.scene.model.ModelNode":
-					model((cast(ModelNode)n).getModel(), n);
-					break;
-				case "yage.scene.sprite.SpriteNode":
-					sprite((cast(SpriteNode)n).getMaterial(), n);
-					break;
-				case "yage.scene.graph.GraphNode":
-					model((cast(GraphNode)n).getModel(), n);
-					break;
-				case "yage.scene.terrain.TerrainNode":
-					model((cast(TerrainNode)n).getModel(), n);
-					break;
-				case "yage.scene.terrain.LightNode":
-					cube(n);	// todo: render as color of light?
-					break;
-				default:
-					cube(n);
-			}
+			
+			if (cast(ModelNode)n)
+				model((cast(ModelNode)n).getModel(), n);			
+			else if (cast(SpriteNode)n)
+				sprite((cast(SpriteNode)n).getMaterial(), n);
+			else if (cast(GraphNode)n)
+				model((cast(GraphNode)n).getModel(), n);
+			else if (cast(TerrainNode)n)
+				model((cast(TerrainNode)n).getModel(), n);
+			else if (cast(LightNode)n)
+				cube(n);	// todo: render as color of light?
+			else
+				cube(n);
+			
 			glPopMatrix();
 		}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
  * License:    <a href="lgpl.txt">LGPL</a>
  *
@@ -38,7 +38,7 @@ int main()
 	// Create and start a Scene
 	Log.write("Starting update loop.");
 	Scene scene = new Scene();
-	scene.start(60); // update 60 times per second
+	scene.play(); // update 60 times per second
 	Device.onExit = &scene.stop;
 
 	// Skybox
@@ -61,11 +61,11 @@ int main()
 	// Main surface where camera output is rendered.
 	Surface view = new Surface(null);
 	view.style.backgroundMaterial = camera.getTexture();
-	view.style.set("bottom: 0; right: 0");	
+	view.style.set("bottom: 0; right: 0; background-color: green");	
 	Device.setSurface(view);
 	
 	// Events for main surface.
-	view.onKeyDown = delegate void (Surface self, byte key){
+	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			Device.exit(0);
 		
@@ -86,17 +86,15 @@ int main()
 			writefln("garbage collected");
 		}
 	};
-	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates){
+	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates) {
 		self.grabMouse(!ship.input);
 		ship.input = !ship.input;
 	};
-	view.onMouseMove = delegate void (Surface self, byte buttons, Vec2i rel){
+	view.onMouseMove = delegate void (Surface self, byte buttons, Vec2i rel) {
 		if(ship.input)
  			ship.mouseDelta = ship.mouseDelta + rel;		
 	};
-	view.onResize = delegate void (Surface self, Vec2f amount){
-		camera.setResolution(cast(int)self.width, cast(int)self.height);
-	};
+	
 
 	
 	
@@ -125,8 +123,6 @@ int main()
 	window1.onMouseDown = &onMouseDown2;
 	window1.onMouseMove = &onMouseMove2;
 	window1.onMouseUp = &onMouseUp2;
-	//window1.onMouseOver = &onMouseOver;
-	//window1.onMouseOut = &onMouseOut;
 	
 	auto window2 = new Surface(window1);
 	window2.style.set("top: 30; right: 0; width: 50; height: 30; background-position: 5px 5px; " ~ 
@@ -140,6 +136,13 @@ int main()
 	window1.style.fontFamily = Resource.font("gui/font/Vera.ttf");
 	window1.style.fontSize = 12;
 	window1.style.color = Color("black");
+	
+	
+	view.onResize = delegate void (Surface self, Vec2f amount) {
+		camera.setResolution(cast(int)self.width, cast(int)self.height);
+		//window1.text = Vec2f(self.width, self.height).toString() ~ Vec2f(Device.getWidth(), Device.getHeight()).toString();
+		//window1.text = Vec4f(self.tex_coords[0..4]).toString() ~ Vec4f(self.tex_coords[4..8]).toString();
+	};
 	
 	// Music
 	auto music = new SoundNode(camera);
@@ -186,8 +189,10 @@ int main()
 		delta.reset();
 		
 		Input.processInput();
+		scene.swapTransformRead(); // swap scene buffer so the latest version can be rendered.
 		camera.toTexture();
 		view.render();
+		
 		
 		// Print framerate
 		fps++;
@@ -203,7 +208,7 @@ int main()
 		// Cap framerate
 		//if (dtime < 1/60.0)
 		//	std.c.time.usleep(cast(uint)(1000));
-		scene.swapTransformRead();
+		
 	}
 
 	return 0;

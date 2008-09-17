@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -207,7 +207,7 @@ class LightNode : MovableNode
 
 		// color will store the RGB color values of the intensity.
 		Vec3f color;
-		color.set(diffuse.r/255*intensity, diffuse.g/255*intensity, diffuse.b/255*intensity);
+		color.set(diffuse.r/255.0f*intensity, diffuse.g/255.0f*intensity, diffuse.b/255.0f*intensity);
 		if (add_ambient)
 			color.add(ambient.vec3f);	// diffuse scaled by intensity plus ambient.
 

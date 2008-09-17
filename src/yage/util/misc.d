@@ -1,7 +1,9 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
+ * 
+ * This probably doesn't need to be a part of yage itself.
  */
 
 module yage.util.misc;

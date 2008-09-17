@@ -1,12 +1,13 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Andy Friesen, Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
  * Xml contains functions and classes for reading, parsing, and writing xml
  * documents.
  *
- * This hasn't been profiled and probably isn't that efficient.
+ * This hasn't been profiled and probably isn't that efficient.  Perhaps it should
+ * eventually be switched to Tango's or Phobos's xml libraries.
  *
  * History:
  * Most of the code in this module originally came from Andy Friesen's Xmld.

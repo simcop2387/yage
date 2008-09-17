@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -11,7 +11,7 @@ import std.string;
 import std.stdio;
 import derelict.openal.al;
 import yage.core.math;
-import yage.system.interfaces;
+import yage.core.interfaces;
 import yage.resource.resource;
 import yage.resource.sound;
 import yage.scene.node;
@@ -231,6 +231,7 @@ class SoundNode : MovableNode, ITemporal
 		}
 	}
 
+	///
 	char[] toString()
 	{	return toString(false);
 	}
@@ -244,7 +245,7 @@ class SoundNode : MovableNode, ITemporal
 		char[] pad = new char[indent*3];
 		pad[0..length] = ' ';
 
-		char[] result = super.toString(false);
+		char[] result = super.toString();
 		result ~= pad~"Sound: " ~ sound.getSource() ~ "\n";
 		result ~= pad~"Radius: " ~ std.string.toString(radius) ~ "\n";
 		result ~= pad~"Volume: " ~ std.string.toString(volume) ~ "\n";
@@ -262,7 +263,7 @@ class SoundNode : MovableNode, ITemporal
 		if (recurse)
 		{	indent++;
 			foreach (Node c; children)
-				result ~= c.toString(recurse);
+				result ~= c.toString();
 			indent--;
 		}
 

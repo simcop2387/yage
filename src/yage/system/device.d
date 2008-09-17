@@ -1,6 +1,6 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
- * Authors:    Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
+ * Authors:    Eric Poggel, Joe Pusderis (deformative0@gmail.com)
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
@@ -55,13 +55,8 @@ abstract class Device
 	protected static ALCcontext	*al_context;
 
 	// Misc
-	protected static bool initialized=0;			// true if init() has been called
-
-	
+	protected static bool initialized=false;			// true if init() has been called
 	protected static Surface surface;
-	
-	
-	//static Surface[] children;
 	
 	/// Unload SDL at exit.
 	static ~this()
@@ -72,8 +67,7 @@ abstract class Device
 				//alcDestroyContext(al_context);
 				//alcCloseDevice(al_device);
 			}catch{ throw new Exception("Error in Device destructor."); }
-		}
-	}
+	}	}
 
 	/**
 	 * This function creates a window with the specified width and height in pixels.
@@ -221,6 +215,7 @@ abstract class Device
 	}
 	
 	static void delegate() onExit;
+	
 	//Perhaps this needs to be improved, or maybe it will be added to the D runtime and no longer be needed
 	static void exit(int code){
 		if(onExit) onExit();
@@ -249,8 +244,9 @@ abstract class Device
 
 	/// Return the aspect ratio (width/height) of the rendering window.
 	static float getAspectRatio()
-	{	if (size.y==0) size.y=1;
-		return size.x/cast(float)size.x;
+	{	if (size.y==0) 
+			size.y=1;
+		return size.x/cast(float)size.y;
 	}
 
 	/**
@@ -364,9 +360,9 @@ abstract class Device
 	static void resizeWindow(int width, int height)
 	{	size.x = width;
 		size.y = height;
-		Vec2f dsize = Vec2f(size.x, size.y);
+		//Vec2f dsize = Vec2f(size.x, size.y);
 		
-		surface.calculate();
+		surface.update();
 		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, also try SDL lock surface)

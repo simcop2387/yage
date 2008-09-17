@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -16,6 +16,7 @@ import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
 import yage.core.math;
+import yage.core.matrix;
 import yage.core.timer;
 import yage.core.vector;
 import yage.resource.resource;
@@ -56,16 +57,16 @@ struct Texture
 	/// Optional, the name of the sampler variable that uses this texture in the shader program.
 	char[] name;
 
-	///
+	/// TODO: Replace with texture matrix?
 	Vec2f position;
-
-	///
+	/// ditto
 	float rotation=0;
-
-	///
+	/// ditto
 	Vec2f scale = {v:[1.0f, 1.0f]};
+	
+	Matrix transform;
 
-	/// A pointer to the actual GPUTexture used.
+	/// 
 	GPUTexture texture;
 
 	/// Create a new TextureInstance with the parameters specified.
@@ -137,6 +138,9 @@ struct Texture
 			glRotatef(rotation, 0, 0, 1);
 			glTranslatef(position.x, position.y, 0);
 			glScalef(scale.x, scale.y, 1);
+			
+			glMultMatrixf(transform.v.ptr);
+			
 			glMatrixMode(GL_MODELVIEW);
 		}
 
@@ -189,7 +193,7 @@ struct Texture
  * Also, there's no need to be concerned about making
  * texture dimensions a power of two, as they're automatically resized up to
  * the next highest supported size if the non_power_of_two OpenGL extension
- * isn't supported in hardware. */
+ * isn't supported in hardware.*/
 class GPUTexture
 {
 	protected bool compress;
@@ -201,8 +205,10 @@ class GPUTexture
 	protected uint height    = 0;
 	protected char[] source;
 	
-	uint requested_width   = 0;
-	uint requested_height  = 0;
+	uint requested_width   = 0;  // TODO: rename to padding, implement like Panda3D: 
+	uint requested_height  = 0;	 // http://panda3d.org/wiki/index.php/Choosing_a_Texture_Size
+	
+	bool flipped = false; // TODO: Find a better solution, use texture matrix?
 	
 	///
 	this()
@@ -225,8 +231,9 @@ class GPUTexture
 	}
 
 	/// Ditto
-	this(Image image, bool compress=true, bool mipmap=true)
+	this(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
 	{	this();
+		source = source_name;
 		upload(image, compress, mipmap);
 	}
 

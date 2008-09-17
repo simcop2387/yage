@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2007 Eric Poggel
+ * Copyright:  (c) 2005-2008 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -7,6 +7,7 @@
 module yage.scene.movable;
 
 import std.stdio;
+import std.math;
 import yage.core.matrix;
 import yage.core.vector;
 import yage.core.misc;
@@ -147,18 +148,27 @@ class MovableNode : Node
 	
 	
 	
-	// Incomplete
+	// Incomplete, need to use up properly
 	// Might also consider a function to return a rotation vector needed to rotate to look at target.
-	void lookAt(Vec3f target, Vec3f up)
-	{	Vec3f f = target.normalize();
-		up = up.normalize();
-
-		Vec3f s = f.cross(up).normalize();
-		Vec3f u = s.cross(f);
-
-		setRotation(Vec3f(0, 0, 0));
-		rotate(u);
+	void lookAt(Vec3f target, Vec3f forward = Vec3f(0, 0, -1), Vec3f up = Vec3f(0, 1, 0))
+	{	rotate(lookAtVector(target, forward, up));
 	}
+	
+	Vec3f lookAtVector(Vec3f target, Vec3f forward = Vec3f(0, 0, -1), Vec3f up = Vec3f(0, 1, 0))
+	{	forward = forward.rotate(getRotation());
+		Vec3f d = (getPosition() - target).normalize();
+		//up = up.rotate(forward.cross(d));
+		return forward.cross(d).scale(up);
+		
+		//Vec3f up2 = up.rotate(getRotation()).normalize();
+		//rotate(d.length(up.angle(up2)));
+		
+		//Vec3f up2 = Vec3f(0, 10000000, 0);
+		//up = up.rotate(getRotation());
+		//Vec3f d2 = (getPosition() - up2).normalize();
+		//rotate(up.cross(d2));
+	}
+		
 
 	/// Move this Node relative to its parent.
 	void move(Vec3f distance)

@@ -6,32 +6,6 @@ Add a setting for min or max mipmap level per texture at the material level
 
 Add boolean set operations to the Resource manager, to load all resources from a new level and free only those that aren't part of that set.
 
-class Surface
-{
-	bool passthrough;			// pass events that occur on this surface to those behind it.
-
-	setOnClick(function);		// mousebutton, mouseposition
-	setOnDblClick(function);
-	setOnKeyDown(function);		// send the keyboard key and modifier
-	setOnKeyUp(function);
-	setOnMouseMove(function);	// new location, distance
-	onMouseDrag(function);		// button being draged, also above params
-	
-	getNodeAtPosition(x, y);
-	setMaterial();
-	
-	// Set style
-	// Parses sring and stores in a style struct.
-	// Three units, px, pt, and %.
-	// 1px is literally 1 pixel
-	// 1% is 1% the width of the parent Element
-	// 1pt is 1% the width of the window.
-	// Position can be absolute or inline.
-	setStyle("border: 12px garient blue; font-size: 12pt; display: inline");
-	
-	setText("Hello <b>World</b>");
-}
-
 Break apart Device.init() into different subsystems, and reduce dependance on dll's to only when they're actually used.
 
 A sensor node that checks for certain events (brightness, velocity, distance, etc.) and calls callback functions when
