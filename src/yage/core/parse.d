@@ -31,7 +31,7 @@ char[] floatToHex(float[] vec)
 	return result;
 }
 
-/// An improved, D compatible, sprintf(), this should probably be in a different module.
+/// An improved, D compatible, sprintf().  This should probably be in a different module.
 char[] formatString(...)
 {	char[] res;
     void putchar(dchar c)

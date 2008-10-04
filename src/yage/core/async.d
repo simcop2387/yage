@@ -96,7 +96,9 @@ private class Timeout(T) : Thread
 	this(float delay, T func, ParameterTypeTuple!(T) func_args)
 	{	this.delay = delay;
 		this.func = func;
-		this.func_args = func_args;		
+		static if (func_args.length)
+		{	this.func_args = func_args;		
+		}
 	}
 	
 	override int run()

@@ -18,7 +18,7 @@ import std.intrinsic;
  * Note that uints and dwords store the bytes in reverse,
  * so Color(0x6633ff00).hex == "00FF3366"
  * All Colors default to transparent black.
- * TODO: Convert to using four floats for better arithmetic?
+ * TODO: Convert to using four floats for better arithmetic, or just make it templated?
  * 
  * Example:
  * --------------------------------

@@ -160,12 +160,8 @@ class SoundNode : MovableNode, ITemporal
 	{	this.looping = looping;
 	}
 
-	/// Is the sound currently paused (or stopped?)
-	bool paused()
-	{	return _paused;
-	}
 
-	/// Alias of setPaused(false);
+	/// Begin / resume playback of the sound at the last position.
 	void play()
 	{	// Only do something if changing states
 		if (_paused)
@@ -176,8 +172,8 @@ class SoundNode : MovableNode, ITemporal
 			enqueue = true;
 		}	
 	}
-
-	/// Alias of setPaused(true);
+	
+	/// Pause playback of the sound.
 	void pause()
 	{	// Only do something if changing states
 		if (!_paused)
@@ -187,6 +183,11 @@ class SoundNode : MovableNode, ITemporal
 		}
 	}
 
+	/// Is the sound currently paused (or stopped?)
+	bool paused()
+	{	return _paused;
+	}
+	
 	/** 
 	 * Seek to the position in the track.  Seek has a precision of .05 seconds.
 	 * @throws Exception if the value is outside the range of the Sound. */

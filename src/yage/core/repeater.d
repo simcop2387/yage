@@ -13,155 +13,58 @@ import std.thread;
 import std.c.time;
 import yage.core.timer;
 
-
 /**
  * A class to repeatedly call a function at a set inverval, in its own thread.
  * TODO: update/combine this with setInterval, or inherit from Timer? */
-class Repeater : Thread
-{
-	protected bool active = true;
-	protected float frequency = 1;
-	protected int callcount = 0;
-	protected Timer timer;
-
-	void delegate(float f) func;
-
-	/**
-	 * Call func repeatedly.
-	 * A call to start() is required to start the process.*/
-	this()
-	{	timer = new Timer();
-		//this.func = func;
-		super.start();
-	}
-
-	~this()
-	{	active = false;
-		try {	// Doesn't seem to work as documented?
-			wait();
-			pause();
-		} catch {}
-	}
-
-	///
-	int getCallCount()
-	{	return callcount;
-	}
-
-	///
-	float getFrequency()
-	{	return frequency;
-	}
-
-	/// Start calling the function defined in the constructor.
-	void play(float frequency=60)
-	{	this.frequency = frequency;
-		timer.play();		
-	}
-
-	/// Stop calling the function defined in the constructor.
-	/// Renamed pause2 since pause() gets called when the gc pauses all threads.
-	void pause2()
-	{	timer.pause();
-		
-	}
-	
-	bool paused()
-	{	return timer.paused();		
-	}
-	
-	double tell()
-	{	return timer.tell();		
-	}
-
-	///
-	void setCallCount(int count)
-	{	callcount = count;
-	}
-
-	
-	void remove()
-	{	active = false;
-		wait(); // wait for thread to terminate.
-	}
-	
-	// Continuously run the function
-	// Catches up if it gets behind.
-	protected int run()
-	{	Timer a = new Timer();
-		while (active)
-		{	a.reset();
-			//writefln("active");
-			if (!timer.paused())
-			{	
-				
-				// Call as many times as needed to catch up.
-				double seconds = timer.tell();
-				//writefln(seconds*frequency, " ", callcount);
-				while (seconds*frequency > callcount && active)
-				{	//writefln("func");
-					func(1/frequency);
-					callcount++;
-				}
-			}
-			// Sleep for 1/frequency - (the time it took to make the calls).
-			if (active)
-			{	version(DigitalMars)
-					usleep(cast(uint)(1_000_000/frequency - a.get()));
-				version(GDC)
-					msleep(cast(uint)(1000/frequency - a.get()));
-			}
-		}
-		return 0;
-	}
-}
-
-/+
-/// TODO: Replace with this superior version
 class Repeater : Timer
 {
 	protected double frequency = 60f;
 	protected double call_time = 0f;
 	
 	protected bool active = true;
-	protected void delegate(float f) func;
+	protected void delegate(double f) func;
+	protected bool calling = false;
 	
 	// Allow repeater to run in its on thread
-	class Helper : Thread
+	class HelperThread : Thread
 	{
-		Repeater outer;
+		Repeater outer;		
 		
 		void start()
 		{	super.start();	
 		}
 		
 		override int run()
-		{	Timer a = new Timer();
+		{	Timer a = new Timer(); // time it takes to call func
 			while (active)
 			{	a.reset();
 				if (!paused())
 				{	
 					// Call as many times as needed to catch up.
 					while (outer.tell() > call_time)
-					{	double s = outer.tell();
-						writefln(outer.tell());
+					{	double s = outer.tell();						
 						if (func)
+						{	calling = true;
 							func(1/frequency);
+							calling = false;						
+						}
 						call_time += 1f/frequency;
-					}	
-					
+						
+						if (paused())
+							break;
+					}					
 				}
 				
 				// Sleep for 1/frequency - (the time it took to make the calls).				
 				version(DigitalMars)					
-					std.c.time.usleep(cast(uint)(1_000_000/frequency - a.get()));				
+					usleep(cast(uint)(1_000_000/frequency - a.get()));				
 				version(GDC)					
-					std.c.time.msleep(cast(uint)(1000/frequency - a.get()));				
+					msleep(cast(uint)(1000/frequency - a.get()));
 			}
 			return 0;
 		}
 	}	
-	Helper thread;
+	protected HelperThread thread;
 	
 	/**
 	 * Initialize the Timer
@@ -169,17 +72,36 @@ class Repeater : Timer
 	 *     start = start the Timer immediately. */
 	this(bool start=false)
 	{	super(start);		
-		thread = new Helper();
+		thread = new HelperThread();
 		thread.outer = this;
 		thread.start();
 	}
 	
+	/**
+	 * Ensures that the helper thread is stopped on destruction. */
 	~this()
 	{	active = false;
-		try {	// Doesn't seem to work as documented?
-			thread.wait();
-			thread.pause();
-		} catch {}
+		if (thread)
+			thread.wait(); // wait for thread to terminate.
+	}
+	
+	/**
+	 * Pause the repeater.
+	 * This is guaranteed to never pause in the middle of a call to the repeater's function, but will
+	 * block until the call finishes.*/
+	override void pause()
+	{	super.pause();
+	
+		// Block until the current function call is complete, if there is one.
+		// This is a primitive way to implement this, but i'm not sure of a better way
+		while (calling)
+			usleep(cast(int)(1_000/frequency)); // sleep for 1 1000th of the frequency.
+	}
+	
+	// Is this necessary?
+	void remove()
+	{	active = false;
+		thread.wait();		
 	}
 	
 	/**
@@ -187,10 +109,10 @@ class Repeater : Timer
 	 * This will always be within tell() and tell()-frequency unless the repeater is behind in calling its function.
 	 * Unless the frequency changes, call time can be divided by frequency to get the call count.
 	 * Returns: time in seconds. */
-	double getCallTime()
+	synchronized double getCallTime()
 	{	return call_time;		
 	}
-	void setCallTime(double call_time) /// ditto
+	synchronized void setCallTime(double call_time) /// ditto
 	{	this.call_time = call_time;		
 	}
 	
@@ -199,23 +121,21 @@ class Repeater : Timer
 	 * The frequency defaults to 60hz until set.
 	 * If the call function is set, it will be called this many times per second.
 	 * Returns: time in hertz. */
-	double getFrequency()
+	synchronized double getFrequency()
 	{	return frequency;		
 	}
-	void setFrequency(double frequency) /// ditto
+	synchronized void setFrequency(double frequency) /// ditto
 	{	this.frequency = frequency;		
 	}
 	
 	
 	/**
 	 * Get / set the function to call. */
-	double getFunction()
-	{	return frequency;		
+	synchronized void delegate(double f) getFunction()
+	{	return func;		
 	}
-	void setFunction( void delegate(float f) func) /// ditto
+	synchronized void setFunction(void delegate(double f) func) /// ditto
 	{	this.func = func;		
 	}
-	
 
 }
-+/

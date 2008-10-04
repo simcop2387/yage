@@ -67,7 +67,7 @@ class Scene : Node//, ITemporal
 		fog_color = Color("gray");
 		repeater = new Repeater();
 		//repeater.setFunction(&update);
-		repeater.func = &update;
+		repeater.setFunction(&update);
 		
 		transform_mutex = new Object();
 		lights_mutex = new Object();
@@ -182,22 +182,23 @@ class Scene : Node//, ITemporal
 	void play()
 	{	repeater.play();
 	}
-	void pause2() /// ditto
-	{	repeater.pause2();		
+	void pause() /// ditto
+	{	repeater.pause();		
 	}	
 	bool paused() /// ditto
 	{	return repeater.paused();
 	}	
-	void stop() /// ditto
-	{	repeater.pause2();
-	}
-	/*
+	
 	void seek(double seconds) /// ditto
 	{	repeater.seek(seconds);		
 	}
-	*/	
 	double tell() /// ditto
 	{	return repeater.tell();		
+	}
+	
+	override void remove()
+	{	repeater.remove(); // ensures repeater's thread terminates.
+		super.remove();
 	}
 
 	/**
@@ -205,13 +206,6 @@ class Scene : Node//, ITemporal
 	 * This allows more advanced interaction than the shorthand functions implemented above. */
 	Repeater getUpdater()
 	{	return repeater;		
-	}
-	
-	
-	void remove()
-	{	repeater.remove(); // blocks until the repeater's thread terminates.
-		super.remove();
-		delete this;
 	}
 
 	/**
@@ -245,7 +239,7 @@ class Scene : Node//, ITemporal
 	 * Update all Nodes in the scene by delta seconds.
 	 * Params:
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
-	void update(float delta = delta.get())
+	void update(double delta = delta.get())
 	{	super.update(delta);
 		delta_time = delta;
 		this.delta.reset();

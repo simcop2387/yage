@@ -163,6 +163,12 @@ abstract class Node : Tree!(Node)
 	}
 
 	/**
+	 * Return a string representation of this Node for human reading. */	
+	char[] toString()
+	{	return formatString("<%s children=\"%d\"/>", getType(), children.length);
+	}
+	
+	/**
 	 * Set a function that will be called every time this Node is updated.
 	 * Specifically, the supplied function is called after a Node's matrices
 	 * are updated and before its children are updated and before it's removed if
@@ -187,12 +193,6 @@ abstract class Node : Tree!(Node)
 	 * --------------------------------*/
 	void onUpdate(void delegate(typeof(this) self) on_update)
 	{	this.on_update = on_update;
-	}
-
-	/**
-	 * Return a string representation of this Node for human reading. */	
-	char[] toString()
-	{	return formatString("<%s children=\"%d\"/>", getType(), children.length);
 	}
 
 	/**

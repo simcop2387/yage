@@ -10,6 +10,7 @@ module demo2.main;
 
 import std.string;
 import std.stdio;
+import std.c.time;
 import derelict.sdl.sdl;
 import yage.all;
 
@@ -38,8 +39,6 @@ int main()
 	Log.write("Starting update loop.");
 	Scene scene = new Scene();
 	scene.play(); // update 60 times per second
-	
-	Device.onExit = &scene.stop;
 	
 	// Skybox
 	Scene skybox = new Scene();
@@ -149,6 +148,9 @@ int main()
 		//	std.c.time.usleep(cast(uint)(1000));
 		scene.swapTransformRead();
 	}
+	scene.pause();
+	
+	msleep(1100);
 
 	return 0;
 }

@@ -39,7 +39,7 @@ int main()
 	Log.write("Starting update loop.");
 	Scene scene = new Scene();
 	scene.play(); // update 60 times per second
-	Device.onExit = &scene.stop;
+	
 
 	// Skybox
 	Scene skybox = new Scene();
