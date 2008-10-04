@@ -35,6 +35,11 @@ class ModelNode : VisibleNode
 	 * or if a range is set and it loops. */
 	void delegate(ModelNode self) onAnimationComplete = null; 
 
+	this()
+	{	super();		
+	}
+	
+	
 	/// Construct this Node as a child of parent.
 	this(Node parent)
 	{	super(parent);

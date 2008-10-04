@@ -43,10 +43,15 @@ class LightNode : MovableNode
 
 	package float intensity;			// Used internally and temporarily to sort lights by intensity for each node.
 
+	this()
+	{	diffuse = Color("white");
+		specular= Color("white");		
+	}
+	
 	/**
 	 * Construct this Node as the child of parent.*/
 	this(Node parent)
-	{	super(parent); // calls setParent, which adds it to the Scene's light list.
+	{	super(parent);
 		diffuse = Color("white");
 		specular= Color("white");
 	}
@@ -65,26 +70,6 @@ class LightNode : MovableNode
 		spot_exponent = original.spot_exponent;
 		quad_attenuation = original.quad_attenuation;
 		type = original.type;
-	}
-
-	/**
-	 * Overridden from Node's setParent() to ensure that the Scene's list of lights
-	 * is updated if the Light is moved from one scene to another. */
-	LightNode setParent(Node parent)
-	{	Scene old = scene;
-		super.setParent(parent);
-		if (old !is scene)
-		{	if ((old !is null))
-				old.removeLight(this);
-			scene.addLight(this);
-		}
-		return this;
-	}
-
-	/// Overridden to remove the light from the Scene's arary of lights
-	void remove()
-	{	scene.removeLight(this);
-		super.remove();
 	}
 
 	/// Get / set the ambient color of the light.
@@ -259,10 +244,11 @@ class LightNode : MovableNode
 		glPopMatrix();
 	}
 
-	/*
-	 * Set the index of this light in its Scene's lights array.
-	 * This function is used internally by the engine and should not be called manually or exported. */
-	//void setLightIndex(int index)
-	//{	light_index = index;
-	//}
+	/// Overridden to remove the light from the Scene's arary of lights
+	override void remove()
+	{	if (scene)
+			scene.removeLight(this);
+		super.remove();
+	}
+
 }

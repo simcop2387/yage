@@ -34,26 +34,28 @@ import yage.system.render;
  * isn't threadsafe.*/
 class CameraNode : MovableNode
 {
-	protected:
-	uint  xres		= 0;		// special values of 0 to stretch to current display size.
-	uint  yres		= 0;
-	float near		= 1;		// the distance of the camera's near plane.
-	float far		= 100000;	// camera's far plane
-	float fov		= 45;		// field of view angle of the camera.
-	float aspect	= 0;		// aspect ratio of the view
-	float threshold = 2.25;		// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
+	protected uint  xres		= 0;	// special values of 0 to stretch to current display size.
+	protected uint  yres		= 0;
+	protected float near		= 1;	// the distance of the camera's near plane.
+	protected float far		= 100000;	// camera's far plane
+	protected float fov		= 45;		// field of view angle of the camera.
+	protected float aspect	= 0;		// aspect ratio of the view
+	protected float threshold = 2.25;	// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
-	GPUTexture capture;			// The camera renders to this Texture
-	Plane[6] frustum;
-	Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
+	protected GPUTexture capture;		// The camera renders to this Texture
+	protected Plane[6] frustum;
+	protected Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
 
 	// Useful stats
-	uint node_count;			// The number of nodes that were rendered.
-	uint frame_count;
-	uint poly_count;
-	uint vertex_count;
+	protected uint node_count;			// The number of nodes that were rendered.
+	protected uint frame_count;
+	protected uint poly_count;
+	protected uint vertex_count;
 
-	public:
+	this()
+	{	super();		
+	}
+
 	/**
 	 * Construct as the child of another node and initialize
 	 * the capture Texture for rendering.*/
@@ -77,29 +79,6 @@ class CameraNode : MovableNode
 		fov  = original.fov;
 		aspect = original.aspect;
 		threshold = original.threshold;
-	}
-
-	/**
-	 * Build a 6-plane view frutum based on the orientation of the camera and
-	 * the parameters passed to setView(). */
-	protected void buildFrustum()
-	{	// Create the clipping matrix from the modelview and projection matrices
-		Matrix clip;
-		Matrix modl;
-		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
-		glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
-		clip = modl*clip;
-
-		// Convert the clipping matrix to our six frustum planes.
-		frustum[0].set(clip[3]-clip[0], clip[7]-clip[4], clip[11]-clip[ 8], clip[15]-clip[12]);
-		frustum[1].set(clip[3]+clip[0], clip[7]+clip[4], clip[11]+clip[ 8], clip[15]+clip[12]);
-		frustum[2].set(clip[3]+clip[1], clip[7]+clip[5], clip[11]+clip[ 9], clip[15]+clip[13]);
-		frustum[3].set(clip[3]-clip[1], clip[7]-clip[5], clip[11]-clip[ 9], clip[15]-clip[13]);
-		frustum[4].set(clip[3]-clip[2], clip[7]-clip[6], clip[11]-clip[10], clip[15]-clip[14]);
-		frustum[5].set(clip[3]+clip[2], clip[7]+clip[6], clip[11]+clip[10], clip[15]+clip[14]);
-
-		foreach (inout Plane p; frustum)
-			p = p.normalize();
 	}
 
 	/// Get the number of frames this camera has rendered.
@@ -327,5 +306,28 @@ class CameraNode : MovableNode
 		// Recurse through and render children.
 		foreach (Node c; node.getChildren())
 			addNodesToRender(c);
+	}
+
+	/*
+	 * Build a 6-plane view frutum based on the orientation of the camera and
+	 * the parameters passed to setView(). */
+	protected void buildFrustum()
+	{	// Create the clipping matrix from the modelview and projection matrices
+		Matrix clip;
+		Matrix modl;
+		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
+		glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
+		clip = modl*clip;
+
+		// Convert the clipping matrix to our six frustum planes.
+		frustum[0].set(clip[3]-clip[0], clip[7]-clip[4], clip[11]-clip[ 8], clip[15]-clip[12]);
+		frustum[1].set(clip[3]+clip[0], clip[7]+clip[4], clip[11]+clip[ 8], clip[15]+clip[12]);
+		frustum[2].set(clip[3]+clip[1], clip[7]+clip[5], clip[11]+clip[ 9], clip[15]+clip[13]);
+		frustum[3].set(clip[3]-clip[1], clip[7]-clip[5], clip[11]-clip[ 9], clip[15]-clip[13]);
+		frustum[4].set(clip[3]-clip[2], clip[7]-clip[6], clip[11]-clip[10], clip[15]-clip[14]);
+		frustum[5].set(clip[3]+clip[2], clip[7]+clip[6], clip[11]+clip[10], clip[15]+clip[14]);
+
+		foreach (inout Plane p; frustum)
+			p = p.normalize();
 	}
 }

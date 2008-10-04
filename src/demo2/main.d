@@ -117,7 +117,7 @@ int main()
 		self.style.set("background-material: url('gui/skin/clear2.png')");
 	}
 
-	auto window1 = new Surface(view);	
+	auto window1 = view.addChild(new Surface());
 	window1.style.set("top: 0; right: 0; width: 400; height: 60; background-position: 5px 5px; " ~ 
 		"background-repeat: nineslice; background-material: url('gui/skin/clear2.png')");
 	window1.onMouseDown = &onMouseDown2;

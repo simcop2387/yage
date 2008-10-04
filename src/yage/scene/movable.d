@@ -25,6 +25,10 @@ import yage.scene.movable;
  * yage.scene.node */
 class MovableNode : Node
 {
+	this()
+	{	super();		
+	}
+	
 	/// Construct as a child of parent.
 	this(Node parent)
 	{	super(parent);
@@ -222,7 +226,7 @@ class MovableNode : Node
 	 * Update the position and rotation of this node based on its velocity and angular velocity.
 	 * This function is called automatically as a Scene's update() function recurses through Nodes.
 	 * It normally doesn't need to be called manually.*/
-	void update(float delta)
+	override void update(float delta)
 	{	
 		// Move by linear velocity if not zero.
 		if (linear_velocity.length2() != 0)

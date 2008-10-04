@@ -94,12 +94,14 @@ class Surface : Tree!(Surface)
 	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOut; ///
 	void delegate(Surface self, Vec2f amount) onResize; ///
 
+	this()
+	{	update();		
+	}
 
 	/// Constructor
-	this(Surface p=null){
-		parent = p;
-		if(!(parent is null))
-			parent.addChild(this);
+	this(Surface p){
+		if(p)
+			p.addChild(this);
 		update();
 	}
 	

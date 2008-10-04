@@ -43,12 +43,17 @@ class TerrainNode : VisibleNode
 	protected float radius;
 	protected int width=0;
 
+	this()
+	{	super();
+		model = new Model();
+		model.setMeshes([new Mesh()]);		
+	}
+	
 	/// Construct as a child of parent
 	this(Node parent)
 	{	super(parent);
 		model = new Model();
 		model.setMeshes([new Mesh()]);
-		visible = true;
 	}
 
 

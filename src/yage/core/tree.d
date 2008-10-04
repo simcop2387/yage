@@ -31,13 +31,23 @@ class Tree(T)
 	 *     child = 
 	 * Returns: A reference to the child.
 	 */
-	T addChild(T child)
+	S addChild(S : T)(S child)
 	in {
 		assert(child != this);
 		assert(child !is null);
 	}body
-	{	child.setParent(cast(T)this);
-		return child;
+	{	
+		// If child has an existing parent.
+		if (child.parent)
+		{	assert(child.parent.isChild(cast(S)child));
+			yage.core.array.remove(child.parent.children, child.index);
+		}
+		
+		// Add as a child.
+		child.parent = cast(T)this;
+		children ~= cast(T)child;
+		child.index = children.length-1;
+		return child;	
 	}
 	
 	/// Get an array of this element's children
@@ -53,15 +63,8 @@ class Tree(T)
 	}
 	T setParent(T _parent) /// ditto
 	in { assert(_parent !is null);
-	}body
-	{	if (parent && parent.isChild(cast(T)this))
-			yage.core.array.remove(parent.children, index);
-		
-		// Add to new parent
-		parent = _parent;
-		parent.children ~= cast(T)this;
-		index = parent.children.length-1;
-		return cast(T)this;
+	}body // should this function evenually go away?
+	{	return _parent.addChild(cast(T)this);
 	}
 	
 	/**

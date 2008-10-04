@@ -42,18 +42,20 @@ int main()
 	
 	// Skybox
 	Scene skybox = new Scene();
-	auto sky = new ModelNode(skybox);
+	auto sky = skybox.addChild(new ModelNode());
 	sky.setModel("sky/sanctuary.ms3d");
 	scene.setSkybox(skybox);
 	scene.setGlobalAmbient(Color("555555"));
 
 	// Ship
 	Ship ship = new Ship(scene);
+	//scene.addChild(ship);
 	ship.setPosition(Vec3f(0, 50, -950));
 	ship.getCameraSpot().setPosition(Vec3f(0, 1000, 3000));
 
 	// Camera
 	CameraNode camera = new CameraNode(ship.getCameraSpot());
+	ship.getCameraSpot().addChild(camera);
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
 
 	// Main surface where camera output is rendered.
@@ -86,24 +88,25 @@ int main()
 	
 		
 	// Music
-	auto music = new SoundNode(camera);
+	auto music = new SoundNode();
+	camera.addChild(music);
 	music.setSound("music/celery - pages.ogg");
 	music.setLooping(true);
 	music.play();
 
 	// Lights
-	auto l1 = new LightNode(scene);
+	auto l1 = scene.addChild(new LightNode());
 	l1.setDiffuse(Color(1, .85, .7));
 	l1.setLightRadius(7000);
 	l1.setPosition(Vec3f(0, 0, -6000));
 
 	// Star
-	auto star = new SpriteNode(l1);
+	auto star = l1.addChild(new SpriteNode());
 	star.setMaterial("space/star.xml");
 	star.setSize(Vec3f(2500));
 
 	// Planet
-	auto planet = new ModelNode(scene);
+	auto planet = scene.addChild(new ModelNode());
 	planet.setModel("space/planet.ms3d");
 	planet.setSize(Vec3f(60));
 	planet.setAngularVelocity(Vec3f(0, -0.01, 0));

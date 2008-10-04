@@ -40,6 +40,13 @@ class SoundNode : MovableNode, ITemporal
 
 	public:
 
+		
+	this()
+	{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
+		super();
+		setSoundRadius(radius);		
+	}
+		
 	/// Construct this Node as a child parent.
 	this(Node parent)
 	{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
@@ -71,7 +78,7 @@ class SoundNode : MovableNode, ITemporal
 	}
 
 	/// Remove the Sound Node, overridden for OpenAL cleanup.
-	void remove()
+	override void remove()
 	{	stop();
 		alDeleteSources(1, &al_source);
 		super.remove();
@@ -233,7 +240,7 @@ class SoundNode : MovableNode, ITemporal
 	}
 
 	///
-	char[] toString()
+	override char[] toString()
 	{	return toString(false);
 	}
 
@@ -332,14 +339,14 @@ class SoundNode : MovableNode, ITemporal
 
 
 	/// Overridden to also call updateBuffers().
-	void update(float delta)
+	override void update(float delta)
 	{	super.update(delta);
 		if (sound !is null)
 			updateBuffers();	// best place to call this?
 	}
 
 	/// Overridden so that the position of the sound is updated in OpenAL when this node is moved.
-	void setTransformDirty()
+	override void setTransformDirty()
 	{	super.setTransformDirty();
 		alSourcefv(al_source, AL_POSITION, &(getAbsoluteTransform().v[12]));
 		alSourcefv(al_source, AL_VELOCITY, &(getAbsoluteVelocity().v[0]));

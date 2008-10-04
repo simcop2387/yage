@@ -83,7 +83,7 @@ abstract class Node : Tree!(Node)
 	/// Construct as a child of parent.
 	this(Node parent)
 	{	this();
-		setParent(parent);
+		parent.addChild(this);
 	}
 
 	/// Construct as a child of parent, a copy of original and recursivly copy all children.
@@ -126,6 +126,7 @@ abstract class Node : Tree!(Node)
 			*/
 		}
 	}
+	
 
 	/**
 	 * Get / set the lifeime of a VisibleNode (in seconds).
@@ -138,18 +139,39 @@ abstract class Node : Tree!(Node)
 	{	lifetime = seconds; 
 	}
 	
+	
 	/**
-	 * Overridden from Tree to set scene and mark transform dirty. */
-	Node setParent(Node _parent) /// Ditto
-	{	scene = _parent.scene;
+	 * Overridden from Tree to mark transform dirty. 
+	 * Returns: child*/
+	T addChild(T)(T child)
+	{	
+		// Recursively set secene and update scene's list of lights for all children
+		void merge(Node node)
+		{	if (cast(LightNode)node)
+			{	if (node.scene)
+					node.scene.removeLight(cast(LightNode)node);
+				if (scene)
+					scene.addLight(cast(LightNode)node);
+			}
+			node.scene = scene;			
+			foreach (c; node.children)
+				merge(c);
+		}
+		
+		merge(child);	
 		setTransformDirty();
-		return super.setParent(_parent);
+		return super.addChild(child);
 	}
 
 
-	/// Get the Scene at the top of the tree that this node belongs to.
+	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a sceneless node tree.
 	Scene getScene()
 	{	return scene;
+	
+		// properly handles node trees with no parent scene.
+		//if (parent)
+		//	return parent.getScene();
+		//return null;		
 	}
 
 	/// Get the type of this Node as a string; i.e. "yage.scene.visible.ModelNode".
@@ -215,7 +237,8 @@ abstract class Node : Tree!(Node)
 		// I guess the preferred way to remove an object would be to set its lifetime to 0.
 		// Perhaps we should override remove to do this so that items are removed in a controlled way?
 		foreach_reverse(Node c; children)
-			c.update(delta);
+			if (c) // does this solve the problem above?
+				c.update(delta);
 		
 		lifetime-= delta;
 		if (lifetime <= 0)
@@ -237,7 +260,7 @@ abstract class Node : Tree!(Node)
 	 * that has a correct absolute transformation matrix.
 	 * This is called automatically when the absolute transformation matrix of a node is needed.
 	 * Remember that rotating a Node's parent will change the Node's velocity. */
-	protected synchronized void calcTransform()
+	protected void calcTransform()
 	{
 		// Errors occur here
 		// could this function be called by two different threads on the same Node?
@@ -247,23 +270,25 @@ abstract class Node : Tree!(Node)
 
 		// build a path up to the first node that does not have transform_dirty set.
 		int i=0;
-		do
-		{	path[i] = node;
-			i++;
-			// If parent isn't a Scene
-			if (cast(Node)node.parent)
-				node = cast(Node)node.parent;
-			else break;
-		}while (node.parent !is null && node.transform_dirty)
-
-		// Follow back down that path calculating absolute matrices.
-		foreach_reverse(Node n; path[0..i])
-		{	// If parent isn't a Scene
-			if (cast(Node)n.parent)
-				n.transform_abs = n.transform * (cast(Node)n.parent).transform_abs;
-			else // since scene's don't have a transform matrix
-				n.transform_abs = n.transform;
-			n.transform_dirty = false;
+		synchronized(this)  // section references the node's parent, which could be changed by another thread.
+		{	do
+			{	path[i] = node;
+				i++;
+				// If parent isn't a Scene
+				if (cast(Node)node.parent)
+					node = cast(Node)node.parent;
+				else break;
+			}while (node.parent !is null && node.transform_dirty)
+	
+			// Follow back down that path calculating absolute matrices.
+			foreach_reverse(Node n; path[0..i])
+			{	// If parent isn't a Scene
+				if (cast(Node)n.parent)
+					n.transform_abs = n.transform * (cast(Node)n.parent).transform_abs;
+				else // since scene's don't have a transform matrix
+					n.transform_abs = n.transform;
+				n.transform_dirty = false;
+			}
 		}
 	}
 }
