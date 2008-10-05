@@ -11,12 +11,12 @@ import derelict.opengl.glext;
 
 import std.stdio;
 import yage.core.all;
-import yage.system.constant;
-import yage.system.device;
+import yage.system.probe;
 import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
+import yage.system.constant;
 import yage.scene.all;
 import yage.scene.model;
 import yage.scene.camera: CameraNode;
@@ -140,7 +140,7 @@ class Render
 		}*/
 		
 		// Unbind current VBO
-		if(Device.getSupport(DEVICE_VBO))
+		if(Probe.openGL(Probe.OpenGL.VBO))
 			glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 		nodes.length = 0;

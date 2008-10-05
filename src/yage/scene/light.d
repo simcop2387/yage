@@ -15,8 +15,8 @@ import yage.resource.material;
 import yage.scene.node;
 import yage.scene.movable;
 import yage.scene.scene;
-import yage.system.device;
 import yage.system.constant;
+import yage.system.probe;
 import yage.system.render;
 import yage.scene.camera: CameraNode;
 
@@ -207,7 +207,7 @@ class LightNode : MovableNode
 	 * Enable this light as the given light number and apply its properties.
 	 * This function is used internally by the engine and should not be called manually or exported. */
 	void apply(int num)
-	in{	assert (num<=Device.getLimit(DEVICE_MAX_LIGHTS));
+	in{	assert (num<=Probe.openGL(Probe.OpenGL.MAX_LIGHTS));
 	}body
 	{
 		glPushMatrix();

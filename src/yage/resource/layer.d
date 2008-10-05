@@ -15,6 +15,7 @@ import yage.core.all;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
+import yage.system.probe;
 import yage.system.render;
 import yage.resource.model;
 import yage.resource.texture;
@@ -271,8 +272,8 @@ class Layer
 		}
 
 		// Textures
-		if (textures.length>1 && Device.getSupport(DEVICE_MULTITEXTURE))
-		{	int length = min(textures.length, Device.getLimit(DEVICE_MAX_TEXTURES));
+		if (textures.length>1 && Probe.openGL(Probe.OpenGL.MULTITEXTURE))
+		{	int length = min(textures.length, Probe.openGL(Probe.OpenGL.MAX_TEXTURE_UNITS));
 
 			// Loop through all of Layer's textures up to the maximum allowed.
 			for (int i=0; i<length; i++)
@@ -285,7 +286,7 @@ class Layer
 
 				// Set texture coordinates
 				Attribute texcoords = model.getAttribute("gl_TexCoord");
-				if (Device.getSupport(DEVICE_VBO))
+				if (Probe.openGL(Probe.OpenGL.VBO))
 				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.vbo);
 					glTexCoordPointer(texcoords.width, GL_FLOAT, 0, null);
 				} else
@@ -402,8 +403,8 @@ class Layer
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		// Textures
-		if (textures.length>1 && Device.getSupport(DEVICE_MULTITEXTURE))
-		{	int length = min(textures.length, Device.getLimit(DEVICE_MAX_TEXTURES));
+		if (textures.length>1 && Probe.openGL(Probe.OpenGL.VBO))
+		{	int length = min(textures.length, Probe.openGL(Probe.OpenGL.MAX_TEXTURE_UNITS));
 
 			for (int i=length-1; i>=0; i--)
 			{	glActiveTextureARB(GL_TEXTURE0_ARB+i);
@@ -441,7 +442,7 @@ class Layer
 
 	// Helper function for the public setUniform() functions.
 	protected void setUniform(char[] name, int width, float[] values)
-	{	if (!Device.getSupport(DEVICE_SHADER))
+	{	if (!Probe.openGL(Probe.OpenGL.SHADER))
 			throw new Exception("Layer.setUniform() is only supported on hardware that supports shaders.");
 
 		// Bind this program

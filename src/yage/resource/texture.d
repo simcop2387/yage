@@ -21,8 +21,9 @@ import yage.core.timer;
 import yage.core.vector;
 import yage.resource.resource;
 import yage.resource.image;
-import yage.system.constant;
 import yage.system.device;
+import yage.system.constant;
+import yage.system.probe;
 import yage.system.log;
 
 // Used as default values for function params
@@ -314,7 +315,7 @@ class GPUTexture
 	    if (mipmap)
 	    	gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
 	    else
-		{	uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
+		{	uint max = Probe.openGL(Probe.OpenGL.MAX_TEXTURE_SIZE);
 			uint newwidth = image.getWidth();
 			uint newheight= image.getHeight();
 

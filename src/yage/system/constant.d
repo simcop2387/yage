@@ -9,16 +9,9 @@
 	
 module yage.system.constant;
 enum {
-	DEVICE_FBO,					/// Hardware support for rendering directly to a texture (Frame Buffer Object)
-	DEVICE_MULTITEXTURE,		/// Hardware support for using multiple textures in a single rendering pass
-	DEVICE_NON_2_TEXTURE,		/// Hardware support for textures of arbitrary size
-	DEVICE_SHADER,				/// Hardware support for openGl vertex and fragment shaders
-	DEVICE_VBO,					/// Hardware support for caching vertex data in video memory (Vertex Buffer Object)
-	DEVICE_BLEND_COLOR,
+	
 
-	DEVICE_MAX_LIGHTS,			/// Maximum number of lights that can be used at one time
-	DEVICE_MAX_TEXTURE_SIZE,	/// Maximum allowed size for a texture
-	DEVICE_MAX_TEXTURES,		/// Maximum number of textures that can be used in multitexturing
+
 
 	LIGHT_DIRECTIONAL,			/// A light that shines in one direction through the entire scene
 	LIGHT_POINT,				/// A light that shines outward in all directions

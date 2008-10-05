@@ -23,9 +23,8 @@ import yage.system.exceptions;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.resource;
-import yage.system.constant;
-import yage.system.device;
 import yage.system.log;
+import yage.system.probe;
 import yage.resource.ms3dloader;
 import yage.resource.objloader;
 import yage.scene.visible;
@@ -123,7 +122,7 @@ class Model
 		attributes["gl_TexCoord"] = a;
 		attributes["gl_Normal"] = a;
 		
-		if (Device.getSupport(DEVICE_VBO))
+		if (Probe.openGL(Probe.OpenGL.VBO))
 		{	glGenBuffersARB(1, &attributes["gl_Vertex"].vbo);	
 			glGenBuffersARB(1, &attributes["gl_TexCoord"].vbo);
 			glGenBuffersARB(1, &attributes["gl_Normal"].vbo);			
@@ -433,14 +432,14 @@ class Model
 		if (!(name in attributes))
 		{	Attribute a;
 			attributes[name] = a;
-			if (Device.getSupport(DEVICE_VBO))
+			if (Probe.openGL(Probe.OpenGL.VBO))
 				glGenBuffersARB(1, &attributes[name].vbo);
 		}
 
 		attributes[name].values = values;
 		attributes[name].width = width;
 
-		if (Device.getSupport(DEVICE_VBO))
+		if (Probe.openGL(Probe.OpenGL.VBO))
 		{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attributes[name].vbo);
 			glBufferDataARB(GL_ARRAY_BUFFER_ARB, attributes[name].values.length*float.sizeof, attributes[name].values.ptr, GL_STATIC_DRAW);
 			//glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0); // unbind

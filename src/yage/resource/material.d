@@ -19,6 +19,7 @@ import yage.resource.resource;
 import yage.resource.shader;
 import yage.system.constant;
 import yage.system.device;
+import yage.system.probe;
 import yage.system.log;
 public import yage.resource.layer;
 
@@ -208,7 +209,7 @@ class Material
  					layer.addTexture(ti);
 				}
 				// If this xml node is a shader
-				else if (name == "shader" && Device.getSupport(DEVICE_SHADER))
+				else if (name == "shader" && Probe.openGL(Probe.OpenGL.SHADER))
 				{	s++;
 					bool type;
 					char[] source, str_type;
@@ -231,7 +232,7 @@ class Material
 			// Warning for too many textures
 			static int max_textures;
 			if (max_textures==0)
-				max_textures = Device.getLimit(DEVICE_MAX_TEXTURES);
+				max_textures = Probe.openGL(Probe.OpenGL.MAX_TEXTURE_UNITS);
 			if (t>max_textures)
 			{	Log.write("WARNING:  layer '", .toString(i) ,"' has ", .toString(t),
 					" textures, but this hardware only supports ", .toString(max_textures), ".");

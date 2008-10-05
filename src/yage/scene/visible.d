@@ -19,8 +19,7 @@ import yage.scene.scene;
 import yage.scene.light;
 import yage.scene.node;
 import yage.scene.movable;
-import yage.system.constant;
-import yage.system.device;
+import yage.system.probe;
 import yage.system.input;
 
 
@@ -133,8 +132,8 @@ abstract class VisibleNode : MovableNode
 	 * Also perhaps use axis sorting for faster calculations. */
 	void enableLights(ubyte number=8)
 	{	
-		if (number>Device.getLimit(DEVICE_MAX_LIGHTS))
-			number = Device.getLimit(DEVICE_MAX_LIGHTS);
+		if (number>Probe.openGL(Probe.OpenGL.MAX_LIGHTS))
+			number = Probe.openGL(Probe.OpenGL.MAX_LIGHTS);
 		lights.length = 0;
 		
 		// Prevent add/remove from array while calculating, since this is typically called from the rendering thread.

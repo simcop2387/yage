@@ -14,8 +14,7 @@ import yage.core.vector;
 
 import yage.resource.material;
 import yage.resource.resource;
-import yage.system.constant;
-import yage.system.device;
+import yage.system.probe;
 
 /**
  * Models are divided into one or more meshes.
@@ -29,7 +28,7 @@ class Mesh
 
 	///
 	this()
-	{	if (Device.getSupport(DEVICE_VBO))
+	{	if (Probe.openGL(Probe.OpenGL.VBO))
 			glGenBuffersARB(1, &vbo_triangles);
 	}
 
@@ -49,7 +48,7 @@ class Mesh
 
 	/// Cleanup
 	~this(){
-		if (Device.getSupport(DEVICE_VBO))
+		if (Probe.openGL(Probe.OpenGL.VBO))
 			glDeleteBuffersARB(1, &vbo_triangles);
 	}
 
@@ -89,7 +88,7 @@ class Mesh
 	void setTriangles(Vec3i[] triangles){
 		this.triangles = triangles;
 		
-		if (Device.getSupport(DEVICE_VBO))
+		if (Probe.openGL(Probe.OpenGL.VBO))
 		{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, getTrianglesVBO());
 			glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, getTriangles().length*Vec3i.sizeof, getTriangles().ptr, GL_STATIC_DRAW);
 			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);

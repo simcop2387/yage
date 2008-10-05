@@ -20,7 +20,7 @@ import yage.scene.visible;
 import yage.scene.node;
 import yage.scene.scene;
 import yage.scene.movable;
-import yage.system.constant;
+import yage.system.probe;
 import yage.system.device;
 import yage.system.render;
 
@@ -147,7 +147,7 @@ class CameraNode : MovableNode
 		yres = height;
 		
 		// Ensure our new resolution is below the maximum texture size
-		uint max = Device.getLimit(DEVICE_MAX_TEXTURE_SIZE);
+		uint max = Probe.openGL(Probe.OpenGL.MAX_TEXTURE_SIZE);
 		if (xres > max)	xres = max;
 		if (yres > max)	yres = max;
 	}

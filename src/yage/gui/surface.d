@@ -18,6 +18,7 @@ import yage.core.matrix;
 import yage.system.device;
 import yage.system.constant;
 import yage.system.input;
+import yage.system.probe;
 import yage.resource.texture;
 import yage.resource.image;
 import yage.gui.style;
@@ -475,7 +476,7 @@ class Surface : Tree!(Surface)
 		void drawQuad(int style)
 		{	
 			// In case something else didn't leave it bound as 0.
-			if(Device.getSupport(DEVICE_VBO))
+			if(Probe.openGL(Probe.OpenGL.VBO))
 				glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 			
 			switch(style)
@@ -594,7 +595,7 @@ class Surface : Tree!(Surface)
 				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
 				
 				// This extension is available as of OpenGL 1.1 or 1.2 and allows drawing colored text in a single pass.
-				if (Device.getSupport(DEVICE_BLEND_COLOR))
+				if (Probe.openGL(Probe.OpenGL.BLEND_COLOR))
 				{	
 					// Apply states
 					Vec4f color = style.color.vec4f;	
