@@ -1,9 +1,10 @@
 /**
- * Copyright:  none
+ * Copyright:  Public Domain
  * Authors:    Eric Poggel
- * License:    Public Domain
+ * Warranty: none
  *
  * This module is not technically part of the engine, but merely uses it.
+ * This is a demo to show off some of the cool features of Yage.
  */
 
 module demo2.main;
@@ -26,6 +27,16 @@ int main()
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
 	//Device.init(1440, 900, 32, true);
+	
+	/*
+	// test
+	auto t = new MovableNode();
+	t.setPosition(Vec3f(0, 1, 0));
+	auto r = t.addChild(new MovableNode());
+	r.setPosition(Vec3f(0, 2, 0));
+	writefln(r.getAbsolutePosition());
+	return 1;
+	*/
 
 	// Paths
 	Resource.addPath("../res/");
@@ -90,7 +101,7 @@ int main()
 	window.onMouseUp = &onMouseUp;
 	window.onMouseOver = &onMouseOver;
 	window.onMouseOut = &onMouseOut;
-
+	
 	// Events for main surface.
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)

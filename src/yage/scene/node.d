@@ -98,8 +98,10 @@ abstract class Node : Tree!(Node)
 		}
 		
 		merge(child);
+		auto old_parent = child.getParent();
 		super.addChild(child);
 		setTransformDirty(); // seems like this should be child.setTransformDirty(), but that breaks things.
+		child.parentChange(old_parent);
 		return child;
 	}
 	
@@ -164,8 +166,6 @@ abstract class Node : Tree!(Node)
 	}
 	
 	
-
-
 
 	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a sceneless node tree.
 	Scene getScene()
@@ -265,33 +265,23 @@ abstract class Node : Tree!(Node)
 	 * Remember that rotating a Node's parent will change the Node's velocity. */
 	protected void calcTransform()
 	{
-		// Errors occur here
-		// could this function be called by two different threads on the same Node?
-		// and then the path gets messed up?
-		Node path[16384] = void; // surely no one will have a scene graph deeper than this!
-		Node node = this;
+		if (transform_dirty)
+		{	synchronized(this)			
+			{	if (parent)
+				{	synchronized(this.parent)
+					{	parent.calcTransform();
+						transform_abs = transform * parent.transform_abs;
+						transform_dirty = false;
+				}	}
+				else
+					transform_abs = transform;
+		}	}
+	}
 
-		// build a path up to the first node that does not have transform_dirty set.
-		int i=0;
-		synchronized(this)  // section references the node's parent, which could be changed by another thread.
-		{	do
-			{	path[i] = node;
-				i++;
-				// If parent isn't a Scene
-				if (cast(Node)node.parent)
-					node = cast(Node)node.parent;
-				else break;
-			}while (node.parent !is null && node.transform_dirty)
-	
-			// Follow back down that path calculating absolute matrices.
-			foreach_reverse(Node n; path[0..i])
-			{	// If parent isn't a Scene
-				if (cast(Node)n.parent)
-					n.transform_abs = n.transform * (cast(Node)n.parent).transform_abs;
-				else // since scene's don't have a transform matrix
-					n.transform_abs = n.transform;
-				n.transform_dirty = false;
-			}
-		}
+	/*
+	 * Called after a node's parent changes. */
+	protected void parentChange(Node old_parent)
+	{
+		
 	}
 }

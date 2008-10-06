@@ -1,7 +1,7 @@
 /**
- * Copyright:  none
+ * Copyright:  Public Domain
  * Authors:    Eric Poggel
- * License:    Public Domain
+ * Warranty:   none
  *
  * This module is not technically part of the engine, but merely uses it.
  * This is minimal code to launch yage and draw something.

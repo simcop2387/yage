@@ -15,7 +15,7 @@ import yage.core.array;
  * --------------------------------
  * class Node : Tree!(Node) {}
  * auto n = new Node();
- * n.addChild(new Node());
+ * auto n2 = n.addChild(new Node());
  * -------------------------------- 
  */
 class Tree(T)
@@ -28,9 +28,8 @@ class Tree(T)
 	 * Add a child element.
 	 * Automatically detaches it from any other element's children.
 	 * Params:
-	 *     child = 
-	 * Returns: A reference to the child.
-	 */
+	 *     child = Node to add as a child of this element.
+	 * Returns: A reference to the child. */
 	S addChild(S : T)(S child)
 	in {
 		assert(child != this);
@@ -71,6 +70,18 @@ class Tree(T)
 	{	if (!elem || elem.index < 0 || elem.index >= children.length)
 			return false;
 		return cast(bool)(children[elem.index] == elem);
+	}
+	
+	S removeChild(S : T)(S child)
+	{	if (child.index > 0)
+		{	//yage.core.all.remove(parent.children, index, false);
+			children.remove(index, false);
+			if (index < parent.children.length)
+				parent.children[index].index = index;
+			child.index = -1; // so remove can't be called twice.
+			child.parent = null;			
+		}
+		return child;
 	}
 	
 	/// Remove this element from its parent.

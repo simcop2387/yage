@@ -81,7 +81,8 @@ class MovableNode : Node
 	{	if (cached) // the transform_abs cache is never dirty
 			return cache[scene.transform_read].transform_abs;
 		if (transform_dirty)
-			calcTransform();
+		{	calcTransform();
+		}
 		return transform_abs;
 	}
 	
