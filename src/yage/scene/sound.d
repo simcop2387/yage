@@ -40,18 +40,12 @@ class SoundNode : MovableNode, ITemporal
 
 	public:
 
-		
+	/**
+	 * Construct. */
 	this()
-	{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
-		super();
+	{	super();
+		alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()		
 		setSoundRadius(radius);		
-	}
-		
-	/// Construct this Node as a child parent.
-	this(Node parent)
-	{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
-		super(parent);
-		setSoundRadius(radius);
 	}
 
 	/**

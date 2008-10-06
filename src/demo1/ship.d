@@ -1,7 +1,7 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  none
  * Authors:    Eric Poggel
- * License:    <a href="lgpl.txt">LGPL</a>
+ * License:    Public Domain
  *
  * This module is not technically part of the engine, but merely uses it.
  */
@@ -24,23 +24,23 @@ class Ship : GameObject
 
 	float ldamp=.5, xdamp=2, ydamp=2;
 
-	synchronized this(Node parent)
+	this()
 	{
-		super(parent);
+		super();
 		new Material("fx/smoke.xml");
 		new Material("fx/flare1.xml");
 
-		pitch = new MovableNode(this);
+		pitch = addChild(new MovableNode());
 
-		ship = new ModelNode(pitch);
+		ship = pitch.addChild(new ModelNode());
 		ship.setModel("scifi/fighter.ms3d");
 		ship.setSize(Vec3f(.25));
 
-		spring = new Spring(ship);
+		spring = new Spring(ship, new MovableNode());
 		spring.setDistance(Vec3f(0, 4, 12));
 		spring.setStiffness(1);
 
-		sound = new SoundNode(ship);
+		sound = ship.addChild(new SoundNode());
 		sound.setSound("sound/ship_eng.ogg");
 		sound.setLooping(true);
 	}
@@ -50,7 +50,12 @@ class Ship : GameObject
 	}
 
 	MovableNode getCameraSpot()
-	{	return spring.getTail();
+	{	if (!(spring.getTail().getScene()))
+			getScene().addChild(spring.getTail());
+		
+		
+		
+		return spring.getTail();
 	}
 
 	Spring getSpring()
@@ -71,7 +76,7 @@ class Ship : GameObject
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
 
 			// Engine smoke
-			SpriteNode puff = new SpriteNode(ship.getScene());
+			SpriteNode puff = getScene().addChild(new SpriteNode());
 			puff.setMaterial(Resource.material("fx/smoke.xml"));
 			puff.setLifetime(5);
 			puff.setSize(Vec3f(.4));
@@ -133,11 +138,11 @@ class Ship : GameObject
 		// Fire a flare
 		if (Input.keyDown[SDLK_SPACE])
 		{
-			Flare flare = new Flare(ship.getScene());
+			Flare flare = ship.getScene().addChild(new Flare());
 			flare.setPosition(ship.getAbsolutePosition());
 			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getAbsoluteTransform())+getVelocity());
 
-			SoundNode zap = new SoundNode(ship);
+			SoundNode zap = ship.addChild(new SoundNode());
 			zap.setSound("sound/laser.wav");
 			zap.setVolume(.3);
 			zap.setLifetime(2);

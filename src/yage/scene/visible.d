@@ -37,17 +37,12 @@ abstract class VisibleNode : MovableNode
 	protected bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
 	protected LightNode[] lights;		// Lights that affect this VisibleNode
 
+	/**
+	 * Construct */
 	this()
-	{	size = Vec3f(1);
-		color = Color("white");
-		super();		
-	}
-	
-	/// Construct as a child of parent.
-	this(Node parent)
-	{	size = Vec3f(1);
-		color = Color("white");
-		super(parent);
+	{	super();
+		size = Vec3f(1);
+		color = Color("white");			
 	}
 
 	/// Construct as a child of parent, a copy of original and recursivly copy all children.

@@ -49,7 +49,7 @@ void asteroidBelt(int number, float radius, Node scene)
 		float value4 = rand()/4294967296.0f;
 		float value5 = rand()/4294967296.0f;
 
-		ModelNode a = new ModelNode(scene);
+		ModelNode a = scene.addChild(new ModelNode());
 		a.setPosition(Vec3f(
 						sin(value*6.282)*radius + pow(value2*2-1, 3.0)*radius/4,
 						pow(value3*2-1, 3.0)*radius/16,
@@ -71,7 +71,7 @@ void asteroidField(int number, float radius, VisibleNode scene)
 		float value4 = rand()/4294967296.0f;
 		float value5 = rand()/4294967296.0f;
 
-		ModelNode a = new ModelNode(scene);
+		ModelNode a = scene.addChild(new ModelNode());
 		a.setPosition(Vec3f((value-.5)*radius, (value2-.5)*radius, (value3-.5)*radius));
 
 		a.setModel(Resource.model("../media/planet/phobos.ms3d"));
@@ -88,7 +88,7 @@ void asteroidPlane(int number, float radius, VisibleNode scene)
 		float value4 = rand()/4294967296.0f;
 		float value5 = rand()/4294967296.0f;
 
-		ModelNode a = new ModelNode(scene);
+		ModelNode a = scene.addChild(new ModelNode());
 		a.setPosition(Vec3f((value-.5)*radius, 0, (value2-.5)*radius));
 
 		a.setModel(Resource.model("../media/planet/phobos.ms3d"));

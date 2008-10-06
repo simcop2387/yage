@@ -23,8 +23,8 @@ class Flyer
 
 
 	this(Node parent)
-	{	base = new MovableNode(parent);
-		pivot = new MovableNode(base);
+	{	base = parent.addChild(new MovableNode());
+		pivot = base.addChild(new MovableNode());
 		ldamp = 16;
 		xdamp = ydamp = 24;
 	}
@@ -39,10 +39,6 @@ class Flyer
 
 	MovableNode getPivot()
 	{	return pivot;
-	}
-
-	void setParent(MovableNode parent)
-	{	base.setParent(parent);
 	}
 
 	void accelerate(Vec3f acc)

@@ -1,7 +1,7 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  none
  * Authors:    Eric Poggel
- * License:    <a href="lgpl.txt">LGPL</a>
+ * License:    Public Domain
  *
  * This module is not technically part of the engine, but merely uses it.
  */
@@ -48,21 +48,48 @@ int main()
 	scene.setGlobalAmbient(Color("555555"));
 
 	// Ship
-	Ship ship = new Ship(scene);
-	//scene.addChild(ship);
+	Ship ship = scene.addChild(new Ship());
 	ship.setPosition(Vec3f(0, 50, -950));
 	ship.getCameraSpot().setPosition(Vec3f(0, 1000, 3000));
 
 	// Camera
-	CameraNode camera = new CameraNode(ship.getCameraSpot());
+	CameraNode camera = ship.getCameraSpot().addChild(new CameraNode());
 	ship.getCameraSpot().addChild(camera);
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
 
 	// Main surface where camera output is rendered.
-	Surface view = new Surface(null);
+	Surface view = new Surface();
 	view.style.backgroundMaterial = camera.getTexture();
 	view.style.set("bottom: 0; right: 0");	
 	Device.setSurface(view);
+	
+	void onMouseDown(Surface self, byte buttons, Vec2i coordinates){
+		self.raise();
+		self.focus();
+	}
+	void onMouseUp(Surface self, byte buttons, Vec2i coordinates){
+		self.blur();
+	}
+	void onMouseMove(Surface self, byte buttons, Vec2i diff){
+		if(buttons == 1) 
+			self.move(cast(Vec2f)diff, true);
+	}
+	void onMouseOver(Surface self, byte buttons, Vec2i coordinates){
+		self.style.set("background-material: url('gui/skin/clear3.png')");
+	}
+	void onMouseOut(Surface self, byte buttons, Vec2i coordinates){
+		self.style.set("background-material: url('gui/skin/clear2.png')");
+	}
+
+	auto window = view.addChild(new Surface());
+	window.style.set("top: 0; right: 0; width: 150; height: 65; background-position: 5px 5px; color: black; " ~ 
+		"background-repeat: nineslice; background-material: url('gui/skin/clear2.png'); " ~
+		"font-family: url('gui/font/Vera.ttf'); font-size: 11px");
+	window.onMouseDown = &onMouseDown;
+	window.onMouseMove = &onMouseMove;
+	window.onMouseUp = &onMouseUp;
+	window.onMouseOver = &onMouseOver;
+	window.onMouseOut = &onMouseOut;
 
 	// Events for main surface.
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
@@ -138,17 +165,16 @@ int main()
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)
-		{	char[] caption = formatString("Yage Test (%.2f fps) (%d objects, %d polygons, %d vertices rendered)\0",
+		{	SDL_WM_SetCaption("Yage Demo\0", null);
+			window.text = formatString("%.2f fps\n%d objects\n%d polygons\n%d vertices",
 				fps/frame.get(), camera.getNodeCount(), camera.getPolyCount(), camera.getVertexCount());
-			SDL_WM_SetCaption(caption.ptr, null);
-			//delete caption;
 			frame.reset();
 			fps = 0;
 		}
 		
-		// Cap framerate
-		//if (dtime < 1/60.0)
-		//	std.c.time.usleep(cast(uint)(1000));
+		// Free up a little cpu if over 60 fps.
+		if (dtime < 1/60.0)
+			std.c.time.usleep(100);
 		scene.swapTransformRead();
 	}
 	scene.pause();

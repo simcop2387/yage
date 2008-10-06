@@ -52,15 +52,10 @@ class CameraNode : MovableNode
 	protected uint poly_count;
 	protected uint vertex_count;
 
-	this()
-	{	super();		
-	}
-
 	/**
-	 * Construct as the child of another node and initialize
-	 * the capture Texture for rendering.*/
-	this(Node _parent)
-	{	super(_parent);
+	 * Construct */
+	this()
+	{	super();
 		capture = new GPUTexture();
 		setResolution(xres, yres);
 	}

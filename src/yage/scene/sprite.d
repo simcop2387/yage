@@ -19,13 +19,9 @@ class SpriteNode : VisibleNode
 {
 	protected Material material;
 
+	/// Construct
 	this()
 	{		
-	}
-	
-	/// Create this Node as a child of parent.
-	this(Node parent)
-	{	super(parent);
 	}
 
 	/**

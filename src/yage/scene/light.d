@@ -43,19 +43,13 @@ class LightNode : MovableNode
 
 	package float intensity;			// Used internally and temporarily to sort lights by intensity for each node.
 
+	/**
+	 * Constructor. */
 	this()
-	{	diffuse = Color("white");
-		specular= Color("white");		
+	{	super();
+		specular = diffuse = Color("white");
 	}
 	
-	/**
-	 * Construct this Node as the child of parent.*/
-	this(Node parent)
-	{	super(parent);
-		diffuse = Color("white");
-		specular= Color("white");
-	}
-
 	/**
 	 * Construct this Node as a copy of another Node and recursively copy all children.
 	 * Params:

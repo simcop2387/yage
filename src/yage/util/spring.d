@@ -21,9 +21,9 @@ class Spring
 	Vec3f		distance;
 	float		stiffness = 16; // arbitrary
 
-	this(VisibleNode head)
+	this(MovableNode head, MovableNode tail)
 	{	this.head = head;
-		tail = new MovableNode(head.getScene());
+		this.tail = tail;
 		distance = Vec3f(0, 2, 6);
 	}
 
@@ -50,7 +50,10 @@ class Spring
 	MovableNode getTail()
 	{	return tail;
 	}
-
+	
+	//void setTail(MovableNode tail)
+	//{	this.tail = tail;
+	//}
 
 	/// Update the position of the floater relative to what it's attached to.
 	void update(float delta){

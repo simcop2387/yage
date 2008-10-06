@@ -6,22 +6,26 @@
 
 module yage.system.exceptions;
 
+import std.bind;
+import yage.core.parse;
+
+
 class YageException : Exception
-{	this(char[] message)
-	{	super(message);
+{	this(...)
+	{	super(formatString(_arguments, _argptr));
 	}	
 }
 
 ///
 class ResourceException : YageException
-{	this(char[] message)
-	{	super(message);
+{	this(...)
+	{	super(formatString(_arguments, _argptr));
 	}	
 }
 
 ///
 class ResourceLoadException : ResourceException
-{	this(char[] message)
-	{	super(message);
+{	this(...)
+	{	super(formatString(_arguments, _argptr));
 	}	
 }

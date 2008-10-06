@@ -32,7 +32,7 @@ import yage.scene.node;
  * Example:
  * --------------------------------
  * Scene s = new Scene();
- * ModelNode a = new ModelNode(s);   // a is a child of s, it exists in Scene s.
+ * ModelNode a = s.addChild(new ModelNode());   // a is a child of s, it exists in Scene s.
  * a.setPosition(3, 5, 0);           // Position is set relative to 0, 0, 0 of the entire scene.
  * a.setRotation(0, 3.14, 0);        // a is rotated PI radians (180 degrees) around the Y axis.
  *
@@ -40,7 +40,7 @@ import yage.scene.node;
  * b.setPosition(5, 0, 0);           // its positoin and rotation are relative to a's.
  * b.getAbsolutePosition();          // Returns Vec3f(-2, 5, 0), b's position relative to the origin.
  *
- * b.setParent(s);                   // b is now a child of s.
+ * s.addChild(b);                    // b is now a child of s.
  * b.getAbsolutePosition();          // Returns Vec3f(5, 0, 0), since it's position is relative
  *                                   // to 0, 0, 0, instead of a.
  * --------------------------------*/
@@ -80,15 +80,39 @@ abstract class Node : Tree!(Node)
 	{	transform_mutex = new Object();		
 	}
 	
-	/// Construct as a child of parent.
-	this(Node parent)
-	{	this();
-		parent.addChild(this);
+	/**
+	 * Overridden from Tree to mark transform dirty. 
+	 * Returns: The child parameter.  Templating is used to ensure the return type is exactly the same.*/
+	T addChild(T : Node)(T child)
+	{	// Recursively set secene and update scene's list of lights for all children
+		void merge(Node node)
+		{	if (cast(LightNode)node)
+			{	if (node.scene)
+					node.scene.removeLight(cast(LightNode)node);
+				if (scene)
+					scene.addLight(cast(LightNode)node);
+			}
+			node.scene = scene;			
+			foreach (c; node.children)
+				merge(c);
+		}
+		
+		merge(child);
+		super.addChild(child);
+		setTransformDirty(); // seems like this should be child.setTransformDirty(), but that breaks things.
+		return child;
+	}
+	
+	T clone(T : typeof(this))()
+	{
+		T result = new T();		
+		return result;		
 	}
 
 	/// Construct as a child of parent, a copy of original and recursivly copy all children.
 	this(Node parent, Node original)
-	{	this(parent);
+	{	this();
+		parent.addChild(this);
 
 		lifetime = original.lifetime;
 		on_update = original.on_update;
@@ -140,28 +164,7 @@ abstract class Node : Tree!(Node)
 	}
 	
 	
-	/**
-	 * Overridden from Tree to mark transform dirty. 
-	 * Returns: child*/
-	T addChild(T)(T child)
-	{	
-		// Recursively set secene and update scene's list of lights for all children
-		void merge(Node node)
-		{	if (cast(LightNode)node)
-			{	if (node.scene)
-					node.scene.removeLight(cast(LightNode)node);
-				if (scene)
-					scene.addLight(cast(LightNode)node);
-			}
-			node.scene = scene;			
-			foreach (c; node.children)
-				merge(c);
-		}
-		
-		merge(child);	
-		setTransformDirty();
-		return super.addChild(child);
-	}
+
 
 
 	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a sceneless node tree.
@@ -186,7 +189,7 @@ abstract class Node : Tree!(Node)
 
 	/**
 	 * Return a string representation of this Node for human reading. */	
-	char[] toString()
+	override char[] toString()
 	{	return formatString("<%s children=\"%d\"/>", getType(), children.length);
 	}
 	

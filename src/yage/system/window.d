@@ -56,13 +56,11 @@ class Window : IRenderTarget
 	}
 	
 	void bindRenderTarget()
-	{
-		
+	{		
 	}
 	
 	void unbindRenderTarget()
-	{
-		
+	{		
 	}
 	
 	/** 

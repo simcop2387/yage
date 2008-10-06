@@ -25,13 +25,10 @@ import yage.scene.movable;
  * yage.scene.node */
 class MovableNode : Node
 {
+	/**
+	 * Constructor */
 	this()
 	{	super();		
-	}
-	
-	/// Construct as a child of parent.
-	this(Node parent)
-	{	super(parent);
 	}
 	
 	/// Construct as a child of parent, a copy of original and recursivly copy all children.

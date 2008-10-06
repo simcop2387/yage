@@ -22,6 +22,7 @@ import yage.gui.surface;
 import yage.system.log;
 import yage.system.constant;
 import yage.system.probe;
+import yage.system.exceptions;
 import yage.core.vector;
 
 import std.c.stdlib : exit;
@@ -118,8 +119,7 @@ abstract class Device
 		if (fullscreen) flags |= SDL_FULLSCREEN;
 		sdl_surface = SDL_SetVideoMode(size.x, size.y, depth, flags);
 		if(sdl_surface is null)
-			throw new Exception ("Unable to set " ~ .toString(size.x) ~ "x" ~ .toString(size.y) ~
-			" video mode: : " ~ .toString(SDL_GetError()));
+			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
 		SDL_LockSurface(sdl_surface);
 
 		// Attempt to load multitexturing

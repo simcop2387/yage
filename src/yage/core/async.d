@@ -52,7 +52,8 @@ Timeout!(T) setTimeout(T)(float delay, T func, ...)
 
 /**
  * This function is the same as setTimeout, except that func is called 
- * repeatedly after delay until clearInterval is called. */
+ * repeatedly after delay until clearInterval is called. 
+ * TODO: Merge with repeater?*/
 Timeout!(T) setInterval(T)(float delay, T func, ...)
 {	
 	// Bind arguments to function

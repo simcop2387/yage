@@ -98,13 +98,6 @@ class Surface : Tree!(Surface)
 	this()
 	{	update();		
 	}
-
-	/// Constructor
-	this(Surface p){
-		if(p)
-			p.addChild(this);
-		update();
-	}
 	
 	~this()
 	{

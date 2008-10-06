@@ -41,21 +41,15 @@ class GraphNode : VisibleNode
 	protected Model model;
 	protected float radius = 0;	// Store the distance of the furthest point
 
+	/**
+	 * Constructor */
 	this()
-	{	setWindow(-1, 1, -1, 1);
+	{	super();
+		setWindow(-1, 1, -1, 1);
 		model = new Model();
 		model.setMeshes([new Mesh()]);	
 	}
 	
-	/// Construct this Node as a child of parent.
-	this(Node parent)
-	{	super(parent);
-		setWindow(-1, 1, -1, 1);
-
-		model = new Model();
-		model.setMeshes([new Mesh()]);
-	}
-
 	/**
 	 * Construct this GraphNode as a copy of another GraphNode and recursively copy all children.
 	 * Params:

@@ -33,12 +33,17 @@ char[] floatToHex(float[] vec)
 
 /// An improved, D compatible, sprintf().  This should probably be in a different module.
 char[] formatString(...)
+{    return formatString(_arguments, _argptr);
+}
+/// ditto
+char[] formatString(TypeInfo[] _arguments, void* _argptr)
 {	char[] res;
-    void putchar(dchar c)
-    {	res~= c;
-    }
-    std.format.doFormat(&putchar, _arguments, _argptr);
-    return res;
+	void putchar(dchar c)
+	{	res~= c;
+	}
+	std.format.doFormat(&putchar, _arguments, _argptr);
+	return res;
+		
 }
 
 /**

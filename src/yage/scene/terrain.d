@@ -43,19 +43,13 @@ class TerrainNode : VisibleNode
 	protected float radius;
 	protected int width=0;
 
+	/**
+	 * Constructor */
 	this()
 	{	super();
 		model = new Model();
 		model.setMeshes([new Mesh()]);		
 	}
-	
-	/// Construct as a child of parent
-	this(Node parent)
-	{	super(parent);
-		model = new Model();
-		model.setMeshes([new Mesh()]);
-	}
-
 
 	/**
 	 * Construct this TerrainNode as a copy of another TerrainNode and recursively copy all children.

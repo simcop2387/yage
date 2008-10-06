@@ -1,7 +1,7 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  none
  * Authors:    Eric Poggel
- * License:    <a href="lgpl.txt">LGPL</a>
+ * License:    Public Domain
  *
  * This module is not technically part of the engine, but merely uses it.
  */
@@ -22,8 +22,8 @@ abstract class GameObject : VisibleNode
 {
 	float mass=0;
 
-	this (Node parent)
-	{	super(parent);
+	this()
+	{	super();		
 	}
 }
 
@@ -33,10 +33,10 @@ class Asteroid : GameObject
 	ModelNode rock;
 	
 	float radius; // cached
-
-	this (Node parent)
-	{	super(parent);
-		rock = new ModelNode(this);
+	
+	this()
+	{	super();
+		rock = addChild(new ModelNode());
 		rock.setModel(Resource.model("space/asteroid1.ms3d"));
 	}
 
@@ -55,12 +55,11 @@ class Flare : GameObject
 {
 	static Timer timer;
 
-
-	this (Node parent)
-	{	super(parent);
+	this ()
+	{	super();
 		this.setLifetime(4);
 
-		SpriteNode flare = new SpriteNode(this);
+		auto flare = addChild(new SpriteNode());
 		flare.setMaterial("fx/flare1.xml");
 		flare.setSize(Vec3f(2));
 
@@ -72,7 +71,7 @@ class Flare : GameObject
 		// don't create a new light more than 5 times per second
 		if (timer.get() > .2)
 		{	timer.reset();
-			LightNode light = new LightNode(this);
+			LightNode light = addChild(new LightNode());
 			light.setDiffuse(Color("orange"));
 			light.setLightRadius(96);
 		}

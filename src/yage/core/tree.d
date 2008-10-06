@@ -36,17 +36,19 @@ class Tree(T)
 		assert(child != this);
 		assert(child !is null);
 	}body
-	{	
-		// If child has an existing parent.
-		if (child.parent)
-		{	assert(child.parent.isChild(cast(S)child));
-			yage.core.array.remove(child.parent.children, child.index);
-		}
+	{	synchronized(this)
+		{
+			// If child has an existing parent.
+			if (child.parent)
+			{	assert(child.parent.isChild(cast(S)child));
+				yage.core.array.remove(child.parent.children, child.index);
+			}
 		
-		// Add as a child.
-		child.parent = cast(T)this;
-		children ~= cast(T)child;
-		child.index = children.length-1;
+			// Add as a child.
+			child.parent = cast(T)this;
+			children ~= cast(T)child;
+			child.index = children.length-1;
+		}
 		return child;	
 	}
 	
@@ -61,12 +63,7 @@ class Tree(T)
 	T getParent()
 	{	return parent;
 	}
-	T setParent(T _parent) /// ditto
-	in { assert(_parent !is null);
-	}body // should this function evenually go away?
-	{	return _parent.addChild(cast(T)this);
-	}
-	
+
 	/**
 	 * Is elem a child of this element?
 	 * This function will also return false if elem is null. */ 
@@ -77,8 +74,10 @@ class Tree(T)
 	}
 	
 	/// Remove this element from its parent.
+	/// TODO: replace with removeChild
 	void remove()
 	{	// this needs to happen because some children (like lights) may need to do more in their remove() function.
+		// instead, call setTransformDirty, which could cause lights, etc. to re-evaluate their scene.
 		foreach_reverse(T c; children)
 			c.remove();
 		

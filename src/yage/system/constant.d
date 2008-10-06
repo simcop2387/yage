@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  *
  * Constants used as parameters to various functions throughout the engine.
- * TODO: Define these as enums in the places where they are used?
+ * TODO: Eliminate this module and define these as enums in the places where they are used,
  */
 	
 module yage.system.constant;
