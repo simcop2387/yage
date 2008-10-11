@@ -13,6 +13,7 @@ import derelict.util.exception;
 import derelict.sdl.sdl;
 
 import yage.core.vector;
+import yage.core.exceptions;
 import yage.system.interfaces;
 
 
@@ -34,7 +35,7 @@ class Window : IRenderTarget
 			flags |= SDL_FULLSCREEN;
 		sdl_surface = SDL_SetVideoMode(size.x, size.y, depth, flags);
 		if(sdl_surface is null)
-			throw new Exception ("Unable to set " ~ .toString(size.x) ~ "x" ~ .toString(size.y) ~
+			throw new YageException("Unable to set " ~ .toString(size.x) ~ "x" ~ .toString(size.y) ~
 			" video mode: : " ~ .toString(SDL_GetError()));
 		SDL_LockSurface(sdl_surface);
 	}
@@ -48,7 +49,7 @@ class Window : IRenderTarget
 	
 	/// Return the current width of the window in pixels.
 	int getWidth()
-	{	return size.x;
+	{	return size.x;		
 	}
 	/// return the current height of the window in pixels.
 	int getHeight()
@@ -111,7 +112,7 @@ class Window : IRenderTarget
 				flags |= SDL_FULLSCREEN;
 			sdl_surface = SDL_SetVideoMode(width, height, 0, flags);
 			if (sdl_surface is null)
-				throw new Exception("Failed to resize the window!");
+				throw new YageException("Failed to resize the window!");
 		}
 	}
 	

@@ -19,7 +19,7 @@ import yage.core.misc;
 import yage.core.parse;
 import yage.core.quatrn;
 import yage.core.vector;
-import yage.system.exceptions;
+import yage.resource.exceptions;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.resource;
@@ -377,7 +377,7 @@ class Model
 				//std.gc.genCollect();
 				break;
 			default:
-				throw new Exception("Unrecognized file format '"~ext~"'.");
+				throw new ResourceException("Unrecognized model file format '"~ext~"'.");
 		}
 	}
 

@@ -13,6 +13,7 @@ import derelict.opengl.glext;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
+import yage.resource.exceptions;
 import yage.resource.resource;
 
 
@@ -57,7 +58,7 @@ class Shader
 		glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
 		if (!status)
 		{	Log.write(getCompileLog());
-			throw new Exception("Could not compile shader '" ~ source ~ "'.");
+			throw new ResourceException("Could not compile shader '" ~ source ~ "'.");
 		}
 	}
 

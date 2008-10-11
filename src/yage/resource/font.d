@@ -14,7 +14,7 @@ import yage.core.math;
 import yage.core.timer;
 import yage.core.types;
 import yage.core.parse;
-import yage.system.exceptions;
+import yage.resource.exceptions;
 import yage.resource.resource;
 import yage.resource.image;
 import yage.resource.texture;
@@ -86,15 +86,15 @@ class Font
 		// TODO: Move this into Device?
 		if (!freetype_initialized)
 			if (FT_Init_FreeType(&library))
-				throw new Exception("Freetype2 Failed to load.");
+				throw new ResourceException("Freetype2 Failed to load.");
 		
 		// Load
 		source = Resource.resolvePath(filename);
 		auto error = FT_New_Face(library, toStringz(source), 0, &face );
 		if (error == FT_Err_Unknown_File_Format)
-			throw new ResourceLoadException("Could not open font file '" ~ source ~ "'. The format is not recognized by Freetype2.");
+			throw new ResourceException("Could not open font file '%s'. The format is not recognized by Freetype2.", source);
 		else if (error)
-			throw new ResourceLoadException("Freetype2 could not open font file '" ~ source ~ "'.");		
+			throw new ResourceException("Freetype2 could not open font file '%s'.", source);		
 	}
 	
 	///
@@ -142,7 +142,7 @@ class Font
 		// Give our font size to freetype.
 		auto error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
 		if (error)
-			throw new Exception(formatString("Font '%s' does not support pixel sizes of %dx%d.", source, width, height));		
+			throw new ResourceException("Font '%s' does not support pixel sizes of %dx%d.", source, width, height);		
 		
 		/*
 		 * First, we render (or retrieve from cache) all letters into an array of Letter.
@@ -162,7 +162,7 @@ class Font
 			{	// Render the character into the glyph slot.
 				error = FT_Load_Char(face, c, FT_LOAD_RENDER);  
 				if (error)
-					throw new Exception("Font '"~source~"' cannot render the character '"~toUTF8([c])~"'.");			
+					throw new ResourceException("Font '%s' cannot render the character '%s'.", source, toUTF8([c]));			
 				
 				auto bitmap = face.glyph.bitmap;
 				ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				

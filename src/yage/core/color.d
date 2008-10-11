@@ -10,6 +10,7 @@ import yage.core.math;
 import yage.core.vector;
 import yage.core.types;
 import yage.core.parse;
+import yage.core.exceptions;
 import std.intrinsic;
 
 /**
@@ -162,7 +163,7 @@ struct Color
 			else if (96 < h && h < 103) // a-f
 				digit = (h-87);
 			else
-				throw new Exception("Invalid character '" ~ h ~"' for Color()");
+				throw new YageException("Invalid character '%s' for Color()", h);
 			result.ub[i/2] += digit * (15*((i+1)%2)+1); // gets low or high nibble
 		}
 		return result;

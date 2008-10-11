@@ -17,11 +17,13 @@ import yage.system.device;
 import yage.system.log;
 import yage.system.probe;
 import yage.system.render;
+import yage.resource.exceptions;
 import yage.resource.model;
-import yage.resource.texture;
 import yage.resource.resource;
 import yage.resource.shader;
+import yage.resource.texture;
 import yage.scene.light;
+
 
 // Used as default values for function params
 private const Vec2f one = {v:[1.0f, 1.0f]};
@@ -162,7 +164,7 @@ class Layer
 		glGetObjectParameterivARB(program, GL_OBJECT_LINK_STATUS_ARB, &status);
 		if (!status)
 		{	Log.write(getShaderProgramLog());
-			throw new Exception("Could not link the shaders.");
+			throw new ResourceException("Could not link the shaders.");
 		}
 		glValidateProgramARB(program);
 		Log.write(getShaderProgramLog());
@@ -443,7 +445,7 @@ class Layer
 	// Helper function for the public setUniform() functions.
 	protected void setUniform(char[] name, int width, float[] values)
 	{	if (!Probe.openGL(Probe.OpenGL.SHADER))
-			throw new Exception("Layer.setUniform() is only supported on hardware that supports shaders.");
+			throw new ResourceException("Layer.setUniform() is only supported on hardware that supports shaders.");
 
 		// Bind this program
 		if (current_program != program)
@@ -451,12 +453,12 @@ class Layer
 
 		// Get the location of name
 		if (program == 0)
-			throw new Exception("Cannot set uniform variable for a layer with no shader program.");
+			throw new ResourceException("Cannot set uniform variable for a layer with no shader program.");
 		char[256] cname = 0;
 		cname[0..name.length] = name;
 		int location = glGetUniformLocationARB(program, cname.ptr);
 		if (location == -1)
-			throw new Exception("Unable to set uniform variable: " ~ name);
+			throw new ResourceException("Unable to set uniform variable: " ~ name);
 
 		// Send the uniform data
 		switch (width)

@@ -22,7 +22,7 @@ import yage.gui.surface;
 import yage.system.log;
 import yage.system.constant;
 import yage.system.probe;
-import yage.system.exceptions;
+import yage.core.exceptions;
 import yage.core.vector;
 
 import std.c.stdlib : exit;
@@ -68,7 +68,7 @@ abstract class Device
 				SDL_Quit();
 				//alcDestroyContext(al_context);
 				//alcCloseDevice(al_device);
-			}catch{ throw new Exception("Error in Device destructor."); }
+			}catch{ throw new YageException("Error in Device destructor."); }
 	}	}
 
 	/**
@@ -106,7 +106,7 @@ abstract class Device
 
 		// Initialize SDL video
 		if(SDL_Init(SDL_INIT_VIDEO) < 0)
-			throw new Exception ("Unable to initialize SDL: "~ .toString(SDL_GetError()));
+			throw new YageException ("Unable to initialize SDL: "~ .toString(SDL_GetError()));
 
 		// Anti-aliasing
 		if (samples > 1)
@@ -125,7 +125,7 @@ abstract class Device
 		// Attempt to load multitexturing
 		if (Probe.openGL(Probe.OpenGL.MULTITEXTURE))
 		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
-				throw new Exception("GL_ARB_multitexture extension detected but it could not be loaded.");
+				throw new YageException("GL_ARB_multitexture extension detected but it could not be loaded.");
 			Log.write("GL_ARB_multitexture support enabled.");
 		}else
 			Log.write("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
@@ -134,9 +134,9 @@ abstract class Device
 		// Attempt to load shaders
 		if (Probe.openGL(Probe.OpenGL.SHADER))
 		{	if (!ARBShaderObjects.load("GL_ARB_shader_objects"))
-				throw new Exception("GL_ARB_shader_objects extension detected but it could not be loaded.");
+				throw new YageException("GL_ARB_shader_objects extension detected but it could not be loaded.");
 			if (!ARBVertexShader.load("GL_ARB_vertex_shader"))
-				throw new Exception("GL_ARB_vertex_shader extension detected but it could not be loaded.");
+				throw new YageException("GL_ARB_vertex_shader extension detected but it could not be loaded.");
 			Log.write("GL_ARB_shader_objects support enabled.");
 		}else
 			Log.write("GL_ARB_shader_objects not supported.  This is ok, but rendering will be limited to the fixed-function pipeline.");
@@ -144,7 +144,7 @@ abstract class Device
 		// Attempt to load vertex buffer object
 		if (Probe.openGL(Probe.OpenGL.VBO))
 		{	if (!ARBVertexBufferObject.load("GL_ARB_vertex_buffer_object"))
-				throw new Exception("GL_ARB_vertex_buffer_object extension detected but it could not be loaded.");
+				throw new YageException("GL_ARB_vertex_buffer_object extension detected but it could not be loaded.");
 			Log.write("GL_ARB_vertex_buffer_object support enabled.");
 		}else
 			Log.write("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
@@ -152,7 +152,7 @@ abstract class Device
 		// Attempt to load blend color extension
 		if (Probe.openGL(Probe.OpenGL.BLEND_COLOR))
 		{	if (!EXTBlendColor.load("GL_EXT_blend_color"))
-				throw new Exception("GL_EXT_blend_color extension detected but it could not be loaded.");
+				throw new YageException("GL_EXT_blend_color extension detected but it could not be loaded.");
 			Log.write("GL_EXT_blend_color support enabled.");
 		}else
 			Log.write("GL_EXT_blend_color not supported.  This is still ok.");
@@ -207,7 +207,7 @@ abstract class Device
 		al_context = alcCreateContext(al_device, null);
 		alcMakeContextCurrent(al_context);
 		if (alGetError()!=0)
-			throw new Exception("There was an error when initializing OpenAL.");
+			throw new YageException("There was an error when initializing OpenAL.");
 
 		surface = new Surface();
 		
@@ -300,7 +300,7 @@ abstract class Device
 				flags |= SDL_FULLSCREEN;
 			sdl_surface = SDL_SetVideoMode(width, height, 0, flags);
 			if (sdl_surface is null)
-				throw new Exception("Failed to resize the window!");
+				throw new YageException("Failed to resize the window!");
 		}
 	}
 }

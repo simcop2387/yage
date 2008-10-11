@@ -13,7 +13,7 @@ import std.stream;
 import std.string;
 import std.stdio;
 import yage.core.all;
-import yage.system.exceptions;
+import yage.resource.exceptions;
 import yage.resource.texture;
 import yage.resource.resource;
 import yage.resource.shader;
@@ -107,7 +107,7 @@ class Material
 				if (xml_layer.hasAttribute("specularity"))
 					layer.specularity = atoi(xml_layer.getAttribute("specularity"));
 				if (layer.specularity<0 || layer.specularity>128)
-					throw new Exception("Could not parse layer '" ~ .toString(i) ~
+					throw new ResourceException("Could not parse layer '" ~ .toString(i) ~
 						"' attributes.  Specularity must be between 0 and 128.\n");
 
 				// Blend
@@ -199,7 +199,7 @@ class Material
 						if (xmap.hasAttribute("scale"   )) ti.scale.v[0..2]    = csvToFloat(xmap.getAttribute("scale"));
 					}
 					catch (Exception e)
-					{	throw new Exception(
+					{	throw new ResourceException(
 							"Could not parse texture '" ~ .toString(t) ~"' in layer '" ~ .toString(i) ~"'.\n"
 							~ e.toString());
 					}

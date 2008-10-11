@@ -19,6 +19,7 @@ import yage.core.math;
 import yage.core.matrix;
 import yage.core.timer;
 import yage.core.vector;
+import yage.resource.exceptions;
 import yage.resource.resource;
 import yage.resource.image;
 import yage.system.device;
@@ -306,7 +307,7 @@ class GPUTexture
 				glinternalformat = compress ? GL_COMPRESSED_RGBA : GL_RGBA;
 				break;
 			default:
-				throw new Exception("Unknown image format" ~ .toString(format));
+				throw new ResourceException("Unknown texture format" ~ .toString(format));
 		}
 
 	    // Upload image

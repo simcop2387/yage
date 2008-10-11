@@ -12,6 +12,7 @@ import std.stdio;
 import derelict.openal.al;
 import yage.core.math;
 import yage.core.interfaces;
+import yage.core.exceptions;
 import yage.resource.resource;
 import yage.resource.sound;
 import yage.scene.node;
@@ -41,13 +42,20 @@ class SoundNode : MovableNode, ITemporal
 	public:
 
 	/**
-	 * Construct. */
+	 * Create OpenAL Sound source on construction */
 	this()
 	{	super();
 		alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()		
 		setSoundRadius(radius);		
 	}
 
+	/**
+	 * Delete OpenAL Sound source on destruction */
+	~this()
+	{	pause();
+		alDeleteSources(1, &al_source);
+	}
+	
 	/*
 	 * Construct this Node as a copy of another Node and recursively copy all children.
 	 * Params:
@@ -92,20 +100,12 @@ class SoundNode : MovableNode, ITemporal
 		return result;
 	}
 
-	/// Remove the Sound Node, overridden for OpenAL cleanup.
-	override void remove()
-	{	stop();
-		alDeleteSources(1, &al_source);
-		super.remove();
-	}
-
-	/// Return the Sound Resource that this SoundNode plays.
+	/**
+	 * Get / set the Sound Resource that this SoundNode will play. */
 	Sound getSound()
 	{	return sound;
-	}
-
-	/// Set the Sound Resource that this SoundNode will play.
-	void setSound(Sound _sound)
+	}	
+	void setSound(Sound _sound) /// ditto
 	{	bool tpaused = paused;
 		stop();
 		sound = _sound;
@@ -189,7 +189,7 @@ class SoundNode : MovableNode, ITemporal
 		if (_paused)
 		{	_paused = false;
 			if (sound is null)
-				throw new Exception("You cannot play or unpause a SoundNode without first calling setSound().");
+				throw new YageException("You cannot play or unpause a SoundNode without first calling setSound().");
 			alSourcePlay(al_source);
 			enqueue = true;
 		}	
@@ -215,10 +215,10 @@ class SoundNode : MovableNode, ITemporal
 	 * @throws Exception if the value is outside the range of the Sound. */
 	void seek(double seconds)
 	{	if (sound is null)
-			throw new Exception("You cannot seek a SoundNode without first calling setSound().");
+			throw new YageException("You cannot seek a SoundNode without first calling setSound().");
 		uint secs = cast(uint)(seconds*size);
 		if (secs>sound.getBuffersLength())
-			throw new Exception("SoundNode.seek("~.toString(seconds)~") is invalid for '"~sound.getSource()~"'");
+			throw new YageException("SoundNode.seek(%d) is invalid for '%s'", seconds, sound.getSource());
 
 		// Delete any leftover buffers
 		int processed;
@@ -360,6 +360,16 @@ class SoundNode : MovableNode, ITemporal
 			updateBuffers();	// best place to call this?
 	}
 
+	/*
+	 * Stop playing the sound when
+	 * This should be protected, but making it anything but public causes it not to be called.
+	 * Most likely a D bug. */
+	override public void ancestorChange(Node old_ancestor)
+	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
+		if (!scene)
+			pause();
+	}
+	
 	/**
 	 * Update sound position and velocity as soon as a new position is calculated. */
 	override protected void calcTransform()

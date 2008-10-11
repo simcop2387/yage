@@ -11,7 +11,6 @@ module yage.system.all;
 public
 {	import yage.system.constant;
 	import yage.system.device;
-	import yage.system.exceptions;	
 	import yage.system.input;
 	import yage.system.interfaces;
 	import yage.system.log;

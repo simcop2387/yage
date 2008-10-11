@@ -10,6 +10,7 @@ import std.path;
 import std.stdio;
 import yage.core.array;
 import yage.core.misc;
+import yage.resource.exceptions;
 import yage.resource.font;
 import yage.resource.model;
 import yage.resource.material;
@@ -79,7 +80,7 @@ abstract class Resource
 		foreach(char[] p; paths)
 			if (std.file.exists(std.path.join(p, path)))
 				return cleanPath(p~path);
-		throw new Exception("The path '" ~ path ~ "' could not be resolved.");
+		throw new ResourceException("The path '" ~ path ~ "' could not be resolved.");
 	}
 
 	/// Remove a path from the array of resource search paths.

@@ -25,7 +25,7 @@ import yage.scene.all;
  * Methods for modifying the hierarchy of Nodes (parents, children) are defined here.
  *  
  * Example:
- * --------------------------------
+ * --------
  * Scene s = new Scene();
  * ModelNode a = s.addChild(new ModelNode());   // a is a child of s, it exists in Scene s.
  * a.setPosition(3, 5, 0);           // Position is set relative to 0, 0, 0 of the entire scene.
@@ -38,7 +38,8 @@ import yage.scene.all;
  * s.addChild(b);                    // b is now a child of s.
  * b.getAbsolutePosition();          // Returns Vec3f(5, 0, 0), since it's position is relative
  *                                   // to 0, 0, 0, instead of a.
- * --------------------------------*/
+ * --------
+ */
 abstract class Node : Tree!(Node)
 {
 	// These are public for easy internal access.

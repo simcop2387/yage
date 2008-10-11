@@ -16,7 +16,7 @@ import yage.resource.font;
 import yage.resource.resource;
 import yage.resource.material;
 import yage.resource.texture;
-import yage.system.exceptions;
+import yage.gui.exceptions;
 
 /**
  * Specifies the style of a Surface.
@@ -211,7 +211,7 @@ struct Style
 			if (num.length) // val=="auto" leaves the value as float.nan
 				value = toFloat(num);
 			else if (string != "auto") // entire string is already toLower'd
-				throw new Exception("Could not parse CSS value: '" ~ string ~"`"); // garbage!				
+				throw new CSSException("Could not parse CSS value: '%s'", string); // garbage!				
 		}
 		
 		void parseUnits(char[] string, float[] edge, Unit[] edge_units)
@@ -292,7 +292,7 @@ struct Style
 				case "visibility":	visible = (tokens[1] == "true" || tokens[1] == "visible"); break;
 				
 				default:
-					throw new YageException("Unsupported CSS Property: '", tokens[0], "'."); // garbage!
+					throw new CSSException("Unsupported CSS Property: '", tokens[0], "'."); // garbage!
 			}
 			
 			delete property;

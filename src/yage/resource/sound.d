@@ -14,6 +14,7 @@ import derelict.openal.al;
 import derelict.ogg.vorbistypes;
 import derelict.ogg.vorbisfile;
 import yage.core.timer;
+import yage.resource.exceptions;
 import yage.resource.resource;
 import yage.system.log;
 
@@ -53,7 +54,7 @@ class Sound
 			sound_file = new WaveFile(source);
 		else if (file[0..4]=="OggS")
 			sound_file = new VorbisFile(source);
-		else throw new Exception("Unrecognized sound format '"~cast(char[])file[0..4]~"' for file '"~source~"'.");
+		else throw new ResourceException("Unrecognized sound format '"~cast(char[])file[0..4]~"' for file '"~source~"'.");
 		delete file;
 
 		// Determine OpenAL format
@@ -61,7 +62,7 @@ class Sound
 		else if (sound_file.channels==1 && sound_file.bools==16) al_format = AL_FORMAT_MONO16;
 		else if (sound_file.channels==2 && sound_file.bools==8)  al_format = AL_FORMAT_STEREO8;
 		else if (sound_file.channels==2 && sound_file.bools==16) al_format = AL_FORMAT_STEREO16;
-		else throw new Exception("Sound must be 8 or 16 bool and mono or stero format.");
+		else throw new ResourceException("Sound must be 8 or 16 bool and mono or stero format.");
 
 		// Calculate the parameters for our buffers
 		int one_second_size = (sound_file.bools/8)*sound_file.frequency*sound_file.channels;
@@ -167,7 +168,7 @@ class Sound
 			if (buffers_ref[i]==0)
 			{	alDeleteBuffers(1, &buffers[i]);
 				if (alIsBuffer(buffers[i]))
-					throw new Exception("Sound buffer "~.toString(i)~" of '"~sound_file.source~
+					throw new ResourceException("Sound buffer "~.toString(i)~" of '"~sound_file.source~
 										"' could not be deleted; probably because it is in use.\n");
 		}	}
 	}
@@ -233,10 +234,10 @@ private class WaveFile : SoundFile
 
 		// First 4 bytes of Wave file should be "RIFF"
 		if (file[0..4] != "RIFF")
-			throw new Exception("'"~filename~"' is not a RIFF file.");
+			throw new ResourceException("'"~filename~"' is not a RIFF file.");
 		// Skip size value (4 bytes)
 		if (file[8..12] != "WAVE")
-			throw new Exception("'"~filename~"' is not a WAVE file.");
+			throw new ResourceException("'"~filename~"' is not a WAVE file.");
 		// Skip "fmt ", format length, format tag (10 bytes)
 		channels 	= (cast(ushort[])file[22..24])[0];
 		frequency	= (cast(uint[])file[24..28])[0];
@@ -280,7 +281,7 @@ private class VorbisFile : SoundFile
 		version(linux){}
 		else  // this returns false errors on linux?
 		{	if(status < 0)
-				throw new Exception("'"~filename~"' is not an ogg vorbis file.\n");
+				throw new ResourceException("'"~filename~"' is not an ogg vorbis file.\n");
 		}
 		vorbis_info *vi = ov_info(&vf, -1);
 

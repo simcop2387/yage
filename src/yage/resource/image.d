@@ -9,6 +9,7 @@ module yage.resource.image;
 import std.string;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
+import yage.resource.exceptions;
 
 /**
  * A class for loading and manipulating images.
@@ -88,7 +89,7 @@ class Image
 		
 		// Attempt to load image
 		if ((sdl_image = IMG_Load(source)) is null)
-			throw new Exception("Could not open image file '" ~ filename ~ "'.");		
+			throw new ResourceException("Could not open image file '%s'.", filename);		
 		width = sdl_image.w;
 		height = sdl_image.h;
 		
@@ -312,10 +313,10 @@ class Image
 					}
 				break;
 			case 4:
-				throw new Exception("Not implemented yet :)");
+				throw new ResourceException("Not implemented yet :)");
 				break;
 			default:
-				throw new Exception("Unrecognized image format.");
+				throw new ResourceException("Unrecognized image format.");
 	
 		}
 		this.channels = channels;

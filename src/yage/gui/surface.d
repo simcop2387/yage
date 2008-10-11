@@ -481,9 +481,7 @@ class Surface : Tree!(Surface)
 				case Style.NINESLICE:
 					glDrawArrays(GL_QUADS, 0, 36);
 					break;
-				default:
-					throw new Exception("Not a valid fill type");
-					break;	
+				default: assert(false);
 			}
 		}
 		

@@ -14,7 +14,7 @@ import yage.core.all;
 import yage.core.types;
 import yage.core.color;
 import yage.resource.all;
-import yage.system.exceptions;
+import yage.resource.exceptions;
 import yage.system.log;
 
 import std.c.string : memcpy;
@@ -110,11 +110,11 @@ private struct MS3D
 
 		// Check for Ms3d header
 		if (icmp("MS3D000000", cast(char[])file[0..10])!=0)
-			throw new Exception("This file does not have a valid MS3D header.");
+			throw new ResourceException("This file does not have a valid MS3D header.");
 
 		// Check Ms3d version (3 or 4 only)
 		if (file[10] <3 || file[10] > 4)
-			throw new Exception("Milkshape file format version " ~ .toString(file[10]) ~ " not supported.");
+			throw new ResourceException("Milkshape file format version " ~ .toString(file[10]) ~ " not supported.");
 
 		// Vertices
 		memcpy(&size, &file[14], 2);
@@ -394,7 +394,7 @@ template Ms3dLoader()
 						break;
 				}	}			
 				if (!current.parent)
-					throw new ResourceLoadException("Unable to link bone " ~ .toString(j) ~ " of model " ~ filename ~ "!");
+					throw new ResourceException("Unable to link bone " ~ .toString(j) ~ " of model " ~ filename ~ "!");
 		}	}
 		
 		// Joint children relationshps

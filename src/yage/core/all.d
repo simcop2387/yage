@@ -16,6 +16,7 @@ public
 {	import yage.core.array;
 	import yage.core.async;
 	import yage.core.color;
+	import yage.core.exceptions;
 	import yage.core.freelist;
 	import yage.core.interfaces;
 	import yage.core.math;
