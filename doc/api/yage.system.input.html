@@ -111,7 +111,7 @@ Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>The key was down and has been released.
+<dd>The key was down and has been released TODO: replace with something else.
 <br><br>
 
 </dd>
@@ -151,122 +151,6 @@ Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>The current pixel location of the mouse cursor; (0, 0) is top left.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">struct 
-<span class="currsymbol">Buttons</span>
-<script type="text/javascript">explorer.outline.addDecl('Buttons');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>A structure to track various state variables associated with each mouse button.
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">down</span>
-<script type="text/javascript">explorer.outline.addDecl('down');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>True if the button is currently 
-<span class="currsymbol">down</span>
-<script type="text/javascript">explorer.outline.addDecl('down');</script>
-.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">up</span>
-<script type="text/javascript">explorer.outline.addDecl('up');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>True if the button was pressed and is now 
-<span class="currsymbol">up</span>
-<script type="text/javascript">explorer.outline.addDecl('up');</script>
-.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">xdown</span>
-<script type="text/javascript">explorer.outline.addDecl('xdown');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>The x location of the mouse when this button was last pressed.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">ydown</span>
-<script type="text/javascript">explorer.outline.addDecl('ydown');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>The y location of the mouse when this button was last pressed.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">xup</span>
-<script type="text/javascript">explorer.outline.addDecl('xup');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>The x location of the mouse when this button was last released.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">yup</span>
-<script type="text/javascript">explorer.outline.addDecl('yup');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>The y location of the mouse when this button was last released.
-<br><br>
-
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Buttons[8u] 
-<span class="currsymbol">button</span>
-<script type="text/javascript">explorer.outline.addDecl('button');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>An array to track the state of the mouse buttons
 <br><br>
 
 </dd>
@@ -315,10 +199,10 @@ Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:41 2008
+		on Sat Oct 11 00:16:27 2008
 
 	</div>
 	
@@ -329,9 +213,13 @@ Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -364,8 +252,6 @@ Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -421,19 +307,23 @@ Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

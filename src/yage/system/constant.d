@@ -13,9 +13,7 @@ enum {
 
 
 
-	LIGHT_DIRECTIONAL,			/// A light that shines in one direction through the entire scene
-	LIGHT_POINT,				/// A light that shines outward in all directions
-	LIGHT_SPOT,					/// A light that emits light outward from a point in a single direction
+
 
 	TEXTURE_FILTER_DEFAULT,		///
 	TEXTURE_FILTER_NONE,		///

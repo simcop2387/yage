@@ -108,34 +108,28 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Node <span class="funcparam">parent</span>);
+<dt><span class="decl">SpriteNode 
+<span class="currsymbol">clone</span>
+<script type="text/javascript">explorer.outline.addDecl('clone');</script>
+(bool <span class="funcparam">children</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Create this Node as a child of <span class="funcparam">parent</span>.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Node <span class="funcparam">parent</span>, SpriteNode <span class="funcparam">original</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Construct this Node as a copy of another Node and recursively copy all children.
+<dd>Make a duplicate of this node, unattached to any parent Node.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
-<td nowrap valign="top" style="padding-right: 8px">Node <span class="funcparam">parent</span></td>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">children</span></td>
 
                
-<td>This Node will be a child of <span class="funcparam">parent</span>.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">SpriteNode <span class="funcparam">original</span></td>
-
-               
-<td>This Node will be an exact copy of <span class="funcparam">original</span>.</td></tr>
+<td>recursively 
+<span class="currsymbol">clone</span>
+<script type="text/javascript">explorer.outline.addDecl('clone');</script>
+ <span class="funcparam">children</span> (and descendants) and add them as <span class="funcparam">children</span> to the new Node.</td></tr>
 </table><br>
+<b>Returns:</b><br>
+The cloned Node. 
+<br><br>
 
 </dd>
 
@@ -211,10 +205,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:41 2008
+		on Sat Oct 11 00:16:27 2008
 
 	</div>
 	
@@ -225,9 +219,13 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -260,8 +258,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -317,19 +313,23 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

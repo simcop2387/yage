@@ -107,7 +107,7 @@ Eric Poggel
  All Colors default to transparent black.
 <br><br>
 <b>TODO:</b><br>
-Convert to using four floats for better arithmetic?
+Convert to using four floats for better arithmetic, or just make it templated?
 
 <br><br>
 <b>Example:</b><br>
@@ -348,6 +348,19 @@ Convert to using four floats for better arithmetic?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">uint 
+<span class="currsymbol">opCast</span>
+<script type="text/javascript">explorer.outline.addDecl('opCast');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Is this useful?
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float[] 
 <span class="currsymbol">f</span>
 <script type="text/javascript">explorer.outline.addDecl('f');</script>
@@ -425,10 +438,10 @@ Convert to using four floats for better arithmetic?
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -439,9 +452,13 @@ Convert to using four floats for better arithmetic?
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -474,8 +491,6 @@ Convert to using four floats for better arithmetic?
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -531,19 +546,23 @@ Convert to using four floats for better arithmetic?
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

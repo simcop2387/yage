@@ -16,21 +16,21 @@ import yage.scene.node;
 
 /**
  * A Scene is the root of a tree of Nodes, and obviously, a Scene never has a parent.
- * Certain "global" variables are stored per Scene and affect all Nodes in that
- * Scene.  Examples include global ambient lighting and the speed of sound.
- * Scenes also maintain an array of all lights in them.
+ * Certain "global" variables are stored per Scene and affect all Nodes in that Scene. 
+ * Examples include global ambient lighting and the speed of sound.
+ * Scenes also maintain an array of all LightNodes in them.
  *
- * Each Scene can also be thought to exist in its own thread.  start() and stop()
+ * Each Scene updates its nodes in its own thread.  play() and pause()
  * control the updating of all child nodes at a fixed frequency.
  *
  * Example:
  * --------------------------------
  * Scene scene = new Scene();
- * scene.start(90);                       // Start the scene updater at 90 times per second.
- * scope(exit)scene.stop();               // Ensure it stops later.
+ * scene.play();                          // Start the scene updater at 60 times per second.
+ * scope(exit)scene.pause();              // Ensure it stops later.
  *
  * Scene skybox = new Scene();            // Create a skybox for the scene.
- * ModelNode sky = new ModelNode(skybox); // A model with all faces pointing inward.
+ * ModelNode sky = skybox.addChild(new ModelNode()); // A model with all faces pointing inward.
  * sky.setModel("sky/sanctuary.ms3d");    // Use this 3D model as geometry for the skybox.
  * scene.setSkybox(skybox);
  * --------------------------------
@@ -66,7 +66,6 @@ class Scene : Node//, ITemporal
 		background = Color("black");	// OpenGL default clear color
 		fog_color = Color("gray");
 		repeater = new Repeater();
-		//repeater.setFunction(&update);
 		repeater.setFunction(&update);
 		
 		transform_mutex = new Object();
@@ -95,14 +94,49 @@ class Scene : Node//, ITemporal
 		// Copy children, unfinished!
 		//foreach (Node c; children.array())
 	}
+	
+	/**
+	 * Make a duplicate of this scene.
+	 * The duplicate will always start with its update thread paused.
+	 * Params:
+	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 * Returns: The cloned Node. */
+	override Scene clone(bool children=false)
+	{	auto result = cast(Scene)super.clone(children);
+				
+		result.ambient = ambient;
+		result.speed_of_sound = speed_of_sound;
+		result.background = background;
+		result.fog_color = fog_color;
+		result.fog_density = fog_density;
+		result.fog_enabled = fog_enabled;
+		
+		// non-atomic operations
+		synchronized (this)
+		{	result.delta.set(delta.tell());
+			result.delta.pause();
+			result.setSkybox(skybox);
+		}
+		
+		return result;
+	}
+	unittest
+	{	// Test duplication of a running scene.
+		// Causes an access violation on exit.
+		Scene a = new Scene();
+		a.play();
+		a.addChild(new VisibleNode());
+		Scene b = a.clone(true);
+		a.pause();
+	}
 
 
-	/// Get an array that contains all lights that are children of this Scene.
+	/// Get an array that contains all LightNodes that are contained within this Scene.
 	LightNode[LightNode] getLights()
 	{	return lights;
 	}
 
-	/// Get / set the background color when no skybox is specified.
+	/// Get / set the background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
 	Color getClearColor()
 	{	return background;
 	}	
@@ -174,8 +208,8 @@ class Scene : Node//, ITemporal
 	}
 	/**
 	 * Implement the time control functions of ITemporal.
-	 * TODO: replace with getRepeater() ?
-	 * When the scene's timer (implementd as a repeater) runs, it updates
+	 * 
+	 * When the scene's timer (implementd as a Repeater) runs, it updates
 	 * the positions and rotations of all Nodes in this Scene.
 	 * Each Scene is updated in its own thread.  If the updating thread
 	 * gets behind, it will always attempt to catch up by updating more frequently.*/
@@ -202,9 +236,10 @@ class Scene : Node//, ITemporal
 	}
 
 	/**
-	 * Get the Repeater that calls update in its own thread.
-	 * This allows more advanced interaction than the shorthand functions implemented above. */
-	Repeater getUpdater()
+	 * Get the Repeater that calls update() in its own thread.
+	 * This allows more advanced interaction than the shorthand functions implemented above.
+	 * See:  yage.core.repeater  */
+	Repeater getRepeater()
 	{	return repeater;		
 	}
 
@@ -237,9 +272,10 @@ class Scene : Node//, ITemporal
 
 	/**
 	 * Update all Nodes in the scene by delta seconds.
+	 * This function is typically called automatically at a set interval once scene.play() is called.
 	 * Params:
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
-	void update(double delta = delta.get())
+	void update(double delta = delta.tell())
 	{	super.update(delta);
 		delta_time = delta;
 		this.delta.reset();

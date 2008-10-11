@@ -92,7 +92,11 @@ Andy Friesen, Eric Poggel
  documents.
 <br><br>
 
- This hasn't been profiled and probably isn't that efficient.
+ This hasn't been profiled and probably isn't that efficient.  Perhaps it should
+ eventually be switched to Tango's or Phobos's 
+<span class="currsymbol">xml</span>
+<script type="text/javascript">explorer.outline.addDecl('xml');</script>
+ libraries.
 
 <br><br>
 <b>History:</b><br>
@@ -431,10 +435,10 @@ Most of the code in this module originally came from Andy Friesen's Xmld.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -445,9 +449,13 @@ Most of the code in this module originally came from Andy Friesen's Xmld.
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -480,8 +488,6 @@ Most of the code in this module originally came from Andy Friesen's Xmld.
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -537,19 +543,23 @@ Most of the code in this module originally came from Andy Friesen's Xmld.
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

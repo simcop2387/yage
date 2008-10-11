@@ -26,17 +26,6 @@ import yage.scene.movable;
 class MovableNode : Node
 {
 	/**
-	 * Constructor */
-	this()
-	{	super();		
-	}
-	
-	/// Construct as a child of parent, a copy of original and recursivly copy all children.
-	this(Node parent, MovableNode original)
-	{	super(parent, original);		
-	}
-	
-	/**
 	 * Move and rotate by the transformation Matrix.
 	 * In other words, apply t as a transformation Matrix. */
 	void transformation(Matrix t)
@@ -81,8 +70,8 @@ class MovableNode : Node
 	{	if (cached) // the transform_abs cache is never dirty
 			return cache[scene.transform_read].transform_abs;
 		if (transform_dirty)
-		{	calcTransform();
-		}
+			calcTransform();
+		
 		return transform_abs;
 	}
 	
@@ -92,7 +81,7 @@ class MovableNode : Node
 	Vec3f getPosition()
 	{	return Vec3f(transform.v[12..15]);
 	}
-	void setPosition(Vec3f position)
+	void setPosition(Vec3f position) /// ditto
 	{	transform.v[12..15] = position.v[0..3];
 		setTransformDirty();
 	}

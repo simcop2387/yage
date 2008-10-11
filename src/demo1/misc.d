@@ -6,7 +6,7 @@
  * This probably doesn't need to be a part of yage itself.
  */
 
-module yage.util.misc;
+module demo1.misc;
 
 // Utility functions to generate fun things.
 
@@ -16,28 +16,6 @@ import yage.resource.resource;
 import yage.system.input;
 import yage.scene.all;
 import yage.core.all;
-
-
-void createArray(VisibleNode instance, float spacing, float x, float y=1, float z=1)
-{
-	Vec3f position = instance.getPosition();
-	for(int i=0; i<x; i++)
-		for(int j=0; j<y; j++)
-			for(int k=0; k<z; k++)
-			{	MovableNode a;
-
-				if (instance.getType() == "SoundNode")
-					a = new SoundNode(instance.getParent(), cast(SoundNode)instance);
-				if (instance.getType() == "yage.scene.model.ModelNode")
-					a = new ModelNode(instance.getParent(), cast(ModelNode)instance);
-				if (instance.getType() == "LightNode")
-					a = new LightNode(instance.getParent(), cast(LightNode)instance);
-				if (instance.getType() == "SpriteNode")
-					a = new SpriteNode(instance.getParent(), cast(SpriteNode)instance);
-				a.setPosition(Vec3f(i*spacing+position[0], j*spacing+position[1], k*spacing+position[2]));
-
-			}
-}
 
 
 void asteroidBelt(int number, float radius, Node scene)

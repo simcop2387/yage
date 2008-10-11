@@ -86,8 +86,9 @@ Eric Poggel
  
 <br><br>
 
-$(DDOC_MODULE_MEMBERS 
 
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">class 
 <span class="currsymbol">Tree</span>
@@ -99,29 +100,66 @@ $(DDOC_MODULE_MEMBERS
 <dd>Implements an element that can be used in a tree, with parents and children.
 <br><br>
 <b>Example:</b><br>
-<pre class="d_code"> class Node : Tree!(Node) {}
- auto n = new Node();
- n.addChild(new Node());
- -------------------------------- 
+<pre class="d_code"> <font color=blue>class</font> Node : <b>Tree</b>!(Node) {}
+ <font color=blue>auto</font> n = <font color=blue>new</font> Node();
+ <font color=blue>auto</font> n2 = n.addChild(<font color=blue>new</font> Node());
 </pre>
+ 
 <br><br>
+
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">T 
+<dt><span class="decl">template 
 <span class="currsymbol">addChild</span>
 <script type="text/javascript">explorer.outline.addDecl('addChild');</script>
-(T <span class="funcparam">child</span>);
+(S : T)</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Add a child element.
+ Automatically detaches it from any other element's children.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">child</td>
+
+               
+<td>Node to add as a child of this element.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+A reference to the child. 
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">S 
+<span class="currsymbol">addChild</span>
+<script type="text/javascript">explorer.outline.addDecl('addChild');</script>
+(S <span class="funcparam">child</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Add a <span class="funcparam">child</span> element.
  Automatically detaches it from any other element's children.
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">S <span class="funcparam">child</span></td>
+
+               
+<td>Node to add as a <span class="funcparam">child</span> of this element.</td></tr>
+</table><br>
 <b>Returns:</b><br>
-A self reference.
+A reference to the <span class="funcparam">child</span>. 
 <br><br>
+
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
 
 </dd>
 
@@ -143,10 +181,6 @@ A self reference.
 <span class="currsymbol">getParent</span>
 <script type="text/javascript">explorer.outline.addDecl('getParent');</script>
 ();
-<br>T 
-<span class="currsymbol">setParent</span>
-<script type="text/javascript">explorer.outline.addDecl('setParent');</script>
-(T <span class="funcparam">_parent</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -180,7 +214,10 @@ A self reference.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Remove this element from its parent
+<dd>Remove this element from its parent.
+<br><br>
+<b>TODO:</b><br>
+replace with removeChild
 <br><br>
 
 </dd>
@@ -188,8 +225,11 @@ A self reference.
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
 
-
 </dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
 </td></tr>
 				</table>
 			</div>
@@ -197,10 +237,10 @@ A self reference.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -211,9 +251,13 @@ A self reference.
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -246,8 +290,6 @@ A self reference.
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -303,19 +345,23 @@ A self reference.
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

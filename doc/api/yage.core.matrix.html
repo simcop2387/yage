@@ -476,7 +476,7 @@ Eric Poggel
 <dt><span class="decl">float 
 <span class="currsymbol">opIndex</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
-(ubyte <span class="funcparam">i</span>);
+(uint <span class="funcparam">i</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -489,7 +489,7 @@ Eric Poggel
 <dt><span class="decl">float 
 <span class="currsymbol">opIndexAssign</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndexAssign');</script>
-(float <span class="funcparam">value</span>, ubyte <span class="funcparam">i</span>);
+(float <span class="funcparam">value</span>, uint <span class="funcparam">i</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -546,9 +546,20 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Perform Matrix multiplication in reverse (since Matrix multiplication is not cummulative.)
+<dd>Perform Matrix multiplication in reverse (since Matrix multiplication is not cummulative.) Is this backwards?
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f 
+<span class="currsymbol">position</span>
+<script type="text/javascript">explorer.outline.addDecl('position');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -730,13 +741,28 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">setRotation</span>
-<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
-(Matrix <span class="funcparam">rot</span>);
+<span class="currsymbol">setPosition</span>
+<script type="text/javascript">explorer.outline.addDecl('setPosition');</script>
+(Vec3f <span class="funcparam">position</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the rotation values of this Matrix from another Matrix
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setRotation</span>
+<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
+(Matrix <span class="funcparam">rot</span>);
+<br>void 
+<span class="currsymbol">setRotation</span>
+<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
+(Quatrn <span class="funcparam">rot</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the rotation values of this Matrix from another Matrix or Quatrn.
 <br><br>
 
 </dd>
@@ -828,10 +854,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -842,9 +868,13 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -877,8 +907,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -934,19 +962,23 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

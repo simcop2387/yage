@@ -97,20 +97,21 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>All other Nodes extend this class.
- Methods for modifying the hierarchy of Nodes (parents, children) are defined here.
-<br><br>
-Every node has an array of child nodes as well as a parent node, with
+<dd>Nodes are used for building scene graphs in Yage.
+ Every node has an array of child nodes as well as a parent node, with
  the exception of a Scene that exists at the top of the scene graph and has no parent.
  When one node is moved or rotated, all of its child nodes move and rotate as well.
  Likewise, setting the position or rotation of a node does so relative to its parent.
  Rendering is done recursively from the Scene down through every child node.
- Likewise, updating of position and rotation occurs recusively from Scene's update() method.
+ Likewise, updating of position and rotation occurs recursively from Scene's update() method.
+<br><br>
+All other Nodes extend this class.
+ Methods for modifying the hierarchy of Nodes (parents, children) are defined here.
 
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> Scene s = <font color=blue>new</font> Scene();
- ModelNode a = <font color=blue>new</font> ModelNode(s);   <font color=green>// a is a child of s, it exists in Scene s.
+ ModelNode a = s.addChild(<font color=blue>new</font> ModelNode());   <font color=green>// a is a child of s, it exists in Scene s.
 </font> a.setPosition(3, 5, 0);           <font color=green>// Position is set relative to 0, 0, 0 of the entire scene.
 </font> a.setRotation(0, 3.14, 0);        <font color=green>// a is rotated PI radians (180 degrees) around the Y axis.
 </font>
@@ -118,7 +119,7 @@ Every node has an array of child nodes as well as a parent node, with
 </font> b.setPosition(5, 0, 0);           <font color=green>// its positoin and rotation are relative to a's.
 </font> b.getAbsolutePosition();          <font color=green>// Returns Vec3f(-2, 5, 0), b's position relative to the origin.
 </font>
- b.setParent(s);                   <font color=green>// b is now a child of s.
+ s.addChild(b);                    <font color=green>// b is now a child of s.
 </font> b.getAbsolutePosition();          <font color=green>// Returns Vec3f(5, 0, 0), since it's position is relative
 </font>                                   <font color=green>// to 0, 0, 0, instead of a.
 </font></pre>
@@ -138,21 +139,43 @@ Every node has an array of child nodes as well as a parent node, with
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Node <span class="funcparam">parent</span>);
+<dt><span class="decl">T 
+<span class="currsymbol">addChild</span>
+<script type="text/javascript">explorer.outline.addDecl('addChild');</script>
+(T : Node)(T <span class="funcparam">child</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct as a child of <span class="funcparam">parent</span>.
+<dd>Overridden from Tree to mark transform dirty.
+<br><br>
+<b>Returns:</b><br>
+The child parameter.  Templating is used to ensure the return type is exactly the same.
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Node <span class="funcparam">parent</span>, Node <span class="funcparam">original</span>);
+<dt><span class="decl">Node 
+<span class="currsymbol">clone</span>
+<script type="text/javascript">explorer.outline.addDecl('clone');</script>
+(bool <span class="funcparam">children</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct as a child of <span class="funcparam">parent</span>, a copy of <span class="funcparam">original</span> and recursivly copy all children.
+<dd>Make a duplicate of this node, unattached to any parent Node.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">children</span></td>
+
+               
+<td>recursively 
+<span class="currsymbol">clone</span>
+<script type="text/javascript">explorer.outline.addDecl('clone');</script>
+ <span class="funcparam">children</span> (and descendants) and add them as <span class="funcparam">children</span> to the new Node.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+The cloned Node. 
 <br><br>
 
 </dd>
@@ -169,29 +192,10 @@ Every node has an array of child nodes as well as a parent node, with
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get / set the lifeime of a VisibleNode (in seconds).
- The default value is float.infinity, but a lower number will cause the VisibleNode to be removed
- from the scene graph after that amount of time, as its lifetime is decreased with every Scene update.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Node 
-<span class="currsymbol">setParent</span>
-<script type="text/javascript">explorer.outline.addDecl('setParent');</script>
-(Node <span class="funcparam">_parent</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Overridden from Tree to set scene and mark transform dirty. 
-<br><br>
-Ditto
-<br><br>
-
-<br><br>
-
- Overridden from Tree to set scene and mark transform dirty. 
+<dd>Get / set the lifeime of a Node (in seconds).
+ The default lifetime is float.infinity.  A lower number will cause the Node to be removed
+ from the scene graph after that amount of time.
+ It's lifetime is decreased every time update() is called (usually by the Node's scene).
 <br><br>
 
 </dd>
@@ -204,7 +208,8 @@ Ditto
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the Scene at the top of the tree that this node belongs to.
+<dd>Get the Scene at the top of the tree that this node belongs to, or null
+ if this is part of a scene-less node tree.
 <br><br>
 
 </dd>
@@ -231,7 +236,21 @@ Ditto
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Always returns false
- unless overridden.
+ for Nodes but can be true
+ for subtypes..
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Return a string representation of this Node for human reading. 
 <br><br>
 
 </dd>
@@ -258,9 +277,6 @@ Ditto
  as an argument to clear
  the function.</td></tr>
 </table><br>
-<font color=red>BUGS:</font><br>
-Certain Node methods cause access violations.  Perhaps this is a dmd bug?
-<br><br>
 <b>Example:</b><br>
 <pre class="d_code"> SpriteNode s = <font color=blue>new</font> SpriteNode(scene);
  s.setMaterial(<span style="color: purple">"something.xml"</span>);
@@ -274,30 +290,6 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
  s.<b>onUpdate</b>(&amp;fade);
 </pre>
 <br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">char[] 
-<span class="currsymbol">toString</span>
-<script type="text/javascript">explorer.outline.addDecl('toString');</script>
-();
-<br>char[] 
-<span class="currsymbol">toString</span>
-<script type="text/javascript">explorer.outline.addDecl('toString');</script>
-(bool <span class="funcparam">recurse</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a string representation of this Node for human reading.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">recurse</td>
-
-               
-<td>Print this Node's children as well. </td></tr>
-</table><br>
 
 </dd>
 
@@ -329,10 +321,10 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:41 2008
+		on Sat Oct 11 00:16:27 2008
 
 	</div>
 	
@@ -343,9 +335,13 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -378,8 +374,6 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -435,19 +429,23 @@ Certain Node methods cause access violations.  Perhaps this is a dmd bug?
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

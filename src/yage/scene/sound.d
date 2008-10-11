@@ -48,11 +48,11 @@ class SoundNode : MovableNode, ITemporal
 		setSoundRadius(radius);		
 	}
 
-	/**
+	/*
 	 * Construct this Node as a copy of another Node and recursively copy all children.
 	 * Params:
 	 * parent = This Node will be a child of parent.
-	 * original = This Node will be an exact copy of original.*/
+	 * original = This Node will be an exact copy of original.
 	this (Node parent, SoundNode original)
 	{
 		alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
@@ -69,6 +69,27 @@ class SoundNode : MovableNode, ITemporal
 			pause();
 		else
 			play();
+	}*/
+	
+	/**
+	 * Make a duplicate of this node, unattached to any parent Node.
+	 * Params:
+	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 * Returns: The cloned Node. */
+	override SoundNode clone(bool children=false)
+	{	auto result = cast(SoundNode)super.clone(children);
+		
+		result.setSound(sound);
+		result.seek(tell());	
+		result.setPitch(pitch);
+		result.setSoundRadius(radius);
+		result.setVolume(volume);
+		result.setLooping(looping);
+		if (paused())
+			result.pause();
+		else
+			result.play();
+		return result;
 	}
 
 	/// Remove the Sound Node, overridden for OpenAL cleanup.
@@ -339,11 +360,11 @@ class SoundNode : MovableNode, ITemporal
 			updateBuffers();	// best place to call this?
 	}
 
-	/// Overridden so that the position of the sound is updated in OpenAL when this node is moved.
-	override void setTransformDirty()
-	{	super.setTransformDirty();
+	/**
+	 * Update sound position and velocity as soon as a new position is calculated. */
+	override protected void calcTransform()
+	{	super.calcTransform();
 		alSourcefv(al_source, AL_POSITION, &(getAbsoluteTransform().v[12]));
 		alSourcefv(al_source, AL_VELOCITY, &(getAbsoluteVelocity().v[0]));
 	}
-
 }

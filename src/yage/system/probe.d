@@ -12,8 +12,7 @@ import derelict.opengl.glext;
 import yage.system.device;
 
 /**
- * 
- */
+ * Provides hardware probing capabilities for Yage. */
 abstract class Probe
 {
 	/**
@@ -29,20 +28,24 @@ abstract class Probe
 		SHADER,				/// Hardware support for openGl vertex and fragment shaders
 		VBO,				/// Hardware support for caching vertex data in video memory (Vertex Buffer Object)
 		BLEND_COLOR
-	}
-	
+	}	
 	
 	/**
-	 * 
+	 * Query an OpenGL value.
 	 * Params:
-	 *     constant = 
-	 * Returns:
+	 *     constant = A value from the OpenGL enum defined above.
+	 * Returns: 1/0 for true/false queries or an integer value for numeric queries.
+	 * 
+	 * Example:
+	 * --------
+	 * Probe.openGL(Probe.OpenGL.SHADER); // returns 1 if shaders are supported or 0 otherwise.
+	 * --------
 	 */
-	static int openGL(OpenGL constant)
+	static int openGL(OpenGL query)
 	{	static int shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1;	// so lookup only has to occur once.
-	int result;
+		int result;
 		
-		switch (constant)
+		switch (query)
 		{	case OpenGL.MAX_LIGHTS:				
 				glGetIntegerv(GL_MAX_LIGHTS, &result);
 				return result;
@@ -75,7 +78,7 @@ abstract class Probe
 			case OpenGL.BLEND_COLOR:
 				if (bc==-1)
 					bc = cast(int)checkExtension("GL_EXT_blend_color");
-				return bc;				
+				return bc;		
 		}
 		
 	}

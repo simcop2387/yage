@@ -110,11 +110,11 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this();
+<dt><span class="decl">this(bool <span class="funcparam">start</span> = true);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Initialize and start the Timer.
+<dd>Initialize and <span class="funcparam">start</span> the Timer.
 <br><br>
 
 </dd>
@@ -137,6 +137,156 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">pause</span>
+<script type="text/javascript">explorer.outline.addDecl('pause');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Stop the timer.  When play() is called again, it will start from the time when it was paused. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">paused</span>
+<script type="text/javascript">explorer.outline.addDecl('paused');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Is the Timer 
+<span class="currsymbol">paused</span>
+<script type="text/javascript">explorer.outline.addDecl('paused');</script>
+?
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">play</span>
+<script type="text/javascript">explorer.outline.addDecl('play');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Start the timer. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">stop</span>
+<script type="text/javascript">explorer.outline.addDecl('stop');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Stop the timer and reset its position.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setPauseAfter</span>
+<script type="text/javascript">explorer.outline.addDecl('setPauseAfter');</script>
+(double <span class="funcparam">seconds</span> = inf);
+<br>double 
+<span class="currsymbol">getPauseAfter</span>
+<script type="text/javascript">explorer.outline.addDecl('getPauseAfter');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Pause the timer when it reaches this amount.
+ Must be between (inclusive) the arguments of setRange(min, max) or else it will be ignored.
+ Use pauseAfter() with no arguments to clear pauseAfter. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">seek</span>
+<script type="text/javascript">explorer.outline.addDecl('seek');</script>
+(double <span class="funcparam">seconds</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the Timer. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">double 
+<span class="currsymbol">tell</span>
+<script type="text/javascript">explorer.outline.addDecl('tell');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the Timer's time in seconds.	 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setRange</span>
+<script type="text/javascript">explorer.outline.addDecl('setRange');</script>
+(double <span class="funcparam">min</span> = cast(double)0, double <span class="funcparam">max</span> = inf);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the timer's roll-under and roll-over values.
+ Provide no arguments to reset them to the defaults of 0 and infinity.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">double <span class="funcparam">min</span></td>
+
+               
+<td>The timer will never be less than this value.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">double <span class="funcparam">max</span></td>
+
+               
+<td>The timer will never be greater than this value and will rollover back to <span class="funcparam">min</span> after crossing it.</td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">set</span>
+<script type="text/javascript">explorer.outline.addDecl('set');</script>
+(real <span class="funcparam">time</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>@deprecated
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">real 
 <span class="currsymbol">get</span>
 <script type="text/javascript">explorer.outline.addDecl('get');</script>
@@ -144,7 +294,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return the Timer's time in seconds
+<dd>@deprecated alias of tell().
 <br><br>
 
 </dd>
@@ -157,7 +307,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Is the Timer paused?
+<dd>@deprecated Is the Timer paused?
 <br><br>
 
 </dd>
@@ -170,21 +320,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set whether the Timer is <span class="funcparam">paused</span>.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">pause</span>
-<script type="text/javascript">explorer.outline.addDecl('pause');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Alias of setPaused(true
-)
+<dd>@deprecated Set whether the Timer is <span class="funcparam">paused</span>.
 <br><br>
 
 </dd>
@@ -197,8 +333,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Alias of setPaused(false
-)
+<dd>@deprecated
 <br><br>
 
 </dd>
@@ -211,28 +346,8 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Reset the Timer to zero.
+<dd>@deprecated
 <br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">set</span>
-<script type="text/javascript">explorer.outline.addDecl('set');</script>
-(double <span class="funcparam">time</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the Timer
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">double <span class="funcparam">time</span></td>
-
-               
-<td>Measured in seconds. </td></tr>
-</table><br>
 
 </dd>
 </dl>
@@ -251,10 +366,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -265,9 +380,13 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -300,8 +419,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -357,19 +474,23 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

@@ -50,11 +50,11 @@ class GraphNode : VisibleNode
 		model.setMeshes([new Mesh()]);	
 	}
 	
-	/**
+	/*
 	 * Construct this GraphNode as a copy of another GraphNode and recursively copy all children.
 	 * Params:
 	 * parent = This GraphNode will be a child of parent.
-	 * original = This GraphNode will be an exact copy of original.*/
+	 * original = This GraphNode will be an exact copy of original.
 	this (Node parent, GraphNode original)
 	{	super(parent, original);
 
@@ -67,7 +67,7 @@ class GraphNode : VisibleNode
 		setTextureFunction(original.texfunc);
 		setWrap(original.swrap, original.twrap);
 		regenerate();
-	}
+	}*/
 
 	/// Return the Model generated from setFunction() and setMaterial().
 	Model getModel()

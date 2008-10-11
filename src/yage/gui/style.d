@@ -16,6 +16,7 @@ import yage.resource.font;
 import yage.resource.resource;
 import yage.resource.material;
 import yage.resource.texture;
+import yage.system.exceptions;
 
 /**
  * Specifies the style of a Surface.
@@ -291,7 +292,7 @@ struct Style
 				case "visibility":	visible = (tokens[1] == "true" || tokens[1] == "visible"); break;
 				
 				default:
-					writefln("Unsupported CSS Property: '", tokens[0], "'."); // garbage!
+					throw new YageException("Unsupported CSS Property: '", tokens[0], "'."); // garbage!
 			}
 			
 			delete property;

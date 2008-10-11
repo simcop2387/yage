@@ -112,8 +112,8 @@ Eric Poggel
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static char[][] 
-<span class="currsymbol">getPath</span>
-<script type="text/javascript">explorer.outline.addDecl('getPath');</script>
+<span class="currsymbol">getPaths</span>
+<script type="text/javascript">explorer.outline.addDecl('getPaths');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -252,6 +252,28 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Font 
+<span class="currsymbol">font</span>
+<script type="text/javascript">explorer.outline.addDecl('font');</script>
+(char[] <span class="funcparam">source</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Acquire and return the given Font.
+ If it has already been loaded, the in-memory copy will be returned.
+ If not, it will be loaded and then returned.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">source</span></td>
+
+               
+<td>The Font file that will be loaded. </td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static Model 
 <span class="currsymbol">model</span>
 <script type="text/javascript">explorer.outline.addDecl('model');</script>
@@ -260,10 +282,10 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Acquire and return the given Model.
-  If it has already been loaded, the in-memory copy will be returned.
-  If not, it will be loaded and uploaded to video memory.
-  All associated Materials, Textures, and Shaders will be loaded into
-  the resource pool as well.
+ If it has already been loaded, the in-memory copy will be returned.
+ If not, it will be loaded and uploaded to video memory.
+ All associated Materials, Textures, and Shaders will be loaded into
+ the resource pool as well.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
@@ -305,7 +327,7 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 <dt><span class="decl">static Texture 
 <span class="currsymbol">texture</span>
 <script type="text/javascript">explorer.outline.addDecl('texture');</script>
-(char[] <span class="funcparam">source</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 11);
+(char[] <span class="funcparam">source</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 0);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -409,10 +431,10 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:27 2008
 
 	</div>
 	
@@ -423,9 +445,13 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -458,8 +484,6 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -515,19 +539,23 @@ An Exception if the <span class="funcparam">path</span> could not be resolved.
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

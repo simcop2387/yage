@@ -147,7 +147,7 @@ Eric Poggel
 <dd>A 
 <span class="currsymbol">Model</span>
 <script type="text/javascript">explorer.outline.addDecl('Model');</script>
- is a 3D object, typically loaded from a file.
+ is a 3D object, often loaded from a file.
 <br><br>
 Each model is divided into one or more Meshes; each Mesh has its own material
  and an array of triangle indices that correspond to vertices in the 
@@ -187,6 +187,27 @@ Each model is divided into one or more Meshes; each Mesh has its own material
 
 <dd>Create as an exact duplicate of another Model.
 <br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">animateTo</span>
+<script type="text/javascript">explorer.outline.addDecl('animateTo');</script>
+(double <span class="funcparam">time</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Advance this Model's animation to <span class="funcparam">time</span>.
+ This still has bugs somehow.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">double <span class="funcparam">time</span></td>
+
+               
+<td></td></tr>
+</table><br>
 
 </dd>
 
@@ -239,18 +260,61 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get the requested attribute.
+ @throws Exception if the attribute is not defined. 
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f 
-<span class="currsymbol">getDimensions</span>
-<script type="text/javascript">explorer.outline.addDecl('getDimensions');</script>
+<dt><span class="decl">float 
+<span class="currsymbol">getRadius</span>
+<script type="text/javascript">explorer.outline.addDecl('getRadius');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the dimensions of a box, centered at the origin, that can contain this Model.
+<dd>Get radius of a sphere, centered at the model's origin, that can contain this Model.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Joint[] 
+<span class="currsymbol">getJoints</span>
+<script type="text/javascript">explorer.outline.addDecl('getJoints');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get an array of all of the Model's Joints, which are used for skeletal animation.
+ This can be traversed as an array, or as a tree since each Joint references its parent and children. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">getAnimated</span>
+<script type="text/javascript">explorer.outline.addDecl('getAnimated');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get whether this model is animated. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">double 
+<span class="currsymbol">getAnimationMax</span>
+<script type="text/javascript">explorer.outline.addDecl('getAnimationMax');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the time in seconds of the end of this Model's skeletal animation.
 <br><br>
 
 </dd>
@@ -346,8 +410,7 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 <td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">name</span></td>
 
                
-<td>the <span class="funcparam">name</span> of the attribute, should be the same as the attribute
- variable <span class="funcparam">name</span> in the vertex shader.</td></tr>
+<td>the <span class="funcparam">name</span> of the attribute, should be the same as the attribute variable <span class="funcparam">name</span> in the vertex shader.</td></tr>
 <tr>
 <td nowrap valign="top" style="padding-right: 8px">float[] <span class="funcparam">values</span></td>
 
@@ -362,7 +425,7 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 <dt><span class="decl">char[] 
 <span class="currsymbol">toString</span>
 <script type="text/javascript">explorer.outline.addDecl('toString');</script>
-();
+(bool <span class="funcparam">detailed</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -386,10 +449,10 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -400,9 +463,13 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -435,8 +502,6 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -492,19 +557,23 @@ Bind the Vertex, Texture, and Normal VBO's for use.
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

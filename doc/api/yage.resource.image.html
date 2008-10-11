@@ -103,7 +103,10 @@ Eric Poggel
 <br><br>
 <font color=red>BUGS:</font><br>
 An RGB image will often be returned when loading grayscale images.  Use setFormat(IMAGE_FORMAT_GRAYSCALE) to correct this.
- The load and resize functions seem to have images with widths that aren't a multiple of 4.
+
+<br><br>
+<b>TODO:</b><br>
+Add convolution support: http://www.php.net/manual/en/function.imageconvolution.php#77818 
 <br><br>
 
 
@@ -149,6 +152,33 @@ An RGB image will often be returned when loading grayscale images.  Use setForma
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this(int <span class="funcparam">channels</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Create a new emtpy image.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">channels</span></td>
+
+               
+<td>number of color <span class="funcparam">channels</span>.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">width</span></td>
+
+               
+<td><span class="funcparam">width</span> in pixels</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">height</span></td>
+
+               
+<td><span class="funcparam">height</span> in pixel </td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">this(ubyte[] <span class="funcparam">data</span>, int <span class="funcparam">channels</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span> = 0);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -161,6 +191,11 @@ An RGB image will often be returned when loading grayscale images.  Use setForma
 
                
 <td>array of raw image <span class="funcparam">data</span></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">channels</span></td>
+
+               
+<td>number of color <span class="funcparam">channels</span>.</td></tr>
 <tr>
 <td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">width</span></td>
 
@@ -315,6 +350,20 @@ An image with the number of channels of the source image.  Paletted images are c
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">overlay</span>
+<script type="text/javascript">explorer.outline.addDecl('overlay');</script>
+(Image <span class="funcparam">img</span>, int <span class="funcparam">xoffset</span> = 0, int <span class="funcparam">yoffset</span> = 0);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Paste another image on top of this one.
+ This does not make a copy. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void* 
 <span class="currsymbol">ptr</span>
 <script type="text/javascript">explorer.outline.addDecl('ptr');</script>
@@ -352,7 +401,7 @@ An image with the number of channels of the source image.  Paletted images are c
 <td>The new <span class="funcparam">height</span>.  If 0, <span class="funcparam">height</span> will be calculated automatically with aspect ratio maintained.</td></tr>
 </table><br>
 <b>Returns:</b><br>
-A new image of the same type.
+A new image of the same type and of the new size, or an exact copy if the dimensions are the same. 
 <br><br>
 
 </dd>
@@ -391,10 +440,10 @@ Replace this with crop.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -405,9 +454,13 @@ Replace this with crop.
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -440,8 +493,6 @@ Replace this with crop.
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -497,19 +548,23 @@ Replace this with crop.
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

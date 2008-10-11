@@ -86,9 +86,8 @@ Joe Pusderis (deformative0@gmail.com), Eric Poggel
  
 <br><br>
 
+$(DDOC_MODULE_MEMBERS 
 
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">class 
 <span class="currsymbol">Surface</span>
@@ -111,6 +110,19 @@ Joe Pusderis (deformative0@gmail.com), Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">ModifierKey</span>
+<script type="text/javascript">explorer.outline.addDecl('ModifierKey');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>This is a mirror of SDLMod (SDL's modifier key struct
+)
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void delegate(Surface self) 
 <span class="currsymbol">onBlur</span>
 <script type="text/javascript">explorer.outline.addDecl('onBlur');</script>
@@ -124,13 +136,139 @@ Joe Pusderis (deformative0@gmail.com), Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Surface <span class="funcparam">p</span> = null);
+<dt><span class="decl">void delegate(Surface self) 
+<span class="currsymbol">onDraw</span>
+<script type="text/javascript">explorer.outline.addDecl('onDraw');</script>
+;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Constructor
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self) 
+<span class="currsymbol">onFocus</span>
+<script type="text/javascript">explorer.outline.addDecl('onFocus');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, byte buttons, Vec!(2,int) coordinates) 
+<span class="currsymbol">onClick</span>
+<script type="text/javascript">explorer.outline.addDecl('onClick');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>unfinished
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, byte buttons, Vec!(2,int) coordinates) 
+<span class="currsymbol">onDblCick</span>
+<script type="text/javascript">explorer.outline.addDecl('onDblCick');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>unfinished
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, int key, int modifier) 
+<span class="currsymbol">onKeyDown</span>
+<script type="text/javascript">explorer.outline.addDecl('onKeyDown');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, int key, int modifier) 
+<span class="currsymbol">onKeyUp</span>
+<script type="text/javascript">explorer.outline.addDecl('onKeyUp');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, byte buttons, Vec!(2,int) coordinates) 
+<span class="currsymbol">onMouseDown</span>
+<script type="text/javascript">explorer.outline.addDecl('onMouseDown');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, byte buttons, Vec!(2,int) coordinates) 
+<span class="currsymbol">onMouseUp</span>
+<script type="text/javascript">explorer.outline.addDecl('onMouseUp');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, byte buttons, Vec!(2,int) amount) 
+<span class="currsymbol">onMouseMove</span>
+<script type="text/javascript">explorer.outline.addDecl('onMouseMove');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, byte buttons, Vec!(2,int) coordinates) 
+<span class="currsymbol">onMouseOver</span>
+<script type="text/javascript">explorer.outline.addDecl('onMouseOver');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, byte buttons, Vec!(2,int) coordinates) 
+<span class="currsymbol">onMouseOut</span>
+<script type="text/javascript">explorer.outline.addDecl('onMouseOut');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void delegate(Surface self, Vec!(2,float) amount) 
+<span class="currsymbol">onResize</span>
+<script type="text/javascript">explorer.outline.addDecl('onResize');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -188,13 +326,16 @@ Joe Pusderis (deformative0@gmail.com), Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">calculate</span>
-<script type="text/javascript">explorer.outline.addDecl('calculate');</script>
+<span class="currsymbol">update</span>
+<script type="text/javascript">explorer.outline.addDecl('update');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Recalculate all properties of this Surface based on its style.
+<br><br>
+<b>TODO:</b><br>
+Ensure vertex and tex coord assignments are 100% on the stack (see array literals).
 <br><br>
 
 </dd>
@@ -207,7 +348,10 @@ Joe Pusderis (deformative0@gmail.com), Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Render this Surface
+<dd>Render this Surface a rendering target.
+<br><br>
+<b>TODO:</b><br>
+Move this to Window?
 <br><br>
 <b>Params:</b><br>
 <table><tr>
@@ -216,6 +360,44 @@ Joe Pusderis (deformative0@gmail.com), Eric Poggel
                
 <td>TODO: Render to this target.</td></tr>
 </table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Surface 
+<span class="currsymbol">findSurface</span>
+<script type="text/javascript">explorer.outline.addDecl('findSurface');</script>
+(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Find the surface at the given coordinates.
+ Surfaces are ordered by zIndex with higher values appearing on top.
+ This function recurses through children and will return children, grandchildren, etc. as necessary.
+<br><br>
+<b>TODO:</b><br>
+Add relative argument.
+<br><br>
+<b>Returns:</b><br>
+The surface, or self if no surface at the coordinates, or null
+ if coordinates are outside self. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">grabMouse</span>
+<script type="text/javascript">explorer.outline.addDecl('grabMouse');</script>
+(bool <span class="funcparam">grab</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>If enabled, the mousecursor will be hidden and grabbed by the application.
+ This also allows for mouse position changes to be registered in a relative fashion,
+ i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching
+ the mouse to the look direction of a first or third-person camera. 
+<br><br>
 
 </dd>
 
@@ -231,7 +413,7 @@ Joe Pusderis (deformative0@gmail.com), Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the zIndex of this Surface to the highest or lowest of its siblings. 
+<dd>Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. 
 <br><br>
 
 </dd>
@@ -267,44 +449,6 @@ Joe Pusderis (deformative0@gmail.com), Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">grabMouse</span>
-<script type="text/javascript">explorer.outline.addDecl('grabMouse');</script>
-(bool <span class="funcparam">grab</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>If enabled, the mousecursor will be hidden and grabbed by the application.
-  This also allows for mouse position changes to be registered in a relative fashion,
-  i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching
-  the mouse to the look direction of a first or third-person camera. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Surface 
-<span class="currsymbol">findSurface</span>
-<script type="text/javascript">explorer.outline.addDecl('findSurface');</script>
-(float <span class="funcparam">x</span>, float <span class="funcparam">y</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Find the surface at the given coordinates.
- Surfaces are ordered by zIndex with higher values appearing on top.
- This function recurses through children and will return children, grandchildren, etc. as necessary.
-<br><br>
-<b>TODO:</b><br>
-Add relative argument.
-<br><br>
-<b>Returns:</b><br>
-The surface, or self if no surface at the coordinates, or null
- if coordinates are outside self. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
 <span class="currsymbol">focus</span>
 <script type="text/javascript">explorer.outline.addDecl('focus');</script>
 ();
@@ -333,6 +477,24 @@ The surface, or self if no surface at the coordinates, or null
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
+<span class="currsymbol">draw</span>
+<script type="text/javascript">explorer.outline.addDecl('draw');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Draw this Surface and call the Surface's onDraw method if it is not null
+.
+ When finished, the 
+<span class="currsymbol">draw</span>
+<script type="text/javascript">explorer.outline.addDecl('draw');</script>
+ methods of all of this Surface's children are called. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
 <span class="currsymbol">blur</span>
 <script type="text/javascript">explorer.outline.addDecl('blur');</script>
 ();
@@ -348,14 +510,18 @@ The surface, or self if no surface at the coordinates, or null
 <dt><span class="decl">void 
 <span class="currsymbol">keyDown</span>
 <script type="text/javascript">explorer.outline.addDecl('keyDown');</script>
-(byte <span class="funcparam">key</span>);
+(int <span class="funcparam">key</span>, int <span class="funcparam">mod</span> = 0);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Trigger a 
 <span class="currsymbol">keyDown</span>
 <script type="text/javascript">explorer.outline.addDecl('keyDown');</script>
- event and call the onKeyDown callback function if set. 
+ event and call the onKeyDown callback function if set.
+ If the onKeyDown function is not set, call the parent's 
+<span class="currsymbol">keyDown</span>
+<script type="text/javascript">explorer.outline.addDecl('keyDown');</script>
+ function. 
 <br><br>
 
 </dd>
@@ -364,14 +530,18 @@ The surface, or self if no surface at the coordinates, or null
 <dt><span class="decl">void 
 <span class="currsymbol">keyUp</span>
 <script type="text/javascript">explorer.outline.addDecl('keyUp');</script>
-(byte <span class="funcparam">key</span>);
+(int <span class="funcparam">key</span>, int <span class="funcparam">mod</span> = 0);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Trigger a 
 <span class="currsymbol">keyUp</span>
 <script type="text/javascript">explorer.outline.addDecl('keyUp');</script>
- event and call the onKeyUp callback function if set. 
+ event and call the onKeyUp callback function if set.
+ If the onKeyUp function is not set, call the parent's 
+<span class="currsymbol">keyUp</span>
+<script type="text/javascript">explorer.outline.addDecl('keyUp');</script>
+ function.
 <br><br>
 
 </dd>
@@ -387,7 +557,11 @@ The surface, or self if no surface at the coordinates, or null
 <dd>Trigger a 
 <span class="currsymbol">mouseDown</span>
 <script type="text/javascript">explorer.outline.addDecl('mouseDown');</script>
- event and call the onMouseDown callback function if set. 
+ event and call the onMouseDown callback function if set.
+ If the onMouseDown function is not set, call the parent's 
+<span class="currsymbol">mouseDown</span>
+<script type="text/javascript">explorer.outline.addDecl('mouseDown');</script>
+ function.
 <br><br>
 
 </dd>
@@ -403,7 +577,11 @@ The surface, or self if no surface at the coordinates, or null
 <dd>Trigger a 
 <span class="currsymbol">mouseUp</span>
 <script type="text/javascript">explorer.outline.addDecl('mouseUp');</script>
- event and call the onMouseUp callback function if set. 
+ event and call the onMouseUp callback function if set.
+ If the onMouseUp function is not set, call the parent's 
+<span class="currsymbol">mouseUp</span>
+<script type="text/javascript">explorer.outline.addDecl('mouseUp');</script>
+ function.
 <br><br>
 
 </dd>
@@ -467,19 +645,20 @@ The surface, or self if no surface at the coordinates, or null
 <dd>Trigger a 
 <span class="currsymbol">resize</span>
 <script type="text/javascript">explorer.outline.addDecl('resize');</script>
- event and call the onResize callback function if set 
+ event and call the onResize callback function if set.
+ This is called automatically after the 
+<span class="currsymbol">resize</span>
+<script type="text/javascript">explorer.outline.addDecl('resize');</script>
+ occurs. 
 <br><br>
 
 </dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
 </dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
 
+</dd>
 </td></tr>
 				</table>
 			</div>
@@ -487,10 +666,10 @@ The surface, or self if no surface at the coordinates, or null
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -501,9 +680,13 @@ The surface, or self if no surface at the coordinates, or null
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -536,8 +719,6 @@ The surface, or self if no surface at the coordinates, or null
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -593,19 +774,23 @@ The surface, or self if no surface at the coordinates, or null
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

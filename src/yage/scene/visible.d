@@ -28,7 +28,7 @@ import yage.system.input;
  * See_Also:
  * yage.scene.MovableNode
  * yage.scene.Node */
-abstract class VisibleNode : MovableNode
+class VisibleNode : MovableNode
 {	
 	protected bool 	visible = true;
 	protected Vec3f	size;
@@ -45,14 +45,18 @@ abstract class VisibleNode : MovableNode
 		color = Color("white");			
 	}
 
-	/// Construct as a child of parent, a copy of original and recursivly copy all children.
-	this(Node parent, VisibleNode original)
-	{	super(parent, original);
-		visible = original.visible;
-		size = original.size;
-		color = original.color;
+	/**
+	 * Make a duplicate of this node, unattached to any parent Node.
+	 * Params:
+	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 * Returns: The cloned Node. */
+	override VisibleNode clone(bool children=false)
+	{	auto result = cast(VisibleNode)super.clone(children);
+		result.visible = visible; // atomic
+		result.size = size;
+		result.color = color; // atomic
+		return result;
 	}
-
 	
 	/**
 	 * Get / Set the color of the VisibleNode.

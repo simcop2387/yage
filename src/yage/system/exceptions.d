@@ -3,15 +3,23 @@
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
-
 module yage.system.exceptions;
 
-import std.bind;
 import yage.core.parse;
 
-
+/**
+ * This is the default exception type for Yage. */
 class YageException : Exception
-{	this(...)
+{	
+	/**
+	 * Create an Exception with a message, using formatting like writefln().
+	 * 
+	 * Example:
+	 * --------
+	 * throw new YageException("Your egg carton has %d eggs.  No more than %d eggs are supported", 13, 12);
+	 * -------- 
+	 */
+	this(...)
 	{	super(formatString(_arguments, _argptr));
 	}	
 }

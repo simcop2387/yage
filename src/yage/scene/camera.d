@@ -60,22 +60,6 @@ class CameraNode : MovableNode
 		setResolution(xres, yres);
 	}
 
-	/**
-	 * Construct this Node as a copy of another Node and recursively copy all children.
-	 * Params:
-	 * parent = This Node will be a child of parent.
-	 * original = This Node will be an exact copy of original.*/
-	this(Node parent, CameraNode original)
-	{	super(parent, original);
-		xres = original.xres;
-		yres = original.yres;
-		near = original.near;
-		far  = original.far;
-		fov  = original.fov;
-		aspect = original.aspect;
-		threshold = original.threshold;
-	}
-
 	/// Get the number of frames this camera has rendered.
 	int getFrameCount()
 	{	return frame_count;

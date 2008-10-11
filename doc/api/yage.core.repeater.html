@@ -83,6 +83,9 @@ Eric Poggel
 <br><br>
 <b>License:</b><br>
 <a href="lgpl.txt">LGPL</a>
+<br><br>
+
+ See Java's Timer class for better ideas.
  
 <br><br>
 
@@ -93,109 +96,111 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">Repeater</span>
 <script type="text/javascript">explorer.outline.addDecl('Repeater');</script>
-: std.thread.Thread;
+: yage.core.timer.Timer;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>A class to repeatedly call a function at a set inverval, in its own thread.
+<br><br>
+<b>TODO:</b><br>
+update/combine this with setInterval, or inherit from Timer? 
 <br><br>
 
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(void delegate(float f) <span class="funcparam">func</span>);
+<dt><span class="decl">this(bool <span class="funcparam">start</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Call <span class="funcparam">func</span> repeatedly.
- A call to start() is required to start the process.
+<dd>Initialize the Timer
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">start</span></td>
+
+               
+<td><span class="funcparam">start</span> the Timer immediately. </td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">pause</span>
+<script type="text/javascript">explorer.outline.addDecl('pause');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Pause the repeater.
+ This is guaranteed to never 
+<span class="currsymbol">pause</span>
+<script type="text/javascript">explorer.outline.addDecl('pause');</script>
+ in the middle of a call to the repeater's function, but will
+ block until the call finishes.
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">getCallCount</span>
-<script type="text/javascript">explorer.outline.addDecl('getCallCount');</script>
+<dt><span class="decl">synchronized double 
+<span class="currsymbol">getCallTime</span>
+<script type="text/javascript">explorer.outline.addDecl('getCallTime');</script>
 ();
+<br>synchronized void 
+<span class="currsymbol">setCallTime</span>
+<script type="text/javascript">explorer.outline.addDecl('setCallTime');</script>
+(double <span class="funcparam">call_time</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get / set the call time.
+ This will always be within tell() and tell()-frequency unless the repeater is behind in calling its function.
+ Unless the frequency changes, call time can be divided by frequency to get the call count.
+<br><br>
+<b>Returns:</b><br>
+time in seconds. 
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
+<dt><span class="decl">synchronized double 
 <span class="currsymbol">getFrequency</span>
 <script type="text/javascript">explorer.outline.addDecl('getFrequency');</script>
 ();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">real 
-<span class="currsymbol">getStartTime</span>
-<script type="text/javascript">explorer.outline.addDecl('getStartTime');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the amount of time since this repeater was last started.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">start</span>
-<script type="text/javascript">explorer.outline.addDecl('start');</script>
-(float <span class="funcparam">frequency</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Start calling the function defined in the constructor.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">stop</span>
-<script type="text/javascript">explorer.outline.addDecl('stop');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Stop calling the function defined in the constructor.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setCallCount</span>
-<script type="text/javascript">explorer.outline.addDecl('setCallCount');</script>
-(int <span class="funcparam">count</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
+<br>synchronized void 
 <span class="currsymbol">setFrequency</span>
 <script type="text/javascript">explorer.outline.addDecl('setFrequency');</script>
-(float <span class="funcparam">frequency</span>);
+(double <span class="funcparam">frequency</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the <span class="funcparam">frequency</span>
- This also resets the call count and 
+<dd>Get / set the frequency.
+ The frequency defaults to 60hz until set.
+ If the call function is set, it will be called this many times per second.
+<br><br>
+<b>Returns:</b><br>
+time in hertz. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">synchronized void delegate(double f) 
+<span class="currsymbol">getFunction</span>
+<script type="text/javascript">explorer.outline.addDecl('getFunction');</script>
+();
+<br>synchronized void 
+<span class="currsymbol">setFunction</span>
+<script type="text/javascript">explorer.outline.addDecl('setFunction');</script>
+(void delegate(double f) <span class="funcparam">func</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get / set the function to call. 
 <br><br>
 
 </dd>
@@ -215,10 +220,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:26 2008
 
 	</div>
 	
@@ -229,9 +234,13 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -264,8 +273,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -321,19 +328,23 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

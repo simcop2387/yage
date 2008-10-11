@@ -112,66 +112,92 @@ All color values are floating point in the range from 0 to 1 and in the order
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Node <span class="funcparam">parent</span>);
+<dt><span class="decl">enum 
+<span class="currsymbol">Type</span>
+<script type="text/javascript">explorer.outline.addDecl('Type');</script>
+;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct this Node as the child of <span class="funcparam">parent</span>.
+<dd>Specifies the type of light.
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">DIRECTIONAL</span>
+<script type="text/javascript">explorer.outline.addDecl('DIRECTIONAL');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>A light that shines in one direction through the entire scene
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Node <span class="funcparam">parent</span>, LightNode <span class="funcparam">original</span>);
+<dt><span class="decl">
+<span class="currsymbol">POINT</span>
+<script type="text/javascript">explorer.outline.addDecl('POINT');</script>
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct this Node as a copy of another Node and recursively copy all children.
+<dd>A light that shines outward in all directions
 <br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">Node <span class="funcparam">parent</span></td>
 
-               
-<td>This Node will be a child of <span class="funcparam">parent</span>.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">LightNode <span class="funcparam">original</span></td>
+</dd>
 
-               
-<td>This Node will be an exact copy of <span class="funcparam">original</span>.</td></tr>
-</table><br>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">SPOT</span>
+<script type="text/javascript">explorer.outline.addDecl('SPOT');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>A light that emits light outward from a point in a single direction
+<br><br>
+
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Constructor. 
+<br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">LightNode 
-<span class="currsymbol">setParent</span>
-<script type="text/javascript">explorer.outline.addDecl('setParent');</script>
-(Node <span class="funcparam">parent</span>);
+<span class="currsymbol">clone</span>
+<script type="text/javascript">explorer.outline.addDecl('clone');</script>
+(bool <span class="funcparam">children</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Overridden from Node's 
-<span class="currsymbol">setParent</span>
-<script type="text/javascript">explorer.outline.addDecl('setParent');</script>
-() to ensure that the Scene's list of lights
- is updated if the Light is moved from one scene to another. 
+<dd>Make a duplicate of this node, unattached to any parent Node.
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">children</span></td>
 
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">remove</span>
-<script type="text/javascript">explorer.outline.addDecl('remove');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Overridden to 
-<span class="currsymbol">remove</span>
-<script type="text/javascript">explorer.outline.addDecl('remove');</script>
- the light from the Scene's arary of lights
+               
+<td>recursively 
+<span class="currsymbol">clone</span>
+<script type="text/javascript">explorer.outline.addDecl('clone');</script>
+ <span class="funcparam">children</span> (and descendants) and add them as <span class="funcparam">children</span> to the new Node.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+The cloned Node. 
 <br><br>
 
 </dd>
@@ -328,10 +354,10 @@ All color values are floating point in the range from 0 to 1 and in the order
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return the RGB brightness of the given <span class="funcparam">point</span>, as influenced only by this light, using
- OpenGl's fixed-function, traditional lighting calculations.  The diffuse and ambient values
- of the light are taken into effect, while the specular is not, since it depends on the
- viewing angle of the camera.
+<dd>Return the RGB brightness this light contributes to a given <span class="funcparam">point</span> in 3D space, relative to this light's scene.
+ OpenGl's fixed-function, traditional lighting calculations are used.
+ The diffuse and ambient values of the light are taken into effect,
+ while the specular is not, since it depends on the viewing angle of the camera.
  Also note that this does not take into account shadows or anything of that nature.
 <br><br>
 <b>Params:</b><br>
@@ -345,12 +371,28 @@ All color values are floating point in the range from 0 to 1 and in the order
 
                
 <td>For spotlights, setting a <span class="funcparam">margin</span> cause this function to return brightest <span class="funcparam">point</span> inside
- of that radius, instead of the default of a single <span class="funcparam">point</span>.
- This is used internally for nodes that have a spotlight shine on one corner of them
- but not at all at their center.</td></tr>
+         of that radius, instead of the default of a single <span class="funcparam">point</span>.
+         This is used internally for nodes that have a spotlight shine on one corner of them
+         but not at all at their center.</td></tr>
 </table><br>
 <b>Returns:</b><br>
 Color.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">remove</span>
+<script type="text/javascript">explorer.outline.addDecl('remove');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Overridden to 
+<span class="currsymbol">remove</span>
+<script type="text/javascript">explorer.outline.addDecl('remove');</script>
+ the light from the Scene's arary of lights
 <br><br>
 
 </dd>
@@ -370,10 +412,10 @@ Color.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:41 2008
+		on Sat Oct 11 00:16:27 2008
 
 	</div>
 	
@@ -384,9 +426,13 @@ Color.
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -419,8 +465,6 @@ Color.
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -476,19 +520,23 @@ Color.
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

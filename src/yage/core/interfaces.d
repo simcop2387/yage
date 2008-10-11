@@ -1,16 +1,20 @@
 /**
- * 
+ * Copyright:  (c) 2005-2008 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl.txt">LGPL</a>
  */
 module yage.core.interfaces;
 
+/**
+ * An interface for anything that implements timekeeping functions. */
 interface ITemporal
 {	
-	void play();
-	void pause();
-	bool paused();
-	void stop();
-	void seek(double seconds);
-	double tell();
+	void play(); ///
+	void pause(); ///
+	bool paused(); ///
+	void stop(); ///
+	void seek(double seconds); ///
+	double tell(); ///
 	
 	/*
 	Vec2f getRange(float min, float max)
@@ -23,16 +27,6 @@ interface ITemporal
 	
 	
 	/*
-	// Alternate approach
-	void setTime(float amount); // get / set the time (seek/tell)
-	float getTime()	
-	void setPlaying(bool playing) // get / set whether the timer is paused.
-	bool getPlaying()
-	
-	Vec2f loop(float min=0, float max=float.infinity);
-	float stopAfter(float time=float.infinity);
-	void delegate() onStopAfter; // Can this be implemented w/o setTimeout?	
-	
 	// Itemporal will be implemented by:	
 	Timer
 	Repeater (loop makes no sense)
@@ -42,3 +36,10 @@ interface ITemporal
 	AnimatedTexture
 	*/
 }
+
+/**
+ * An interface for anything that can be cloned via a clone() method. */
+interface ICloneable
+{	typeof(this) clone(); ///
+}
+ 

@@ -51,18 +51,18 @@ class TerrainNode : VisibleNode
 		model.setMeshes([new Mesh()]);		
 	}
 
-	/**
+	/*
 	 * Construct this TerrainNode as a copy of another TerrainNode and recursively copy all children.
 	 * Params:
 	 * parent = This TerrainNode will be a child of parent.
-	 * original = This TerrainNode will be an exact copy of original.*/
+	 * original = This TerrainNode will be an exact copy of original.
 	this (Node parent, TerrainNode original)
 	{	super(parent, original);
 
 		model = new Model(original.model);
 		radius = original.radius;
 		width = original.width;
-	}
+	}*/
 
 	///
 	Material getMaterial()

@@ -93,7 +93,7 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">SoundNode</span>
 <script type="text/javascript">explorer.outline.addDecl('SoundNode');</script>
-: yage.scene.movable.MovableNode;
+: yage.scene.movable.MovableNode, yage.core.interfaces.ITemporal;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -104,34 +104,38 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Node <span class="funcparam">parent</span>);
+<dt><span class="decl">this();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct this Node as a child <span class="funcparam">parent</span>.
+<dd>Construct. 
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this(Node <span class="funcparam">parent</span>, SoundNode <span class="funcparam">original</span>);
+<dt><span class="decl">SoundNode 
+<span class="currsymbol">clone</span>
+<script type="text/javascript">explorer.outline.addDecl('clone');</script>
+(bool <span class="funcparam">children</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Construct this Node as a copy of another Node and recursively copy all children.
+<dd>Make a duplicate of this node, unattached to any parent Node.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
-<td nowrap valign="top" style="padding-right: 8px">Node <span class="funcparam">parent</span></td>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">children</span></td>
 
                
-<td>This Node will be a child of <span class="funcparam">parent</span>.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">SoundNode <span class="funcparam">original</span></td>
-
-               
-<td>This Node will be an exact copy of <span class="funcparam">original</span>.</td></tr>
+<td>recursively 
+<span class="currsymbol">clone</span>
+<script type="text/javascript">explorer.outline.addDecl('clone');</script>
+ <span class="funcparam">children</span> (and descendants) and add them as <span class="funcparam">children</span> to the new Node.</td></tr>
 </table><br>
+<b>Returns:</b><br>
+The cloned Node. 
+<br><br>
 
 </dd>
 
@@ -320,32 +324,6 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">getPaused</span>
-<script type="text/javascript">explorer.outline.addDecl('getPaused');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Is the sound currently paused (or stopped?)
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setPaused</span>
-<script type="text/javascript">explorer.outline.addDecl('setPaused');</script>
-(bool <span class="funcparam">paused</span> = true);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set whether the playback of the SoundNode is <span class="funcparam">paused</span>.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">play</span>
 <script type="text/javascript">explorer.outline.addDecl('play');</script>
@@ -353,8 +331,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Alias of setPaused(false
-);
+<dd>Begin / resume playback of the sound at the last position.
 <br><br>
 
 </dd>
@@ -367,8 +344,23 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Alias of setPaused(true
-);
+<dd>Pause playback of the sound.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">paused</span>
+<script type="text/javascript">explorer.outline.addDecl('paused');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Is the sound currently 
+<span class="currsymbol">paused</span>
+<script type="text/javascript">explorer.outline.addDecl('paused');</script>
+ (or stopped?)
 <br><br>
 
 </dd>
@@ -382,10 +374,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Seek to the position in the track.  Seek has a precision of .05 <span class="funcparam">seconds</span>.
-  
-<span class="currsymbol">seek</span>
-<script type="text/javascript">explorer.outline.addDecl('seek');</script>
-() throws an exception if the value is outside the range of the Sound. 
+ @throws Exception if the value is outside the range of the Sound. 
 <br><br>
 
 </dd>
@@ -414,6 +403,17 @@ Eric Poggel
 <dd>Stop the SoundNode from playing and rewind it to the beginning.
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -465,14 +465,14 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setTransformDirty</span>
-<script type="text/javascript">explorer.outline.addDecl('setTransformDirty');</script>
+<dt><span class="decl">protected void 
+<span class="currsymbol">calcTransform</span>
+<script type="text/javascript">explorer.outline.addDecl('calcTransform');</script>
 ();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Overridden so that the position of the sound is updated in OpenAL when this node is moved.
+<dd>Update sound position and velocity as soon as a new position is calculated. 
 <br><br>
 
 </dd>
@@ -492,10 +492,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:41 2008
+		on Sat Oct 11 00:16:27 2008
 
 	</div>
 	
@@ -506,9 +506,13 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -541,8 +545,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -598,19 +600,23 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

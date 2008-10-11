@@ -19,19 +19,15 @@ class SpriteNode : VisibleNode
 {
 	protected Material material;
 
-	/// Construct
-	this()
-	{		
-	}
-
 	/**
-	 * Construct this Node as a copy of another Node and recursively copy all children.
+	 * Make a duplicate of this node, unattached to any parent Node.
 	 * Params:
-	 * parent = This Node will be a child of parent.
-	 * original = This Node will be an exact copy of original.*/
-	this (Node parent, SpriteNode original)
-	{	super(parent, original);
-		material = original.material;
+	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 * Returns: The cloned Node. */
+	override SpriteNode clone(bool children=false)
+	{	auto result = cast(SpriteNode)super.clone(children);
+		result.material = material;
+		return result;
 	}
 
 	/// Return the Material assigned to the SpriteNode.

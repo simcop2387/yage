@@ -9,16 +9,18 @@
 
 module demo2.main;
 
+import std.c.time;
 import std.string;
 import std.stdio;
-import std.c.time;
-import derelict.sdl.sdl;
-import yage.all;
 
 import derelict.opengl.gl;
 import derelict.opengl.glext;
+import derelict.sdl.sdl;
+
+import yage.all;
 
 import demo1.ship;
+import demo1.misc;
 
 // Current program entry point.  This may change in the future.
 int main()
@@ -27,24 +29,11 @@ int main()
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
 	//Device.init(1440, 900, 32, true);
-	
-	/*
-	// test
-	auto t = new MovableNode();
-	t.setPosition(Vec3f(0, 1, 0));
-	auto r = t.addChild(new MovableNode());
-	r.setPosition(Vec3f(0, 2, 0));
-	writefln(r.getAbsolutePosition());
-	return 1;
-	*/
 
 	// Paths
 	Resource.addPath("../res/");
-	Resource.addPath("../res2/");
 	Resource.addPath("../res/shader");
-
-	new Material("fx/smoke.xml");
-	new Material("fx/flare1.xml");
+	Resource.addPath("../res2/");	
 
 	// Create and start a Scene
 	Log.write("Starting update loop.");
@@ -59,10 +48,10 @@ int main()
 	scene.setGlobalAmbient(Color("555555"));
 
 	// Ship
-	Ship ship = scene.addChild(new Ship());
+	Ship ship = scene.addChild(new Ship());	
 	ship.setPosition(Vec3f(0, 50, -950));
 	ship.getCameraSpot().setPosition(Vec3f(0, 1000, 3000));
-
+	
 	// Camera
 	CameraNode camera = ship.getCameraSpot().addChild(new CameraNode());
 	ship.getCameraSpot().addChild(camera);
@@ -74,33 +63,30 @@ int main()
 	view.style.set("bottom: 0; right: 0");	
 	Device.setSurface(view);
 	
-	void onMouseDown(Surface self, byte buttons, Vec2i coordinates){
-		self.raise();
-		self.focus();
-	}
-	void onMouseUp(Surface self, byte buttons, Vec2i coordinates){
-		self.blur();
-	}
-	void onMouseMove(Surface self, byte buttons, Vec2i diff){
-		if(buttons == 1) 
-			self.move(cast(Vec2f)diff, true);
-	}
-	void onMouseOver(Surface self, byte buttons, Vec2i coordinates){
-		self.style.set("background-material: url('gui/skin/clear3.png')");
-	}
-	void onMouseOut(Surface self, byte buttons, Vec2i coordinates){
-		self.style.set("background-material: url('gui/skin/clear2.png')");
-	}
 
+	// Make a draggable window to show some useful info.
 	auto window = view.addChild(new Surface());
 	window.style.set("top: 0; right: 0; width: 150; height: 65; background-position: 5px 5px; color: black; " ~ 
 		"background-repeat: nineslice; background-material: url('gui/skin/clear2.png'); " ~
 		"font-family: url('gui/font/Vera.ttf'); font-size: 11px");
-	window.onMouseDown = &onMouseDown;
-	window.onMouseMove = &onMouseMove;
-	window.onMouseUp = &onMouseUp;
-	window.onMouseOver = &onMouseOver;
-	window.onMouseOut = &onMouseOut;
+	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
+		self.raise();
+		self.focus();
+	};
+	window.onMouseMove = (Surface self, byte buttons, Vec2i diff){
+		if(buttons == 1) 
+			self.move(cast(Vec2f)diff, true);
+	};
+	window.onMouseUp = (Surface self, byte buttons, Vec2i coordinates){
+		self.blur();
+	};
+	window.onMouseOver = (Surface self, byte buttons, Vec2i coordinates){
+		self.style.set("background-material: url('gui/skin/clear3.png')");
+	};
+	window.onMouseOut = (Surface self, byte buttons, Vec2i coordinates){
+		self.style.set("background-material: url('gui/skin/clear2.png')");
+	};
+	
 	
 	// Events for main surface.
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
@@ -108,7 +94,7 @@ int main()
 			Device.exit(0);
 		
 		if(key == SDLK_c){
-			std.gc.fullCollect(); 
+			std.gc.fullCollect();
 			writefln("garbage collected");
 		}
 	};
@@ -124,7 +110,6 @@ int main()
 		camera.setResolution(cast(int)self.width, cast(int)self.height);
 	};
 	
-		
 	// Music
 	auto music = new SoundNode();
 	camera.addChild(music);
@@ -151,12 +136,13 @@ int main()
 	
 	// Asteroids
 	asteroidBelt(800, 1400, planet);
+
 	
 	// Add to the scene's update loop
 	void update(Node self){
 		ship.getSpring().update(1/60.0f);
 	}
-	scene.onUpdate(&update);
+	scene.onUpdate(&update);	
 	
 	// Rendering / Input Loop
 	int fps = 0;

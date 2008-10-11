@@ -88,145 +88,13 @@ Eric Poggel
  Constants used as parameters to various functions throughout the engine.
 <br><br>
 <b>TODO:</b><br>
-Define these as enums in the places where they are used?
+Eliminate this module and define these as enums in the places where they are used,
  
 <br><br>
 
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DEVICE_FBO</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_FBO');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Hardware support for rendering directly to a texture (Frame Buffer Object)
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DEVICE_MULTITEXTURE</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_MULTITEXTURE');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Hardware support for using multiple textures in a single rendering pass
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DEVICE_NON_2_TEXTURE</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_NON_2_TEXTURE');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Hardware support for textures of arbitrary size
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DEVICE_SHADER</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_SHADER');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Hardware support for openGl vertex and fragment shaders
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DEVICE_VBO</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_VBO');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Hardware support for caching vertex data in video memory (Vertex Buffer Object)
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DEVICE_MAX_LIGHTS</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_MAX_LIGHTS');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Maximum number of lights that can be used at one time
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DEVICE_MAX_TEXTURE_SIZE</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_MAX_TEXTURE_SIZE');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Maximum allowed size for a texture
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DEVICE_MAX_TEXTURES</span>
-<script type="text/javascript">explorer.outline.addDecl('DEVICE_MAX_TEXTURES');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Maximum number of textures that can be used in multitexturing
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">LIGHT_DIRECTIONAL</span>
-<script type="text/javascript">explorer.outline.addDecl('LIGHT_DIRECTIONAL');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>A light that shines in one direction through the entire scene
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">LIGHT_POINT</span>
-<script type="text/javascript">explorer.outline.addDecl('LIGHT_POINT');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>A light that shines outward in all directions
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">LIGHT_SPOT</span>
-<script type="text/javascript">explorer.outline.addDecl('LIGHT_SPOT');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>A light that emits light outward from a point in a single direction
-<br><br>
-
-</dd>
-
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">
 <span class="currsymbol">TEXTURE_FILTER_DEFAULT</span>
@@ -385,10 +253,10 @@ Define these as enums in the places where they are used?
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:41 2008
+		on Sat Oct 11 00:16:27 2008
 
 	</div>
 	
@@ -399,9 +267,13 @@ Define these as enums in the places where they are used?
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -434,8 +306,6 @@ Define these as enums in the places where they are used?
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -491,19 +361,23 @@ Define these as enums in the places where they are used?
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

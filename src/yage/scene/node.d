@@ -7,27 +7,22 @@
 module yage.scene.node;
 
 import std.stdio;
-import std.traits;
-import std.bind;
 import yage.core.all;
 import yage.core.tree;
-import yage.scene.visible;
 import yage.scene.scene;
-import yage.scene.movable;
 import yage.scene.all;
-import yage.scene.light;
-import yage.scene.node;
 
 /**
- * All other Nodes extend this class.
- * Methods for modifying the hierarchy of Nodes (parents, children) are defined here.
- * 
+ * Nodes are used for building scene graphs in Yage.
  * Every node has an array of child nodes as well as a parent node, with
  * the exception of a Scene that exists at the top of the scene graph and has no parent.  
  * When one node is moved or rotated, all of its child nodes move and rotate as well.
  * Likewise, setting the position or rotation of a node does so relative to its parent.  
  * Rendering is done recursively from the Scene down through every child node.  
- * Likewise, updating of position and rotation occurs recusively from Scene's update() method.
+ * Likewise, updating of position and rotation occurs recursively from Scene's update() method.
+ * 
+ * All other Nodes extend this class.
+ * Methods for modifying the hierarchy of Nodes (parents, children) are defined here.
  *  
  * Example:
  * --------------------------------
@@ -53,7 +48,7 @@ abstract class Node : Tree!(Node)
 	
 	protected Matrix	transform;				// The position and rotation of this node relative to its parent
 	protected Matrix	transform_abs;			// The position and rotation of this node in worldspace coordinates
-	protected bool		transform_dirty=true;	// The absolute transformation matrix needs to be recalculated.
+	public bool			transform_dirty=true;	// The absolute transformation matrix needs to be recalculated.
 
 	protected Vec3f		linear_velocity;
 	protected Vec3f		angular_velocity;
@@ -84,80 +79,55 @@ abstract class Node : Tree!(Node)
 	 * Overridden from Tree to mark transform dirty. 
 	 * Returns: The child parameter.  Templating is used to ensure the return type is exactly the same.*/
 	T addChild(T : Node)(T child)
-	{	// Recursively set secene and update scene's list of lights for all children
-		void merge(Node node)
-		{	if (cast(LightNode)node)
-			{	if (node.scene)
-					node.scene.removeLight(cast(LightNode)node);
-				if (scene)
-					scene.addLight(cast(LightNode)node);
-			}
-			node.scene = scene;			
-			foreach (c; node.children)
-				merge(c);
-		}
-		
-		merge(child);
+	{			
 		auto old_parent = child.getParent();
 		super.addChild(child);
-		setTransformDirty(); // seems like this should be child.setTransformDirty(), but that breaks things.
-		child.parentChange(old_parent);
+		child.ancestorChange(old_parent); // handles 
 		return child;
 	}
+
 	
-	T clone(T : typeof(this))()
+	/**
+	 * Make a duplicate of this node, unattached to any parent Node.
+	 * Params:
+	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 * Returns: The cloned Node. */
+	Node clone(bool children=false)
 	{
-		T result = new T();		
-		return result;		
-	}
-
-	/// Construct as a child of parent, a copy of original and recursivly copy all children.
-	this(Node parent, Node original)
-	{	this();
-		parent.addChild(this);
-
-		lifetime = original.lifetime;
-		on_update = original.on_update;
-
-		// From Node
-		transform = original.transform;
-		linear_velocity = original.linear_velocity;
-		angular_velocity = original.angular_velocity;
-		cache[0] = original.cache[0];
-		cache[1] = original.cache[1];
-		cache[2] = original.cache[2];
-
-		// Also recursively copy every child
-		foreach (inout Node c; original.children)
-		{	// Scene and Node are never children
-			// Is there a better way to do this?
-			switch (c.classinfo.name)
-			{	case "yage.scene.camera.CameraNode": new CameraNode(this, cast(CameraNode)c); break;
-				case "yage.scene.graph.GraphNode": new GraphNode(this, cast(GraphNode)c); break;
-				case "yage.scene.light.LightNode": new LightNode(this, cast(LightNode)c); break;
-				case "yage.scene.model.ModelNode": new ModelNode(this, cast(ModelNode)c); break;
-				case "yage.scene.sound.SoundNode": new SoundNode(this, cast(SoundNode)c); break;
-				case "yage.scene.sprite.SpriteNode": new SpriteNode(this, cast(SpriteNode)c); break;
-				case "yage.scene.terrain.TerrainNode": new TerrainNode(this, cast(TerrainNode)c); break;				
-				default:
-			}
-			/*
-			new Object.factory(c.classinfo.name);
-			auto ci = ClassInfo.find(classname);
-			if (ci)
-			{
-			    return ci.create();
-			}
-			return null;
-			*/
+		Node result = cast(Node)this.classinfo.create();		
+		
+		// Since "this" may have its properties changed by other calls during this process.
+		synchronized(this) 
+		{	result.lifetime = lifetime;
+			result.transform = transform;
+			result.linear_velocity = linear_velocity;
+			result.angular_velocity = angular_velocity;
+			result.linear_velocity_abs = linear_velocity_abs;
+			result.angular_velocity_abs = angular_velocity_abs;
+			result.cache[0..3] = cache[0..3];
+			
+			if (children)
+				foreach (c; this.children)
+					result.addChild(c.clone());
 		}
+		
+		return result;
+	}
+	unittest
+	{	// Test child cloning
+		auto a = new VisibleNode();
+		a.addChild(new VisibleNode());
+		auto b = a.clone(true);
+		assert(b.getChildren().length == 1);
+		assert(b.getChildren()[0] != a.getChildren()[0]); // should not be equal, should've been cloned.
 	}
 	
 
 	/**
-	 * Get / set the lifeime of a VisibleNode (in seconds).
-	 * The default value is float.infinity, but a lower number will cause the VisibleNode to be removed
-	 * from the scene graph after that amount of time, as its lifetime is decreased with every Scene update.*/	
+	 * Get / set the lifeime of a Node (in seconds).
+	 * The default lifetime is float.infinity.  A lower number will cause the Node to be removed
+	 * from the scene graph after that amount of time.  
+	 * It's lifetime is decreased every time update() is called (usually by the Node's scene).*/	
 	float getLifetime() 
 	{	return lifetime; 
 	}
@@ -165,16 +135,9 @@ abstract class Node : Tree!(Node)
 	{	lifetime = seconds; 
 	}
 	
-	
-
-	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a sceneless node tree.
+	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a scene-less node tree.
 	Scene getScene()
 	{	return scene;
-	
-		// properly handles node trees with no parent scene.
-		//if (parent)
-		//	return parent.getScene();
-		//return null;		
 	}
 
 	/// Get the type of this Node as a string; i.e. "yage.scene.visible.ModelNode".
@@ -182,7 +145,7 @@ abstract class Node : Tree!(Node)
 	{	return this.classinfo.name;
 	}
 	
-	/// Always returns false unless overridden.
+	/// Always returns false for Nodes but can be true for subtypes..
 	bool getVisible()
 	{	return false;		
 	}
@@ -201,8 +164,7 @@ abstract class Node : Tree!(Node)
 	 * Params:
 	 * on_update = the function that will be called.  Use null as an argument to clear
 	 * the function.
-	 * Bugs:
-	 * Certain Node methods cause access violations.  Perhaps this is a dmd bug?
+	 * 
 	 * Example:
 	 * --------------------------------
 	 * SpriteNode s = new SpriteNode(scene);
@@ -255,7 +217,7 @@ abstract class Node : Tree!(Node)
 	void setTransformDirty()
 	{	if (!transform_dirty)
 		{	transform_dirty=true;
-			foreach(Node c; children)
+			foreach(c; children)
 				c.setTransformDirty();
 	}	}
 	/*
@@ -266,22 +228,38 @@ abstract class Node : Tree!(Node)
 	protected void calcTransform()
 	{
 		if (transform_dirty)
-		{	synchronized(this)			
+		{	synchronized(this) // this function is called very frequently, how does this affect performance?
 			{	if (parent)
 				{	synchronized(this.parent)
 					{	parent.calcTransform();
-						transform_abs = transform * parent.transform_abs;
-						transform_dirty = false;
+						transform_abs = transform * parent.transform_abs;						
 				}	}
 				else
 					transform_abs = transform;
+				transform_dirty = false;
 		}	}
+	}
+	unittest
+	{	// Ensure absolute position is calculated properly in a node heirarchy.
+		MovableNode a = new MovableNode();
+		a.setPosition(Vec3f(0, 1, 0));
+		MovableNode b = a.addChild(new MovableNode());
+		b.setPosition(Vec3f(0, 2, 0));		
+		assert(b.getAbsolutePosition() == Vec3f(0, 3, 0));
 	}
 
 	/*
-	 * Called after a node's parent changes. */
-	protected void parentChange(Node old_parent)
-	{
-		
+	 * Called after any of a node's ancestors have their parent changed. 
+	 * This function also sets transform_dirty.  
+	 * Yes, this is a side-effect,  but it increases performance in cases where both need to be called, 
+	 * since the transformation matrix should always be dirty after an ancestor change. 
+	 * @param old_ancestor The ancestor that was previously one above the top node of the tree that had its parent changed. */
+	protected void ancestorChange(Node old_ancestor)
+	{	synchronized(this)
+		{	transform_dirty = true;
+			scene = parent.scene;
+			foreach(c; children)
+				c.ancestorChange(old_ancestor);
+		}
 	}
 }

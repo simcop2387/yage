@@ -50,6 +50,7 @@ class Tree(T)
 		}
 		return child;	
 	}
+
 	
 	/// Get an array of this element's children
 	T[] getChildren()

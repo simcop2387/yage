@@ -36,13 +36,6 @@ abstract class Log
 	}
 	*/
 
-	static void credits()
-	{	writefln(
-			"The Yage Game Engine uses the following software:\n" ~
-			" * Simple DirectMedia Layer, which is available under the terms of the LGPL.\n"
-
-		);
-	}
 	
 	/**
 	 * Set the types of messages that will be logged.

@@ -15,10 +15,9 @@ import yage.resource.material;
 import yage.scene.node;
 import yage.scene.movable;
 import yage.scene.scene;
-import yage.system.constant;
 import yage.system.probe;
 import yage.system.render;
-import yage.scene.camera: CameraNode;
+import yage.scene.camera;
 
 /**
  * LightNodes are Nodes that emit light.
@@ -32,8 +31,15 @@ import yage.scene.camera: CameraNode;
  * (1, .5, 0, 0) is orange, since it is 100% red and 50% green.*/
 class LightNode : MovableNode
 {
+	/// Specifies the type of light.
+	enum Type
+	{	DIRECTIONAL,		/// A light that shines in one direction through the entire scene
+		POINT,				/// A light that shines outward in all directions
+		SPOT,				/// A light that emits light outward from a point in a single direction
+	}
+	
 	protected float	quad_attenuation	= 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
- 	protected int type 			= LIGHT_POINT;
+ 	protected int type 					= Type.POINT;
 
 	protected Color	ambient;			// The RGBA ambient color of the light, defaults to black.
 	protected Color	diffuse;			// The RGBA diffuse color of the light, defaults to 100% white.
@@ -41,7 +47,7 @@ class LightNode : MovableNode
 	protected float	spot_angle = 45.0;	// If the light type is SPOT, this sets the angle of the cone of light emitted.
 	protected float	spot_exponent = 0;	// If the light type is SPOT, this sets the fadeoff of the light.
 
-	package float intensity;			// Used internally and temporarily to sort lights by intensity for each node.
+	package float intensity;			// Used internally as a temp variable to sort lights by intensity for each node.
 
 	/**
 	 * Constructor. */
@@ -51,19 +57,23 @@ class LightNode : MovableNode
 	}
 	
 	/**
-	 * Construct this Node as a copy of another Node and recursively copy all children.
+	 * Make a duplicate of this node, unattached to any parent Node.
 	 * Params:
-	 * parent = This Node will be a child of parent.
-	 * original = This Node will be an exact copy of original.*/
-	this (Node parent, LightNode original)
-	{	super(parent, original);
-		ambient = original.ambient;
-		diffuse = original.diffuse;
-		specular = original.specular;
-		spot_angle = original.spot_angle;
-		spot_exponent = original.spot_exponent;
-		quad_attenuation = original.quad_attenuation;
-		type = original.type;
+	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 * Returns: The cloned Node. */
+	override LightNode clone(bool children=false)
+	{	auto result = cast(LightNode)super.clone(children);
+		
+		// All of these assignments are atomic.
+		result.quad_attenuation = quad_attenuation;
+		result.type = type;
+		result.ambient = ambient;
+		result.diffuse = diffuse;
+		result.specular = specular;
+		result.spot_angle = spot_angle;
+		result.spot_exponent = spot_exponent;
+		
+		return result;
 	}
 
 	/// Get / set the ambient color of the light.
@@ -141,23 +151,23 @@ class LightNode : MovableNode
 
 
 	/**
-	 * Return the RGB brightness of the given point, as influenced only by this light, using
-	 * OpenGl's fixed-function, traditional lighting calculations.  The diffuse and ambient values
-	 * of the light are taken into effect, while the specular is not, since it depends on the
-	 * viewing angle of the camera.
+	 * Return the RGB brightness this light contributes to a given point in 3D space, relative to this light's scene.
+	 * OpenGl's fixed-function, traditional lighting calculations are used.
+	 * The diffuse and ambient values of the light are taken into effect, 
+	 * while the specular is not, since it depends on the viewing angle of the camera.
 	 * Also note that this does not take into account shadows or anything of that nature.
 	 * Params:
-	 * point = 3D coordinates of the point to be evaluated.
-	 * margin = For spotlights, setting a margin cause this function to return brightest point inside
-	 * of that radius, instead of the default of a single point.  
-	 * This is used internally for nodes that have a spotlight shine on one corner of them 
-	 * but not at all at their center.
+	 *     point = 3D coordinates of the point to be evaluated.
+	 *     margin = For spotlights, setting a margin cause this function to return brightest point inside
+	 *         of that radius, instead of the default of a single point.  
+	 *         This is used internally for nodes that have a spotlight shine on one corner of them 
+	 *         but not at all at their center.
 	 * Returns: Color.*/
 	Color getBrightness(Vec3f point, float margin=0.0)
 	{
 		// Directional lights are easy, since they don't depend on which way the light points
 		// or how far away the light is.
-		if (type==LIGHT_DIRECTIONAL)
+		if (type==Type.DIRECTIONAL)
 			return Color(ambient.r+diffuse.r, ambient.g+diffuse.g, ambient.b+diffuse.b);
 
 		// light_direction is vector from light to point
@@ -167,7 +177,7 @@ class LightNode : MovableNode
 		float intensity = 1/(quad_attenuation*d2);	// quadratic attenuation.
 
 		bool add_ambient = true;	// Only if this node is in the spotlight
-		if (type==LIGHT_SPOT)
+		if (type==Type.SPOT)
 		{
 			float d = sqrt(d2);	// distance
 			if (d==0) d=1;
@@ -212,13 +222,13 @@ class LightNode : MovableNode
 		getAbsoluteTransform();
 		Vec4f pos;
 		pos.v[0..3] = transform_abs.v[12..15];
-		pos.v[3] = type==LIGHT_DIRECTIONAL ? 0 : 1;
+		pos.v[3] = type==Type.DIRECTIONAL ? 0 : 1;
 		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
 
 		// Spotlight settings
-		float angle = type == LIGHT_SPOT ? spot_angle : 180;
+		float angle = type == Type.SPOT ? spot_angle : 180;
 		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angle);
-		if (type==LIGHT_SPOT)
+		if (type==Type.SPOT)
 		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, spot_exponent);
 			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
 			// rotated by the node's rotation.  This is opposite the default direction of cameras
@@ -245,4 +255,16 @@ class LightNode : MovableNode
 		super.remove();
 	}
 
+	/*
+	 * This should be protected, but making it anything but public causes it not to be called.
+	 * Most likely a D bug. */
+	override public void ancestorChange(Node old_ancestor)
+	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
+		
+		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
+		if (old_scene)
+			old_ancestor.scene.removeLight(this);
+		if (scene && scene != old_scene)
+			scene.addLight(this);
+	}
 }

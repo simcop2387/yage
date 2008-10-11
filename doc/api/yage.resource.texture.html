@@ -197,32 +197,21 @@ the TEXTURE_FILTER_* constants in yage.system.constant
 <span class="currsymbol">position</span>
 <script type="text/javascript">explorer.outline.addDecl('position');</script>
 ;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
+<br>float 
 <span class="currsymbol">rotation</span>
 <script type="text/javascript">explorer.outline.addDecl('rotation');</script>
 ;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec2f 
+<br>Vec2f 
 <span class="currsymbol">scale</span>
 <script type="text/javascript">explorer.outline.addDecl('scale');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd><b>TODO:</b><br>
+Replace with texture matrix?
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -233,16 +222,14 @@ the TEXTURE_FILTER_* constants in yage.system.constant
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A pointer to the actual GPUTexture used.
-<br><br>
-
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static Texture 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
-(GPUTexture <span class="funcparam">texture</span>, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 11, Vec!(2,float) <span class="funcparam">position</span> = zero, float <span class="funcparam">rotation</span> = cast(float)0, Vec!(2,float) <span class="funcparam">scale</span> = one);
+(GPUTexture <span class="funcparam">texture</span>, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 0, Vec!(2,float) <span class="funcparam">position</span> = zero, float <span class="funcparam">rotation</span> = cast(float)0, Vec!(2,float) <span class="funcparam">scale</span> = one);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -309,7 +296,7 @@ the TEXTURE_FILTER_* constants in yage.system.constant
 Also, there's no need to be concerned about making
  texture dimensions a power of two, as they're automatically resized up to
  the next highest supported size if the non_power_of_two OpenGL extension
- isn't supported in hardware. 
+ isn't supported in hardware.
 <br><br>
 
 
@@ -325,7 +312,7 @@ Also, there's no need to be concerned about making
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">this(char[] <span class="funcparam">filename</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true);
-<br>this(Image <span class="funcparam">image</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true);
+<br>this(Image <span class="funcparam">image</span>, bool <span class="funcparam">compress</span> = true, bool <span class="funcparam">mipmap</span> = true, char[] <span class="funcparam">source_name</span> = "");
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -487,10 +474,10 @@ yage.system.constant
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2007 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Jul 13 22:15:40 2008
+		on Sat Oct 11 00:16:27 2008
 
 	</div>
 	
@@ -501,9 +488,13 @@ yage.system.constant
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
+	explorer.packageExplorer.addModule("yage.core.async");
+
 	explorer.packageExplorer.addModule("yage.core.color");
 
 	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
 
 	explorer.packageExplorer.addModule("yage.core.math");
 
@@ -536,8 +527,6 @@ yage.system.constant
 	explorer.packageExplorer.addModule("yage.gui.surface");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
-
-	explorer.packageExplorer.addModule("yage.resource.exception");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -593,19 +582,23 @@ yage.system.constant
 
 	explorer.packageExplorer.addModule("yage.system.device");
 
+	explorer.packageExplorer.addModule("yage.system.exceptions");
+
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.interfaces");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 
+	explorer.packageExplorer.addModule("yage.system.probe");
+
 	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.system.rendertarget");
+	explorer.packageExplorer.addModule("yage.system.window");
 
 	explorer.packageExplorer.addModule("yage.util.all");
 
 	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.misc");
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>

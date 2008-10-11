@@ -35,20 +35,17 @@ class ModelNode : VisibleNode
 	 * or if a range is set and it loops. */
 	void delegate(ModelNode self) onAnimationComplete = null; 
 
-	/// Construct
-	this()
-	{	super();		
-	}
-
 	/**
-	 * Construct this Node as a copy of another Node and recursively copy all children.
+	 * Make a duplicate of this node, unattached to any parent Node.
+	 * Animation is not yet cloned since its current implementation may soon change.
 	 * Params:
-	 * parent = This Node will be a child of parent.
-	 * original = This Node will be an exact copy of original.*/
-	this (Node parent, ModelNode original)
-	{	super(parent, original);
-		model = original.model;
-		radius = original.radius;
+	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 * Returns: The cloned Node. */
+	override ModelNode clone(bool children=false)
+	{	auto result = cast(ModelNode)super.clone(children);
+		result.model = model; // atomic
+		result.radius = radius;
+		return result;
 	}
 
 	/**

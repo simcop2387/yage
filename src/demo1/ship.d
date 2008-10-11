@@ -91,7 +91,7 @@ class Ship : GameObject
 			}
 			puff.onUpdate(&fade);
 
-			puff = new SpriteNode(ship.getScene(), puff);
+			puff = ship.getScene().addChild(puff.clone());
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 			
 			
