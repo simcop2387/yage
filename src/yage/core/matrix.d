@@ -1,6 +1,6 @@
 /**
  * Copyright:  (c) 2005-2008 Eric Poggel
- * Authors:    Eric Poggel
+ * Authors:    Eric Poggel, Matt Peterson
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
@@ -39,7 +39,7 @@ struct Matrix
 			float v30, v31, v32, v33;
 		}
 	}
-	invariant
+	invariant()
 	{	foreach (float t; v)
 			assert(t != float.nan);
 	}

@@ -1,6 +1,6 @@
 /**
  * Copyright:  (c) 2005-2008 Eric Poggel
- * Authors:    Eric Poggel
+ * Authors:    Eric Poggel, Matt Peterson
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
@@ -31,7 +31,7 @@ struct Quatrn
 		{	float x, y, z, w;
 	}	}
 
-	invariant
+	invariant()
 	{	foreach (float t; v)
 			assert(t != float.nan);
 	}
