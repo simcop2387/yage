@@ -115,7 +115,7 @@ private struct MS3D
 		// Check Ms3d version (3 or 4 only)
 		if (file[10] <3 || file[10] > 4)
 			throw new ResourceException("Milkshape file format version " ~ .toString(file[10]) ~ " not supported.");
-
+		
 		// Vertices
 		memcpy(&size, &file[14], 2);
 		vertices.length = size;
@@ -198,7 +198,7 @@ template Ms3dLoader()
 	 * manager to avoid duplicates.  Meshes without a material are assigned a default material.
 	 * Uploading vertex data to video memory must be done manually by calling Upload(). */
 	protected void loadMs3d(char[] filename)
-	{
+	{	
 		source = Resource.resolvePath(filename);
 		char[] path = source[0 .. rfind(source, "/") + 1]; // path stripped of filename
 

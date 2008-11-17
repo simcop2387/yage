@@ -251,11 +251,11 @@ struct Style
 	
 
 		// Parse and apply the style
-		style = tolower(style); // creates garbage if changed
+		//style = tolower(style); // breaks paths on linux!
 		char[][] expressions =  std.regexp.split(style, ";\\s*");
 		foreach (exp; expressions)
 		{	char[][] tokens = std.regexp.split(exp, ":[ ]*");
-			char[] property = replace(tokens[0], "-", ""); // creates garbage.
+			char[] property = tolower(replace(tokens[0], "-", "")); // creates garbage.
 			if (!property.length)
 				continue;
 			

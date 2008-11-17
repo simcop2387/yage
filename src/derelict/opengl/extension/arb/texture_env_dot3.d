@@ -69,7 +69,7 @@ else
     }
 }
 
-enum GLenum
+enum : GLenum
 {
     GL_DOT3_RGB_ARB   = 0x86AE,
     GL_DOT3_RGBA_ARB  = 0x86AF,

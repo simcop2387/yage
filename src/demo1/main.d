@@ -29,7 +29,8 @@ int main()
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
 	//Device.init(1440, 900, 32, true);
-
+	
+	
 	// Paths
 	Resource.addPath("../res/");
 	Resource.addPath("../res/shader");
@@ -46,7 +47,7 @@ int main()
 	sky.setModel("sky/sanctuary.ms3d");
 	scene.setSkybox(skybox);
 	scene.setGlobalAmbient(Color("555555"));
-
+	
 	// Ship
 	Ship ship = scene.addChild(new Ship());	
 	ship.setPosition(Vec3f(0, 50, -950));

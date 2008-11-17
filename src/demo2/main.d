@@ -55,6 +55,13 @@ int main()
 		grabbed = !grabbed;
 	};
 	
+	// Music
+	auto music = new SoundNode();
+	camera.addChild(music);
+	music.setSound("music/celery - pages.ogg");
+	music.setLooping(true);
+	music.play();
+	
 	// Lights
 	auto l1 = scene.addChild(new LightNode());
 	l1.setPosition(Vec3f(0, 300, -300));

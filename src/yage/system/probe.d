@@ -57,8 +57,8 @@ abstract class Probe
 				return result;
 		
 			case OpenGL.SHADER:
-				version(linux)		// Shaders often fail on linux due to poor driver support!  :(
-					return 0;	// ATI drivers will claim shader support but fail on shader compile.
+				//version(linux)		// Shaders often fail on linux due to poor driver support!  :(
+				//	return 0;	// ATI drivers will claim shader support but fail on shader compile.
 									// This needs a better workaround.
 				if (shader==-1)
 					shader = cast(int)checkExtension("GL_ARB_shader_objects") && checkExtension("GL_ARB_vertex_shader");

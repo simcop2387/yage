@@ -123,7 +123,7 @@ class Model
 		attributes["gl_Normal"] = a;
 		
 		if (Probe.openGL(Probe.OpenGL.VBO))
-		{	glGenBuffersARB(1, &attributes["gl_Vertex"].vbo);	
+		{	glGenBuffersARB(1, &attributes["gl_Vertex"].vbo);
 			glGenBuffersARB(1, &attributes["gl_TexCoord"].vbo);
 			glGenBuffersARB(1, &attributes["gl_Normal"].vbo);			
 		}

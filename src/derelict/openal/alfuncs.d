@@ -145,7 +145,7 @@ GenericDependentLoader  DerelictALU;
 static this() {
     DerelictAL.setup(
         "OpenAL32.dll",
-        "libal.so, libAL.so, libopenal.so, libopenal.so.0",
+        "libal.so, libAL.so, libopenal.so, libopenal.so.0, libopenal.so.1",
         "",
         &loadAL
     );

@@ -75,7 +75,7 @@ enum : GLenum
 {
     GL_RGBA_FLOAT_MODE_ARB             = 0x8820,
     GL_CLAMP_VERTEX_COLOR_ARB          = 0x891A,
-    GL_CLAMP_FRAGMENT_COLOE_ARB        = 0x891B,
+    GL_CLAMP_FRAGMENT_COLOR_ARB        = 0x891B,
     GL_CLAMP_READ_COLOR_ARB            = 0x891C,
     GL_FIXED_ONLY_COLOR_ARB            = 0x891D,
 }

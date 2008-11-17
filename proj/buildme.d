@@ -10,7 +10,7 @@
  * This script can either use precompiled derelict libraries in the lib folder
  * or build the derelict source directly with the engine.  The former is
  * of course faster, but the latter can be achieved by setting 
- * lib_path to empty string and adding ../src/derelict to the src_path
+ * lib_path to empty array and adding ../src/derelict to the src_path
  * in the compilation options below.
  * 
  * This script can easily be expanded to compile and generate docs for most
@@ -443,7 +443,11 @@ int main(char[][] args)
 	// Run
 	if (Build.run)
 	{	chdir(bin_path);
-		std.c.process.system(toStringz(bin_name ~ bin_ext));
+		
+		version(Windows)
+			std.c.process.system(toStringz(bin_name ~ bin_ext));
+		else
+			std.c.process.system(toStringz("./"~bin_name ~ bin_ext));
 		chdir(cur_path);
 	}
 	

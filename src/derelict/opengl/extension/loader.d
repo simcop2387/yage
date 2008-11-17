@@ -36,12 +36,19 @@ private
     version(Windows)
         import derelict.opengl.wgl;
     else version(linux)
-        import derelict.opengl.glx;
+    {
+        version = UsingGLX;
+    }
     else version(darwin)
     {
         import derelict.util.loader;
         import derelict.util.exception;
         import derelict.opengl.glfuncs;
+    }
+    
+    version(UsingGLX)
+    {
+        import derelict.opengl.glx;
     }
 
     import derelict.util.wrapper;
