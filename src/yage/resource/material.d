@@ -252,11 +252,11 @@ class Material
 	/// Return a string of xml for this material along with all layers.
 	char[] toString()
 	{	char[] result;
-		result = formatString("<material maxlights=%d>\n", max_lights);
+		result = swritef("<material maxlights=%d>\n", max_lights);
 		// Loop through layers
 		foreach (Layer layer; layers)
 			result ~= layer.toString();
-		result~= formatString("</material>\n");
+		result~= swritef("</material>\n");
 		return result;
 	}
 }

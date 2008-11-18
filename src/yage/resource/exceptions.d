@@ -11,6 +11,6 @@ import yage.core.parse;
 ///
 class ResourceException : YageException
 {	this(...)
-	{	super(formatString(_arguments, _argptr));
+	{	super(swritefRelay(_arguments, _argptr));
 	}	
 }

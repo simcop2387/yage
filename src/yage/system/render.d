@@ -20,6 +20,7 @@ import yage.system.constant;
 import yage.scene.all;
 import yage.scene.model;
 import yage.scene.camera: CameraNode;
+import yage.scene.visible;
 
 private struct Attribute2
 {	char[] name;

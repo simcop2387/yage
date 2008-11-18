@@ -48,18 +48,13 @@ class Repeater : Timer
 							func(1/frequency);
 							calling = false;						
 						}
-						call_time += 1f/frequency;
-						
+						call_time += 1f/frequency;						
 						if (paused())
 							break;
-					}					
-				}
+				}	}
 				
 				// Sleep for 1/frequency - (the time it took to make the calls).				
-				version(DigitalMars)					
-					usleep(cast(uint)(1_000_000/frequency - a.get()));				
-				version(GDC)					
-					msleep(cast(uint)(1000/frequency - a.get()));
+				usleep(cast(uint)(1_000_000/frequency - a.get()));					
 			}
 			return 0;
 		}

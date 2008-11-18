@@ -22,13 +22,16 @@ import yage.all;
 import demo1.ship;
 import demo1.misc;
 
+
+
 // Current program entry point.  This may change in the future.
 int main()
-{	
+{		
   	// Init (resolution, depth, fullscreen, aa-samples)
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
 	//Device.init(1440, 900, 32, true);
+	
 	
 	
 	// Paths
@@ -92,7 +95,7 @@ int main()
 	// Events for main surface.
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
-			Device.exit(0);
+			Device.running = false;
 		
 		if(key == SDLK_c){
 			std.gc.fullCollect();
@@ -143,7 +146,7 @@ int main()
 	void update(Node self){
 		ship.getSpring().update(1/60.0f);
 	}
-	scene.onUpdate(&update);	
+	scene.onUpdate(&update);
 	
 	// Rendering / Input Loop
 	int fps = 0;
@@ -151,7 +154,7 @@ int main()
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
 	std.gc.fullCollect();	
-	while(1)
+	while(Device.running)
 	{
 		float dtime = delta.get();
 		delta.reset();
@@ -164,7 +167,7 @@ int main()
 		fps++;
 		if (frame.get()>=0.25f)
 		{	SDL_WM_SetCaption("Yage Demo\0", null);
-			window.text = formatString("%.2f fps\n%d objects\n%d polygons\n%d vertices",
+			window.text = swritef("%.2f fps\n%d objects\n%d polygons\n%d vertices",
 				fps/frame.get(), camera.getNodeCount(), camera.getPolyCount(), camera.getVertexCount());
 			frame.reset();
 			fps = 0;
@@ -177,7 +180,7 @@ int main()
 	}
 	scene.pause();
 	
-	msleep(1100);
+	Device.deInit();
 
 	return 0;
 }

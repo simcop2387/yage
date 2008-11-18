@@ -375,6 +375,6 @@ struct Quatrn
 
 	/// Return a string representation of this quaternion for human reading.
 	char[] toString()
-	{	return formatString("<%.4f %.4f %.4f %.4f>", x, y, z, w);
+	{	return swritef("<%.4f %.4f %.4f %.4f>", x, y, z, w);
 	}
 }

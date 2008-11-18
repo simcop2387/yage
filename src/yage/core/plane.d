@@ -98,7 +98,7 @@ struct Plane
 
 	/// Return a string representation of this Plane for human reading.
 	char[] toString()
-	{	return formatString("<%.4fx %.4fy %.4fz> + %.4f", v[0], v[1], v[2], v[3]);
+	{	return swritef("<%.4fx %.4fy %.4fz> + %.4f", v[0], v[1], v[2], v[3]);
 	}
 
 

@@ -277,9 +277,9 @@ struct Vec(int S, T)
 	{	char[] result = "<";
 		for (int i=0; i<S; i++)
 			static if (is (T : int))
-				result ~= formatString("%d ", v[i]);
+				result ~= swritef("%d ", v[i]);
 			else
-				result ~= formatString("%.4f ", v[i]);
+				result ~= swritef("%.4f ", v[i]);
 		result ~= ">";
 		return result;
 	}
@@ -692,7 +692,7 @@ struct Vec3f
 
 	/// Return a string representation of this vector for human reading.
 	char[] toString()
-	{	return formatString("<%.4f %.4f %.4f>", x, y, z);
+	{	return swritef("<%.4f %.4f %.4f>", x, y, z);
 	}
 
 	///

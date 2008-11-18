@@ -30,7 +30,7 @@ class Tree(T)
 	 * Params:
 	 *     child = Node to add as a child of this element.
 	 * Returns: A reference to the child. */
-	S addChild(S : T)(S child)
+	S addChild(S /*: T*/)(S child)
 	in {
 		assert(child != this);
 		assert(child !is null);
@@ -73,7 +73,7 @@ class Tree(T)
 		return cast(bool)(children[elem.index] == elem);
 	}
 	
-	S removeChild(S : T)(S child)
+	S removeChild(S /*: T*/)(S child)
 	{	if (child.index > 0)
 		{	//yage.core.all.remove(parent.children, index, false);
 			children.remove(index, false);

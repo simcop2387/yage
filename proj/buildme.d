@@ -8,8 +8,8 @@
  * feel free to use this script for whatever.
  * 
  * This script can either use precompiled derelict libraries in the lib folder
- * or build the derelict source directly with the engine.  The former is
- * of course faster, but the latter can be achieved by setting 
+ * or build the derelict source directly with the engine.  
+ * The former is of course faster, but the latter can be achieved by setting 
  * lib_path to empty array and adding ../src/derelict to the src_path
  * in the compilation options below.
  * 
@@ -22,8 +22,10 @@
  * dmd -run buildme.d -gdc
  * ------
  *
- * TODO:
- * Test with GDC on Linux.
+ * This script has been tested with:
+ * DMD on Windows
+ * DMD on X86 Linux
+ * GDC on X86 Linux
  */
 
 import std.c.process;
@@ -50,7 +52,7 @@ char[] cur_path;									// Folder of this script, set automatically
 version (Windows)
 {	char[] bin_ext = ".exe";
 	char[] lib_ext = ".lib";
-}else
+} else
 {	char[] bin_ext = "";
 	char[] lib_ext = ".a";
 }
@@ -207,9 +209,10 @@ class Build
 		
 		// Get a list of all files as absolute paths
 		foreach (char[] path; src_path)
-		{	sources ~= Util.scan(path, [".d", ".ddoc"]);
-			if (ddoc)
-				sources ~= Util.scan(path, [".ddoc"]);
+		{	if (ddoc)
+				sources ~= Util.scan(path, [".d", ".ddoc"]);
+			else
+				sources ~= Util.scan(path, [".d"]);
 		}		
 		foreach (char[] path; lib_path)
 			libs ~= Util.scan(path, [lib_ext]);
@@ -313,19 +316,24 @@ class Build
 		}	}
 		
 		char[][] args = flags ~ sources ~ libs;	
-		char[] compiler = gdc ? "gdc" : "dmd";	
-		if (verbose)			
-			writefln(compiler ~ " " ~ std.string.join(args," "));		
+		char[] compiler = gdc ? "gdc" : "dmd";				
 		
 		bool success;
 		version (Windows) // Since windows is limited to 8190 chars per command
 		{	std.file.write("compile", std.string.join(args," "));
 			char[] exec = compiler ~ " @compile";	// we write args out to a file in case they're too long for system to execute.
+			if (verbose)			
+				writefln(compiler ~ " " ~ std.string.join(args," "));			
+			
 			success = !std.c.process.system(toStringz(exec));
 			std.file.remove("compile");
 		}
 		else
-		{	char[] exec = compiler ~" " ~ std.string.join(args," ") ~ " -L-ldl";
+		{	char[] dl = gdc ? " -ldl" : " -L-ldl"; // link with the dl library for derelict.		
+			char[] exec = compiler ~" " ~ std.string.join(args," ") ~ dl;
+			if (verbose)
+				writefln(exec);
+		
 			success = !std.c.process.system(toStringz(exec));
 		}
 		return success;
@@ -415,7 +423,7 @@ int main(char[][] args)
 		writefln("   -clean     Delete all intermediate object files.");
 		writefln("   -ddoc      Generate documentation in "~doc_path);
 		writefln("   -debug     Include debugging symbols.");
-		writefln("   -gdc       Compile using gdc instead of dmd (has issues).");
+		writefln("   -gdc       Compile using gdc instead of dmd.");
 		writefln("   -nolink    Compile but do not link.");
 		writefln("   -profile   Compile in profiling code.");
 		writefln("   -release   Optimize, inline expand functions, and remove unit tests and asserts.");

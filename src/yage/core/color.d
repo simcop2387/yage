@@ -209,8 +209,8 @@ struct Color
 	 * lower = return lower case hexadecimal digits*/ 
 	char[] hex(bool lower=false)
 	{	if (lower)
-			return formatString("%.8x", bswap(ui));
-		return formatString("%.8X", bswap(ui));
+			return swritef("%.8x", bswap(ui));
+		return swritef("%.8X", bswap(ui));
 	}
 	/// ditto
 	char[] toString()

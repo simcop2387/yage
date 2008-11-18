@@ -79,7 +79,7 @@ abstract class Node : Tree!(Node)
 	/**
 	 * Overridden from Tree to mark transform dirty. 
 	 * Returns: The child parameter.  Templating is used to ensure the return type is exactly the same.*/
-	T addChild(T : Node)(T child)
+	T addChild(T /*: Node*/)(T child)
 	{			
 		auto old_parent = child.getParent();
 		super.addChild(child);
@@ -154,7 +154,7 @@ abstract class Node : Tree!(Node)
 	/**
 	 * Return a string representation of this Node for human reading. */	
 	override char[] toString()
-	{	return formatString("<%s children=\"%d\"/>", getType(), children.length);
+	{	return swritef("<%s children=\"%d\"/>", getType(), children.length);
 	}
 	
 	/**

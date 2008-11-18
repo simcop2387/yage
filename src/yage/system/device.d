@@ -41,8 +41,7 @@ extern(C) {
  * The device class exists to group functions for initializing a window,
  * checking OpenGL extensions, and other utility and lower level tasks.*/
 abstract class Device
-{
-	
+{	
 	// Video
 	protected static SDL_Surface* sdl_surface; // Holds a reference to the main (and only) SDL surface
 
@@ -60,16 +59,7 @@ abstract class Device
 	protected static bool initialized=false;			// true if init() has been called
 	protected static Surface surface;
 	
-	/// Unload SDL at exit.
-	static ~this()
-	{	if (initialized)
-		{	try {	// Order of un-initialization is causing trouble here with OpenAL
-				//writefln("Device destructor");
-				SDL_Quit();
-				//alcDestroyContext(al_context);
-				//alcCloseDevice(al_device);
-			}catch{ throw new YageException("Error in Device destructor."); }
-	}	}
+	static bool running = true;
 
 	/**
 	 * This function creates a window with the specified width and height in pixels.
@@ -215,15 +205,13 @@ abstract class Device
 		Log.write("Yage has been initialized.");
 	}
 	
-	static void delegate() onExit;
-	
-	//Perhaps this needs to be improved, or maybe it will be added to the D runtime and no longer be needed
-	static void exit(int code){
-		if(onExit) onExit();
+	static void deInit()
+	{	SDL_WM_GrabInput(SDL_GRAB_OFF);
+		SDL_ShowCursor(true);
 		
-		_moduleDtor();
-		gc_term();
-		std.c.stdlib.exit(code);
+		alcDestroyContext(al_context);
+		alcCloseDevice(al_device);
+		SDL_Quit();
 	}
 	
 

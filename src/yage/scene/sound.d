@@ -46,13 +46,18 @@ class SoundNode : MovableNode, ITemporal
 	this()
 	{	super();
 		alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()		
-		setSoundRadius(radius);		
+		setSoundRadius(radius);
 	}
 
 	/**
-	 * Delete OpenAL Sound source on destruction */
+	 * Delete OpenAL Sound source on destruction.
+	 * For some reason this isn't called for all sounds. */
 	~this()
-	{	pause();
+	{	stop();
+	
+		// Free unprocessed buffers.		
+		if (sound)
+			alSourceUnqueueBuffers(al_source, buffer_end, sound.getBuffers(buffer_start, buffer_end).ptr);
 		alDeleteSources(1, &al_source);
 	}
 	

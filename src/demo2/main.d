@@ -48,19 +48,12 @@ int main()
 	bool grabbed = true;
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
-			Device.exit(0);	
+			Device.running = false;	
 	};
 	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates) {
 		self.grabMouse(grabbed);
 		grabbed = !grabbed;
 	};
-	
-	// Music
-	auto music = new SoundNode();
-	camera.addChild(music);
-	music.setSound("music/celery - pages.ogg");
-	music.setLooping(true);
-	music.play();
 	
 	// Lights
 	auto l1 = scene.addChild(new LightNode());
@@ -69,7 +62,7 @@ int main()
 	// Rendering / Input Loop
 	int fps = 0;
 	Timer frame = new Timer();
-	while(1)
+	while(Device.running)
 	{		
 		Input.processInput();
 		scene.swapTransformRead(); // swap scene buffer so the latest version can be rendered.
@@ -79,11 +72,12 @@ int main()
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)
-		{	view.text = formatString("%.2f fps", fps/frame.get());
+		{	view.text = swritef("%.2f fps", fps/frame.get());
 			frame.reset();
 			fps = 0;			
 		}
 	}
 
+	Device.deInit();
 	return 0;
 }

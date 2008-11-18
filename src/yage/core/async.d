@@ -36,7 +36,7 @@ Timeout!(T) setTimeout(T)(float delay, T func, ...)
 	// Bind arguments to function
 	ParameterTypeTuple!(func) func_args;
 	assert(_arguments.length == func_args.length, 
-		formatString("Wrong number of arguments passed to setTimeout, expected %d but received %d", 
+		swritef("Wrong number of arguments passed to setTimeout, expected %d but received %d", 
 			func_args.length, _arguments.length));
 	foreach(int i, arg; func_args)
 	{	alias typeof(func_args[i]) T;
@@ -59,7 +59,7 @@ Timeout!(T) setInterval(T)(float delay, T func, ...)
 	// Bind arguments to function
 	ParameterTypeTuple!(func) func_args;
 	assert(_arguments.length == func_args.length, 
-		formatString("Wrong number of arguments passed to setInterval, expected %d but received %d", 
+		swritef("Wrong number of arguments passed to setInterval, expected %d but received %d", 
 			func_args.length, _arguments.length));
 	foreach(int i, arg; func_args)
 	{	alias typeof(func_args[i]) T;

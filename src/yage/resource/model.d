@@ -57,7 +57,7 @@ struct KeyFrame
 	
 	char[] toString()
 	{
-		char[] result = formatString(
+		char[] result = swritef(
 			"%ss, %s",
 			time, value);
 		return result;
@@ -78,16 +78,16 @@ class Joint
 	
 	char[] toString()
 	{
-		char[] result = formatString(
+		char[] result = swritef(
 			"Name: %s\n" ~
 			"Parent: %s\n" ~
 			"Start Position: %s\n" ~
 			"Start Rotation: %s\n",
 			name, parentName, startPosition, startRotation);		
 		foreach (i, k; positions)		
-			result ~= formatString("Position %d: %s\n", i, k.toString());
+			result ~= swritef("Position %d: %s\n", i, k.toString());
 		foreach (i, k; rotations)		
-			result ~= formatString("Rotation %d: %s\n", i, k.toString());
+			result ~= swritef("Rotation %d: %s\n", i, k.toString());
 		return result;
 	}
 };
