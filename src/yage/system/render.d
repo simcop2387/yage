@@ -78,30 +78,36 @@ class Render
 
 		if (!models_generated)
 			generate();
-
+		
+		LightNode[] lights = current_camera.getScene().getLights().values;
+		
 		// Loop through all nodes in the queue and render them
 		foreach (VisibleNode n; nodes)
-		{
-			glPushMatrix();
-			glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
-			Vec3f size = n.getSize();
-			glScalef(size.x, size.y, size.z);
-			n.enableLights();
+		{	synchronized (n)
+			{	if (!n.getScene()) // was recently removed from its scene.
+					continue;
 			
-			if (cast(ModelNode)n)
-				model((cast(ModelNode)n).getModel(), n);			
-			else if (cast(SpriteNode)n)
-				sprite((cast(SpriteNode)n).getMaterial(), n);
-			else if (cast(GraphNode)n)
-				model((cast(GraphNode)n).getModel(), n);
-			else if (cast(TerrainNode)n)
-				model((cast(TerrainNode)n).getModel(), n);
-			else if (cast(LightNode)n)
-				cube(n);	// todo: render as color of light?
-			else
-				cube(n);
-			
-			glPopMatrix();
+				glPushMatrix();
+				glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
+				Vec3f size = n.getSize();
+				glScalef(size.x, size.y, size.z);
+				n.enableLights(lights);
+				
+				if (cast(ModelNode)n)
+					model((cast(ModelNode)n).getModel(), n);			
+				else if (cast(SpriteNode)n)
+					sprite((cast(SpriteNode)n).getMaterial(), n);
+				else if (cast(GraphNode)n)
+					model((cast(GraphNode)n).getModel(), n);
+				else if (cast(TerrainNode)n)
+					model((cast(TerrainNode)n).getModel(), n);
+				else if (cast(LightNode)n)
+					cube(n);	// todo: render as color of light?
+				else
+					cube(n);
+				
+				glPopMatrix();
+			}
 		}
 
 		// Sort alpha (translucent) triangles

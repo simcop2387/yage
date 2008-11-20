@@ -52,7 +52,7 @@ class MovableNode : Node
 	 * cached = Get the transformation Matrix cached after the last complete scenegraph update,
 	 * instead of the current version.  This can be used to avoid working with a half-updated scenegraph.*/
 	Matrix getTransform(bool cached = false)
-	{	if (cached)
+	{	if (cached && parent)
 			return cache[getScene().transform_read].transform;
 		return transform;
 	}
@@ -67,7 +67,7 @@ class MovableNode : Node
 	 * cached = Get the absolute transformation Matrix cached after the last complete scenegraph update,
 	 * instead of the current version.  This can be used to avoid working with a half-updated scenegraph.*/
 	Matrix getAbsoluteTransform(bool cached = false)
-	{	if (cached) // the transform_abs cache is never dirty
+	{	if (cached && scene) // the transform_abs cache is never dirty
 			return cache[scene.transform_read].transform_abs;
 		if (transform_dirty)
 			calcTransform();

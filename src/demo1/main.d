@@ -1,10 +1,11 @@
 /**
  * Copyright:  Public Domain
  * Authors:    Eric Poggel
- * Warranty: none
+ * Warranty:   none
  *
- * This module is not technically part of the engine, but merely uses it.
- * This is a demo to show off some of the cool features of Yage.
+ * This module is not part of the engine, but merely uses it.
+ * This is a demo to show off some of the cool features of Yage 
+ * and also acts a general, incomplete test for regressions.
  */
 
 module demo2.main;
@@ -12,6 +13,7 @@ module demo2.main;
 import std.c.time;
 import std.string;
 import std.stdio;
+import std.random;
 
 import derelict.opengl.gl;
 import derelict.opengl.glext;
@@ -61,16 +63,44 @@ int main()
 	ship.getCameraSpot().addChild(camera);
 	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
 
+	
+	// Music
+	auto music = new SoundNode();
+	camera.addChild(music);
+	music.setSound("music/celery - pages.ogg");
+	music.setLooping(true);
+	music.play();
+
+	// Lights
+	auto l1 = scene.addChild(new LightNode());
+	l1.setDiffuse(Color(1, .85, .7));
+	l1.setLightRadius(7000);
+	l1.setPosition(Vec3f(0, 0, -6000));
+
+	// Star
+	auto star = l1.addChild(new SpriteNode());
+	star.setMaterial("space/star.xml");
+	star.setSize(Vec3f(2500));
+
+	// Planet
+	auto planet = scene.addChild(new ModelNode());
+	planet.setModel("space/planet.ms3d");
+	planet.setSize(Vec3f(60));
+	planet.setAngularVelocity(Vec3f(0, -0.01, 0));
+	
+	// Asteroids
+	asteroidBelt(800, 1400, planet);
+
+	
 	// Main surface where camera output is rendered.
 	Surface view = new Surface();
 	view.style.backgroundMaterial = camera.getTexture();
 	view.style.set("bottom: 0; right: 0");	
 	Device.setSurface(view);
 	
-
 	// Make a draggable window to show some useful info.
 	auto window = view.addChild(new Surface());
-	window.style.set("top: 0; right: 0; width: 150; height: 65; background-position: 5px 5px; color: black; " ~ 
+	window.style.set("top: 0; right: 0; width: 150px; height: 80px; background-position: 5px 5px; color: black; " ~ 
 		"background-repeat: nineslice; background-material: url('gui/skin/clear2.png'); " ~
 		"font-family: url('gui/font/Vera.ttf'); font-size: 11px");
 	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
@@ -113,38 +143,30 @@ int main()
 	view.onResize = delegate void (Surface self, Vec2f amount){
 		camera.setResolution(cast(int)self.width, cast(int)self.height);
 	};
-	
-	// Music
-	auto music = new SoundNode();
-	camera.addChild(music);
-	music.setSound("music/celery - pages.ogg");
-	music.setLooping(true);
-	music.play();
-
-	// Lights
-	auto l1 = scene.addChild(new LightNode());
-	l1.setDiffuse(Color(1, .85, .7));
-	l1.setLightRadius(7000);
-	l1.setPosition(Vec3f(0, 0, -6000));
-
-	// Star
-	auto star = l1.addChild(new SpriteNode());
-	star.setMaterial("space/star.xml");
-	star.setSize(Vec3f(2500));
-
-	// Planet
-	auto planet = scene.addChild(new ModelNode());
-	planet.setModel("space/planet.ms3d");
-	planet.setSize(Vec3f(60));
-	planet.setAngularVelocity(Vec3f(0, -0.01, 0));
-	
-	// Asteroids
-	asteroidBelt(800, 1400, planet);
-
-	
 	// Add to the scene's update loop
 	void update(Node self){
 		ship.getSpring().update(1/60.0f);
+		// Test creation and removal of lots of lights and sounds and sprites.
+		for (int i=0; i<1; i++)
+		{	/*
+			auto flare = scene.addChild(new SpriteNode());
+			flare.setMaterial("fx/flare1.xml");
+			flare.setSize(Vec3f(2));
+			flare.setPosition(Vec3f(0, 0, -1400));
+			flare.setLifetime((rand()%100)/100.0f + 2);
+			flare.setVelocity(Vec3f(cast(int)((rand()%100)-50)/2.0f, (cast(int)(rand()%100)-50)/2.0f, (cast(int)(rand()%100)-50)/2.0f));
+			
+			auto l = flare.addChild(new LightNode());
+			l.setDiffuse(Color(1, 1, 1));
+			l.setLightRadius(1200);
+			
+			SoundNode zap = flare.addChild(new SoundNode());
+			zap.setSound("sound/laser.wav");
+			zap.setVolume(1);
+			zap.setLifetime(2); 
+			zap.play();
+			*/
+		}
 	}
 	scene.onUpdate(&update);
 	

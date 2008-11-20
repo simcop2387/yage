@@ -76,9 +76,9 @@ class Tree(T)
 	S removeChild(S /*: T*/)(S child)
 	{	if (child.index > 0)
 		{	//yage.core.all.remove(parent.children, index, false);
-			children.remove(index, false);
-			if (index < parent.children.length)
-				parent.children[index].index = index;
+			yage.core.all.remove(children, child.index, false);
+			if (child.index < children.length)
+				children[child.index].index = child.index;
 			child.index = -1; // so remove can't be called twice.
 			child.parent = null;			
 		}

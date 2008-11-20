@@ -129,28 +129,20 @@ class VisibleNode : MovableNode
 	 * TODO: Take into account a spotlight inside a VisibleNode that shines outward but doesn't shine
 	 * on the Node's center.  Need to test to see if this is even broken.
 	 * Also perhaps use axis sorting for faster calculations. */
-	void enableLights(ubyte number=8)
+	void enableLights(LightNode[] all_lights, ubyte number=8)
 	{	
 		if (number>Probe.openGL(Probe.OpenGL.MAX_LIGHTS))
 			number = Probe.openGL(Probe.OpenGL.MAX_LIGHTS);
-		lights.length = 0;
+		lights.length = 0;		
 		
-		// Prevent add/remove from array while calculating, since this is typically called from the rendering thread.
-		synchronized (scene.lights_mutex)	
-		{		
-			LightNode[] all_lights = scene.getLights().values;
-			
-			// Calculate the intensity of all lights on this node
-			Vec3f position;
-			position.set(getAbsoluteTransform(true));
-			for (int i=0; i<all_lights.length; i++)
-			{	LightNode l = all_lights[i];
-	
-				// Add to the array of limited lights if bright enough
-				l.intensity = l.getBrightness(position, getRadius()).vec3f.average();
-				if (l.intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
-					lights.addSorted(l, false, (LightNode a) { return a.intensity; } );
-		}	}
+		Vec3f position;
+		position.set(getAbsoluteTransform(true));
+		foreach (l; all_lights)
+		{	// Add to the array of limited lights if bright enough
+			l.intensity = l.getBrightness(position, getRadius()).vec3f.average();
+			if (l.intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
+				addSorted(lights, l, false, (LightNode a) { return a.intensity; } );
+		}
 		
 		// Enable the apropriate lights
 		for (int i=0; i<number; i++)

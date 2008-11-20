@@ -77,8 +77,11 @@ abstract class Node : Tree!(Node)
 	}
 	
 	/**
-	 * Overridden from Tree to mark transform dirty. 
-	 * Returns: The child parameter.  Templating is used to ensure the return type is exactly the same.*/
+	 * Add a child Node to this Node's array of children.
+	 * Overridden to call ancestorChange() and mark transformation matrices dirty.
+	 * Params:
+	 *     child = The Node to add.
+	 * Returns: The child Node that was added.  Templating is used to ensure the return type is exactly the same.*/
 	T addChild(T /*: Node*/)(T child)
 	{			
 		auto old_parent = child.getParent();
@@ -87,6 +90,18 @@ abstract class Node : Tree!(Node)
 		return child;
 	}
 
+	/**
+	 * Remove a child Node to this Node's array of children.
+	 * Overridden to call ancestorChange() and mark transformation matrices dirty.
+	 * Params:
+	 *     child = The Node to remove.
+	 * Returns: The child Node that was removed.  Templating is used to ensure the return type is exactly the same.*/
+	T removeChild(T : Node)(T child)
+	{	auto old_parent = child.getParent();
+		super.removeChild(child);
+		child.ancestorChange(old_parent); // sets transform dirty also
+		return child;
+	}
 	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
@@ -132,7 +147,7 @@ abstract class Node : Tree!(Node)
 	float getLifetime() 
 	{	return lifetime; 
 	}
-	void setLifetime(float seconds)  /// Ditto
+	void setLifetime(float seconds)  /// ditto
 	{	lifetime = seconds; 
 	}
 	
@@ -146,7 +161,7 @@ abstract class Node : Tree!(Node)
 	{	return this.classinfo.name;
 	}
 	
-	/// Always returns false for Nodes but can be true for subtypes..
+	/// Always returns false for Nodes but can be true for subtypes.
 	bool getVisible()
 	{	return false;		
 	}
@@ -189,11 +204,12 @@ abstract class Node : Tree!(Node)
 	{	
 		// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.
-		cache[scene.transform_write].transform = transform;
-		if (transform_dirty)
-			calcTransform();
-		cache[scene.transform_write].transform_abs = transform_abs;
-
+		if (scene)
+		{	cache[scene.transform_write].transform = transform;
+			if (transform_dirty)
+				calcTransform();
+			cache[scene.transform_write].transform_abs = transform_abs;
+		}
 		// Call the onUpdate() function
 		if (on_update !is null)
 			on_update(this);
@@ -213,7 +229,7 @@ abstract class Node : Tree!(Node)
 	
 	/*
 	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
-	 * This should be called whenever a Node is moved or rotated
+	 * This should be called whenever a Node has its transformation matrix changed.
 	 * This function is used internally by the engine usually doesn't need to be called manually. */
 	void setTransformDirty()
 	{	if (!transform_dirty)
@@ -221,6 +237,7 @@ abstract class Node : Tree!(Node)
 			foreach(c; children)
 				c.setTransformDirty();
 	}	}
+	
 	/*
 	 * Calculate and store the absolute transformation matrices of this Node up to the first node
 	 * that has a correct absolute transformation matrix.
@@ -256,9 +273,9 @@ abstract class Node : Tree!(Node)
 	 * since the transformation matrix should always be dirty after an ancestor change. 
 	 * @param old_ancestor The ancestor that was previously one above the top node of the tree that had its parent changed. */
 	protected void ancestorChange(Node old_ancestor)
-	{	synchronized(this)
+	{	// synchronized(this) // causes deadlock with calcTransform.
 		{	transform_dirty = true;
-			scene = parent.scene;
+			scene = parent ? parent.scene : null;
 			foreach(c; children)
 				c.ancestorChange(old_ancestor);
 		}
