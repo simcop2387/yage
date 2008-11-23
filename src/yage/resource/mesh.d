@@ -8,12 +8,11 @@ module yage.resource.mesh;
 
 import std.stdio;
 import std.string;
-import derelict.opengl.gl;
-import derelict.opengl.glext;
 import yage.core.vector;
 
 import yage.resource.material;
 import yage.resource.resource;
+import yage.resource.lazyresource;
 import yage.system.probe;
 
 /**
@@ -21,15 +20,13 @@ import yage.system.probe;
  * Each mesh has its own material and an array of triangle indices.
  * The triangle indicices index into an array of vertices in a parent Model. */
 class Mesh
-{	protected Vec3i[]	triangles;
-	protected uint		vbo_triangles;
-	protected Material	material;
-	protected bool cached;
+{	protected Vec3i[]		triangles;
+	protected LazyVBO		vbo_triangles;
+	protected Material		material;
 
 	///
 	this()
-	{	if (Probe.openGL(Probe.OpenGL.VBO))
-			glGenBuffersARB(1, &vbo_triangles);
+	{	
 	}
 
 	/// Create as an exact duplicate of another Mesh.
@@ -43,18 +40,11 @@ class Mesh
 	this(Material matl, Vec3i[] triangles)
 	{	this();
 		setMaterial(matl);
-		this.triangles = triangles;
+		setTriangles(triangles);
 	}
-
-	/// Cleanup
-	~this(){
-		if (Probe.openGL(Probe.OpenGL.VBO))
-			glDeleteBuffersARB(1, &vbo_triangles);
-	}
-
-	/// Are the triangles of this mesh cashed in video memory?
-	bool getCached()
-	{	return cached;		
+	
+	void finalize()
+	{	vbo_triangles.destroy();		
 	}
 	
 	/// Get the array of triangle indices that define this Mesh.
@@ -64,7 +54,7 @@ class Mesh
 
 	/// Get the OpenGL Vertex Buffer Object index for the triangles indices.
 	uint getTrianglesVBO()
-	{	return vbo_triangles;
+	{	return vbo_triangles.getId();
 	}
 
 	/// Get the Material assigned to this Mesh.
@@ -86,13 +76,9 @@ class Mesh
 	 * Set the triangles of this mesh.  Each triangle contains
 	 * three vertex indicies from the vertex arrays in the containing Model.*/
 	void setTriangles(Vec3i[] triangles){
-		this.triangles = triangles;
-		
+		this.triangles = triangles;		
 		if (Probe.openGL(Probe.OpenGL.VBO))
-		{	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, getTrianglesVBO());
-			glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, getTriangles().length*Vec3i.sizeof, getTriangles().ptr, GL_STATIC_DRAW);
-			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
-			cached = true;
+		{	vbo_triangles.create(LazyVBO.Type.GL_ELEMENT_ARRAY_BUFFER_ARB, cast(float[])triangles);		
 		}
 	}
 

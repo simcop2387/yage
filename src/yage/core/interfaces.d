@@ -42,4 +42,9 @@ interface ITemporal
 interface ICloneable
 {	typeof(this) clone(); ///
 }
+
+interface IFinalizable
+{	
+	void finalize();
+}
  

@@ -40,7 +40,7 @@ import yage.scene.all;
  *                                   // to 0, 0, 0, instead of a.
  * --------
  */
-abstract class Node : Tree!(Node)
+abstract class Node : Tree!(Node), IFinalizable 
 {
 	// These are public for easy internal access.
 	Scene	scene;			// The Scene that this node belongs to.
@@ -89,7 +89,19 @@ abstract class Node : Tree!(Node)
 		child.ancestorChange(old_parent); // handles 
 		return child;
 	}
-
+	
+	/**
+	 * Remove a child Node to this Node's array of children.
+	 * Overridden to call ancestorChange() and mark transformation matrices dirty.
+	 * Params:
+	 *     child = The Node to remove.
+	 * Returns: The child Node that was removed.  Templating is used to ensure the return type is exactly the same.*/
+	T removeChild(T/* : Node*/)(T child)
+	{	auto old_parent = child.getParent();
+		super.removeChild(child);
+		child.ancestorChange(old_parent); // sets transform dirty also
+		return child;
+	}
 	/**
 	 * Remove a child Node to this Node's array of children.
 	 * Overridden to call ancestorChange() and mark transformation matrices dirty.
@@ -136,6 +148,13 @@ abstract class Node : Tree!(Node)
 		auto b = a.clone(true);
 		assert(b.getChildren().length == 1);
 		assert(b.getChildren()[0] != a.getChildren()[0]); // should not be equal, should've been cloned.
+	}
+	
+	/**
+	 * Some types of Nodes may need to free resources before being destructed. */
+	void finalize()
+	{	foreach (c; children)
+			c.finalize();
 	}
 	
 
@@ -213,18 +232,21 @@ abstract class Node : Tree!(Node)
 		// Call the onUpdate() function
 		if (on_update !is null)
 			on_update(this);
+		
+		lifetime-= delta;
+		if (lifetime <= 0)
+		{	if (parent)
+				parent.removeChild(this);
+			lifetime = float.infinity;
+		}
 
 		// We iterate in reverse in case a child deletes itself.
 		// What about one child deleting another?
 		// I guess the preferred way to remove an object would be to set its lifetime to 0.
 		// Perhaps we should override remove to do this so that items are removed in a controlled way?
-		foreach_reverse(Node c; children)
+		foreach(Node c; children)
 			if (c) // does this solve the problem above?
 				c.update(delta);
-		
-		lifetime-= delta;
-		if (lifetime <= 0)
-			remove();
 	}
 	
 	/*
@@ -246,9 +268,9 @@ abstract class Node : Tree!(Node)
 	protected void calcTransform()
 	{
 		if (transform_dirty)
-		{	synchronized(this) // this function is called very frequently, how does this affect performance?
+		{	//synchronized(this) // still causes deadlock
 			{	if (parent)
-				{	synchronized(this.parent)
+				{	//synchronized(this.parent) // still causes deadlock.
 					{	parent.calcTransform();
 						transform_abs = transform * parent.transform_abs;						
 				}	}

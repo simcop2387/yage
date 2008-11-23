@@ -16,6 +16,7 @@ import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
+import yage.resource.lazyresource;
 import yage.system.constant;
 import yage.scene.all;
 import yage.scene.model;
@@ -63,8 +64,7 @@ class Render
 	// Stats
 	protected static uint poly_count;
 	protected static uint vertex_count;
-
-
+	
 	/// Add a node to the queue for rendering.
 	static void add(VisibleNode node)
 	{	nodes ~= node;
@@ -73,11 +73,43 @@ class Render
 	/// Render everything in the queue
 	static void all(inout uint poly_count, inout uint vertex_count)
 	{
+		LazyResource.apply();
+		
 		this.poly_count = poly_count;
 		this.vertex_count = vertex_count;
 
 		if (!models_generated)
 			generate();
+		/*
+		// Loop through all nodes in the queue and render them
+		foreach (VisibleNode n; nodes)
+		{	synchronized (n)
+			{	if (!n.getScene()) // was recently removed from its scene.
+					continue;
+			
+				glPushMatrix();
+				glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
+				Vec3f size = n.getSize();
+				glScalef(size.x, size.y, size.z);
+				n.enableLights(lights);
+				
+				if (cast(ModelNode)n)
+					model((cast(ModelNode)n).getModel(), n);			
+				else if (cast(SpriteNode)n)
+					sprite((cast(SpriteNode)n).getMaterial(), n);
+				else if (cast(GraphNode)n)
+					model((cast(GraphNode)n).getModel(), n);
+				else if (cast(TerrainNode)n)
+					model((cast(TerrainNode)n).getModel(), n);
+				else if (cast(LightNode)n)
+					cube(n);	// todo: render as color of light?
+				else
+					cube(n);
+				
+				glPopMatrix();
+			}
+		}
+		*/
 		
 		LightNode[] lights = current_camera.getScene().getLights().values;
 		
@@ -196,7 +228,7 @@ class Render
 		{
 			// Bind and draw the triangles
 			void drawTriangles()
-			{	if (mesh.getCached()){
+			{	if (mesh.getTrianglesVBO()){
 					glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTrianglesVBO());
 					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, null);
 				}
@@ -222,7 +254,7 @@ class Render
 					// If not translucent
 					if (!sort)
 					{	l.bind(node.getLights(), node.getColor(), model);
-					drawTriangles();
+						drawTriangles();
 						l.unbind();
 
 					} else

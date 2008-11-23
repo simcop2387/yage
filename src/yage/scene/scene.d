@@ -9,6 +9,7 @@ module yage.scene.scene;
 import derelict.opengl.gl;
 import derelict.openal.al;
 import yage.core.all;
+import yage.system.device;
 import yage.scene.visible;
 import yage.scene.light;
 import yage.scene.node;
@@ -37,6 +38,8 @@ import yage.scene.node;
  */
 class Scene : Node//, ITemporal
 {
+	protected static Scene[Scene] all_scenes;
+	
 	protected Scene skybox;
 	protected LightNode[LightNode] lights;
 
@@ -70,29 +73,16 @@ class Scene : Node//, ITemporal
 		
 		transform_mutex = new Object();
 		lights_mutex = new Object();
+		
+		all_scenes[this] = this;
 	}
-
-	/// Destructor, stops the Scene's thread.
-	~this()
-	{	std.stdio.writefln("Scene destructor");
-		try { // since order of destruction is unpredictable.
-			//repeater.stop();
-		} catch {}
-	}
-
-	/*
-	 * Construct this Scene as an exact copy original and make copies of all children.
-	 * Unfinished! */
-	this (Scene original)
-	{	this();
-		setSkybox(original.skybox);
-		delta.set(original.delta.get());
-		//delta.setPaused(original.delta.getPaused());
-		ambient = original.ambient;
-		speed_of_sound = original.speed_of_sound;
-
-		// Copy children, unfinished!
-		//foreach (Node c; children.array())
+	
+	/**
+	 * Overridden to pause scene updates and to remove this instance from the array of all scenes. */
+	override void finalize()
+	{	pause();
+		all_scenes.remove(this);
+		super.finalize();
 	}
 	
 	/**
@@ -286,8 +276,7 @@ class Scene : Node//, ITemporal
 	/*
 	 * Apply OpenGL options specific to this Scene.  This function is used internally by
 	 * the engine and doesn't normally need to be called.
-	 * TODO: Rename to bind?
-	 * */
+	 * TODO: Rename to bind? */
 	void apply()
 	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.vec4f.ptr);
 		glClearColor(background.r, background.g, background.b, background.a);
@@ -300,6 +289,7 @@ class Scene : Node//, ITemporal
 			glDisable(GL_FOG);
 	}
 
+	
 	/*
 	 * Add a light to this Scene's list of lights.
 	 * Only add lights that already exist as one of this node's children.
@@ -316,4 +306,9 @@ class Scene : Node//, ITemporal
 	{	synchronized (lights_mutex) lights.remove(light);
 	}
 
+	/**
+	 * Get a self-indexed array of all senes that have been constructed but not finalized. */
+	static Scene[Scene] getAllScenes()
+	{	return all_scenes;		
+	}
 }

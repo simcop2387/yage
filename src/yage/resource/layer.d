@@ -289,7 +289,7 @@ class Layer
 				// Set texture coordinates
 				Attribute texcoords = model.getAttribute("gl_TexCoord");
 				if (Probe.openGL(Probe.OpenGL.VBO))
-				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.vbo);
+				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.vbo.getId());
 					glTexCoordPointer(texcoords.width, GL_FLOAT, 0, null);
 				} else
 					glTexCoordPointer(texcoords.width, GL_FLOAT, 0, texcoords.values.ptr);

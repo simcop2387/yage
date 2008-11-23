@@ -22,43 +22,65 @@ import yage.scene.scene;
 
 /// A node that emits a sound.
 class SoundNode : MovableNode, ITemporal
-{	protected:
+{	
+	protected uint	al_source;		// OpenAL index of this Sound Resource
+	protected Sound	sound;			// The Sound Resource (file) itself.
 
-	uint		al_source;		// OpenAL index of this Sound Resource
-	Sound		sound;			// The Sound Resource (file) itself.
+	protected float	pitch = 1.0;
+	protected float	radius = 256;	// The radius of the Sound that plays.
+	protected float	volume = 1.0;
+	protected bool	looping = false;
+	protected bool	_paused  = true;// true if paused or stopped
 
-	float		pitch = 1.0;
-	float		radius = 256;	// The radius of the Sound that plays.
-	float		volume = 1.0;
-	bool		looping = false;
-	bool		_paused  = true;	// true if paused or stopped
+	protected int	size;			// number of buffers that we use at one time
+	protected bool	enqueue = true;	// Keep enqueue'ing more buffers, false if no loop and at end of track.
+	protected uint	buffer_start;	// the first buffer in the array of currently enqueue'd buffers
+	protected uint	buffer_end;		// the last buffer in the array of currently enqueue'd buffers
+	protected uint	to_process;		// the number of buffers to queue next time.
 
-	int			size;			// number of buffers that we use at one time
-	bool		enqueue = true;	// Keep enqueue'ing more buffers, false if no loop and at end of track.
-	uint		buffer_start;	// the first buffer in the array of currently enqueue'd buffers
-	uint		buffer_end;		// the last buffer in the array of currently enqueue'd buffers
-	uint		to_process;		// the number of buffers to queue next time.
-
-	public:
-
+	static int counter;
+	
 	/**
 	 * Create OpenAL Sound source on construction */
 	this()
 	{	super();
-		alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()		
-		setSoundRadius(radius);
+	}
+	
+	// TODO: make this re-seek to the previous position
+	protected void createSource()
+	{	
+		if (!al_source)
+		{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()		
+			setSoundRadius(radius);
+			if (sound)
+				setSound(sound);
+			
+			//counter++;
+			//writefln("Ctor, ", counter);
+		}
+	}
+	
+	protected void removeSource()
+	{	if (al_source)
+		{	if (sound)
+				alSourceUnqueueBuffers(al_source, buffer_end, sound.getBuffers(buffer_start, buffer_end).ptr);
+			alSourceStop(al_source);
+			alDeleteSources(1, &al_source);
+			al_source = 0;
+			//counter--;
+			//writefln("Dtor, ", counter);
+		}
+	}
+	
+	override public void finalize()
+	{	removeSource();
+		super.finalize();
 	}
 
 	/**
-	 * Delete OpenAL Sound source on destruction.
-	 * For some reason this isn't called for all sounds. */
+	 * Delete OpenAL Sound source on destruction. */
 	~this()
-	{	stop();
-	
-		// Free unprocessed buffers.		
-		if (sound)
-			alSourceUnqueueBuffers(al_source, buffer_end, sound.getBuffers(buffer_start, buffer_end).ptr);
-		alDeleteSources(1, &al_source);
+	{	finalize();
 	}
 	
 	/*
@@ -259,15 +281,15 @@ class SoundNode : MovableNode, ITemporal
 		}
 	}
 
-	///
-	override char[] toString()
-	{	return toString(false);
-	}
-
 	/**
 	 * Return a string representation of this Node for human reading.
 	 * Params:
 	 * recurse = Print this Node's children as well. */
+	override char[] toString()
+	{	return toString(false);
+	}
+
+	/// ditto
 	char[] toString(bool recurse)
 	{	static int indent;
 		char[] pad = new char[indent*3];
@@ -370,9 +392,13 @@ class SoundNode : MovableNode, ITemporal
 	 * This should be protected, but making it anything but public causes it not to be called.
 	 * Most likely a D bug. */
 	override public void ancestorChange(Node old_ancestor)
-	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
-		if (!scene)
-			pause();
+	{	Scene old_scene = old_ancestor ? old_ancestor.scene : null;
+		super.ancestorChange(old_ancestor); // must be called first so scene is set.
+		if (scene && !old_scene)
+			createSource();
+		if (!scene && old_scene)
+			removeSource();
+			
 	}
 	
 	/**

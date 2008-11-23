@@ -129,9 +129,10 @@ class Sound
 			return buffers[first..last];
 	}
 
-	/** Return an array of OpenAL Buffers starting at first.
-	 *  This can accept buffers outside of the range of buffers and
-	 *  will wrap them around to support easy looping. */
+	/** 
+	 * Return an array of OpenAL Buffers starting at first.
+	 * This can accept buffers outside of the range of buffers and
+	 * will wrap them around to support easy looping. */
 	void allocBuffers(int first, int number)
 	{	// Loop through each of the buffers that will be returned
 		for (int j=first; j<first+number; j++)

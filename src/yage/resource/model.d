@@ -12,6 +12,7 @@ import std.file;
 import std.math;
 import std.path;
 import std.stdio;
+import std.thread;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.matrix;
@@ -25,8 +26,10 @@ import yage.resource.mesh;
 import yage.resource.resource;
 import yage.system.log;
 import yage.system.probe;
+import yage.system.device;
 import yage.resource.ms3dloader;
 import yage.resource.objloader;
+import yage.resource.lazyresource;
 import yage.scene.visible;
 
 
@@ -35,10 +38,9 @@ import yage.scene.visible;
  * Vertex attributes can be vertices themselves, texture coordinates, normals, colors, or anything else.
  * They can be an array of floats, vectors of varying size, or matrices. */
 struct Attribute
-{	float[]	values;			// Raw data of the attributes
+{	float[]	values;			// Raw data of the attributes, can we use lazyVBO for this?
 	ubyte	width;			// Number of floats to use for each vertex.
-	uint	vbo;		
-	bool	cached = false; // Are the values of this attribute cached in video memory?
+	LazyVBO vbo;
 
 	/// Get the values of this attribute as an array of Vec3f
 	Vec3f[] vec3f()
@@ -115,21 +117,12 @@ class Model
 	mixin Ms3dLoader;
 	mixin ObjLoader;
 
-	/// Generate buffers in video memory for the vertex data.
+	/// Instantiate an empty model.
 	this()
-	{	Attribute a;
-		attributes["gl_Vertex"] = a;
-		attributes["gl_TexCoord"] = a;
-		attributes["gl_Normal"] = a;
-		
-		if (Probe.openGL(Probe.OpenGL.VBO))
-		{	glGenBuffersARB(1, &attributes["gl_Vertex"].vbo);
-			glGenBuffersARB(1, &attributes["gl_TexCoord"].vbo);
-			glGenBuffersARB(1, &attributes["gl_Normal"].vbo);			
-		}
+	{			
 	}
 
-	/// Generate buffers and load and upload the given model file.
+	/// Instantiate and and load the given model file.
 	this (char[] filename)
 	{	this();
 		load(filename);
@@ -151,14 +144,16 @@ class Model
 
 	/// Remove the model's vertex data from video memory.
 	~this()
-	{	if (source.length)
-			Log.write("Removing model '" ~ source ~ "'.");
-		foreach (name, attrib; attributes)
+	{	finalize();
+	}
+	
+	/**
+	 * Deallocates vertex buffers. */
+	void finalize()
+	{	foreach (name, attrib; attributes)
 			clearAttribute(name);
 	}
 
-	
-	
 	/**
 	 * Advance this Model's animation to time.
 	 * This still has bugs somehow.
@@ -172,8 +167,7 @@ class Model
 			return;
 		
 		time = fmod(time, animation_max_time);		
-		animation_time = time;
-		
+		animation_time = time;		
 		
 		// TODO: check time constraints
 		int i=0;
@@ -256,8 +250,7 @@ class Model
 				if (normals.length)
 					normals[v] = normals_original[v].rotate(cmatx);
 				// TODO: only reassign cmatx if joint_indices[v] has changed.
-			}				
-		}
+		}	}
 				
 		setAttribute("gl_Vertex", vertices);
 		if (normals.length)
@@ -265,29 +258,35 @@ class Model
 	}	
 	
 	
-	/// This can only be called before upload()
-	/// Bind the Vertex, Texture, and Normal VBO's for use.
+	/**
+	 * Bind the Vertex, Texture, and Normal VBO's for use.
+	 * This can only be called from the rendering thread. */
 	void bind()
+	in {
+		assert(Device.isDeviceThread());
+	}
+	body
 	{	foreach (name, attrib; attributes)
 		{	switch (name)
 			{	case "gl_Vertex":
-					if (attrib.cached)
-					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo);
-						glVertexPointer(3, GL_FLOAT, 0, null);					
+					if (attrib.vbo.getId())
+					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo.getId());
+						glVertexPointer(3, GL_FLOAT, 0, null);
 					} else
-						glVertexPointer(3, GL_FLOAT, 0, attrib.vec3f.ptr);
+					{	glVertexPointer(3, GL_FLOAT, 0, attrib.vec3f.ptr);
+					}
 					break;
 				
 				case "gl_TexCoord":
-					if (attrib.cached)
-					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo);
+					if (attrib.vbo.getId())
+					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo.getId());
 						glTexCoordPointer(2, GL_FLOAT, 0, null);		
 					} else
 						glTexCoordPointer(2, GL_FLOAT, 0, attrib.vec2f.ptr);				
 					break;
 				case "gl_Normal":
-					if (attrib.cached)
-					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo);
+					if (attrib.vbo.getId())
+					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo.getId());
 						glNormalPointer(GL_FLOAT, 0, null);
 					} else
 						glNormalPointer(GL_FLOAT, 0, attrib.vec3f.ptr);
@@ -300,8 +299,7 @@ class Model
 	/// Clear an attribute.
 	void clearAttribute(char[] name)
 	{	if (name in attributes)
-		{	if (attributes[name].cached)
-				glDeleteBuffersARB(1, &attributes[name].vbo);
+		{	attributes[name].vbo.destroy();
 			attributes.remove(name);
 		}
 	}
@@ -417,12 +415,9 @@ class Model
 	/**
 	 * Return a string representation of this Model and all of its data. */
 	char[] toString(bool detailed=false)
-	{	char[] result;
-		result ~= "Model:  '"~source~"'\n";
-
+	{	char[] result = "Model:  '"~source~"'\n";
 		foreach (j; joints)
-			result ~= j.toString();
-		
+			result ~= j.toString();		
 		return result;
 	}
 
@@ -432,18 +427,10 @@ class Model
 		if (!(name in attributes))
 		{	Attribute a;
 			attributes[name] = a;
-			if (Probe.openGL(Probe.OpenGL.VBO))
-				glGenBuffersARB(1, &attributes[name].vbo);
 		}
-
-		attributes[name].values = values;
-		attributes[name].width = width;
-
-		if (Probe.openGL(Probe.OpenGL.VBO))
-		{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attributes[name].vbo);
-			glBufferDataARB(GL_ARRAY_BUFFER_ARB, attributes[name].values.length*float.sizeof, attributes[name].values.ptr, GL_STATIC_DRAW);
-			//glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0); // unbind
-			attributes[name].cached = true;
-		}
+		Attribute *b = &attributes[name];
+		b.values = values;
+		b.width = width;		
+		b.vbo.create(LazyVBO.Type.GL_ARRAY_BUFFER_ARB, attributes[name].values);		
 	}
 }

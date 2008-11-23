@@ -34,8 +34,6 @@ int main()
 	//Device.init(1024, 768, 32, true);
 	//Device.init(1440, 900, 32, true);
 	
-	
-	
 	// Paths
 	Resource.addPath("../res/");
 	Resource.addPath("../res/shader");
@@ -147,8 +145,9 @@ int main()
 	void update(Node self){
 		ship.getSpring().update(1/60.0f);
 		// Test creation and removal of lots of lights and sounds and sprites.
+		/*
 		for (int i=0; i<1; i++)
-		{	/*
+		{	
 			auto flare = scene.addChild(new SpriteNode());
 			flare.setMaterial("fx/flare1.xml");
 			flare.setSize(Vec3f(2));
@@ -164,9 +163,9 @@ int main()
 			zap.setSound("sound/laser.wav");
 			zap.setVolume(1);
 			zap.setLifetime(2); 
-			zap.play();
-			*/
+			zap.play();	 	
 		}
+		*/
 	}
 	scene.onUpdate(&update);
 	
@@ -201,6 +200,7 @@ int main()
 		scene.swapTransformRead();
 	}
 	scene.pause();
+	scene.finalize();
 	
 	Device.deInit();
 

@@ -8,6 +8,7 @@ module yage.system.device;
 
 import std.stdio;
 import std.string;
+import std.thread;
 import derelict.openal.al;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
@@ -24,6 +25,8 @@ import yage.system.constant;
 import yage.system.probe;
 import yage.core.exceptions;
 import yage.core.vector;
+import yage.scene.scene;
+import yage.resource.lazyresource;
 
 import std.c.stdlib : exit;
 
@@ -59,6 +62,8 @@ abstract class Device
 	protected static bool initialized=false;			// true if init() has been called
 	protected static Surface surface;
 	
+	protected static Thread self_thread; // reference to thread that called init.	
+	
 	static bool running = true;
 
 	/**
@@ -82,6 +87,8 @@ abstract class Device
 		this.size.y= height;
 		this.depth = depth;
 		this.fullscreen = fullscreen;
+		
+		this.self_thread = Thread.getThis();
 
 		// load shared libraries
 		DerelictGL.load();
@@ -194,7 +201,7 @@ abstract class Device
 
 		// Initialize OpenAL
 		al_device = alcOpenDevice(null);
-		al_context = alcCreateContext(al_device, null);
+		al_context = alcCreateContext(al_device, null); // TODO: make this per-scene.
 		alcMakeContextCurrent(al_context);
 		if (alGetError()!=0)
 			throw new YageException("There was an error when initializing OpenAL.");
@@ -206,7 +213,17 @@ abstract class Device
 	}
 	
 	static void deInit()
-	{	SDL_WM_GrabInput(SDL_GRAB_OFF);
+	in {
+		assert(isDeviceThread());
+	}
+	body
+	{	
+		foreach (s; Scene.getAllScenes().values)
+			s.finalize();		
+		
+		LazyResource.apply();
+		
+		SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);
 		
 		alcDestroyContext(al_context);
@@ -240,6 +257,13 @@ abstract class Device
 	{	return size.y;
 	}
 
+	/**
+	 * Returns true if called from the same thread as what Device.init() was called.
+	 * This is useful to ensure that rendering functions aren't called from other threads. */
+	static bool isDeviceThread()
+	{	return !!(Thread.getThis() == self_thread);		
+	}
+	
 	/** 
 	 * Resize the viewport to the given size.  
 	 * Special values of zero scale the viewport to the window size. 
@@ -292,4 +316,3 @@ abstract class Device
 		}
 	}
 }
-

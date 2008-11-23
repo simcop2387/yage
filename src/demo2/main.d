@@ -11,6 +11,7 @@ module min.main;
 
 import std.string;
 import std.stdio;
+import std.random;
 import derelict.sdl.sdl;
 import yage.all;
 
@@ -24,11 +25,13 @@ int main()
 	
 	// Paths
 	Resource.addPath("../res/");
+	Resource.addPath("../res2/");
 	
 	// Create and start a Scene
 	Scene scene = new Scene();
 	scene.play();
 	scene.setClearColor(Color("green"));
+	
 	// Ship
 	auto ship = scene.addChild(new ModelNode());
 	ship.setModel("obj/tie2.obj");
@@ -59,6 +62,13 @@ int main()
 	auto l1 = scene.addChild(new LightNode());
 	l1.setPosition(Vec3f(0, 300, -300));
 	
+	//	 Music
+	auto music = new SoundNode();
+	camera.addChild(music);
+	music.setSound("music/celery - pages.ogg");
+	music.setLooping(true);
+	music.play();
+	
 	// Rendering / Input Loop
 	int fps = 0;
 	Timer frame = new Timer();
@@ -77,7 +87,8 @@ int main()
 			fps = 0;			
 		}
 	}
-
+	
+	// Free resources that can't be freed by the garbage collector.
 	Device.deInit();
 	return 0;
 }

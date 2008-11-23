@@ -1,9 +1,8 @@
 #A backup build script for when buildme.d fails.
-#Uses bud, available at www.dsource.org/projects/build
+#Uses rebuild, available at www.dsource.org/projects/dsss
 #Linux only!
 
 cd ../src
-bud -op -clean demo1/main.d dl.a
-cd demo1
-mv main ../../bin/yage
-cd ../../proj
+rebuild -g -clean demo2/main.d
+mv main ../bin/yage3d
+cd ../proj
