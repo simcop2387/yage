@@ -12,7 +12,7 @@ import std.stdio;
 import std.string;
 import std.stream;
 
-import yage.resource.resource;
+import yage.resource.manager;
 import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
@@ -134,16 +134,16 @@ class TerrainNode : VisibleNode
 	}
 
 	/**
-	 * Set the Material used by this TerrainNode, using the Resource Manager
+	 * Set the Material used by this TerrainNode, using the ResourceManager Manager
 	 * to ensure that no Material is loaded twice.
-	 * Equivalent of setMaterial(Resource.material(filename)); */
+	 * Equivalent of setMaterial(ResourceManager.material(filename)); */
 	void setMaterial(Material material)
 	{	model.getMeshes()[0].setMaterial(material);
 	}
 
 	/// Set the Material of the GraphNode.
 	void setMaterial(char[] material_file)
-	{	setMaterial(Resource.material(material_file));
+	{	setMaterial(ResourceManager.material(material_file));
 	}
 
 	

@@ -27,8 +27,8 @@ class Ship : GameObject
 	this()
 	{
 		super();
-		new Material("fx/smoke.xml");
-		new Material("fx/flare1.xml");
+		ResourceManager.material("fx/smoke.xml");
+		ResourceManager.material("fx/flare1.xml");
 
 		pitch = addChild(new MovableNode());
 
@@ -77,7 +77,7 @@ class Ship : GameObject
 
 			// Engine smoke
 			SpriteNode puff = getScene().addChild(new SpriteNode());
-			puff.setMaterial(Resource.material("fx/smoke.xml"));
+			puff.setMaterial("fx/smoke.xml");
 			puff.setLifetime(5);
 			puff.setSize(Vec3f(.4));
 			//puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
@@ -93,8 +93,7 @@ class Ship : GameObject
 
 			puff = ship.getScene().addChild(puff.clone());
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-			
-			
+
 			sound.play();
 		}
 		else

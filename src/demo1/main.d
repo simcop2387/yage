@@ -35,9 +35,9 @@ int main()
 	//Device.init(1440, 900, 32, true);
 	
 	// Paths
-	Resource.addPath("../res/");
-	Resource.addPath("../res/shader");
-	Resource.addPath("../res2/");	
+	ResourceManager.addPath("../res/");
+	ResourceManager.addPath("../res/shader");
+	ResourceManager.addPath("../res2/");	
 
 	// Create and start a Scene
 	Log.write("Starting update loop.");

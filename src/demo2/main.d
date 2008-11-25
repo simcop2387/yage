@@ -24,8 +24,9 @@ int main()
 	Device.init(800, 600, 32, false, 1);
 	
 	// Paths
-	Resource.addPath("../res/");
-	Resource.addPath("../res2/");
+	ResourceManager.addPath(["../res", "../res2"]);
+	
+	// ResourceManager.material("fx/flare1.xml"); // This shouldn't be required here.
 	
 	// Create and start a Scene
 	Scene scene = new Scene();
@@ -68,6 +69,32 @@ int main()
 	music.setSound("music/celery - pages.ogg");
 	music.setLooping(true);
 	music.play();
+	
+	// Add to the scene's update loop
+	void update(Node self){
+		
+		// Test creation and removal of lots of lights and sounds and sprites.
+		for (int i=0; i<1; i++)
+		{	
+			auto flare = scene.addChild(new SpriteNode());
+			flare.setMaterial("fx/flare1.xml");
+			flare.setSize(Vec3f(2));
+			flare.setPosition(Vec3f(0, 0, -1400));
+			flare.setLifetime((rand()%100)/100.0f + 2);
+			flare.setVelocity(Vec3f(cast(int)((rand()%100)-50)/2.0f, (cast(int)(rand()%100)-50)/2.0f, (cast(int)(rand()%100)-50)/2.0f));
+			
+			auto l = flare.addChild(new LightNode());
+			l.setDiffuse(Color(1, 1, 1));
+			l.setLightRadius(1200);
+			
+			SoundNode zap = flare.addChild(new SoundNode());
+			zap.setSound("sound/laser.wav");
+			zap.setVolume(1);
+			zap.setLifetime(2); 
+			zap.play();	 	
+		}
+	}
+	scene.onUpdate(&update);
 	
 	// Rendering / Input Loop
 	int fps = 0;

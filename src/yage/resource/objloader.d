@@ -1,6 +1,6 @@
 /**
  * Copyright:  (c) 2005-2008 Eric Poggel
- * Authors:    Eric Poggel
+ * Authors:    Joe Pusderis (deformative0@gmail.com)
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
@@ -21,7 +21,7 @@ import yage.system.constant;
 import yage.resource.model;
 import yage.resource.material;
 import yage.resource.mesh;
-import yage.resource.resource;
+import yage.resource.manager;
 import yage.resource.texture;
 import yage.system.log;
 
@@ -285,13 +285,13 @@ template ObjLoader(){
 
 	/**
 	 * Load a model from a Wavefront obj file.
-	 * All materials, etc. referenced by this model are loaded through the Resource
+	 * All materials, etc. referenced by this model are loaded through the ResourceManager
 	 * manager to avoid duplicates.  Meshes without a material are assigned a default material.*/
 	protected void loadObj(char[] filename){
 		Vec3f[] vertices, normals;
 		Vec2f[] texcoords;
 		
-		source = Resource.resolvePath(filename);
+		source = ResourceManager.resolvePath(filename);
 		
 		OBJ obj;
 		obj.load(source);
@@ -338,11 +338,11 @@ template ObjLoader(){
 			//if (texfile.length){
 			//	if (icmp(texfile[0..2], ".\\")==0) // linux fails with .\ in a path.
 			//		texfile = texfile[2..length];
-			//meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ texfile));
+			//meshes[m].getMaterial().getLayers()[0].addTexture(ResourceManager.texture(path ~ texfile));
 			//}
 			//if (ms3d.materials[midx].alphamap[0])
 			if(g.mtl.texture.length)
-				meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(obj.path ~ g.mtl.texture));
+				meshes[m].getMaterial().getLayers()[0].addTexture(ResourceManager.texture(obj.path ~ g.mtl.texture));
 			
 			
 			// Triangles

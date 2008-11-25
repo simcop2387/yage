@@ -11,6 +11,7 @@ import std.string;
 import yage.core.vector;
 
 import yage.resource.material;
+import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.lazyresource;
 import yage.system.probe;
@@ -19,7 +20,7 @@ import yage.system.probe;
  * Models are divided into one or more meshes.
  * Each mesh has its own material and an array of triangle indices.
  * The triangle indicices index into an array of vertices in a parent Model. */
-class Mesh
+class Mesh : Resource
 {	protected Vec3i[]		triangles;
 	protected LazyVBO		vbo_triangles;
 	protected Material		material;
@@ -69,7 +70,7 @@ class Mesh
 	
 	/// Ditto
 	void setMaterial(char[] filename)
-	{	this.material = Resource.material(filename);
+	{	this.material = ResourceManager.material(filename);
 	}
 
 	/**

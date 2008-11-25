@@ -110,11 +110,11 @@ private struct MS3D
 
 		// Check for Ms3d header
 		if (icmp("MS3D000000", cast(char[])file[0..10])!=0)
-			throw new ResourceException("This file does not have a valid MS3D header.");
+			throw new ResourceManagerException("This file does not have a valid MS3D header.");
 
 		// Check Ms3d version (3 or 4 only)
 		if (file[10] <3 || file[10] > 4)
-			throw new ResourceException("Milkshape file format version " ~ .toString(file[10]) ~ " not supported.");
+			throw new ResourceManagerException("Milkshape file format version " ~ .toString(file[10]) ~ " not supported.");
 		
 		// Vertices
 		memcpy(&size, &file[14], 2);
@@ -194,12 +194,12 @@ template Ms3dLoader()
 {
 	/**
 	 * Load a model from a Milkshape3D model file.
-	 * All materials, etc. referenced by this model are loaded through the Resource
+	 * All materials, etc. referenced by this model are loaded through the ResourceManager
 	 * manager to avoid duplicates.  Meshes without a material are assigned a default material.
 	 * Uploading vertex data to video memory must be done manually by calling Upload(). */
 	protected void loadMs3d(char[] filename)
 	{	
-		source = Resource.resolvePath(filename);
+		source = ResourceManager.resolvePath(filename);
 		char[] path = source[0 .. rfind(source, "/") + 1]; // path stripped of filename
 
 		// Load the Ms3d model into the MS3D struct.
@@ -259,10 +259,10 @@ template Ms3dLoader()
 					if (texfile.length)
 					{	if (icmp(texfile[0..2], ".\\")==0) // linux fails with .\ in a path.
 							texfile = texfile[2..length];
-						meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ texfile));
+						meshes[m].getMaterial().getLayers()[0].addTexture(ResourceManager.texture(path ~ texfile));
 					}
 					if (ms3d.materials[midx].alphamap[0])
-						meshes[m].getMaterial().getLayers()[0].addTexture(Resource.texture(path ~ ms3d.materials[midx].alphamap));
+						meshes[m].getMaterial().getLayers()[0].addTexture(ResourceManager.texture(path ~ ms3d.materials[midx].alphamap));
 				}
 			}
 			
@@ -394,7 +394,7 @@ template Ms3dLoader()
 						break;
 				}	}			
 				if (!current.parent)
-					throw new ResourceException("Unable to link bone " ~ .toString(j) ~ " of model " ~ filename ~ "!");
+					throw new ResourceManagerException("Unable to link bone " ~ .toString(j) ~ " of model " ~ filename ~ "!");
 		}	}
 		
 		// Joint children relationshps

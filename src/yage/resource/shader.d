@@ -14,6 +14,7 @@ import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
 import yage.resource.exceptions;
+import yage.resource.manager;
 import yage.resource.resource;
 
 
@@ -21,7 +22,7 @@ import yage.resource.resource;
  * A Shader is a class used to represent a vertex or fragment shader.
  * Material layers link shader objects together to form shader programs.
  * When a node that uses that material is rendered, the shader program is applied.*/
-class Shader
+class Shader : Resource
 {
 	protected char[]	source;		// path to the source code.
 	protected char[]	code;		// Source code of the shader.
@@ -37,7 +38,7 @@ class Shader
 	this(char[] filename, bool type)
 	{
 		// Load
-		source = Resource.resolvePath(filename);
+		source = ResourceManager.resolvePath(filename);
 		this.type = type;
 		Log.write("Loading shader '", filename, "'.");
 		code = cast(char[])read(source);
@@ -58,7 +59,7 @@ class Shader
 		glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
 		if (!status)
 		{	Log.write(getCompileLog());
-			throw new ResourceException("Could not compile shader '" ~ source ~ "'.");
+			throw new ResourceManagerException("Could not compile shader '" ~ source ~ "'.");
 		}
 	}
 

@@ -23,6 +23,7 @@ import yage.core.vector;
 import yage.resource.exceptions;
 import yage.resource.material;
 import yage.resource.mesh;
+import yage.resource.manager;
 import yage.resource.resource;
 import yage.system.log;
 import yage.system.probe;
@@ -101,7 +102,7 @@ class Joint
  * Each model is divided into one or more Meshes; each Mesh has its own material
  * and an array of triangle indices that correspond to vertices in the Model's vertex array.  
  * ModelNodes can be used to create 3D models in a scene.*/
-class Model
+class Model : Resource
 {	
 	protected char[] source;
 	protected Mesh[] meshes;
@@ -375,7 +376,7 @@ class Model
 				//std.gc.genCollect();
 				break;
 			default:
-				throw new ResourceException("Unrecognized model file format '"~ext~"'.");
+				throw new ResourceManagerException("Unrecognized model file format '"~ext~"'.");
 		}
 	}
 

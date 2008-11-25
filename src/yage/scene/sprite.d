@@ -6,7 +6,7 @@
 
 module yage.scene.sprite;
 
-import yage.resource.resource;
+import yage.resource.manager;
 import yage.resource.material;
 import yage.scene.node;
 import yage.scene.visible;
@@ -45,10 +45,10 @@ class SpriteNode : VisibleNode
 	{	this.material=material;
 	}
 
-	/** Set the Material of the SpriteNode, using the Resource Manager
+	/** Set the Material of the SpriteNode, using the ResourceManager Manager
 	 *  to ensure that no Material is loaded twice.
-	 *  Equivalent of setMaterial(Resource.material(filename)); */
+	 *  Equivalent of setMaterial(ResourceManager.material(filename)); */
 	void setMaterial(char[] material_file)
-	{	setMaterial(Resource.material(material_file));
+	{	setMaterial(ResourceManager.material(material_file));
 	}
 }

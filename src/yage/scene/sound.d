@@ -13,7 +13,7 @@ import derelict.openal.al;
 import yage.core.math;
 import yage.core.interfaces;
 import yage.core.exceptions;
-import yage.resource.resource;
+import yage.resource.manager;
 import yage.resource.sound;
 import yage.scene.node;
 import yage.scene.movable;
@@ -23,8 +23,8 @@ import yage.scene.scene;
 /// A node that emits a sound.
 class SoundNode : MovableNode, ITemporal
 {	
-	protected uint	al_source;		// OpenAL index of this Sound Resource
-	protected Sound	sound;			// The Sound Resource (file) itself.
+	protected uint	al_source;		// OpenAL index of this Sound ResourceManager
+	protected Sound	sound;			// The Sound ResourceManager (file) itself.
 
 	protected float	pitch = 1.0;
 	protected float	radius = 256;	// The radius of the Sound that plays.
@@ -128,7 +128,7 @@ class SoundNode : MovableNode, ITemporal
 	}
 
 	/**
-	 * Get / set the Sound Resource that this SoundNode will play. */
+	 * Get / set the Sound ResourceManager that this SoundNode will play. */
 	Sound getSound()
 	{	return sound;
 	}	
@@ -148,11 +148,11 @@ class SoundNode : MovableNode, ITemporal
 			play();
 	}
 
-	/** Set the Sound used by this Node, using the Resource Manager
+	/** Set the Sound used by this Node, using the ResourceManager Manager
 	 *  to ensure that no Sound is loaded twice.
-	 *  Equivalent of setSound(Resource.sound(filename)); */
+	 *  Equivalent of setSound(ResourceManager.sound(filename)); */
 	void setSound(char[] filename)
-	{	setSound(Resource.sound(filename));
+	{	setSound(ResourceManager.sound(filename));
 	}
 
 	/// Get the pitch of the SoundNode.
@@ -162,7 +162,7 @@ class SoundNode : MovableNode, ITemporal
 
 	/**
 	 * Set the pitch of the SoundNode.
-	 * This has nothing to do with the frequency of the loaded Sound Resource.
+	 * This has nothing to do with the frequency of the loaded Sound ResourceManager.
 	 * Params:
 	 * pitch = Less than 1.0 is deeper, greater than 1.0 is higher. */
 	void setPitch(float pitch)

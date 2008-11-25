@@ -15,52 +15,55 @@ import yage.core.timer;
 import yage.core.types;
 import yage.core.parse;
 import yage.resource.exceptions;
-import yage.resource.resource;
 import yage.resource.image;
+import yage.resource.manager;
+import yage.resource.resource;
 import yage.resource.texture;
 
-//Stores a single rendered letter.
-private struct Letter
-{	Image image;
-	int top;
-	int left;
-	int advancex;
-	int advancey;
-	dchar letter;
-	
-	char[] toString()
-	{	return toUTF8([letter]);		
-	}
-}
 
-// Used as a key to lookup cached letters.
-private struct Key
-{	dchar letter;
-	short width;
-	short height;
-	
-	// Hash recognizes that most letters are two bytes or less, most sizes are one byte or less
-    hash_t toHash()
-    {	return (cast(uint)letter<<16) + ((cast(uint)width)<<8) + (cast(uint)height);    	
-    }
-    int opEquals(Key s)
-    {  	return letter==s.letter && width==s.width && height==s.height;
-    }
-    int opCmp(Key s)
-    {  	 return toHash() - s.toHash();
-    }
-}
-
-private struct Line
-{	Letter[] letters;
-	int width;
-}
 
 /**
  * An instance of a loaded Font.
  * Fonts are typically used to render strings of text to an image. */
-class Font
+class Font : Resource
 {
+	// Stores a single rendered letter.
+	protected struct Letter
+	{	Image image;
+		int top;
+		int left;
+		int advancex;
+		int advancey;
+		dchar letter;
+		
+		char[] toString()
+		{	return toUTF8([letter]);		
+		}
+	}
+
+	// Used as a key to lookup cached letters.
+	protected struct Key
+	{	dchar letter;
+		short width;
+		short height;
+		
+		// Hash recognizes that most letters are two bytes or less, most sizes are one byte or less
+	    hash_t toHash()
+	    {	return (cast(uint)letter<<16) + ((cast(uint)width)<<8) + (cast(uint)height);    	
+	    }
+	    int opEquals(Key s)
+	    {  	return letter==s.letter && width==s.width && height==s.height;
+	    }
+	    int opCmp(Key s)
+	    {  	 return toHash() - s.toHash();
+	    }
+	}
+
+	protected struct Line
+	{	Letter[] letters;
+		int width;
+	}
+	
 	protected static FT_Library library;
 	protected static bool freetype_initialized = false;
 	
@@ -70,6 +73,7 @@ class Font
 	protected char[] source;
 	protected Letter[Key] cache; // Using this cache of rendered character images increases performance by about 5x.
 	
+	///
 	enum TextAlign
 	{	LEFT = 0,
 		CENTER = 1,
@@ -79,25 +83,25 @@ class Font
 	/**
 	 * Construct and load the font file specified by filename.
 	 * Params:
-	 *     filename = Any font file supported by Freetype that exists in Resource.paths. */
+	 *     filename = Any font file supported by Freetype that exists in ResourceManager.paths. */
 	this(char[] filename)
 	{
 		// Initialize Freetype library if not initialized
 		// TODO: Move this into Device?
 		if (!freetype_initialized)
 			if (FT_Init_FreeType(&library))
-				throw new ResourceException("Freetype2 Failed to load.");
+				throw new ResourceManagerException("Freetype2 Failed to load.");
 		
 		// Load
-		source = Resource.resolvePath(filename);
+		source = ResourceManager.resolvePath(filename);
 		auto error = FT_New_Face(library, toStringz(source), 0, &face );
 		if (error == FT_Err_Unknown_File_Format)
-			throw new ResourceException("Could not open font file '%s'. The format is not recognized by Freetype2.", source);
+			throw new ResourceManagerException("Could not open font file '%s'. The format is not recognized by Freetype2.", source);
 		else if (error)
-			throw new ResourceException("Freetype2 could not open font file '%s'.", source);		
+			throw new ResourceManagerException("Freetype2 could not open font file '%s'.", source);		
 	}
 	
-	///
+	//
 	~this()
 	{	// Do freetype libraries not require any type of cleanup?
 	}
@@ -142,7 +146,7 @@ class Font
 		// Give our font size to freetype.
 		auto error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
 		if (error)
-			throw new ResourceException("Font '%s' does not support pixel sizes of %dx%d.", source, width, height);		
+			throw new ResourceManagerException("Font '%s' does not support pixel sizes of %dx%d.", source, width, height);		
 		
 		/*
 		 * First, we render (or retrieve from cache) all letters into an array of Letter.
@@ -162,7 +166,7 @@ class Font
 			{	// Render the character into the glyph slot.
 				error = FT_Load_Char(face, c, FT_LOAD_RENDER);  
 				if (error)
-					throw new ResourceException("Font '%s' cannot render the character '%s'.", source, toUTF8([c]));			
+					throw new ResourceManagerException("Font '%s' cannot render the character '%s'.", source, toUTF8([c]));			
 				
 				auto bitmap = face.glyph.bitmap;
 				ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				

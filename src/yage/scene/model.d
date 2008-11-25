@@ -11,7 +11,7 @@ import yage.core.vector;
 import yage.system.device;
 import yage.system.log;
 import yage.system.interfaces;
-import yage.resource.resource;
+import yage.resource.manager;
 import yage.resource.model;
 import yage.resource.material;
 import yage.scene.visible;
@@ -109,10 +109,10 @@ class ModelNode : VisibleNode
 	}
 
 	/**
-	 * Set the 3D model used by this Node, using the Resource Manager to ensure that no Model is loaded twice.
-	 * Equivalent of setModel(Resource.model(filename)); */
+	 * Set the 3D model used by this Node, using the ResourceManager Manager to ensure that no Model is loaded twice.
+	 * Equivalent of setModel(ResourceManager.model(filename)); */
 	void setModel(char[] filename)
-	{	setModel(Resource.model(filename));
+	{	setModel(ResourceManager.model(filename));
 	}
 
 	/// Overridden to cache the radius if changed by the scale.

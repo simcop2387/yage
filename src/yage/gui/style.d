@@ -13,7 +13,7 @@ import std.conv;
 import yage.core.color;
 import yage.core.vector;
 import yage.resource.font;
-import yage.resource.resource;
+import yage.resource.manager;
 import yage.resource.material;
 import yage.resource.texture;
 import yage.gui.exceptions;
@@ -267,7 +267,7 @@ struct Style
 			
 				case "backgroundcolor":		backgroundColor = Color(tokens[1]); break;
 				case "backgroundrepeat":	backgroundRepeat = translate[tokens[1]]; break;
-				case "backgroundmaterial":	backgroundMaterial = Resource.texture(removeUrl(tokens[1])).texture; break;				
+				case "backgroundmaterial":	backgroundMaterial = ResourceManager.texture(removeUrl(tokens[1])).texture; break;				
 			
 				case "backgroundpositionx":parseUnits(tokens[1], backgroundPosition.values[0..1], backgroundPositionUnits.values[0..1]); break;
 				case "backgroundpositiony":parseUnits(tokens[1], backgroundPosition.values[1..2], backgroundPositionUnits.values[1..2]); break;
@@ -276,7 +276,7 @@ struct Style
 				//case 
 				case "font":		/*todo */ break;
 				case "fontsize":	parseUnit(tokens[1], fontSize, fontSizeUnit); break;
-				case "fontfamily":	fontFamily = Resource.font(removeUrl(tokens[1])); break;		
+				case "fontfamily":	fontFamily = ResourceManager.font(removeUrl(tokens[1])); break;		
 			
 				case "top":			parseUnits(tokens[1], dimension.values[0..1], dimensionUnits.values[0..1]); break;
 				case "right":		parseUnits(tokens[1], dimension.values[1..2], dimensionUnits.values[1..2]); break;

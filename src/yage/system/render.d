@@ -73,7 +73,7 @@ class Render
 	/// Render everything in the queue
 	static void all(inout uint poly_count, inout uint vertex_count)
 	{
-		LazyResource.apply();
+		LazyResourceManager.apply();
 		
 		this.poly_count = poly_count;
 		this.vertex_count = vertex_count;

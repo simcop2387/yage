@@ -19,6 +19,7 @@ import yage.system.probe;
 import yage.system.render;
 import yage.resource.exceptions;
 import yage.resource.model;
+import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.shader;
 import yage.resource.texture;
@@ -41,7 +42,7 @@ private const Vec2f zero = {v:[0.0f, 0.0f]};
  *
  * When an xml Material file is loaded, this class is used to represent each Layer
  * defined in the file. */
-class Layer
+class Layer : Resource
 {
 	Color	ambient;				/// Property for the RGBA ambient layer color, default is Vec4f(0).
 	Color	diffuse;				/// Property for the RGBA diffuse layer color, default is Vec4f(1).
@@ -164,7 +165,7 @@ class Layer
 		glGetObjectParameterivARB(program, GL_OBJECT_LINK_STATUS_ARB, &status);
 		if (!status)
 		{	Log.write(getShaderProgramLog());
-			throw new ResourceException("Could not link the shaders.");
+			throw new ResourceManagerException("Could not link the shaders.");
 		}
 		glValidateProgramARB(program);
 		Log.write(getShaderProgramLog());
@@ -445,7 +446,7 @@ class Layer
 	// Helper function for the public setUniform() functions.
 	protected void setUniform(char[] name, int width, float[] values)
 	{	if (!Probe.openGL(Probe.OpenGL.SHADER))
-			throw new ResourceException("Layer.setUniform() is only supported on hardware that supports shaders.");
+			throw new ResourceManagerException("Layer.setUniform() is only supported on hardware that supports shaders.");
 
 		// Bind this program
 		if (current_program != program)
@@ -453,12 +454,12 @@ class Layer
 
 		// Get the location of name
 		if (program == 0)
-			throw new ResourceException("Cannot set uniform variable for a layer with no shader program.");
+			throw new ResourceManagerException("Cannot set uniform variable for a layer with no shader program.");
 		char[256] cname = 0;
 		cname[0..name.length] = name;
 		int location = glGetUniformLocationARB(program, cname.ptr);
 		if (location == -1)
-			throw new ResourceException("Unable to set uniform variable: " ~ name);
+			throw new ResourceManagerException("Unable to set uniform variable: " ~ name);
 
 		// Send the uniform data
 		switch (width)

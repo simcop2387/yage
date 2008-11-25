@@ -1,6 +1,9 @@
 /**
- * 
+ * Copyright:  (c) 2005-2008 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl.txt">LGPL</a>
  */
+
 module yage.resource.lazyresource;
 
 import yage.system.probe;
@@ -19,7 +22,7 @@ import yage.core.exceptions;
  * Shader
  * Sound - No, because each scene should have its own alContext.
  */
-class LazyResource
+class LazyResourceManager
 {
 	protected static LazyVBO*[] vbo_queue;
 	
@@ -70,7 +73,7 @@ struct LazyVBO
 	{	this.type = type;
 		this.data = data;
 		if (Probe.openGL(Probe.OpenGL.VBO))
-			LazyResource.vbo_queue ~= this;
+			LazyResourceManager.vbo_queue ~= this;
 	}
 	
 	/**
@@ -78,7 +81,7 @@ struct LazyVBO
 	 * Create can be called again if necessary. */
 	void destroy()
 	{	if (id)
-			LazyResource.vbo_queue ~= this;
+			LazyResourceManager.vbo_queue ~= this;
 	}
 	
 	uint getId()

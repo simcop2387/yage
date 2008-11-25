@@ -9,7 +9,7 @@ import yage.core.exceptions;
 import yage.core.parse;
 
 ///
-class ResourceException : YageException
+class ResourceManagerException : YageException
 {	this(...)
 	{	super(swritefRelay(_arguments, _argptr));
 	}	

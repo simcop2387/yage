@@ -221,7 +221,7 @@ abstract class Device
 		foreach (s; Scene.getAllScenes().values)
 			s.finalize();		
 		
-		LazyResource.apply();
+		LazyResourceManager.apply();
 		
 		SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);

@@ -13,7 +13,7 @@ import std.stdio;
 import yage.core.timer;
 import yage.core.color;
 import yage.core.vector;
-import yage.resource.resource;
+import yage.resource.manager;
 import yage.resource.model;
 import yage.scene.all;
 
@@ -37,7 +37,7 @@ class Asteroid : GameObject
 	this()
 	{	super();
 		rock = addChild(new ModelNode());
-		rock.setModel(Resource.model("space/asteroid1.ms3d"));
+		rock.setModel(ResourceManager.model("space/asteroid1.ms3d"));
 	}
 
 	float getRadius()

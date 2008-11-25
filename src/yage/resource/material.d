@@ -15,6 +15,7 @@ import std.stdio;
 import yage.core.all;
 import yage.resource.exceptions;
 import yage.resource.texture;
+import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.shader;
 import yage.system.constant;
@@ -28,7 +29,7 @@ public import yage.resource.layer;
  * can be assigned to sprite nodes, mesh nodes, and even GUI elements.
  * In addition, material parameters can be updated while the engine
  * is running, allowing for quite a few nice effects.*/
-class Material
+class Material : Resource
 {
 	// Internal structure
 	protected char[] source;		// the path to the xml file.
@@ -64,7 +65,7 @@ class Material
 	/// Parse the given XML file and load it into memory, creating layers and textures as necessary
 	void load(char[] filename)
 	{
-		source = Resource.resolvePath(filename);
+		source = ResourceManager.resolvePath(filename);
 		char[] path = source[0 .. rfind(source, "/") + 1]; // should be replace with getDirName(absolute(path))
 
 		// Load xml file
@@ -72,14 +73,14 @@ class Material
 		try
 		{	xml = readDocument(source);
 		} catch
-		{	throw new ResourceException("Unable to parse xml material file '"~source~"'.");
+		{	throw new ResourceManagerException("Unable to parse xml material file '"~source~"'.");
 		}
 
 		// Load material attributes
 		try
 		{	max_lights = atoi(xml.getAttribute("maxlights"));
 		}catch
-		{	throw new ResourceException("Could not parse material attributes.");
+		{	throw new ResourceManagerException("Could not parse material attributes.");
 		}
 
 		// Loop through each xml layer node
@@ -107,7 +108,7 @@ class Material
 				if (xml_layer.hasAttribute("specularity"))
 					layer.specularity = atoi(xml_layer.getAttribute("specularity"));
 				if (layer.specularity<0 || layer.specularity>128)
-					throw new ResourceException("Could not parse layer '" ~ .toString(i) ~
+					throw new ResourceManagerException("Could not parse layer '" ~ .toString(i) ~
 						"' attributes.  Specularity must be between 0 and 128.\n");
 
 				// Blend
@@ -118,7 +119,7 @@ class Material
 						case "add"		: layer.blend = BLEND_ADD;  break;
 						case "multiply"	: layer.blend = BLEND_MULTIPLY;  break;
 						case "average"	: layer.blend = BLEND_AVERAGE;  break;
-						default: throw new ResourceException("Invalid blend value '" ~ blend ~"'.");
+						default: throw new ResourceManagerException("Invalid blend value '" ~ blend ~"'.");
 				}	}
 
 				// Cull, mode, width
@@ -127,7 +128,7 @@ class Material
 					switch (cull)
 					{	case "front"	: layer.cull = LAYER_CULL_FRONT;  break;
 						case "back"		: layer.cull = LAYER_CULL_FRONT;  break;
-						default: throw new ResourceException("Invalid cull value '" ~ cull ~"'.");
+						default: throw new ResourceManagerException("Invalid cull value '" ~ cull ~"'.");
 				}	}
 				if(xml_layer.hasAttribute("draw"))
 				{	char[] draw = tolower(xml_layer.getAttribute("draw"));
@@ -139,13 +140,13 @@ class Material
 						case "lines"	: layer.draw = LAYER_DRAW_LINES;  break;
 						case "point"	:
 						case "points"	: layer.draw = LAYER_DRAW_POINTS;  break;
-						default: throw new ResourceException("Invalid draw value '" ~ draw~"'.");
+						default: throw new ResourceManagerException("Invalid draw value '" ~ draw~"'.");
 				}	}
 				if(xml_layer.hasAttribute("width"))
 					layer.width = atoi(xml_layer.getAttribute("width"));
 
 			}catch (Exception e)
-			{	throw new ResourceException("Could not parse layer '" ~ .toString(i) ~"' attributes.\n"
+			{	throw new ResourceManagerException("Could not parse layer '" ~ .toString(i) ~"' attributes.\n"
 					~ e.toString());
 			}
 
@@ -179,7 +180,7 @@ class Material
 								case "add"		: ti.blend = BLEND_ADD;  break;
 								case "multiply"	: ti.blend = BLEND_MULTIPLY;  break;
 								case "average"	: ti.blend = BLEND_AVERAGE;  break;
-								default: throw new ResourceException("Invalid blend value '" ~ blend ~"'.");
+								default: throw new ResourceManagerException("Invalid blend value '" ~ blend ~"'.");
 						}	}
 
 						// Filter
@@ -190,7 +191,7 @@ class Material
 								case "nearest"	: ti.filter = TEXTURE_FILTER_NONE; break;
 								case "bilinear"	: ti.filter = TEXTURE_FILTER_BILINEAR; break;
 								case "trilinear": ti.filter = TEXTURE_FILTER_TRILINEAR; break;
-								default: throw new ResourceException("Invalid filter value '" ~ str ~"'.");
+								default: throw new ResourceManagerException("Invalid filter value '" ~ str ~"'.");
 						}	}
 
 						// Position, rotation, scale
@@ -199,13 +200,13 @@ class Material
 						if (xmap.hasAttribute("scale"   )) ti.scale.v[0..2]    = csvToFloat(xmap.getAttribute("scale"));
 					}
 					catch (Exception e)
-					{	throw new ResourceException(
+					{	throw new ResourceManagerException(
 							"Could not parse texture '" ~ .toString(t) ~"' in layer '" ~ .toString(i) ~"'.\n"
 							~ e.toString());
 					}
 
 					// Add the texture instance to the layer
-					ti.texture = Resource.texture(Resource.resolvePath(source, path), compress, mipmap).texture;
+					ti.texture = ResourceManager.texture(ResourceManager.resolvePath(source, path), compress, mipmap).texture;
  					layer.addTexture(ti);
 				}
 				// If this xml node is a shader
@@ -217,15 +218,15 @@ class Material
 					{	source	= xmap.getAttribute("src");
 						str_type= tolower(xmap.getAttribute("type"));
 					}catch
-					{	throw new ResourceException(
+					{	throw new ResourceManagerException(
 							"Could not parse shader '" ~ .toString(s) ~"' in layer '" ~ .toString(i) ~"'.\n");
 					}
 					// Convert type from string to bool, and load
 					if (str_type=="vertex") type = 0;
 					else if (str_type=="fragment") type = 1;
-					else throw new ResourceException("Could not parse shader type '" ~ str_type ~ "' in shader '"
+					else throw new ResourceManagerException("Could not parse shader type '" ~ str_type ~ "' in shader '"
 									~ .toString(s) ~ "'.  Must be 'vertex' or 'fragment'.");
-					layer.addShader(Resource.shader(Resource.resolvePath(source, path), type));
+					layer.addShader(ResourceManager.shader(ResourceManager.resolvePath(source, path), type));
 				}
 			}
 

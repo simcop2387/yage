@@ -20,8 +20,9 @@ import yage.core.matrix;
 import yage.core.timer;
 import yage.core.vector;
 import yage.resource.exceptions;
-import yage.resource.resource;
 import yage.resource.image;
+import yage.resource.manager;
+import yage.resource.resource;
 import yage.system.device;
 import yage.system.constant;
 import yage.system.probe;
@@ -33,9 +34,9 @@ private const Vec2f zero = {v:[0.0f, 0.0f]};
 
 
 /**
- * An instance of a Texture.
- * This allows many options to be set per instance of a Texture instead of
- * creating multiple copies of the Texture (and consuming valuable memory)
+ * An instance of a GPUTexture.
+ * This allows many options to be set per instance of a GPUTexture instead of
+ * creating multiple copies of the GPUTexture (and consuming valuable memory)
  * just to change filtering, clamping, or relative scale. */
 struct Texture
 {
@@ -96,7 +97,7 @@ struct Texture
 			translate[BLEND_MULTIPLY] = GL_MODULATE;
 		}
 
-		glBindTexture(GL_TEXTURE_2D, texture.gl_index);
+		glBindTexture(GL_TEXTURE_2D, texture.gl_id);
 
 		// Filtering
 		if (filter == TEXTURE_FILTER_DEFAULT)
@@ -196,13 +197,13 @@ struct Texture
  * texture dimensions a power of two, as they're automatically resized up to
  * the next highest supported size if the non_power_of_two OpenGL extension
  * isn't supported in hardware.*/
-class GPUTexture
+class GPUTexture : Resource
 {
 	protected bool compress;
 	protected bool mipmap;
 	protected int format;
 
-	protected uint gl_index  = 0;	// opengl index of this texture
+	protected uint gl_id  = 0;	// opengl index of this texture
 	protected uint width     = 0;
 	protected uint height    = 0;
 	protected char[] source;
@@ -214,10 +215,10 @@ class GPUTexture
 	
 	///
 	this()
-	{	glGenTextures(1, &gl_index);
+	{	glGenTextures(1, &gl_id);
 	
 		// For some reason these need to be called or everything runs slowly.
-		glBindTexture(GL_TEXTURE_2D, gl_index);
+		glBindTexture(GL_TEXTURE_2D, gl_id);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -228,24 +229,28 @@ class GPUTexture
 	 * This is equivalent to calling the default constructor followed by upload().*/
 	this(char[] filename, bool compress=true, bool mipmap=true)
 	{	this();
-		source = Resource.resolvePath(filename);
+		source = ResourceManager.resolvePath(filename);
 		upload(new Image(source), compress, mipmap);
 	}
 
-	/// Ditto
+	/// ditto
 	this(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
 	{	this();
 		source = source_name;
 		upload(image, compress, mipmap);
 	}
 
-	/// Release OpenGL texture index.
+	
 	~this()
-	{	Log.write("Removing texture '" ~ source ~ "' from video memory.");
-		try // Because of a conflict with SDL_Quit();
-		{	glDeleteTextures(1, &gl_index); 
+	{	finalize();
+	}
+	
+	/// Release OpenGL texture index.
+	void finalize()
+	{	if (gl_id)
+		{	glDeleteTextures(1, &gl_id); 
+			glDeleteTextures(1, &gl_id);
 		}
-		catch {}
 	}
 
 	/// Is texture compression used in video memory?
@@ -260,7 +265,7 @@ class GPUTexture
 	uint getFormat() { return format; }
 
 	/// What is the OpenGL index of this texture?
-	uint getIndex() { return gl_index; }
+	uint getId() { return gl_id; }
 
 	/// Return the height of the Texture in pixels.
 	uint getHeight() { return height; }
@@ -289,7 +294,7 @@ class GPUTexture
 		this.width = image.getWidth();
 		this.height = image.getHeight();		
 
-		glBindTexture(GL_TEXTURE_2D, gl_index);
+		glBindTexture(GL_TEXTURE_2D, gl_id);
 
 		// Calculate formats
 		uint glformat, glinternalformat;
@@ -307,7 +312,7 @@ class GPUTexture
 				glinternalformat = compress ? GL_COMPRESSED_RGBA : GL_RGBA;
 				break;
 			default:
-				throw new ResourceException("Unknown texture format" ~ .toString(format));
+				throw new ResourceManagerException("Unknown texture format" ~ .toString(format));
 		}
 
 	    // Upload image
@@ -354,7 +359,7 @@ class GPUTexture
 			this.height =nextPow2(height);
 		}
 
-		glBindTexture(GL_TEXTURE_2D, gl_index);
+		glBindTexture(GL_TEXTURE_2D, gl_id);
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, this.width, this.height, 0);
 		format = 3;
 		

@@ -10,7 +10,7 @@ import std.stdio;
 import std.math;
 import yage.core.vector;
 import yage.core.misc;
-import yage.resource.resource;
+import yage.resource.manager;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.model;
@@ -28,7 +28,7 @@ import yage.scene.scene;
  * plot.setWindow(-2, 2, -2, 2, .1, .1);
  * plot.setFunction((float s, float t){ return Vec3f(s, 1-(s*s+t*t), t); });
  * plot.setTextureFunction((float s, float t){ return Vec2f(s/4-.5, t/4-.5); } );
- * plot.setMaterial(Resource.material("blue.xml"));
+ * plot.setMaterial(ResourceManager.material("blue.xml"));
  * plot.regenerate(); // required to generate the graph.
  * --------------------------------
  */
@@ -90,11 +90,11 @@ class GraphNode : VisibleNode
 	}
 
 	/**
-	 * Set the Material of the GraphNode, using the Resource Manager
+	 * Set the Material of the GraphNode, using the ResourceManager Manager
 	 * to ensure that no Material is loaded twice.
-	 * Equivalent of setMaterial(Resource.material(filename)); */
+	 * Equivalent of setMaterial(ResourceManager.material(filename)); */
 	void setMaterial(char[] material_file)
-	{	model.getMeshes()[0].setMaterial(Resource.material(material_file));
+	{	model.getMeshes()[0].setMaterial(ResourceManager.material(material_file));
 	}
 
 

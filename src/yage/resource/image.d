@@ -10,6 +10,7 @@ import std.string;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
 import yage.resource.exceptions;
+import yage.resource.resource;
 
 /**
  * A class for loading and manipulating images.
@@ -19,7 +20,7 @@ import yage.resource.exceptions;
  * An RGB image will often be returned when loading grayscale images.  Use setFormat(IMAGE_FORMAT_GRAYSCALE) to correct this.
  * 
  * TODO: Add convolution support: http://www.php.net/manual/en/function.imageconvolution.php#77818 */
-class Image
+class Image : Resource
 {
 	// Types
 	struct Pixel(int C)
@@ -89,7 +90,7 @@ class Image
 		
 		// Attempt to load image
 		if ((sdl_image = IMG_Load(source)) is null)
-			throw new ResourceException("Could not open image file '%s'.", filename);		
+			throw new ResourceManagerException("Could not open image file '%s'.", filename);		
 		width = sdl_image.w;
 		height = sdl_image.h;
 		
@@ -313,10 +314,10 @@ class Image
 					}
 				break;
 			case 4:
-				throw new ResourceException("Not implemented yet :)");
+				throw new ResourceManagerException("Not implemented yet :)");
 				break;
 			default:
-				throw new ResourceException("Unrecognized image format.");
+				throw new ResourceManagerException("Unrecognized image format.");
 	
 		}
 		this.channels = channels;
