@@ -99,33 +99,25 @@ abstract class ResourceManager
 		return false;
 	}
 
-	/// Return an associative array of all loaded Textures.
+	/// Return an associative array (indexed by filename) of a resource type.
 	static GPUTexture[char[]][][] getTextures()
 	{	return cast(GPUTexture[char[]][][])textures;
 	}
-
-	/// Return an associative array of all loaded Shaders.
-	static Shader[char[]] getShaders()
+	static Shader[char[]] getShaders() /// ditto
 	{	return shaders;
 	}
-
-	/// Return an associative array of all loaded Materials.
-	static Material[char[]] getMaterials()
+	static Material[char[]] getMaterials() /// ditto
 	{	return materials;
 	}
-
-	/// Return an associative array of all loaded Models.
-	static Model[char[]] getModels()
+	static Model[char[]] getModels() /// ditto
 	{	return models;
 	}
-
-	/// Return an associative array of all loaded Sounds.
-	static Sound[char[]] getSounds()
+	static Sound[char[]] getSounds() /// ditto
 	{	return sounds;
 	}
 
 	/** 
-	 * Acquire and return the given Font.
+	 * Acquire and return a requested Font.
 	 * If it has already been loaded, the in-memory copy will be returned.
 	 * If not, it will be loaded and then returned.
 	 * Params: source = The Font file that will be loaded. */
@@ -139,7 +131,7 @@ abstract class ResourceManager
 	}
 	
 	/** 
-	 * Acquire and return the given Model.
+	 * Acquire and return a requested Model.
 	 * If it has already been loaded, the in-memory copy will be returned.
 	 * If not, it will be loaded and uploaded to video memory.
 	 * All associated Materials, Textures, and Shaders will be loaded into
@@ -154,7 +146,7 @@ abstract class ResourceManager
 		return models[source];
 	}
 
-	/** Acquire and return the given Material.
+	/** Acquire and return a requested Material.
 	 *  If the material has already been loaded, the in-memory copy will be returned.
 	 *  If not, it will be loaded and stored in the resource pool.  This function
 	 *  is called automatically for each of a Model's Materials when loading a Model.
@@ -168,22 +160,7 @@ abstract class ResourceManager
 		return materials[source];
 	}
 
-	/** Acquire and return the given Texture.
-	 *  If a texture with the given properties already been loaded, the in-memory copy will be returned.  
-	 *  If not, it will be loaded, uploaded to video memory, and stored in the resource pool.  
-	 *  This function is called automatically for each of a material's textures when loading a material.
-	 *  Params: source = The Texture image file that will be loaded. */
-	static Texture texture(char[] source, bool compress=true, bool mipmap=true, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT)
-	{	// Remember that multidimensional arrays must be accessed in reverse.
-		if (source in textures[mipmap][compress])
-			return Texture(textures[mipmap][compress][source]);
-		Timer t = new Timer();
-		textures[mipmap][compress][source] = new GPUTexture(source, compress, mipmap);
-		Log.write(Log.RESOURCE, "ResourceManager ", source ~ " loaded in ", t, " seconds.");
-		return Texture(textures[mipmap][compress][source], clamp, filter);
-	}
-
-	/** Acquire and return the given Shader.
+	/** Acquire and return a requested Shader.
 	 *  If the Shader has already been loaded, the in-memory copy will be returned.
 	 *  If not, it will be loaded and stored in the resource pool.  This function
 	 *  is called automatically for each of a Material's Shaders when loading a Material.
@@ -197,7 +174,7 @@ abstract class ResourceManager
 		return shaders[source];
 	}
 
-	/** Acquire and return the given Sound.
+	/** Acquire and return a requested Sound.
 	 *  If the Sound has already been loaded, the in-memory copy will be returned.
 	 *  If not, it will be loaded and stored in the resource pool.
 	 *  Params: source = The path to the sound file that will be loaded. */
@@ -210,10 +187,39 @@ abstract class ResourceManager
 		return sounds[source];
 	}
 	
+	/** 
+	 * Acquire and return a requested Texture.
+	 * If a texture with the given properties already been loaded, the in-memory copy will be returned.  
+	 * If not, it will be loaded, uploaded to video memory, and stored in the resource pool.  
+	 * This function is called automatically for each of a material's textures when loading a material.
+	 * Keep in mind that multiple requested textures may use the same GPUTexture.
+	 * Params: source = The Texture image file that will be loaded. */
+	static Texture texture(char[] source, bool compress=true, bool mipmap=true, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT)
+	{	// Remember that multidimensional arrays must be accessed in reverse.
+		if (source in textures[mipmap][compress])
+			return Texture(textures[mipmap][compress][source]);
+		Timer t = new Timer();
+		textures[mipmap][compress][source] = new GPUTexture(source, compress, mipmap);
+		Log.write(Log.RESOURCE, "ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		return Texture(textures[mipmap][compress][source], clamp, filter);
+	}
+	
+	/**
+	 * Call the finalize() method on all resources that have been loaded through the resource manager, 
+	 * and then remove them from the resource managers lists of loaded resources. */
 	static void finalize()
-	{	/*
-		foreach (i; fonts)
-			i.finalize();
+	{	
+		foreach (path, res; fonts)
+		{	//res.finalize();
+			//writefln("Removing font ", path);
+			//fonts.remove(path);
+		}
+		foreach (path, res; sounds)
+		{	//res.finalize();
+			//writefln("Removing sound ", path);
+			//sounds.remove(path);
+		}
+		/*
 		foreach (i; materials)
 			i.finalize();
 		foreach (i; models)
@@ -222,8 +228,10 @@ abstract class ResourceManager
 			i.finalize();
 		foreach (i; sounds)
 			i.finalize();
-		foreach (i; textures)
-			i.finalize();
+		foreach (k; textures)
+			foreach (j; k)
+				foreach (i; j)
+					i.finalize();
 		*/
 	}
 

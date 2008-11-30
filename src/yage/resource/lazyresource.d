@@ -17,10 +17,11 @@ import yage.core.exceptions;
  * A lazy resource is not bound when it is created, but rather the next time rendering calls are started by the rendering thread.
  * This is required since OpenGL is a state machine and can't receive simultaneous calls from multiple threads.
  * 
+ * These do or may end up using LazyResoureManager
  * VertexBuffer
  * Texture
  * Shader
- * Sound - No, because each scene should have its own alContext.
+ * Sound - No, because each scene should have its own alContext?
  */
 class LazyResourceManager
 {
@@ -28,7 +29,7 @@ class LazyResourceManager
 	
 	/**
 	 * Process the queues. */
-	public static void apply()
+	public static void processQueue()
 	{	
 		foreach_reverse (i, vbo; vbo_queue)
 		{	

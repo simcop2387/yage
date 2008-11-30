@@ -43,8 +43,14 @@ interface ICloneable
 {	typeof(this) clone(); ///
 }
 
+/**
+ * Any class that has to do custom cleanup operations before destruction should implement this. */
 interface IFinalizable
 {	
+	/**
+	 * Clean up resources before garbage collection that can't safely be cleaned up in a destructor.
+	 * Finalize must be able to accept multiple calls, in case it is called manually and by a destroctor.
+	 * After finalize is called, it's object should be considered to be in a non-usable state and ready for destruction.*/
 	void finalize();
 }
  

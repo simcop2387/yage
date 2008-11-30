@@ -62,23 +62,27 @@ class SoundNode : MovableNode, ITemporal
 	
 	protected void removeSource()
 	{	if (al_source)
-		{	if (sound)
+		{	stop();
+			if (sound)			
 				alSourceUnqueueBuffers(al_source, buffer_end, sound.getBuffers(buffer_start, buffer_end).ptr);
-			alSourceStop(al_source);
 			alDeleteSources(1, &al_source);
+			if (sound)
+				sound.freeBuffers(buffer_start, buffer_end-buffer_start-1);	
 			al_source = 0;
 			//counter--;
 			//writefln("Dtor, ", counter);
 		}
 	}
 	
+	/**
+	 * Delete OpenAL Sound source on destruction. */
 	override public void finalize()
 	{	removeSource();
 		super.finalize();
 	}
 
 	/**
-	 * Delete OpenAL Sound source on destruction. */
+	 * Overridden to call finalize(). */
 	~this()
 	{	finalize();
 	}
@@ -239,7 +243,7 @@ class SoundNode : MovableNode, ITemporal
 	
 	/** 
 	 * Seek to the position in the track.  Seek has a precision of .05 seconds.
-	 * @throws Exception if the value is outside the range of the Sound. */
+	 * @throws YageException if the value is outside the range of the Sound. */
 	void seek(double seconds)
 	{	if (sound is null)
 			throw new YageException("You cannot seek a SoundNode without first calling setSound().");
@@ -252,8 +256,8 @@ class SoundNode : MovableNode, ITemporal
 		alGetSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
 		if (processed>0)
 		{	//writefln("Unqueuing buffers[%d..%d]", buffer_start, buffer_start+processed);
-			alSourceUnqueueBuffers(al_source, processed, sound.getBuffers(buffer_start, buffer_start+processed).ptr);
-			sound.freeBuffers(buffer_start, processed);
+			alSourceUnqueueBuffers(al_source, processed, sound.getBuffers(buffer_start, buffer_start+buffer_end).ptr);
+			sound.freeBuffers(buffer_start, buffer_end);
 		}
 
 		buffer_start = buffer_end = secs;

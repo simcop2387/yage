@@ -102,18 +102,6 @@ abstract class Node : Tree!(Node), IFinalizable
 		child.ancestorChange(old_parent); // sets transform dirty also
 		return child;
 	}
-	/**
-	 * Remove a child Node to this Node's array of children.
-	 * Overridden to call ancestorChange() and mark transformation matrices dirty.
-	 * Params:
-	 *     child = The Node to remove.
-	 * Returns: The child Node that was removed.  Templating is used to ensure the return type is exactly the same.*/
-	T removeChild(T : Node)(T child)
-	{	auto old_parent = child.getParent();
-		super.removeChild(child);
-		child.ancestorChange(old_parent); // sets transform dirty also
-		return child;
-	}
 	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.

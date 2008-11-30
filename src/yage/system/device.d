@@ -26,11 +26,12 @@ import yage.system.probe;
 import yage.core.exceptions;
 import yage.core.vector;
 import yage.scene.scene;
+import yage.resource.manager;
 import yage.resource.lazyresource;
 
 import std.c.stdlib : exit;
 
-// Enable specular highlights with textures.
+// OpenGL constants to enable specular highlights with textures.
 const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
 const int SINGLE_COLOR_EXT = 0x81F9;
 const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
@@ -212,16 +213,19 @@ abstract class Device
 		Log.write("Yage has been initialized.");
 	}
 	
+	/**
+	 * Release all Yage Resources.  
+	 * If Device.init() is called, this must be called for cleanup before the program closes.
+	 * After calling this function, many Yage functions can no longer be called safely. */
 	static void deInit()
 	in {
 		assert(isDeviceThread());
-	}
-	body
-	{	
-		foreach (s; Scene.getAllScenes().values)
+	} body
+	{	foreach (s; Scene.getAllScenes().values)
 			s.finalize();		
 		
-		LazyResourceManager.apply();
+		ResourceManager.finalize();
+		LazyResourceManager.processQueue(); // required for any pending deallocations.
 		
 		SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);
@@ -230,7 +234,6 @@ abstract class Device
 		alcCloseDevice(al_device);
 		SDL_Quit();
 	}
-	
 
 	/// Return the aspect ratio (width/height) of the rendering window.
 	static float getAspectRatio()

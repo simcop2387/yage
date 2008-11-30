@@ -14,6 +14,7 @@ import derelict.openal.al;
 import derelict.ogg.vorbistypes;
 import derelict.ogg.vorbisfile;
 import yage.core.timer;
+import yage.core.parse;
 import yage.resource.exceptions;
 import yage.resource.manager;
 import yage.resource.resource;
@@ -77,8 +78,12 @@ class Sound : Resource
 
 	/// Tell OpenAL to release the sound, close the file, and delete associated memory.
 	~this()
-	{	std.stdio.writefln("Sound deconstructor");
-		freeBuffers(0, buffer_num);	// ensure every buffer is released
+	{	finalize();
+	}	
+	
+	override void finalize()
+	{	//freeBuffers(0, buffer_num);	// ensure every buffer is released
+		//buffer_num = 0;
 		delete sound_file;
 	}
 
@@ -87,8 +92,9 @@ class Sound : Resource
 	{	return sound_file.frequency;
 	}
 
-	/** Get a pointer to the array of OpenAL buffer id's used for this sound.
-	 *  allocBuffers() and freeBuffers() are used to assign and release buffers from the sound source.*/
+	/** 
+	 * Get a pointer to the array of OpenAL buffer id's used for this sound.
+	 * allocBuffers() and freeBuffers() are used to assign and release buffers from the sound source.*/
 	uint[] getBuffers()
 	{	return buffers;
 	}
@@ -122,6 +128,8 @@ class Sound : Resource
 	uint[] getBuffers(int first, int last)
 	{	first = first % buffers.length;
 		last = last % buffers.length;
+		
+		
 
 		// If we're wrapping around
 		if (first > last)
@@ -131,9 +139,10 @@ class Sound : Resource
 	}
 
 	/** 
-	 * Return an array of OpenAL Buffers starting at first.
-	 * This can accept buffers outside of the range of buffers and
-	 * will wrap them around to support easy looping. */
+	 * Create openAL buffers in the buffers array for the given range.
+	 * As sounds request buffers, a reference counters are incremented/decremented for each buffer, 
+	 * and the openAL buffers are destroyed when the reference counter reaches zero. 
+	 * This can accept buffers outside of the range of buffers and will wrap them around to support easy looping. */
 	void allocBuffers(int first, int number)
 	{	// Loop through each of the buffers that will be returned
 		for (int j=first; j<first+number; j++)
@@ -153,11 +162,13 @@ class Sound : Resource
 		}
 	}
 
-	/** Mark the range of buffers for freeing.
-	 *  This will decrement the reference count for each of the buffers
-	 *  and will release it once it's at zero. */
+	/**
+	 * Mark the range of buffers for freeing.
+	 * This will decrement the reference count for each of the buffers
+	 * and will release it once it's at zero. */
 	void freeBuffers(int first, int number)
-	{	for (int j=first; j<first+number; j++)
+	{	
+		for (int j=first; j<first+number; j++)
 		{	// Allow inputs that are out of range to loop around
 			int i = j % buffers.length;
 
@@ -168,19 +179,25 @@ class Sound : Resource
 
 			// If this buffer has no references to it, delete it
 			if (buffers_ref[i]==0)
-			{	alDeleteBuffers(1, &buffers[i]);
-				if (alIsBuffer(buffers[i]))
-					throw new ResourceManagerException("Sound buffer "~.toString(i)~" of '"~sound_file.source~
-										"' could not be deleted; probably because it is in use.\n");
+			{	if (alIsBuffer(buffers[i]))
+				{	alDeleteBuffers(1, &buffers[i]); /// TODO, delete multiple buffers at once?
+					if (alIsBuffer(buffers[i]))
+						throw new ResourceManagerException(
+							"OpenAL Sound buffer %d of '%s' could not be deleted; probably because it is in use.\n", 
+							i, sound_file.source);
+				} else
+					throw new ResourceManagerException( // this should never happen.
+						"OpenAL Sound buffer %d of '%s' cannot be deleted because it is has not been allocated.\n", 
+						i, sound_file.source);
 		}	}
 	}
 
 	/// Print useful information about the loaded sound file.
-	void print()
-	{	sound_file.print();
-		printf("size of buffer: %d bytes\n", buffer_size);
-		printf("number of buffers: %d bytes\n", buffer_num);
-		printf("buffers per second: %d bytes\n", buffers_per_sec);
+	override char[] toString()
+	{	return swritef(
+			"size of buffer: %d bytes\nsize of buffer: %d bytes\nbuffers per second: %d bytes\n", 
+			buffer_size, buffer_num, buffers_per_sec
+		);
 	}
 }
 

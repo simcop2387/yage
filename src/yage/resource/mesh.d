@@ -44,8 +44,14 @@ class Mesh : Resource
 		setTriangles(triangles);
 	}
 	
-	void finalize()
-	{	vbo_triangles.destroy();		
+	/// Overridden to clean up the triangles vertex buffer.
+	override void finalize()
+	{	if (vbo_triangles.getId())
+			vbo_triangles.destroy();
+	}
+	
+	~this()
+	{	finalize();		
 	}
 	
 	/// Get the array of triangle indices that define this Mesh.
