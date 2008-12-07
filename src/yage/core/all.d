@@ -15,6 +15,7 @@ module yage.core.all;
 public
 {	import yage.core.array;
 	import yage.core.async;
+	import yage.core.closure;
 	import yage.core.color;
 	import yage.core.exceptions;
 	import yage.core.freelist;

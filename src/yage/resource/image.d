@@ -31,10 +31,13 @@ class Image : Resource
 	alias Pixel!(3) Pixel3;
 	alias Pixel!(4) Pixel4;
 	
-	const int FORMAT_GRAYSCALE=1;	/// A grayscale image
-	const int FORMAT_RGB=3;			/// An image with red, green, and blue color channels
-	const int FORMAT_RGBA=4;		/// An image with Red, green, blue, and alpha color channels
-	
+	///The pixel format, also the bytes-per-pixel
+	static enum Format
+	{	GRAYSCALE=1,
+		RGB=3,
+		RGBA=4		
+	};
+
 	// Fields
 	protected ubyte[] data;
 	protected int width, height, channels;

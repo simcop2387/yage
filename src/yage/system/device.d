@@ -210,7 +210,7 @@ abstract class Device
 		surface = new Surface();
 		
 		initialized = true;
-		Log.write("Yage has been initialized.");
+		Log.write("Yage has been initialized successfully.");
 	}
 	
 	/**
@@ -233,6 +233,8 @@ abstract class Device
 		alcDestroyContext(al_context);
 		alcCloseDevice(al_device);
 		SDL_Quit();
+		
+		Log.write("Yage has been de-initialized successfully.");
 	}
 
 	/// Return the aspect ratio (width/height) of the rendering window.

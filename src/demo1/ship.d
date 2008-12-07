@@ -27,8 +27,6 @@ class Ship : GameObject
 	this()
 	{
 		super();
-		ResourceManager.material("fx/smoke.xml");
-		ResourceManager.material("fx/flare1.xml");
 
 		pitch = addChild(new MovableNode());
 

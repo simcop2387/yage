@@ -226,6 +226,8 @@ private extern (C)
 //===============================================
 // ov_open
 //===============================================
+
+// __D8derelict3ogg10vorbisfile7ov_openFPS5tango4stdc5stdio6_iobufPS8derelict3ogg11vorbistypes14OggVorbis_FilePalZi
 int ov_open(FILE *f, OggVorbis_File *vf, char *initial, long ibytes)
 {
     // Fill the ov_callbacks structure

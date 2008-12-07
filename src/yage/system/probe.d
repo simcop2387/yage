@@ -46,7 +46,9 @@ abstract class Probe
 		int result;
 		
 		switch (query)
-		{	case OpenGL.MAX_LIGHTS:				
+		{	
+			// TODO: These need to be cached so we don't do opengl calls from threads besides the rendering thread.
+			case OpenGL.MAX_LIGHTS:				
 				glGetIntegerv(GL_MAX_LIGHTS, &result);
 				return result;
 			case OpenGL.MAX_TEXTURE_SIZE:

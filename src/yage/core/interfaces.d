@@ -53,4 +53,22 @@ interface IFinalizable
 	 * After finalize is called, it's object should be considered to be in a non-usable state and ready for destruction.*/
 	void finalize();
 }
+
+/**
+ * Interface for any resource that has an external component outside of D memory, such as an OpenGL Texture. */
+interface IExternalResource
+{
+	///
+	public void create();
+	
+	///
+	public void destroy();
+	
+	///
+	public uint getId();	
+
+	///
+	//protected void upload();
+	
+}
  

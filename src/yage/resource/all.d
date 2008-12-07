@@ -26,4 +26,5 @@ public
 	import yage.resource.sound;
 	import yage.resource.texture;	
 	import yage.resource.lazyresource;
+	import yage.resource.vertexbuffer;
 }

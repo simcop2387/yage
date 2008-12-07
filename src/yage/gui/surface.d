@@ -226,8 +226,8 @@ class Surface : Tree!(Surface)
 		// Portion of the Texture to use for drawing
 		// This won't be necessary when we support rectangular textures.
 		if (style.backgroundMaterial)
-		{	portion.x = style.backgroundMaterial.requested_width/cast(float)style.backgroundMaterial.getWidth();
-			portion.y = style.backgroundMaterial.requested_height/cast(float)style.backgroundMaterial.getHeight();
+		{	portion.x = style.backgroundMaterial.padding.x/cast(float)style.backgroundMaterial.getWidth();
+			portion.y = style.backgroundMaterial.padding.y/cast(float)style.backgroundMaterial.getHeight();
 		} else
 		{	portion.x = 1;
 			portion.y = 1;
@@ -547,7 +547,7 @@ class Surface : Tree!(Surface)
 						0, 0, 1, 0,
 						0, 0, 0, 1
 					]);
-					float portion = style.backgroundMaterial.requested_height/cast(float)style.backgroundMaterial.getHeight();
+					float portion = style.backgroundMaterial.padding.y/cast(float)style.backgroundMaterial.getHeight();
 					tex.position = Vec2f(0, -1 + portion);
 				}
 				tex.bind();
@@ -565,7 +565,7 @@ class Surface : Tree!(Surface)
 					if (!textTexture.texture)
 						textTexture = Texture(new GPUTexture(textImage, false, false, text), true, TEXTURE_FILTER_BILINEAR);
 					else
-						textTexture.texture.upload(textImage, false, false);
+						textTexture.texture.create(textImage, false, false);
 					old_text = text;
 				}
 			

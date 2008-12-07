@@ -28,7 +28,8 @@ import demo1.misc;
 
 // Current program entry point.  This may change in the future.
 int main()
-{		
+{	
+	
   	// Init (resolution, depth, fullscreen, aa-samples)
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
@@ -105,17 +106,17 @@ int main()
 		self.raise();
 		self.focus();
 	};
-	window.onMouseMove = (Surface self, byte buttons, Vec2i diff){
+	window.onMouseMove = (Surface self, byte buttons, Vec2i diff) {
 		if(buttons == 1) 
 			self.move(cast(Vec2f)diff, true);
 	};
-	window.onMouseUp = (Surface self, byte buttons, Vec2i coordinates){
+	window.onMouseUp = (Surface self, byte buttons, Vec2i coordinates) {
 		self.blur();
 	};
-	window.onMouseOver = (Surface self, byte buttons, Vec2i coordinates){
+	window.onMouseOver = (Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("background-material: url('gui/skin/clear3.png')");
 	};
-	window.onMouseOut = (Surface self, byte buttons, Vec2i coordinates){
+	window.onMouseOut = (Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("background-material: url('gui/skin/clear2.png')");
 	};
 	
@@ -129,6 +130,15 @@ int main()
 			std.gc.fullCollect();
 			writefln("garbage collected");
 		}
+		
+		if (key == SDLK_x)
+			music.seek(music.tell() + 2.5);
+		if (key == SDLK_z)
+			music.seek(music.tell() - 2.5);
+		if (key == SDLK_b)
+			music.stop();
+		if (key == SDLK_n)
+			music.play();
 	};
 	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates){
 		self.grabMouse(!ship.input);

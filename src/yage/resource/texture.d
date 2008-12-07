@@ -15,14 +15,17 @@ import derelict.sdl.image;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
+import yage.core.closure;
 import yage.core.math;
 import yage.core.matrix;
 import yage.core.timer;
 import yage.core.vector;
+import yage.core.interfaces;
 import yage.resource.exceptions;
 import yage.resource.image;
 import yage.resource.manager;
 import yage.resource.resource;
+import yage.resource.lazyresource;
 import yage.system.device;
 import yage.system.constant;
 import yage.system.probe;
@@ -97,7 +100,7 @@ struct Texture
 			translate[BLEND_MULTIPLY] = GL_MODULATE;
 		}
 
-		glBindTexture(GL_TEXTURE_2D, texture.gl_id);
+		glBindTexture(GL_TEXTURE_2D, texture.id);
 
 		// Filtering
 		if (filter == TEXTURE_FILTER_DEFAULT)
@@ -197,31 +200,24 @@ struct Texture
  * texture dimensions a power of two, as they're automatically resized up to
  * the next highest supported size if the non_power_of_two OpenGL extension
  * isn't supported in hardware.*/
-class GPUTexture : Resource
+class GPUTexture : Resource, IExternalResource
 {
 	protected bool compress;
 	protected bool mipmap;
-	protected int format;
+	protected uint format;
 
-	protected uint gl_id  = 0;	// opengl index of this texture
-	protected uint width     = 0;
-	protected uint height    = 0;
+	protected uint id = 0;	// opengl index of this texture
+	protected uint width = 0;
+	protected uint height = 0;
 	protected char[] source;
 	
-	uint requested_width   = 0;  // TODO: rename to padding, implement like Panda3D: 
-	uint requested_height  = 0;	 // http://panda3d.org/wiki/index.php/Choosing_a_Texture_Size
+	Vec2i padding; // amount of padding to the left and top for non-power-of-two sized textures.
 	
 	bool flipped = false; // TODO: Find a better solution, use texture matrix?
 	
 	///
 	this()
-	{	glGenTextures(1, &gl_id);
-	
-		// For some reason these need to be called or everything runs slowly.
-		glBindTexture(GL_TEXTURE_2D, gl_id);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glBindTexture(GL_TEXTURE_2D, 0);
+	{	create();
 	}
 
 	/**
@@ -229,49 +225,69 @@ class GPUTexture : Resource
 	 * This is equivalent to calling the default constructor followed by upload().*/
 	this(char[] filename, bool compress=true, bool mipmap=true)
 	{	this();
-		source = ResourceManager.resolvePath(filename);
-		upload(new Image(source), compress, mipmap);
+		source = ResourceManager.resolvePath(filename);		
+		create(new Image(source), compress, mipmap);
 	}
 
 	/// ditto
 	this(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
 	{	this();
 		source = source_name;
-		upload(image, compress, mipmap);
+		create(image, compress, mipmap);
 	}
 
-	
+	/// Can this be inherited?
 	~this()
 	{	finalize();
 	}
 	
 	/// Release OpenGL texture index.
-	void finalize()
-	{	if (gl_id)
-		{	glDeleteTextures(1, &gl_id); 
-			glDeleteTextures(1, &gl_id);
+	override void destroy()
+	{	if (id)
+		{	// OpenGl functions can only be called from the rendering thread.
+			if (!Device.isDeviceThread())
+			{	LazyResourceManager.addToQueue(closure(&this.destroy));
+				return;
+			}
+			glDeleteTextures(1, &id); 
+			id = 0;
 		}
+	}
+	
+	///
+	override void finalize()
+	{	destroy();
 	}
 
 	/// Is texture compression used in video memory?
-	bool getCompressed() { return compress; }
+	bool getCompressed() 
+	{ return compress; }
 
 	/// Are mipmaps used?
-	bool getMipmapped() { return mipmap; }
+	bool getMipmapped() 
+	{ return mipmap; }
 
 	/**
 	 * Get the format of the Texture.
 	 * See_Also: yage.system.constant */
-	uint getFormat() { return format; }
+	uint getFormat()
+	{	return format;
+	}
 
 	/// What is the OpenGL index of this texture?
-	uint getId() { return gl_id; }
+	uint getId() 
+	{	return id;
+	}
 
 	/// Return the height of the Texture in pixels.
-	uint getHeight() { return height; }
+	uint getHeight() 
+	{	return height; 
+	}
 
 	/// Return the width of the Texture in pixels.
-	uint getWidth() { return width; }
+	uint getWidth() 
+	{	return width; 
+	}
 
 	///
 	char[] getSource()
@@ -286,64 +302,92 @@ class GPUTexture : Resource
 	 * compress = Compress the image in video memory.  This causes a slight loss of quality
 	 * in exchange for four times less memory used.
 	 * mipmap = Generate mipmaps.*/
-	void upload(Image image, bool compress=true, bool mipmap=true)
-	{
+	void create(Image image, bool compress=true, bool mipmap=true)
+	{	
+		// Set as many variables as possible
 		this.compress = compress;
 		this.mipmap = mipmap;
-		this.format = image.getChannels();
-		this.width = image.getWidth();
-		this.height = image.getHeight();		
-
-		glBindTexture(GL_TEXTURE_2D, gl_id);
-
-		// Calculate formats
-		uint glformat, glinternalformat;
-		switch(format)
-		{	case Image.FORMAT_GRAYSCALE:
-				glformat = GL_LUMINANCE;
-				glinternalformat = compress ? GL_COMPRESSED_LUMINANCE : GL_LUMINANCE;
-				break;
-			case Image.FORMAT_RGB:
-				glformat = GL_RGB;
-				glinternalformat = compress ? GL_COMPRESSED_RGB : GL_RGB;
-				break;
-			case Image.FORMAT_RGBA:
-				glformat = GL_RGBA;
-				glinternalformat = compress ? GL_COMPRESSED_RGBA : GL_RGBA;
-				break;
-			default:
-				throw new ResourceManagerException("Unknown texture format" ~ .toString(format));
+		if (image)
+		{	this.format = image.getChannels();
+			this.width = image.getWidth();
+			this.height = image.getHeight();
 		}
+			
+		// OpenGl functions can only be called from the rendering thread.
+		if (!Device.isDeviceThread())
+		{	LazyResourceManager.addToQueue(closure(&this.create, image, compress, mipmap));
+			return;
+		}
+		
+		if (!id)
+		{
+			glGenTextures(1, &id);
+			glBindTexture(GL_TEXTURE_2D, id);
+			
+			// For some reason these need to be called or everything runs slowly.			
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		else
+			glBindTexture(GL_TEXTURE_2D, id);
 
-	    // Upload image
-		// TODO: Use image's built in resizer instead of glu.
-		// glu has resizing issues with non power of two source textures.
-	    if (mipmap)
-	    	gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
-	    else
-		{	uint max = Probe.openGL(Probe.OpenGL.MAX_TEXTURE_SIZE);
-			uint newwidth = image.getWidth();
-			uint newheight= image.getHeight();
-
-			// Ensure power of two sized if required
-			//if (!Device.getSupport(DEVICE_NON_2_TEXTURE))
-			if (true)
-			{	if (log2(newheight) != floor(log2(newheight)))
-					newheight = nextPow2(newheight);
-				if (log2(newwidth) != floor(log2(newwidth)))
-					newwidth = nextPow2(newwidth);
+		if (image)
+		{	// Calculate formats
+			uint glformat, glinternalformat;
+			switch(format)
+			{	case Image.Format.GRAYSCALE:
+					glformat = GL_LUMINANCE;
+					glinternalformat = compress ? GL_COMPRESSED_LUMINANCE : GL_LUMINANCE;
+					break;
+				case Image.Format.RGB:
+					glformat = GL_RGB;
+					glinternalformat = compress ? GL_COMPRESSED_RGB : GL_RGB;
+					break;
+				case Image.Format.RGBA:
+					glformat = GL_RGBA;
+					glinternalformat = compress ? GL_COMPRESSED_RGBA : GL_RGBA;
+					break;
+				default:
+					throw new ResourceManagerException("Unknown texture format " ~ .toString(format));
 			}
-
-			// Resize if necessary
-			if (newwidth != width || newheight != height)
-				image = image.resize(min(newwidth, max), min(newheight, max));
-
-			// Uploading the texture to video memory is by far the slowest part of this function.
-			glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
-
+	
+		    // Upload image
+			// TODO: Use image's built in resizer instead of glu.
+			// glu has resizing issues with non power of two source textures.
+		    if (mipmap)
+		    	gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
+		    else
+			{	uint max = Probe.openGL(Probe.OpenGL.MAX_TEXTURE_SIZE);
+				uint new_width = image.getWidth();
+				uint new_height= image.getHeight();
+	
+				// Ensure power of two sized if required
+				//if (!Device.getSupport(DEVICE_NON_2_TEXTURE))
+				if (true)
+				{	if (log2(new_height) != floor(log2(new_height)))
+						new_height = nextPow2(new_height);
+					if (log2(new_width) != floor(log2(new_width)))
+						new_width = nextPow2(new_width);
+				}
+	
+				// Resize if necessary
+				if (new_width != width || new_height != height)
+					image = image.resize(min(new_width, max), min(new_height, max));
+	
+				// Uploading the texture to video memory is by far the slowest part of this function.
+				glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
+	
+			}
+		    if(padding.x == 0) 
+		    	padding.x = getWidth();
+		    if(padding.y == 0) 
+		    	padding.y = getHeight();
 		}
-	    if(this.requested_width == 0) this.requested_width = this.getWidth();
-	    if(this.requested_height == 0) this.requested_height = this.getHeight();
+	}
+	
+	/// ditto
+	void create() 
+	{	create(null, false, false);		
 	}
 
 	/// Copy the the contents of the framebuffer into this Texture.
@@ -359,11 +403,11 @@ class GPUTexture : Resource
 			this.height =nextPow2(height);
 		}
 
-		glBindTexture(GL_TEXTURE_2D, gl_id);
+		glBindTexture(GL_TEXTURE_2D, id);
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, this.width, this.height, 0);
 		format = 3;
 		
-		requested_width  = width;
-		requested_height = height;
+		padding.x = width;
+		padding.y = height;
 	}
 }

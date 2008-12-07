@@ -77,12 +77,3 @@ long getCPUCount()
 	return ((cast(long)hiword) << 32) + loword;
 }
 
-
-/// Print out the bits that make a 32-bit number
-void printBits(void* a)
-{	for (int i=31; i>=0; i--)
-	{	bool r = cast(bool)(*cast(int*)a & (1<<i));
-		printf("%d",r);
-	}
-	printf("\n");
-}
