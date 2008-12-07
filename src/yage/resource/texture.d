@@ -242,21 +242,16 @@ class GPUTexture : Resource, IExternalResource
 	}
 	
 	/// Release OpenGL texture index.
-	override void destroy()
+	override void finalize()
 	{	if (id)
 		{	// OpenGl functions can only be called from the rendering thread.
 			if (!Device.isDeviceThread())
-			{	LazyResourceManager.addToQueue(closure(&this.destroy));
+			{	LazyResourceManager.addToQueue(closure(&this.finalize));
 				return;
 			}
 			glDeleteTextures(1, &id); 
 			id = 0;
 		}
-	}
-	
-	///
-	override void finalize()
-	{	destroy();
 	}
 
 	/// Is texture compression used in video memory?

@@ -7,7 +7,7 @@ module yage.core.async;
 
 import std.c.time : usleep;
 import std.bind : ParameterTypeTuple;
-import std.gc;
+import std.stdarg;
 import std.stdio;
 import std.thread;
 import yage.core.parse;
@@ -39,15 +39,17 @@ Timeout!(T) setTimeout(T)(float delay, T func, ...)
 		swritef("Wrong number of arguments passed to setTimeout, expected %d but received %d", 
 			func_args.length, _arguments.length));
 	foreach(int i, arg; func_args)
-	{	alias typeof(func_args[i]) T;
-		func_args[i] = *cast(T *)_argptr;
-		_argptr += T.sizeof;
+	{	alias typeof(func_args[i]) A;
+		func_args[i] = va_arg!(A)(_argptr);
 	}
 
 	// Spawn a thread to call the function after a delay.
 	auto t = new Timeout!(T)(delay, func, func_args);
 	t.start();
 	return t;
+}
+unittest
+{	auto t = setTimeout(0.0001f, (char[] s, int t) { assert(s=="foo" && t==4); }, "foo", 4);
 }
 
 /**
@@ -98,8 +100,8 @@ private class Timeout(T) : Thread
 	{	this.delay = delay;
 		this.func = func;
 		static if (func_args.length)
-		{	this.func_args = func_args;		
-		}
+			foreach(int i, arg; func_args) // straight assignment fails in dmd.
+				this.func_args[i] = func_args[i];
 	}
 	
 	override int run()

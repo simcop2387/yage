@@ -25,6 +25,7 @@ import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.manager;
 import yage.resource.resource;
+import yage.resource.vertexbuffer;
 import yage.system.log;
 import yage.system.probe;
 import yage.system.device;
@@ -39,9 +40,9 @@ import yage.scene.visible;
  * Vertex attributes can be vertices themselves, texture coordinates, normals, colors, or anything else.
  * They can be an array of floats, vectors of varying size, or matrices. */
 struct Attribute
-{	float[]	values;			// Raw data of the attributes, can we use lazyVBO for this?
+{	float[]	values;			// Raw data of the attributes, can we use VertexBuffer for this?
 	ubyte	width;			// Number of floats to use for each vertex.
-	LazyVBO vbo;
+	VertexBuffer vbo;
 
 	/// Get the values of this attribute as an array of Vec3f
 	Vec3f[] vec3f()
@@ -300,7 +301,7 @@ class Model : Resource
 	/// Clear an attribute.
 	void clearAttribute(char[] name)
 	{	if (name in attributes)
-		{	attributes[name].vbo.destroy();
+		{	attributes[name].vbo.finalize();
 			attributes.remove(name);
 		}
 	}
@@ -432,6 +433,6 @@ class Model : Resource
 		Attribute *b = &attributes[name];
 		b.values = values;
 		b.width = width;		
-		b.vbo.create(LazyVBO.Type.GL_ARRAY_BUFFER_ARB, attributes[name].values);		
+		b.vbo.create(VertexBuffer.Type.GL_ARRAY_BUFFER_ARB, attributes[name].values);		
 	}
 }

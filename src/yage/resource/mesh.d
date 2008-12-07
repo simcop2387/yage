@@ -10,19 +10,18 @@ import std.stdio;
 import std.string;
 import yage.core.vector;
 
-import yage.resource.material;
 import yage.resource.manager;
+import yage.resource.material;
 import yage.resource.resource;
-import yage.resource.lazyresource;
+import yage.resource.vertexbuffer;
 import yage.system.probe;
 
 /**
  * Models are divided into one or more meshes.
- * Each mesh has its own material and an array of triangle indices.
- * The triangle indicices index into an array of vertices in a parent Model. */
+ * Each mesh has its own material and an array of triangle indices that index into its models vertex array. */
 class Mesh : Resource
 {	protected Vec3i[]		triangles;
-	protected LazyVBO		vbo_triangles;
+	protected VertexBuffer	vbo_triangles;
 	protected Material		material;
 
 	///
@@ -32,62 +31,56 @@ class Mesh : Resource
 
 	/// Create as an exact duplicate of another Mesh.
 	this(Mesh mesh)
-	{	this();
-		triangles = mesh.triangles.dup;
+	{	triangles = mesh.triangles.dup;
 		material = mesh.material;
 	}
 
 	/// Create with a material and triangles.
 	this(Material matl, Vec3i[] triangles)
-	{	this();
-		setMaterial(matl);
+	{	setMaterial(matl);
 		setTriangles(triangles);
 	}
 	
+	/// Call finalize on destruction.
+	~this()
+	{	finalize();
+	}	
+	
 	/// Overridden to clean up the triangles vertex buffer.
 	override void finalize()
-	{	if (vbo_triangles.getId())
-			vbo_triangles.destroy();
+	{	if (vbo_triangles.getId()) // Segfault here!
+			vbo_triangles.finalize();
 	}
-	
-	~this()
-	{	finalize();		
-	}
-	
-	/// Get the array of triangle indices that define this Mesh.
+
+	/**
+	 * Get/set the triangles of this mesh.  Each triangle contains
+	 * three vertex indicies from the vertex arrays in the containing Model.
+	 * When setting, an OpenGL VBO is created automatially if supported by hardware. */
 	Vec3i[] getTriangles()
 	{	return triangles;
 	}
-
-	/// Get the OpenGL Vertex Buffer Object index for the triangles indices.
+	void setTriangles(Vec3i[] triangles) /// ditto
+	{	this.triangles = triangles;
+		vbo_triangles.create(VertexBuffer.Type.GL_ELEMENT_ARRAY_BUFFER_ARB, cast(float[])triangles);
+	}
+	
+	/**
+	 * Get the OpenGL Vertex Buffer Object id of the triangles array, or 0 if it doesn't exist. */
 	uint getTrianglesVBO()
 	{	return vbo_triangles.getId();
 	}
 
-	/// Get the Material assigned to this Mesh.
+	/// Get/set the Material assigned to this Mesh.
 	Material getMaterial()
 	{	return material;
 	}
-
-	/// Set the Material of this Mesh.
-	void setMaterial(Material matl)
+	void setMaterial(Material matl) /// ditto
 	{	this.material = matl;
 	}
-	
-	/// Ditto
-	void setMaterial(char[] filename)
+	void setMaterial(char[] filename) /// ditto
 	{	this.material = ResourceManager.material(filename);
 	}
 
-	/**
-	 * Set the triangles of this mesh.  Each triangle contains
-	 * three vertex indicies from the vertex arrays in the containing Model.*/
-	void setTriangles(Vec3i[] triangles){
-		this.triangles = triangles;		
-		if (Probe.openGL(Probe.OpenGL.VBO))
-		{	vbo_triangles.create(LazyVBO.Type.GL_ELEMENT_ARRAY_BUFFER_ARB, cast(float[])triangles);		
-		}
-	}
 
 	/// Return a string representation of this Mesh and its data.
 	char[] toString()

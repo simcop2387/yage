@@ -209,6 +209,10 @@ abstract class Node : Tree!(Node), IFinalizable
 	 * Update the positions and rotations of this Node and all children by delta seconds.*/ 
 	void update(float delta)
 	{	
+		// Call the onUpdate() function
+		if (on_update !is null)
+			on_update(this);
+		
 		// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.
 		if (scene)
@@ -217,17 +221,14 @@ abstract class Node : Tree!(Node), IFinalizable
 				calcTransform();
 			cache[scene.transform_write].transform_abs = transform_abs;
 		}
-		// Call the onUpdate() function
-		if (on_update !is null)
-			on_update(this);
-		
+
 		lifetime-= delta;
 		if (lifetime <= 0)
 		{	if (parent)
 				parent.removeChild(this);
 			lifetime = float.infinity;
 		}
-
+		
 		// We iterate in reverse in case a child deletes itself.
 		// What about one child deleting another?
 		// I guess the preferred way to remove an object would be to set its lifetime to 0.

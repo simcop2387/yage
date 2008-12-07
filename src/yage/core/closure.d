@@ -72,14 +72,14 @@ interface Closure
 /*
  * Stores the function and arguments on the heap for later. */
 class ClosureHelper(T) : Closure
-{
-	protected T func;
+{	protected T func;
 	protected ParameterTypeTuple!(T) func_args;
 	
 	this (T func, ParameterTypeTuple!(T) func_args)
 	{	this.func = func;
 		static if (func_args.length)
-			this.func_args = func_args;
+			foreach(int i, arg; func_args) // straight assignment fails in dmd.
+				this.func_args[i] = func_args[i];
 	}
 	
 	ReturnType!(T) opCall()

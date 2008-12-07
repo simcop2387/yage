@@ -56,19 +56,16 @@ interface IFinalizable
 
 /**
  * Interface for any resource that has an external component outside of D memory, such as an OpenGL Texture. */
-interface IExternalResource
+interface IExternalResource : IFinalizable
 {
 	///
 	public void create();
 	
 	///
-	public void destroy();
+	public void finalize();
 	
 	///
-	public uint getId();	
-
-	///
-	//protected void upload();
+	public uint getId();
 	
 }
  
