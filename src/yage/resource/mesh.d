@@ -48,7 +48,7 @@ class Mesh : Resource
 	
 	/// Overridden to clean up the triangles vertex buffer.
 	override void finalize()
-	{	if (vbo_triangles.getId()) // Segfault here!
+	{	if (vbo_triangles.getId())
 			vbo_triangles.finalize();
 	}
 

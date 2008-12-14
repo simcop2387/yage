@@ -565,7 +565,7 @@ class Surface : Tree!(Surface)
 					if (!textTexture.texture)
 						textTexture = Texture(new GPUTexture(textImage, false, false, text), true, TEXTURE_FILTER_BILINEAR);
 					else
-						textTexture.texture.create(textImage, false, false);
+						textTexture.texture.create(textImage, false, false, text);
 					old_text = text;
 				}
 			

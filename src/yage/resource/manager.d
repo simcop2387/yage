@@ -126,7 +126,7 @@ abstract class ResourceManager
 			return fonts[source];
 		Timer t = new Timer();
 		fonts[source] = new Font(source);
-		Log.write(Log.RESOURCE, "ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
 		return fonts[source];
 	}
 	
@@ -142,7 +142,7 @@ abstract class ResourceManager
 			return models[source];
 		Timer t = new Timer();
 		models[source] = new Model(source);
-		Log.write(Log.RESOURCE, "ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
 		return models[source];
 	}
 
@@ -156,7 +156,7 @@ abstract class ResourceManager
 			return materials[source];
 		Timer t = new Timer();
 		materials[source] = new Material(source);
-		Log.write(Log.RESOURCE, "ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
 		return materials[source];
 	}
 
@@ -170,7 +170,7 @@ abstract class ResourceManager
 			return shaders[source];
 		Timer t = new Timer();
 		shaders[source] = new Shader(source, type);
-		Log.write(Log.RESOURCE, "ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
 		return shaders[source];
 	}
 
@@ -183,7 +183,7 @@ abstract class ResourceManager
 			return sounds[source];
 		Timer t = new Timer();
 		sounds[source] = new Sound(source);
-		Log.write(Log.RESOURCE, "ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
 		return sounds[source];
 	}
 	
@@ -200,7 +200,7 @@ abstract class ResourceManager
 			return Texture(textures[mipmap][compress][source]);
 		Timer t = new Timer();
 		textures[mipmap][compress][source] = new GPUTexture(source, compress, mipmap);
-		Log.write(Log.RESOURCE, "ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
 		return Texture(textures[mipmap][compress][source], clamp, filter);
 	}
 	
@@ -210,29 +210,22 @@ abstract class ResourceManager
 	static void finalize()
 	{	
 		foreach (path, res; fonts)
-		{	//res.finalize();
-			//writefln("Removing font ", path);
-			//fonts.remove(path);
-		}
+			res.finalize();		
+		foreach (path, res; materials)
+			res.finalize();
+		foreach (path, res; models)
+			res.finalize();
+		foreach (path, res; shaders)
+			res.finalize();
 		foreach (path, res; sounds)
-		{	//res.finalize();
-			//writefln("Removing sound ", path);
-			//sounds.remove(path);
-		}
-		/*
-		foreach (i; materials)
-			i.finalize();
-		foreach (i; models)
-			i.finalize();
-		foreach (i; shaders)
-			i.finalize();
-		foreach (i; sounds)
-			i.finalize();
+			res.finalize();
 		foreach (k; textures)
 			foreach (j; k)
 				foreach (i; j)
 					i.finalize();
-		*/
+		
+		//fonts.length = 0;
+		
 	}
 
 

@@ -99,7 +99,7 @@ class Ship : GameObject
 
 		// Accelerate left, right, and backward
 		if (Input.keyDown[SDLK_LEFT] || Input.keyDown[SDLK_a])
-			accelerate(Vec3f(-speed/6, 0, 0).rotate(pitch.getTransform()).rotate(getTransform()));
+			accelerate(Vec3f(-speed/6, 0, 0).rotate(pitch.getTransform()).rotate(getTransform()));	
 		if (Input.keyDown[SDLK_RIGHT] || Input.keyDown[SDLK_d])
 			accelerate(Vec3f(speed/6, 0, 0).rotate(pitch.getTransform()).rotate(getTransform()));
 		if (Input.keyDown[SDLK_DOWN] || Input.keyDown[SDLK_s])

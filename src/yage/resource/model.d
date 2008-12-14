@@ -44,6 +44,10 @@ struct Attribute
 	ubyte	width;			// Number of floats to use for each vertex.
 	VertexBuffer vbo;
 
+	char[] toString()
+	{	return swritef("<Attribute vertexNumber=\"%d\">", values.length / width);		
+	}
+	
 	/// Get the values of this attribute as an array of Vec3f
 	Vec3f[] vec3f()
 	{	return (cast(Vec3f*)values.ptr)[0..values.length/3];
@@ -53,8 +57,10 @@ struct Attribute
 	Vec2f[] vec2f()
 	{	return (cast(Vec2f*)values.ptr)[0..values.length/2];
 	}
+
 }
 
+///
 struct KeyFrame
 {	float time;
 	Vec3f value;
@@ -68,6 +74,7 @@ struct KeyFrame
 	}
 };
 
+///
 class Joint
 {	char[]	name;
 	char[]	parentName;
@@ -105,7 +112,7 @@ class Joint
  * ModelNodes can be used to create 3D models in a scene.*/
 class Model : Resource
 {	
-	protected char[] source;
+	public char[] source;
 	protected Mesh[] meshes;
 	protected Attribute[char[]] attributes;	// An associative array to store as many attributes as necessary
 
@@ -121,7 +128,7 @@ class Model : Resource
 
 	/// Instantiate an empty model.
 	this()
-	{			
+	{	
 	}
 
 	/// Instantiate and and load the given model file.
@@ -147,13 +154,6 @@ class Model : Resource
 	/// Remove the model's vertex data from video memory.
 	~this()
 	{	finalize();
-	}
-	
-	/**
-	 * Deallocates vertex buffers. */
-	void finalize()
-	{	foreach (name, attrib; attributes)
-			clearAttribute(name);
 	}
 
 	/**
@@ -258,8 +258,7 @@ class Model : Resource
 		if (normals.length)
 			setAttribute("gl_Normal", normals);
 	}	
-	
-	
+
 	/**
 	 * Bind the Vertex, Texture, and Normal VBO's for use.
 	 * This can only be called from the rendering thread. */
@@ -302,8 +301,22 @@ class Model : Resource
 	void clearAttribute(char[] name)
 	{	if (name in attributes)
 		{	attributes[name].vbo.finalize();
-			attributes.remove(name);
+			//attributes.remove(name); TODO: Why does this break?
 		}
+	}
+	
+	/**
+	 * Deallocates vertex buffers. */
+	void finalize()
+	{	foreach (name, attrib; attributes)
+			clearAttribute(name);
+		attributes = null; /// This shouldn't be necessary when attributes.remove is fixed.
+	
+		foreach (mesh; meshes)
+			mesh.finalize();
+		meshes.length = 0;
+		
+		writefln("finalizing %s", source);
 	}
 	
 	/// Get an associative array of all attributes.  The index is the attribute name.

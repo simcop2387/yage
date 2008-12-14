@@ -6,6 +6,7 @@
 
 module yage.system.device;
 
+import std.gc;
 import std.stdio;
 import std.string;
 import std.thread;
@@ -26,8 +27,11 @@ import yage.system.probe;
 import yage.core.exceptions;
 import yage.core.vector;
 import yage.scene.scene;
-import yage.resource.manager;
 import yage.resource.lazyresource;
+import yage.resource.manager;
+import yage.resource.texture;
+import yage.resource.vertexbuffer;;
+
 
 import std.c.stdlib : exit;
 
@@ -60,7 +64,8 @@ abstract class Device
 	protected static ALCcontext	*al_context;
 
 	// Misc
-	protected static bool initialized=false;			// true if init() has been called
+	protected static bool active = false;		// true if between a call to init and deinit, inclusive
+	protected static bool initialized=false;	// true if between a call to init and deinit, exclusive
 	protected static Surface surface;
 	
 	protected static Thread self_thread; // reference to thread that called init.	
@@ -83,7 +88,7 @@ abstract class Device
 		assert(width>0 && height>0);
 	}
 	body
-	{
+	{	active = true;
 		this.size.x = width;
 		this.size.y= height;
 		this.depth = depth;
@@ -221,11 +226,22 @@ abstract class Device
 	in {
 		assert(isDeviceThread());
 	} body
-	{	foreach (s; Scene.getAllScenes().values)
-			s.finalize();		
+	{	initialized = false;		
+		foreach (s; Scene.getAllScenes().values) // .values shouldn't be necessary?
+			s.finalize();
 		
 		ResourceManager.finalize();
-		LazyResourceManager.processQueue(); // required for any pending deallocations.
+		
+		// Clean up resources not managed by the ResourceManager.
+		foreach (item; VertexBuffer.getAll().values)
+			item.finalize();
+		foreach (item; GPUTexture.getAll().values)
+			item.finalize();
+		
+		// Forces cleanup of any other resources
+		fullCollect();
+		
+		LazyResourceManager.processQueue(); // required for any pending lazyresource destroys
 		
 		SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);
@@ -234,6 +250,7 @@ abstract class Device
 		alcCloseDevice(al_device);
 		SDL_Quit();
 		
+		active = false;
 		Log.write("Yage has been de-initialized successfully.");
 	}
 
@@ -264,9 +281,12 @@ abstract class Device
 
 	/**
 	 * Returns true if called from the same thread as what Device.init() was called.
-	 * This is useful to ensure that rendering functions aren't called from other threads. */
+	 * This is useful to ensure that rendering functions aren't called from other threads. 
+	 * Always returns false if called before Device.init() */
 	static bool isDeviceThread()
-	{	return !!(Thread.getThis() == self_thread);		
+	{	if (self_thread)
+			return !!(Thread.getThis() == self_thread);
+		return false;
 	}
 	
 	/** 

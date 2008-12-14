@@ -5,10 +5,12 @@
  */
 module yage.resource.vertexbuffer;
 
+import std.stdio;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.closure;
 import yage.core.interfaces;
+import yage.core.parse;
 import yage.resource.resource;
 import yage.resource.lazyresource;
 import yage.system.device;
@@ -27,6 +29,8 @@ struct VertexBuffer /*: Resource, IExternalResource*/
 	protected Type type;
 	protected void[] data;
 	protected uint id;
+	
+	static protected VertexBuffer[VertexBuffer] all;
 
 	/**
 	 * Create or update the vertex buffer object with data.
@@ -43,7 +47,9 @@ struct VertexBuffer /*: Resource, IExternalResource*/
 			{	LazyResourceManager.addToQueue(closure(&this.create, type, data, just_create));
 			} else
 			{	if (!id)
-					glGenBuffersARB(1, &id);
+				{	glGenBuffersARB(1, &id);
+					all[*this] = *this;
+				}
 				if (!just_create)
 				{	glBindBufferARB(type, id);
 					glBufferDataARB(type, data.length, data.ptr, GL_STATIC_DRAW_ARB);
@@ -67,12 +73,24 @@ struct VertexBuffer /*: Resource, IExternalResource*/
 			} else
 			{	glDeleteBuffersARB(1, &id);
 				id = 0;
+				all.remove(*this);
 			}
 	}
+
 	
 	/**
 	 * Get the OpenGL id of the vertex buffer, or 0 if it hasn't yet been allocated. */
 	uint getId()
 	{	return id;
 	}	
+
+	///
+	char[] toString()
+	{	return swritef("<VertexBuffer dataBytes=\"%d\" id=\"%d\"/>", data.length, id);
+	}
+	
+	/// Get a list of all VertexBuffers that have been created but not finalized. 
+	static VertexBuffer[VertexBuffer] getAll()
+	{	return all;
+	}
 }

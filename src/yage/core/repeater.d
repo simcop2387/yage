@@ -54,7 +54,7 @@ class Repeater : Timer
 				}	}
 				
 				// Sleep for 1/frequency - (the time it took to make the calls).				
-				usleep(cast(uint)(1_000_000/frequency - a.get()));					
+				usleep(cast(uint)(1_000_000/frequency - a.get()));
 			}
 			return 0;
 		}

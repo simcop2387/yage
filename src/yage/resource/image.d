@@ -41,6 +41,7 @@ class Image : Resource
 	// Fields
 	protected ubyte[] data;
 	protected int width, height, channels;
+	char[] source;
 	
 	// Empty Constructor, used internally
 	protected this()
@@ -85,7 +86,7 @@ class Image : Resource
 	 *     filename = absolute or relative path of an image file supported by sdl_image.
 	 * Returns: An image with the number of channels of the source image.  Paletted images are converted to nonpaletted.*/
 	this(char[] filename) 
-	{		
+	{			
 		SDL_Surface *sdl_image;
 		char* source = toStringz(filename);
 		scope(exit) delete source;

@@ -9,12 +9,23 @@ module yage.core.interfaces;
  * An interface for anything that implements timekeeping functions. */
 interface ITemporal
 {	
-	void play(); ///
-	void pause(); ///
-	bool paused(); ///
-	void stop(); ///
-	void seek(double seconds); ///
-	double tell(); ///
+	///
+	void play();
+	
+	///
+	void pause();
+	
+	///
+	bool paused();
+	
+	///
+	void stop();
+	
+	///
+	void seek(double seconds);
+	
+	///
+	double tell(); 
 	
 	/*
 	Vec2f getRange(float min, float max)
@@ -58,14 +69,17 @@ interface IFinalizable
  * Interface for any resource that has an external component outside of D memory, such as an OpenGL Texture. */
 interface IExternalResource : IFinalizable
 {
-	///
-	public void create();
+	/// Initializes the external part of the resource.  This function must support multiple calls.
+	void create();
 	
-	///
-	public void finalize();
+	/// Destroyes the external part of the resource.  This function must support multiple calls.
+	void finalize();
 	
-	///
-	public uint getId();
+	/// Get an id that is used to reference the external part of the resource.  This will be 0 if the external part doesn't exist.
+	uint getId();
+	
+	/// Get a self-indexed associative array of all of this external resource type.  This is useful for cleanup.
+	static IExternalResource[IExternalResource] getAll(); // note that static interface members aren't enforced!
 	
 }
  

@@ -70,7 +70,7 @@ class Render
 	{	nodes ~= node;
 	}
 
-	/// Render everything in the queue
+	/// Render everything in the queue and empty it.
 	static void all(inout uint poly_count, inout uint vertex_count)
 	{
 		LazyResourceManager.processQueue();
@@ -133,10 +133,10 @@ class Render
 					model((cast(GraphNode)n).getModel(), n);
 				else if (cast(TerrainNode)n)
 					model((cast(TerrainNode)n).getModel(), n);
-				else if (cast(LightNode)n)
-					cube(n);	// todo: render as color of light?
-				else
-					cube(n);
+				//else if (cast(LightNode)n)
+				//	cube(n);	// todo: render as color of light?
+				//else
+				//	cube(n);
 				
 				glPopMatrix();
 			}
@@ -189,6 +189,16 @@ class Render
 		vertex_count = this.vertex_count;
 	}
 
+	/**
+	 * Get / set the current (or last) camera that is/was rendering a scene.
+	 * This is mostly for internal use. */
+	static CameraNode getCurrentCamera()
+	{	return current_camera;
+	}
+	static void setCurrentCamera(CameraNode camera) /// ditto;
+	{	current_camera = camera;
+	}
+	
 	/*
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
@@ -338,21 +348,10 @@ class Render
 		}
 	}
 
-	/// Get the current (or last) camera that is/was rendering a scene.
-	static CameraNode getCurrentCamera()
-	{	return current_camera;
-	}
-
-	/// Set the current camera for rendering.
-	static void setCurrentCamera(CameraNode camera)
-	{	current_camera = camera;
-	}
-
 	
 	// Render a cube
 	protected static void cube(VisibleNode node)
 	{	model(mcube, node);
-		// (cast(LightNode)n).getDiffuse().add((cast(LightNode)n).getAmbient())
 	}
 
 	// Render a sprite
@@ -360,8 +359,7 @@ class Render
 	{	msprite.getMeshes()[0].setMaterial(material);
 		model(msprite, node, current_camera.getAbsoluteTransform(true).toAxis());
 	}
-
-
+	
 	// Generate models used for various Nodes (like the quad for SpriteNodes).
 	protected static void generate()
 	{	// Sprite
@@ -370,7 +368,6 @@ class Render
 		msprite.setAttribute("gl_Normal",   [Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
 		msprite.setAttribute("gl_TexCoord", [Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
 		msprite.setMeshes([new Mesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)])]);
-		//msprite.upload();
 
 		// Cube (in as little code as possible :)
 		mcube = new Model();
@@ -391,10 +388,8 @@ class Render
 			Vec3i(0,  6,  9), Vec3i( 9,  3, 0), Vec3i( 1,  4, 16), Vec3i(16, 13, 1),
 			Vec3i(2, 14, 20), Vec3i(20,  8, 2), Vec3i(12, 15, 21), Vec3i(21, 18, 12),
 			Vec3i(7, 19, 22), Vec3i(22, 10, 7), Vec3i( 5, 11, 23), Vec3i(23, 17, 5)];
-		Mesh mesh = new Mesh();
-		mesh.setTriangles(triangles);
-		mcube.setMeshes([mesh]);
-		mcube.setMeshes([new Mesh()]);
+		mcube.setMeshes([new Mesh(null, triangles)]);
+		
 		models_generated = true;
 	}
 }

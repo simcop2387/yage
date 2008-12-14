@@ -211,6 +211,8 @@ class GPUTexture : Resource, IExternalResource
 	protected uint height = 0;
 	protected char[] source;
 	
+	static protected GPUTexture[GPUTexture] all;
+	
 	Vec2i padding; // amount of padding to the left and top for non-power-of-two sized textures.
 	
 	bool flipped = false; // TODO: Find a better solution, use texture matrix?
@@ -226,14 +228,13 @@ class GPUTexture : Resource, IExternalResource
 	this(char[] filename, bool compress=true, bool mipmap=true)
 	{	this();
 		source = ResourceManager.resolvePath(filename);		
-		create(new Image(source), compress, mipmap);
+		create(new Image(source), compress, mipmap, source);
 	}
 
 	/// ditto
 	this(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
 	{	this();
-		source = source_name;
-		create(image, compress, mipmap);
+		create(image, compress, mipmap, source_name);
 	}
 
 	/// Can this be inherited?
@@ -241,64 +242,17 @@ class GPUTexture : Resource, IExternalResource
 	{	finalize();
 	}
 	
-	/// Release OpenGL texture index.
-	override void finalize()
-	{	if (id)
-		{	// OpenGl functions can only be called from the rendering thread.
-			if (!Device.isDeviceThread())
-			{	LazyResourceManager.addToQueue(closure(&this.finalize));
-				return;
-			}
-			glDeleteTextures(1, &id); 
-			id = 0;
-		}
-	}
-
-	/// Is texture compression used in video memory?
-	bool getCompressed() 
-	{ return compress; }
-
-	/// Are mipmaps used?
-	bool getMipmapped() 
-	{ return mipmap; }
-
-	/**
-	 * Get the format of the Texture.
-	 * See_Also: yage.system.constant */
-	uint getFormat()
-	{	return format;
-	}
-
-	/// What is the OpenGL index of this texture?
-	uint getId() 
-	{	return id;
-	}
-
-	/// Return the height of the Texture in pixels.
-	uint getHeight() 
-	{	return height; 
-	}
-
-	/// Return the width of the Texture in pixels.
-	uint getWidth() 
-	{	return width; 
-	}
-
-	///
-	char[] getSource()
-	{	return source;
-	}
-
 	/**
 	 * Set the Texture from an Image.
 	 * The image is uploaded into video memory and resized to a power of two if necessary.
 	 * Params:
 	 * image = The image to use for the Texture.
 	 * compress = Compress the image in video memory.  This causes a slight loss of quality
-	 * in exchange for four times less memory used.
+	 * in exchange for four times less video memory used.
 	 * mipmap = Generate mipmaps.*/
-	void create(Image image, bool compress=true, bool mipmap=true)
-	{	
+	void create(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
+	{	this.source = source_name;
+		
 		// Set as many variables as possible
 		this.compress = compress;
 		this.mipmap = mipmap;
@@ -310,7 +264,7 @@ class GPUTexture : Resource, IExternalResource
 			
 		// OpenGl functions can only be called from the rendering thread.
 		if (!Device.isDeviceThread())
-		{	LazyResourceManager.addToQueue(closure(&this.create, image, compress, mipmap));
+		{	LazyResourceManager.addToQueue(closure(&this.create, image, compress, mipmap, source_name));
 			return;
 		}
 		
@@ -322,6 +276,8 @@ class GPUTexture : Resource, IExternalResource
 			// For some reason these need to be called or everything runs slowly.			
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			
+			all[this] = this;
 		}
 		else
 			glBindTexture(GL_TEXTURE_2D, id);
@@ -381,8 +337,58 @@ class GPUTexture : Resource, IExternalResource
 	}
 	
 	/// ditto
-	void create() 
+	override void create() 
 	{	create(null, false, false);		
+	}
+	
+	/// Release OpenGL texture index.
+	override void finalize()
+	{	if (id)
+		{	// OpenGl functions can only be called from the rendering thread.
+			if (!Device.isDeviceThread())
+			{	LazyResourceManager.addToQueue(closure(&this.finalize));
+			} else
+			{	//Log.write("Destroying texture %s", source);
+				glDeleteTextures(1, &id); 
+				id = 0;
+				all.remove(this);
+			}
+		}
+	}
+
+	/// Is texture compression used in video memory?
+	bool getCompressed() 
+	{ return compress; }
+
+	/// Are mipmaps used?
+	bool getMipmapped() 
+	{ return mipmap; }
+
+	/**
+	 * Get the format of the Texture.
+	 * See_Also: yage.system.constant */
+	uint getFormat()
+	{	return format;
+	}
+
+	/// What is the OpenGL index of this texture?
+	uint getId() 
+	{	return id;
+	}
+
+	/// Return the height of the Texture in pixels.
+	uint getHeight() 
+	{	return height; 
+	}
+
+	/// Return the width of the Texture in pixels.
+	uint getWidth() 
+	{	return width; 
+	}
+
+	///
+	char[] getSource()
+	{	return source;
 	}
 
 	/// Copy the the contents of the framebuffer into this Texture.
@@ -404,5 +410,10 @@ class GPUTexture : Resource, IExternalResource
 		
 		padding.x = width;
 		padding.y = height;
+	}
+
+	/// Get a list of all VertexBuffers that have been created but not finalized. 
+	static GPUTexture[GPUTexture] getAll()
+	{	return all;
 	}
 }

@@ -201,8 +201,8 @@ class Scene : Node//, ITemporal
 	 * 
 	 * When the scene's timer (implementd as a Repeater) runs, it updates
 	 * the positions and rotations of all Nodes in this Scene.
-	 * Each Scene is updated in its own thread.  If the updating thread
-	 * gets behind, it will always attempt to catch up by updating more frequently.*/
+	 * Each Scene is updated in its own thread.  
+	 * If the updating thread gets behind, it will always attempt to catch up by updating more frequently.*/
 	void play()
 	{	repeater.play();
 	}
