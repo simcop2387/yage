@@ -27,20 +27,17 @@ import yage.system.log;
  *  During initialization, a Sound loads the sound data from a file and
  *  passes it on to OpenAL for playback, as it's needed. */
 class Sound : Resource
-{	protected:
-
-	ubyte		format;  		// wav, ogg, etc.
-	SoundFile	sound_file;		// see doc for SoundFile
-	uint		al_format;		// Number of channels and uncompressed bool-rate.
-
-	uint[]		buffers;		// holds the OpenAL id name of each buffer for the song
-	uint[]		buffers_ref;	// counts how many SoundNodes are using each buffer
-	uint		buffer_num;		// total number of buffers
-	uint		buffer_size;	// size of each buffer in bytes, always a multiple of 4.
-	uint		buffers_per_sec = 25;// ideal is between 5 and 500.  Higher values give more seek precision.
+{	
+	protected ubyte		format;  		// wav, ogg, etc.
+	protected SoundFile	sound_file;		// see doc for SoundFile
+	protected uint		al_format;		// Number of channels and uncompressed bool-rate.
+	
+	protected uint[]	buffers;		// holds the OpenAL id name of each buffer for the song
+	protected uint[]	buffers_ref;	// counts how many SoundNodes are using each buffer
+	protected uint		buffer_num;		// total number of buffers
+	protected uint		buffer_size;	// size of each buffer in bytes, always a multiple of 4.
+	protected uint		buffers_per_sec = 25;// ideal is between 5 and 500.  Higher values give more seek precision.
 									// but limit the number of sounds that can be playing concurrently.
-
-	public:
 
 	/** Load a sound from a file.
 	 *  Note that the file is not closed until the destructor is called.
@@ -60,18 +57,18 @@ class Sound : Resource
 		delete file;
 
 		// Determine OpenAL format
-		if (sound_file.channels==1 && sound_file.bools==8)  		al_format = AL_FORMAT_MONO8;
-		else if (sound_file.channels==1 && sound_file.bools==16) al_format = AL_FORMAT_MONO16;
-		else if (sound_file.channels==2 && sound_file.bools==8)  al_format = AL_FORMAT_STEREO8;
-		else if (sound_file.channels==2 && sound_file.bools==16) al_format = AL_FORMAT_STEREO16;
+		if (sound_file.channels==1 && sound_file.bits==8)  		al_format = AL_FORMAT_MONO8;
+		else if (sound_file.channels==1 && sound_file.bits==16) al_format = AL_FORMAT_MONO16;
+		else if (sound_file.channels==2 && sound_file.bits==8)  al_format = AL_FORMAT_STEREO8;
+		else if (sound_file.channels==2 && sound_file.bits==16) al_format = AL_FORMAT_STEREO16;
 		else throw new ResourceManagerException("Sound must be 8 or 16 bool and mono or stero format.");
 
 		// Calculate the parameters for our buffers
-		int one_second_size = (sound_file.bools/8)*sound_file.frequency*sound_file.channels;
+		int one_second_size = (sound_file.bits/8)*sound_file.frequency*sound_file.channels;
 		float seconds = sound_file.size/cast(double)one_second_size;
 		buffer_num = cast(int)(seconds*buffers_per_sec);
 		buffer_size= one_second_size/buffers_per_sec;
-		int sample_size = sound_file.channels*sound_file.bools/8;
+		int sample_size = sound_file.channels*sound_file.bits/8;
 		buffer_size = (buffer_size/sample_size)*sample_size;	// ensure a multiple of our sample size
 		buffers.length = buffers_ref.length = buffer_num;	// allocate empty buffers
 	}
@@ -111,7 +108,7 @@ class Sound : Resource
 
 	/// Get the length of the sound in seconds
 	double getLength()
-	{	return (8.0*sound_file.size)/(sound_file.bools*sound_file.frequency*sound_file.channels);
+	{	return (8.0*sound_file.size)/(sound_file.bits*sound_file.frequency*sound_file.channels);
 	}
 
 	/// Return the size of the uncompressed sound data, in bytes.
@@ -212,7 +209,7 @@ private abstract class SoundFile
 {
 	ubyte	channels;
 	int		frequency;	// 22050hz, 44100hz?
-	int		bools;		// 8bool, 16bool?
+	int		bits;		// 8bit, 16bit?
 	int		size;		// in bytes
 	char[]	source;
 	char[][]comments;	// Header info from audio file (not used yet)
@@ -230,13 +227,15 @@ private abstract class SoundFile
 	}
 
 	/// Print useful information about the loaded sound file.
-	void print()
-	{	printf("Sound: '%.*s'\n", source);
-		printf("channels: %d\n", channels);
-		printf("sample rate: %dhz\n", frequency);
-		printf("sample bools: %d\n", bools);
-		printf("sample length: %d bytes\n", size);
-		printf("sample length: %f seconds\n", (8.0*size)/(bools*frequency*channels));
+	override char[] toString()
+	{	return swritef(
+			swritef("Sound: '%.*s'\n", source),
+			swritef("channels: %d\n", channels),
+			swritef("sample rate: %dhz\n", frequency),
+			swritef("sample bits: %d\n", bits),
+			swritef("sample length: %d bytes\n", size),
+			swritef("sample length: %f seconds\n", (8.0*size)/(bits*frequency*channels))
+		);
 	}
 }
 
@@ -244,7 +243,7 @@ private abstract class SoundFile
 /// A Wave implementation of SoundFile
 private class WaveFile : SoundFile
 {
-	MmFile	file;
+	MmFile file;
 
 	/// Open a wave file and store attributes from its headers
 	this(char[] filename)
@@ -261,7 +260,7 @@ private class WaveFile : SoundFile
 		channels 	= (cast(ushort[])file[22..24])[0];
 		frequency	= (cast(uint[])file[24..28])[0];
 		// Skip average bytes per second, block align, bytes by capture (6 bytes)
-		bools		= (cast(ushort[])file[34..36])[0];
+		bits		= (cast(ushort[])file[34..36])[0];
 		// Skip 'data' (4 bytes)
 		size		= (cast(uint[])file[40..44])[0];
 	}
@@ -273,7 +272,7 @@ private class WaveFile : SoundFile
 
 	/** Return a buffer of uncompressed sound data.
 	 *  Both parameters are measured in bytes. */
-	ubyte[] getBuffer(int offset, int _size)
+	override ubyte[] getBuffer(int offset, int _size)
 	{	if (offset+_size > size)
 			return null;
 		return cast(ubyte[])file[(44+offset)..(44+offset+_size)];
@@ -307,23 +306,22 @@ private class VorbisFile : SoundFile
 		// Get relevant data from the file
 		channels = vi.channels;
 		frequency = vi.rate;
-		bools = 16;	// always 16-bool for ov?
-		size = ov_pcm_total(&vf, -1)*(bools/8)*channels;
+		bits = 16;	// always 16-bool for ov?
+		size = ov_pcm_total(&vf, -1)*(bits/8)*channels;
 	}
 
 	/// Free memory and close file
 	~this()
-	{	ov_clear(&vf);
-		fclose(file);
-		delete buffer;
+	{	// Closing the file is not necessary since ov_clear closes it automatially.
+		ov_clear(&vf);
 	}
 
 	/** Return a buffer of uncompressed sound data.
 	 *  Both parameters are measured in bytes. */
-	ubyte[] getBuffer(int offset, int _size)
+	override ubyte[] getBuffer(int offset, int _size)
 	{	if (offset+_size > size)
 			return null;
-		ov_pcm_seek(&vf, offset/(bools/8)/channels);
+		ov_pcm_seek(&vf, offset/(bits/8)/channels);
 		buffer.length = _size;
 		int ret = 0;
 		while (ret<_size)	// because it may take several requests to fill our buffer

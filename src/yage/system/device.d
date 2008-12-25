@@ -253,6 +253,7 @@ abstract class Device
 		active = false;
 		Log.write("Yage has been de-initialized successfully.");
 	}
+	
 
 	/// Return the aspect ratio (width/height) of the rendering window.
 	static float getAspectRatio()

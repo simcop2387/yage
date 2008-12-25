@@ -56,8 +56,6 @@ abstract class Node : Tree!(Node), IFinalizable
 	protected Vec3f		linear_velocity_abs;	// Store a cached version of the absolute linear velocity.
 	protected Vec3f		angular_velocity_abs;
 	protected bool		velocity_dirty=true;	// The absolute velocity vectors need to be recalculated.
-	
-	protected Object	transform_mutex;
 
 	// Rendering and scene-graph updates run in different threads.
 	// If the scene is rendered halfway through updating, rendering glitches may occur.
@@ -73,7 +71,7 @@ abstract class Node : Tree!(Node), IFinalizable
 
 	/// Constructor
 	this()
-	{	transform_mutex = new Object();		
+	{	
 	}
 	
 	/**
@@ -121,6 +119,8 @@ abstract class Node : Tree!(Node), IFinalizable
 			result.linear_velocity_abs = linear_velocity_abs;
 			result.angular_velocity_abs = angular_velocity_abs;
 			result.cache[0..3] = cache[0..3];
+			
+			result.on_update = on_update;
 			
 			if (children)
 				foreach (c; this.children)
@@ -221,21 +221,21 @@ abstract class Node : Tree!(Node), IFinalizable
 				calcTransform();
 			cache[scene.transform_write].transform_abs = transform_abs;
 		}
-
+		
+		// We iterate in reverse in case a child deletes itself.
+		// What about one child deleting another?
+		// I guess the preferred way to remove an object would be to set its lifetime to 0.
+		// Perhaps we should override remove to do this so that items are removed in a controlled way?
+		foreach_reverse(Node c; children) // gdc segfaults 2 lines below unless this is foreach_reverse
+			if (c) // does this solve the problem above?
+				c.update(delta);
+		
 		lifetime-= delta;
 		if (lifetime <= 0)
 		{	if (parent)
 				parent.removeChild(this);
 			lifetime = float.infinity;
 		}
-		
-		// We iterate in reverse in case a child deletes itself.
-		// What about one child deleting another?
-		// I guess the preferred way to remove an object would be to set its lifetime to 0.
-		// Perhaps we should override remove to do this so that items are removed in a controlled way?
-		foreach(Node c; children)
-			if (c) // does this solve the problem above?
-				c.update(delta);
 	}
 	
 	/*

@@ -52,7 +52,9 @@ int main()
 	bool grabbed = true;
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
-			Device.running = false;	
+			Device.running = false;
+		if (key == SDLK_c)
+			new GPUTexture("../res/fx/flare1.jpg"); // This proves that the LazyResource queue doesn't work yet!
 	};
 	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates) {
 		self.grabMouse(grabbed);
@@ -63,16 +65,9 @@ int main()
 	auto l1 = scene.addChild(new LightNode());
 	l1.setPosition(Vec3f(0, 300, -300));
 	
-	//	 Music
-	auto music = new SoundNode();
-	camera.addChild(music);
-	music.setSound("music/celery - pages.ogg");
-	music.setLooping(true);
-	music.play();
-	
 	// Add to the scene's update loop
 	void update(Node self){
-		
+		/*
 		// Test creation and removal of lots of lights and sounds and sprites.
 		for (int i=0; i<1; i++)
 		{	
@@ -93,6 +88,7 @@ int main()
 			zap.setLifetime(2); 
 			zap.play();	 	
 		}
+		*/
 	}
 	scene.onUpdate(&update);
 	
@@ -116,6 +112,7 @@ int main()
 	}
 	
 	// Free resources that can't be freed by the garbage collector.
+	scene.finalize();
 	Device.deInit();
 	return 0;
 }

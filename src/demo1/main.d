@@ -13,7 +13,7 @@ module demo2.main;
 import std.c.time;
 import std.string;
 import std.stdio;
-import std.random;
+import std.gc;
 
 import derelict.opengl.gl;
 import derelict.opengl.glext;
@@ -184,7 +184,9 @@ int main()
 	Timer frame = new Timer();
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
-	std.gc.fullCollect();	
+	std.gc.fullCollect();
+	//std.gc.disable(); // temporary, to see if we still get crashes.
+	
 	while(Device.running)
 	{
 		float dtime = delta.get();
