@@ -85,21 +85,4 @@ class Tree(T)
 		return child;
 	}
 	
-	/// Remove this element from its parent.
-	/// TODO: replace with removeChild
-	void remove()
-	{	// this needs to happen because some children (like lights) may need to do more in their remove() function.
-		// instead, call setTransformDirty, which could cause lights, etc. to re-evaluate their scene.
-		foreach_reverse(T c; children)
-			c.remove();
-		
-		if (index > 0)
-		{	yage.core.all.remove(parent.children, index, false);
-			if (index < parent.children.length)
-				parent.children[index].index = index;
-			index = -1; // so remove can't be called twice.
-			parent = null;
-		}
-
-	}
 }

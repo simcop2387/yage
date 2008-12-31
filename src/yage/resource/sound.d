@@ -19,11 +19,11 @@ import yage.resource.exceptions;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.system.log;
+import yage.system.alcontext;
 
 
 /** A Sound is a represenation of sound data in system memory.
- *  Sounds use a SoundFile as a member variable, which abstracts away
- *  the differences between different sound formats.
+ *  Sounds use a SoundFile as a member variable, which abstracts away the differences between different sound formats.
  *  During initialization, a Sound loads the sound data from a file and
  *  passes it on to OpenAL for playback, as it's needed. */
 class Sound : Resource
@@ -39,9 +39,10 @@ class Sound : Resource
 	protected uint		buffers_per_sec = 25;// ideal is between 5 and 500.  Higher values give more seek precision.
 									// but limit the number of sounds that can be playing concurrently.
 
-	/** Load a sound from a file.
-	 *  Note that the file is not closed until the destructor is called.
-	 *  \param source Filename of the sound to load.*/
+	/** 
+	 * Load a sound from a file.
+	 * Note that the file is not closed until the destructor is called.
+	 * Params: source=Filename of the sound to load.*/
 	this(char[] filename)
 	{
 		char[] source = ResourceManager.resolvePath(filename);
@@ -148,11 +149,12 @@ class Sound : Resource
 
 			// If this buffer hasn't yet been bound
 			if (buffers_ref[i]==0)
-			{	// Generate a buffer
-				alGenBuffers(1, &buffers[i]);
-				//printf("Newly generated buffer %d is %d\n", i, buffers[i]);
-				ubyte[] data = sound_file.getBuffer(i*buffer_size, buffer_size);
-				alBufferData(buffers[i], al_format, &data[0], cast(ALsizei)data.length, getFrequency());
+			{	
+				synchronized(ALContext.getOpenALMutex())
+				{	alGenBuffers(1, &buffers[i]);
+					ubyte[] data = sound_file.getBuffer(i*buffer_size, buffer_size);
+					alBufferData(buffers[i], al_format, &data[0], cast(ALsizei)data.length, getFrequency());
+				}
 			}
 			// Increment reference count
 			buffers_ref[i]++;
@@ -176,16 +178,18 @@ class Sound : Resource
 
 			// If this buffer has no references to it, delete it
 			if (buffers_ref[i]==0)
-			{	if (alIsBuffer(buffers[i]))
-				{	alDeleteBuffers(1, &buffers[i]); /// TODO, delete multiple buffers at once?
+			{	
+				synchronized(ALContext.getOpenALMutex())
 					if (alIsBuffer(buffers[i]))
-						throw new ResourceManagerException(
-							"OpenAL Sound buffer %d of '%s' could not be deleted; probably because it is in use.\n", 
+					{	alDeleteBuffers(1, &buffers[i]); /// TODO, delete multiple buffers at once?
+						if (alIsBuffer(buffers[i]))
+							throw new ResourceManagerException(
+								"OpenAL Sound buffer %d of '%s' could not be deleted; probably because it is in use.\n", 
+								i, sound_file.source);
+					} else
+						throw new ResourceManagerException( // this should never happen.
+							"OpenAL Sound buffer %d of '%s' cannot be deleted because it is has not been allocated.\n", 
 							i, sound_file.source);
-				} else
-					throw new ResourceManagerException( // this should never happen.
-						"OpenAL Sound buffer %d of '%s' cannot be deleted because it is has not been allocated.\n", 
-						i, sound_file.source);
 		}	}
 	}
 

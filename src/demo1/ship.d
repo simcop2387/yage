@@ -39,8 +39,9 @@ class Ship : GameObject
 		spring.setStiffness(1);
 
 		sound = ship.addChild(new SoundNode());
-		sound.setSound("sound/ship_eng.ogg");
+		sound.setSound("sound/ship-engine.ogg");
 		sound.setLooping(true);
+		sound.setVolume(2);
 	}
 
 	ModelNode getShip()
@@ -140,8 +141,8 @@ class Ship : GameObject
 			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getAbsoluteTransform())+getVelocity());
 
 			SoundNode zap = ship.addChild(new SoundNode());
-			zap.setSound("sound/laser.wav");
-			zap.setVolume(.3);
+			zap.setSound("sound/laser3.ogg");
+			zap.setVolume(.1);
 			zap.setLifetime(2);
 			zap.play();
 		}

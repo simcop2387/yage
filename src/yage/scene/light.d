@@ -56,6 +56,16 @@ class LightNode : MovableNode
 		specular = diffuse = Color("white");
 	}
 	
+	~this()
+	{	finalize();		
+	}
+	
+	override void finalize()
+	{	super.finalize();
+		if (scene)
+			scene.removeLight(this);
+	}
+	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
 	 * Params:
@@ -246,13 +256,6 @@ class LightNode : MovableNode
 		glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, quad_attenuation);
 
 		glPopMatrix();
-	}
-
-	/// Overridden to remove the light from the Scene's arary of lights
-	override void remove()
-	{	if (scene)
-			scene.removeLight(this);
-		super.remove();
 	}
 
 	/*

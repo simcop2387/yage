@@ -38,7 +38,6 @@ int main()
 	// Paths
 	ResourceManager.addPath("../res/");
 	ResourceManager.addPath("../res/shader");
-	ResourceManager.addPath("../res2/");	
 
 	// Create and start a Scene
 	Log.write("Starting update loop.");
@@ -50,7 +49,7 @@ int main()
 	auto sky = skybox.addChild(new ModelNode());
 	sky.setModel("sky/sanctuary.ms3d");
 	scene.setSkybox(skybox);
-	scene.setGlobalAmbient(Color("555555"));
+	scene.setGlobalAmbient(Color("#444444"));
 	
 	// Ship
 	Ship ship = scene.addChild(new Ship());	
@@ -60,7 +59,7 @@ int main()
 	// Camera
 	CameraNode camera = ship.getCameraSpot().addChild(new CameraNode());
 	ship.getCameraSpot().addChild(camera);
-	camera.setView(2, 20000, 60, 0, 1);	// wide angle view
+	camera.setView(2, 100000, 60, 0, 1);	// wide angle view
 
 	
 	// Music
@@ -88,7 +87,7 @@ int main()
 	planet.setAngularVelocity(Vec3f(0, -0.01, 0));
 	
 	// Asteroids
-	asteroidBelt(800, 1400, planet);
+	asteroidBelt(1200, 1400, planet);
 
 	
 	// Main surface where camera output is rendered.
@@ -207,8 +206,8 @@ int main()
 		}
 		
 		// Free up a little cpu if over 60 fps.
-		if (dtime < 1/60.0)
-			std.c.time.usleep(100);
+		if (dtime < 1/60.0)			
+			std.c.time.usleep(cast(int)((1/60.0f-dtime)*1_000_000));
 		scene.swapTransformRead();
 	}
 	scene.pause();

@@ -21,23 +21,24 @@ import yage.core.quatrn;
  * --------------------------------
  * Vec!(4, real) a; // a is a four-component real vector.
  * --------------------------------
+ * TODO: Convert looping code to static if's to improve performance.
  */
 struct Vec(int S, T)
 {
 	alias Vec!(S, T) VST;
 
+	/// Allow acessiong the vector as an array of values through field v, or via .x, .y, .z, etc. up to the number of components.
 	union
-	{	T v[S] = 0; // same as x, y, z, etc.
-		static if(S==2)
-		{	struct { T x, y; }
-		}
-		static if(S==3)
-		{	struct { T x, y, z; }
-			struct { T r, g, b; }
-		}
-		static if(S==4)
-		{	struct { T r, g, b, a; }
-			struct { T x, y, z, w; }
+	{	T v[S] = 0; ///
+	
+		struct ///
+		{	union {T x; T r; } ///
+			static if (S>=2) ///
+				union {T y; T g; } ///
+			static if (S>=3) ///
+				union {T z; T b; } ///
+			static if (S>=4) ///
+				union {T w; T a; } ///
 		}
 	}
 

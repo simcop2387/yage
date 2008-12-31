@@ -21,6 +21,7 @@ import derelict.ogg.vorbis;
 import derelict.ogg.vorbisfile;
 import derelict.freetype.ft;
 import yage.gui.surface;
+import yage.system.alcontext;
 import yage.system.log;
 import yage.system.constant;
 import yage.system.probe;
@@ -30,20 +31,12 @@ import yage.scene.scene;
 import yage.resource.lazyresource;
 import yage.resource.manager;
 import yage.resource.texture;
-import yage.resource.vertexbuffer;;
-
-
-import std.c.stdlib : exit;
+import yage.resource.vertexbuffer;
 
 // OpenGL constants to enable specular highlights with textures.
 const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
 const int SINGLE_COLOR_EXT = 0x81F9;
 const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
-
-extern(C) {
-	void _moduleDtor();
-	void gc_term();
-}
 
 /**
  * The device class exists to group functions for initializing a window,
@@ -59,18 +52,15 @@ abstract class Device
 	protected static ubyte 		depth;
 	protected static bool 		fullscreen;
 
-	// Audio
-	protected static ALCdevice	*al_device;
-	protected static ALCcontext	*al_context;
 
 	// Misc
 	protected static bool active = false;		// true if between a call to init and deinit, inclusive
 	protected static bool initialized=false;	// true if between a call to init and deinit, exclusive
 	protected static Surface surface;
 	
-	protected static Thread self_thread; // reference to thread that called init.	
+	protected static Thread self_thread; // reference to thread that called init, typically the main thread
 	
-	static bool running = true;
+	static bool running = true; // temporary until I find a better way to organize things.
 
 	/**
 	 * This function creates a window with the specified width and height in pixels.
@@ -205,13 +195,6 @@ abstract class Device
 		SDL_EnableUNICODE(true);
 		SDL_EnableKeyRepeat(1, 100);
 
-		// Initialize OpenAL
-		al_device = alcOpenDevice(null);
-		al_context = alcCreateContext(al_device, null); // TODO: make this per-scene.
-		alcMakeContextCurrent(al_context);
-		if (alGetError()!=0)
-			throw new YageException("There was an error when initializing OpenAL.");
-
 		surface = new Surface();
 		
 		initialized = true;
@@ -246,8 +229,6 @@ abstract class Device
 		SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);
 		
-		alcDestroyContext(al_context);
-		alcCloseDevice(al_device);
 		SDL_Quit();
 		
 		active = false;
@@ -255,7 +236,8 @@ abstract class Device
 	}
 	
 
-	/// Return the aspect ratio (width/height) of the rendering window.
+	/**
+	 * Return the aspect ratio (width/height) of the rendering window. */
 	static float getAspectRatio()
 	{	if (size.y==0) 
 			size.y=1;
@@ -271,12 +253,12 @@ abstract class Device
 	{	surface = s;	
 	}
 	
-	/// Return the current width of the window in pixels.
+	/**
+	 * Get the current width/height of the window in pixels. */
 	static uint getWidth()
 	{	return size.x;
-	}
-	/// return the current height of the window in pixels.
-	static uint getHeight()
+	}	
+	static uint getHeight() /// ditto
 	{	return size.y;
 	}
 

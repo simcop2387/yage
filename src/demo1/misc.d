@@ -34,7 +34,7 @@ void asteroidBelt(int number, float radius, Node scene)
 						cos(value*6.282)*radius + pow(value4*2-1, 3.0)*radius/4));
 		
 		a.setModel(ResourceManager.model("space/asteroid1.ms3d"));
-		a.setSize(Vec3f(value5*value5*value5*value5*value5*value5*value5*1.1 + .2));
+		a.setSize(Vec3f(value5*value5*value5*value5*value5*value5*value5 + .2));
 		a.rotate(Vec3f(value4*12, value2*12, value3*12));
 	//	a.setAngularVelocity(Vec3f(random(-.2, .2), random(-.2, .2), random(-.2, .2)));
 	}

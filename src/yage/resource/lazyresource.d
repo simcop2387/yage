@@ -29,9 +29,7 @@ class LazyResourceManager
 	}
 	body
 	{	synchronized(queue_mutex)
-		{	if (queue.length)
-				std.stdio.writefln("processing closure queue of length %d", queue.length);
-			foreach(i, func; queue)
+		{	foreach(func; queue)
 				func.call();
 			queue.length = 0;
 		}

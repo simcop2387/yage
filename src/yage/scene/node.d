@@ -140,11 +140,10 @@ abstract class Node : Tree!(Node), IFinalizable
 	
 	/**
 	 * Some types of Nodes may need to free resources before being destructed. */
-	void finalize()
+	override void finalize()
 	{	foreach (c; children)
 			c.finalize();
 	}
-	
 
 	/**
 	 * Get / set the lifeime of a Node (in seconds).

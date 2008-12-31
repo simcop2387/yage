@@ -6,14 +6,17 @@
 
 module yage.scene.scene;
 
+
+import std.stdio;
 import derelict.opengl.gl;
 import derelict.openal.al;
 import yage.core.all;
+import yage.system.alcontext;
 import yage.system.device;
-import yage.scene.visible;
 import yage.scene.light;
 import yage.scene.node;
-
+import yage.scene.sound;
+import yage.scene.visible;
 
 /**
  * A Scene is the root of a tree of Nodes, and obviously, a Scene never has a parent.
@@ -42,6 +45,7 @@ class Scene : Node//, ITemporal
 	
 	protected Scene skybox;
 	protected LightNode[LightNode] lights;
+	protected SoundNode[SoundNode] sounds;
 
 	protected Timer delta; 					// time since the last time this Scene was updated.
 	protected float delta_time;
@@ -52,37 +56,62 @@ class Scene : Node//, ITemporal
 	protected bool  fog_enabled = false;
 	protected float speed_of_sound = 343;	// 343m/s is the speed of sound in air at sea level.
 	
-	package Object transform_mutex;		// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
+	package Object transform_mutex;			// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
 	package Object lights_mutex;
+	package Object sounds_mutex;
 
-	protected long timestamp[3];
+	protected long timestamp[3];			// Used for timestamps of newest transform_read/write
 	package int transform_read=0, transform_write=1;
 
-	Repeater repeater;
+	Repeater update_thread;
+	ALContext sound_thread;
 
 	/// Construct an empty Scene.
 	this()
 	{	super();
-		delta	= new Timer();
-		scene	= this;
+		delta = new Timer();
+		scene = this;
 		ambient	= Color("333333"); // OpenGL default global ambient light.
 		background = Color("black");	// OpenGL default clear color
 		fog_color = Color("gray");
-		repeater = new Repeater();
-		repeater.setFunction(&update);
+		
+		update_thread = new Repeater();
+		update_thread.setFunction(&update);
+		
+		sound_thread = new ALContext();
+		sound_thread.setFunction(&updateSounds);
+		sound_thread.setFrequency(30); // sound buffers are updated 30 times per second.
 		
 		transform_mutex = new Object();
 		lights_mutex = new Object();
+		sounds_mutex = new Object();
 		
 		all_scenes[this] = this;
 	}
 	
 	/**
-	 * Overridden to pause scene updates and to remove this instance from the array of all scenes. */
+	 * Call finalize() on destruction. */
+	~this()
+	{	finalize();		
+	}
+	
+	/**
+	 * Overridden to pause the scene update and sound threads and to remove this instance from the array of all scenes. */
 	override void finalize()
-	{	pause();
-		all_scenes.remove(this);
-		super.finalize();
+	{	if (this in all_scenes) // repeater will be null if finalize has already been called.
+		{	pause();
+			super.finalize(); // needs to occur before sound_thread finalize to free sound nodes.
+			
+			if (update_thread)
+			{	update_thread.finalize();
+				update_thread = null;
+			}
+			if (sound_thread)
+			{	sound_thread.finalize();
+				sound_thread = null;
+			}
+			all_scenes.remove(this);
+		}
 	}
 	
 	/**
@@ -112,12 +141,14 @@ class Scene : Node//, ITemporal
 	}
 	unittest
 	{	// Test duplication of a running scene.
-		// Causes an access violation on exit.
+		// this no longer works since the scene constructor now requiores the openAl .dll/.so
+		/*
 		Scene a = new Scene();
 		a.play();
 		a.addChild(new VisibleNode());
 		Scene b = a.clone(true);
 		a.pause();
+		*/
 	}
 
 
@@ -188,13 +219,12 @@ class Scene : Node//, ITemporal
 	{	skybox = _skybox;
 	}
 	
-	/// Get / set the speed of sound (in game units) variable that will be passed to OpenAL.
+	/// Get / set the speed of sound (in game units per second) variable that will be passed to OpenAL.
 	float getSpeedOfSound()
-	{	return speed_of_sound;
+	{	return sound_thread.getDopplerVeloity();
 	}	
 	void setSpeedOfSound(float speed) /// ditto
-	{	speed_of_sound = speed;
-		alDopplerVelocity(speed/343.3);
+	{	sound_thread.setDopplerVelocity(speed/343.3);
 	}
 	/**
 	 * Implement the time control functions of ITemporal.
@@ -204,33 +234,37 @@ class Scene : Node//, ITemporal
 	 * Each Scene is updated in its own thread.  
 	 * If the updating thread gets behind, it will always attempt to catch up by updating more frequently.*/
 	void play()
-	{	repeater.play();
+	{	update_thread.play();
+		sound_thread.play();
 	}
 	void pause() /// ditto
-	{	repeater.pause();		
+	{	update_thread.pause();
+		sound_thread.pause();
 	}	
 	bool paused() /// ditto
-	{	return repeater.paused();
+	{	return update_thread.paused();
 	}	
 	
 	void seek(double seconds) /// ditto
-	{	repeater.seek(seconds);		
+	{	update_thread.seek(seconds);
+		// no point in seeking the sound thread.
 	}
 	double tell() /// ditto
-	{	return repeater.tell();		
-	}
-	
-	override void remove()
-	{	repeater.remove(); // ensures repeater's thread terminates.
-		super.remove();
+	{	return update_thread.tell();		
 	}
 
 	/**
 	 * Get the Repeater that calls update() in its own thread.
 	 * This allows more advanced interaction than the shorthand functions implemented above.
 	 * See:  yage.core.repeater  */
-	Repeater getRepeater()
-	{	return repeater;		
+	Repeater getUpdateThread()
+	{	return update_thread;		
+	}
+	
+	/**
+	 * Get the Repeater that handles all sound playback for this scene. */
+	Repeater getSoundThread()
+	{	return sound_thread;		
 	}
 
 	/**
@@ -262,7 +296,7 @@ class Scene : Node//, ITemporal
 
 	/**
 	 * Update all Nodes in the scene by delta seconds.
-	 * This function is typically called automatically at a set interval once scene.play() is called.
+	 * This function is typically called automatically at a set interval from the scene's update_thread once scene.play() is called.
 	 * Params:
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
 	void update(double delta = delta.tell())
@@ -272,6 +306,14 @@ class Scene : Node//, ITemporal
 		scene.swapTransformWrite();
 	}
 	
+	/**
+	 * This is typically called automatically at a set interval from the scene's sound_thread. */
+	void updateSounds(double unused=0)
+	{	sound_thread.processQueue();
+		synchronized(sounds_mutex)
+			foreach (sound; sounds)
+				sound.updateBuffers();
+	}	
 
 	/*
 	 * Apply OpenGL options specific to this Scene.  This function is used internally by
@@ -291,19 +333,37 @@ class Scene : Node//, ITemporal
 
 	
 	/*
-	 * Add a light to this Scene's list of lights.
-	 * Only add lights that already exist as one of this node's children.
-	 * A list of lights in the scene are mainained here only for faster lookups.
+	 * Add/remove the light from the scene's list of lights.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	void addLight(LightNode light)
 	{	synchronized (lights_mutex) lights[light] = light;	
 	}
-
-	/*
-	 * Remove the light with the given light index.
-	 * This function is used internally by the engine and doesn't normally need to be called.*/
-	void removeLight(LightNode light)
+	void removeLight(LightNode light) // ditto
 	{	synchronized (lights_mutex) lights.remove(light);
+	}
+	
+	/**
+	 * Get all LightNodes that are currently a part of this scene.
+	 * Returns: a self indexed array. */
+	LightNode[LightNode] getAllLights()
+	{	return lights;		
+	}
+	
+	/*
+	 * Add/remove the sound from the scene's list of sounds.
+	 * This function is used internally by the engine and doesn't normally need to be called.*/
+	void addSound(SoundNode sound)
+	{	synchronized (sounds_mutex) sounds[sound] = sound;	
+	}	
+	void removeSound(SoundNode sound) // ditto
+	{	synchronized (sounds_mutex) sounds.remove(sound);
+	}
+	
+	/**
+	 * Get all SoundNodes that are currently a part of this scene.
+	 * Returns: a self indexed array. */
+	SoundNode[SoundNode] getAllSounds()
+	{	return sounds;		
 	}
 
 	/**

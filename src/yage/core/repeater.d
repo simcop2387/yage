@@ -11,19 +11,22 @@ module yage.core.repeater;
 import std.stdio;
 import std.thread;
 import std.c.time;
+import yage.core.closure;
+import yage.core.interfaces;
 import yage.core.timer;
 
 /**
  * A class to repeatedly call a function at a set inverval, in its own thread.
  * TODO: update/combine this with setInterval, or inherit from Timer? */
-class Repeater : Timer
+class Repeater : Timer, IFinalizable
 {
 	protected double frequency = 60f;
 	protected double call_time = 0f;
 	
-	protected bool active = true;
-	protected void delegate(double f) func;
+	protected bool active = true;	
 	protected bool calling = false;
+	protected void delegate(double f) func;
+	protected Closure[] call_once;
 	
 	// Allow repeater to run in its on thread
 	class HelperThread : Thread
@@ -40,6 +43,12 @@ class Repeater : Timer
 			{	a.reset();
 				if (!paused())
 				{	
+					if (call_once.length)
+					{	foreach (f; call_once)
+							f.call();
+						call_once.length = 0;
+					}
+					
 					// Call as many times as needed to catch up.
 					while (outer.tell() > call_time)
 					{	double s = outer.tell();						
@@ -75,9 +84,7 @@ class Repeater : Timer
 	/**
 	 * Ensures that the helper thread is stopped on destruction. */
 	~this()
-	{	active = false;
-		if (thread)
-			thread.wait(); // wait for thread to terminate.
+	{	finalize();
 	}
 	
 	/**
@@ -94,9 +101,12 @@ class Repeater : Timer
 	}
 	
 	// Is this necessary?
-	void remove()
+	override void finalize()
 	{	active = false;
-		thread.wait();		
+		if (thread)
+		{	thread.wait();
+			thread = null;
+		}
 	}
 	
 	/**
