@@ -9,7 +9,8 @@
 module yage.system.all;
 
 public
-{	import yage.system.constant;
+{	import yage.system.alcontext;
+	import yage.system.constant;
 	import yage.system.device;
 	import yage.system.input;
 	import yage.system.interfaces;

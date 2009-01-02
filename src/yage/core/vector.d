@@ -473,7 +473,7 @@ struct Vec3f
 
 	/// Return the length of the vector squared.  This is faster than length().
 	float length2()
-	{	return x*x+y*y+z*z;
+	{	return x*x + y*y + z*z;
 	}
 
 	/// Return a copy of this vector scaled to length l.

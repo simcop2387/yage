@@ -5,7 +5,7 @@
  * 
  * This is an experiment toward a wrapper around OpenGL's state manager, or perhaps eventually all of OpenGL. 
  */
-module yage.system.glstate;
+module yage.system.glcontext;
 
 
 import std.thread;

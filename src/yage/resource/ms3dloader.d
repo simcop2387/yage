@@ -410,7 +410,7 @@ template Ms3dLoader()
 			{	
 				// create transformation matrix from position and rotation
 				joint.transform = Matrix();
-				joint.transform.setEuler(joint.startRotation);
+				joint.transform.setRotationEuler(joint.startRotation);
 				joint.transform.setPosition(joint.startPosition);
 
 				if (!joint.parent)

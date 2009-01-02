@@ -30,15 +30,19 @@ struct Matrix
 	{	float[16] v =  [1, 0, 0, 0,
 						0, 1, 0, 0,
 						0, 0, 1, 0,
-						0, 0, 0, 1,];
+						0, 0, 0, 1,]; /// elements in array form.
 		//Vec4f[4] row;	// produces a forward reference error
-		struct
-		{	float v00, v01, v02, v03;
-			float v10, v11, v12, v13;
-			float v20, v21, v22, v23;
-			float v30, v31, v32, v33;
+		struct /// elements in column/row form.
+		{	float v00, v01, v02, v03; /// first column
+			float v10, v11, v12, v13; /// second column
+			float v20, v21, v22, v23; /// third column
+			float v30, v31, v32, v33; /// fourth column
 		}
 	}
+	
+	protected static const float close_enough = 0.0001;
+	
+	
 	invariant()
 	{	foreach (float t; v)
 			assert(t != float.nan);
@@ -125,6 +129,46 @@ struct Matrix
 		return true;
 	}
 
+	/**
+	 * Decompose this Matrix into a position, rotation, and scaling Matrix. */
+	void decompose(out Matrix position, out Matrix rotation, out Matrix scale)
+	{	position = rotation = scale = Matrix(); // set each to identity.
+		
+		// Extract the translation directly
+		position.v30 = v30;
+		position.v31 = v31;
+		position.v32 = v32;
+		
+		// Extract the orientation basis vectors
+		Vec3f rx = Vec3f(v[0..3]);
+		Vec3f ry = Vec3f(v[4..7]);
+		Vec3f rz = Vec3f(v[8..11]);
+		float rx_length = rx.length();
+		float ry_length = ry.length();
+		float rz_length = rz.length();
+		
+		// Divide the basis vectors by their lengths to normalize them.
+		rotation.v[0..3] = rx.scale(1/rx_length).v[0..3];
+		rotation.v[4..7] = ry.scale(1/ry_length).v[0..3];
+		rotation.v[8..11]= rz.scale(1/rz_length).v[0..3];
+		
+		// Take the lengths of the basis vectors to find the scale factors.
+		scale.v00 = rx_length;
+		scale.v11 = ry_length;
+		scale.v22 = rz_length;		
+	}
+	unittest
+	{	// Decompose and recompose a random matrix to make sure we get back what we started with.
+		Matrix test = Matrix.random();
+		test.v03 = test.v13 = test.v23 = 0;
+		test.v33 = 1; // the last row isn't used in decompose, so we set it to identity.
+		
+		Matrix position, rotation, scale;
+		test.decompose(position, rotation, scale);
+
+		assert(test.almostEqual(scale*(rotation*(position)), close_enough));
+	}
+	
 	/// Return the determinant of the Matrix.
 	float determinant()
 	{	return	v[12]*v[ 9]*v[ 6]*v[ 3] - v[ 8]*v[13]*v[ 6]*v[ 3] -
@@ -177,6 +221,23 @@ struct Matrix
 		return false;
 	}
 
+	/**
+	 * Returns true if all components of the scale are the same.
+	 * This is much faster than calling toScale() and comparing elements. 
+	 * TODO: make this count almost uniform as uniform, to fix floating point errors.*/
+	bool isUniformScale()
+	{	float sx = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+		float sy = v[4]*v[4] + v[5]*v[5] + v[6]*v[6];
+		if (!.almostEqual(sx, sy, close_enough))
+			return false;		
+		float sz = v[8]*v[8] + v[9]*v[9] + v[10]*v[10];
+		return (.almostEqual(sx, sz, close_enough));
+	}
+	unittest
+	{	assert(Matrix().isUniformScale());
+		assert(!Matrix.random().isUniformScale()); // will fail 1 out of 2^64 times.
+	}
+	
 	/// Return a copy of this Matrix with its position values incremented by vec.
 	Matrix move(Vec3f vec)
 	{	Matrix res = *this;
@@ -252,36 +313,19 @@ struct Matrix
 
 	/// Multiply this Matrix by another matrix and store the result in this Matrix.
 	Matrix opMulAssign(Matrix b)
-	{	float[16] result=void;
-		result[ 0] = v[ 0]*b.v[ 0] + v[ 1]*b.v[ 4] + v[ 2]*b.v[ 8] + v[ 3]*b.v[12];
-		result[ 1] = v[ 0]*b.v[ 1] + v[ 1]*b.v[ 5] + v[ 2]*b.v[ 9] + v[ 3]*b.v[13];
-		result[ 2] = v[ 0]*b.v[ 2] + v[ 1]*b.v[ 6] + v[ 2]*b.v[10] + v[ 3]*b.v[14];
-		result[ 3] = v[ 0]*b.v[ 3] + v[ 1]*b.v[ 7] + v[ 2]*b.v[11] + v[ 3]*b.v[15];
-
-		result[ 4] = v[ 4]*b.v[ 0] + v[ 5]*b.v[ 4] + v[ 6]*b.v[ 8] + v[ 7]*b.v[12];
-		result[ 5] = v[ 4]*b.v[ 1] + v[ 5]*b.v[ 5] + v[ 6]*b.v[ 9] + v[ 7]*b.v[13];
-		result[ 6] = v[ 4]*b.v[ 2] + v[ 5]*b.v[ 6] + v[ 6]*b.v[10] + v[ 7]*b.v[14];
-		result[ 7] = v[ 4]*b.v[ 3] + v[ 5]*b.v[ 7] + v[ 6]*b.v[11] + v[ 7]*b.v[15];
-
-		result[ 8] = v[ 8]*b.v[ 0] + v[ 9]*b.v[ 4] + v[10]*b.v[ 8] + v[11]*b.v[12];
-		result[ 9] = v[ 8]*b.v[ 1] + v[ 9]*b.v[ 5] + v[10]*b.v[ 9] + v[11]*b.v[13];
-		result[10] = v[ 8]*b.v[ 2] + v[ 9]*b.v[ 6] + v[10]*b.v[10] + v[11]*b.v[14];
-		result[11] = v[ 8]*b.v[ 3] + v[ 9]*b.v[ 7] + v[10]*b.v[11] + v[11]*b.v[15];
-
-		result[12] = v[12]*b.v[ 0] + v[13]*b.v[ 4] + v[14]*b.v[ 8] + v[15]*b.v[12];
-		result[13] = v[12]*b.v[ 1] + v[13]*b.v[ 5] + v[14]*b.v[ 9] + v[15]*b.v[13];
-		result[14] = v[12]*b.v[ 2] + v[13]*b.v[ 6] + v[14]*b.v[10] + v[15]*b.v[14];
-		result[15] = v[12]*b.v[ 3] + v[13]*b.v[ 7] + v[14]*b.v[11] + v[15]*b.v[15];
-		set(result);
+	{	*this = ((*this) * b);
 		return *this;
 	}
-
-	/// Perform Matrix multiplication in reverse (since Matrix multiplication is not cummulative.) Is this backwards?
-	Matrix postMultiply(Matrix b)
-	{	return *this*b;
+	unittest
+	{	Matrix a = Matrix.random();
+		Matrix b = Matrix.random();
+		Matrix c = a;
+		c*=b;
+		assert (a*b == c);
 	}
 
-	///
+	/**
+	 * Get the position component of the Matrix as a Vector. */
 	Vec3f position()
 	{	return Vec3f(v[12..15]);		
 	}
@@ -291,20 +335,16 @@ struct Matrix
 	{	return v.ptr;
 	}
 
-	/// Return a copy of this Matrix rotated by an axis Vec3f.
+	/**
+	 * Return a copy of this Matrix rotated by the rotation values of an axis-angle Vector, a Quaternion, or another Matrix.
+	 * For Matrix rotation, this is equivalent to a post-multiplication of only the rotation values.*/
 	Matrix rotate(Vec3f axis)
 	{	return rotate(axis.toMatrix());
 	}
-
-	/// Return a copy of this Matrix rotated by a Quatrn, relative to it's current rotation axis.
-	Matrix rotate(Quatrn rotation)
+	Matrix rotate(Quatrn rotation) /// ditto
 	{	return rotate(rotation.toMatrix());
 	}
-
-	/**
-	 * Return a copy of this Matrix rotated by the rotation values of another Matrix.
-	 * This is equivalent to a post-multiplication of only the rotation values.*/
-	Matrix rotate(Matrix b)
+	Matrix rotate(Matrix b) /// ditto
 	{	Matrix res=void;
 		res.v[ 0] = b.v[ 0]*v[ 0] + b.v[ 1]*v[ 4] + b.v[ 2]*v[ 8];
 		res.v[ 1] = b.v[ 0]*v[ 1] + b.v[ 1]*v[ 5] + b.v[ 2]*v[ 9];
@@ -320,38 +360,61 @@ struct Matrix
 		res.v[11..16] = v[11..16];
 		return res;
 	}
+	
+	/**
+	 * Rotation and scale are intimately related in the Matrix.
+	 * This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. */
+	Matrix rotatePreservingScale(T)(T rot) /// ditto
+	{	if (isUniformScale()) // no need for special steps
+			return rotate(rot);
+		
+		Matrix position, rotation, scale;
+		decompose(position, rotation, scale);
+		rotation = rotation.rotate(rot).rotate(scale);
+		position.setRotation(rotation); // faster version of return scale * (rotation * position)
+		return position;
+	}
 
 	/**
 	 * Return a copy of this Matrix with its rotation values incremented by an
-	 * axis Vec3f, relative to the absolute worldspace axis.
+	 * axis angle Vector, a Quaternion or another Matrix, relative to the absolute worldspace axis.
 	 * This function hasn't been verified to be correct in all circumstances. */
 	Matrix rotateAbsolute(Vec3f axis)
 	{	Matrix res = *this;
-		res.set(axis.toQuatrn()*toQuatrn());
+		res.setRotation(axis.toQuatrn()*toQuatrn());
 		return res;
 		//return axis.toMatrix()*(*this);
 	}
-
-	/**
-	 * Return a copy of this Matrix with its rotation values incremented by a
-	 * Quatrn, relative to the absolute worldspace axis.
-	 * This function hasn't been verified to be correct in all circumstances. */
-	Matrix rotateAbsolute(Quatrn rotation)
+	Matrix rotateAbsolute(Quatrn rotation) /// ditto
 	{	Matrix res = *this;
-		res.set(rotation*toQuatrn());
+		res.setRotation(rotation*toQuatrn());
 		return res;
 		//return rotation.toMatrix()*(*this);
 	}
-
-	/**
-	 * Return a copy of this Matrix with its rotation values incremented by the
-	 * rotation values of another Matrix, relative to the absolute worldspace axis.
-	 * This function hasn't been verified to be correct in all circumstances. */
-	Matrix rotateAbsolute(Matrix m)
+	Matrix rotateAbsolute(Matrix m) /// ditto
 	{	Matrix res = *this;
-		res.set(m.toQuatrn()*toQuatrn());
+		res.setRotation(m.toQuatrn()*toQuatrn());
 		return res;
 		//return m*(*this);
+	}
+	
+	/**
+	 * This is mostly untested. */
+	Matrix rotateAbsolutePreservingScale(Vec3f axis)
+	{	return rotateAbsolutePreservingScale(axis.toMatrix());
+	}
+	Matrix rotateAbsolutePreservingScale(Quatrn rotation) /// ditto
+	{	return rotateAbsolutePreservingScale(rotation.toMatrix());
+	}
+	Matrix rotateAbsolutePreservingScale(Matrix b) /// ditto
+	{	if (isUniformScale()) // is this right?
+			return rotateAbsolute(b);
+		
+		Matrix position, rotation, scale;
+		decompose(position, rotation, scale);
+		rotation = b.rotate(rotation); // this is the reverse of the non-absolute version.
+		position.setRotation(rotation.rotate(scale)); // faster version of return scale * (rotation * position)
+		return position;
 	}
 
 	/**
@@ -359,14 +422,14 @@ struct Matrix
 	 * relative to it's current rotation axis.  First by x, then y, then z.
 	 * This function hasn't been verified to be correct in all circumstances. */
 	Matrix rotateEuler(Vec3f euler)
-	{	double cx = cos(euler.x);
-		double sx = sin(euler.x);
-		double cy = cos(euler.y);
-		double sy = sin(euler.y);
-		double cz = cos(euler.z);
-		double sz = sin(euler.z);
-		double sxsy = sx*sy;
-		double cxsy = cx*sy;
+	{	float cx = cos(euler.x);
+		float sx = sin(euler.x);
+		float cy = cos(euler.y);
+		float sy = sin(euler.y);
+		float cz = cos(euler.z);
+		float sz = sin(euler.z);
+		float sxsy = sx*sy;
+		float cxsy = cx*sy;
 		Matrix result=void;
 		result[ 0] = cy*cz*v[ 0] + cy*sz*v[ 4] + -sy*v[ 8];
 		result[ 1] = cy*cz*v[ 1] + cy*sz*v[ 5] + -sy*v[ 9];
@@ -389,7 +452,7 @@ struct Matrix
 	Matrix rotateEulerAbsolute(Vec3f euler)
 	{	Matrix res = *this;
 		res.rotateEuler(euler);
-		res.set(res.toQuatrn()*toQuatrn());
+		res.setRotation(res.toQuatrn()*toQuatrn());
 		return res;
 	}
 
@@ -398,50 +461,18 @@ struct Matrix
 	{	v[0..16] = values[0..16];
 	}
 
-	/// Set the rotation values of this Matrix from an axis vector.
-	void set(Vec3f axis)
-	{	setRotation(axis.toQuatrn().toMatrix());
-	}
-
-	/// Set the rotation values of the Matrix from a Quatrn.
-	void set(Quatrn rot)
-	{	setRotation(rot.toMatrix());
-	}
-
-	/// Set the rotation values of the matrix from a vector containing euler angles.
-	void setEuler(Vec3f euler)
-	{	double cx = cos(euler.x);
-		double sx = sin(euler.x);
-		double cy = cos(euler.y);
-		double sy = sin(euler.y);
-		double cz = cos(euler.z);
-		double sz = sin(euler.z);
-		double sxsy = sx*sy;
-		double cxsy = cx*sy;
-		v[0] = (cy*cz);
-		v[1] = (cy*sz);
-		v[2] = (-sy);
-		v[4] = (sxsy*cz - cx*sz);
-		v[5] = (sxsy*sz + cx*cz);
-		v[6] = (sx*cy);
-		v[8] = cxsy*cz + sx*sz;
-		v[9] = cxsy*sz - sx*cz;
-		v[10]= cx*cy;
-	}
-
 	///
 	void setPosition(Vec3f position)
 	{	v[12..15] = position.v[0..3];
 	}
 	
-	/// Set the rotation values of this Matrix from another Matrix or Quatrn.
+	/// Set the rotation values of this Matrix from another Matrix, Quaternion, or axis-angle Vector.
 	void setRotation(Matrix rot)
 	{	v[0..3]  = rot.v[0..3];
 		v[4..7]  = rot.v[4..7];
 		v[8..11] = rot.v[8..11];
-	}
-	/// ditto
-	void setRotation(Quatrn rot)
+	}	
+	void setRotation(Quatrn rot) /// ditto
 	{	v[0] = 1-2*(rot.y*rot.y + rot.z*rot.z);
 		v[1] =   2*(rot.x*rot.y + rot.z*rot.w);
 		v[2] =   2*(rot.x*rot.z - rot.y*rot.w);
@@ -453,6 +484,72 @@ struct Matrix
 		v[8] =   2*(rot.x*rot.z + rot.y*rot.w);
 		v[9] =   2*(rot.y*rot.z - rot.x*rot.w);
 		v[10] = 1-2*(rot.x*rot.x + rot.y*rot.y);
+	}
+	void setRotation(Vec3f rot) /// ditto
+	{	// this is untested.
+		
+		float phi = rot.length();
+		if (phi==0) // no rotation for zero-vector
+			return;
+		Vec3f n = rot.scale(1/phi);
+		float rcos = cos(phi);
+		float rcos1 = 1-rcos;
+		float rsin = sin(phi);
+		v[0] =        rcos + n.x*n.x*rcos1;
+		v[1] =  n.z * rsin + n.y*n.x*rcos1;
+		v[2] = -n.y * rsin + n.z*n.x*rcos1;
+		v[4] = -n.z * rsin + n.x*n.y*rcos1;
+		v[5] =        rcos + n.y*n.y*rcos1;
+		v[6] =  n.x * rsin + n.z*n.y*rcos1;
+		v[8] =  n.y * rsin + n.x*n.z*rcos1;
+		v[9] = -n.x * rsin + n.y*n.z*rcos1;
+		v[10]=        rcos + n.z*n.z*rcos1;	
+	}
+	/**
+	 * Set the rotation while taking extra steps to preserve the Matrices scaling values. */
+	void setRotationPreservingScale(T)(T rot)
+	{	Vec3f scale = toScale();
+		setRotation(rot);
+		setScalePreservingRotation(scale); // slow
+	}
+	
+	/// Set the rotation values of the matrix from a vector containing euler angles.
+	void setRotationEuler(Vec3f euler)
+	{	float cx = cos(euler.x);
+		float sx = sin(euler.x);
+		float cy = cos(euler.y);
+		float sy = sin(euler.y);
+		float cz = cos(euler.z);
+		float sz = sin(euler.z);
+		float sxsy = sx*sy;
+		float cxsy = cx*sy;
+		v[0] = (cy*cz);
+		v[1] = (cy*sz);
+		v[2] = (-sy);
+		v[4] = (sxsy*cz - cx*sz);
+		v[5] = (sxsy*sz + cx*cz);
+		v[6] = (sx*cy);
+		v[8] = cxsy*cz + sx*sz;
+		v[9] = cxsy*sz - sx*cz;
+		v[10]= cx*cy;
+	}
+	
+	/**
+	 * Set the scale component of the Matrix, disregarding any rotation values already present in the scale part of the Matrix. */
+	void setScale(Vec3f scale)
+	{	v00 = scale.x;
+		v11 = scale.y;
+		v22 = scale.z;
+	}
+	
+	/**
+	 * Set the scale component of the Matrix, taking extra steps to preserve any 
+	 * rotation values already present in the scale part of the Matrix. */
+	void setScalePreservingRotation(Vec3f scale)
+	{	Matrix position, rotation, mscale;
+		decompose(position, rotation, mscale);
+		mscale.setScale(scale);
+		setRotation(rotation.rotate(mscale));
 	}
 
 	/**
@@ -494,11 +591,25 @@ struct Matrix
 	/** Convert the rotation part of the Matrix to Euler angles.
 	 *  This may be inaccurate and perhaps suffers from other faults. */
 	Vec3f toEuler()
-	{	double y = asin(v[2]); // Y axis-angle
-		double c = cos(y);
+	{	float y = asin(v[2]); // Y axis-angle
+		float c = cos(y);
 		if (fabs(c) > 0.00005)  // If Gimball Lock?
 			return Vec3f(-atan2(-v[6]/c, v[10]/c), -y, -atan2(-v[1]/c, v[0]/c));
 		return Vec3f(0, -y, -atan2(v[4], v[5]));
+	}
+	
+	/**
+	 * Extract the scale Vector from the rotation component of the Matrix.
+	 * Scale components will always be positive. */
+	Vec3f toScale()
+	{	return Vec3f(
+			Vec3f(v[0..3]).length(),
+			Vec3f(v[4..7]).length(),
+			Vec3f(v[8..11]).length()
+		);
+	}
+	unittest
+	{	assert(Matrix().toScale() == Vec3f(1, 1, 1));		
 	}
 
 	/** Return the transpose of the Matrix.  This is equivalent to
@@ -531,5 +642,13 @@ struct Matrix
 		swritef("[%f %f %f %f]\n", v[1], v[5], v[9], v[13])  ~
 		swritef("[%f %f %f %f]\n", v[2], v[6], v[10], v[14]) ~
 		swritef("[%f %f %f %f]\n", v[3], v[7], v[11], v[15]);
+	}
+	
+	// Get a random matrix, good for unit-testing.
+	protected static Matrix random()
+	{	Matrix result;
+		foreach (inout float t; result.v)
+			t = 1_000_000_000f/rand();
+		return result;
 	}
 }

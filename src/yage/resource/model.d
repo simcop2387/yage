@@ -219,11 +219,11 @@ class Model : Resource
 												
 				m_frame.setRotation(finl);
 			} else if (i==0)
-				m_frame.setEuler(joint.rotations[0].value);
+				m_frame.setRotationEuler(joint.rotations[0].value);
 			else // i==joints.rotations.length
-				m_frame.setEuler(joint.rotations[length].value);
+				m_frame.setRotationEuler(joint.rotations[length].value);
 			
-			m_rel.setEuler(joint.startRotation); 
+			m_rel.setRotationEuler(joint.startRotation); 
 			m_rel.v[12..15] = joint.startPosition.v[0..3];			
 			m_rel = m_frame*m_rel;
 			

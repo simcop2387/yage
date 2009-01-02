@@ -41,36 +41,24 @@ class SoundNode : MovableNode, ITemporal
 
 	static int counter;
 	
-	/*
-	 * Create an OpenAL source associated with this SoundNode.
-	 * This is done automatically when the SoundNode is first added to a scene. */
-	// TODO: make this re-seek to the previous position if previously deleted.
-	protected void createSource()
-	{	if (!al_source)
-		{	synchronized(ALContext.getOpenALMutex())
-			{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()		
-				setSoundRadius(radius);
-				if (sound)
-					setSound(sound);
-			}
-		}
+	/**
+	 * Create a SoundNode and optinally set the sound from an already loaded sound or a sound filename. */
+	this()
+	{	super();
+	}
+	this(Sound sound) /// ditto
+	{	this();
+		setSound(sound);
+	}	
+	this(char[] filename) /// ditto
+	{	this();
+		setSound(filename);
 	}
 	
-	/*
-	 * Delete the OpenAL source associated with this SoundNode.
-	 * This is done when the SoundNode no longer belongs to a scene. */
-	protected void removeSource()
-	{	if (al_source)
-		{	synchronized(ALContext.getOpenALMutex())
-			{	stop();
-				if (sound)			
-					alSourceUnqueueBuffers(al_source, buffer_end, sound.getBuffers(buffer_start, buffer_end).ptr);
-				alDeleteSources(1, &al_source);
-				if (sound)
-					sound.freeBuffers(buffer_start, buffer_end-buffer_start-1);	
-				al_source = 0;
-			}
-		}
+	/**
+	 * Overridden to call finalize(). */
+	~this()
+	{	finalize();
 	}
 	
 	/**
@@ -78,12 +66,6 @@ class SoundNode : MovableNode, ITemporal
 	override public void finalize()
 	{	removeSource();
 		super.finalize();
-	}
-
-	/**
-	 * Overridden to call finalize(). */
-	~this()
-	{	finalize();
 	}
 	
 	/*
@@ -408,7 +390,7 @@ class SoundNode : MovableNode, ITemporal
 	 * Stop playing the sound when
 	 * This should be protected, but making it anything but public causes it not to be called.
 	 * Most likely a D bug. */
-	override public void ancestorChange(Node old_ancestor)
+	override void ancestorChange(Node old_ancestor)
 	{	Scene old_scene = old_ancestor ? old_ancestor.scene : null;
 		super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		
@@ -424,6 +406,38 @@ class SoundNode : MovableNode, ITemporal
 			old_ancestor.scene.removeSound(this);
 		if (scene && scene != old_scene)
 			scene.addSound(this);
+	}
+	
+	/*
+	 * Create an OpenAL source associated with this SoundNode.
+	 * This is done automatically when the SoundNode is first added to a scene. */
+	// TODO: make this re-seek to the previous position if previously deleted.
+	protected void createSource()
+	{	if (!al_source)
+		{	synchronized(ALContext.getOpenALMutex())
+			{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()		
+				setSoundRadius(radius);
+				if (sound)
+					setSound(sound);
+			}
+		}
+	}
+	
+	/*
+	 * Delete the OpenAL source associated with this SoundNode.
+	 * This is done when the SoundNode no longer belongs to a scene. */
+	protected void removeSource()
+	{	if (al_source)
+		{	synchronized(ALContext.getOpenALMutex())
+			{	stop();
+				if (sound)			
+					alSourceUnqueueBuffers(al_source, buffer_end, sound.getBuffers(buffer_start, buffer_end).ptr);
+				alDeleteSources(1, &al_source);
+				if (sound)
+					sound.freeBuffers(buffer_start, buffer_end-buffer_start-1);	
+				al_source = 0;
+			}
+		}
 	}
 	
 	/**

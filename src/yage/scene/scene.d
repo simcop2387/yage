@@ -95,24 +95,6 @@ class Scene : Node//, ITemporal
 	{	finalize();		
 	}
 	
-	/**
-	 * Overridden to pause the scene update and sound threads and to remove this instance from the array of all scenes. */
-	override void finalize()
-	{	if (this in all_scenes) // repeater will be null if finalize has already been called.
-		{	pause();
-			super.finalize(); // needs to occur before sound_thread finalize to free sound nodes.
-			
-			if (update_thread)
-			{	update_thread.finalize();
-				update_thread = null;
-			}
-			if (sound_thread)
-			{	sound_thread.finalize();
-				sound_thread = null;
-			}
-			all_scenes.remove(this);
-		}
-	}
 	
 	/**
 	 * Make a duplicate of this scene.
@@ -150,7 +132,25 @@ class Scene : Node//, ITemporal
 		a.pause();
 		*/
 	}
-
+	
+	/**
+	 * Overridden to pause the scene update and sound threads and to remove this instance from the array of all scenes. */
+	override void finalize()
+	{	if (this in all_scenes) // repeater will be null if finalize has already been called.
+		{	pause();
+			super.finalize(); // needs to occur before sound_thread finalize to free sound nodes.
+			
+			if (update_thread)
+			{	update_thread.finalize();
+				update_thread = null;
+			}
+			if (sound_thread)
+			{	sound_thread.finalize();
+				sound_thread = null;
+			}
+			all_scenes.remove(this);
+		}
+	}
 
 	/// Get an array that contains all LightNodes that are contained within this Scene.
 	LightNode[LightNode] getLights()

@@ -20,6 +20,20 @@ class SpriteNode : VisibleNode
 	protected Material material;
 
 	/**
+	 * Create a SpriteNode and optinally set the material from an already loaded material or a material filename. */
+	this()
+	{	super();
+	}
+	this(Material material) /// ditto
+	{	this();
+		setMaterial(material);
+	}	
+	this(char[] filename) /// ditto
+	{	this();
+		setMaterial(filename);
+	}
+	
+	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
@@ -37,7 +51,7 @@ class SpriteNode : VisibleNode
 
 	/// Return the distance to the furthest point of the SpriteNode.
 	float getRadius()
-	{	return 1.414213562*size.max();
+	{	return 1.414213562*size.max(); /// TODO: add scale into this calculation.
 	}
 
 	/// Set the Material of the SpriteNode.

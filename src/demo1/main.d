@@ -25,6 +25,63 @@ import demo1.ship;
 import demo1.misc;
 
 
+class DemoScene : Scene
+{
+	Scene skybox;
+	Ship ship;
+	CameraNode camera;
+	SoundNode music;
+	
+	LightNode light;
+	SpriteNode star;
+	ModelNode planet;
+	
+	
+	this()
+	{
+		super();		
+		
+		// Skybox
+		Scene skybox = new Scene();
+		skybox.addChild(new ModelNode("sky/sanctuary.ms3d"));
+		setSkybox(skybox);
+		setGlobalAmbient(Color("#444444"));
+		
+		// Ship
+		ship = addChild(new Ship());	
+		ship.setPosition(Vec3f(0, 50, -950));
+		ship.getCameraSpot().setPosition(Vec3f(0, 1000, 3000));
+		
+		// Camera
+		camera = ship.getCameraSpot().addChild(new CameraNode());
+		ship.getCameraSpot().addChild(camera);
+		camera.setView(2, 100000, 60, 0, 1);	// wide angle view
+		
+		// Music
+		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
+		music.setLooping(true);
+		music.play();
+
+		// Lights
+		light = scene.addChild(new LightNode());
+		light.setDiffuse(Color(1, .85, .7));
+		light.setLightRadius(7000);
+		light.setPosition(Vec3f(0, 0, -6000));
+
+		// Star
+		star = light.addChild(new SpriteNode());
+		star.setMaterial("space/star.xml");
+		star.setSize(Vec3f(2500));
+
+		// Planet
+		planet = scene.addChild(new ModelNode("space/planet.ms3d"));
+		planet.setSize(Vec3f(60));
+		planet.setAngularVelocity(Vec3f(0, -0.01, 0));
+		
+		// Asteroids
+		asteroidBelt(1200, 1400, planet);
+	}	
+}
 
 // Current program entry point.  This may change in the future.
 int main()
@@ -41,58 +98,12 @@ int main()
 
 	// Create and start a Scene
 	Log.write("Starting update loop.");
-	Scene scene = new Scene();
+	auto scene = new DemoScene();
 	scene.play(); // update 60 times per second
-	
-	// Skybox
-	Scene skybox = new Scene();
-	auto sky = skybox.addChild(new ModelNode());
-	sky.setModel("sky/sanctuary.ms3d");
-	scene.setSkybox(skybox);
-	scene.setGlobalAmbient(Color("#444444"));
-	
-	// Ship
-	Ship ship = scene.addChild(new Ship());	
-	ship.setPosition(Vec3f(0, 50, -950));
-	ship.getCameraSpot().setPosition(Vec3f(0, 1000, 3000));
-	
-	// Camera
-	CameraNode camera = ship.getCameraSpot().addChild(new CameraNode());
-	ship.getCameraSpot().addChild(camera);
-	camera.setView(2, 100000, 60, 0, 1);	// wide angle view
-
-	
-	// Music
-	auto music = new SoundNode();
-	camera.addChild(music);
-	music.setSound("music/celery - pages.ogg");
-	music.setLooping(true);
-	music.play();
-
-	// Lights
-	auto l1 = scene.addChild(new LightNode());
-	l1.setDiffuse(Color(1, .85, .7));
-	l1.setLightRadius(7000);
-	l1.setPosition(Vec3f(0, 0, -6000));
-
-	// Star
-	auto star = l1.addChild(new SpriteNode());
-	star.setMaterial("space/star.xml");
-	star.setSize(Vec3f(2500));
-
-	// Planet
-	auto planet = scene.addChild(new ModelNode());
-	planet.setModel("space/planet.ms3d");
-	planet.setSize(Vec3f(60));
-	planet.setAngularVelocity(Vec3f(0, -0.01, 0));
-	
-	// Asteroids
-	asteroidBelt(1200, 1400, planet);
-
 	
 	// Main surface where camera output is rendered.
 	Surface view = new Surface();
-	view.style.backgroundMaterial = camera.getTexture();
+	view.style.backgroundMaterial = scene.camera.getTexture();
 	view.style.set("bottom: 0; right: 0");	
 	Device.setSurface(view);
 	
@@ -129,52 +140,22 @@ int main()
 			std.gc.fullCollect();
 			writefln("garbage collected");
 		}
-		
-		if (key == SDLK_x)
-			music.seek(music.tell() + 2.5);
-		if (key == SDLK_z)
-			music.seek(music.tell() - 2.5);
-		if (key == SDLK_b)
-			music.stop();
-		if (key == SDLK_n)
-			music.play();
 	};
 	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates){
-		self.grabMouse(!ship.input);
-		ship.input = !ship.input;
+		self.grabMouse(!scene.ship.input);
+		scene.ship.input = !scene.ship.input;
 	};
 	view.onMouseMove = delegate void (Surface self, byte buttons, Vec2i rel){
-		if(ship.input)
- 			ship.mouseDelta = ship.mouseDelta + rel;
+		if(scene.ship.input)
+			scene.ship.mouseDelta = scene.ship.mouseDelta + rel;
 	};
 	view.onResize = delegate void (Surface self, Vec2f amount){
-		camera.setResolution(cast(int)self.width, cast(int)self.height);
+		scene.camera.setResolution(cast(int)self.width, cast(int)self.height);
 	};
 	// Add to the scene's update loop
 	void update(Node self){
-		ship.getSpring().update(1/60.0f);
-		// Test creation and removal of lots of lights and sounds and sprites.
-		/*
-		for (int i=0; i<1; i++)
-		{	
-			auto flare = scene.addChild(new SpriteNode());
-			flare.setMaterial("fx/flare1.xml");
-			flare.setSize(Vec3f(2));
-			flare.setPosition(Vec3f(0, 0, -1400));
-			flare.setLifetime((rand()%100)/100.0f + 2);
-			flare.setVelocity(Vec3f(cast(int)((rand()%100)-50)/2.0f, (cast(int)(rand()%100)-50)/2.0f, (cast(int)(rand()%100)-50)/2.0f));
-			
-			auto l = flare.addChild(new LightNode());
-			l.setDiffuse(Color(1, 1, 1));
-			l.setLightRadius(1200);
-			
-			SoundNode zap = flare.addChild(new SoundNode());
-			zap.setSound("sound/laser.wav");
-			zap.setVolume(1);
-			zap.setLifetime(2); 
-			zap.play();	 	
-		}
-		*/
+		scene.ship.getSpring().update(1/60.0f);
+		//(cast(DemoScene)self).planet.setScale(Vec3f(.5, 1, 1));
 	}
 	scene.onUpdate(&update);
 	
@@ -192,15 +173,15 @@ int main()
 		delta.reset();
 
 		Input.processInput();
-		camera.toTexture();
+		scene.camera.toTexture();
 		view.render();
 
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)
 		{	SDL_WM_SetCaption("Yage Demo\0", null);
-			window.text = swritef("%.2f fps\n%d objects\n%d polygons\n%d vertices",
-				fps/frame.get(), camera.getNodeCount(), camera.getPolyCount(), camera.getVertexCount());
+			window.text = swritef("%.2f fps\n%d objects\n%d polygons\n%d vertices\n%s",
+				fps/frame.get(), scene.camera.getNodeCount(), scene.camera.getPolyCount(), scene.camera.getVertexCount(), scene.planet.getScale());
 			frame.reset();
 			fps = 0;
 		}
@@ -210,9 +191,8 @@ int main()
 			std.c.time.usleep(cast(int)((1/60.0f-dtime)*1_000_000));
 		scene.swapTransformRead();
 	}
-	scene.pause();
-	scene.finalize();
 	
+	scene.finalize();
 	Device.deInit();
 
 	return 0;

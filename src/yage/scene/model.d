@@ -30,6 +30,21 @@ class ModelNode : VisibleNode
 	double last_time;
 	
 	/**
+	 * Create a ModelNode and optionally set the model from an already loaded model or a model filename. */
+	this()
+	{	super();
+	}
+	this(Model model) /// ditto
+	{	this();
+		setModel(model);
+	}	
+	this(char[] filename) /// ditto
+	{	this();
+		setModel(filename);
+	}
+	
+	
+	/**
 	 * Call this function from onUpdate when the model's current animation completes.
 	 * The animation is considered complete when the animation timer reachers its pauseAfter value
 	 * or if a range is set and it loops. */
@@ -99,6 +114,9 @@ class ModelNode : VisibleNode
 		t1.play();
 	}	
 	
+	/**
+	 * Get / set the 3D model used by this Node, using the ResourceManager Manager to ensure that no Model is loaded twice.
+	 * Equivalent of setModel(ResourceManager.model(filename)); */
 	/// Get / set the 3D model that is being used by this Node.
 	Model getModel()
 	{	return model;
@@ -106,21 +124,14 @@ class ModelNode : VisibleNode
 	void setModel(Model model) /// ditto
 	{	this.model = model;
 		radius = model.getRadius()*size.max();
-	}
-
-	/**
-	 * Set the 3D model used by this Node, using the ResourceManager Manager to ensure that no Model is loaded twice.
-	 * Equivalent of setModel(ResourceManager.model(filename)); */
-	void setModel(char[] filename)
+	}	
+	void setModel(char[] filename) /// ditto
 	{	setModel(ResourceManager.model(filename));
 	}
 
 	/// Overridden to cache the radius if changed by the scale.
-	Vec3f getSize()
-	{	return super.size;		
-	}
-	void setSize(Vec3f s) /// Ditto
-	{	super.size = s;
+	override void setSize(Vec3f s) /// Ditto
+	{	super.setSize(s);
 		if (model)
 			radius = model.getRadius()*size.max();
 	}	

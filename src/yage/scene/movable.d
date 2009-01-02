@@ -29,7 +29,7 @@ class MovableNode : Node
 	 * Move and rotate by the transformation Matrix.
 	 * In other words, apply t as a transformation Matrix. */
 	void transformation(Matrix t)
-	{	transform.postMultiply(t);
+	{	transform = t * transform;
 		setTransformDirty();
 	}
 
@@ -76,8 +76,7 @@ class MovableNode : Node
 	}
 	
 	/**
-	 * Get / set the position of this Node relative to its parent's location.
-	 * Note that changing the values of the return vector will not affect the Node's position. */
+	 * Get / set the position of this Node relative to its parent's position. */
 	Vec3f getPosition()
 	{	return Vec3f(transform.v[12..15]);
 	}
@@ -87,35 +86,43 @@ class MovableNode : Node
 	}
 	
 	/**
-	 * Get the absolute position of this Node, calculating it if necessary.
-	 * Note that changing the values of the return vector will not affect the Node's position. */
+	 * Get the absolute position of this Node, calculating it if necessary.*/
 	Vec3f getAbsolutePosition()
 	{	return Vec3f(getAbsoluteTransform().v[12..15]);
 	}
 	
 	/**
-	 * Get the rotation of this Node relative to its parent's rotation.
-	 * Note that changing the values of the return vector will not affect the Node's rotation. */
+	 * Get the rotation of this Node relative to its parent's rotation. */
 	Vec3f getRotation()
 	{	return transform.toAxis();
 	}
-	void setRotation(Vec3f axis) /// Ditto
-	{	transform.set(axis);
+	void setRotation(Vec3f axis) /// ditto
+	{	transform.setRotationPreservingScale(axis);
 		setTransformDirty();
 	}
 	
 	/**
-	 * Get the absolute rotation of this Node, calculating it if necessary.
-	 * Note that changing the values of the return vector will not affect the Node's rotation. */
+	 * Get the absolute rotation of this Node, calculating it if necessary. */
 	Vec3f getAbsoluteRotation()
 	{	return getAbsoluteTransform().toAxis();
 	}
 
+	/**
+	 * Get / set the scale of this Node relative to its parent's scale.
+	 * Note that scale is inherited by children.  Use get/setSize() of VisibleNode for a similar effect that'snot inherited.*/
+	Vec3f getScale()
+	{	return Vec3f(transform.v[0], transform.v[5], transform.v[10]);		
+	}
+	void setScale(Vec3f scale) /// ditto;
+	{	transform.setScalePreservingRotation(scale);
+	}
+	
+	
 	/// Get / set the velocity of this Node relative to its parent's linear and angular velocity.
 	void setVelocity(Vec3f velocity)
 	{	linear_velocity = velocity; 
 	} 
-	Vec3f getVelocity() /// Ditto
+	Vec3f getVelocity() /// ditto
 	{	return linear_velocity;
 	}
 
@@ -133,7 +140,7 @@ class MovableNode : Node
 	Vec3f getAngularVelocity() 
 	{	return angular_velocity;
 	}	
-	void setAngularVelocity(Vec3f axis) /// Ditto
+	void setAngularVelocity(Vec3f axis) /// ditto
 	{	angular_velocity = axis; 
 	}
 	
@@ -177,13 +184,13 @@ class MovableNode : Node
 
 	/// Rotate this Node relative to its current rotation axis, using an axis angle
 	void rotate(Vec3f axis)
-	{	transform = transform.rotate(axis);
+	{	transform = transform.rotatePreservingScale(axis);
 		setTransformDirty();
 	}
 
 	/// Rotate this Node around the absolute worldspace axis, using an axis angle.
 	void rotateAbsolute(Vec3f axis) 
-	{	transform = transform.rotateAbsolute(axis);
+	{	transform = transform.rotateAbsolutePreservingScale(axis);
 		setTransformDirty();
 	}
 
