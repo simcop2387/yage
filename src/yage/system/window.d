@@ -14,11 +14,12 @@ import derelict.sdl.sdl;
 
 import yage.core.vector;
 import yage.core.exceptions;
-import yage.system.interfaces;
+import yage.core.interfaces;
 
 
 // TODO: Have Device use this code.
 // Note that SDL supports only one window at a time.
+// Should this extend Repeater and put all rendering in its own thread?
 class Window : IRenderTarget
 {
 	protected SDL_Surface* sdl_surface;

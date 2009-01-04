@@ -40,7 +40,7 @@ import yage.scene.all;
  *                                   // to 0, 0, 0, instead of a.
  * --------
  */
-abstract class Node : Tree!(Node), IFinalizable 
+abstract class Node : Tree!(Node), IFinalizable, ICloneable
 {
 	// These are public for easy internal access.
 	Scene	scene;			// The Scene that this node belongs to.
@@ -106,9 +106,11 @@ abstract class Node : Tree!(Node), IFinalizable
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	Node clone(bool children=false)
-	{
-		Node result = cast(Node)this.classinfo.create();		
+	override Node clone()
+	{	return clone(false);		
+	}
+	Node clone(bool children) /// ditto
+	{	Node result = cast(Node)this.classinfo.create();		
 		
 		// Since "this" may have its properties changed by other calls during this process.
 		synchronized(this) 
@@ -126,9 +128,10 @@ abstract class Node : Tree!(Node), IFinalizable
 				foreach (c; this.children)
 					result.addChild(c.clone());
 		}
-		
 		return result;
 	}
+	
+	
 	unittest
 	{	// Test child cloning
 		auto a = new VisibleNode();

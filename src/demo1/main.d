@@ -36,7 +36,6 @@ class DemoScene : Scene
 	SpriteNode star;
 	ModelNode planet;
 	
-	
 	this()
 	{
 		super();		
@@ -80,13 +79,17 @@ class DemoScene : Scene
 		
 		// Asteroids
 		asteroidBelt(1200, 1400, planet);
-	}	
+	}
+	
+	override void update(float delta)
+	{	super.update(delta);
+		ship.getSpring().update(1/60.0f);
+	}
 }
 
 // Current program entry point.  This may change in the future.
 int main()
 {	
-	
   	// Init (resolution, depth, fullscreen, aa-samples)
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
@@ -134,7 +137,7 @@ int main()
 	// Events for main surface.
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
-			Device.running = false;
+			Device.abort("Yage aborted by esc key press.");
 		
 		if(key == SDLK_c){
 			std.gc.fullCollect();
@@ -152,22 +155,16 @@ int main()
 	view.onResize = delegate void (Surface self, Vec2f amount){
 		scene.camera.setResolution(cast(int)self.width, cast(int)self.height);
 	};
-	// Add to the scene's update loop
-	void update(Node self){
-		scene.ship.getSpring().update(1/60.0f);
-		//(cast(DemoScene)self).planet.setScale(Vec3f(.5, 1, 1));
-	}
-	scene.onUpdate(&update);
-	
-	// Rendering / Input Loop
+
+
 	int fps = 0;
 	Timer frame = new Timer();
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
 	std.gc.fullCollect();
-	//std.gc.disable(); // temporary, to see if we still get crashes.
 	
-	while(Device.running)
+	// Rendering loop
+	while(!Device.isAborted())
 	{
 		float dtime = delta.get();
 		delta.reset();
@@ -180,8 +177,8 @@ int main()
 		fps++;
 		if (frame.get()>=0.25f)
 		{	SDL_WM_SetCaption("Yage Demo\0", null);
-			window.text = swritef("%.2f fps\n%d objects\n%d polygons\n%d vertices\n%s",
-				fps/frame.get(), scene.camera.getNodeCount(), scene.camera.getPolyCount(), scene.camera.getVertexCount(), scene.planet.getScale());
+			window.text = swritef("%.2f fps\n%d objects\n%d polygons\n%d vertices",
+				fps/frame.get(), scene.camera.getNodeCount(), scene.camera.getPolyCount(), scene.camera.getVertexCount());
 			frame.reset();
 			fps = 0;
 		}
@@ -191,8 +188,7 @@ int main()
 			std.c.time.usleep(cast(int)((1/60.0f-dtime)*1_000_000));
 		scene.swapTransformRead();
 	}
-	
-	scene.finalize();
+	//scene.finalize(); // is this needed to prevent albuffer.c error?
 	Device.deInit();
 
 	return 0;

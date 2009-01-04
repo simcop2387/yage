@@ -22,6 +22,7 @@ import derelict.ogg.vorbisfile;
 import derelict.freetype.ft;
 import yage.gui.surface;
 import yage.system.alcontext;
+import yage.system.glcontext;
 import yage.system.log;
 import yage.system.constant;
 import yage.system.probe;
@@ -43,25 +44,12 @@ const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
  * checking OpenGL extensions, and other utility and lower level tasks.*/
 abstract class Device
 {	
-	// Video
-	protected static SDL_Surface* sdl_surface; // Holds a reference to the main (and only) SDL surface
-
-	protected static Vec2i		size;			// The width/height of the window.
-	protected static uint 		viewport_width; // The width of the current viewport
-	protected static uint 		viewport_height;// The height of the current viewport
-	protected static ubyte 		depth;
-	protected static bool 		fullscreen;
-
-
-	// Misc
 	protected static bool active = false;		// true if between a call to init and deinit, inclusive
 	protected static bool initialized=false;	// true if between a call to init and deinit, exclusive
-	protected static Surface surface;
+	protected static bool aborted = false; 		// this flag is set when the engine is ready to exit.
 	
-	protected static Thread self_thread; // reference to thread that called init, typically the main thread
+	protected static Thread self_thread; 		// reference to thread that called init, typically the main thread
 	
-	static bool running = true; // temporary until I find a better way to organize things.
-
 	/**
 	 * This function creates a window with the specified width and height in pixels.
 	 * It also initializes an OpenAL context so that audio playback can occur.
@@ -149,6 +137,13 @@ abstract class Device
 			Log.write("GL_EXT_blend_color support enabled.");
 		}else
 			Log.write("GL_EXT_blend_color not supported.  This is still ok.");
+	
+		if (Probe.openGL(Probe.OpenGL.BLEND_FUNC_SEPARATE))
+		{	if (!EXTBlendFuncSeparate.load("GL_EXT_blend_func_separate"))
+				throw new YageException("GL_EXT_blend_func_separate extension detected but it could not be loaded.");
+			Log.write("GL_EXT_blend_func_separate support enabled.");
+		}else
+			Log.write("GL_EXT_blend_func_separate not supported.  This is still ok.");
 
 		// OpenGL options
 		// These are the engine defaults.  Any function that
@@ -178,24 +173,15 @@ abstract class Device
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-		// Enable texture coordinate arrays for each texture unit
-		// This crashes some machines.
-		/*if (Device.getSupport(DEVICE_MULTITEXTURE))
-			for (int i=Device.getLimit(DEVICE_MAX_TEXTURES)-1; i>=0; i--)
-			{	glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
-				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-				glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-				glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-			}
-		*/
 		
 		// Input options
 		SDL_EnableUNICODE(true);
 		SDL_EnableKeyRepeat(1, 100);
 
 		surface = new Surface();
+		
+		// Not used yet
+		GLContext glc = new GLContext();
 		
 		initialized = true;
 		Log.write("Yage has been initialized successfully.");
@@ -210,9 +196,11 @@ abstract class Device
 		assert(isDeviceThread());
 	} body
 	{	initialized = false;		
-		foreach (s; Scene.getAllScenes().values) // .values shouldn't be necessary?
+		foreach_reverse (s; Scene.getAllScenes().values)
+		{	//writefln(s);
 			s.finalize();
 		
+		}
 		ResourceManager.finalize();
 		
 		// Clean up resources not managed by the ResourceManager.
@@ -235,6 +223,50 @@ abstract class Device
 		Log.write("Yage has been de-initialized successfully.");
 	}
 	
+
+	/**
+	 * Returns true if called from the same thread as what Device.init() was called.
+	 * This is useful to ensure that rendering functions aren't called from other threads. 
+	 * Always returns false if called before Device.init() */
+	static bool isDeviceThread()
+	{	if (self_thread)
+			return !!(Thread.getThis() == self_thread);
+		return false;
+	}
+	
+	/**
+	 * Set the abort flag signalling that the application is ready for exit.
+	 * abourtException provides a good exception callback for any asynchronous code that may throw an exception. */
+	static void abort(char[] message)
+	{	if (message.length)
+			Log.write(message);
+		aborted = true;
+	}
+	static void abortException(Exception e) /// ditto
+	{	abort(e.toString());
+	}
+	
+	/// Has the abort flag been set?
+	static bool isAborted()
+	{	return aborted;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	// --- Everything below here should eventually be moved into Window ---
+	
+	protected static SDL_Surface* sdl_surface; // Holds a reference to the main (and only) SDL surface
+	protected static Vec2i	size;			// The width/height of the window.
+	protected static uint 	viewport_width; // The width of the current viewport
+	protected static uint 	viewport_height;// The height of the current viewport
+	protected static ubyte 	depth;
+	protected static bool 	fullscreen;
+	protected static Surface surface;
 
 	/**
 	 * Return the aspect ratio (width/height) of the rendering window. */
@@ -260,16 +292,6 @@ abstract class Device
 	}	
 	static uint getHeight() /// ditto
 	{	return size.y;
-	}
-
-	/**
-	 * Returns true if called from the same thread as what Device.init() was called.
-	 * This is useful to ensure that rendering functions aren't called from other threads. 
-	 * Always returns false if called before Device.init() */
-	static bool isDeviceThread()
-	{	if (self_thread)
-			return !!(Thread.getThis() == self_thread);
-		return false;
 	}
 	
 	/** 
@@ -300,8 +322,9 @@ abstract class Device
 
 	}
 
-	/** Stores the dimensions of the current window size.
-	 *  This is called by a resize event in Input.checkInput(). */
+	/** 
+	 * Stores the dimensions of the current window size.
+	 * This is called by a resize event in Input.checkInput(). */
 	static void resizeWindow(int width, int height)
 	{	size.x = width;
 		size.y = height;

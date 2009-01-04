@@ -42,10 +42,13 @@ class GLContext
 	GLState state;
 	GLState applied_state;
 	
+	Object opengl_mutex;
+	
 	Thread self_thread;
 	
 	this()
-	{	self_thread = Thread.getThis();		
+	{	self_thread = Thread.getThis();
+		opengl_mutex = new Object();
 	}
 	
 	invariant
@@ -59,18 +62,27 @@ class GLContext
 		state.clearColor.a = a;
 	}
 	
-	
-	int apply()
+	/**
+	 * Apply the current virtual OpenGL state to the real OpenGL state. */
+	protected int apply()
 	{	int func_calls = 0;
 		
-		if (state.clearColor != applied_state.clearColor)
-		{	glClearColor(state.clearColor.r, state.clearColor.g, state.clearColor.b, state.clearColor.a);
-			applied_state.clearColor = state.clearColor;
-			func_calls++;
+		synchronized (opengl_mutex)
+		{	if (state.clearColor != applied_state.clearColor)
+			{	glClearColor(state.clearColor.r, state.clearColor.g, state.clearColor.b, state.clearColor.a);
+				applied_state.clearColor = state.clearColor;
+				func_calls++;
+			}
 		}
 		
 		return func_calls;
 	}
+	
+	void execute(void delegate() code)
+	{	synchronized (opengl_mutex)
+			code();
+	}
+	
 	
 	void push()
 	{	states ~= state;

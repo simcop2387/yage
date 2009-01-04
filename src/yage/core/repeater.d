@@ -13,6 +13,7 @@ import std.thread;
 import std.c.time;
 import yage.core.closure;
 import yage.core.interfaces;
+import yage.core.misc;
 import yage.core.timer;
 
 /**
@@ -25,8 +26,8 @@ class Repeater : Timer, IFinalizable
 	
 	protected bool active = true;	
 	protected bool calling = false;
-	protected void delegate(double f) func;
-	protected Closure[] call_once;
+	protected void delegate(float f) func;
+	protected void delegate(Exception e) on_error;
 	
 	// Allow repeater to run in its on thread
 	class HelperThread : Thread
@@ -42,25 +43,28 @@ class Repeater : Timer, IFinalizable
 			while (active)
 			{	a.reset();
 				if (!paused())
-				{	
-					if (call_once.length)
-					{	foreach (f; call_once)
-							f.call();
-						call_once.length = 0;
-					}
-					
+				{						
 					// Call as many times as needed to catch up.
 					while (outer.tell() > call_time)
 					{	double s = outer.tell();						
 						if (func)
 						{	calling = true;
-							func(1/frequency);
-							calling = false;						
+							try {
+								func(1/frequency); // call the function.
+							} catch(Exception e)
+							{	if (on_error != null)
+									on_error(e);
+								else
+									throw e;								
+							} finally
+							{	calling = false;							
+							}
 						}
 						call_time += 1f/frequency;						
 						if (paused())
 							break;
-				}	}
+					}	
+				}
 				
 				// Sleep for 1/frequency - (the time it took to make the calls).				
 				usleep(cast(uint)(1_000_000/frequency - a.get()));
@@ -87,6 +91,15 @@ class Repeater : Timer, IFinalizable
 	{	finalize();
 	}
 	
+	///
+	override void finalize()
+	{	active = false;
+		if (thread)
+		{	thread.wait();
+			thread = null;
+		}
+	}
+	
 	/**
 	 * Pause the repeater.
 	 * This is guaranteed to never pause in the middle of a call to the repeater's function, but will
@@ -99,16 +112,7 @@ class Repeater : Timer, IFinalizable
 		while (calling)
 			usleep(cast(int)(1_000/frequency)); // sleep for 1 1000th of the frequency.
 	}
-	
-	// Is this necessary?
-	override void finalize()
-	{	active = false;
-		if (thread)
-		{	thread.wait();
-			thread = null;
-		}
-	}
-	
+
 	/**
 	 * Get / set the call time.
 	 * This will always be within tell() and tell()-frequency unless the repeater is behind in calling its function.
@@ -133,14 +137,25 @@ class Repeater : Timer, IFinalizable
 	{	this.frequency = frequency;		
 	}
 	
-	
 	/**
 	 * Get / set the function to call. */
-	synchronized void delegate(double f) getFunction()
+	synchronized void delegate(float f) getFunction()
 	{	return func;		
 	}
-	synchronized void setFunction(void delegate(double f) func) /// ditto
-	{	this.func = func;		
+	synchronized void setFunction(void delegate(float f) func) /// ditto
+	{	this.func = func;
 	}
-
+	
+	/**
+	 * Get / a function to call if the update function throws an exception.
+	 * If this is set to null (the default), then the exception will just be thrown as normal. */
+	synchronized void delegate(Exception e) getErrorFunction()
+	{	return on_error;		
+	}
+	synchronized void setErrorFunction(void delegate(Exception e) on_error) /// ditto
+	{	this.on_error = on_error;
+	}
+	synchronized void setErrorFunction(void function(Exception e) on_error) /// ditto
+	{	this.on_error = toDelegate(on_error);
+	}
 }

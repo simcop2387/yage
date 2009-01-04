@@ -269,6 +269,7 @@ class Render
 
 					} else
 					{
+						
 						// Add to translucent
 						foreach (int index, Vec3i tri; mesh.getTriangles())						
 						{	AlphaTriangle at;
@@ -285,7 +286,8 @@ class Render
 							at.triangle = index;						
 							
 							alpha ~= at;
-					}	}
+						}	
+					}
 					num++;
 				}
 			}

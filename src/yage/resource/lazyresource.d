@@ -11,7 +11,8 @@ import yage.system.device;
 
 
 /**
- * This class manages a queue of operations that can only be performed in the rendering thread.*/
+ * This class manages a queue of operations that can only be performed in the rendering thread.
+ * This should eventually be replaced with a glContext that manages openGL state and can allow synchronized OpenGL calls from any thread.*/
 class LazyResourceManager
 {
 	protected static Closure[] queue;

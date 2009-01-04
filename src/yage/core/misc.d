@@ -66,14 +66,15 @@ char[] cleanPath(char[] path)
 	return path;
 }
 
-/// Probaly won't work on multicore machines.
-long getCPUCount()
-{	uint loword, hiword;
-	asm
-	{	rdtsc;
-		mov hiword, EDX;
-		mov loword, EAX;
+/**
+ * Convert any function pointer to a delegate.
+ * From: http://www.digitalmars.com/d/archives/digitalmars/D/easily_convert_any_method_function_to_a_delegate_55827.html */
+R delegate(P) toDelegate(R, P...)(R function(P) fp)
+{	struct S
+	{	R Go(P p) // P is the function args.
+		{	return (cast(R function(P))(cast(void*)this))(p);
+		}
 	}
-	return ((cast(long)hiword) << 32) + loword;
+	return &(cast(S*)(cast(void*)fp)).Go;
 }
 

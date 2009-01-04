@@ -27,7 +27,8 @@ abstract class Probe
 		NON_2_TEXTURE,		/// Hardware support for textures of arbitrary size
 		SHADER,				/// Hardware support for openGl vertex and fragment shaders
 		VBO,				/// Hardware support for caching vertex data in video memory (Vertex Buffer Object)
-		BLEND_COLOR
+		BLEND_COLOR,
+		BLEND_FUNC_SEPARATE
 	}	
 	
 	/**
@@ -42,7 +43,7 @@ abstract class Probe
 	 * --------
 	 */
 	static int openGL(OpenGL query)
-	{	static int shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1;	// so lookup only has to occur once.
+	{	static int shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1, bfs=-1;	// so lookup only has to occur once.
 		int result;
 		
 		switch (query)
@@ -80,7 +81,11 @@ abstract class Probe
 			case OpenGL.BLEND_COLOR:
 				if (bc==-1)
 					bc = cast(int)checkExtension("GL_EXT_blend_color");
-				return bc;		
+				return bc;
+			case OpenGL.BLEND_FUNC_SEPARATE: // unused.
+				if (bfs==-1)
+					bfs = cast(int)checkExtension("GL_EXT_blend_func_separate");
+				return bfs;	
 		}
 		
 	}

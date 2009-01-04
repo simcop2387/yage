@@ -16,7 +16,7 @@ import std.intrinsic;
 /**
  * A struct used to represent a color.
  * Colors are represented in RGBA format.
- * Note that uints and dwords store the bytes in reverse,
+ * Note that uints and dwords store the bytes in reverse (little endian),
  * so Color(0x6633ff00).hex == "00FF3366"
  * All Colors default to transparent black.
  * TODO: Convert to using four floats for better arithmetic, or just make it templated?
@@ -33,14 +33,24 @@ struct Color
 {
 	private const real frac = 1.0f/255;
 	
+	// public static Color GREEN = toColor(0xFF008000); // fails due to CTFE union bug.
+	
 	union
-	{	ubyte[4] ub;/// Get the Color as an array of ubyte
-		uint ui;	/// Get the Color as a uint		
-		dword dw;	/// Get the Color as a dword
-		struct { ubyte r, g, b, a; } /// Access each color component.
+	{	uint ui;	/// Get the Color as a uint
+		ubyte[4] ub;/// Get the Color as an array of ubyte
+		struct { ubyte r, g, b, a; } /// Access each color component: TODO: test to ensure order is correct.
 	}
 	
-	/// Initialize
+	/// Initialize from an unsinged integer.
+	static Color opCall(uint ui)
+	{	Color res;
+		res.ui = ui;
+		return res;
+	}
+	
+	/**
+	 * Initialize from 3 or 4 values (red, green, blue, alpha).
+	 * Integer types rante from 0 to 255 and floating point types range from 0 to 1. */
 	static Color opCall(int r, int g,int b, int a=255)
 	{	Color res;
 		res.r=r;
@@ -49,7 +59,11 @@ struct Color
 		res.a=a;
 		return res;
 	}
-	/// Ditto
+	unittest
+	{	assert(Color(0x99663300) == Color(0, 0x33, 0x66, 0x99));
+	}
+	
+	/// ditto
 	static Color opCall(float r, float g, float b, float a=1)
 	{	Color res;
 		res.r=cast(ubyte)clamp(r*255, 0.0f, 255.0f);
@@ -58,23 +72,8 @@ struct Color
 		res.a=cast(ubyte)clamp(a*255, 0.0f, 255.0f);
 		return res;
 	}
-
-
-	/// Convert dword to Color
-	static Color opCall(dword dw)
-	{	Color res;
-		res.dw = dw;
-		return res;
-	}
 	
-	/// Convert uint to Color
-	static Color opCall(uint ui)
-	{	Color res;
-		res.ui = ui;
-		return res;
-	}
-	
-	/// Convert ubyte[] to Color
+	/// ditto
 	static Color opCall(ubyte[] v)
 	{	Color res;
 		for (int i=0; i<max(v.length, 4); i++)
@@ -82,7 +81,7 @@ struct Color
 		return res;
 	}	
 	
-	/// Convert int[] to Color
+	/// ditto
 	static Color opCall(int[] v)
 	{	Color res;
 		for (int i=0; i<max(v.length, 4); i++)
@@ -90,7 +89,7 @@ struct Color
 		return res;
 	}	
 	
-	/// Convert float[] to Color
+	/// ditto
 	static Color opCall(float[] f)
 	{	Color res;
 		for (int i=0; i<min(f.length, 4); i++)
@@ -98,12 +97,12 @@ struct Color
 		return res;
 	}
 	
-	/// Convert Vec3f to Color
+	/// ditto
 	static Color opCall(Vec3f v)
 	{	return Color(v.v);
 	}
 	
-	/// Convert Vec4f to Color
+	/// ditto
 	static Color opCall(Vec4f v)
 	{	return Color(v.v);
 	}

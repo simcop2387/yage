@@ -13,7 +13,6 @@ public
 	import yage.system.constant;
 	import yage.system.device;
 	import yage.system.input;
-	import yage.system.interfaces;
 	import yage.system.log;
 	import yage.system.probe;
 	import yage.system.render;

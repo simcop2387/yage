@@ -10,7 +10,6 @@ import yage.core.timer;
 import yage.core.vector;
 import yage.system.device;
 import yage.system.log;
-import yage.system.interfaces;
 import yage.resource.manager;
 import yage.resource.model;
 import yage.resource.material;

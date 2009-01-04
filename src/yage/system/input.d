@@ -132,7 +132,7 @@ class Input
 				Device.resizeWindow(event.resize.w, event.resize.h);
 				break;
 			case SDL_QUIT:
-				Device.running = false; // not the most organized way.
+				Device.abort("Yage aborted by window close");
 				break;
 			default:
 				break;

@@ -179,7 +179,8 @@ class CameraNode : MovableNode
 		glRotatef(-axis.length()*57.295779513, axis.x, axis.y, axis.z);
 
 		// Draw the skybox
-		if (scene.getSkybox() !is null)
+		// TODO: Modify this to allow for recursive skyboxes.
+		if (scene.getSkybox())
 		{	glClear(GL_DEPTH_BUFFER_BIT);
 
 			// Reset the position to the origin for skybox rendering.
@@ -195,7 +196,10 @@ class CameraNode : MovableNode
 
 			cache[scene.transform_read].transform_abs.v[12..15] = push[0..3]; // restore position
 		}
-		else
+		
+		scene.apply();
+
+		if (!scene.getSkybox())
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Translate in reverse

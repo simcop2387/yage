@@ -241,10 +241,11 @@ class Layer : Resource
 			glDepthMask(false);
 			switch (blend)
 			{	case BLEND_ADD:
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					glBlendFunc(GL_ONE, GL_ONE);
 					break;
 				case BLEND_AVERAGE:
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					//glBlendFuncSeparateEXT(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 					break;
 				case BLEND_MULTIPLY:
 					glBlendFunc(GL_ZERO, GL_SRC_COLOR);
