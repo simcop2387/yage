@@ -19,6 +19,7 @@ module yage.core.array;
 import std.stdio;
 import std.random;
 import yage.core.types;
+import yage.core.timer;
 
 /**
  * Add an element to an already sorted array, maintaining the same sort order. 
@@ -43,7 +44,8 @@ void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem
 	array.length = array.length+1;
 	K compare_value = getKey(value);	
 	
-	for (int i=0; i<array.length-1; i++)
+	// Despite two loops, this still runs in O(n)
+	for (int i=0; i<array.length-1; i++) // TODO: Use a binary search instead of linear.
 	{	if (increasing ? compare_value <= getKey(array[i]) : compare_value >= getKey(array[i]))
 		{	for (int j=array.length-2; j>=i; j--) // Shift all elements forward
 				array[j+1] = array[j];			
@@ -70,7 +72,7 @@ unittest
 
 
 
-/// Return the element with the minimum or maximum value of an array.
+/// Return the element with the minimum or maximum value from an unsorted array.
 T amax(T)(T[] array, )
 {	T m = array[0];
 	foreach (T a; array)
@@ -103,6 +105,126 @@ T amin(T, K)(T[] array, K delegate(T elem) getKey)
 		if (getKey(a)<mk)
 			m=a;	
 	return m;
+}
+
+/**
+ * Get the maximum n elements in an unsorted array.
+ * Params:
+ *     array = array to search.
+ *     number = number of elements to find.
+ *     lookup = Function used to lookup values in arrays of classes and structs
+ * Returns: An unsorted array of length number. */
+T[] maxRange(T, K/* : real*/)(T[] array, int number, K delegate(T elem) getKey)
+in {
+	assert(number <= array.length);
+}
+out (result)
+{	assert (result.length == number);	
+}
+body
+{
+	struct Map
+	{	T elem;
+		K value;
+	}
+	
+	Map[] array2 = new Map[array.length];	
+	foreach (i, inout s; array2)
+	{	s.elem = array[i];
+		s.value = getKey(array[i]);
+	}
+	
+	Map[] result2 = new Map[number];
+	foreach (inout r; result2)
+		r.value = -K.infinity;
+	
+	// TODO: This could be greatly sped up using a heap, such as Tango's util.container.more.Heap.
+	int min_index=0;
+	int getMinIndex()
+	{	for (int i=0; i<result2.length; i++)
+			if (result2[i].value < result2[min_index].value)
+				min_index = i;		
+		return min_index;		
+	}
+	
+	for (int i=0; i<array2.length; i++)
+		if (array2[i].value > result2[min_index].value)
+		{	if (result2[min_index].value != -K.infinity || min_index == result2.length-1)
+			{	result2[min_index] = array2[i];
+				min_index = getMinIndex();
+			} else
+			{	result2[min_index] = array2[i];
+				min_index++;
+		}	}	
+	
+	// Copy results from the map array back to the result array
+	T[] result = new T[number];	
+	foreach (i, r; result2)
+		result[i] = r.elem;
+	
+	return result;
+}
+unittest
+{	class Foo
+	{	float a;
+		this (float a) { this.a = a; }
+	}
+
+	Foo[] test;
+	for (int i=0; i<1000; i++)
+		test ~= new Foo((rand()-cast(float)rand())/rand());
+
+	auto max = maxRange(test, 100, (Foo f){return f.a;} );
+	max.radixSort(true, (Foo f){return f.a;});
+	test.radixSort(true, (Foo f){return f.a;});
+	test = test[length-max.length..length];
+	assert(max == test);
+}
+
+T[] maxRange(T)(T[] array, int number) /// ditto
+in 
+{	assert(number <= array.length);
+}
+out (result)
+{	assert (result.length == number);	
+}
+body
+{
+	T[] result = new T[number];
+	foreach (inout r; result)
+		r = -T.infinity;
+	
+	// TODO: This could be greatly sped up using a heap, such as Tango's util.container.more.Heap.
+	int min_index=0;
+	int getMinIndex()
+	{	for (int i=0; i<result.length; i++)
+			if (result[i] < result[min_index])
+				min_index = i;		
+		return min_index;		
+	}
+	
+	for (int i=0; i<array.length; i++)
+		if (array[i] > result[min_index])
+		{	if (result[min_index] != -T.infinity || min_index == result.length-1)
+			{	result[min_index] = array[i];
+				min_index = getMinIndex();
+			} else
+			{	result[min_index] = array[i];
+				min_index++;
+		}	}
+
+	return result;
+}
+unittest
+{	float[] test;
+	for (int i=0; i<1000; i++)
+		test ~= (rand()-cast(float)rand())/rand();
+
+	auto max = maxRange(test, 100);
+	max.radixSort();
+	test.radixSort();	
+	test = test[length-max.length..length];
+	assert(max == test);
 }
 
 
@@ -238,16 +360,15 @@ void radixSort(T, K)(inout T[] array, bool increasing, K delegate(T elem) getKey
 
 		// Build offset table
 		uint offset[256];
-		for (size_t i=0; i<255; i++)
+		offset[0]=neg;
+		for(int i=0; i<127; i++)
 			offset[i+1] = offset[i] + histogram[i];
 		if (neg)  // only if last past and negative
-		{	offset[0]=neg;
-			for(int i=0; i<127; i++)
-				offset[i+1] = offset[i] + histogram[i];
 			offset[128]=0;
-			for (int i=128; i<255; i++)
-				offset[i+1] = offset[i] + histogram[i];
-		}
+		else
+			offset[128] = offset[127] + histogram[127];
+		for (int i=128; i<255; i++)
+			offset[i+1] = offset[i] + histogram[i];
 
 		// Fill destination buffer
 		if (!isfloat || !last_pass || !neg) // sort as usual
@@ -273,7 +394,7 @@ void radixSort(T, K)(inout T[] array, bool increasing, K delegate(T elem) getKey
 	}
 
 	// Move everything back again
-	// Radix is not in place, if odd number of passes, move data back to return buffer
+	// If odd number of passes, move data back to return buffer
 	if (increasing)
 	{	static if (K.sizeof % 2 == 1)
 			for (size_t i=0; i<count; i++)
@@ -316,5 +437,13 @@ unittest
 	// Sort doubles
 	double[] test3 = [3.0, 5, 2, 0, -1, 7, -4];
 	test3.radixSort();
-	assert(test3 == [-4.0, -1, 0, 2, 3, 5, 7]);	
+	assert(test3 == [-4.0, -1, 0, 2, 3, 5, 7]);
+	
+	// large array of +- floats	
+	float[] test4;
+	for (int i=0; i<10000; i++)
+		test4 ~= (rand()-cast(float)rand())/rand();
+	Timer a = new Timer();
+	test4.radixSort();
+	assert(test4.sorted());
 }

@@ -119,12 +119,16 @@ class Render
 			{	if (!n.getScene()) // was recently removed from its scene.
 					continue;
 			
+				// Transform
 				glPushMatrix();
 				glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
 				Vec3f size = n.getSize();
 				glScalef(size.x, size.y, size.z);
+				
+				// Enable the apropriate lights
 				n.enableLights(lights);
 				
+				// Render
 				if (cast(ModelNode)n)
 					model((cast(ModelNode)n).getModel(), n);			
 				else if (cast(SpriteNode)n)

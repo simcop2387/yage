@@ -23,3 +23,12 @@ class YageException : Exception
 	{	super(swritefRelay(_arguments, _argptr));
 	}	
 }
+
+///
+class OpenALException : YageException
+{
+	///
+	this(...)
+	{	super(swritefRelay(_arguments, _argptr));
+	}
+}

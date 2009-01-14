@@ -1,5 +1,6 @@
 Yage can be compiled several times faster if it doesn't also have to compile derelict.
-The build script (proj/buildme.d) is configured by default to look here for derelict lib files.
-This folder has dmd-compiled derelict lib files for windows and x86 linux.
+The build script (proj/buildyage.d) will build src/derelict as a lib and place it here, 
+if such a lib file doesn't already exist.
 
-Can these files be used with DMD on Linux?
+Of course, if derelict is udpated, the derelict lib file in this folder should be deleted
+so that a new up-to-date lib can be built.

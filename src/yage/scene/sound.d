@@ -5,11 +5,11 @@
  */
 
 module yage.scene.sound;
-
+import derelict.openal.al;
 import std.math;
 import std.string;
 import std.stdio;
-import derelict.openal.al;
+import std.gc;
 import yage.core.math;
 import yage.core.interfaces;
 import yage.core.exceptions;
@@ -21,7 +21,9 @@ import yage.scene.movable;
 import yage.scene.scene;
 
 
-/// A node that emits a sound.
+/**
+ * A node that emits a sound.
+ */ 
 class SoundNode : MovableNode, ITemporal
 {	
 	protected uint	al_source;		// OpenAL index of this Sound ResourceManager
@@ -33,18 +35,31 @@ class SoundNode : MovableNode, ITemporal
 	protected bool	looping = false;
 	protected bool	_paused  = true;// true if paused or stopped
 
+	// To be moved excluisively to ALSource
 	protected int	size;			// number of buffers that we use at one time
 	protected bool	enqueue = true;	// Keep enqueue'ing more buffers, false if no loop and at end of track.
 	protected uint	buffer_start;	// the first buffer in the array of currently enqueue'd buffers
 	protected uint	buffer_end;		// the last buffer in the array of currently enqueue'd buffers
 	protected uint	to_process;		// the number of buffers to queue next time.
-
-	static int counter;
 	
 	/**
 	 * Create a SoundNode and optinally set the sound from an already loaded sound or a sound filename. */
 	this()
 	{	super();
+		synchronized(ALContext.getMutex())
+		{	try
+			{	ALContext.genSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
+			} catch (OpenALException e)
+			{	genCollect(); // hopefully this can call some SoundNode destructors and get us some sounds.
+				try
+				{	ALContext.genSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
+				} catch (OpenALException e)
+				{	fullCollect(); // slower, but more likely to work.
+					ALContext.genSources(1, &al_source);
+				}
+			}
+			setSoundRadius(radius);
+		}
 	}
 	this(Sound sound) /// ditto
 	{	this();
@@ -60,36 +75,6 @@ class SoundNode : MovableNode, ITemporal
 	~this()
 	{	finalize();
 	}
-	
-	/**
-	 * Delete OpenAL Sound source on destruction. */
-	override public void finalize()
-	{	removeSource();
-		super.finalize();
-	}
-	
-	/*
-	 * Construct this Node as a copy of another Node and recursively copy all children.
-	 * Params:
-	 * parent = This Node will be a child of parent.
-	 * original = This Node will be an exact copy of original.
-	this (Node parent, SoundNode original)
-	{
-		alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()
-		super(parent, original);
-
-		setSound(original.sound);
-		seek(original.tell());
-
-		setPitch(original.pitch);
-		setSoundRadius(original.radius);
-		setVolume(original.volume);
-		setLooping(original.looping);
-		if (original._paused)
-			pause();
-		else
-			play();
-	}*/
 	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
@@ -113,12 +98,26 @@ class SoundNode : MovableNode, ITemporal
 	}
 
 	/**
+	 * Delete OpenAL Sound source on destruction. */
+	override public void finalize()
+	{	if (al_source)
+		{	synchronized(ALContext.getMutex())
+			{	stop();
+				unqueueBuffers();
+				ALContext.deleteSources(1, &al_source);
+			}
+			al_source = 0;
+			super.finalize();
+		}
+	}
+
+	/**
 	 * Get / set the Sound ResourceManager that this SoundNode will play. */
 	Sound getSound()
 	{	return sound;
 	}	
 	void setSound(Sound _sound) /// ditto
-	{	bool tpaused = paused;
+	{	bool tpaused = paused();
 		stop();
 		sound = _sound;
 
@@ -152,8 +151,8 @@ class SoundNode : MovableNode, ITemporal
 	 * pitch = Less than 1.0 is deeper, greater than 1.0 is higher. */
 	void setPitch(float pitch)
 	{	this.pitch = pitch;
-		synchronized(ALContext.getOpenALMutex())
-			alSourcef(al_source, AL_PITCH, pitch);
+		synchronized(ALContext.getMutex())
+			ALContext.sourcef(al_source, AL_PITCH, pitch);
 	}
 
 	/// Get the radius of the SoundNode
@@ -168,8 +167,8 @@ class SoundNode : MovableNode, ITemporal
 	 * radius = The sound will be 1/2 its volume at this distance.*/
 	void setSoundRadius(float radius)
 	{	this.radius = radius;
-		synchronized(ALContext.getOpenALMutex())
-			alSourcef(al_source, AL_ROLLOFF_FACTOR, 1.0/radius);
+		synchronized(ALContext.getMutex())
+			ALContext.sourcef(al_source, AL_ROLLOFF_FACTOR, 1.0/radius);
 	}
 
 	/// Get the volume (gain) of the SoundNode
@@ -183,8 +182,9 @@ class SoundNode : MovableNode, ITemporal
 	 * volume = 1.0 is the default. */
 	void setVolume(float volume)
 	{	this.volume = volume;
-		synchronized(ALContext.getOpenALMutex())
-			alSourcef(al_source, AL_GAIN, volume);
+		synchronized(ALContext.getMutex())
+		{	ALContext.sourcef(al_source, AL_GAIN, volume);
+		}
 	}
 
 	/// Does the Sound loop when playback is finished?
@@ -205,8 +205,8 @@ class SoundNode : MovableNode, ITemporal
 		{	_paused = false;
 			if (sound is null)
 				throw new YageException("You cannot play or unpause a SoundNode without first calling setSound().");
-			synchronized(ALContext.getOpenALMutex())
-				alSourcePlay(al_source);
+			synchronized(ALContext.getMutex())
+				ALContext.sourcePlay(al_source);
 			enqueue = true;
 		}	
 	}
@@ -216,9 +216,8 @@ class SoundNode : MovableNode, ITemporal
 	{	// Only do something if changing states
 		if (!_paused)
 		{	_paused = true;
-			if (paused)
-				synchronized(ALContext.getOpenALMutex())
-					alSourcePause(al_source);
+			synchronized(ALContext.getMutex())
+				ALContext.sourcePause(al_source);
 		}
 	}
 
@@ -238,15 +237,8 @@ class SoundNode : MovableNode, ITemporal
 			throw new YageException("SoundNode.seek(%d) is invalid for '%s'", seconds, sound.getSource());
 
 		// Delete any leftover buffers
-		synchronized(ALContext.getOpenALMutex())
-		{	int processed;
-			alGetSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
-			if (processed>0)
-			{	//writefln("Unqueuing buffers[%d..%d]", buffer_start, buffer_start+processed);
-				alSourceUnqueueBuffers(al_source, processed, sound.getBuffers(buffer_start, buffer_start+buffer_end).ptr);
-				sound.freeBuffers(buffer_start, buffer_end);
-			}
-	
+		synchronized(ALContext.getMutex())
+		{	unqueueBuffers();
 			buffer_start = buffer_end = secs;
 			if (_paused)
 				pause();
@@ -258,19 +250,18 @@ class SoundNode : MovableNode, ITemporal
 	/// Tell the position of the playback of the current sound file, in seconds.
 	double tell()
 	{	int processed;
-		synchronized(ALContext.getOpenALMutex())
-			alGetSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
+		synchronized(ALContext.getMutex())
+			ALContext.getSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
 		return ((buffer_start+processed) % sound.getBuffersLength()) /
 			cast(double)sound.getBuffersPerSecond();
 	}
 
 	/// Stop the SoundNode from playing and rewind it to the beginning.
 	void stop()
-	{	synchronized(ALContext.getOpenALMutex())
-		{	pause();
-			enqueue	= false;
+	{	synchronized(ALContext.getMutex())
+		{	enqueue	= false;
 			if (sound !is null)
-			{	alSourceStop(al_source);
+			{	ALContext.sourceStop(al_source);
 				seek(0);
 		}	}
 	}
@@ -281,10 +272,8 @@ class SoundNode : MovableNode, ITemporal
 	 * recurse = Print this Node's children as well. */
 	override char[] toString()
 	{	return toString(false);
-	}
-
-	/// ditto
-	char[] toString(bool recurse)
+	}	
+	char[] toString(bool recurse) /// ditto
 	{	static int indent;
 		char[] pad = new char[indent*3];
 		pad[0..length] = ' ';
@@ -324,11 +313,11 @@ class SoundNode : MovableNode, ITemporal
 		if (!sound || !scene)
 			return;
 		
-		synchronized(ALContext.getOpenALMutex())
+		synchronized(ALContext.getMutex())
 		{	if (enqueue)
 			{	// Count buffers processed since last time we queue'd more
 				int processed;
-				alGetSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
+				ALContext.getSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
 				to_process = max(processed, cast(int)(size-(buffer_end-buffer_start)));
 	
 				// Update the buffers for this source if more than 1/4th have been used.
@@ -342,14 +331,16 @@ class SoundNode : MovableNode, ITemporal
 					// Unqueue old buffers
 					if (processed > 0)	// new, ensure no bugs
 					{	//writefln("Unqueuing buffers[%d..%d]", buffer_start, buffer_start+processed);
-						alSourceUnqueueBuffers(al_source, processed, sound.getBuffers(buffer_start, buffer_start+processed).ptr);
-						sound.freeBuffers(buffer_start, processed);
+						//alSourceUnqueueBuffers(al_source, processed, sound.getBuffers(buffer_start, buffer_start+processed).ptr);
+						//sound.freeBuffers(buffer_start, processed);
+						
+						unqueueBuffers(processed);
 					}
 	
 					// Enqueue as many buffers as what are available
 					//writefln("Enqueuing buffers[%d..%d]", buffer_end, buffer_end+to_process);
 					sound.allocBuffers(buffer_end, to_process);
-					alSourceQueueBuffers(al_source, to_process, sound.getBuffers(buffer_end, buffer_end+to_process).ptr);
+					ALContext.sourceQueueBuffers(al_source, to_process, sound.getBuffers(buffer_end, buffer_end+to_process).ptr);
 	
 					buffer_start+= processed;
 					buffer_end	+= to_process;
@@ -358,11 +349,11 @@ class SoundNode : MovableNode, ITemporal
 	
 			// If not playing
 			int temp;
-			alGetSourcei(al_source, AL_SOURCE_STATE, &temp);
+			ALContext.getSourcei(al_source, AL_SOURCE_STATE, &temp);
 			if (temp==AL_STOPPED || temp==AL_INITIAL)
 			{	// but it should be, resume playback
 				if (!paused && enqueue)
-					alSourcePlay(al_source);
+					ALContext.sourcePlay(al_source);
 				else // we've reached the end of the track
 				{	bool tpaused = paused;
 					stop();
@@ -376,6 +367,21 @@ class SoundNode : MovableNode, ITemporal
 				// If not looping and our buffer has reached the end of the track
 				if (!looping && buffer_end+1 >= sound.getBuffersLength())
 					enqueue = false;
+		}
+	}
+	
+	/**
+	 * 
+	 * Params:
+	 *     all = Unqueue all buffers, or just those that have been processed? */
+	protected void unqueueBuffers(int number=-1)
+	{	if (sound)	
+		{	if (number == -1)
+				number = buffer_end - buffer_start;		
+			synchronized(ALContext.getMutex())
+			{	ALContext.sourceUnqueueBuffers(al_source, number, sound.getBuffers(buffer_start, buffer_start+number).ptr);
+				sound.freeBuffers(buffer_start, number-1);
+			}
 		}
 	}
 
@@ -394,59 +400,32 @@ class SoundNode : MovableNode, ITemporal
 	{	Scene old_scene = old_ancestor ? old_ancestor.scene : null;
 		super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		
-		// Create / destroy the sound if becoming / not becoming part of a scene.
-		// Can a way be found to make this complexity unnecessary?
-		if (scene && !old_scene)
-			createSource();
-		if (!scene && old_scene)
-			removeSource();	
+		// Resume / pause the sound if becoming / not becoming part of a scene.
+		if (!_paused)
+		{	if (scene && !old_scene)
+				synchronized(ALContext.getMutex())
+					ALContext.sourcePause(al_source);
+			else if (!scene && old_scene)
+				synchronized(ALContext.getMutex())
+					ALContext.sourcePlay(al_source);
+		}
 		
 		// Update scene's list of sounds
 		if (old_scene)
-			old_ancestor.scene.removeSound(this);
+			old_scene.removeSound(this);
 		if (scene && scene != old_scene)
 			scene.addSound(this);
 	}
 	
-	/*
-	 * Create an OpenAL source associated with this SoundNode.
-	 * This is done automatically when the SoundNode is first added to a scene. */
-	// TODO: make this re-seek to the previous position if previously deleted.
-	protected void createSource()
-	{	if (!al_source)
-		{	synchronized(ALContext.getOpenALMutex())
-			{	alGenSources(1, &al_source); // first, so position to be set correctly by SoundNode.setTransformDirty()		
-				setSoundRadius(radius);
-				if (sound)
-					setSound(sound);
-			}
-		}
-	}
-	
-	/*
-	 * Delete the OpenAL source associated with this SoundNode.
-	 * This is done when the SoundNode no longer belongs to a scene. */
-	protected void removeSource()
-	{	if (al_source)
-		{	synchronized(ALContext.getOpenALMutex())
-			{	stop();
-				if (sound)			
-					alSourceUnqueueBuffers(al_source, buffer_end, sound.getBuffers(buffer_start, buffer_end).ptr);
-				alDeleteSources(1, &al_source);
-				if (sound)
-					sound.freeBuffers(buffer_start, buffer_end-buffer_start-1);	
-				al_source = 0;
-			}
-		}
-	}
 	
 	/**
 	 * Update sound position and velocity as soon as a new position is calculated. */
 	override protected void calcTransform()
 	{	super.calcTransform();
-		synchronized(ALContext.getOpenALMutex())
-		{	alSourcefv(al_source, AL_POSITION, &(getAbsoluteTransform().v[12]));
-			alSourcefv(al_source, AL_VELOCITY, &(getAbsoluteVelocity().v[0]));
-		}
+		if (al_source)
+			synchronized(ALContext.getMutex())
+			{	ALContext.sourcefv(al_source, AL_POSITION, &(getAbsoluteTransform().v[12]));
+				ALContext.sourcefv(al_source, AL_VELOCITY, &(getAbsoluteVelocity().v[0]));
+			}
 	}
 }

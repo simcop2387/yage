@@ -74,6 +74,10 @@ abstract class Node : Tree!(Node), IFinalizable, ICloneable
 	{	
 	}
 	
+	~this()
+	{		
+	}
+	
 	/**
 	 * Add a child Node to this Node's array of children.
 	 * Overridden to call ancestorChange() and mark transformation matrices dirty.
@@ -129,9 +133,7 @@ abstract class Node : Tree!(Node), IFinalizable, ICloneable
 					result.addChild(c.clone());
 		}
 		return result;
-	}
-	
-	
+	}	
 	unittest
 	{	// Test child cloning
 		auto a = new VisibleNode();
@@ -144,8 +146,11 @@ abstract class Node : Tree!(Node), IFinalizable, ICloneable
 	/**
 	 * Some types of Nodes may need to free resources before being destructed. */
 	override void finalize()
-	{	foreach (c; children)
-			c.finalize();
+	{	if (children.length)
+		{	foreach_reverse (c; children)
+				c.finalize();
+			children.length = 0; // prevent multiple calls.
+		}
 	}
 
 	/**

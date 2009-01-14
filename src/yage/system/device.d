@@ -18,7 +18,6 @@ import derelict.util.exception;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
 import derelict.ogg.vorbis;
-import derelict.ogg.vorbisfile;
 import derelict.freetype.ft;
 import yage.gui.surface;
 import yage.system.alcontext;
@@ -26,6 +25,7 @@ import yage.system.glcontext;
 import yage.system.log;
 import yage.system.constant;
 import yage.system.probe;
+import yage.system.openal;
 import yage.core.exceptions;
 import yage.core.vector;
 import yage.scene.scene;
@@ -195,12 +195,18 @@ abstract class Device
 	in {
 		assert(isDeviceThread());
 	} body
-	{	initialized = false;		
+	{	initialized = false;
+	
+		SDL_WM_GrabInput(SDL_GRAB_OFF);
+		SDL_ShowCursor(true);
+	
 		foreach_reverse (s; Scene.getAllScenes().values)
 		{	//writefln(s);
 			s.finalize();
 		
 		}
+		//OpenALContext.getInstance().finalize();
+		
 		ResourceManager.finalize();
 		
 		// Clean up resources not managed by the ResourceManager.
@@ -213,9 +219,6 @@ abstract class Device
 		fullCollect();
 		
 		LazyResourceManager.processQueue(); // required for any pending lazyresource destroys
-		
-		SDL_WM_GrabInput(SDL_GRAB_OFF);
-		SDL_ShowCursor(true);
 		
 		SDL_Quit();
 		
@@ -238,7 +241,8 @@ abstract class Device
 	 * Set the abort flag signalling that the application is ready for exit.
 	 * abourtException provides a good exception callback for any asynchronous code that may throw an exception. */
 	static void abort(char[] message)
-	{	if (message.length)
+	{	writefln("Device.abort()");
+		if (message.length)
 			Log.write(message);
 		aborted = true;
 	}

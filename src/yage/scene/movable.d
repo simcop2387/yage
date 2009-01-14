@@ -51,7 +51,7 @@ class MovableNode : Node
 	 * Params:
 	 * cached = Get the transformation Matrix cached after the last complete scenegraph update,
 	 * instead of the current version.  This can be used to avoid working with a half-updated scenegraph.*/
-	Matrix getTransform(bool cached = false)
+	Matrix getTransform(bool cached=false)
 	{	if (cached && parent)
 			return cache[getScene().transform_read].transform;
 		return transform;
@@ -66,7 +66,7 @@ class MovableNode : Node
 	 * Params:
 	 * cached = Get the absolute transformation Matrix cached after the last complete scenegraph update,
 	 * instead of the current version.  This can be used to avoid working with a half-updated scenegraph.*/
-	Matrix getAbsoluteTransform(bool cached = false)
+	Matrix getAbsoluteTransform(bool cached=false)
 	{	if (cached && scene) // the transform_abs cache is never dirty
 			return cache[scene.transform_read].transform_abs;
 		if (transform_dirty)
@@ -212,8 +212,8 @@ class MovableNode : Node
 	/**
 	 * Accelerate the rotation of this Node, interpreting the acceleration axis
 	 * in terms of absolute worldspace coordinates. */
-	void angularAccelerateAbsolute(Vec3f axis)
-	{	angular_velocity += axis.rotate(getAbsoluteTransform().inverse()); 
+	void angularAccelerateAbsolute(Vec3f axis) // [below] transpose is the same as inverse for rotation matrices.
+	{	angular_velocity += axis.rotate(getAbsoluteTransform().transpose()); 
 	}
 	
 	/*

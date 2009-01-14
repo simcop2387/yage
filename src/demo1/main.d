@@ -23,7 +23,8 @@ import yage.all;
 
 import demo1.ship;
 import demo1.misc;
-
+import derelict.openal.alfuncs;
+import std.random;
 
 class DemoScene : Scene
 {
@@ -90,7 +91,7 @@ class DemoScene : Scene
 // Current program entry point.  This may change in the future.
 int main()
 {	
-  	// Init (resolution, depth, fullscreen, aa-samples)
+	// Init (resolution, depth, fullscreen, aa-samples)
 	Device.init(800, 600, 32, false, 1);
 	//Device.init(1024, 768, 32, true);
 	//Device.init(1440, 900, 32, true);
@@ -139,9 +140,19 @@ int main()
 		if (key == SDLK_ESCAPE)
 			Device.abort("Yage aborted by esc key press.");
 		
-		if(key == SDLK_c){
+		// Trigger the garbage collector
+		if(key == SDLK_c) {
 			std.gc.fullCollect();
 			writefln("garbage collected");
+		}
+		
+		// Reset the scene
+		if (key == SDLK_r)
+		{	scene.pause();
+			scene.finalize();
+			scene = new DemoScene();
+			view.style.backgroundMaterial = scene.camera.getTexture();
+			scene.play();
 		}
 	};
 	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates){

@@ -158,38 +158,4 @@ class VisibleNode : MovableNode
 		for (int i=0; i<min(number, lights.length); i++)
 			lights[i].apply(i);
 	}
-	
-	/*
-	// This is not ready yet, it occasionally segfaults.
-	void enableLights(LightNode[] all_lights, ubyte number=8)
-	{	
-		if (number>Probe.openGL(Probe.OpenGL.MAX_LIGHTS))
-			number = Probe.openGL(Probe.OpenGL.MAX_LIGHTS);
-		lights.length = 0;		
-		
-		Vec3f position;
-		position.set(getAbsoluteTransform(true));
-		foreach (l; all_lights)
-		{	// Add to the array of limited lights if bright enough
-			try {
-				l.intensity = l.getBrightness(position, getRadius()).vec3f.average(); // segfault on this line randomly.
-			} catch
-			{	writefln(l);
-				writefln(this);
-				if (this)
-					writefln(this.getRadius());
-				
-			}
-			if (l.intensity > 0.00390625) // smallest noticeable brightness for 8-bit per channel color (1/256).
-				addSorted(lights, l, false, (LightNode a) { return a.intensity; } );
-		}
-		
-		// Enable the apropriate lights
-		for (int i=0; i<number; i++)
-			glDisable(GL_LIGHT0+i);
-		for (int i=0; i<min(number, lights.length); i++)
-			lights[i].apply(i);
-	}
-	*/
-
 }

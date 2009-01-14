@@ -34,6 +34,8 @@ import yage.system.render;
  * isn't threadsafe.*/
 class CameraNode : MovableNode
 {
+	protected static CameraNode listener;
+	
 	protected uint  xres		= 0;	// special values of 0 to stretch to current display size.
 	protected uint  yres		= 0;
 	protected float near		= 1;	// the distance of the camera's near plane.
@@ -58,6 +60,9 @@ class CameraNode : MovableNode
 	{	super();
 		capture = new GPUTexture();
 		setResolution(xres, yres);
+		
+		if (!listener)
+			listener = this;
 	}
 
 	/// Get the number of frames this camera has rendered.
@@ -65,7 +70,8 @@ class CameraNode : MovableNode
 	{	return frame_count;
 	}
 
-	///
+	/**
+	 * Get six planes that make up the CameraNode's view frustum. */
 	Plane[] getFrustum()
 	{	return frustum;
 	}
@@ -74,8 +80,23 @@ class CameraNode : MovableNode
 	public Matrix getInverseAbsoluteMatrix() {
 		return inverse_absolute; 
 	}
-
+	
 	/**
+	 * Sound playback can occur from only one camera at a time.
+	 * setListener() can be used to make this CameraNode the listener.
+	 * getListener() will return, from all CameraNodes, the CameraNode that is the current listener.
+	 * When there is no listener (listener is null), the first camera 
+	 * added to a scene becomes the listener (not the first CameraNode created).
+	 * The listener is set to null when the current listener is removed from its scene. */
+	static CameraNode getListener()
+	{	return listener;		
+	}
+	void setListener() /// ditto
+	{	listener = this;		
+	}
+	
+	/**
+	 * Unfinished!
 	 * Return the closest Node to the Camera in the Camera's Scene at the x, y
 	 * coordinates in the Camera's Texture.  This will not return any Nodes from
 	 * the Scene's skybox.  Returns null if no Node is at the position.*/
@@ -148,7 +169,6 @@ class CameraNode : MovableNode
 		this.aspect = aspect;
 		this.threshold = 1/(threshold*threshold);
 	}
-
 
 	/**
 	 * Render everything seen by the camera to its own Texture.  The Texture can then be
@@ -225,6 +245,7 @@ class CameraNode : MovableNode
 	{
 		super.update(delta);
 
+		// Deprecated:
 		// Give the camera's position, orientation, and velocity to OpenAL
 		// Look is looking into the monitor
 		// The positive y direction is up.
@@ -293,7 +314,11 @@ class CameraNode : MovableNode
 
 	/*
 	 * Build a 6-plane view frutum based on the orientation of the camera and
-	 * the parameters passed to setView(). */
+	 * the parameters passed to setView(). 
+	 * 
+	 * This needs to be rewritten to use the camera's transform matrix + fov and
+	 * not rely on the current state of OpenGL's view matrix.
+	 * It might also be good to put this in calcTransform() instead.*/
 	protected void buildFrustum()
 	{	// Create the clipping matrix from the modelview and projection matrices
 		Matrix clip;
@@ -312,5 +337,25 @@ class CameraNode : MovableNode
 
 		foreach (inout Plane p; frustum)
 			p = p.normalize();
+	}
+
+	/*
+	 * Update the scene's list of cameras and add/remove listener reference to this CameraNode
+	 * This should be protected, but making it anything but public causes it not to be called.
+	 * Most likely a D bug. */
+	override public void ancestorChange(Node old_ancestor)
+	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
+		
+		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
+		if (old_scene)
+			old_ancestor.scene.removeCamera(this);		
+		if (scene && scene != old_scene) // if scene changed.
+		{	scene.addCamera(this);
+			if (!listener)
+				listener = this;
+		} else // if no scene
+		{	if (listener == this)
+				listener = null;			
+		}
 	}
 }

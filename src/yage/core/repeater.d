@@ -29,10 +29,10 @@ class Repeater : Timer, IFinalizable
 	protected void delegate(float f) func;
 	protected void delegate(Exception e) on_error;
 	
-	// Allow repeater to run in its on thread
+	// Allow repeater to run in its own thread
 	class HelperThread : Thread
 	{
-		Repeater outer;		
+		Repeater outer;	// reference to outer class
 		
 		void start()
 		{	super.start();	
@@ -105,9 +105,8 @@ class Repeater : Timer, IFinalizable
 	 * This is guaranteed to never pause in the middle of a call to the repeater's function, but will
 	 * block until the call finishes.*/
 	override void pause()
-	{	super.pause();
-	
-		// Block until the current function call is complete, if there is one.
+	{	super.pause(); // pause the timer
+
 		// This is a primitive way to implement this, but i'm not sure of a better way
 		while (calling)
 			usleep(cast(int)(1_000/frequency)); // sleep for 1 1000th of the frequency.
@@ -144,6 +143,9 @@ class Repeater : Timer, IFinalizable
 	}
 	synchronized void setFunction(void delegate(float f) func) /// ditto
 	{	this.func = func;
+	}
+	synchronized void setFunction(void function(float f) func) /// ditto
+	{	this.func = toDelegate(func);
 	}
 	
 	/**

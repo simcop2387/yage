@@ -122,13 +122,11 @@ class Sound : Resource
 	{	return sound_file.source;
 	}
 
-	///
+	/// TODO: convert last to be number, to be consistent with alloBuffers and FreeBuffers?
 	uint[] getBuffers(int first, int last)
 	{	first = first % buffers.length;
 		last = last % buffers.length;
 		
-		
-
 		// If we're wrapping around
 		if (first > last)
 			return buffers[first..length]~buffers[0..last];
@@ -150,10 +148,10 @@ class Sound : Resource
 			// If this buffer hasn't yet been bound
 			if (buffers_ref[i]==0)
 			{	
-				synchronized(ALContext.getOpenALMutex())
-				{	alGenBuffers(1, &buffers[i]);
+				//synchronized(ALContext.getMutex())
+				{	ALContext.genBuffers(1, &buffers[i]);
 					ubyte[] data = sound_file.getBuffer(i*buffer_size, buffer_size);
-					alBufferData(buffers[i], al_format, &data[0], cast(ALsizei)data.length, getFrequency());
+					ALContext.bufferData(buffers[i], al_format, &data[0], cast(ALsizei)data.length, getFrequency());
 				}
 			}
 			// Increment reference count
@@ -179,10 +177,10 @@ class Sound : Resource
 			// If this buffer has no references to it, delete it
 			if (buffers_ref[i]==0)
 			{	
-				synchronized(ALContext.getOpenALMutex())
-					if (alIsBuffer(buffers[i]))
-					{	alDeleteBuffers(1, &buffers[i]); /// TODO, delete multiple buffers at once?
-						if (alIsBuffer(buffers[i]))
+				synchronized(ALContext.getMutex())
+					if (ALContext.isBuffer(buffers[i]))
+					{	ALContext.deleteBuffers(1, &buffers[i]); /// TODO, delete multiple buffers at once?
+						if (ALContext.isBuffer(buffers[i]))
 							throw new ResourceManagerException(
 								"OpenAL Sound buffer %d of '%s' could not be deleted; probably because it is in use.\n", 
 								i, sound_file.source);

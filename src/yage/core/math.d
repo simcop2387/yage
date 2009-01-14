@@ -73,7 +73,7 @@ float map(float v, float oldmin, float oldmax, float newmin, float newmax)
 
 /// Return the maximum of all arguments 
 T[0] max(T...)(T a)
-{	typeof(a[0]) max = a[0];
+{	T[0] max = a[0];
 	foreach(T x; a)
 		if (x>max)
 			max = x;
@@ -85,7 +85,7 @@ unittest
 
 /// Return the minimum of all arguments.
 T[0] min(T...)(T a)
-{	typeof(a[0]) min = a[0];
+{	T[0] min = a[0];
 	foreach (T x; a)
 		if (x<min)
 			min = x;

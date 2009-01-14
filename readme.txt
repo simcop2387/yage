@@ -1,7 +1,7 @@
 This folder contains the entire yage3d game engine project.
 
 ./bin       Binary files, compiler output
-./doc       DDoc generated documentation files
+./doc       DDoc generated html documentation files
 ./lib       Static library files
 ./proj      Project files, scripts for building yage
 ./res       Resource files: models, textures, sounds, fonts

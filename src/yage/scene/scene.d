@@ -13,19 +13,21 @@ import derelict.openal.al;
 import yage.core.all;
 import yage.system.alcontext;
 import yage.system.device;
+import yage.system.openal;
+import yage.scene.camera;
 import yage.scene.light;
 import yage.scene.node;
 import yage.scene.sound;
 import yage.scene.visible;
 
 /**
- * A Scene is the root of a tree of Nodes, and obviously, a Scene never has a parent.
+ * A Scene is the root of a tree of Nodes, and threfore never has a parent.
  * Certain "global" variables are stored per Scene and affect all Nodes in that Scene. 
  * Examples include global ambient lighting and the speed of sound.
  * Scenes also maintain an array of all LightNodes in them.
  *
- * Each Scene updates its nodes in its own thread.  play() and pause()
- * control the updating of all child nodes at a fixed frequency.
+ * Each Scene updates its nodes in its own thread at a fixed frequencty, 
+ * controlled by play(), pause() and other ITemporal methods.
  *
  * Example:
  * --------------------------------
@@ -44,8 +46,19 @@ class Scene : Node//, ITemporal
 	protected static Scene[Scene] all_scenes;
 	
 	protected Scene skybox;
+	protected CameraNode[CameraNode] cameras;	
 	protected LightNode[LightNode] lights;
 	protected SoundNode[SoundNode] sounds;
+	package Object cameras_mutex;
+	package Object lights_mutex;
+	package Object sounds_mutex;	
+	package Object transform_mutex;			// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
+
+	protected Repeater update_thread;
+	protected ALContext sound_thread;		// deprecated
+	
+	protected long timestamp[3];			// Used for timestamps of newest transform_read/write
+	package int transform_read=0, transform_write=1;
 
 	protected Timer delta; 					// time since the last time this Scene was updated.
 	protected float delta_time;
@@ -55,15 +68,7 @@ class Scene : Node//, ITemporal
 	protected float fog_density = 0.1;
 	protected bool  fog_enabled = false;
 	
-	package Object transform_mutex;			// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
-	package Object lights_mutex;
-	package Object sounds_mutex;
-
-	protected long timestamp[3];			// Used for timestamps of newest transform_read/write
-	package int transform_read=0, transform_write=1;
-
-	Repeater update_thread;
-	ALContext sound_thread;
+	protected OpenALContext c;
 
 	/// Construct an empty Scene.
 	this()
@@ -76,18 +81,22 @@ class Scene : Node//, ITemporal
 		
 		update_thread = new Repeater();
 		update_thread.setFunction(&update);		
-		update_thread.setErrorFunction(&Device.abortException);
+		//update_thread.setErrorFunction(&Device.abortException);
 		
 		sound_thread = new ALContext();
 		sound_thread.setFunction(&updateSounds);
 		sound_thread.setFrequency(30); // sound buffers are updated 30 times per second.
-		sound_thread.setErrorFunction(&Device.abortException);
+		//sound_thread.setErrorFunction(&Device.abortException);
 		
-		transform_mutex = new Object();
+		cameras_mutex = new Object();
 		lights_mutex = new Object();
 		sounds_mutex = new Object();
+		transform_mutex = new Object();
 		
 		all_scenes[this] = this;
+		
+		writefln("scene constructor");
+		c = OpenALContext.getInstance();
 	}
 	
 	/**
@@ -138,7 +147,7 @@ class Scene : Node//, ITemporal
 	override void finalize()
 	{	if (this in all_scenes) // repeater will be null if finalize has already been called.
 		{	writefln(this);
-			pause();
+			// pause();
 			super.finalize(); // needs to occur before sound_thread finalize to free sound nodes.
 			
 			if (update_thread)
@@ -149,6 +158,9 @@ class Scene : Node//, ITemporal
 			{	sound_thread.finalize();
 				sound_thread = null;
 			}
+			
+			lights = null;
+			sounds = null;
 			all_scenes.remove(this);
 		}
 	}
@@ -174,10 +186,16 @@ class Scene : Node//, ITemporal
 	/**
 	 * Get / a function to call if the sound or update thread's update function throws an exception.
 	 * If this is set to null (the default), then the exception will just be thrown. 
-	 * */
-	void setErrorFunction(void delegate(Exception e) on_error) /// ditto
-	{	sound_thread.setErrorFunction(on_error);
-		update_thread.setErrorFunction(on_error);
+	 * Params:
+	 *     on_error = Defaults to Device.abortException.  If null, any errors from the Scene's 
+	 *     sound or update threads will cause the threads to terminate silently. */
+	void setErrorFunction(void delegate(Exception e) on_error)
+	{	//sound_thread.setErrorFunction(on_error);
+		//update_thread.setErrorFunction(on_error);
+	}
+	void setErrorFunction(void function(Exception e) on_error) /// ditto
+	{	//sound_thread.setErrorFunction(on_error);
+		//update_thread.setErrorFunction(on_error);
 	}
 
 	/// Get / set the color of global scene fog, when fog is enabled.
@@ -236,21 +254,22 @@ class Scene : Node//, ITemporal
 	void setSpeedOfSound(float speed) /// ditto
 	{	sound_thread.setDopplerVelocity(speed/343.3);
 	}
+
 	
-	/**
+	/*
 	 * Get the Repeater that handles all sound playback for this scene. */
-	Repeater getSoundThread()
+	package Repeater getSoundThread()
 	{	return sound_thread;		
 	}
 
-	/**
+	/*
 	 * Get the Repeater that calls update() in its own thread.
-	 * This allows more advanced interaction than the shorthand functions implemented above.
+	 * This allows more advanced interaction than the shorthand functions implemented below.
 	 * See:  yage.core.repeater  */
-	Repeater getUpdateThread()
+	package Repeater getUpdateThread()
 	{	return update_thread;		
 	}
-
+	
 	/**
 	 * Implement the time control functions of ITemporal.
 	 * 
@@ -269,7 +288,6 @@ class Scene : Node//, ITemporal
 	bool paused() /// ditto
 	{	return update_thread.paused();
 	}	
-	
 	void seek(double seconds) /// ditto
 	{	update_thread.seek(seconds);
 		// no point in seeking the sound thread.
@@ -322,8 +340,7 @@ class Scene : Node//, ITemporal
 	 * Params:
 	 *     delta = This is required to match the signature of Repeater's callback function, but is otherwise unused.*/
 	void updateSounds(float delta=0)
-	{	sound_thread.processQueue();
-		synchronized(sounds_mutex)
+	{	synchronized(sounds_mutex)
 			foreach (sound; sounds)
 				sound.updateBuffers();
 	}	
@@ -365,6 +382,23 @@ class Scene : Node//, ITemporal
 	 * Returns: a self indexed array. */
 	LightNode[LightNode] getAllLights()
 	{	return lights;		
+	}
+	
+	/*
+	 * Add/remove the camera from the scene's list of cameras.
+	 * This function is used internally by the engine and doesn't normally need to be called.*/
+	void addCamera(CameraNode camera)
+	{	synchronized (cameras_mutex) cameras[camera] = camera;
+	}
+	void removeCamera(CameraNode camera) // ditto
+	{	synchronized (cameras_mutex) cameras.remove(camera);
+	}
+	
+	/**
+	 * Get all CameraNodes that are currently a part of this scene.
+	 * Returns: a self indexed array. */
+	CameraNode[CameraNode] getAllCameras()
+	{	return cameras;		
 	}
 	
 	/*

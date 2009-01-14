@@ -32,8 +32,8 @@ class Tree(T)
 	 * Returns: A reference to the child. */
 	S addChild(S /*: T*/)(S child)
 	in {
-		assert(child != this);
-		assert(child !is null);
+		assert(child);
+		assert(child != this);		
 	}body
 	{	synchronized(this)
 		{
@@ -49,6 +49,28 @@ class Tree(T)
 			child.index = children.length-1;
 		}
 		return child;	
+	}
+	
+	///
+	S removeChild(S /*: T*/)(S child)
+	in {
+		assert(child);
+		assert(isChild(child));
+		assert(child.parent == this);
+	}
+	out
+	{	assert (!isChild(child));
+	}
+	body
+	{	if (child.index > 0)
+		{	//yage.core.all.remove(parent.children, index, false);
+			yage.core.all.remove(children, child.index, false);
+			if (child.index < children.length) // update index of element that replaced child.
+				children[child.index].index = child.index;
+			child.index = -1; // so remove can't be called twice.
+			child.parent = null;			
+		}
+		return child;
 	}
 
 	
@@ -71,18 +93,7 @@ class Tree(T)
 	{	if (!elem || elem.index < 0 || elem.index >= children.length)
 			return false;
 		return cast(bool)(children[elem.index] == elem);
-	}
-	
-	S removeChild(S /*: T*/)(S child)
-	{	if (child.index > 0)
-		{	//yage.core.all.remove(parent.children, index, false);
-			yage.core.all.remove(children, child.index, false);
-			if (child.index < children.length)
-				children[child.index].index = child.index;
-			child.index = -1; // so remove can't be called twice.
-			child.parent = null;			
-		}
-		return child;
-	}
+	}                
+
 	
 }

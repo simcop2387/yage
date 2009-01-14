@@ -11,6 +11,7 @@ module yage.system.glcontext;
 import std.thread;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
+import yage.core.exceptions;
 
 /**
  * This represents a current OpenGL state that can be pushed or popped.
@@ -23,7 +24,12 @@ struct GLState
 		LEQUAL
 	}
 	
-	public struct ClearColor
+	static GLState opCall()
+	{	GLState result;
+		return result;		
+	}
+	
+	struct ClearColor
 	{	public float r;
 		public float g;
 		public float b;
@@ -50,10 +56,7 @@ class GLContext
 	{	self_thread = Thread.getThis();
 		opengl_mutex = new Object();
 	}
-	
-	invariant
-	{	assert(self_thread == Thread.getThis());		
-	}
+
 	
 	void clearColor(float r, float g, float b, float a)
 	{	state.clearColor.r = r;
@@ -63,13 +66,22 @@ class GLContext
 	}
 	
 	/**
-	 * Apply the current virtual OpenGL state to the real OpenGL state. */
+	 * Apply the current virtual OpenGL state to the real OpenGL state. 
+	 * Returns: The number of OpenGL state changes that were required to apply the state.*/
 	protected int apply()
 	{	int func_calls = 0;
 		
 		synchronized (opengl_mutex)
-		{	if (state.clearColor != applied_state.clearColor)
-			{	glClearColor(state.clearColor.r, state.clearColor.g, state.clearColor.b, state.clearColor.a);
+		{	int error = glGetError(); // clear error state
+			
+			// Set the clearColor
+			if (state.clearColor != applied_state.clearColor)
+			{	glGetError();
+				glClearColor(state.clearColor.r, state.clearColor.g, state.clearColor.b, state.clearColor.a);
+				error = glGetError();
+				if (error)
+					throw new YageException("glClearColor error %d", error);
+				
 				applied_state.clearColor = state.clearColor;
 				func_calls++;
 			}
@@ -78,18 +90,35 @@ class GLContext
 		return func_calls;
 	}
 	
+	/**
+	 * Execute the following OpenGL code in an asynchronous-safe way.
+	 * This can be called from any thread
+	 * Params:
+	 *     code =
+	 */
 	void execute(void delegate() code)
 	{	synchronized (opengl_mutex)
 			code();
 	}
 	
 	
-	void push()
+	void push(GLState new_state=state)
 	{	states ~= state;
 	}
 	
-	void pop()
-	{	state = states[length-1];
-		states.length = states.length -1;
+	/**
+	 * If this is called from an empty stack, then the state will be set to the default OpenGL state.
+	 * Returns:
+	 */
+	GLState pop()
+	{	GLState result = state;
+		
+		if (states.length)
+		{	states.length = states.length -1;
+			state = states[length];
+		} else
+		{	state = GLState();			
+		}
+		return result;
 	}
 }

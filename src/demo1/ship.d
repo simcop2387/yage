@@ -41,7 +41,7 @@ class Ship : GameObject
 		sound = ship.addChild(new SoundNode());
 		sound.setSound("sound/ship-engine.ogg");
 		sound.setLooping(true);
-		sound.setVolume(2);
+		sound.setVolume(1);
 	}
 
 	ModelNode getShip()
@@ -85,7 +85,7 @@ class Ship : GameObject
 			void fade(Node self)
 			{	SpriteNode node = cast(SpriteNode)self;
 				node.setColor(Color(1, 1, 1, node.getLifetime()/5));
-				float scale = std.math.sqrt(5.0f)-std.math.sqrt(node.getLifetime()) + .4;
+				float scale = std.math.sqrt(20.0f)-std.math.sqrt(node.getLifetime()*4) + .4;
 				node.setSize(scale);
 			}
 			puff.onUpdate(&fade);

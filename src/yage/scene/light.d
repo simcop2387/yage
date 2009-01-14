@@ -56,16 +56,6 @@ class LightNode : MovableNode
 		specular = diffuse = Color("white");
 	}
 	
-	~this()
-	{	finalize();		
-	}
-	
-	override void finalize()
-	{	super.finalize();
-		if (scene)
-			scene.removeLight(this);
-	}
-	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
 	 * Params:

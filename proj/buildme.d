@@ -39,7 +39,7 @@ import std.string;
 // Paths are relative to the build script.
 char[]   mod_path = "../src";						// The root folder of all modules
 char[][] src_path = ["../src/yage", "../src/demo1"];// Array of folders to look for source files
-char[][] imp_path = ["../src/derelict"];			// Array of folders to look for imports
+char[][] imp_path = ["../src/derelict"];								// Array of folders to look for imports
 char[][] lib_path = ["../lib"];						// Array of folders to scan for libraries
 
 char[] obj_path = "../bin/.obj";					// Folder for object files
@@ -64,13 +64,17 @@ version (Windows)
 
 class Util
 {
-	// Return the full path of all files in directory and all subdirectories with extension ext
-	static char[][] scan(char[] directory, char[][] exts)
-	{	char[][] res;
+	/**
+	 * Recursively get all sources in directory and subdirectories that have an extension in exts
+	 * @param directory Absolute or relative path to the current directory
+	 * @param exts Array of extensions to match
+	 * @return An array of paths (including filename) relative to directory. */
+	static char[][] recls(char[] directory, char[][] exts)
+	{	char[][] result;
 		foreach(char[] filename; listdir(directory))
 		{	char[] name = directory~sep~filename;
 			if(isdir(name))
-				res ~= scan(name, exts);
+				result ~= recls(name, exts);
 			else if (isfile(name))
 			{	// if filename is longer than ext and filename's extention is ext.
 				foreach (char[] ext; exts)
@@ -78,41 +82,29 @@ class Util
 					{	char[] t = name;
 						if (t[0..2] == "."~sep)
 							t = t[2..length];
-						res~= t;
+						result~= t;
 			}		}
-		}
-		return res;
-	}
-
-	// Return all directories in a path, except hidden ones
-	static char[][] recls(char[] directory=".")
-	{	char[][] result;
-		result ~= directory;
-		foreach(char[] filename; listdir(directory))
-		{	if(isdir(directory~sep~filename) && filename[0]!='.')
-				result ~= recls(directory~sep~filename);
 		}
 		return result;
 	}
 
-	// Given relative path rel_path, returns an absolute path.
-	static char[] absPath(char[] rel_path)
-	{
-		// Remove filename
-		char[] filename;
-		int index = rfind(rel_path, sep);
-		if (index != -1)
-		{	filename = rel_path[rfind(rel_path, sep)..length];
-			rel_path = replace(rel_path, filename, "");
-		}
+	/**
+	 * Recursively get all directories in a path, except hidden ones
+	 * @param directory An absolute path, or relative path from the current directory.
+	 * @return an array of relative paths from directory. */ 
+	static char[][] recls(char[] directory=".")
+	{	char[][] result;
+		result ~= directory;
+		foreach(char[] filename; listdir(directory))
+			if(isdir(directory~sep~filename) && filename[0] != '.')
+				result ~= recls(directory~sep~filename);		
+		return result;
+	}
 
-		char[] cur_path = getcwd();
-		try {	// if can't chdir, rel_path is current path.
-			chdir(rel_path);
-		} catch {};
-		char[] result = getcwd();
-		chdir(cur_path);
-		return result~filename;
+	/**
+	 * Get an absolute path from a relative path. */
+	static char[] absPath(char[] rel_path)
+	{	return std.path.join(getcwd(), rel_path);
 	}
 }
 
@@ -210,12 +202,12 @@ class Build
 		// Get a list of all files as absolute paths
 		foreach (char[] path; src_path)
 		{	if (ddoc)
-				sources ~= Util.scan(path, [".d", ".ddoc"]);
+				sources ~= Util.recls(path, [".d", ".ddoc"]);
 			else
-				sources ~= Util.scan(path, [".d"]);
+				sources ~= Util.recls(path, [".d"]);
 		}		
 		foreach (char[] path; lib_path)
-			libs ~= Util.scan(path, [lib_ext]);
+			libs ~= Util.recls(path, [lib_ext]);
 
 		// Convert from absolute paths to paths relative to mod_path
 		foreach (inout char[] source; sources)
@@ -230,11 +222,7 @@ class Build
 			writefln("[Cleaning]");	
 
 		// Remove all intermediate files
-		char[][] files = 
-			Util.scan(obj_path, [".obj"]) ~
-			Util.scan(obj_path, [".o"]) ~
-			Util.scan(obj_path, [".map"]) ~
-			Util.scan(obj_path, [bin_ext]);
+		char[][] files = Util.recls(obj_path, [".obj", ".o", ".map", bin_ext]);
 		foreach(char[] file; files)
 			if (std.file.exists(file))
 				std.file.remove(file);
@@ -265,7 +253,7 @@ class Build
 			}
 			else if (_release)
 			{	flags~="-O3";
-				flags~="-finline";
+				flags~="-finline-functions";
 				flags~="-frelease";
 			}
 			if (profile)
@@ -276,14 +264,14 @@ class Build
 			}
 			if (!_release)
 				flags~="-funittest";			
-			//flags~="-od"~obj_path;		// Set the object output directory
-			//flags~="-op";					// Preserve path of object files, otherwise duplicate names will overwrite one another!
+			flags~="-od"~obj_path;		// Set the object output directory
+			flags~="-op";					// Preserve path of object files, otherwise duplicate names will overwrite one another!
 			flags~="-o"~bin_name~bin_ext;	// output filename		
 		}
 		else
 		{	if (_debug)
 			{	flags~="-debug";
-				flags~="-g";
+				flags~="-gc";
 			}
 			else if (_release)
 			{	flags~="-O";
@@ -299,8 +287,8 @@ class Build
 			if (!_release)
 				flags~="-unittest";
 			flags~="-od"~obj_path;	// Set the object output directory
-			flags~="-of"~bin_name~bin_ext;	// output filename
 			flags~="-op";			// Preserve path of object files, otherwise duplicate names will occur!
+			flags~="-of"~bin_name~bin_ext;	// output filename			
 			flags~="-quiet";
 		}
 		if (nolink)
@@ -346,7 +334,7 @@ class Build
 
 		// Clean out any previous docs
 		chdir(doc_path);
-		char[][] docs = Util.scan(".", [".html"]);
+		char[][] docs = Util.recls(".", [".html"]);
 		foreach (char[] doc; docs)
 			std.file.remove(doc);
 		
@@ -354,7 +342,7 @@ class Build
 		{	if (std.file.exists(path~"/candy.ddoc"))
 			{	chdir(path);
 				char[] modules = "MODULES = \r\n";
-				foreach(char[] src; Util.scan(path, [".d"]))
+				foreach(char[] src; Util.recls(path, [".d"]))
 				{	src = replace(src, mod_path~sep, "");  // Make relative path
 					src = split(src, ".")[0];		// remove extension
 					src = replace(src, sep, ".");	// replace path separator with dot.
@@ -375,7 +363,7 @@ class Build
 
 		// Move all html files in doc_path to the same folder and rename with the "package.module" naming convention.
 		chdir(doc_path);
-		char[][] docs = Util.scan(".", [".html"]);
+		char[][] docs = Util.recls(".", [".html"]);
 		foreach (char[] doc; docs)
 		{	char[] dest = replace(doc, sep, ".");
 			if (doc != dest)
@@ -415,6 +403,12 @@ int main(char[][] args)
 			case "-gdc": 		Build.gdc 		= true; break;
 			default: break;
 		}
+	}
+	
+	// Temporary hack
+	if (Build.gdc)
+	{	src_path ~= imp_path;
+		imp_path = [];		
 	}
 
 	writefln("Building Yage...");
