@@ -13,58 +13,59 @@
 	<script language="JavaScript" src="js/explorer.js" type="text/javascript"></script>
   </head>
   <body>
-	<!-- Title Image -->  
+	<!-- Title Image -->	
 	<div style="position: absolute; z-index: 2;">
-	  <a href="http://yage3d.net"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
+		<a href="index.php"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
 	</div>
 	
 	<!-- Menu -->
 	<div style="position: absolute;	height: 87px; width: 100%;">
-	  <div style="position: absolute; bottom: 0px;">
+		<div style="margin-top: 63px">
 		<div id="slidetabsmenu">
-		  <ul>
-			<li><a href="http://yage3d.net" title="Yage Home"><span>Home</span></a></li>
-			<li><a href="http://yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
+			<ul>
+			<li><a href="index.php" title="Yage Home"><span>Home</span></a></li>
+			<li><a href="wiki" title="Yage Wiki"><span>Wiki</span></a></li>
 			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
-			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
-		  </ul>
+			<li><a href="api" title="Yage API Documentation"><span>API</span></a></li>
+			</ul>
 		</div>
-	  </div>
+		</div>
 	</div>
 	
 	 <!-- Images at top of page -->
 	<table cellpadding="0" cellspacing="0" width="100%">
-	  <!-- Upper part -->
-	  <tr>
-		<td width="75%" style="background: url('img/title-stretch.png') repeat-x"></td>
-		<td><img src="img/title-right.png" alt="" height="102" style="vertical-align: top;"></td>
-		<td width="25%" valign="top" style="background: url('img/title-right-stretch.png') repeat-x">
-		  <img src="img/title-right-gear.png" style="float: right;" alt="">
-		</td>
-	  </tr>
-	  <!-- Bar Beneath Main title -->
-	  <tr>
-		<td width="100%" colspan="4">	      
-		  <table cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-			  <td width="100%" style="background: url('img/bar-stretch.png') repeat-x; height: 9px;"></td>
-			  <td valign="top"><img src="img/search.png" alt="" style="vertical-align: top"></td>
-			  <td width="100%" style="background: url('img/search-stretch.png') repeat-x;">	            
-				<!-- Use Google search for now -->        
-				<form method="GET" action="http://www.google.com/search" style="padding: 2px;">
-				  <input type="hidden" name="ie" value="UTF-8">
-				  <input type="hidden" name="oe" value="UTF-8">
-				  <input type="hidden" name="domains" value="www.yage3d.net">
-				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="width: 8em;"><span>
-				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
-				</form>
-				<div style="width: 14em; height: 1px;"></div>
-			  </td>
-			</tr>
-		  </table>
-		</td>
-	  </tr>
+		<!-- Upper part -->
+		<tr>
+			<td width="75%" style="background: url('img/title-stretch.png') repeat-x">&nbsp;</td>
+			<td style="background: url('img/title-right-stretch.png') repeat-x">
+				<img src="img/title-right.png" alt="" height="102" style="vertical-align: top;"></td>
+			<td width="25%" valign="top" style="background: url('img/title-right-stretch.png') repeat-x">
+				<img src="img/title-right-gear.png" style="float: right;" alt="">
+			</td>
+		</tr>
+		
+		<tr> <!-- Bar Beneath Main title -->
+			<td width="100%" colspan="4">				
+				<table cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td width="100%" style="background: url('img/bar-stretch.png') repeat-x; height: 9px;"></td>
+						<td valign="top"><img src="img/search.png" alt="" style="vertical-align: top"></td>
+						<td width="100%" style="background: url('img/search-stretch.png') repeat-x;">
+							<!-- Use Google search for now -->				
+							<form method="GET" action="http://www.google.com/search" style="padding: 2px;">
+								<input type="hidden" name="ie" value="UTF-8">
+								<input type="hidden" name="oe" value="UTF-8">
+								<input type="hidden" name="domains" value="www.yage3d.net">
+								<input type="hidden" name="sitesearch" value="www.yage3d.net">
+								<input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+								<input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
+							</form>
+							<div style="width: 14em; height: 1px;"></div>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
 	</table>
 	
 	<!-- Content -->
@@ -99,7 +100,7 @@ Eric Poggel
 
 <dd>A struct used to represent a color.
  Colors are represented in RGBA format.
- Note that uints and dwords store the bytes in reverse,
+ Note that uints and dwords store the bytes in reverse (little endian),
  so 
 <span class="currsymbol">Color</span>
 <script type="text/javascript">explorer.outline.addDecl('Color');</script>
@@ -111,17 +112,30 @@ Convert to using four floats for better arithmetic, or just make it templated?
 
 <br><br>
 <b>Example:</b><br>
-<pre class="d_code"> <font color=blue>uint</font>  red  = <b>Color</b>(<span style="color: purple">"red"</span>).ui;
+<pre class="d_code"> <span style="color: blue">uint</span>  red  = <b>Color</b>(<span style="color: purple">"red"</span>).ui;
  Vec4f blue = <b>Color</b>(<span style="color: purple">"0000FF"</span>).vec4f;
- writefln(<b>Color</b>(<span style="color: purple">"blue"</span>)); 	 <font color=green>// outputs "0000FF00"
-</font> writefln(<b>Color</b>(0x00FF0000));  <font color=green>// outputs "0000FF00"
-</font></pre>
+ writefln(<b>Color</b>(<span style="color: purple">"blue"</span>)); 	 <span style="color: green">// outputs "0000FF00"
+</span> writefln(<b>Color</b>(0x00FF0000));  <span style="color: green">// outputs "0000FF00"
+</span></pre>
  
 <br><br>
 
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">uint 
+<span class="currsymbol">ui</span>
+<script type="text/javascript">explorer.outline.addDecl('ui');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the Color as a uint
+<br><br>
+
+</dd>
+
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">ubyte[4u] 
 <span class="currsymbol">ub</span>
@@ -136,32 +150,6 @@ Convert to using four floats for better arithmetic, or just make it templated?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">ui</span>
-<script type="text/javascript">explorer.outline.addDecl('ui');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the Color as a uint		
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">dword 
-<span class="currsymbol">dw</span>
-<script type="text/javascript">explorer.outline.addDecl('dw');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the Color as a dword
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">ubyte 
 <span class="currsymbol">r</span>
 <script type="text/javascript">explorer.outline.addDecl('r');</script>
@@ -169,7 +157,7 @@ Convert to using four floats for better arithmetic, or just make it templated?
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Access each color component.
+<dd>Access each color component: TODO: test to ensure order is correct.
 <br><br>
 
 </dd>
@@ -182,7 +170,7 @@ Convert to using four floats for better arithmetic, or just make it templated?
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Access each color component.
+<dd>Access each color component: TODO: test to ensure order is correct.
 <br><br>
 
 </dd>
@@ -195,7 +183,7 @@ Convert to using four floats for better arithmetic, or just make it templated?
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Access each color component.
+<dd>Access each color component: TODO: test to ensure order is correct.
 <br><br>
 
 </dd>
@@ -208,7 +196,20 @@ Convert to using four floats for better arithmetic, or just make it templated?
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Access each color component.
+<dd>Access each color component: TODO: test to ensure order is correct.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Color 
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(uint <span class="funcparam">ui</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Initialize from an unsinged integer.
 <br><br>
 
 </dd>
@@ -222,101 +223,31 @@ Convert to using four floats for better arithmetic, or just make it templated?
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (float <span class="funcparam">r</span>, float <span class="funcparam">g</span>, float <span class="funcparam">b</span>, float <span class="funcparam">a</span> = cast(float)1);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Initialize
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Color 
-<span class="currsymbol">opCall</span>
-<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
-(dword <span class="funcparam">dw</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert dword to Color
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Color 
-<span class="currsymbol">opCall</span>
-<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
-(uint <span class="funcparam">ui</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert uint to Color
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Color 
+<br>static Color 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (ubyte[] <span class="funcparam">v</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert ubyte[] to Color
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Color 
+<br>static Color 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (int[] <span class="funcparam">v</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert int[] to Color
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Color 
+<br>static Color 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (float[] <span class="funcparam">f</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert float[] to Color
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Color 
+<br>static Color 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (Vec3f <span class="funcparam">v</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Convert Vec3f to Color
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Color 
+<br>static Color 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 (Vec!(4,float) <span class="funcparam">v</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Convert Vec4f to Color
+<dd>Initialize from 3 or 4 values (red, green, blue, alpha).
+ Integer types rante from 0 to 255 and floating point types range from 0 to 1. 
 <br><br>
 
 </dd>
@@ -438,73 +369,87 @@ Convert to using four floats for better arithmetic, or just make it templated?
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Nov 16 22:12:31 2008
+		on Sun Jan 18 21:45:36 2009
 
 	</div>
 	
 	<script type="text/javascript">
-	explorer.packageExplorer.addModule("yage.system.interfaces");
-
-	explorer.packageExplorer.addModule("yage.system.window");
-
-	explorer.packageExplorer.addModule("yage.system.log");
-
-	explorer.packageExplorer.addModule("yage.system.input");
-
-	explorer.packageExplorer.addModule("yage.system.render");
-
-	explorer.packageExplorer.addModule("yage.system.probe");
-
-	explorer.packageExplorer.addModule("yage.system.constant");
-
-	explorer.packageExplorer.addModule("yage.system.all");
-
-	explorer.packageExplorer.addModule("yage.system.device");
-
-	explorer.packageExplorer.addModule("yage.util.all");
-
-	explorer.packageExplorer.addModule("yage.util.spring");
-
-	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.scene.visible");
-
-	explorer.packageExplorer.addModule("yage.scene.camera");
-
-	explorer.packageExplorer.addModule("yage.scene.graph");
-
-	explorer.packageExplorer.addModule("yage.scene.model");
-
-	explorer.packageExplorer.addModule("yage.scene.scene");
-
-	explorer.packageExplorer.addModule("yage.scene.node");
-
-	explorer.packageExplorer.addModule("yage.scene.light");
-
-	explorer.packageExplorer.addModule("yage.scene.movable");
-
-	explorer.packageExplorer.addModule("yage.scene.sound");
-
-	explorer.packageExplorer.addModule("yage.scene.all");
-
-	explorer.packageExplorer.addModule("yage.scene.terrain");
-
-	explorer.packageExplorer.addModule("yage.scene.sprite");
-
 	explorer.packageExplorer.addModule("yage.all");
 
-	explorer.packageExplorer.addModule("yage.resource.layer");
+	explorer.packageExplorer.addModule("yage.core.all");
 
-	explorer.packageExplorer.addModule("yage.resource.texture");
+	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.async");
+
+	explorer.packageExplorer.addModule("yage.core.closure");
+
+	explorer.packageExplorer.addModule("yage.core.color");
+
+	explorer.packageExplorer.addModule("yage.core.exceptions");
+
+	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
+
+	explorer.packageExplorer.addModule("yage.core.math");
+
+	explorer.packageExplorer.addModule("yage.core.matrix");
+
+	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
+
+	explorer.packageExplorer.addModule("yage.core.plane");
+
+	explorer.packageExplorer.addModule("yage.core.quatrn");
+
+	explorer.packageExplorer.addModule("yage.core.repeater");
+
+	explorer.packageExplorer.addModule("yage.core.timer");
+
+	explorer.packageExplorer.addModule("yage.core.tree");
+
+	explorer.packageExplorer.addModule("yage.core.types");
+
+	explorer.packageExplorer.addModule("yage.core.vector");
+
+	explorer.packageExplorer.addModule("yage.core.xml");
+
+	explorer.packageExplorer.addModule("yage.gui.all");
+
+	explorer.packageExplorer.addModule("yage.gui.exceptions");
+
+	explorer.packageExplorer.addModule("yage.gui.style");
+
+	explorer.packageExplorer.addModule("yage.gui.surface");
+
+	explorer.packageExplorer.addModule("yage.gui.textlayout");
+
+	explorer.packageExplorer.addModule("yage.resource.all");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
+	explorer.packageExplorer.addModule("yage.resource.image");
+
+	explorer.packageExplorer.addModule("yage.resource.layer");
+
+	explorer.packageExplorer.addModule("yage.resource.lazyresource");
+
+	explorer.packageExplorer.addModule("yage.resource.manager");
+
+	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
+
 	explorer.packageExplorer.addModule("yage.resource.model");
 
-	explorer.packageExplorer.addModule("yage.resource.exceptions");
+	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+
+	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 
@@ -512,63 +457,59 @@ Convert to using four floats for better arithmetic, or just make it templated?
 
 	explorer.packageExplorer.addModule("yage.resource.sound");
 
-	explorer.packageExplorer.addModule("yage.resource.all");
+	explorer.packageExplorer.addModule("yage.resource.texture");
 
-	explorer.packageExplorer.addModule("yage.resource.objloader");
+	explorer.packageExplorer.addModule("yage.resource.vertexbuffer");
 
-	explorer.packageExplorer.addModule("yage.resource.image");
+	explorer.packageExplorer.addModule("yage.scene.all");
 
-	explorer.packageExplorer.addModule("yage.resource.mesh");
+	explorer.packageExplorer.addModule("yage.scene.camera");
 
-	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+	explorer.packageExplorer.addModule("yage.scene.graph");
 
-	explorer.packageExplorer.addModule("yage.resource.material");
+	explorer.packageExplorer.addModule("yage.scene.light");
 
-	explorer.packageExplorer.addModule("yage.gui.style");
+	explorer.packageExplorer.addModule("yage.scene.model");
 
-	explorer.packageExplorer.addModule("yage.gui.exceptions");
+	explorer.packageExplorer.addModule("yage.scene.movable");
 
-	explorer.packageExplorer.addModule("yage.gui.all");
+	explorer.packageExplorer.addModule("yage.scene.node");
 
-	explorer.packageExplorer.addModule("yage.gui.surface");
+	explorer.packageExplorer.addModule("yage.scene.scene");
 
-	explorer.packageExplorer.addModule("yage.core.interfaces");
+	explorer.packageExplorer.addModule("yage.scene.sound");
 
-	explorer.packageExplorer.addModule("yage.core.repeater");
+	explorer.packageExplorer.addModule("yage.scene.sprite");
 
-	explorer.packageExplorer.addModule("yage.core.parse");
+	explorer.packageExplorer.addModule("yage.scene.terrain");
 
-	explorer.packageExplorer.addModule("yage.core.matrix");
+	explorer.packageExplorer.addModule("yage.scene.visible");
 
-	explorer.packageExplorer.addModule("yage.core.color");
+	explorer.packageExplorer.addModule("yage.system.all");
 
-	explorer.packageExplorer.addModule("yage.core.math");
+	explorer.packageExplorer.addModule("yage.system.constant");
 
-	explorer.packageExplorer.addModule("yage.core.exceptions");
+	explorer.packageExplorer.addModule("yage.system.device");
 
-	explorer.packageExplorer.addModule("yage.core.misc");
+	explorer.packageExplorer.addModule("yage.system.glcontext");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.system.input");
 
-	explorer.packageExplorer.addModule("yage.core.types");
+	explorer.packageExplorer.addModule("yage.system.log");
 
-	explorer.packageExplorer.addModule("yage.core.quatrn");
+	explorer.packageExplorer.addModule("yage.system.openal");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.system.probe");
 
-	explorer.packageExplorer.addModule("yage.core.all");
+	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.core.array");
+	explorer.packageExplorer.addModule("yage.system.window");
 
-	explorer.packageExplorer.addModule("yage.core.xml");
+	explorer.packageExplorer.addModule("yage.util.all");
 
-	explorer.packageExplorer.addModule("yage.core.freelist");
+	explorer.packageExplorer.addModule("yage.util.flyer");
 
-	explorer.packageExplorer.addModule("yage.core.plane");
-
-	explorer.packageExplorer.addModule("yage.core.async");
-
-	explorer.packageExplorer.addModule("yage.core.vector");
+	explorer.packageExplorer.addModule("yage.util.spring");
 </script>
   </body>
 </html>

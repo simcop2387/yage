@@ -36,9 +36,9 @@ class CameraNode : MovableNode
 {
 	protected static CameraNode listener;
 	
-	protected uint  xres		= 0;	// special values of 0 to stretch to current display size.
-	protected uint  yres		= 0;
-	protected float near		= 1;	// the distance of the camera's near plane.
+	protected uint  xres	= 0;		// special values of 0 to stretch to current display size.
+	protected uint  yres	= 0;
+	protected float near	= 1;		// the distance of the camera's near plane.
 	protected float far		= 100000;	// camera's far plane
 	protected float fov		= 45;		// field of view angle of the camera.
 	protected float aspect	= 0;		// aspect ratio of the view
@@ -65,6 +65,13 @@ class CameraNode : MovableNode
 			listener = this;
 	}
 
+	/**
+	 * Set the current listener to null if the listener is this CameraNode. */
+	override void finalize()
+	{	if (listener && listener == this)
+			listener = null;
+	}	
+	
 	/// Get the number of frames this camera has rendered.
 	int getFrameCount()
 	{	return frame_count;
@@ -174,6 +181,10 @@ class CameraNode : MovableNode
 	 * Render everything seen by the camera to its own Texture.  The Texture can then be
 	 * added to a material or used for any other purpose by using getTexture(). */
 	void toTexture()
+	in {
+		assert(Device.isDeviceThread());
+	}
+	body
 	{	node_count = poly_count = vertex_count = 0;
 		Render.setCurrentCamera(this);
 		
@@ -320,6 +331,10 @@ class CameraNode : MovableNode
 	 * not rely on the current state of OpenGL's view matrix.
 	 * It might also be good to put this in calcTransform() instead.*/
 	protected void buildFrustum()
+	in {
+		assert(Device.isDeviceThread()); // this shouldn't be necessary.
+	}
+	body
 	{	// Create the clipping matrix from the modelview and projection matrices
 		Matrix clip;
 		Matrix modl;
@@ -353,8 +368,8 @@ class CameraNode : MovableNode
 		{	scene.addCamera(this);
 			if (!listener)
 				listener = this;
-		} else // if no scene
-		{	if (listener == this)
+		} else // no scene or scene didn't change
+		{	if (!scene && listener == this)
 				listener = null;			
 		}
 	}

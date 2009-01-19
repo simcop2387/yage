@@ -9,7 +9,7 @@ module yage.resource.image;
 import std.string;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
-import yage.resource.exceptions;
+import yage.core.exceptions;
 import yage.resource.resource;
 
 /**

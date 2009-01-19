@@ -7,6 +7,7 @@
 module yage.resource.sound;
 
 import std.mmfile;
+import std.c.math;
 import std.c.time;
 import std.c.stdio;
 import std.string;
@@ -15,11 +16,11 @@ import derelict.ogg.vorbistypes;
 import derelict.ogg.vorbisfile;
 import yage.core.timer;
 import yage.core.parse;
-import yage.resource.exceptions;
+import yage.core.exceptions;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.system.log;
-import yage.system.alcontext;
+import yage.system.openal;
 
 
 /** A Sound is a represenation of sound data in system memory.
@@ -149,9 +150,9 @@ class Sound : Resource
 			if (buffers_ref[i]==0)
 			{	
 				//synchronized(ALContext.getMutex())
-				{	ALContext.genBuffers(1, &buffers[i]);
+				{	OpenAL.genBuffers(1, &buffers[i]);
 					ubyte[] data = sound_file.getBuffer(i*buffer_size, buffer_size);
-					ALContext.bufferData(buffers[i], al_format, &data[0], cast(ALsizei)data.length, getFrequency());
+					OpenAL.bufferData(buffers[i], al_format, &data[0], cast(ALsizei)data.length, getFrequency());
 				}
 			}
 			// Increment reference count
@@ -177,10 +178,10 @@ class Sound : Resource
 			// If this buffer has no references to it, delete it
 			if (buffers_ref[i]==0)
 			{	
-				synchronized(ALContext.getMutex())
-					if (ALContext.isBuffer(buffers[i]))
-					{	ALContext.deleteBuffers(1, &buffers[i]); /// TODO, delete multiple buffers at once?
-						if (ALContext.isBuffer(buffers[i]))
+				synchronized(OpenAL.getMutex())
+					if (OpenAL.isBuffer(buffers[i]))
+					{	OpenAL.deleteBuffers(1, &buffers[i]); /// TODO, delete multiple buffers at once?
+						if (OpenAL.isBuffer(buffers[i]))
 							throw new ResourceManagerException(
 								"OpenAL Sound buffer %d of '%s' could not be deleted; probably because it is in use.\n", 
 								i, sound_file.source);

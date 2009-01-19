@@ -10,7 +10,7 @@ import std.path;
 import std.stdio;
 import yage.core.array;
 import yage.core.misc;
-import yage.resource.exceptions;
+import yage.core.exceptions;
 import yage.resource.font;
 import yage.resource.model;
 import yage.resource.material;

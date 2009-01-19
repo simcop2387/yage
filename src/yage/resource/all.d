@@ -13,8 +13,7 @@
 module yage.resource.all;
 
 public
-{	import yage.resource.exceptions;
-	import yage.resource.font;
+{	import yage.resource.font;
 	import yage.resource.image;
 	import yage.resource.layer;
 	import yage.resource.manager;

@@ -93,10 +93,12 @@ class Ship : GameObject
 			puff = ship.getScene().addChild(puff.clone());
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 
-			sound.play();
+			if (sound.paused())
+				sound.play();
 		}
 		else
-			sound.stop();
+			if (!sound.paused())
+				sound.stop();
 
 		// Accelerate left, right, and backward
 		if (Input.keyDown[SDLK_LEFT] || Input.keyDown[SDLK_a])
@@ -117,7 +119,7 @@ class Ship : GameObject
 		float turn = getAngularVelocity().y;
 		float cur = ship.getRotation().z;
 		if (cur > 1 || cur < -1)	// Prevent banking too far
-			ship.setAngularVelocity(Vec3f(0, 0, -cur/16));
+			ship.setAngularVelocity(Vec3f(0, 0, -cur/32));
 		else
 			ship.setAngularVelocity(Vec3f(0, 0, (turn-cur)));
 
@@ -139,12 +141,6 @@ class Ship : GameObject
 			Flare flare = ship.getScene().addChild(new Flare());
 			flare.setPosition(ship.getAbsolutePosition());
 			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getAbsoluteTransform())+getVelocity());
-
-			SoundNode zap = ship.addChild(new SoundNode());
-			zap.setSound("sound/laser3.ogg");
-			zap.setVolume(.1);
-			zap.setLifetime(2);
-			zap.play();
 		}
 	}
 }

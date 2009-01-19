@@ -32,3 +32,12 @@ class OpenALException : YageException
 	{	super(swritefRelay(_arguments, _argptr));
 	}
 }
+
+///
+class ResourceManagerException : YageException
+{	
+	///
+	this(...)
+	{	super(swritefRelay(_arguments, _argptr));
+	}	
+}

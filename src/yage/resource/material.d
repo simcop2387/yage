@@ -13,7 +13,7 @@ import std.stream;
 import std.string;
 import std.stdio;
 import yage.core.all;
-import yage.resource.exceptions;
+import yage.core.exceptions;
 import yage.resource.texture;
 import yage.resource.manager;
 import yage.resource.resource;

@@ -13,58 +13,59 @@
 	<script language="JavaScript" src="js/explorer.js" type="text/javascript"></script>
   </head>
   <body>
-	<!-- Title Image -->  
+	<!-- Title Image -->	
 	<div style="position: absolute; z-index: 2;">
-	  <a href="http://yage3d.net"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
+		<a href="index.php"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
 	</div>
 	
 	<!-- Menu -->
 	<div style="position: absolute;	height: 87px; width: 100%;">
-	  <div style="position: absolute; bottom: 0px;">
+		<div style="margin-top: 63px">
 		<div id="slidetabsmenu">
-		  <ul>
-			<li><a href="http://yage3d.net" title="Yage Home"><span>Home</span></a></li>
-			<li><a href="http://yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
+			<ul>
+			<li><a href="index.php" title="Yage Home"><span>Home</span></a></li>
+			<li><a href="wiki" title="Yage Wiki"><span>Wiki</span></a></li>
 			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
-			<li><a href="yage.all.html" title="Yage API Documentation"><span>API</span></a></li>
-		  </ul>
+			<li><a href="api" title="Yage API Documentation"><span>API</span></a></li>
+			</ul>
 		</div>
-	  </div>
+		</div>
 	</div>
 	
 	 <!-- Images at top of page -->
 	<table cellpadding="0" cellspacing="0" width="100%">
-	  <!-- Upper part -->
-	  <tr>
-		<td width="75%" style="background: url('img/title-stretch.png') repeat-x"></td>
-		<td><img src="img/title-right.png" alt="" height="102" style="vertical-align: top;"></td>
-		<td width="25%" valign="top" style="background: url('img/title-right-stretch.png') repeat-x">
-		  <img src="img/title-right-gear.png" style="float: right;" alt="">
-		</td>
-	  </tr>
-	  <!-- Bar Beneath Main title -->
-	  <tr>
-		<td width="100%" colspan="4">	      
-		  <table cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-			  <td width="100%" style="background: url('img/bar-stretch.png') repeat-x; height: 9px;"></td>
-			  <td valign="top"><img src="img/search.png" alt="" style="vertical-align: top"></td>
-			  <td width="100%" style="background: url('img/search-stretch.png') repeat-x;">	            
-				<!-- Use Google search for now -->        
-				<form method="GET" action="http://www.google.com/search" style="padding: 2px;">
-				  <input type="hidden" name="ie" value="UTF-8">
-				  <input type="hidden" name="oe" value="UTF-8">
-				  <input type="hidden" name="domains" value="www.yage3d.net">
-				  <input type="hidden" name="sitesearch" value="www.yage3d.net">
-				  <input type="text" name="q" value="" style="width: 8em;"><span>
-				  <input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
-				</form>
-				<div style="width: 14em; height: 1px;"></div>
-			  </td>
-			</tr>
-		  </table>
-		</td>
-	  </tr>
+		<!-- Upper part -->
+		<tr>
+			<td width="75%" style="background: url('img/title-stretch.png') repeat-x">&nbsp;</td>
+			<td style="background: url('img/title-right-stretch.png') repeat-x">
+				<img src="img/title-right.png" alt="" height="102" style="vertical-align: top;"></td>
+			<td width="25%" valign="top" style="background: url('img/title-right-stretch.png') repeat-x">
+				<img src="img/title-right-gear.png" style="float: right;" alt="">
+			</td>
+		</tr>
+		
+		<tr> <!-- Bar Beneath Main title -->
+			<td width="100%" colspan="4">				
+				<table cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td width="100%" style="background: url('img/bar-stretch.png') repeat-x; height: 9px;"></td>
+						<td valign="top"><img src="img/search.png" alt="" style="vertical-align: top"></td>
+						<td width="100%" style="background: url('img/search-stretch.png') repeat-x;">
+							<!-- Use Google search for now -->				
+							<form method="GET" action="http://www.google.com/search" style="padding: 2px;">
+								<input type="hidden" name="ie" value="UTF-8">
+								<input type="hidden" name="oe" value="UTF-8">
+								<input type="hidden" name="domains" value="www.yage3d.net">
+								<input type="hidden" name="sitesearch" value="www.yage3d.net">
+								<input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
+								<input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
+							</form>
+							<div style="width: 14em; height: 1px;"></div>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
 	</table>
 	
 	<!-- Content -->
@@ -124,7 +125,9 @@ Eric Poggel, Matt Peterson
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>The 16 values of the Matrix.
+<dd>elements in array form.
+<br><br>
+The 16 values of the Matrix.
 <br><br>
 
 </dd>
@@ -176,7 +179,9 @@ Eric Poggel, Matt Peterson
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>The 16 values of the Matrix.
+<dd>first column
+<br><br>
+The 16 values of the Matrix.
 <br><br>
 
 </dd>
@@ -228,7 +233,9 @@ Eric Poggel, Matt Peterson
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>The 16 values of the Matrix.
+<dd>second column
+<br><br>
+The 16 values of the Matrix.
 <br><br>
 
 </dd>
@@ -280,7 +287,9 @@ Eric Poggel, Matt Peterson
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>The 16 values of the Matrix.
+<dd>third column
+<br><br>
+The 16 values of the Matrix.
 <br><br>
 
 </dd>
@@ -332,7 +341,9 @@ Eric Poggel, Matt Peterson
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>The 16 values of the Matrix.
+<dd>fourth column
+<br><br>
+The 16 values of the Matrix.
 <br><br>
 
 </dd>
@@ -390,6 +401,19 @@ Eric Poggel, Matt Peterson
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">decompose</span>
+<script type="text/javascript">explorer.outline.addDecl('decompose');</script>
+(out Matrix <span class="funcparam">position</span>, out Matrix <span class="funcparam">rotation</span>, out Matrix <span class="funcparam">scale</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Decompose this Matrix into a <span class="funcparam">position</span>, <span class="funcparam">rotation</span>, and scaling Matrix. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
 <span class="currsymbol">determinant</span>
 <script type="text/javascript">explorer.outline.addDecl('determinant');</script>
@@ -428,6 +452,24 @@ Eric Poggel, Matt Peterson
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Is this an identity Matrix?
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">isUniformScale</span>
+<script type="text/javascript">explorer.outline.addDecl('isUniformScale');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Returns true
+ if all components of the scale are the same.
+ This is much faster than calling toScale() and comparing elements.
+<br><br>
+<b>TODO:</b><br>
+make this count almost uniform as uniform, to fix floating point errors.
 <br><br>
 
 </dd>
@@ -539,19 +581,6 @@ Eric Poggel, Matt Peterson
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix 
-<span class="currsymbol">postMultiply</span>
-<script type="text/javascript">explorer.outline.addDecl('postMultiply');</script>
-(Matrix <span class="funcparam">b</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Perform Matrix multiplication in reverse (since Matrix multiplication is not cummulative.) Is this backwards?
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Vec3f 
 <span class="currsymbol">position</span>
 <script type="text/javascript">explorer.outline.addDecl('position');</script>
@@ -559,7 +588,12 @@ Eric Poggel, Matt Peterson
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get the 
+<span class="currsymbol">position</span>
+<script type="text/javascript">explorer.outline.addDecl('position');</script>
+ component of the Matrix as a Vector. 
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -578,37 +612,39 @@ Eric Poggel, Matt Peterson
 <span class="currsymbol">rotate</span>
 <script type="text/javascript">explorer.outline.addDecl('rotate');</script>
 (Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a copy of this Matrix rotated by an <span class="funcparam">axis</span> Vec3f.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix 
+<br>Matrix 
 <span class="currsymbol">rotate</span>
 <script type="text/javascript">explorer.outline.addDecl('rotate');</script>
 (Quatrn <span class="funcparam">rotation</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a copy of this Matrix rotated by a Quatrn, relative to it's current <span class="funcparam">rotation</span> axis.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix 
+<br>Matrix 
 <span class="currsymbol">rotate</span>
 <script type="text/javascript">explorer.outline.addDecl('rotate');</script>
 (Matrix <span class="funcparam">b</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return a copy of this Matrix rotated by the rotation values of another Matrix.
- This is equivalent to a post-multiplication of only the rotation values.
+<dd>Return a copy of this Matrix rotated by the rotation values of an <span class="funcparam">axis</span>-angle Vector, a Quaternion, or another Matrix.
+ For Matrix rotation, this is equivalent to a post-multiplication of only the rotation values.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Matrix 
+<span class="currsymbol">rotatePreservingScale</span>
+<script type="text/javascript">explorer.outline.addDecl('rotatePreservingScale');</script>
+(T)(T <span class="funcparam">rot</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Rotation and scale are intimately related in the Matrix.
+ This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. 
+<br><br>
+Rotation and scale are intimately related in the Matrix.
+ This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. 
+<br><br>
+
+ ditto
 <br><br>
 
 </dd>
@@ -618,42 +654,41 @@ Eric Poggel, Matt Peterson
 <span class="currsymbol">rotateAbsolute</span>
 <script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
 (Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a copy of this Matrix with its rotation values incremented by an
- <span class="funcparam">axis</span> Vec3f, relative to the absolute worldspace <span class="funcparam">axis</span>.
- This function hasn't been verified to be correct in all circumstances. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix 
+<br>Matrix 
 <span class="currsymbol">rotateAbsolute</span>
 <script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
 (Quatrn <span class="funcparam">rotation</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a copy of this Matrix with its <span class="funcparam">rotation</span> values incremented by a
- Quatrn, relative to the absolute worldspace axis.
- This function hasn't been verified to be correct in all circumstances. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix 
+<br>Matrix 
 <span class="currsymbol">rotateAbsolute</span>
 <script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
 (Matrix <span class="funcparam">m</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Return a copy of this Matrix with its rotation values incremented by the
- rotation values of another Matrix, relative to the absolute worldspace axis.
+<dd>Return a copy of this Matrix with its rotation values incremented by an
+ <span class="funcparam">axis</span> angle Vector, a Quaternion or another Matrix, relative to the absolute worldspace <span class="funcparam">axis</span>.
  This function hasn't been verified to be correct in all circumstances. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Matrix 
+<span class="currsymbol">rotateAbsolutePreservingScale</span>
+<script type="text/javascript">explorer.outline.addDecl('rotateAbsolutePreservingScale');</script>
+(Vec3f <span class="funcparam">axis</span>);
+<br>Matrix 
+<span class="currsymbol">rotateAbsolutePreservingScale</span>
+<script type="text/javascript">explorer.outline.addDecl('rotateAbsolutePreservingScale');</script>
+(Quatrn <span class="funcparam">rotation</span>);
+<br>Matrix 
+<span class="currsymbol">rotateAbsolutePreservingScale</span>
+<script type="text/javascript">explorer.outline.addDecl('rotateAbsolutePreservingScale');</script>
+(Matrix <span class="funcparam">b</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>This is mostly untested. 
 <br><br>
 
 </dd>
@@ -702,45 +737,6 @@ Eric Poggel, Matt Peterson
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">set</span>
-<script type="text/javascript">explorer.outline.addDecl('set');</script>
-(Vec3f <span class="funcparam">axis</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the rotation values of this Matrix from an <span class="funcparam">axis</span> vector.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">set</span>
-<script type="text/javascript">explorer.outline.addDecl('set');</script>
-(Quatrn <span class="funcparam">rot</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the rotation values of the Matrix from a Quatrn.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setEuler</span>
-<script type="text/javascript">explorer.outline.addDecl('setEuler');</script>
-(Vec3f <span class="funcparam">euler</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the rotation values of the matrix from a vector containing <span class="funcparam">euler</span> angles.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
 <span class="currsymbol">setPosition</span>
 <script type="text/javascript">explorer.outline.addDecl('setPosition');</script>
 (Vec3f <span class="funcparam">position</span>);
@@ -759,10 +755,67 @@ Eric Poggel, Matt Peterson
 <span class="currsymbol">setRotation</span>
 <script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
 (Quatrn <span class="funcparam">rot</span>);
+<br>void 
+<span class="currsymbol">setRotation</span>
+<script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
+(Vec3f <span class="funcparam">rot</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set the rotation values of this Matrix from another Matrix or Quatrn.
+<dd>Set the rotation values of this Matrix from another Matrix, Quaternion, or axis-angle Vector.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setRotationPreservingScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setRotationPreservingScale');</script>
+(T)(T <span class="funcparam">rot</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the rotation while taking extra steps to preserve the Matrices scaling values. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setRotationEuler</span>
+<script type="text/javascript">explorer.outline.addDecl('setRotationEuler');</script>
+(Vec3f <span class="funcparam">euler</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the rotation values of the matrix from a vector containing <span class="funcparam">euler</span> angles.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setScale</span>
+<script type="text/javascript">explorer.outline.addDecl('setScale');</script>
+(Vec3f <span class="funcparam">scale</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the <span class="funcparam">scale</span> component of the Matrix, disregarding any rotation values already present in the <span class="funcparam">scale</span> part of the Matrix. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">setScalePreservingRotation</span>
+<script type="text/javascript">explorer.outline.addDecl('setScalePreservingRotation');</script>
+(Vec3f <span class="funcparam">scale</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the <span class="funcparam">scale</span> component of the Matrix, taking extra steps to preserve any
+ rotation values already present in the <span class="funcparam">scale</span> part of the Matrix. 
 <br><br>
 
 </dd>
@@ -805,6 +858,20 @@ Eric Poggel, Matt Peterson
 
 <dd>Convert the rotation part of the Matrix to Euler angles.
   This may be inaccurate and perhaps suffers from other faults. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f 
+<span class="currsymbol">toScale</span>
+<script type="text/javascript">explorer.outline.addDecl('toScale');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Extract the scale Vector from the rotation component of the Matrix.
+ Scale components will always be positive. 
 <br><br>
 
 </dd>
@@ -854,73 +921,87 @@ Eric Poggel, Matt Peterson
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2008 Eric Poggel<br>
+		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Nov 16 22:12:31 2008
+		on Sun Jan 18 21:45:36 2009
 
 	</div>
 	
 	<script type="text/javascript">
-	explorer.packageExplorer.addModule("yage.system.interfaces");
-
-	explorer.packageExplorer.addModule("yage.system.window");
-
-	explorer.packageExplorer.addModule("yage.system.log");
-
-	explorer.packageExplorer.addModule("yage.system.input");
-
-	explorer.packageExplorer.addModule("yage.system.render");
-
-	explorer.packageExplorer.addModule("yage.system.probe");
-
-	explorer.packageExplorer.addModule("yage.system.constant");
-
-	explorer.packageExplorer.addModule("yage.system.all");
-
-	explorer.packageExplorer.addModule("yage.system.device");
-
-	explorer.packageExplorer.addModule("yage.util.all");
-
-	explorer.packageExplorer.addModule("yage.util.spring");
-
-	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.scene.visible");
-
-	explorer.packageExplorer.addModule("yage.scene.camera");
-
-	explorer.packageExplorer.addModule("yage.scene.graph");
-
-	explorer.packageExplorer.addModule("yage.scene.model");
-
-	explorer.packageExplorer.addModule("yage.scene.scene");
-
-	explorer.packageExplorer.addModule("yage.scene.node");
-
-	explorer.packageExplorer.addModule("yage.scene.light");
-
-	explorer.packageExplorer.addModule("yage.scene.movable");
-
-	explorer.packageExplorer.addModule("yage.scene.sound");
-
-	explorer.packageExplorer.addModule("yage.scene.all");
-
-	explorer.packageExplorer.addModule("yage.scene.terrain");
-
-	explorer.packageExplorer.addModule("yage.scene.sprite");
-
 	explorer.packageExplorer.addModule("yage.all");
 
-	explorer.packageExplorer.addModule("yage.resource.layer");
+	explorer.packageExplorer.addModule("yage.core.all");
 
-	explorer.packageExplorer.addModule("yage.resource.texture");
+	explorer.packageExplorer.addModule("yage.core.array");
+
+	explorer.packageExplorer.addModule("yage.core.async");
+
+	explorer.packageExplorer.addModule("yage.core.closure");
+
+	explorer.packageExplorer.addModule("yage.core.color");
+
+	explorer.packageExplorer.addModule("yage.core.exceptions");
+
+	explorer.packageExplorer.addModule("yage.core.freelist");
+
+	explorer.packageExplorer.addModule("yage.core.interfaces");
+
+	explorer.packageExplorer.addModule("yage.core.math");
+
+	explorer.packageExplorer.addModule("yage.core.matrix");
+
+	explorer.packageExplorer.addModule("yage.core.misc");
+
+	explorer.packageExplorer.addModule("yage.core.parse");
+
+	explorer.packageExplorer.addModule("yage.core.plane");
+
+	explorer.packageExplorer.addModule("yage.core.quatrn");
+
+	explorer.packageExplorer.addModule("yage.core.repeater");
+
+	explorer.packageExplorer.addModule("yage.core.timer");
+
+	explorer.packageExplorer.addModule("yage.core.tree");
+
+	explorer.packageExplorer.addModule("yage.core.types");
+
+	explorer.packageExplorer.addModule("yage.core.vector");
+
+	explorer.packageExplorer.addModule("yage.core.xml");
+
+	explorer.packageExplorer.addModule("yage.gui.all");
+
+	explorer.packageExplorer.addModule("yage.gui.exceptions");
+
+	explorer.packageExplorer.addModule("yage.gui.style");
+
+	explorer.packageExplorer.addModule("yage.gui.surface");
+
+	explorer.packageExplorer.addModule("yage.gui.textlayout");
+
+	explorer.packageExplorer.addModule("yage.resource.all");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
+	explorer.packageExplorer.addModule("yage.resource.image");
+
+	explorer.packageExplorer.addModule("yage.resource.layer");
+
+	explorer.packageExplorer.addModule("yage.resource.lazyresource");
+
+	explorer.packageExplorer.addModule("yage.resource.manager");
+
+	explorer.packageExplorer.addModule("yage.resource.material");
+
+	explorer.packageExplorer.addModule("yage.resource.mesh");
+
 	explorer.packageExplorer.addModule("yage.resource.model");
 
-	explorer.packageExplorer.addModule("yage.resource.exceptions");
+	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+
+	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 
@@ -928,63 +1009,59 @@ Eric Poggel, Matt Peterson
 
 	explorer.packageExplorer.addModule("yage.resource.sound");
 
-	explorer.packageExplorer.addModule("yage.resource.all");
+	explorer.packageExplorer.addModule("yage.resource.texture");
 
-	explorer.packageExplorer.addModule("yage.resource.objloader");
+	explorer.packageExplorer.addModule("yage.resource.vertexbuffer");
 
-	explorer.packageExplorer.addModule("yage.resource.image");
+	explorer.packageExplorer.addModule("yage.scene.all");
 
-	explorer.packageExplorer.addModule("yage.resource.mesh");
+	explorer.packageExplorer.addModule("yage.scene.camera");
 
-	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
+	explorer.packageExplorer.addModule("yage.scene.graph");
 
-	explorer.packageExplorer.addModule("yage.resource.material");
+	explorer.packageExplorer.addModule("yage.scene.light");
 
-	explorer.packageExplorer.addModule("yage.gui.style");
+	explorer.packageExplorer.addModule("yage.scene.model");
 
-	explorer.packageExplorer.addModule("yage.gui.exceptions");
+	explorer.packageExplorer.addModule("yage.scene.movable");
 
-	explorer.packageExplorer.addModule("yage.gui.all");
+	explorer.packageExplorer.addModule("yage.scene.node");
 
-	explorer.packageExplorer.addModule("yage.gui.surface");
+	explorer.packageExplorer.addModule("yage.scene.scene");
 
-	explorer.packageExplorer.addModule("yage.core.interfaces");
+	explorer.packageExplorer.addModule("yage.scene.sound");
 
-	explorer.packageExplorer.addModule("yage.core.repeater");
+	explorer.packageExplorer.addModule("yage.scene.sprite");
 
-	explorer.packageExplorer.addModule("yage.core.parse");
+	explorer.packageExplorer.addModule("yage.scene.terrain");
 
-	explorer.packageExplorer.addModule("yage.core.matrix");
+	explorer.packageExplorer.addModule("yage.scene.visible");
 
-	explorer.packageExplorer.addModule("yage.core.color");
+	explorer.packageExplorer.addModule("yage.system.all");
 
-	explorer.packageExplorer.addModule("yage.core.math");
+	explorer.packageExplorer.addModule("yage.system.constant");
 
-	explorer.packageExplorer.addModule("yage.core.exceptions");
+	explorer.packageExplorer.addModule("yage.system.device");
 
-	explorer.packageExplorer.addModule("yage.core.misc");
+	explorer.packageExplorer.addModule("yage.system.glcontext");
 
-	explorer.packageExplorer.addModule("yage.core.timer");
+	explorer.packageExplorer.addModule("yage.system.input");
 
-	explorer.packageExplorer.addModule("yage.core.types");
+	explorer.packageExplorer.addModule("yage.system.log");
 
-	explorer.packageExplorer.addModule("yage.core.quatrn");
+	explorer.packageExplorer.addModule("yage.system.openal");
 
-	explorer.packageExplorer.addModule("yage.core.tree");
+	explorer.packageExplorer.addModule("yage.system.probe");
 
-	explorer.packageExplorer.addModule("yage.core.all");
+	explorer.packageExplorer.addModule("yage.system.render");
 
-	explorer.packageExplorer.addModule("yage.core.array");
+	explorer.packageExplorer.addModule("yage.system.window");
 
-	explorer.packageExplorer.addModule("yage.core.xml");
+	explorer.packageExplorer.addModule("yage.util.all");
 
-	explorer.packageExplorer.addModule("yage.core.freelist");
+	explorer.packageExplorer.addModule("yage.util.flyer");
 
-	explorer.packageExplorer.addModule("yage.core.plane");
-
-	explorer.packageExplorer.addModule("yage.core.async");
-
-	explorer.packageExplorer.addModule("yage.core.vector");
+	explorer.packageExplorer.addModule("yage.util.spring");
 </script>
   </body>
 </html>

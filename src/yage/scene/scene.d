@@ -9,9 +9,7 @@ module yage.scene.scene;
 import std.date;
 import std.stdio;
 import derelict.opengl.gl;
-import derelict.openal.al;
 import yage.core.all;
-import yage.system.alcontext;
 import yage.system.device;
 import yage.system.openal;
 import yage.scene.camera;
@@ -55,7 +53,6 @@ class Scene : Node//, ITemporal
 	package Object transform_mutex;			// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
 
 	protected Repeater update_thread;
-	protected ALContext sound_thread;		// deprecated
 	
 	protected long timestamp[3];			// Used for timestamps of newest transform_read/write
 	package int transform_read=0, transform_write=1;
@@ -68,8 +65,6 @@ class Scene : Node//, ITemporal
 	protected float fog_density = 0.1;
 	protected bool  fog_enabled = false;
 	
-	protected OpenALContext c;
-
 	/// Construct an empty Scene.
 	this()
 	{	super();
@@ -82,21 +77,13 @@ class Scene : Node//, ITemporal
 		update_thread = new Repeater();
 		update_thread.setFunction(&update);		
 		//update_thread.setErrorFunction(&Device.abortException);
-		
-		sound_thread = new ALContext();
-		sound_thread.setFunction(&updateSounds);
-		sound_thread.setFrequency(30); // sound buffers are updated 30 times per second.
-		//sound_thread.setErrorFunction(&Device.abortException);
-		
+	
 		cameras_mutex = new Object();
 		lights_mutex = new Object();
 		sounds_mutex = new Object();
 		transform_mutex = new Object();
 		
 		all_scenes[this] = this;
-		
-		writefln("scene constructor");
-		c = OpenALContext.getInstance();
 	}
 	
 	/**
@@ -146,17 +133,11 @@ class Scene : Node//, ITemporal
 	 * Overridden to pause the scene update and sound threads and to remove this instance from the array of all scenes. */
 	override void finalize()
 	{	if (this in all_scenes) // repeater will be null if finalize has already been called.
-		{	writefln(this);
-			// pause();
-			super.finalize(); // needs to occur before sound_thread finalize to free sound nodes.
+		{	super.finalize(); // needs to occur before sound_thread finalize to free sound nodes.
 			
 			if (update_thread)
 			{	update_thread.finalize();
 				update_thread = null;
-			}
-			if (sound_thread)
-			{	sound_thread.finalize();
-				sound_thread = null;
 			}
 			
 			lights = null;
@@ -249,17 +230,10 @@ class Scene : Node//, ITemporal
 	
 	/// Get / set the speed of sound (in game units per second) variable that will be passed to OpenAL.
 	float getSpeedOfSound()
-	{	return sound_thread.getDopplerVeloity();
+	{	return 343;//return sound_thread.getDopplerVeloity();
 	}	
 	void setSpeedOfSound(float speed) /// ditto
-	{	sound_thread.setDopplerVelocity(speed/343.3);
-	}
-
-	
-	/*
-	 * Get the Repeater that handles all sound playback for this scene. */
-	package Repeater getSoundThread()
-	{	return sound_thread;		
+	{	//sound_thread.setDopplerVelocity(speed/343.3);
 	}
 
 	/*
@@ -279,11 +253,9 @@ class Scene : Node//, ITemporal
 	 * If the updating thread gets behind, it will always attempt to catch up by updating more frequently.*/
 	void play()
 	{	update_thread.play();
-		sound_thread.play();
 	}
 	void pause() /// ditto
 	{	update_thread.pause();
-		sound_thread.pause();
 	}	
 	bool paused() /// ditto
 	{	return update_thread.paused();
@@ -334,16 +306,6 @@ class Scene : Node//, ITemporal
 		this.delta.reset();
 		scene.swapTransformWrite();
 	}
-	
-	/**
-	 * This is typically called automatically at a set interval from the scene's sound_thread. 
-	 * Params:
-	 *     delta = This is required to match the signature of Repeater's callback function, but is otherwise unused.*/
-	void updateSounds(float delta=0)
-	{	synchronized(sounds_mutex)
-			foreach (sound; sounds)
-				sound.updateBuffers();
-	}	
 
 	/*
 	 * Apply OpenGL options specific to this Scene.  This function is used internally by
@@ -416,6 +378,10 @@ class Scene : Node//, ITemporal
 	 * Returns: a self indexed array. */
 	SoundNode[SoundNode] getAllSounds()
 	{	return sounds;		
+	}
+	
+	Object getSoundsMutex()
+	{	return sounds_mutex;		
 	}
 
 	/**

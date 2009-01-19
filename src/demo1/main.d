@@ -149,8 +149,9 @@ int main()
 		// Reset the scene
 		if (key == SDLK_r)
 		{	scene.pause();
-			scene.finalize();
+			//scene.finalize();
 			scene = new DemoScene();
+			scene.camera.setListener();
 			view.style.backgroundMaterial = scene.camera.getTexture();
 			scene.play();
 		}

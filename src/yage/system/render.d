@@ -19,6 +19,7 @@ import yage.resource.mesh;
 import yage.resource.lazyresource;
 import yage.system.constant;
 import yage.scene.all;
+import yage.scene.light;
 import yage.scene.model;
 import yage.scene.camera: CameraNode;
 import yage.scene.visible;
@@ -80,38 +81,9 @@ class Render
 
 		if (!models_generated)
 			generate();
-		/*
-		// Loop through all nodes in the queue and render them
-		foreach (VisibleNode n; nodes)
-		{	synchronized (n)
-			{	if (!n.getScene()) // was recently removed from its scene.
-					continue;
-			
-				glPushMatrix();
-				glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
-				Vec3f size = n.getSize();
-				glScalef(size.x, size.y, size.z);
-				n.enableLights(lights);
-				
-				if (cast(ModelNode)n)
-					model((cast(ModelNode)n).getModel(), n);			
-				else if (cast(SpriteNode)n)
-					sprite((cast(SpriteNode)n).getMaterial(), n);
-				else if (cast(GraphNode)n)
-					model((cast(GraphNode)n).getModel(), n);
-				else if (cast(TerrainNode)n)
-					model((cast(TerrainNode)n).getModel(), n);
-				else if (cast(LightNode)n)
-					cube(n);	// todo: render as color of light?
-				else
-					cube(n);
-				
-				glPopMatrix();
-			}
-		}
-		*/
-		
-		LightNode[] lights = current_camera.getScene().getLights().values;
+
+		int num_lights = Probe.openGL(Probe.OpenGL.MAX_LIGHTS);
+		LightNode[] all_lights = current_camera.getScene().getLights().values; // creates garbage, but this copy also prevents threading issues.
 		
 		// Loop through all nodes in the queue and render them
 		foreach (VisibleNode n; nodes)
@@ -125,8 +97,14 @@ class Render
 				Vec3f size = n.getSize();
 				glScalef(size.x, size.y, size.z);
 				
-				// Enable the apropriate lights
-				n.enableLights(lights);
+				// Enable the appropriate lights
+				//writefln(all_lights);
+				auto lights = n.getLights(all_lights, num_lights);
+				for (int i=0; i<num_lights; i++)
+					glDisable(GL_LIGHT0+i);
+				for (int i=0; i<min(num_lights, lights.length); i++)
+					light(lights[i], i);
+				
 				
 				// Render
 				if (cast(ModelNode)n)
@@ -148,11 +126,11 @@ class Render
 
 		// Sort alpha (translucent) triangles
 		Vec3f camera = Vec3f(getCurrentCamera().getAbsoluteTransform(true).v[12..15]);
-		float triSort(AlphaTriangle a)
-		{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(.33333333333);
+		/*
+		radixSort(alpha, true, (AlphaTriangle a)
+		{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(1/3);
 			return -camera.distance2(center); // distance squared is faster and values still compare the same
-		}
-		//radixSort(alpha, &triSort);
+		});*/
 
 		// Render alpha triangles
 		foreach (AlphaTriangle at; alpha)
@@ -201,6 +179,49 @@ class Render
 	}
 	static void setCurrentCamera(CameraNode camera) /// ditto;
 	{	current_camera = camera;
+	}
+	
+	/*
+	 * Enable this light as the given light number and apply its properties.
+	 * This function is used internally by the engine and should not be called manually or exported. */
+	static void light(LightNode light, int num)
+	in{	assert (num<=Probe.openGL(Probe.OpenGL.MAX_LIGHTS));
+	}body
+	{
+		glPushMatrix();
+		glLoadMatrixf(current_camera.getInverseAbsoluteMatrix().v.ptr); // required for spotlights.
+
+		// Set position and direction
+		glEnable(GL_LIGHT0+num);
+		auto type = light.getLightType();
+		Matrix transform_abs = light.getAbsoluteTransform(true);
+		
+		Vec4f pos;
+		pos.v[0..3] = transform_abs.v[12..15];
+		pos.v[3] = type==LightNode.Type.DIRECTIONAL ? 0 : 1;
+		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
+
+		// Spotlight settings
+		float angle = type == LightNode.Type.SPOT ? light.getSpotAngle() : 180;
+		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angle);
+		if (type==LightNode.Type.SPOT)
+		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.getSpotExponent());
+			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
+			// rotated by the node's rotation.  This is opposite the default direction of cameras
+			glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
+		}
+
+		// Light material properties
+		glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.getAmbient().vec4f.ptr);
+		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.getDiffuse().vec4f.ptr);
+		glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.getSpecular().vec4f.ptr);
+
+		// Attenuation properties
+		glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
+		glLightf(GL_LIGHT0+num, GL_LINEAR_ATTENUATION, 0);
+		glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, light.getQuadraticAttenuation());
+
+		glPopMatrix();
 	}
 	
 	/*

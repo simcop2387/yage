@@ -17,7 +17,7 @@ import yage.system.device;
 import yage.system.log;
 import yage.system.probe;
 import yage.system.render;
-import yage.resource.exceptions;
+import yage.core.exceptions;
 import yage.resource.model;
 import yage.resource.manager;
 import yage.resource.resource;

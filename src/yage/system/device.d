@@ -20,10 +20,9 @@ import derelict.sdl.image;
 import derelict.ogg.vorbis;
 import derelict.freetype.ft;
 import yage.gui.surface;
-import yage.system.alcontext;
 import yage.system.glcontext;
 import yage.system.log;
-import yage.system.constant;
+import yage.system.openal;
 import yage.system.probe;
 import yage.system.openal;
 import yage.core.exceptions;
@@ -183,6 +182,9 @@ abstract class Device
 		// Not used yet
 		GLContext glc = new GLContext();
 		
+		// Create OpenAL device, context, and start sound proessing thread.
+		OpenALContext.getInstance();
+		
 		initialized = true;
 		Log.write("Yage has been initialized successfully.");
 	}
@@ -201,12 +203,9 @@ abstract class Device
 		SDL_ShowCursor(true);
 	
 		foreach_reverse (s; Scene.getAllScenes().values)
-		{	//writefln(s);
 			s.finalize();
-		
-		}
-		//OpenALContext.getInstance().finalize();
-		
+			
+		OpenALContext.getInstance().finalize();
 		ResourceManager.finalize();
 		
 		// Clean up resources not managed by the ResourceManager.
@@ -214,7 +213,6 @@ abstract class Device
 			item.finalize();
 		foreach (item; GPUTexture.getAll().values)
 			item.finalize();
-		
 		// Forces cleanup of any other resources
 		fullCollect();
 		
@@ -225,7 +223,6 @@ abstract class Device
 		active = false;
 		Log.write("Yage has been de-initialized successfully.");
 	}
-	
 
 	/**
 	 * Returns true if called from the same thread as what Device.init() was called.
@@ -241,8 +238,7 @@ abstract class Device
 	 * Set the abort flag signalling that the application is ready for exit.
 	 * abourtException provides a good exception callback for any asynchronous code that may throw an exception. */
 	static void abort(char[] message)
-	{	writefln("Device.abort()");
-		if (message.length)
+	{	if (message.length)
 			Log.write(message);
 		aborted = true;
 	}

@@ -267,9 +267,9 @@ class Build
 		{
 			char[] lib_name = Util.swritef("%s-%s-%s%s", path, compiler, env, lib_ext);
 			
-			chdir("../src");
+			chdir(mod_path);
 			if (!exists(lib_path~sep~lib_name))
-			{	Util.exec("../proj/build %s -lib -%s%s", path, offlag, lib_name);
+			{	Util.exec("\".."~sep~"proj"~sep~"build\" %s -lib -%s%s", path, offlag, lib_name);
 				std.file.rename(lib_name, lib_path~sep~lib_name); // move to lib folder
 			}
 			

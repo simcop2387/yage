@@ -97,9 +97,9 @@ DDOC =
 </html>
 
 D_CODE = <pre class="d_code">$0</pre>
-D_COMMENT = $(GREEN $0)
+D_COMMENT = <span style="color: green">$0</span>
 D_STRING  = <span style="color: purple">$0</span>
-D_KEYWORD = $(BLUE $0)
+D_KEYWORD = <span style="color: blue">$0</span>
 D_PSYMBOL = $(B $0)
 D_PARAM	  = $(I $0)
 

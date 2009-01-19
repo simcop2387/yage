@@ -13,7 +13,7 @@ import derelict.opengl.glext;
 import yage.system.constant;
 import yage.system.device;
 import yage.system.log;
-import yage.resource.exceptions;
+import yage.core.exceptions;
 import yage.resource.manager;
 import yage.resource.resource;
 

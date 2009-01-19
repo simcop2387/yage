@@ -21,7 +21,7 @@ import yage.core.matrix;
 import yage.core.timer;
 import yage.core.vector;
 import yage.core.interfaces;
-import yage.resource.exceptions;
+import yage.core.exceptions;
 import yage.resource.image;
 import yage.resource.manager;
 import yage.resource.resource;

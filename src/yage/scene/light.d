@@ -8,8 +8,7 @@ module yage.scene.light;
 
 import std.math;
 import std.stdio;
-import derelict.opengl.gl;
-import derelict.opengl.glext;
+
 import yage.core.all;
 import yage.resource.material;
 import yage.scene.node;
@@ -35,7 +34,7 @@ class LightNode : MovableNode
 	enum Type
 	{	DIRECTIONAL,		/// A light that shines in one direction through the entire scene
 		POINT,				/// A light that shines outward in all directions
-		SPOT,				/// A light that emits light outward from a point in a single direction
+		SPOT				/// A light that emits light outward from a point in a single direction
 	}
 	
 	protected float	quad_attenuation	= 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
@@ -149,7 +148,6 @@ class LightNode : MovableNode
 	{	return quad_attenuation;
 	}
 
-
 	/**
 	 * Return the RGB brightness this light contributes to a given point in 3D space, relative to this light's scene.
 	 * OpenGl's fixed-function, traditional lighting calculations are used.
@@ -205,47 +203,6 @@ class LightNode : MovableNode
 		if (color.z>=1) color.z=1;
 
 		return Color(color);
-	}
-
-	/*
-	 * Enable this light as the given light number and apply its properties.
-	 * This function is used internally by the engine and should not be called manually or exported. */
-	void apply(int num)
-	in{	assert (num<=Probe.openGL(Probe.OpenGL.MAX_LIGHTS));
-	}body
-	{
-		glPushMatrix();
-		glLoadMatrixf(Render.getCurrentCamera().getInverseAbsoluteMatrix().v.ptr); // required for spotlights.
-
-		// Set position and direction
-		glEnable(GL_LIGHT0+num);
-		getAbsoluteTransform();
-		Vec4f pos;
-		pos.v[0..3] = transform_abs.v[12..15];
-		pos.v[3] = type==Type.DIRECTIONAL ? 0 : 1;
-		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
-
-		// Spotlight settings
-		float angle = type == Type.SPOT ? spot_angle : 180;
-		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angle);
-		if (type==Type.SPOT)
-		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, spot_exponent);
-			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
-			// rotated by the node's rotation.  This is opposite the default direction of cameras
-			glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
-		}
-
-		// Light material properties
-		glLightfv(GL_LIGHT0+num, GL_AMBIENT, ambient.vec4f.ptr);
-		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, diffuse.vec4f.ptr);
-		glLightfv(GL_LIGHT0+num, GL_SPECULAR, specular.vec4f.ptr);
-
-		// Attenuation properties
-		glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
-		glLightf(GL_LIGHT0+num, GL_LINEAR_ATTENUATION, 0);
-		glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, quad_attenuation);
-
-		glPopMatrix();
 	}
 
 	/*

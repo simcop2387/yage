@@ -66,6 +66,15 @@ class Timer
 		
 	}
 	
+	Timer clone()
+	{	auto result = new Timer(!this.paused());
+		result.pause_after = pause_after;
+		result.min = min;
+		result.max = max;
+		result.seek(tell());
+		return result;
+	}
+	
 	// Get the timer's time, ignoring loop settings.
 	protected double rawTime()
 	{	if (source)
@@ -96,14 +105,15 @@ class Timer
 	/**
 	 * Start the timer. */
 	void play()
-	{	synchronized(this)
-		{	_paused = false;
-			hpc.start();
-		}	
+	{	if (_paused)
+			synchronized(this)
+			{	_paused = false;
+				hpc.start();
+			}	
 	}
 	
 	/**
-	 * Stop the timer and reset its position.*/
+	 * Stop the timer and reset it to zero.*/
 	void stop()
 	{	synchronized(this)
 		{	_paused = true;

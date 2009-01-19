@@ -54,10 +54,11 @@ class Asteroid : GameObject
 class Flare : GameObject
 {
 	static Timer timer;
+	static Timer timer2;
 
 	this ()
 	{	super();
-		this.setLifetime(4);
+		this.setLifetime(5);
 
 		auto flare = addChild(new SpriteNode());
 		flare.setMaterial("fx/flare1.xml");
@@ -65,7 +66,7 @@ class Flare : GameObject
 
 		if (timer is null)
 		{	timer = new Timer();
-			timer.set(1);			
+			timer2 = new Timer();
 		}
 
 		// don't create a new light more than 5 times per second
@@ -75,5 +76,14 @@ class Flare : GameObject
 			light.setDiffuse(Color("orange"));
 			light.setLightRadius(96);
 		}
+		
+		if (timer2.get() > 1/20.0f)
+		{	timer2.reset();			
+			SoundNode zap = addChild(new SoundNode());
+			zap.setSound("sound/laser3.ogg");
+			zap.setVolume(1);
+			zap.play();
+		}
+			
 	}
 }

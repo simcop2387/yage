@@ -40,7 +40,10 @@ int main()
 
 	// Camera
 	auto camera = scene.addChild(new CameraNode());
-	camera.setPosition(Vec3f(0, 5, 30));	
+	camera.setPosition(Vec3f(0, 5, 30));
+	auto music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
+	music.setLooping(true);
+	music.play();
 	
 	// Main surface where camera output is rendered.
 	auto view = new Surface();
@@ -52,7 +55,7 @@ int main()
 	bool grabbed = true;
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
-			Device.running = false;
+			Device.abort("Yage aborted by esc key press.");
 		if (key == SDLK_c)
 			new GPUTexture("../res/fx/flare1.jpg"); // This proves that the LazyResource queue doesn't work yet!
 	};
@@ -95,7 +98,7 @@ int main()
 	// Rendering / Input Loop
 	int fps = 0;
 	Timer frame = new Timer();
-	while(Device.running)
+	while(!Device.isAborted())
 	{		
 		Input.processInput();
 		scene.swapTransformRead(); // swap scene buffer so the latest version can be rendered.

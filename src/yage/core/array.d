@@ -33,20 +33,23 @@ import yage.core.timer;
 void addSorted(T)(inout T[] array, T value, bool increasing=true)
 {	addSorted(array, value, increasing, (T a) { return a; });
 }
-/// Ditto
-void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem) getKey)
+/// ditto
+void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem) getKey, int max_length=int.max)
 {
 	if (!array.length)
 	{	array ~= value;
 		return;		
 	}
 	
-	array.length = array.length+1;
-	K compare_value = getKey(value);	
+	K key_value = getKey(value);
+	if (array.length < max_length) // increase the length
+		array.length = array.length+1; // [below] If fixed length and no place to add, immediately return.
+	else if (increasing ? key_value > getKey(array[length-1]) : key_value < getKey(array[length-1]))
+		return;
 	
-	// Despite two loops, this still runs in O(n)
+	// Despite two loops, this still runs in worst-case O(n)
 	for (int i=0; i<array.length-1; i++) // TODO: Use a binary search instead of linear.
-	{	if (increasing ? compare_value <= getKey(array[i]) : compare_value >= getKey(array[i]))
+	{	if (increasing ? key_value <= getKey(array[i]) : key_value >= getKey(array[i]))
 		{	for (int j=array.length-2; j>=i; j--) // Shift all elements forward
 				array[j+1] = array[j];			
 			array[i] = value;
@@ -113,8 +116,9 @@ T amin(T, K)(T[] array, K delegate(T elem) getKey)
  *     array = array to search.
  *     number = number of elements to find.
  *     lookup = Function used to lookup values in arrays of classes and structs
+ *     min = do not return any values that are this value or less.
  * Returns: An unsorted array of length number. */
-T[] maxRange(T, K/* : real*/)(T[] array, int number, K delegate(T elem) getKey)
+T[] maxRange(T, K/* : real*/)(T[] array, int number, K delegate(T elem) getKey, K min=-K.infinity)
 in {
 	assert(number <= array.length);
 }
@@ -136,7 +140,7 @@ body
 	
 	Map[] result2 = new Map[number];
 	foreach (inout r; result2)
-		r.value = -K.infinity;
+		r.value = min;
 	
 	// TODO: This could be greatly sped up using a heap, such as Tango's util.container.more.Heap.
 	int min_index=0;
@@ -149,7 +153,7 @@ body
 	
 	for (int i=0; i<array2.length; i++)
 		if (array2[i].value > result2[min_index].value)
-		{	if (result2[min_index].value != -K.infinity || min_index == result2.length-1)
+		{	if (result2[min_index].value > min || min_index == result2.length-1)
 			{	result2[min_index] = array2[i];
 				min_index = getMinIndex();
 			} else
@@ -170,15 +174,30 @@ unittest
 		this (float a) { this.a = a; }
 	}
 
-	Foo[] test;
-	for (int i=0; i<1000; i++)
-		test ~= new Foo((rand()-cast(float)rand())/rand());
-
-	auto max = maxRange(test, 100, (Foo f){return f.a;} );
-	max.radixSort(true, (Foo f){return f.a;});
-	test.radixSort(true, (Foo f){return f.a;});
-	test = test[length-max.length..length];
-	assert(max == test);
+	{
+		Foo[] test;
+		for (int i=0; i<1000; i++)
+			test ~= new Foo((rand()-cast(float)rand())/rand());
+	
+		auto max = maxRange(test, 100, (Foo f){return f.a;} );
+		max.radixSort(true, (Foo f){return f.a;});
+		test.radixSort(true, (Foo f){return f.a;});
+		test = test[length-max.length..length];
+		assert(max == test);
+	}
+	{	// same as above, but tests a min value argument.
+		Foo[] test;
+		for (int i=0; i<1000; i++)
+			test ~= new Foo((rand()-cast(float)rand())/rand());
+	
+		auto max = maxRange(test, 100, (Foo f){return f.a;}, 0.3f);
+		max.radixSort(true, (Foo f){return f.a;});
+		test.radixSort(true, (Foo f){return f.a;});
+		test = test[length-max.length..length];
+		assert(max == test);
+		foreach (t; test)
+			assert(t.a>0.3f);
+	}
 }
 
 T[] maxRange(T)(T[] array, int number) /// ditto

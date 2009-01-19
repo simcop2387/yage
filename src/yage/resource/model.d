@@ -20,7 +20,7 @@ import yage.core.misc;
 import yage.core.parse;
 import yage.core.quatrn;
 import yage.core.vector;
-import yage.resource.exceptions;
+import yage.core.exceptions;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.manager;
