@@ -92,9 +92,9 @@ class DemoScene : Scene
 int main()
 {	
 	// Init (resolution, depth, fullscreen, aa-samples)
-	Device.init(800, 600, 32, false, 1);
-	//Device.init(1024, 768, 32, true);
-	//Device.init(1440, 900, 32, true);
+	System.init(800, 600, 32, false, 1);
+	//System.init(1024, 768, 32, true);
+	//System.init(1440, 900, 32, true);
 	
 	// Paths
 	ResourceManager.addPath("../res/");
@@ -109,7 +109,7 @@ int main()
 	Surface view = new Surface();
 	view.style.backgroundMaterial = scene.camera.getTexture();
 	view.style.set("bottom: 0; right: 0");	
-	Device.setSurface(view);
+	System.setSurface(view);
 	
 	// Make a draggable window to show some useful info.
 	auto window = view.addChild(new Surface());
@@ -138,7 +138,7 @@ int main()
 	// Events for main surface.
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
-			Device.abort("Yage aborted by esc key press.");
+			System.abort("Yage aborted by esc key press.");
 		
 		// Trigger the garbage collector
 		if(key == SDLK_c) {
@@ -176,7 +176,7 @@ int main()
 	std.gc.fullCollect();
 	
 	// Rendering loop
-	while(!Device.isAborted())
+	while(!System.isAborted())
 	{
 		float dtime = delta.get();
 		delta.reset();
@@ -201,7 +201,7 @@ int main()
 		scene.swapTransformRead();
 	}
 	//scene.finalize(); // is this needed to prevent albuffer.c error?
-	Device.deInit();
+	System.deInit();
 
 	return 0;
 }

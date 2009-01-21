@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -21,7 +21,7 @@ import yage.scene.node;
 import yage.scene.scene;
 import yage.scene.movable;
 import yage.system.probe;
-import yage.system.device;
+import yage.system.system;
 import yage.system.render;
 
 
@@ -182,7 +182,7 @@ class CameraNode : MovableNode
 	 * added to a material or used for any other purpose by using getTexture(). */
 	void toTexture()
 	in {
-		assert(Device.isDeviceThread());
+		assert(System.isSystemThread());
 	}
 	body
 	{	node_count = poly_count = vertex_count = 0;
@@ -190,10 +190,10 @@ class CameraNode : MovableNode
 		
 		// Get Size
 		int modified_xres=xres, modified_yres=yres;
-		if (modified_xres > Device.getWidth()) modified_xres=Device.getWidth();
-		if (modified_yres > Device.getHeight()) modified_yres=Device.getHeight();
-		if (modified_xres ==0) modified_xres=Device.getWidth();
-		if (modified_yres ==0) modified_yres=Device.getHeight();
+		if (modified_xres > System.getWidth()) modified_xres=System.getWidth();
+		if (modified_yres > System.getHeight()) modified_yres=System.getHeight();
+		if (modified_xres ==0) modified_xres=System.getWidth();
+		if (modified_yres ==0) modified_yres=System.getHeight();
 		
 
 		// Precalculate the inverse of the Camera's absolute transformation Matrix.
@@ -202,7 +202,7 @@ class CameraNode : MovableNode
 
 		// Resize viewport
 		float aspect2 = aspect ? aspect : modified_xres/cast(float)modified_yres;
-		Device.resizeViewport(modified_xres, modified_yres, near, far, fov, aspect2);
+		System.resizeViewport(modified_xres, modified_yres, near, far, fov, aspect2);
 		glLoadIdentity();
 
 		// Rotate in reverse
@@ -307,7 +307,7 @@ class CameraNode : MovableNode
 
 				float height = yres;
 				if (height==0)
-					height = Device.getHeight();
+					height = System.getHeight();
 				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
 					vnode.setOnscreen(false);
 				else // Onscreen and big enough to draw
@@ -332,7 +332,7 @@ class CameraNode : MovableNode
 	 * It might also be good to put this in calcTransform() instead.*/
 	protected void buildFrustum()
 	in {
-		assert(Device.isDeviceThread()); // this shouldn't be necessary.
+		assert(System.isSystemThread()); // this shouldn't be necessary.
 	}
 	body
 	{	// Create the clipping matrix from the modelview and projection matrices

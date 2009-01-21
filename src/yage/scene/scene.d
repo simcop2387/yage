@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -10,7 +10,7 @@ import std.date;
 import std.stdio;
 import derelict.opengl.gl;
 import yage.core.all;
-import yage.system.device;
+import yage.system.system;
 import yage.system.openal;
 import yage.scene.camera;
 import yage.scene.light;
@@ -76,7 +76,7 @@ class Scene : Node//, ITemporal
 		
 		update_thread = new Repeater();
 		update_thread.setFunction(&update);		
-		//update_thread.setErrorFunction(&Device.abortException);
+		//update_thread.setErrorFunction(&System.abortException);
 	
 		cameras_mutex = new Object();
 		lights_mutex = new Object();
@@ -168,7 +168,7 @@ class Scene : Node//, ITemporal
 	 * Get / a function to call if the sound or update thread's update function throws an exception.
 	 * If this is set to null (the default), then the exception will just be thrown. 
 	 * Params:
-	 *     on_error = Defaults to Device.abortException.  If null, any errors from the Scene's 
+	 *     on_error = Defaults to System.abortException.  If null, any errors from the Scene's 
 	 *     sound or update threads will cause the threads to terminate silently. */
 	void setErrorFunction(void delegate(Exception e) on_error)
 	{	//sound_thread.setErrorFunction(on_error);
@@ -313,7 +313,7 @@ class Scene : Node//, ITemporal
 	 * TODO: Rename to bind */
 	void apply()
 	in
-	{	assert(Device.isDeviceThread()); /// TODO: use closure queue or glcontext mutex to allow calling from anywhere.
+	{	assert(System.isSystemThread()); /// TODO: use closure queue or glcontext mutex to allow calling from anywhere.
 	}
 	body
 	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.vec4f.ptr);

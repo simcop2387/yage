@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -9,7 +9,7 @@ module yage.system.probe;
 import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
-import yage.system.device;
+import yage.system.system;
 
 /**
  * Provides hardware probing capabilities for Yage. */

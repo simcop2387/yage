@@ -1,6 +1,6 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
- * Authors:    Eric Poggel & Joe (Deformative) Pusdesris
+ * Copyright:  (c) 2005-2009 Eric Poggel
+ * Authors:    Eric Poggel, Joe Pusderis (deformative0@gmail.com)
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
@@ -22,7 +22,7 @@ import yage.scene.visible;
 import yage.core.matrix;
 import yage.core.vector;
 import yage.system.constant;
-import yage.system.device;
+import yage.system.system;
 import yage.system.log;
 
 

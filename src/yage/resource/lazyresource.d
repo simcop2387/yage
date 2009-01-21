@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -7,7 +7,7 @@
 module yage.resource.lazyresource;
 
 import yage.core.closure;
-import yage.system.device;
+import yage.system.system;
 
 
 /**
@@ -26,7 +26,7 @@ class LazyResourceManager
 	 * Process the queues. */
 	static void processQueue()
 	in {
-		assert(Device.isDeviceThread());
+		assert(System.isSystemThread());
 	}
 	body
 	{	synchronized(queue_mutex)

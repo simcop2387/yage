@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -11,7 +11,7 @@ public import derelict.sdl.sdl;
 import std.stdio;
 import std.utf;
 import yage.core.vector;
-import yage.system.device;
+import yage.system.system;
 import yage.gui.surface;
 
 
@@ -129,10 +129,10 @@ class Input
 				//case SDL_ACTIVEEVENT:
 				//case SDL_VIDEOEXPOSE:
 			case SDL_VIDEORESIZE:
-				Device.resizeWindow(event.resize.w, event.resize.h);
+				System.resizeWindow(event.resize.w, event.resize.h);
 				break;
 			case SDL_QUIT:
-				Device.abort("Yage aborted by window close");
+				System.abort("Yage aborted by window close");
 				break;
 			default:
 				break;
@@ -146,7 +146,7 @@ class Input
 	static Surface getSurface(){
 		if(surfaceLock) 
 			return surfaceLock;
-		return Device.getSurface().findSurface(cast(float)mousex, cast(float)mousey);
+		return System.getSurface().findSurface(cast(float)mousex, cast(float)mousey);
 	}
 	//Releases the locked surface, now the appropriate surface will recieve events rather than the locked
 	void unlock(){

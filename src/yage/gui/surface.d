@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:	   Joe Pusderis (deformative0@gmail.com), Eric Poggel
  * License:	   <a href="lgpl.txt">LGPL</a> 
  */
@@ -15,7 +15,7 @@ import derelict.opengl.glu;
 import derelict.opengl.extension.ext.blend_color; // opengl 1.2
 import yage.core.all;
 import yage.core.matrix;
-import yage.system.device;
+import yage.system.system;
 import yage.system.constant;
 import yage.system.input;
 import yage.system.probe;
@@ -120,8 +120,8 @@ class Surface : Tree!(Surface)
 	float height(){	return bottomRight.y - topLeft.y; }	/// ditto
 	
 	/// Get dimensions of this Surface's parent in pixels
-	float parentWidth() { return parent ? parent.width()  : Device.getWidth(); }
-	float parentHeight(){ return parent ? parent.height() : Device.getHeight(); }	/// Ditto	
+	float parentWidth() { return parent ? parent.width()  : System.getWidth(); }
+	float parentHeight(){ return parent ? parent.height() : System.getHeight(); }	/// Ditto	
 
 	/**
 	 * Recalculate all properties of this Surface based on its style.
@@ -299,10 +299,10 @@ class Surface : Tree!(Surface)
 		// Setup the viewport in orthogonal mode,
 		// with dimensions 0..width, 0..height
 		// with 0,0 being at the top left.
-		glViewport(0, 0, cast(int)Device.size.x, cast(int)Device.size.y);
+		glViewport(0, 0, cast(int)System.size.x, cast(int)System.size.y);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, Device.size.x, Device.size.y, 0, -1, 1);
+		glOrtho(0, System.size.x, System.size.y, 0, -1, 1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		

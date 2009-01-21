@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -11,7 +11,7 @@ import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.system.constant;
-import yage.system.device;
+import yage.system.system;
 import yage.system.log;
 import yage.core.exceptions;
 import yage.resource.manager;

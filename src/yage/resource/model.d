@@ -1,5 +1,5 @@
  /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -28,7 +28,7 @@ import yage.resource.resource;
 import yage.resource.vertexbuffer;
 import yage.system.log;
 import yage.system.probe;
-import yage.system.device;
+import yage.system.system;
 import yage.resource.ms3dloader;
 import yage.resource.objloader;
 import yage.resource.lazyresource;
@@ -264,7 +264,7 @@ class Model : Resource
 	 * This can only be called from the rendering thread. */
 	void bind()
 	in {
-		assert(Device.isDeviceThread());
+		assert(System.isSystemThread());
 	}
 	body
 	{	foreach (name, attrib; attributes)

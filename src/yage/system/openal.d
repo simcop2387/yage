@@ -1,7 +1,7 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
- * Authors:	Eric Poggel
- * License:	<a href="lgpl.txt">LGPL</a>
+ * Copyright:  (c) 2005-2009 Eric Poggel
+ * Authors:	   Eric Poggel
+ * License:	   <a href="lgpl.txt">LGPL</a>
  *
  * This module contains OpenAL wrapping classes that are used internally by the engine.
  * Ideally, few if any other modules should include derelict._openal and use its functions directly.
@@ -27,7 +27,7 @@ import yage.core.repeater;
 import yage.core.vector;
 import yage.scene.camera;
 import yage.scene.sound;
-import yage.system.device;
+import yage.system.system;
 import yage.system.log;
 import yage.resource.sound;
 
@@ -333,7 +333,7 @@ class OpenALContext : IFinalizable
 	{	mixin(e!());
 		// Get a device
 		device = OpenAL.openDevice(null);		
-		Log.write("Using OpenAL Device '%s'.", .toString(OpenAL.getString(device, ALC_DEVICE_SPECIFIER)));
+		Log.write("Using OpenAL System '%s'.", .toString(OpenAL.getString(device, ALC_DEVICE_SPECIFIER)));
 	
 		// Get a context
 		context = OpenAL.createContext(device, null);
@@ -368,7 +368,7 @@ class OpenALContext : IFinalizable
 	
 	/**
 	 * Add the getInstance() method to get an instance of this singleton.
-	 * On the first requiest (which happens automatically in Device.init(), the constructor is called. */
+	 * On the first requiest (which happens automatically in System.init(), the constructor is called. */
 	mixin Singleton!(typeof(this));
 	
 	
@@ -392,9 +392,9 @@ class OpenALContext : IFinalizable
 						source.finalize();
 				sources = null;
 			
-				alcMakeContextCurrent(null);
-				alcDestroyContext(context);			
-				alcCloseDevice(device);
+				OpenAL.makeContextCurrent(null);
+				OpenAL.destroyContext(context);			
+				OpenAL.closeDevice(device);
 				context = device = null;
 			}
 		}
@@ -553,7 +553,8 @@ class OpenAL
 		try {
 			static if (is (R==void))
 			{	T(args);
-				checkError();
+				if (T.stringof[0..3] != "alc")
+					checkError();
 			}
 			else
 			{	R result = T(args);
@@ -579,27 +580,28 @@ class OpenAL
 	
 	/**
 	 * Wrappers for each OpenAL function (unfinished). */
-	alias execute!(alListenerfv) listenerfv;
-	alias execute!(alSourceUnqueueBuffers) sourceUnqueueBuffers;
-	alias execute!(alSourceQueueBuffers) sourceQueueBuffers; /// ditto
+	alias execute!(alBufferData) bufferData; /// ditto	
+	alias execute!(alDeleteBuffers) deleteBuffers; /// ditto
+	alias execute!(alDeleteSources) deleteSources; /// ditto
+	alias execute!(alGenBuffers) genBuffers; /// ditto
+	alias execute!(alGenSources) genSources; /// ditto
+	alias execute!(alGetSourcef) getSourcef; /// ditto
+	alias execute!(alGetSourcei) getSourcei; /// ditto
+	alias execute!(alIsBuffer) isBuffer; /// ditto
+	alias execute!(alListenerfv) listenerfv; /// ditto
 	alias execute!(alSourcef) sourcef; /// ditto
 	alias execute!(alSourcefv) sourcefv; /// ditto
 	alias execute!(alSourcePlay) sourcePlay; /// ditto
 	alias execute!(alSourcePause) sourcePause; /// ditto
+	alias execute!(alSourceQueueBuffers) sourceQueueBuffers; /// ditto
 	alias execute!(alSourceStop) sourceStop; /// ditto
-	alias execute!(alGenSources) genSources; /// ditto
-	alias execute!(alDeleteSources) deleteSources; /// ditto
-	alias execute!(alGetSourcef) getSourcef; /// ditto
-	alias execute!(alGetSourcei) getSourcei; /// ditto
-	alias execute!(alIsBuffer) isBuffer; /// ditto
-	alias execute!(alGenBuffers) genBuffers; /// ditto
-	alias execute!(alDeleteBuffers) deleteBuffers; /// ditto
-	alias execute!(alBufferData) bufferData; /// ditto	
-
+	alias execute!(alSourceUnqueueBuffers) sourceUnqueueBuffers; /// ditto
+	
+	alias execute!(alcCloseDevice) closeDevice; /// ditto
+	alias execute!(alcCreateContext) createContext; /// ditto
+	alias execute!(alcDestroyContext) destroyContext; /// ditto
 	alias execute!(alcGetIntegerv) getIntegerv; /// ditto
 	alias execute!(alcGetString) getString; /// ditto
-	alias execute!(alcOpenDevice) openDevice; /// ditto	
-	alias execute!(alcCreateContext) createContext; /// ditto
 	alias execute!(alcMakeContextCurrent) makeContextCurrent; /// ditto
-
+	alias execute!(alcOpenDevice) openDevice; /// ditto
 }

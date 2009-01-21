@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -13,7 +13,7 @@ import yage.core.interfaces;
 import yage.core.parse;
 import yage.resource.resource;
 import yage.resource.lazyresource;
-import yage.system.device;
+import yage.system.system;
 import yage.system.probe;
 
 /**
@@ -43,7 +43,7 @@ struct VertexBuffer /*: Resource, IExternalResource*/
 		this.data = data;
 		
 		if (Probe.openGL(Probe.OpenGL.VBO))
-		{	if (!Device.isDeviceThread())
+		{	if (!System.isSystemThread())
 			{	LazyResourceManager.addToQueue(closure(&this.create, type, data, just_create));
 			} else
 			{	if (!id)
@@ -68,7 +68,7 @@ struct VertexBuffer /*: Resource, IExternalResource*/
 	 * Create can be called again if necessary. */
 	void finalize()
 	{	if (id)
-			if (!Device.isDeviceThread())
+			if (!System.isSystemThread())
 			{	LazyResourceManager.addToQueue(closure(&this.finalize));			
 			} else
 			{	glDeleteBuffersARB(1, &id);

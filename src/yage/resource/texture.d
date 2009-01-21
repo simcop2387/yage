@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -26,7 +26,7 @@ import yage.resource.image;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.lazyresource;
-import yage.system.device;
+import yage.system.system;
 import yage.system.constant;
 import yage.system.probe;
 import yage.system.log;
@@ -263,7 +263,7 @@ class GPUTexture : Resource, IExternalResource
 		}
 			
 		// OpenGl functions can only be called from the rendering thread.
-		if (!Device.isDeviceThread())
+		if (!System.isSystemThread())
 		{	LazyResourceManager.addToQueue(closure(&this.create, image, compress, mipmap, source_name));
 			return;
 		}
@@ -313,7 +313,7 @@ class GPUTexture : Resource, IExternalResource
 				uint new_height= image.getHeight();
 	
 				// Ensure power of two sized if required
-				//if (!Device.getSupport(DEVICE_NON_2_TEXTURE))
+				//if (!System.getSupport(DEVICE_NON_2_TEXTURE))
 				if (true)
 				{	if (log2(new_height) != floor(log2(new_height)))
 						new_height = nextPow2(new_height);
@@ -345,7 +345,7 @@ class GPUTexture : Resource, IExternalResource
 	override void finalize()
 	{	if (id)
 		{	// OpenGl functions can only be called from the rendering thread.
-			if (!Device.isDeviceThread())
+			if (!System.isSystemThread())
 			{	LazyResourceManager.addToQueue(closure(&this.finalize));
 			} else
 			{	//Log.write("Destroying texture %s", source);
@@ -394,11 +394,11 @@ class GPUTexture : Resource, IExternalResource
 	/// Copy the the contents of the framebuffer into this Texture.
 	void loadFrameBuffer(uint width, uint height){
 		// A special value of zero to stretch to the window size.
-		if (width ==0) width  = Device.getWidth();
-		if (height==0) height = Device.getHeight();
+		if (width ==0) width  = System.getWidth();
+		if (height==0) height = System.getHeight();
 
 		// Needs to be tested.
-		//if (!Device.getSupport(DEVICE_NON_2_TEXTURE))
+		//if (!System.getSupport(DEVICE_NON_2_TEXTURE))
 		if (true)
 		{	this.width = nextPow2(width);
 			this.height =nextPow2(height);

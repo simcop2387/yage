@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -87,7 +87,7 @@ class Font : Resource
 	this(char[] filename)
 	{
 		// Initialize Freetype library if not initialized
-		// TODO: Move this into Device?
+		// TODO: Move this into System?
 		if (!freetype_initialized)
 			if (FT_Init_FreeType(&library))
 				throw new ResourceManagerException("Freetype2 Failed to load.");

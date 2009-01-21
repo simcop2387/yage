@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -17,7 +17,7 @@ import yage.core.exceptions;
 import yage.core.interfaces;
 
 
-// TODO: Have Device use this code.
+// TODO: Have System use this code.
 // Note that SDL supports only one window at a time.
 // Should this extend Repeater and put all rendering in its own thread?
 class Window : IRenderTarget

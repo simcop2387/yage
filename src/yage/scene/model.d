@@ -1,5 +1,5 @@
 /**
- * Copyright:  (c) 2005-2008 Eric Poggel
+ * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  */
@@ -8,7 +8,7 @@ module yage.scene.model;
 
 import yage.core.timer;
 import yage.core.vector;
-import yage.system.device;
+import yage.system.system;
 import yage.system.log;
 import yage.resource.manager;
 import yage.resource.model;

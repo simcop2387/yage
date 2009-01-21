@@ -21,7 +21,7 @@ import derelict.opengl.glext;
 // program entry point.
 int main()
 {
-	Device.init(800, 600, 32, false, 1);
+	System.init(800, 600, 32, false, 1);
 	
 	// Paths
 	ResourceManager.addPath(["../res", "../res2"]);
@@ -49,13 +49,13 @@ int main()
 	auto view = new Surface();
 	view.style.backgroundMaterial = camera.getTexture();
 	view.style.set("background-color: red; font-family: url('gui/font/Vera.ttf')");	
-	Device.setSurface(view);
+	System.setSurface(view);
 	
 	// Events for main surface.
 	bool grabbed = true;
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
-			Device.abort("Yage aborted by esc key press.");
+			System.abort("Yage aborted by esc key press.");
 		if (key == SDLK_c)
 			new GPUTexture("../res/fx/flare1.jpg"); // This proves that the LazyResource queue doesn't work yet!
 	};
@@ -98,7 +98,7 @@ int main()
 	// Rendering / Input Loop
 	int fps = 0;
 	Timer frame = new Timer();
-	while(!Device.isAborted())
+	while(!System.isAborted())
 	{		
 		Input.processInput();
 		scene.swapTransformRead(); // swap scene buffer so the latest version can be rendered.
@@ -116,6 +116,6 @@ int main()
 	
 	// Free resources that can't be freed by the garbage collector.
 	scene.finalize();
-	Device.deInit();
+	System.deInit();
 	return 0;
 }
