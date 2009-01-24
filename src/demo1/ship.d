@@ -1,13 +1,14 @@
 /**
  * Copyright:  Public Domain
  * Authors:    Eric Poggel
- * Warranty: none
+ * Warranty:   none
  *
  * This module is not technically part of the engine, but merely uses it.
  */
 
 module demo1.ship;
 
+import tango.math.Math;
 import std.stdio;
 import yage.all;
 import demo1.gameobj;
@@ -85,7 +86,7 @@ class Ship : GameObject
 			void fade(Node self)
 			{	SpriteNode node = cast(SpriteNode)self;
 				node.setColor(Color(1, 1, 1, node.getLifetime()/5));
-				float scale = std.math.sqrt(20.0f)-std.math.sqrt(node.getLifetime()*4) + .4;
+				float scale = tango.math.Math.sqrt(20.0f)-tango.math.Math.sqrt(node.getLifetime()*4) + .4;
 				node.setSize(scale);
 			}
 			puff.onUpdate(&fade);

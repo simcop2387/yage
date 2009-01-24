@@ -6,7 +6,7 @@
 
 module yage.core.matrix;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import std.random;
 import yage.core.vector;
@@ -593,7 +593,7 @@ struct Matrix
 	Vec3f toEuler()
 	{	float y = asin(v[2]); // Y axis-angle
 		float c = cos(y);
-		if (fabs(c) > 0.00005)  // If Gimball Lock?
+		if (abs(c) > 0.00005)  // If Gimball Lock?
 			return Vec3f(-atan2(-v[6]/c, v[10]/c), -y, -atan2(-v[1]/c, v[0]/c));
 		return Vec3f(0, -y, -atan2(v[4], v[5]));
 	}

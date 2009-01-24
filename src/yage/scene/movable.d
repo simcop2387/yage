@@ -7,7 +7,7 @@
 module yage.scene.movable;
 
 import std.stdio;
-import std.math;
+import tango.math.Math;
 import yage.core.matrix;
 import yage.core.vector;
 import yage.core.misc;

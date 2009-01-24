@@ -6,7 +6,7 @@
 
 module yage.scene.visible;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import std.traits;
 import yage.core.all;

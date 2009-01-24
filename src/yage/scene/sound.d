@@ -7,7 +7,7 @@
 module yage.scene.sound;
 
 import std.c.math;
-import std.math;
+import tango.math.Math;
 import std.string;
 import std.stdio;
 import yage.core.exceptions;

@@ -8,10 +8,10 @@
  */
 module yage.system.openal;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import std.string;
-import std.thread;
+import tango.core.Thread;
 import std.traits;
 
 import derelict.openal.al;

@@ -6,7 +6,7 @@
 
 module yage.scene.camera;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import derelict.opengl.gl;
 import derelict.opengl.glu;

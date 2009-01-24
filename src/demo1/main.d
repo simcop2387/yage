@@ -8,7 +8,7 @@
  * and also acts a general, incomplete test for regressions.
  */
 
-module demo2.main;
+module demo1.main;
 
 import std.c.time;
 import std.string;

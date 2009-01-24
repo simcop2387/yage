@@ -7,7 +7,7 @@
  */
 module yage.core.math;
 
-import std.math;
+import tango.math.Math;
 import std.random;
 import std.intrinsic;
 
@@ -16,6 +16,7 @@ public const float _180_PI = 57.2957795130823; // 180 / pi
 
 
 /**
+ * TODO: Can this be replaced with the faster Tango.math.IEEE.feqrel?
  * Check if two floats are almost equal, that is, they differ no more than
  * fudge from one another, relatively speaking.  If fudge is 0.0001 (the default)
  * Then 10000 and 10001 will compare equally and so will 1.000 and 1.0001; but if
@@ -23,9 +24,9 @@ public const float _180_PI = 57.2957795130823; // 180 / pi
  * numbers with an absolute difference less than or equal to fudge will always
  * compare equal.  This allows 0.00001 and 0 to be almost equal. */
 bool almostEqual(float a, float b, float fudge=0.0001)
-{	if (fabs(a-b) <= fudge)
+{	if (abs(a-b) <= fudge)
 		return true;
-	return fabs((a-b)/b) <= fudge;
+	return abs((a-b)/b) <= fudge;
 }
 unittest
 {	assert(almostEqual(0, 0));
@@ -69,32 +70,6 @@ unittest
 float map(float v, float oldmin, float oldmax, float newmin, float newmax)
 {	return ((newmax-newmin)*v/(oldmax-oldmin))+newmin;
 }
-
-
-/// Return the maximum of all arguments 
-T[0] max(T...)(T a)
-{	T[0] max = a[0];
-	foreach(T x; a)
-		if (x>max)
-			max = x;
-	return max;
-}
-unittest
-{	assert(max(3, 4, -1) == 4);
-}
-
-/// Return the minimum of all arguments.
-T[0] min(T...)(T a)
-{	T[0] min = a[0];
-	foreach (T x; a)
-		if (x<min)
-			min = x;
-	return min;
-}
-unittest
-{	assert(min(3, 4, -1) == -1);
-}
-
 
 /// Generate a random number between min and max.
 float random(float min, float max)

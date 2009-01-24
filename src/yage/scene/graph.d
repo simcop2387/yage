@@ -7,7 +7,7 @@
 module yage.scene.graph;
 
 import std.stdio;
-import std.math;
+import tango.math.Math;
 import yage.core.vector;
 import yage.core.misc;
 import yage.resource.manager;

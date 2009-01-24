@@ -9,7 +9,7 @@ module yage.system.system;
 import std.gc;
 import std.stdio;
 import std.string;
-import std.thread;
+import tango.core.Thread;
 import derelict.openal.al;
 import derelict.opengl.gl;
 import derelict.opengl.glu;

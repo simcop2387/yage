@@ -9,7 +9,7 @@
 module yage.core.repeater;
 
 import std.stdio;
-import std.thread;
+import tango.core.Thread;
 import std.c.time;
 import yage.core.closure;
 import yage.core.interfaces;
@@ -34,11 +34,11 @@ class Repeater : Timer, IFinalizable
 	{
 		Repeater outer;	// reference to outer class
 		
-		void start()
-		{	super.start();	
+		this()
+		{	super(&run);
 		}
 		
-		override int run()
+		void run()
 		{	Timer a = new Timer(); // time it takes to call func
 			while (active)
 			{	a.reset();
@@ -69,7 +69,6 @@ class Repeater : Timer, IFinalizable
 				// Sleep for 1/frequency - (the time it took to make the calls).				
 				usleep(cast(uint)(1_000_000/frequency - a.get()));
 			}
-			return 0;
 		}
 	}	
 	protected HelperThread thread;
@@ -95,7 +94,7 @@ class Repeater : Timer, IFinalizable
 	override void finalize()
 	{	active = false;
 		if (thread)
-		{	thread.wait();
+		{	thread.join();
 			thread = null;
 		}
 	}

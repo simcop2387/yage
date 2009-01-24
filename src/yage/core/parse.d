@@ -8,7 +8,7 @@
 
 module yage.core.parse;
 
-import std.math;
+import tango.math.Math;
 import std.string;
 import std.stdio;
 

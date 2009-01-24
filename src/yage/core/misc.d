@@ -10,7 +10,7 @@
 module yage.core.misc;
 
 import std.file;
-import std.math;
+import tango.math.Math;
 import std.path;
 import std.random;
 import std.string;

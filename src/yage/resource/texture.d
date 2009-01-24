@@ -8,7 +8,7 @@ module yage.resource.texture;
 
 
 import std.string;
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import derelict.sdl.sdl;
 import derelict.sdl.image;

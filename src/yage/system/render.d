@@ -6,6 +6,8 @@
 
 module yage.system.render;
 
+import tango.math.Math;
+
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 

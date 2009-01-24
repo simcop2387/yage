@@ -7,7 +7,8 @@
 module yage.gui.surface;
 
 import std.stdio;
-import std.math;
+import tango.math.IEEE;
+import tango.math.Math;
 import derelict.opengl.gl;
 import derelict.sdl.sdl;
 import derelict.opengl.glext;
@@ -143,51 +144,51 @@ class Surface : Tree!(Surface)
 		Vec2f offset_by = offset;
 		
 		// Ensure at least 4 of the 6 dimensions are set.
-		if (isnan(left))
-		{	if (isnan(right))
+		if (isNaN(left))
+		{	if (isNaN(right))
 				left = 0.0f;
-			if (isnan(width))
+			if (isNaN(width))
 				width = parent_width;			
 		}	
-		if (isnan(top))
-		{	if (isnan(bottom))
+		if (isNaN(top))
+		{	if (isNaN(bottom))
 				top = 0.0f;
-			if (isnan(height))
+			if (isNaN(height))
 				height = parent_height;				
 		}	
 
 		// If left side is anchored
-		if (!isnan(left))
+		if (!isNaN(left))
 		{	topLeft.x = left;
-			if (!isnan(width)) // if width
+			if (!isNaN(width)) // if width
 				bottomRight.x = left + width;
-			else if (isnan(right)) // if not width and not right
+			else if (isNaN(right)) // if not width and not right
 			{} // TODO: Figure out what default size should be.  size to contents?
 		}
 		
 		// If right side is anchored
-		if (!isnan(right))
+		if (!isNaN(right))
 		{	bottomRight.x = parent_width - right;
-			if (isnan(left)) // if not left
-			{	if (!isnan(width)) // if width
+			if (isNaN(left)) // if not left
+			{	if (!isNaN(width)) // if width
 					topLeft.x = parent_width - right - width;
 				else
 				{} // TODO: Figure out what default size should be.  size to contents?
 		}	}
 		
 		// If top side is anchored
-		if (!isnan(top))
+		if (!isNaN(top))
 		{	topLeft.y = top;
-			if (!isnan(height)) // if Height
+			if (!isNaN(height)) // if Height
 				bottomRight.y =top + height;
-			else if (isnan(bottom)) // if not Height and not bottom
+			else if (isNaN(bottom)) // if not Height and not bottom
 			{} // TODO: Figure out what default size should be.  size to contents?
 		}
 		// If bottom side is anchored
-		if (!isnan(bottom))
+		if (!isNaN(bottom))
 		{	bottomRight.y = parent_height - bottom;
-			if (isnan(top)) // if not top
-			{	if (!isnan(height)) // if Height
+			if (isNaN(top)) // if not top
+			{	if (!isNaN(height)) // if Height
 					topLeft.y = parent_height - bottom - height;
 				else
 				{} // TODO: Figure out what default size should be.  size to contents?
@@ -390,9 +391,9 @@ class Surface : Tree!(Surface)
 	void move(Vec2f amount, bool constrain=false)
 	{	
 		// Ensure top and left are set in the stle if bottom and right are not.  This is required for moving.
-		if (isnan(style.left) && isnan(style.right))
+		if (isNaN(style.left) && isNaN(style.right))
 			style.left = 0.0f;
-		if (isnan(style.top) && isnan(style.bottom))
+		if (isNaN(style.top) && isNaN(style.bottom))
 			style.top = 0.0f;
 		
 		// Calculate real values from percents
@@ -402,13 +403,13 @@ class Surface : Tree!(Surface)
 		float percent_height = 100/parent_height;
 		
 		// Update dimension styles with new positions.
-		if (!isnan(style.left))
+		if (!isNaN(style.left))
 			style.left += amount.x * (style.leftUnit==Style.PERCENT ? percent_width : 1.0f);
-		if (!isnan(style.right))
+		if (!isNaN(style.right))
 			style.right -= amount.x * (style.rightUnit==Style.PERCENT ? percent_width : 1.0f);
-		if (!isnan(style.top))
+		if (!isNaN(style.top))
 			style.top += amount.y * (style.topUnit==Style.PERCENT ? percent_height : 1.0f);
-		if (!isnan(style.bottom))
+		if (!isNaN(style.bottom))
 			style.bottom -= amount.y * (style.bottomUnit==Style.PERCENT ? percent_height : 1.0f);
 		
 		// if constrain dragging to parent dimensions.
@@ -417,25 +418,25 @@ class Surface : Tree!(Surface)
 			// The constraints require the current calculations.
 			update();
 			
-			if (!isnan(style.left))
+			if (!isNaN(style.left))
 			{	if (style.left < 0)
 					style.left = 0;			
 				if (right() > parent_width)
 					left(parent_width - width());
 			}
-			if (!isnan(style.right))
+			if (!isNaN(style.right))
 			{	if (style.right < 0)
 					style.right = 0;
 				if (left() < 0)
 					right(parent_width - width());
 			}
-			if (!isnan(style.top))
+			if (!isNaN(style.top))
 			{	if (style.top < 0)
 					style.top = 0;			
 				if (bottom() > parent_height)
 					top(parent_height - height());
 			}	
-			if (!isnan(style.bottom))
+			if (!isNaN(style.bottom))
 			{	if (style.bottom < 0)
 					style.bottom = 0;
 				if (top() < 0)

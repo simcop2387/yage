@@ -231,7 +231,9 @@ abstract class ResourceManager
 
 	/// Print a list of all resources loaded
 	static void print()
-	{	foreach (Model modl; models)
+	{	
+		/*
+		foreach (Model modl; models)
 			writefln("%.*s", modl.getSource());
 		foreach (Material matl; materials)
 			writefln("%.*s", matl.getSource());
@@ -240,7 +242,7 @@ abstract class ResourceManager
 
 		foreach (Shader shdr; shaders)
 			writefln("%.*s", shdr.getSource());
-		/*
+		
 		foreach (Texture tex1[2][2][2][char[]]; textures)
 			foreach (Texture tex2[2][2][char[]]; tex1)
 				foreach (Texture tex3[2][char[]]; tex2)

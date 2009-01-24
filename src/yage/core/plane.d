@@ -6,7 +6,7 @@
 
 module yage.core.plane;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import yage.core.vector;
 import yage.core.parse;

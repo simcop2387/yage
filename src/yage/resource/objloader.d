@@ -11,7 +11,7 @@ import std.file;
 import std.path;
 import std.stdio;
 import std.string;
-import std.conv;
+import tango.util.Convert;
 
 import yage.core.types;
 import yage.core.matrix;
@@ -89,7 +89,7 @@ MTL[] handleMTL(char[] source){
 					//mats[$-1].diffuse[3] = toFloat(words[1]);  //FIX!
 					break;
 				case "Ns":
-					mats[$-1].shininess = toFloat(words[1]);
+					mats[$-1].shininess = to!(float)(words[1]);
 					break;
 				case "map_Ka":
 					mats[$-1].texture = words[1];
@@ -121,7 +121,7 @@ struct group{
 			point p;
 			foreach(int index, inout part; split(word, "/")){
 				if(part.length != 0)
-					p.array[index] = std.conv.toInt(part);
+					p.array[index] = to!(int)(part);
 			}
 			
 			points[word] = p;
@@ -267,14 +267,14 @@ struct OBJ{
 Vec3f fromWords3(char[][] words){
 	Vec3f vertex;
 	for(int i; i < 3; i++)
-		vertex[i] = std.conv.toFloat(words[i+1]);
+		vertex[i] = to!(float)(words[i+1]);
 	return vertex;
 }
 	
 Vec2f fromWords2(char[][] words){
 	Vec2f vertex;
 	for(int i; i < 2; i++)
-		vertex[i] = std.conv.toFloat(words[i+1]);
+		vertex[i] = to!(float)(words[i+1]);
 	return vertex;
 }
 

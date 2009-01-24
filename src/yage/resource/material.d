@@ -6,7 +6,7 @@
 
 module yage.resource.material;
 
-import std.conv;
+import tango.util.Convert;
 import std.file;
 import std.path;
 import std.stream;
@@ -78,7 +78,7 @@ class Material : Resource
 
 		// Load material attributes
 		try
-		{	max_lights = atoi(xml.getAttribute("maxlights"));
+		{	max_lights = to!(int)(xml.getAttribute("maxlights"));
 		}catch
 		{	throw new ResourceManagerException("Could not parse material attributes.");
 		}
@@ -108,7 +108,7 @@ class Material : Resource
 				if (xml_layer.hasAttribute("specularity"))
 					layer.specularity = atoi(xml_layer.getAttribute("specularity"));
 				if (layer.specularity<0 || layer.specularity>128)
-					throw new ResourceManagerException("Could not parse layer '" ~ .toString(i) ~
+					throw new ResourceManagerException("Could not parse layer '", i,
 						"' attributes.  Specularity must be between 0 and 128.\n");
 
 				// Blend
@@ -146,8 +146,7 @@ class Material : Resource
 					layer.width = atoi(xml_layer.getAttribute("width"));
 
 			}catch (Exception e)
-			{	throw new ResourceManagerException("Could not parse layer '" ~ .toString(i) ~"' attributes.\n"
-					~ e.toString());
+			{	throw new ResourceManagerException("Could not parse layer '", i, "' attributes.\n", e);
 			}
 
 			// Loop through each xml texture and shader of the layer
@@ -201,7 +200,7 @@ class Material : Resource
 					}
 					catch (Exception e)
 					{	throw new ResourceManagerException(
-							"Could not parse texture '" ~ .toString(t) ~"' in layer '" ~ .toString(i) ~"'.\n"
+							"Could not parse texture '", t, "' in layer '", i, "'.\n"
 							~ e.toString());
 					}
 
@@ -219,13 +218,13 @@ class Material : Resource
 						str_type= tolower(xmap.getAttribute("type"));
 					}catch
 					{	throw new ResourceManagerException(
-							"Could not parse shader '" ~ .toString(s) ~"' in layer '" ~ .toString(i) ~"'.\n");
+							"Could not parse shader '", s, "' in layer '", i, "'.\n");
 					}
 					// Convert type from string to bool, and load
 					if (str_type=="vertex") type = 0;
 					else if (str_type=="fragment") type = 1;
-					else throw new ResourceManagerException("Could not parse shader type '" ~ str_type ~ "' in shader '"
-									~ .toString(s) ~ "'.  Must be 'vertex' or 'fragment'.");
+					else throw new ResourceManagerException("Could not parse shader type '" ~ str_type ~ "' in shader '",
+									s, "'.  Must be 'vertex' or 'fragment'.");
 					layer.addShader(ResourceManager.shader(ResourceManager.resolvePath(source, path), type));
 				}
 			}
@@ -235,8 +234,8 @@ class Material : Resource
 			if (max_textures==0)
 				max_textures = Probe.openGL(Probe.OpenGL.MAX_TEXTURE_UNITS);
 			if (t>max_textures)
-			{	Log.write("WARNING:  layer '", .toString(i) ,"' has ", .toString(t),
-					" textures, but this hardware only supports ", .toString(max_textures), ".");
+			{	Log.write("WARNING:  layer '", i ,"' has ", t,
+					" textures, but this hardware only supports ", max_textures, ".");
 			}
 
 			// Link Shaders

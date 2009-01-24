@@ -1,16 +1,16 @@
 /**
- * Copyright:  (c) 2005-2009 Eric Poggel
+ * Copyright:  Public Domain
  * Authors:    Eric Poggel
- * License:    <a href="lgpl.txt">LGPL</a>
+ * Warranty:   none
  * 
- * This probably doesn't need to be a part of yage itself.
+ * This module is not part of the engine, but merely uses it.
  */
 
 module demo1.misc;
 
 // Utility functions to generate fun things.
 
-import std.math;
+import tango.math.Math;
 import std.random;
 import yage.resource.manager;
 import yage.system.input;

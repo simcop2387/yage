@@ -6,7 +6,7 @@
 
 module yage.scene.terrain;
 
-import std.conv;
+import tango.util.Convert;
 import std.file;
 import std.stdio;
 import std.string;

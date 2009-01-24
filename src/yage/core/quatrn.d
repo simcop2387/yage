@@ -6,7 +6,7 @@
 
 module yage.core.quatrn;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import yage.core.parse;
 import yage.core.vector;
@@ -343,7 +343,7 @@ struct Quatrn
 	Vec3f toAxis()
 	{	double angle = acos(w)*2;
 		double sin_a = sqrt(1.0 - w*w);
-		if (fabs(sin_a) < 0.0005)	// arbitrary small number
+		if (abs(sin_a) < 0.0005)	// arbitrary small number
 			sin_a = 1;
 		Vec3f axis;
 		axis.x = x/sin_a;

@@ -12,6 +12,7 @@ import yage.core.types;
 import yage.core.parse;
 import yage.core.exceptions;
 import std.intrinsic;
+import tango.math.Math;
 
 /**
  * A struct used to represent a color.

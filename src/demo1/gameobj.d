@@ -1,14 +1,14 @@
 /**
  * Copyright:  Public Domain
  * Authors:    Eric Poggel
- * Warranty: none
+ * Warranty:   none
  *
  * This module is not technically part of the engine, but merely uses it.
  */
 
 module demo1.gameobj;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import yage.core.timer;
 import yage.core.color;

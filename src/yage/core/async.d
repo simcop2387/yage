@@ -9,7 +9,7 @@ import std.c.time : usleep;
 import std.bind : ParameterTypeTuple;
 import std.stdarg;
 import std.stdio;
-import std.thread;
+import tango.core.Thread;
 import yage.core.parse;
 
 /**
@@ -102,9 +102,10 @@ private class Timeout(T) : Thread
 		static if (func_args.length)
 			foreach(int i, arg; func_args) // straight assignment fails in dmd.
 				this.func_args[i] = func_args[i];
+		super(&run);
 	}
 	
-	override int run()
+	void run()
 	{	do {
 			usleep(cast(uint)(1_000_000 * delay));
 			if (running)

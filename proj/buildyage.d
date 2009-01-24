@@ -246,6 +246,7 @@ class Build
 		version (linux) char[] env="linux";
 		char[] compiler = gdc ? "gdc" : "dmd";
 		char[] offlag = gdc ? "o" : "of";
+		char[] flags  = gdc ? "" : "-O -inline -release";
 		
 		scope(exit)
 			clean2();
@@ -260,7 +261,7 @@ class Build
 		
 		// Create builder
 		chdir(cur_path);
-		Util.exec("%s build.d -%sbuild", compiler, offlag);
+		Util.exec("%s %s build.d -%sbuild", compiler, flags, offlag);
 		
 		// Convert everything in imp_path into a lib in lib_path
 		foreach(path; imp_path)
@@ -468,7 +469,7 @@ int main(char[][] args)
 		writefln("   -debug     Include debugging symbols.");
 		writefln("   -gdc       Compile using gdc instead of dmd.");
 		writefln("   -profile   Compile in profiling code.");
-		writefln("   -release   Optimize, inline expand functions, and remove unit tests and asserts.");
+		writefln("   -release   Optimize, inline expand functions, and remove unit tests/asserts.");
 		writefln("   -run       Run when finished.");
 		writefln("   -silent    Hide this helpful message.");
 		writefln("   -verbose   Print all commands as they're being executed.");

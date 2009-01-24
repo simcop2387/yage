@@ -6,7 +6,7 @@
 
 module yage.resource.layer;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 import std.string;
 import derelict.opengl.gl;

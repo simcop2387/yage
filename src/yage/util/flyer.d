@@ -6,6 +6,8 @@
 
 module yage.util.flyer;
 
+import tango.math.Math;
+
 import yage.core.all;
 import yage.scene.node;
 import yage.scene.camera;

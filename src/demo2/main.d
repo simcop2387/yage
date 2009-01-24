@@ -7,7 +7,7 @@
  * This is minimal code to launch yage and draw something.
  */
 
-module min.main;
+module demo2.main;
 
 import std.string;
 import std.stdio;

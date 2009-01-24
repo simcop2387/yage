@@ -6,7 +6,7 @@
 
 module yage.scene.light;
 
-import std.math;
+import tango.math.Math;
 import std.stdio;
 
 import yage.core.all;
@@ -134,7 +134,7 @@ class LightNode : MovableNode
 
 	/// Get the radius of the light.  This is not the same as the Node's radius, see below.
 	float getLightRadius()
-	{	return std.math.sqrt(1/quad_attenuation);
+	{	return tango.math.Math.sqrt(1/quad_attenuation);
 	}
 	/** Set the radius of the light.  Default value is 256.
 	 *  Quadratic attenuation is used, so the brightness of an object is Radius^2/distance^2,

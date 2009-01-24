@@ -8,7 +8,7 @@
 module yage.system.glcontext;
 
 
-import std.thread;
+import tango.core.Thread;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.exceptions;

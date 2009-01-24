@@ -9,7 +9,7 @@ module yage.gui.style;
 import std.regexp;
 import std.string;
 import std.stdio;
-import std.conv;
+import tango.util.Convert;
 import yage.core.color;
 import yage.core.vector;
 import yage.resource.font;
@@ -209,7 +209,7 @@ struct Style
 				value_unit = Style.PX;
 			char[] num = std.regexp.sub(string, "[^0-9]+", "", "g");
 			if (num.length) // val=="auto" leaves the value as float.nan
-				value = toFloat(num);
+				value = to!(float)(num);
 			else if (string != "auto") // entire string is already toLower'd
 				throw new CSSException("Could not parse CSS value: '%s'", string); // garbage!				
 		}
@@ -287,7 +287,7 @@ struct Style
 				case "height":		parseUnits(tokens[1], size.values[1..2], sizeUnits.values[1..2]); break;
 				case "size": 		parseUnits(tokens[1], size.values, sizeUnits.values); break;	
 				
-				case "zIndex":		zIndex = toInt(tokens[1]); break;
+				case "zIndex":		zIndex = to!(int)(tokens[1]); break;
 				case "visible":
 				case "visibility":	visible = (tokens[1] == "true" || tokens[1] == "visible"); break;
 				
