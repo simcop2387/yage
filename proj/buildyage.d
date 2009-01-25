@@ -261,7 +261,7 @@ class Build
 		
 		// Create builder
 		chdir(cur_path);
-		Util.exec("%s %s build.d -%sbuild", compiler, flags, offlag);
+		Util.exec("%s %s build.d -%sbuild%s", compiler, flags, offlag, bin_ext);
 		
 		// Convert everything in imp_path into a lib in lib_path
 		foreach(path; imp_path)
@@ -270,7 +270,7 @@ class Build
 			
 			chdir(mod_path);
 			if (!exists(lib_path~sep~lib_name))
-			{	Util.exec("\".."~sep~"proj"~sep~"build\" %s -lib -%s%s", path, offlag, lib_name);
+			{	Util.exec("\".."~sep~"proj"~sep~"build%s\" %s -lib -%s%s", bin_ext, path, offlag, lib_name);
 				std.file.rename(lib_name, lib_path~sep~lib_name); // move to lib folder
 			}
 			
