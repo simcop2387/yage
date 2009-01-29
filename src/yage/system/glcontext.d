@@ -38,6 +38,14 @@ struct GLState
 	ClearColor clearColor;
 }
 
+class OpenGL
+{
+	enum VertexBufferType
+	{   GL_ARRAY_BUFFER_ARB         = 0x8892,
+	    GL_ELEMENT_ARRAY_BUFFER_ARB = 0x8893
+	}	
+}
+
 /**
  * Wrapping all of OpenGL's functionality as I'm doing here would take 1000's of LoC.
  * I need to find a way to do this more quickly using templates.

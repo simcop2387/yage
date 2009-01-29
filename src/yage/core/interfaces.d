@@ -34,7 +34,7 @@ interface IFinalizable
 interface IExternalResource : IFinalizable
 {
 	/// Initializes the external part of the resource.  This function must support multiple calls.
-	void create();
+	void commit();
 	
 	/// Destroyes the external part of the resource.  This function must support multiple calls.
 	void finalize();

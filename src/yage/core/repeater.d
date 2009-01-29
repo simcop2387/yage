@@ -8,7 +8,6 @@
 
 module yage.core.repeater;
 
-import std.stdio;
 import tango.core.Thread;
 import std.c.time;
 import yage.core.closure;

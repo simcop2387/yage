@@ -26,6 +26,7 @@ import yage.core.quatrn;
 struct Vec(int S, T)
 {
 	alias Vec!(S, T) VST;
+	static const byte width = S;
 
 	/// Allow acessiong the vector as an array of values through field v, or via .x, .y, .z, etc. up to the number of components.
 	union
@@ -298,6 +299,8 @@ alias Vec!(4, float) Vec4f;		/// A four-component float Vec
  * This can be merged with the templated version above when D fixed the forward template declaration bugs. */
 struct Vec3f
 {
+	static const byte width = 3;
+	
 	union
 	{	float v[3] = [0, 0, 0]; // same as x, y, and z
 		struct

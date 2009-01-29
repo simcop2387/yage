@@ -9,10 +9,10 @@
 module yage.system.openal;
 
 import tango.math.Math;
-import std.stdio;
-import std.string;
+import tango.io.Stdout;
+import tango.util.Convert;
 import tango.core.Thread;
-import std.traits;
+import tango.core.Traits;
 
 import derelict.openal.al;
 
@@ -38,7 +38,7 @@ const int AL_SEC_OFFSET = 0x1024;
 const int AL_SAMPLE_OFFSET = 0x1025;
 
 template e()
-{	const char[] e = "scope(failure) writefln(__FILE__, \" line:\", __LINE__);";
+{	const char[] e = "scope(failure) Stdout.format(__FILE__, \" line:\", __LINE__);";
 }
 
 
@@ -102,7 +102,7 @@ private class ALSource : IFinalizable
 		{
 			
 			if (sound !is soundNode.getSound())
-			{	// writefln("Changing sound to %s", soundNode.getSound().getSource());
+			{	// Stdout.format("Changing sound to %s", soundNode.getSound().getSource());
 				sound = soundNode.getSound();
 			
 				// Ensure that our number of buffers isn't more than what exists in the sound file
@@ -115,49 +115,49 @@ private class ALSource : IFinalizable
 			
 			if (radius != soundNode.getSoundRadius())
 			{	radius = soundNode.getSoundRadius();
-				// writefln("Changing radius to %s", radius);
+				// Stdout.format("Changing radius to %s", radius);
 				OpenAL.sourcef(al_source, AL_ROLLOFF_FACTOR, 1.0/radius);
 			}
 			
 			if (this.volume != soundNode.getVolume())
 			{	volume = soundNode.getVolume();
-				// writefln("Changing volume to %s", volume);
+				// Stdout.format("Changing volume to %s", volume);
 				OpenAL.sourcef(al_source, AL_GAIN, volume);
 			}
 			
 			if (this.pitch != soundNode.getPitch())
 			{	pitch = soundNode.getPitch();
-				// writefln("Changing pitch to %s", pitch);
+				// Stdout.format("Changing pitch to %s", pitch);
 				OpenAL.sourcef(al_source, AL_PITCH, pitch);
 			}
 			
 			double epsilon = 1.0/sound.getBuffersPerSecond(); // is this always .05?
 			double _tell = tell();
 			double seconds = soundNode.tell();
-			//writefln("times: %f, %f", _tell, seconds);
+			//Stdout.format("times: %f, %f", _tell, seconds);
 			if (soundNode.reseek && (seconds+epsilon < _tell ||  _tell < seconds-epsilon))
-			{	// writefln("Changing playback position from %s to %s", _tell, seconds);				
+			{	// Stdout.format("Changing playback position from %s to %s", _tell, seconds);				
 				seek(seconds);
-				// writefln(tell());
+				// Stdout.format(tell());
 			} else if (enqueue) // update soundNode's playback timer to the real playback location.
 				soundNode.seek(_tell);
 			soundNode.reseek = false;
 			
 			Vec3f position = soundNode.getAbsolutePosition();			
 			if (this.position != position)
-			{	//writefln("Changing position from %s to %s", this.position, position);
+			{	//Stdout.format("Changing position from %s to %s", this.position, position);
 				this.position = position;
 				OpenAL.sourcefv(al_source, AL_POSITION, position.ptr);
 			}
 			
 			Vec3f velocity = soundNode.getAbsoluteVelocity();
 			if (this.velocity != velocity)
-			{	//writefln("Changing velocity from %s to %s", this.velocity, velocity);
+			{	//Stdout.format("Changing velocity from %s to %s", this.velocity, velocity);
 				this.velocity = velocity;
 				OpenAL.sourcefv(al_source, AL_VELOCITY, velocity.ptr);
 			}
 			
-			//writefln("radius is %s, volume is %s, paused is %s, tell is %s, position is %s, velocity is %s",
+			//Stdout.format("radius is %s, volume is %s, paused is %s, tell is %s, position is %s, velocity is %s",
 			//	radius, volume, _paused, seconds, position, velocity);
 		}
 	}
@@ -169,9 +169,9 @@ private class ALSource : IFinalizable
 		if (soundNode)
 		{	enqueue	= false;
 			synchronized(OpenAL.getMutex())
-			{	//writefln("unbinding source");
+			{	//Stdout.format("unbinding source");
 				OpenAL.sourceStop(al_source);
-				//writefln("2]");
+				//Stdout.format("2]");
 				unqueueBuffers();
 			}
 			buffer_start = buffer_end = 0;
@@ -201,7 +201,7 @@ private class ALSource : IFinalizable
 			OpenAL.sourcePlay(al_source);			
 			OpenAL.sourcef(al_source, AL_SEC_OFFSET, fraction/buffers_per_second);
 		}
-		// writefln("seeked to ", (new_start+fraction)/buffers_per_second);
+		// Stdout.format("seeked to ", (new_start+fraction)/buffers_per_second);
 	}
 
 	/*
@@ -231,7 +231,7 @@ private class ALSource : IFinalizable
 		synchronized(OpenAL.getMutex())
 		{	if (enqueue)
 			{	
-				//writefln("updating buffers for %s", sound.getSource());
+				//Stdout.format("updating buffers for %s", sound.getSource());
 				// Count buffers processed since last time we queue'd more
 				int processed;
 				OpenAL.getSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
@@ -333,7 +333,7 @@ class OpenALContext : IFinalizable
 	{	mixin(e!());
 		// Get a device
 		device = OpenAL.openDevice(null);		
-		Log.write("Using OpenAL System '%s'.", .toString(OpenAL.getString(device, ALC_DEVICE_SPECIFIER)));
+		Log.write("Using OpenAL System '%s'.", OpenAL.getString(device, ALC_DEVICE_SPECIFIER));
 	
 		// Get a context
 		context = OpenAL.createContext(device, null);
@@ -449,7 +449,7 @@ class OpenALContext : IFinalizable
 					bool unbind = true;
 					foreach (sound; sounds)
 						if (source.soundNode is sound)
-						{	//writefln("rebinding %s to source %d", sound.getSound().getSource(), i);
+						{	//Stdout.format("rebinding %s to source %d", sound.getSound().getSource(), i);
 							source.bind(sound);
 							unbind = false;
 							break;					
@@ -471,7 +471,7 @@ class OpenALContext : IFinalizable
 					if (unbound)
 					{	foreach (i, source; sources) // find a source to bind to.
 							if (!source.soundNode)
-							{	//writefln("binding %s to source %d, intensity=%f", sound.getSound().getSource(), i, sound.intensity);
+							{	//Stdout.format("binding %s to source %d, intensity=%f", sound.getSound().getSource(), i, sound.intensity);
 								source.bind(sound); // this is never getting called.
 								break;
 							}
@@ -492,15 +492,15 @@ class OpenALContext : IFinalizable
 	{	try {
 			foreach (i, source; sources)
 			{	if (source.soundNode)
-					writefln("source %d bound, vol=%s, dist=%s, file=%s", i, source.soundNode.intensity, 
+					Stdout.format("source %d bound, vol=%s, dist=%s, file=%s", i, source.soundNode.intensity, 
 						CameraNode.getListener().getAbsolutePosition().distance(source.soundNode.getAbsolutePosition()), 
 						source.soundNode.getSound().getSource());
 				else
-					writefln("source %s unbound", i);
+					Stdout.format("source %s unbound", i);
 			}
 			foreach (i, sound; sounds)
 			{	
-				writefln("sound %s, file=%s", i, sound.intensity, sound.getSound().getSource());
+				Stdout.format("sound %s, file=%s", i, sound.intensity, sound.getSound().getSource());
 			}
 		}
 		catch (Exception e) {}
@@ -534,7 +534,7 @@ class OpenAL
 	/*
 	 * Create a wrapper around any OpenAL function.
 	 * ReturnType execute(FunctionName)(Arguments ...);*/
-	static R execute(alias T, R=ReturnType!(baseTypedef!(typeof(T))))(ParameterTypeTuple!(baseTypedef!(typeof(T))) args)
+	static R execute(alias T, R=ReturnTypeOf!(baseTypedef!(typeof(T))))(ParameterTupleOf!(baseTypedef!(typeof(T))) args)
 	in {
 		if (T.stringof[0..3] != "alc" && OpenALContext.singleton) // all non-alc functions require an active OpenAL Context
 			assert(OpenALContext.getInstance().getContext());

@@ -6,10 +6,8 @@
 
 module yage.scene.sound;
 
-import std.c.math;
+import tango.stdc.math;
 import tango.math.Math;
-import std.string;
-import std.stdio;
 import yage.core.exceptions;
 import yage.core.interfaces;
 import yage.core.math;

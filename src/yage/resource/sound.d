@@ -7,10 +7,8 @@
 module yage.resource.sound;
 
 import std.mmfile;
-import std.c.math;
-import std.c.time;
-import std.c.stdio;
-import std.string;
+import tango.stdc.stdio : FILE, fopen;
+import std.string : toStringz; // what's the tango equivalent of toStringz?
 import derelict.openal.al;
 import derelict.ogg.vorbistypes;
 import derelict.ogg.vorbisfile;

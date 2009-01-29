@@ -8,8 +8,8 @@
 module yage.core.math;
 
 import tango.math.Math;
+import tango.core.BitManip;
 import std.random;
-import std.intrinsic;
 
 public const float PI_180 = 0.01745329251994;	// PI / 180
 public const float _180_PI = 57.2957795130823; // 180 / pi
@@ -54,7 +54,7 @@ T clamp(T)(T v, T lower, T upper)
 uint nextPow2(uint input)
 {	if (0 == input)
 		return 1;
-	int msb = std.intrinsic.bsr(input);	// get first bit set, starting with most significant.
+	int msb = bsr(input);	// get first bit set, starting with most significant.
 	if ((1 << msb) == input)				// If already equal to a power of two
 		return input;
 	return 2 << msb;

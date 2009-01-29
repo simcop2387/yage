@@ -6,7 +6,7 @@
 
 module yage.gui.surface;
 
-import std.stdio;
+import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.math.Math;
 import derelict.opengl.gl;
@@ -22,6 +22,9 @@ import yage.system.input;
 import yage.system.probe;
 import yage.resource.texture;
 import yage.resource.image;
+import yage.resource.model;
+import yage.resource.mesh;
+import yage.resource.vertexbuffer;
 import yage.gui.style;
 
 const float third = 1.0/3.0;
@@ -79,7 +82,7 @@ class Surface : Tree!(Surface)
 	protected float[72] tex_coords = 0;
 
 	/// Callback functions
-	// TODO convert these to private and have functions to set them with such names as onBlur();
+	// TODO convert these to private and have functions to set them with such names as onBlur()?
 	void delegate(Surface self) onBlur; ///
 	void delegate(Surface self) onDraw; ///
 	void delegate(Surface self) onFocus; ///
@@ -253,7 +256,7 @@ class Surface : Tree!(Surface)
 				// 0    3
 				// |	^
 				// V	|
-				// 1<---2
+				// 1--->2
 				// static arrays to ensure this operation is 100% on the stack.
 				float[72] vertices_temp = [
 					0.0f, 0, 0, vert1.y, vert1.x, vert1.y, vert1.x, 0,						// top left
@@ -564,7 +567,7 @@ class Surface : Tree!(Surface)
 					if (!textTexture.texture)
 						textTexture = Texture(new GPUTexture(textImage, false, false, text), true, TEXTURE_FILTER_BILINEAR);
 					else
-						textTexture.texture.create(textImage, false, false, text);
+						textTexture.texture.commit(textImage, false, false, text);
 					old_text = text;
 				}
 			
@@ -715,5 +718,23 @@ class Surface : Tree!(Surface)
 	{	if (onResize)
 			onResize(this, amount);
 	}
-	
+}
+
+private class Geometry
+{	/*
+	VertexBuffer!(Vec3f) vertices;
+	VertexBuffer!(Vec3f) normals;
+	VertexBuffer!(Vec2f) tex_coords1;
+	VertexBuffer!(Vec2f) tex_coords2;
+	VertexBuffer!(Vec4f) colors;
+	*/
+	Mesh[] meshes;
+}
+
+private class SurfaceGeometry : Geometry
+{
+	this()
+	{
+		
+	}
 }

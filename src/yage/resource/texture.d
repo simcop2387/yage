@@ -219,7 +219,7 @@ class GPUTexture : Resource, IExternalResource
 	
 	///
 	this()
-	{	create();
+	{	commit();
 	}
 
 	/**
@@ -228,13 +228,13 @@ class GPUTexture : Resource, IExternalResource
 	this(char[] filename, bool compress=true, bool mipmap=true)
 	{	this();
 		source = ResourceManager.resolvePath(filename);		
-		create(new Image(source), compress, mipmap, source);
+		commit(new Image(source), compress, mipmap, source);
 	}
 
 	/// ditto
 	this(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
 	{	this();
-		create(image, compress, mipmap, source_name);
+	commit(image, compress, mipmap, source_name);
 	}
 
 	/// Can this be inherited?
@@ -250,7 +250,7 @@ class GPUTexture : Resource, IExternalResource
 	 * compress = Compress the image in video memory.  This causes a slight loss of quality
 	 * in exchange for four times less video memory used.
 	 * mipmap = Generate mipmaps.*/
-	void create(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
+	void commit(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
 	{	this.source = source_name;
 		
 		// Set as many variables as possible
@@ -264,7 +264,7 @@ class GPUTexture : Resource, IExternalResource
 			
 		// OpenGl functions can only be called from the rendering thread.
 		if (!System.isSystemThread())
-		{	LazyResourceManager.addToQueue(closure(&this.create, image, compress, mipmap, source_name));
+		{	LazyResourceManager.addToQueue(closure(&this.commit, image, compress, mipmap, source_name));
 			return;
 		}
 		
@@ -337,8 +337,8 @@ class GPUTexture : Resource, IExternalResource
 	}
 	
 	/// ditto
-	override void create() 
-	{	create(null, false, false);		
+	override void commit() 
+	{	commit(null, false, false);		
 	}
 	
 	/// Release OpenGL texture index.
