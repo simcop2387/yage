@@ -22,10 +22,8 @@ import yage.core.vector;
 import yage.core.exceptions;
 import yage.resource.geometry;
 import yage.resource.material;
-import yage.resource.mesh;
 import yage.resource.manager;
 import yage.resource.resource;
-import yage.resource.vertexbuffer;
 import yage.system.log;
 import yage.system.probe;
 import yage.system.system;
@@ -33,7 +31,6 @@ import yage.resource.ms3dloader;
 import yage.resource.objloader;
 import yage.resource.lazyresource;
 import yage.scene.visible;
-
 
 ///
 struct KeyFrame

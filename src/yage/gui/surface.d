@@ -22,9 +22,7 @@ import yage.system.input;
 import yage.system.probe;
 import yage.resource.texture;
 import yage.resource.image;
-import yage.resource.model;
-import yage.resource.mesh;
-import yage.resource.vertexbuffer;
+import yage.resource.geometry;
 import yage.gui.style;
 
 const float third = 1.0/3.0;

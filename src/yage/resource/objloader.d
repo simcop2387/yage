@@ -20,7 +20,7 @@ import yage.core.vector;
 import yage.system.constant;
 import yage.resource.model;
 import yage.resource.material;
-import yage.resource.mesh;
+import yage.resource.geometry;
 import yage.resource.manager;
 import yage.resource.texture;
 import yage.system.log;

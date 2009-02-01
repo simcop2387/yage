@@ -14,12 +14,10 @@ import derelict.opengl.glext;
 
 import yage.core.all;
 import yage.system.probe;
-import yage.resource.vertexbuffer;
 import yage.resource.geometry;
 import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
-import yage.resource.mesh;
 import yage.resource.lazyresource;
 import yage.system.constant;
 import yage.scene.all;

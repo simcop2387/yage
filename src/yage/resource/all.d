@@ -18,12 +18,11 @@ public
 	import yage.resource.layer;
 	import yage.resource.manager;
 	import yage.resource.material;
-	import yage.resource.mesh;
+	import yage.resource.geometry;
 	import yage.resource.model;
 	import yage.resource.resource;
 	import yage.resource.shader;
 	import yage.resource.sound;
 	import yage.resource.texture;	
 	import yage.resource.lazyresource;
-	import yage.resource.vertexbuffer;
 }

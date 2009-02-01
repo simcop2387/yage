@@ -6,12 +6,148 @@
 
 module yage.resource.geometry;
 
+import derelict.opengl.gl;
+import derelict.opengl.glext;
+
 import tango.math.Math;
+import yage.core.closure;
 import yage.core.interfaces;
 import yage.core.vector;
-import yage.resource.mesh;
-import yage.resource.vertexbuffer;
+import yage.resource.manager;
+import yage.resource.material;
+import yage.resource.resource;
+import yage.resource.lazyresource;
+import yage.system.system;
 
+/**
+ * This is a common interface shared by all VertexBuffers.  It allows them to be passed around
+ * interchangeably and to exist as siblings in arrays. */
+interface IVertexBuffer : IFinalizable
+{
+	void[] getData(); ///
+	void setData(void[]); ///
+
+	bool getDirty(); ///
+	void setDirty(bool); ///
+
+	uint getId(); ///
+	void setId(uint); ///
+
+	int getSizeInBytes(); ///
+	
+	byte getWidth(); ///
+	
+	int length(); ///
+	void length(int); ///
+
+	void* ptr(); ///
+
+	float itemLength2(int);
+	
+	static void finalizeAll(); ///
+}
+
+/**
+ * A VertexBuffer stores the parameters of an OpenGL Vertex Buffer Object
+ * TODO: Would it make sense to implement several array operations
+ * and then have an update function to synchronize? */
+class VertexBuffer(T) : IVertexBuffer
+{
+	protected T[] data;
+	protected uint id;
+	protected bool dirty = true;;
+
+	protected static uint[uint] current_ids; // all active opengl vbo ids
+
+	/**
+	 * Free the VBO, if it exists. */
+	~this()
+	{	finalize();
+	}
+	void finalize() /// ditto
+	{	if (id)
+			if (!System.isSystemThread())
+			{	LazyResourceManager.addToQueue(closure(&this.finalize));
+			} else
+			{	current_ids.remove(id);
+				glDeleteBuffersARB(1, &id);
+				id = 0;
+			}
+	}
+
+	/**
+	 * Get/set the vertex data of this buffer.
+	 * It must be cast to an array of type T[] */
+	void[] getData()
+	{	return data;
+	}
+	void setData(void[] data) /// ditto
+	{	dirty = true;
+		this.data = cast(T[])data;
+	}
+	
+	/**
+	 * Get/set the dirty flag.
+	 * If VBO's are used and the dirty flag is set, the VBO will be updated with the vertex data. */
+	bool getDirty()
+	{	return dirty;
+	}
+	void setDirty(bool dirty) /// ditto
+	{	this.dirty = dirty;
+	}
+
+	/**
+	 * Get/set the OpenGL id of the vertex buffer, or 0 if it hasn't yet been allocated. */
+	uint getId()
+	{	return id;
+	}
+	void setId(uint id) /// ditto
+	{	this.id = id;
+		if (id)
+			current_ids[id] = id;
+	}
+		
+	/**
+	 * Get the size of the vertex data in bytes. */
+	int getSizeInBytes()
+	{	return length * T.sizeof;
+	}
+	
+	/**
+	 * Returns: The number of components in each array element. */
+	byte getWidth()
+	{	return T.width;
+	}
+
+	/// Implement array operations
+	int length()
+	{	return data.length;
+	}
+	void length(int l)
+	{	data.length = l;
+	}
+
+	/**
+	 * Returns: A c-style pointer to the vertex data array. */
+	void* ptr()
+	{	return data.ptr;
+	}
+
+	/**
+	 * Delete all VBO's, if VBO's exist. */
+	static void finalizeAll()
+	in {
+		assert(System.isSystemThread());
+	} body
+	{	foreach (id; current_ids)
+			glDeleteBuffersARB(1, &id);
+	}
+
+	// Hackish: used by Geometry for radius calculation
+	float itemLength2(int index)
+	{	return data[index].length2();
+	}	
+}
 
 /**
  * Stores vertex data and meshes for any 3D geometry. */
@@ -40,7 +176,6 @@ class Geometry
 	static const char[] COLORS0    = "gl_Color"; /// ditto
 	static const char[] COLORS1    = "gl_SecondaryColor"; /// ditto
 	static const char[] FOGCOORDS  = "gl_FogCood"; /// ditto
-
 	
 	protected IVertexBuffer[char[]] attributes;
 	protected Mesh[] meshes;
@@ -124,5 +259,53 @@ class Geometry
 				}
 		}	}
 		return sqrt(result);
+	}
+}
+
+
+/**
+ * Models are divided into one or more meshes.
+ * Each mesh has its own material and an array of triangle indices that index into its models vertex array. */
+class Mesh : Resource
+{
+	static const char[] TRIANGLES = "gl_Triangles"; /// Constants used to specify various built-in polgyon attribute type names.
+	
+	protected VertexBuffer!(Vec3i) triangles;
+	protected Material material;
+
+	///
+	this()
+	{	triangles = new VertexBuffer!(Vec3i);
+	}
+
+	/// Create with a material and triangles.
+	this(Material matl, Vec3i[] triangles)
+	{	this();
+		this.material = matl;
+		this.triangles.setData(triangles);
+	}
+	
+	/**
+	 * Get / set the triangles */
+	VertexBuffer!(Vec3i) getTriangles()
+	{	return triangles;
+	}
+	void setTriangles(VertexBuffer!(Vec3i) triangles) /// ditto
+	{	this.triangles = triangles;
+	}
+	void setTriangles(Vec3i[] triangles) /// ditto
+	{	this.triangles.setData(triangles);
+	}
+
+	/**
+	 * Get the material, or set the material from another material or a file. */
+	Material getMaterial()
+	{	return material;
+	}
+	void setMaterial(Material material) /// ditto
+	{	this.material = material;
+	}
+	void setMaterial(char[] filename) /// ditto
+	{	this.material = ResourceManager.material(filename);
 	}
 }

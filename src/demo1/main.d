@@ -201,7 +201,6 @@ int main()
 			std.c.time.usleep(cast(int)((1/60.0f-dtime)*1_000_000));
 		scene.swapTransformRead();
 	}
-	//scene.finalize(); // is this needed to prevent albuffer.c error?
 	System.deInit();
 
 	return 0;

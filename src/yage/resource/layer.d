@@ -18,7 +18,7 @@ import yage.system.log;
 import yage.system.probe;
 import yage.system.render;
 import yage.core.exceptions;
-import yage.resource.vertexbuffer;
+import yage.resource.geometry;
 import yage.resource.model;
 import yage.resource.manager;
 import yage.resource.resource;
@@ -227,7 +227,7 @@ class Layer : Resource
 	 * This function is used internally by the engine and doesn't normally need to be called.
 	 * color = Used to set color on a per-instance basis, combined with existing material colors.
 	 * Model = Used to retrieve texture coordinates for multitexturing. */
-	void bind(LightNode[] lights = null, Color color = Color("white"), Model model=null)
+	void bind(LightNode[] lights = null, Color color = Color("white"), Geometry model=null)
 	{
 		// Material
 		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.vec4f.scale(color.vec4f).v.ptr);
@@ -290,7 +290,7 @@ class Layer : Resource
 				glClientActiveTextureARB(GL_TEXTUREI_ARB);
 
 				// Set texture coordinates
-				IVertexBuffer texcoords = model.getAttribute("gl_TexCoord");
+				IVertexBuffer texcoords = model.getTexCoords0();
 				if (Probe.openGL(Probe.OpenGL.VBO))
 				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.getId());
 					glTexCoordPointer(texcoords.getWidth(), GL_FLOAT, 0, null);

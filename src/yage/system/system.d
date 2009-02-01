@@ -31,7 +31,7 @@ import yage.scene.scene;
 import yage.resource.lazyresource;
 import yage.resource.manager;
 import yage.resource.texture;
-import yage.resource.vertexbuffer;
+import yage.resource.geometry;
 
 // OpenGL constants to enable specular highlights with textures.
 const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
