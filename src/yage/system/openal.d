@@ -70,7 +70,7 @@ private class ALSource : IFinalizable
 	/*
 	 * Create the OpenAL Source. */
 	this()
-	{	mixin(e!());
+	{	mixin(e!());		
 		OpenAL.genSources(1, &al_source);
 	}
 	

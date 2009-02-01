@@ -114,15 +114,19 @@ class ModelNode : VisibleNode
 	}	
 	
 	/**
-	 * Get / set the 3D model used by this Node, using the ResourceManager Manager to ensure that no Model is loaded twice.
+	 * Get / set the 3D model used by this Node.
+	 * If a filename is passed, the ResourceManager Manager will ensure that no Model is loaded twice.
+	 * If no argument is passed to setModel(), the model will be cleared.
 	 * Equivalent of setModel(ResourceManager.model(filename)); */
-	/// Get / set the 3D model that is being used by this Node.
 	Model getModel()
 	{	return model;
 	}
-	void setModel(Model model) /// ditto
+	void setModel(Model model=null) /// ditto
 	{	this.model = model;
-		radius = model.getRadius()*size.max();
+		if (model)
+			radius = model.getRadius()*size.max();
+		else
+			radius = 0;
 	}	
 	void setModel(char[] filename) /// ditto
 	{	setModel(ResourceManager.model(filename));

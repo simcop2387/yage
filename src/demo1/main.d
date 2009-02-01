@@ -37,6 +37,7 @@ class DemoScene : Scene
 	SpriteNode star;
 	ModelNode planet;
 	
+	// Create the scene and all elements in it
 	this()
 	{
 		super();		

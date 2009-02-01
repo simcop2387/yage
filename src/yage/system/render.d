@@ -7,13 +7,15 @@
 module yage.system.render;
 
 import tango.math.Math;
+import tango.io.Stdout;
 
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 
-import std.stdio;
 import yage.core.all;
 import yage.system.probe;
+import yage.resource.vertexbuffer;
+import yage.resource.geometry;
 import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
@@ -113,10 +115,10 @@ class Render
 					model((cast(ModelNode)n).getModel(), n);			
 				else if (cast(SpriteNode)n)
 					sprite((cast(SpriteNode)n).getMaterial(), n);
-				else if (cast(GraphNode)n)
-					model((cast(GraphNode)n).getModel(), n);
-				else if (cast(TerrainNode)n)
-					model((cast(TerrainNode)n).getModel(), n);
+				//else if (cast(GraphNode)n)
+				//	model((cast(GraphNode)n).getModel(), n);
+				//else if (cast(TerrainNode)n)
+				//	model((cast(TerrainNode)n).getModel(), n);
 				//else if (cast(LightNode)n)
 				//	cube(n);	// todo: render as color of light?
 				//else
@@ -128,19 +130,19 @@ class Render
 
 		// Sort alpha (translucent) triangles
 		Vec3f camera = Vec3f(getCurrentCamera().getAbsoluteTransform(true).v[12..15]);
-		/*
+		
 		radixSort(alpha, true, (AlphaTriangle a)
 		{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(1/3);
 			return -camera.distance2(center); // distance squared is faster and values still compare the same
-		});*/
-
+		});
+		
 		// Render alpha triangles
 		foreach (AlphaTriangle at; alpha)
 		{	foreach (layer; at.matl.getLayers())
 			{	layer.bind(at.node.getLights(), at.node.getColor());
 				glBegin(GL_TRIANGLES);
 				
-				Vec3i triangle = at.mesh.getTriangles[at.triangle];
+				Vec3i triangle = (cast(Vec3i[])(at.mesh.getTriangles().getData()))[at.triangle];
 				
 				for (int i=0; i<3; i++)
 				{	
@@ -187,8 +189,8 @@ class Render
 	 * Enable this light as the given light number and apply its properties.
 	 * This function is used internally by the engine and should not be called manually or exported. */
 	static void light(LightNode light, int num)
-	in{	assert (num<=Probe.openGL(Probe.OpenGL.MAX_LIGHTS));
-	}body
+	in { assert (num<=Probe.openGL(Probe.OpenGL.MAX_LIGHTS));
+	} body
 	{
 		glPushMatrix();
 		glLoadMatrixf(current_camera.getInverseAbsoluteMatrix().v.ptr); // required for spotlights.
@@ -227,18 +229,73 @@ class Render
 	}
 	
 	/*
+	 * 
+	 */
+	static void vertexBufferBind(char[] type, IVertexBuffer vb)
+	{	uint id = vb.getId();
+		int vbo = Probe.openGL(Probe.OpenGL.VBO);
+		uint vbo_type = type==Mesh.TRIANGLES ? 
+				GL_ELEMENT_ARRAY_BUFFER_ARB :
+				GL_ARRAY_BUFFER_ARB;
+		
+		// Bind the buffer, and also create it and upload data if necessary.
+		if (vbo)
+		{	if (!id)
+			{	glGenBuffersARB(1, &id);
+				vb.setId(id);
+			}
+			glBindBufferARB(vbo_type, id);
+			if (vb.getDirty())
+				glBufferDataARB(vbo_type, vb.getSizeInBytes(), vb.ptr, GL_STATIC_DRAW_ARB);
+		}
+		
+		switch (type)
+		{
+			case Geometry.VERTICES:
+				glVertexPointer(vb.getWidth(), GL_FLOAT, 0, vbo ? null : vb.ptr);
+				break;
+			case Geometry.NORMALS:
+				assert(vb.getWidth() == 3); // normals are always Vec3
+				glNormalPointer(GL_FLOAT, 0, vbo ? null : vb.ptr);
+				break;
+			case Geometry.TEXCOORDS0:
+				glTexCoordPointer(vb.getWidth(), GL_FLOAT, 0, vbo ? null : vb.ptr);
+				break;
+			case Mesh.TRIANGLES:
+				//glDrawElements(GL_TRIANGLES, vb.length*3, GL_UNSIGNED_INT, vbo ? null : vb.ptr);
+				break;
+			default:
+				// TODO: Support custom types.
+				break;
+		}		
+	}
+	
+	static void vertexBufferDraw(char[] type, IVertexBuffer triangles=null)
+	{	int vbo = Probe.openGL(Probe.OpenGL.VBO);
+		if (triangles)
+		{	vertexBufferBind(type, triangles);
+			glDrawElements(GL_TRIANGLES, triangles.length*3, GL_UNSIGNED_INT, vbo ? null : triangles.ptr);
+		}
+		// else
+		//	glDrawArrays();
+	}
+	
+	/*
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
 	 * Rotation can optionally be supplied to rotate sprites so they face the camera. 
 	 * TODO: Remove dependence on node. */
-	protected static void model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)
-	{
-		model.bind();
-		Vec3f[] v = model.getAttribute("gl_Vertex").vec3f;
-		Vec3f[] n = model.getAttribute("gl_Normal").vec3f;
-		Vec2f[] t = model.getAttribute("gl_TexCoord").vec2f;
+	static void model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)
+	{	
+		foreach (name, attrib; model.getAttributes())
+			vertexBufferBind(name, attrib);		
+		
+		Vec3f[] v = cast(Vec3f[])model.getVertices().getData();
+		Vec3f[] n = cast(Vec3f[])model.getNormals().getData();
+		Vec2f[] t = cast(Vec2f[])model.getTexCoords0().getData();
 		Matrix abs_transform = node.getAbsoluteTransform(true);
 		vertex_count += v.length;
+		
 		
 		// Apply skeletal animation.
 		if (cast(ModelNode)node)
@@ -261,16 +318,20 @@ class Render
 		}
 
 		// Loop through the meshes
+		
 		foreach (Mesh mesh; model.getMeshes())
 		{
 			// Bind and draw the triangles
 			void drawTriangles()
-			{	if (mesh.getTrianglesVBO()) {
-					glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTrianglesVBO());
+			{	
+				if (mesh.getTriangles().getId()) {
+					
+					glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTriangles().getId());
 					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, null);
 				}
 				else
-					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, mesh.getTriangles().ptr);
+				{	glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, mesh.getTriangles().ptr);				
+				}
 			}
 
 			poly_count += mesh.getTriangles().length;
@@ -289,16 +350,19 @@ class Render
 						sort = true;
 
 					// If not translucent
+					
 					if (!sort)
-					{	l.bind(node.getLights(), node.getColor(), model);
-						drawTriangles();
+					{	
+						l.bind(node.getLights(), node.getColor(), model);
+						vertexBufferDraw(Mesh.TRIANGLES, mesh.getTriangles());
 						l.unbind();
+						
 
 					} else
 					{
 						
 						// Add to translucent
-						foreach (int index, Vec3i tri; mesh.getTriangles())						
+						foreach (int index, Vec3i tri; cast(Vec3i[])mesh.getTriangles().getData())						
 						{	AlphaTriangle at;
 							for (int i=0; i<3; i++)
 							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getSize());
@@ -320,13 +384,13 @@ class Render
 			}
 			else // render with no material
 				drawTriangles();
-
+				
 			
 			if (_debug)
 			{	// Draw normals
 				glColor3f(0, 1, 1);
 				glDisable(GL_LIGHTING);
-				foreach (Vec3i tri; mesh.getTriangles())
+				foreach (Vec3i tri; cast(Vec3i[])mesh.getTriangles().getData())
 				{	for (int i=0; i<3; i++)
 					{	Vec3f vertex = v[tri.v[i]];
 						Vec3f normal = n[tri.v[i]];						
@@ -378,6 +442,9 @@ class Render
 	}
 
 	
+	
+	
+	
 	// Render a cube
 	protected static void cube(VisibleNode node)
 	{	model(mcube, node);
@@ -393,9 +460,9 @@ class Render
 	protected static void generate()
 	{	// Sprite
 		msprite = new Model();
-		msprite.setAttribute("gl_Vertex",   [Vec3f(-1,-1, 0), Vec3f( 1,-1, 0), Vec3f( 1, 1, 0), Vec3f(-1, 1, 0)]);
-		msprite.setAttribute("gl_Normal",   [Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
-		msprite.setAttribute("gl_TexCoord", [Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
+		msprite.setVertices([Vec3f(-1,-1, 0), Vec3f( 1,-1, 0), Vec3f( 1, 1, 0), Vec3f(-1, 1, 0)]);
+		msprite.setNormals([Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
+		msprite.setTexCoords0([Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
 		msprite.setMeshes([new Mesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)])]);
 
 		// Cube (in as little code as possible :)
@@ -409,9 +476,9 @@ class Render
 					normals  ~= [Vec3f(x, 0, 0), Vec3f(0, y, 0), Vec3f(0, 0, z)];
 					texcoords~= [Vec2f(y*.5+.5, z*.5+.5), Vec2f(x*.5+.5, z*.5+.5), Vec2f(x*.5+.5, y*.5+.5)];
 		}	}	}
-		mcube.setAttribute("gl_Vertex", vertices);
-		mcube.setAttribute("gl_TexCoord", texcoords);
-		mcube.setAttribute("gl_Normal", normals);
+		mcube.setVertices(vertices);
+		mcube.setNormals(normals);
+		mcube.setTexCoords0(texcoords);
 
 		Vec3i[] triangles = [
 			Vec3i(0,  6,  9), Vec3i( 9,  3, 0), Vec3i( 1,  4, 16), Vec3i(16, 13, 1),

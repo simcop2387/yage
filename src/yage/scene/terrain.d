@@ -5,7 +5,7 @@
  */
 
 module yage.scene.terrain;
-
+/+
 import tango.util.Convert;
 import std.file;
 import std.stdio;
@@ -198,3 +198,4 @@ class TerrainNode : VisibleNode
 		radius = model.getRadius()*size.max();
 	}
 }
++/

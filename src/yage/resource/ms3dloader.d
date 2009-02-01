@@ -9,7 +9,7 @@ module yage.resource.ms3dloader;
 import std.string;
 import std.file;
 import std.path;
-import std.stdio;
+import tango.io.Stdout;
 import yage.core.all;
 import yage.core.types;
 import yage.core.color;
@@ -209,14 +209,13 @@ template Ms3dLoader()
 		
 		Vec3f[] vertices, normals;
 		Vec2f[] texcoords;
-		
-		
+				
 		// Vertices
 		vertices.length  = ms3d.vertices.length;
 		texcoords.length = ms3d.vertices.length;
 		normals.length   = ms3d.vertices.length;
 		joint_indices.length= ms3d.vertices.length;
-		
+
 		for (int v; v<ms3d.vertices.length; v++)
 		{	vertices[v].x = ms3d.vertices[v].vertex[0];
 			vertices[v].y = ms3d.vertices[v].vertex[1];
@@ -224,13 +223,12 @@ template Ms3dLoader()
 			joint_indices[v] = ms3d.vertices[v].boneId;
 		}
 		
-		
 		// Meshes
 		meshes.length = ms3d.groups.length;
 		for (int m; m<meshes.length; m++)
-		{			
+		{	
 			meshes[m] = new Mesh();
-			Vec3i[] triangles = meshes[m].getTriangles();
+			Vec3i[] triangles = cast(Vec3i[])meshes[m].getTriangles().getData();
 			triangles.length = ms3d.groups[m].numtriangles;
 			
 			// Material
@@ -265,7 +263,7 @@ template Ms3dLoader()
 						meshes[m].getMaterial().getLayers()[0].addTexture(ResourceManager.texture(path ~ ms3d.materials[midx].alphamap));
 				}
 			}
-			
+		
 			// Triangles
 			for (int t; t<triangles.length; t++)
 			{	//printf( "%d\n", ms3d.groups[m].triangleIndices[t]);
@@ -429,12 +427,12 @@ template Ms3dLoader()
 			
 			
 		}	
-				
-		setAttribute("gl_Vertex", vertices);
-		setAttribute("gl_TexCoord", texcoords);
-		setAttribute("gl_Normal", normals);
-		setAttribute("gl_VertexOriginal", vertices.dup); // a copy of these
-		setAttribute("gl_NormalOriginal", normals.dup); // is required for skeletal animation.
+		
+		setVertices(vertices);
+		setTexCoords0(texcoords);
+		setNormals(normals);
+		setAttributeData("gl_VertexOriginal", vertices.dup); // a copy of these
+		setAttributeData("gl_NormalOriginal", normals.dup); // is required for skeletal animation.
 	}
 }
 

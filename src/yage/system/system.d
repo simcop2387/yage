@@ -209,8 +209,7 @@ abstract class System
 		ResourceManager.finalize();
 		
 		// Clean up resources not managed by the ResourceManager.
-		foreach (item; VertexBuffer.getAll().values)
-			item.finalize();
+		VertexBuffer!(Vec3f).finalizeAll();
 		foreach (item; GPUTexture.getAll().values)
 			item.finalize();
 		// Forces cleanup of any other resources

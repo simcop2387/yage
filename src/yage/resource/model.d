@@ -6,21 +6,21 @@
 
 module yage.resource.model;
 
-import std.c.math : fmod;
+import tango.stdc.math : fmod;
 import std.string;
 import std.file;
 import tango.math.Math;
 import std.path;
-import std.stdio;
+import tango.io.Stdout;
 import tango.core.Thread;
-import derelict.opengl.gl;
-import derelict.opengl.glext;
+
 import yage.core.matrix;
 import yage.core.misc;
 import yage.core.parse;
 import yage.core.quatrn;
 import yage.core.vector;
 import yage.core.exceptions;
+import yage.resource.geometry;
 import yage.resource.material;
 import yage.resource.mesh;
 import yage.resource.manager;
@@ -34,31 +34,6 @@ import yage.resource.objloader;
 import yage.resource.lazyresource;
 import yage.scene.visible;
 
-
-/**
- * An array of vertex attribute.
- * Vertex attributes can be vertices themselves, texture coordinates, normals, colors, or anything else.
- * They can be an array of floats, vectors of varying size, or matrices. */
-struct Attribute
-{	float[]	values;			// Raw data of the attributes, can we use VertexBuffer for this?
-	ubyte	width;			// Number of floats to use for each vertex.
-	VertexBuffer vbo;
-
-	char[] toString()
-	{	return swritef("<Attribute vertexNumber=\"%d\">", values.length / width);		
-	}
-	
-	/// Get the values of this attribute as an array of Vec3f
-	Vec3f[] vec3f()
-	{	return (cast(Vec3f*)values.ptr)[0..values.length/3];
-	}
-
-	/// Get the values of this attribute as an array of Vec3f
-	Vec2f[] vec2f()
-	{	return (cast(Vec2f*)values.ptr)[0..values.length/2];
-	}
-
-}
 
 ///
 struct KeyFrame
@@ -110,11 +85,9 @@ class Joint
  * Each model is divided into one or more Meshes; each Mesh has its own material
  * and an array of triangle indices that correspond to vertices in the Model's vertex array.  
  * ModelNodes can be used to create 3D models in a scene.*/
-class Model : Resource
+class Model : Geometry
 {	
 	public char[] source;
-	protected Mesh[] meshes;
-	protected Attribute[char[]] attributes;	// An associative array to store as many attributes as necessary
 
 	protected float fps=24;
 	protected bool animated = false;
@@ -135,25 +108,6 @@ class Model : Resource
 	this (char[] filename)
 	{	this();
 		load(filename);
-	}
-
-	/// Create as an exact duplicate of another Model.
-	this (Model model)
-	{	this();
-		source = model.source.dup;
-		foreach (name, attrib; model.attributes)
-		{	setAttribute(name, attrib.values);
-			attributes[name].width = attrib.width;			
-		}		
-		Mesh[] lhs;
-		foreach (Mesh m; model.getMeshes)
-			lhs[]= (new Mesh(m));
-		setMeshes(lhs);
-	}
-
-	/// Remove the model's vertex data from video memory.
-	~this()
-	{	finalize();
 	}
 
 	/**
@@ -234,14 +188,14 @@ class Model : Resource
 		}
 		
 		// Update vertex positions based on joints.
-		Vec3f[] vertices = getAttribute("gl_Vertex").vec3f;
-		Vec3f[] vertices_original = getAttribute("gl_VertexOriginal").vec3f;
+		Vec3f[] vertices = cast(Vec3f[])getVertices().getData();
+		Vec3f[] vertices_original =  cast(Vec3f[])getAttribute("gl_VertexOriginal").getData();
 		
 		Vec3f[] normals;
 		Vec3f[] normals_original;
 		if (hasAttribute("gl_Normal"))
-		{	normals = getAttribute("gl_Normal").vec3f;
-			normals_original = getAttribute("gl_NormalOriginal").vec3f;		
+		{	normals =  cast(Vec3f[])getNormals().getData();
+			normals_original =  cast(Vec3f[])getAttribute("gl_NormalOriginal").getData();		
 		}
 		for (int v=0; v<vertices.length; v++)
 		{	if (joint_indices[v] != -1)
@@ -254,93 +208,10 @@ class Model : Resource
 				// TODO: only reassign cmatx if joint_indices[v] has changed.
 		}	}
 				
-		setAttribute("gl_Vertex", vertices);
+		setVertices(vertices);
 		if (normals.length)
-			setAttribute("gl_Normal", normals);
+			setNormals(normals);
 	}	
-
-	/**
-	 * Bind the Vertex, Texture, and Normal VBO's for use.
-	 * This can only be called from the rendering thread. */
-	void bind()
-	in {
-		assert(System.isSystemThread());
-	}
-	body
-	{	foreach (name, attrib; attributes)
-		{	switch (name)
-			{	case "gl_Vertex":
-					if (attrib.vbo.getId())
-					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo.getId());
-						glVertexPointer(3, GL_FLOAT, 0, null);
-					} else
-					{	glVertexPointer(3, GL_FLOAT, 0, attrib.vec3f.ptr);
-					}
-					break;
-				
-				case "gl_TexCoord":
-					if (attrib.vbo.getId())
-					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo.getId());
-						glTexCoordPointer(2, GL_FLOAT, 0, null);		
-					} else
-						glTexCoordPointer(2, GL_FLOAT, 0, attrib.vec2f.ptr);				
-					break;
-				case "gl_Normal":
-					if (attrib.vbo.getId())
-					{	glBindBufferARB(GL_ARRAY_BUFFER_ARB, attrib.vbo.getId());
-						glNormalPointer(GL_FLOAT, 0, null);
-					} else
-						glNormalPointer(GL_FLOAT, 0, attrib.vec3f.ptr);
-					break;
-				default:					
-			}			
-		}
-	}
-
-	/// Clear an attribute.
-	void clearAttribute(char[] name)
-	{	if (name in attributes)
-		{	attributes[name].vbo.finalize();
-			//attributes.remove(name); TODO: Why does this break?
-		}
-	}
-	
-	/**
-	 * Deallocates vertex buffers. */
-	void finalize()
-	{	foreach (name, attrib; attributes)
-			clearAttribute(name);
-		attributes = null; /// This shouldn't be necessary when attributes.remove is fixed.
-	
-		foreach (mesh; meshes)
-			mesh.finalize();
-		meshes.length = 0;
-		
-		writefln("finalizing %s", source);
-	}
-	
-	/// Get an associative array of all attributes.  The index is the attribute name.
-	Attribute[char[]] getAttributes()
-	{	return attributes;
-	}
-	
-	/**
-	 * Get the requested attribute.
-	 * @throws Exception if the attribute is not defined. */
-	Attribute getAttribute(char[] name)
-	{	return attributes[name];
-	}
-
-	/// Get radius of a sphere, centered at the model's origin, that can contain this Model.
-	float getRadius()
-	{	float result=0;
-		foreach (Vec3f v; getAttribute("gl_Vertex").vec3f)
-		{	float length2 = v.length2();
-			if (length2 > result)
-				result = length2;
-		}
-		return sqrt(result);
-	}
 
 	/**
 	 * Get an array of all of the Model's Joints, which are used for skeletal animation.
@@ -362,16 +233,6 @@ class Model : Resource
 	{	return animation_max_time;		
 	}
 	
-	/// Get the array of meshes that compose this model.
-	Mesh[] getMeshes()
-	{	return meshes;
-	}
-
-	///
-	bool hasAttribute(char[] name)
-	{	return cast(bool)(name in attributes);
-	}
-
 	/// Get the path to the file where the model was loaded.
 	char[] getSource()
 	{	return source;
@@ -394,58 +255,4 @@ class Model : Resource
 		}
 	}
 
-	/**
-	 * Set the Meshes used by this model. */
-	void setMeshes(Mesh[] meshes)
-	{	this.meshes = meshes;
-	}
-	
-	/**
-	 * Set a per-vertex attribute for this Model.
-	 * Attributes can be accessed by OpenGl vertex shaders.
-	 * If an attribute is defined for this model, and a mesh of this model has
-	 * a material with a shader that has an attribute variable of the same name,
-	 * the values of the attribute will be bound automaticallyat runtime and can
-	 * then be accessed by the shader.
-	 * Params:
-	 * name = the name of the attribute, should be the same as the attribute variable name in the vertex shader.
-	 * values = an array of values; should be the same length as the number of
-	 * vertices for the model.*/
-	void setAttribute(char[] name, float[] values)
-	{	setAttribute(name, values, 1);
-	}
-
-	/// ditto
-	void setAttribute(char[] name, Vec2f[] values)
-	{	float[] arg = (cast(float*)&values[0].v)[0..values.length*2];
-		setAttribute(name, arg, 2);
-	}
-
-	/// ditto
-	void setAttribute(char[] name, Vec3f[] values)
-	{	float[] arg = (cast(float*)&values[0].v)[0..values.length*3];
-		setAttribute(name, arg, 3);
-	}
-
-	/**
-	 * Return a string representation of this Model and all of its data. */
-	char[] toString(bool detailed=false)
-	{	char[] result = "Model:  '"~source~"'\n";
-		foreach (j; joints)
-			result ~= j.toString();		
-		return result;
-	}
-
-	// Used by the other setAttribute functions.
-	protected void setAttribute(char[] name, float[] values, int width)
-	{		
-		if (!(name in attributes))
-		{	Attribute a;
-			attributes[name] = a;
-		}
-		Attribute *b = &attributes[name];
-		b.values = values;
-		b.width = width;		
-		b.vbo.create(VertexBuffer.Type.GL_ARRAY_BUFFER_ARB, attributes[name].values);		
-	}
 }

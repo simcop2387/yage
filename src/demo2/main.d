@@ -9,9 +9,7 @@
 
 module demo2.main;
 
-import std.string;
-import std.stdio;
-import std.random;
+import tango.io.Stdout;
 import derelict.sdl.sdl;
 import yage.all;
 
@@ -21,13 +19,10 @@ import derelict.opengl.glext;
 // program entry point.
 int main()
 {
+	// Init
 	System.init(800, 600, 32, false, 1);
-	
-	// Paths
 	ResourceManager.addPath(["../res", "../res2"]);
-	
-	// ResourceManager.material("fx/flare1.xml"); // This shouldn't be required here.
-	
+
 	// Create and start a Scene
 	Scene scene = new Scene();
 	scene.play();
@@ -41,9 +36,6 @@ int main()
 	// Camera
 	auto camera = scene.addChild(new CameraNode());
 	camera.setPosition(Vec3f(0, 5, 30));
-	auto music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
-	music.setLooping(true);
-	music.play();
 	
 	// Main surface where camera output is rendered.
 	auto view = new Surface();
@@ -115,7 +107,6 @@ int main()
 	}
 	
 	// Free resources that can't be freed by the garbage collector.
-	scene.finalize();
 	System.deInit();
 	return 0;
 }

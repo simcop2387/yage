@@ -5,7 +5,7 @@
  */
 
 module yage.scene.graph;
-
+/+
 import std.stdio;
 import tango.math.Math;
 import yage.core.vector;
@@ -232,3 +232,4 @@ class GraphNode : VisibleNode
 		//model.upload();
 	}
 }
++/

@@ -5,10 +5,8 @@
  */
 module yage.core.async;
 
-import std.c.time : usleep;
 import std.bind : ParameterTypeTuple;
 import std.stdarg;
-import std.stdio;
 import tango.core.Thread;
 import yage.core.parse;
 
@@ -23,11 +21,11 @@ import yage.core.parse;
  * Example:
  * --------
  * void func(char[] s)
- * {	writefln(s, " ", t);
+ * {	Stdout(s, t);
  * }
  *
  * setTimeout(1, &func, "foo"); // call func with argument of "foo" after 1 second.
- * auto t = setTimeout(2, (char[] s, int t) { writefln(s, " ", t); }, "foo", 4);
+ * auto t = setTimeout(2, (char[] s, int t) { Stdout(s, t); }, "foo", 4);
  * clearTimeout(t); // cancel second timeout function.
  * --------
  */
@@ -107,7 +105,7 @@ private class Timeout(T) : Thread
 	
 	void run()
 	{	do {
-			usleep(cast(uint)(1_000_000 * delay));
+			Thread.sleep(delay);
 			if (running)
 				func(func_args);
 		} while (repeating);

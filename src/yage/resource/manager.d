@@ -213,8 +213,8 @@ abstract class ResourceManager
 			res.finalize();		
 		foreach (path, res; materials)
 			res.finalize();
-		foreach (path, res; models)
-			res.finalize();
+		//foreach (path, res; models)
+		//	res.finalize();
 		foreach (path, res; shaders)
 			res.finalize();
 		foreach (path, res; sounds)

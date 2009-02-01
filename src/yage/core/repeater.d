@@ -2,14 +2,11 @@
  * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
- * 
- * See Java's Timer class for better ideas.
  */
 
 module yage.core.repeater;
 
 import tango.core.Thread;
-import std.c.time;
 import yage.core.closure;
 import yage.core.interfaces;
 import yage.core.misc;
@@ -17,7 +14,7 @@ import yage.core.timer;
 
 /**
  * A class to repeatedly call a function at a set inverval, in its own thread.
- * TODO: update/combine this with setInterval, or inherit from Timer? */
+ * TODO: Can this be combined with setInterval / setTimeout? */
 class Repeater : Timer, IFinalizable
 {
 	protected double frequency = 60f;
@@ -34,7 +31,8 @@ class Repeater : Timer, IFinalizable
 		Repeater outer;	// reference to outer class
 		
 		this()
-		{	super(&run);
+		{	isDaemon(true); // if the application stops, this thread will stop also.
+			super(&run);
 		}
 		
 		void run()
@@ -65,8 +63,10 @@ class Repeater : Timer, IFinalizable
 					}	
 				}
 				
-				// Sleep for 1/frequency - (the time it took to make the calls).				
-				usleep(cast(uint)(1_000_000/frequency - a.get()));
+				// Sleep for 1/frequency - (the time it took to make the calls).
+				float sleep_time = 1/frequency - a.get();
+				if (sleep_time > 0)
+					Thread.sleep(1/frequency - a.get());
 			}
 		}
 	}	
@@ -107,7 +107,7 @@ class Repeater : Timer, IFinalizable
 
 		// This is a primitive way to implement this, but i'm not sure of a better way
 		while (calling)
-			usleep(cast(int)(1_000/frequency)); // sleep for 1 1000th of the frequency.
+			Thread.sleep(.001/frequency); // sleep for 1 1000th of the frequency.
 	}
 
 	/**

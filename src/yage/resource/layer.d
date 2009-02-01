@@ -7,8 +7,8 @@
 module yage.resource.layer;
 
 import tango.math.Math;
-import std.stdio;
 import std.string;
+
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.all;
@@ -18,6 +18,7 @@ import yage.system.log;
 import yage.system.probe;
 import yage.system.render;
 import yage.core.exceptions;
+import yage.resource.vertexbuffer;
 import yage.resource.model;
 import yage.resource.manager;
 import yage.resource.resource;
@@ -289,12 +290,12 @@ class Layer : Resource
 				glClientActiveTextureARB(GL_TEXTUREI_ARB);
 
 				// Set texture coordinates
-				Attribute texcoords = model.getAttribute("gl_TexCoord");
+				IVertexBuffer texcoords = model.getAttribute("gl_TexCoord");
 				if (Probe.openGL(Probe.OpenGL.VBO))
-				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.vbo.getId());
-					glTexCoordPointer(texcoords.width, GL_FLOAT, 0, null);
+				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.getId());
+					glTexCoordPointer(texcoords.getWidth(), GL_FLOAT, 0, null);
 				} else
-					glTexCoordPointer(texcoords.width, GL_FLOAT, 0, texcoords.values.ptr);
+					glTexCoordPointer(texcoords.getWidth(), GL_FLOAT, 0, texcoords.ptr);
 
 				// Bind and blend
 				textures[i].bind();

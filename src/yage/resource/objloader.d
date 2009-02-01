@@ -9,7 +9,7 @@ module yage.resource.objloader;
 import std.string;
 import std.file;
 import std.path;
-import std.stdio;
+import tango.io.Stdout;
 import std.string;
 import tango.util.Convert;
 
@@ -346,7 +346,7 @@ template ObjLoader(){
 			
 			
 			// Triangles
-			Vec3i[] triangles = meshes[m].getTriangles();
+			Vec3i[] triangles = cast(Vec3i[])meshes[m].getTriangles().getData();
 			foreach(inout f; g.faces){
 				//this will fan polygons
 				while(f.length != 2){
@@ -360,9 +360,8 @@ template ObjLoader(){
 			}
 			meshes[m].setTriangles(triangles);
 		}
-		
-		setAttribute("gl_Vertex", vertices);
-		setAttribute("gl_TexCoord", texcoords);
-		setAttribute("gl_Normal", normals);
+		setVertices(vertices);
+		setTexCoords0(texcoords);
+		setNormals(normals);
 	}
 }
