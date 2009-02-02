@@ -118,6 +118,8 @@ class Model : Geometry
 		// If nothing to do.
 		if (animation_time == time)
 			return;
+		if (!hasAttribute(Geometry.VERTICES))
+			return;
 		
 		time = fmod(time, animation_max_time);		
 		animation_time = time;		
@@ -223,7 +225,6 @@ class Model : Geometry
 	{	return animated;		
 	}
 	
-	
 	/**
 	 * Get the time in seconds of the end of this Model's skeletal animation.*/
 	double getAnimationMax()
@@ -251,5 +252,4 @@ class Model : Geometry
 				throw new ResourceManagerException("Unrecognized model file format '"~ext~"'.");
 		}
 	}
-
 }

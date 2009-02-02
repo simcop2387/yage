@@ -35,7 +35,7 @@ interface IVertexBuffer : IFinalizable
 
 	int getSizeInBytes(); ///
 	
-	byte getWidth(); ///
+	byte getComponents(); ///
 	
 	int length(); ///
 	void length(int); ///
@@ -115,8 +115,8 @@ class VertexBuffer(T) : IVertexBuffer
 	
 	/**
 	 * Returns: The number of components in each array element. */
-	byte getWidth()
-	{	return T.width;
+	byte getComponents()
+	{	return T.components;
 	}
 
 	/// Implement array operations
@@ -184,7 +184,7 @@ class Geometry
 	public VertexBuffer!(Vec3f) getVertices()
 	{	return cast(VertexBuffer!(Vec3f))attributes[VERTICES];
 	}
-	public void setVertices(Vec3f[] vertices)
+	public void setVertices(T)(T[] vertices)
 	{	setAttributeData(VERTICES, vertices);
 	}
 	public VertexBuffer!(Vec3f) getNormals()
@@ -218,14 +218,14 @@ class Geometry
 	 * Example:
 	 * --------
 	 * if (!geom.hasAttribute(Geometry.VERTICES))
-	 *     geom.setAttribute(Geometry.VERTICES, new VertexBuffer(!Vec3f));
+	 *     geom.setAttribute(Geometry.VERTICES, new VertexBuffer!(Vec3f)());
 	 * --------
 	 */
 	public IVertexBuffer[char[]] getAttributes()
 	{	return attributes;
 	}
 	public IVertexBuffer getAttribute(char[] name) /// ditto
-	{	return attributes[name];		
+	{	return attributes[name];
 	}
 	public void setAttribute(char[] name, IVertexBuffer vb) /// ditto
 	{	if (name in attributes) // prevent creation of a new VBO.
@@ -264,8 +264,7 @@ class Geometry
 
 
 /**
- * Models are divided into one or more meshes.
- * Each mesh has its own material and an array of triangle indices that index into its models vertex array. */
+ * A mesh consists of a material and an array of triangle indices that index into vertex buffers. */
 class Mesh : Resource
 {
 	static const char[] TRIANGLES = "gl_Triangles"; /// Constants used to specify various built-in polgyon attribute type names.
@@ -286,7 +285,7 @@ class Mesh : Resource
 	}
 	
 	/**
-	 * Get / set the triangles */
+	 * Get/set the triangles */
 	VertexBuffer!(Vec3i) getTriangles()
 	{	return triangles;
 	}

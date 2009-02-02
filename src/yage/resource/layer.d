@@ -293,9 +293,9 @@ class Layer : Resource
 				IVertexBuffer texcoords = model.getTexCoords0();
 				if (Probe.openGL(Probe.OpenGL.VBO))
 				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.getId());
-					glTexCoordPointer(texcoords.getWidth(), GL_FLOAT, 0, null);
+					glTexCoordPointer(texcoords.getComponents(), GL_FLOAT, 0, null);
 				} else
-					glTexCoordPointer(texcoords.getWidth(), GL_FLOAT, 0, texcoords.ptr);
+					glTexCoordPointer(texcoords.getComponents(), GL_FLOAT, 0, texcoords.ptr);
 
 				// Bind and blend
 				textures[i].bind();

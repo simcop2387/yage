@@ -226,9 +226,10 @@ class Render
 		glPopMatrix();
 	}
 	
-	/*
-	 * 
-	 */
+	/**
+	 * Bind (and if necessary upload to video memory) a vertex buffer
+	 * Params:
+	 *     type = A vertex buffer type constant defined in Geometry or Mesh. */
 	static void vertexBufferBind(char[] type, IVertexBuffer vb)
 	{	uint id = vb.getId();
 		int vbo = Probe.openGL(Probe.OpenGL.VBO);
@@ -250,14 +251,14 @@ class Render
 		switch (type)
 		{
 			case Geometry.VERTICES:
-				glVertexPointer(vb.getWidth(), GL_FLOAT, 0, vbo ? null : vb.ptr);
+				glVertexPointer(vb.getComponents(), GL_FLOAT, 0, vbo ? null : vb.ptr);
 				break;
 			case Geometry.NORMALS:
-				assert(vb.getWidth() == 3); // normals are always Vec3
+				assert(vb.getComponents() == 3); // normals are always Vec3
 				glNormalPointer(GL_FLOAT, 0, vbo ? null : vb.ptr);
 				break;
 			case Geometry.TEXCOORDS0:
-				glTexCoordPointer(vb.getWidth(), GL_FLOAT, 0, vbo ? null : vb.ptr);
+				glTexCoordPointer(vb.getComponents(), GL_FLOAT, 0, vbo ? null : vb.ptr);
 				break;
 			case Mesh.TRIANGLES:
 				//glDrawElements(GL_TRIANGLES, vb.length*3, GL_UNSIGNED_INT, vbo ? null : vb.ptr);
@@ -268,6 +269,8 @@ class Render
 		}		
 	}
 	
+	/**
+	 * Draw the contents of a vertex buffer, such as a buffer of triangle indices. */
 	static void vertexBufferDraw(char[] type, IVertexBuffer triangles=null)
 	{	int vbo = Probe.openGL(Probe.OpenGL.VBO);
 		if (triangles)
@@ -282,9 +285,13 @@ class Render
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
 	 * Rotation can optionally be supplied to rotate sprites so they face the camera. 
-	 * TODO: Remove dependence on node. */
+	 * TODO: Remove dependence on node. 
+	 * TODO: Make all vbo's optional.*/
 	static void model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)
 	{	
+		if (!model.hasAttribute(Geometry.VERTICES))
+			return;
+		
 		foreach (name, attrib; model.getAttributes())
 			vertexBufferBind(name, attrib);		
 		
@@ -439,9 +446,6 @@ class Render
 		}
 	}
 
-	
-	
-	
 	
 	// Render a cube
 	protected static void cube(VisibleNode node)

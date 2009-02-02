@@ -9,11 +9,10 @@ module yage.gui.surface;
 import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.math.Math;
-import derelict.opengl.gl;
 import derelict.sdl.sdl;
+import derelict.opengl.gl;
 import derelict.opengl.glext;
 import derelict.opengl.glu;
-import derelict.opengl.extension.ext.blend_color; // opengl 1.2
 import yage.core.all;
 import yage.core.matrix;
 import yage.system.system;
@@ -23,6 +22,7 @@ import yage.system.probe;
 import yage.resource.texture;
 import yage.resource.image;
 import yage.resource.geometry;
+import yage.resource.material;
 import yage.gui.style;
 
 const float third = 1.0/3.0;
@@ -41,7 +41,7 @@ class Surface : Tree!(Surface)
 	Image textImage;
 	Texture textTexture;
 	
-	/// This is a mirror of SDLMod (SDL's modifier key struct
+	/// This is a mirror of SDLMod (SDL's modifier key struct)
 	enum ModifierKey
 	{	NONE  = 0x0000,
 		LSHIFT= 0x0001,
@@ -76,6 +76,9 @@ class Surface : Tree!(Surface)
 	protected float old_parent_height;
 	protected char[] old_text;
 	
+	SurfaceGeometry geometry;
+	
+	// deprecated
 	protected float[72] vertices = 0; // Used for rendering
 	protected float[72] tex_coords = 0;
 
@@ -96,21 +99,20 @@ class Surface : Tree!(Surface)
 	void delegate(Surface self, Vec2f amount) onResize; ///
 
 	this()
-	{	update();		
-	}
-	
-	~this()
-	{
-		// free textures?  should be done automatically by gc?
+	{	geometry = new SurfaceGeometry();
+		update();		
 	}
 	
 	// Set style dimensions from pixels.
 	protected void top(float v)    { style.top    = style.topUnit   ==Style.PERCENT ? 100*v/parentHeight() : v; }
-	protected void bottom(float v) { style.bottom = style.bottomUnit==Style.PERCENT ? 100*v/parentHeight() : v; }
-	protected void height(float v) { style.height = style.heightUnit==Style.PERCENT ? 100*v/parentHeight() : v; }
-	protected void left(float v)   { style.left   = style.leftUnit  ==Style.PERCENT ? 100*v/parentWidth() : v; }
 	protected void right(float v)  { style.right  = style.rightUnit ==Style.PERCENT ? 100*v/parentWidth() : v; }
+	protected void bottom(float v) { style.bottom = style.bottomUnit==Style.PERCENT ? 100*v/parentHeight() : v; }	
+	protected void left(float v)   { style.left   = style.leftUnit  ==Style.PERCENT ? 100*v/parentWidth() : v; }
 	protected void width(float v)  { style.width  = style.widthUnit ==Style.PERCENT ? 100*v/parentWidth() : v; }
+	protected void height(float v) { style.height = style.heightUnit==Style.PERCENT ? 100*v/parentHeight() : v; }
+	
+	
+	
 	
 	/**
 	 * Get the calculated values of this Surface's dimensions in pixel values from the top left corner. */
@@ -118,8 +120,17 @@ class Surface : Tree!(Surface)
 	float right() { return bottomRight.x; }	/// ditto
 	float bottom(){ return bottomRight.y; }	/// ditto
 	float left()  { return topLeft.x; }	/// ditto
+	
+	
+	// TODO: take into account border width and padding width
 	float width() { return bottomRight.x - topLeft.x; }	/// ditto
 	float height(){	return bottomRight.y - topLeft.y; }	/// ditto
+	
+	/*
+	float width() // excludes border and padding
+	float innerWidth() // excludes border, includes padding
+	float outerWidth() // includes border and padding	
+	 */
 	
 	/// Get dimensions of this Surface's parent in pixels
 	float parentWidth() { return parent ? parent.width()  : System.getWidth(); }
@@ -225,6 +236,7 @@ class Surface : Tree!(Surface)
 		
 		// Portion of the Texture to use for drawing
 		// This won't be necessary when we support rectangular textures.
+		// TODO: This should also be replaceable with a texture scaling matrix.
 		if (style.backgroundMaterial)
 		{	portion.x = style.backgroundMaterial.padding.x/cast(float)style.backgroundMaterial.getWidth();
 			portion.y = style.backgroundMaterial.padding.y/cast(float)style.backgroundMaterial.getHeight();
@@ -232,6 +244,7 @@ class Surface : Tree!(Surface)
 		{	portion.x = 1;
 			portion.y = 1;
 		}
+		
 		
 		switch(style.backgroundRepeat)
 		{
@@ -718,21 +731,79 @@ class Surface : Tree!(Surface)
 	}
 }
 
-private class Geometry
-{	/*
-	VertexBuffer!(Vec3f) vertices;
-	VertexBuffer!(Vec3f) normals;
-	VertexBuffer!(Vec2f) tex_coords1;
-	VertexBuffer!(Vec2f) tex_coords2;
-	VertexBuffer!(Vec4f) colors;
-	*/
-	Mesh[] meshes;
-}
-
-private class SurfaceGeometry : Geometry
+/**
+ * SurfaceGeometry defines vertices and meshes for drawing a surface, including borders/border textures.
+ * The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
+ * Nine meshes are defined, one for each region.
+ * 0__4__8__12      BR
+ * |\ |\ |\ |       BR
+ * 1_\5_\9_\13      BR
+ * |\ |\ |\ |       BR
+ * 2_\6_\10\14      BR
+ * |\ |\ |\ |       BR
+ * 3_\7_\11\15      BR
+ */
+package class SurfaceGeometry : Geometry
 {
+	VertexBuffer!(Vec2f) vertices;
+	VertexBuffer!(Vec2f) texcoords;
+	
+	Mesh top_left;
+	Mesh top;
+	Mesh top_right;
+	Mesh right;
+	Mesh bottom_right;
+	Mesh bottom;
+	Mesh bottom_left;
+	Mesh left;
+	Mesh center;
+	
+	/**
+	 * Create the vertices, texture coordinates, meshes, and materials used for rendering a surface. */
 	this()
-	{
+	{	
+		// Create Vertex Arrays
+		setVertices(new Vec2f[16]);
+		setTexCoords0(new Vec2f[16]);
+		vertices = cast(VertexBuffer!(Vec2f))getAttribute(Geometry.VERTICES);
+		texcoords = cast(VertexBuffer!(Vec2f))getAttribute(Geometry.TEXCOORDS0);
 		
+		// Create Meshes
+		top_left     = new Mesh(new Material(), [Vec3i(0, 1, 5), Vec3i(1, 5, 4)]);
+		top          = new Mesh(new Material(), [Vec3i(4, 5, 9), Vec3i(5, 9, 8)]);
+		top_right    = new Mesh(new Material(), [Vec3i(8, 9, 13),Vec3i(9, 13, 12)]);
+		right        = new Mesh(new Material(), [Vec3i(9, 10,14),Vec3i(10, 14, 13)]);
+		bottom_right = new Mesh(new Material(), [Vec3i(10, 11, 15), Vec3i(11, 15, 14)]);
+		bottom       = new Mesh(new Material(), [Vec3i(6, 7, 11),Vec3i(7, 11, 10)]);
+		bottom_left  = new Mesh(new Material(), [Vec3i(2, 3, 7), Vec3i(3, 7, 6)]);
+		left         = new Mesh(new Material(), [Vec3i(1, 2, 6), Vec3i(2, 6, 5)]);
+		center       = new Mesh(new Material(), [Vec3i(5, 6, 10),Vec3i(6, 10, 9)]);		
+		setMeshes([top_left, top, top_right, right, bottom_right, bottom, bottom_left, left, center]);
+	}
+	
+	/**
+	 * Set the dimensions of the surface's geometry
+	 * Params:
+	 *     dimensions = Used to set the width and the height in pixels
+	 *     borders = Used to set the size of each border in pixels (top, right, bottom, left) */
+	void setDimensions(Vec2f dimensions, Vec4f borders)
+	{	Vec2f[] vertices = cast(Vec2f[])getVertices().getData();	
+		vertices[ 4].x = vertices[ 5].x = vertices[ 6].x = vertices[ 7].x = borders.left;
+		vertices[ 8].x = vertices[ 9].x = vertices[10].x = vertices[11].x = borders.left + dimensions.width;
+		vertices[12].x = vertices[13].x = vertices[14].x = vertices[15].x = borders.left + dimensions.width + borders.right;
+		vertices[ 1].y = vertices[ 5].y = vertices[ 9].y = vertices[13].y = borders.top;
+		vertices[ 2].y = vertices[ 6].y = vertices[10].y = vertices[14].y = borders.top + dimensions.height;
+		vertices[ 3].y = vertices[ 7].y = vertices[11].y = vertices[15].y = borders.top + dimensions.height + borders.bottom;
+		setVertices(vertices);
+		
+		// Set Texture Coordinates (Currently only supports scaling)
+		Vec2f[] texcoords = cast(Vec2f[])getTexCoords0().getData();
+		texcoords[4].x = texcoords[5].x = texcoords[6].x = texcoords[7].x = 1/3.0f;
+		texcoords[8].x = texcoords[9].x = texcoords[10].x= texcoords[11].x= 2/3.0f;
+		texcoords[12].x= texcoords[13].x= texcoords[14].x= texcoords[15].x= 1;
+		texcoords[1].y = texcoords[5].y = texcoords[9].y = texcoords[13].y= 1/3.0f;
+		texcoords[2].y = texcoords[6].y = texcoords[10].y= texcoords[14].y= 2/3.0f;
+		texcoords[3].y = texcoords[7].y = texcoords[11].y= texcoords[15].y= 1;
+		setTexCoords0(texcoords);
 	}
 }
