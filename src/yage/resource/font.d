@@ -6,15 +6,15 @@
 
 module yage.resource.font;
 
+import tango.io.Stdout;
 import std.string;
-import std.stdio;
 import std.utf;
 import derelict.freetype.ft;
-import yage.core.math;
+import yage.core.math.math;
 import yage.core.timer;
 import yage.core.types;
 import yage.core.parse;
-import yage.core.exceptions;
+import yage.core.object2;;
 import yage.resource.image;
 import yage.resource.manager;
 import yage.resource.resource;
@@ -67,7 +67,7 @@ class Font : Resource
 	protected static FT_Library library;
 	protected static bool freetype_initialized = false;
 	
-	protected static char[] br_char = " *()-+=/\\,.;:|()[]{}<>";
+	protected static char[] br_char = " *()-+=/\\,.;:|()[]{}<>\r\n";
 	
 	protected FT_Face face;
 	protected char[] source;
@@ -190,13 +190,13 @@ class Font : Resource
 		lines.length = lines.length + 1;
 		foreach (i, letter; letters)
 		{	
-			// Advance to next line if necessary
-			if (lines[$-1].width + letter.advancex > line_width)
-				lines.length = lines.length + 1;
+			// Advance to next line if necessary			
 			if (letter.letter == '\n')
 			{	lines.length = lines.length + 1;
 				continue;
 			}
+			if (lines[$-1].width + letter.advancex > line_width)
+				lines.length = lines.length + 1;
 	
 			// If a possible breaking character
 			if (find(br_char, letter.letter) != -1) // if this letter is a breaking charater
@@ -229,9 +229,10 @@ class Font : Resource
 		}
 		
 		
-		// Create image target where glyphs will be compisited.
+		// Create image target where glyphs will be composited.
 		int img_width = image_pow2 ? nextPow2(line_width) : line_width;
 		int img_height = image_pow2 ? nextPow2(line_height*lines.length) : line_height*lines.length;
+		//Stdout(img_width, img_height).newline;
 		Image result = new Image(1, img_width, img_height);
 		
 		

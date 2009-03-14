@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.system.probe;
+module yage.system.graphics.probe;
 
 import std.string;
 import derelict.opengl.gl;

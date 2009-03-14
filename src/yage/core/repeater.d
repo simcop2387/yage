@@ -8,7 +8,7 @@ module yage.core.repeater;
 
 import tango.core.Thread;
 import yage.core.closure;
-import yage.core.interfaces;
+import yage.core.object2;;
 import yage.core.misc;
 import yage.core.timer;
 

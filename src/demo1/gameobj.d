@@ -12,7 +12,7 @@ import tango.math.Math;
 import std.stdio;
 import yage.core.timer;
 import yage.core.color;
-import yage.core.vector;
+import yage.core.math.vector;
 import yage.resource.manager;
 import yage.resource.model;
 import yage.scene.all;

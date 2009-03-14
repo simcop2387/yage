@@ -20,13 +20,11 @@ import derelict.sdl.image;
 import derelict.ogg.vorbis;
 import derelict.freetype.ft;
 import yage.gui.surface;
-import yage.system.glcontext;
 import yage.system.log;
-import yage.system.openal;
-import yage.system.probe;
-import yage.system.openal;
-import yage.core.exceptions;
-import yage.core.vector;
+import yage.system.sound.soundsystem;
+import yage.system.graphics.all;
+import yage.core.object2;;
+import yage.core.math.vector;
 import yage.scene.scene;
 import yage.resource.lazyresource;
 import yage.resource.manager;
@@ -162,8 +160,6 @@ abstract class System
 		glEnable(GL_LIGHTING);
 		glFogi(GL_FOG_MODE, GL_EXP); // Most realistic?
 
-		glAlphaFunc(GL_GEQUAL, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
-
 		// Environment Mapping (disabled by default)
 		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
@@ -183,7 +179,7 @@ abstract class System
 		GLContext glc = new GLContext();
 		
 		// Create OpenAL device, context, and start sound proessing thread.
-		OpenALContext.getInstance();
+		SoundContext.getInstance();
 		
 		initialized = true;
 		Log.write("Yage has been initialized successfully.");
@@ -205,15 +201,16 @@ abstract class System
 		foreach_reverse (s; Scene.getAllScenes().values)
 			s.finalize();
 			
-		OpenALContext.getInstance().finalize();
+		SoundContext.getInstance().finalize();
 		ResourceManager.finalize();
 		
 		// Clean up resources not managed by the ResourceManager.
-		VertexBuffer!(Vec3f).finalizeAll();
+		
 		foreach (item; GPUTexture.getAll().values)
 			item.finalize();
 		// Forces cleanup of any other resources
 		fullCollect();
+		GraphicsResource.finalize();
 		
 		LazyResourceManager.processQueue(); // required for any pending lazyresource destroys
 		
@@ -329,7 +326,7 @@ abstract class System
 		size.y = height;
 		//Vec2f dsize = Vec2f(size.x, size.y);
 		
-		surface.update();
+		surface.updateDimensions();
 		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, also try SDL lock surface)

@@ -6,9 +6,9 @@
 
 module yage.resource.resource;
 
-import yage.core.interfaces;
+import yage.core.object2;
 
-abstract class Resource : IFinalizable
+abstract class Resource : YageObject, IFinalizable
 {
 	override void finalize()
 	{		

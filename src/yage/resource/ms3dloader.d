@@ -14,7 +14,7 @@ import yage.core.all;
 import yage.core.types;
 import yage.core.color;
 import yage.resource.all;
-import yage.core.exceptions;
+import yage.core.object2;;
 import yage.system.log;
 
 import std.c.string : memcpy;

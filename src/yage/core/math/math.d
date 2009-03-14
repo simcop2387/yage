@@ -5,7 +5,7 @@
  *
  * Math functions not in the standard library.
  */
-module yage.core.math;
+module yage.core.math.math;
 
 import tango.math.Math;
 import tango.core.BitManip;

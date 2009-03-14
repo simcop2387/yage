@@ -5,7 +5,7 @@
  */
 module yage.gui.exceptions;
 
-import yage.core.exceptions;
+import yage.core.object2;;
 import yage.core.parse;
 
 ///

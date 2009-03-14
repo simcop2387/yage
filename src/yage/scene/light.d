@@ -14,8 +14,8 @@ import yage.resource.material;
 import yage.scene.node;
 import yage.scene.movable;
 import yage.scene.scene;
-import yage.system.probe;
-import yage.system.render;
+import yage.system.graphics.probe;
+import yage.system.graphics.probe;
 import yage.scene.camera;
 
 /**

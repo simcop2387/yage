@@ -14,11 +14,11 @@ import derelict.ogg.vorbistypes;
 import derelict.ogg.vorbisfile;
 import yage.core.timer;
 import yage.core.parse;
-import yage.core.exceptions;
+import yage.core.object2;;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.system.log;
-import yage.system.openal;
+import yage.system.sound.all;
 
 
 /** A Sound is a represenation of sound data in system memory.
@@ -330,8 +330,3 @@ private class VorbisFile : SoundFile
 		return buffer;
 	}
 }
-
-
-
-
-

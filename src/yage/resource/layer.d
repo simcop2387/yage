@@ -7,6 +7,7 @@
 module yage.resource.layer;
 
 import tango.math.Math;
+import tango.io.Stdout;
 import std.string;
 
 import derelict.opengl.gl;
@@ -15,9 +16,9 @@ import yage.core.all;
 import yage.system.constant;
 import yage.system.system;
 import yage.system.log;
-import yage.system.probe;
-import yage.system.render;
-import yage.core.exceptions;
+import yage.system.graphics.probe;
+import yage.system.graphics.render;
+import yage.core.object2;;
 import yage.resource.geometry;
 import yage.resource.model;
 import yage.resource.manager;
@@ -32,6 +33,8 @@ private const Vec2f one = {v:[1.0f, 1.0f]};
 private const Vec2f zero = {v:[0.0f, 0.0f]};
 
 /**
+ * This is old code and will be replaced once Collada becomes the default model format.
+ * 
  * Each material is divided into one or more layers.
  * Layers represent a single rendering pass.  They can optionally have shaders
  * that compile into a single program, multiple textures, and various other
@@ -50,6 +53,8 @@ class Layer : Resource
 	Color	specular;				/// Property for the RGBA specular layer color, default is Vec4f(0).
 	Color	emissive;				/// Property for the RGBA emissive layer color, default is Vec4f(0).
 	float	specularity=0;			/// Shininess exponential value, default is zero (no shininess).
+	
+	Color	color;					// necessary for materials with no lights.
 
 	/// Property to set the blending for this Layer.
 	/// See_Also: the LAYER_BLEND_* constants in yage.system.constant;
@@ -67,7 +72,7 @@ class Layer : Resource
 	int	width = 1;
 
 	// private
-	protected Texture[] textures;
+	public Texture[] textures;
 	protected Shader[] shaders;
 	protected int program=0;
 	protected static int current_program=0;
@@ -79,6 +84,7 @@ class Layer : Resource
 		diffuse = Color("white");
 		specular = Color("black");
 		emissive = Color("black");
+		color = Color("white");
 	}
 
 	~this()
@@ -95,10 +101,9 @@ class Layer : Resource
 	}
 
 	/// Add a new texture to this layer and return it.
-	int addTexture(GPUTexture texture, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT,
-				Vec2f position=zero, float rotation=0, Vec2f scale=one)
+	int addTexture(GPUTexture texture, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT)
 	{
-		return addTexture(Texture(texture, clamp, filter, position, rotation, scale));
+		return addTexture(Texture(texture, clamp, filter));
 	}
 	/// ditto
 	int addTexture(Texture texture)
@@ -234,7 +239,9 @@ class Layer : Resource
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse.vec4f.scale(color.vec4f).v.ptr);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, specular.vec4f.scale(color.vec4f).v.ptr);
 		glMaterialfv(GL_FRONT, GL_EMISSION, emissive.vec4f.scale(color.vec4f).v.ptr);
-		glMaterialfv(GL_FRONT, GL_SHININESS, &specularity);
+		glMaterialfv(GL_FRONT, GL_SHININESS, &specularity);	
+		
+		glColor4fv(this.color.vec4f.ptr);
 
 		// Blend
 		if (blend != BLEND_NONE)
@@ -253,8 +260,9 @@ class Layer : Resource
 					break;
 		}	}
 		else
-			glEnable(GL_ALPHA_TEST);
-
+		{	glEnable(GL_ALPHA_TEST);
+			glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
+		}
 
 		// Cull
 		if (cull == LAYER_CULL_FRONT)
@@ -304,7 +312,8 @@ class Layer : Resource
 		else if(textures.length == 1){
 			glEnable(GL_TEXTURE_2D);
 			textures[0].bind();
-		}
+		} else
+			glDisable(GL_TEXTURE_2D);
 
 		// Shader
 		if (program != 0)
@@ -387,6 +396,8 @@ class Layer : Resource
 	 * This function is used internally by the engine and doesn't normally need to be called. */
 	void unbind()
 	{
+		glColor4f(1, 1, 1, 1);
+		
 		// Material
 		float s=0;
 		glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
@@ -400,8 +411,9 @@ class Layer : Resource
 		{	glDisable(GL_BLEND);
 			glDepthMask(true);
 		}else
-			glDisable(GL_ALPHA_TEST);
-
+		{	glDisable(GL_ALPHA_TEST);
+			glAlphaFunc(GL_ALWAYS, 0);
+		}
 
 		// Cull, polygon
 		glCullFace(GL_BACK);
@@ -424,10 +436,11 @@ class Layer : Resource
 			}
 			glClientActiveTextureARB(GL_TEXTURE0_ARB);
 		}
-		else if(textures.length == 1){	textures[0].unbind();
-			glDisable(GL_TEXTURE_2D);
+		else if(textures.length == 1){	
+			textures[0].unbind();			
 			//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		}
+		glDisable(GL_TEXTURE_2D);
 
 		// Shader
 		if (program != 0)

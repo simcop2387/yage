@@ -4,11 +4,10 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.core.plane;
+module yage.core.math.plane;
 
 import tango.math.Math;
-import std.stdio;
-import yage.core.vector;
+import yage.core.math.vector;
 import yage.core.parse;
 import yage.core.misc;
 

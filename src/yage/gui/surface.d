@@ -14,16 +14,19 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 import derelict.opengl.glu;
 import yage.core.all;
-import yage.core.matrix;
+import yage.core.math.matrix;
 import yage.system.system;
 import yage.system.constant;
 import yage.system.input;
-import yage.system.probe;
+import yage.system.graphics.probe;
+import yage.system.graphics.render;
 import yage.resource.texture;
 import yage.resource.image;
 import yage.resource.geometry;
 import yage.resource.material;
 import yage.gui.style;
+import yage.gui.textlayout;
+
 
 const float third = 1.0/3.0;
 
@@ -34,12 +37,16 @@ const float third = 1.0/3.0;
  * Surfacs are positioned relative to their parent. 
  * A style struct defines most of the styles associated with the Surface. */
 class Surface : Tree!(Surface)
-{
-	static final Style defaultStyle;
+{	
 	Style style;
 	char[] text;
-	Image textImage;
-	Texture textTexture;
+	char[] old_text;
+	GPUTexture textTexture;
+	
+	static final Style defaultStyle;
+	
+	protected static Surface grabbedSurface;
+	protected static Surface focusSurface;
 	
 	/// This is a mirror of SDLMod (SDL's modifier key struct)
 	enum ModifierKey
@@ -63,24 +70,18 @@ class Surface : Tree!(Surface)
 	};
 	
 	// internal values
-	Vec2f topLeft;		// pixel distance of the topleft corner from parent's top left
-	Vec2f bottomRight;	// pixel distance of the bottom right corner from parent's top left
-	Vec2f offset;		// pixel distance of top left from the window's top left at 0, 0
+	Vec2f offset;		// pixel distance of the topleft corner from parent's top left, a relative offset
+	Vec2f size;			// pixel outer width/height, which includes borders and padding.
+	Vec4f border;		// pixel sizes of each border
+	Vec4f padding;		// pixel sizes of each padding	
 	
-	bool mouseIn; // used to track mouseover/mouseout
-	bool _grabbed;
+	Vec2f offsetAbsolute;		// pixel distance of top left from the window's top left at 0, 0, an absolute offset
 	
-	protected Style old_style; // Used for comparison to see if dirty.
-	protected Surface old_parent;
-	protected float old_parent_width;
-	protected float old_parent_height;
-	protected char[] old_text;
+	bool mouseIn; 		// used to track mouseover/mouseout
+	bool _grabbed;	
+	bool resize_dirty = true;
 	
 	SurfaceGeometry geometry;
-	
-	// deprecated
-	protected float[72] vertices = 0; // Used for rendering
-	protected float[72] tex_coords = 0;
 
 	/// Callback functions
 	// TODO convert these to private and have functions to set them with such names as onBlur()?
@@ -100,381 +101,184 @@ class Surface : Tree!(Surface)
 
 	this()
 	{	geometry = new SurfaceGeometry();
-		update();		
+		updateDimensions();
 	}
 	
 	// Set style dimensions from pixels.
-	protected void top(float v)    { style.top    = style.topUnit   ==Style.PERCENT ? 100*v/parentHeight() : v; }
-	protected void right(float v)  { style.right  = style.rightUnit ==Style.PERCENT ? 100*v/parentWidth() : v; }
-	protected void bottom(float v) { style.bottom = style.bottomUnit==Style.PERCENT ? 100*v/parentHeight() : v; }	
-	protected void left(float v)   { style.left   = style.leftUnit  ==Style.PERCENT ? 100*v/parentWidth() : v; }
-	protected void width(float v)  { style.width  = style.widthUnit ==Style.PERCENT ? 100*v/parentWidth() : v; }
-	protected void height(float v) { style.height = style.heightUnit==Style.PERCENT ? 100*v/parentHeight() : v; }
-	
-	
-	
+	protected void top(float v)    
+	{	style.top    = style.top.unit   == Style.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	}
+	protected void right(float v)  
+	{	style.right  = style.right.unit == Style.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	}
+	protected void bottom(float v) 
+	{	style.bottom = style.bottom.unit== Style.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	}	
+	protected void left(float v)   
+	{	style.left   = style.left.unit  == Style.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	}
+	protected void width(float v)  
+	{	style.width  = style.width.unit == Style.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	}
+	protected void height(float v) 
+	{	style.height = style.height.unit== Style.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	}
+	// Get dimensions of this Surface's parent in pixels
+	protected float parentWidth() { return parent ? parent.width()  : System.getWidth(); }
+	protected float parentHeight(){ return parent ? parent.height() : System.getHeight(); }	// ditto	
+
 	
 	/**
-	 * Get the calculated values of this Surface's dimensions in pixel values from the top left corner. */
-	float top()   { return topLeft.y; }
-	float right() { return bottomRight.x; }	/// ditto
-	float bottom(){ return bottomRight.y; }	/// ditto
-	float left()  { return topLeft.x; }	/// ditto
+	 * Get the distance of this surface from its parent's top left corner. */
+	float top()
+	{	return offset.x;
+	}
+	float left() /// ditto
+	{	return offset.y;
+	}
 	
+	/**
+	 * Get the inner-most width/height of the surface.  Just as with CSS, this is the width/height inside the padding. */
+	float width() 
+	{	return innerWidth() - padding.left - padding.right;
+	}	
+	float height() /// ditto
+	{	return innerHeight() - padding.top - padding.bottom;
+	}
 	
-	// TODO: take into account border width and padding width
-	float width() { return bottomRight.x - topLeft.x; }	/// ditto
-	float height(){	return bottomRight.y - topLeft.y; }	/// ditto
+	/**
+	 * Get the width/height of the surface, including the width/height of the padding, but not including the border. */
+	float innerWidth()
+	{	return outerWidth() - border.left - border.right;
+	}
+	float innerHeight() /// ditto
+	{	return outerHeight() - border.top - border.bottom;
+	}
 	
-	/*
-	float width() // excludes border and padding
-	float innerWidth() // excludes border, includes padding
+	/**
+	 * Get the width/height of the surface, including both the padding and the border.
+	 * This is the same as the distance from top to bottom and left to right. */
 	float outerWidth() // includes border and padding	
-	 */
+	{	return size.x;
+	}
+	float outerHeight()  /// ditto
+	{	return size.y;
+	}
 	
-	/// Get dimensions of this Surface's parent in pixels
-	float parentWidth() { return parent ? parent.width()  : System.getWidth(); }
-	float parentHeight(){ return parent ? parent.height() : System.getHeight(); }	/// Ditto	
-
 	/**
-	 * Recalculate all properties of this Surface based on its style.
-	 * TODO: Ensure vertex and tex coord assignments are 100% on the stack (see array literals).*/
-	void update()
-	{			
-		// Calculate real values from percents
-		float parent_width = parentWidth();
-		float parent_height= parentHeight();
+	 * Update the internally stored x, y, width, and height based on the style.
+	 * This will also update the geometry, recurse through children, and call the resize event if necessary. */
+	void updateDimensions()
+	{
+		Vec2f old_offset = offset;
+		Vec2f old_size = size;
 		
-		float top   = style.topUnit    == Style.PERCENT ? style.top   * parent_height*.01f : style.top;
-		float right = style.rightUnit  == Style.PERCENT ? style.right * parent_width *.01f : style.right;
-		float bottom= style.bottomUnit == Style.PERCENT ? style.bottom* parent_height*.01f : style.bottom;
-		float left  = style.leftUnit   == Style.PERCENT ? style.left  * parent_width *.01f : style.left;
-		float width = style.widthUnit  == Style.PERCENT ? style.width * parent_width *.01f : style.width;
-		float height= style.heightUnit == Style.PERCENT ? style.height* parent_height*.01f : style.height;
-
-		Vec2f resized_by = Vec2f(this.width(), this.height());
-		Vec2f offset_by = offset;
-		
-		// Ensure at least 4 of the 6 dimensions are set.
-		if (isNaN(left))
-		{	if (isNaN(right))
-				left = 0.0f;
-			if (isNaN(width))
-				width = parent_width;			
-		}	
-		if (isNaN(top))
-		{	if (isNaN(bottom))
-				top = 0.0f;
-			if (isNaN(height))
-				height = parent_height;				
-		}	
-
-		// If left side is anchored
-		if (!isNaN(left))
-		{	topLeft.x = left;
-			if (!isNaN(width)) // if width
-				bottomRight.x = left + width;
-			else if (isNaN(right)) // if not width and not right
-			{} // TODO: Figure out what default size should be.  size to contents?
+		// Copy/convert borders and padding to internal pixel values.
+		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
+		for (int i=0; i<4; i++)
+		{	float scale_by = i%2==0 ? parent_size.y : parent_size.x;			
+			padding[i] = style.padding[i].toPx(scale_by, false);
+			border[i] = style.borderWidth[i].toPx(scale_by, false);
 		}
 		
-		// If right side is anchored
-		if (!isNaN(right))
-		{	bottomRight.x = parent_width - right;
-			if (isNaN(left)) // if not left
-			{	if (!isNaN(width)) // if width
-					topLeft.x = parent_width - right - width;
-				else
-				{} // TODO: Figure out what default size should be.  size to contents?
-		}	}
+		// Convert style dimensions to pixels.		
+		Vec4f style_dimensions = Vec4f(
+			style.top.toPx(parent_size.y),
+			style.right.toPx(parent_size.x),
+			style.bottom.toPx(parent_size.y),
+			style.left.toPx(parent_size.x));
+		Vec2f style_size = Vec2f( // style size doesn't include borders and padding, but the internal size does.
+			style.width.toPx(parent_size.x) + border.left + border.right + padding.left + padding.right, 
+			style.height.toPx(parent_size.y) + border.top + border.bottom + padding.top + padding.bottom);
 		
-		// If top side is anchored
-		if (!isNaN(top))
-		{	topLeft.y = top;
-			if (!isNaN(height)) // if Height
-				bottomRight.y =top + height;
-			else if (isNaN(bottom)) // if not Height and not bottom
-			{} // TODO: Figure out what default size should be.  size to contents?
-		}
-		// If bottom side is anchored
-		if (!isNaN(bottom))
-		{	bottomRight.y = parent_height - bottom;
-			if (isNaN(top)) // if not top
-			{	if (!isNaN(height)) // if Height
-					topLeft.y = parent_height - bottom - height;
-				else
-				{} // TODO: Figure out what default size should be.  size to contents?
-		}	}
+		// This loop over xy combines the x/left/right and y/top/bottom calulations into one block of code.
+		for (int xy=0; xy<2; xy++)
+		{	int topLeft= xy==0 ? 3 : 0; // top or left
+			int bottomRight = xy ==0 ? 1 : 2; // bottom or right
+			
+			// Ensure at least 4 of the 6 style dimensions are set.
+			if (isNaN(style_dimensions[topLeft]))
+			{	if (isNaN(style_dimensions[bottomRight]))
+					style_dimensions[topLeft] = 0;
+				if (isNaN(style_size[xy]))
+					style_size[xy] = parent_size[xy];			
+			}
+			
+			// Position	
+			// Convert CSS style top, left, bottom, right, width, height to internal pixel x, y, width, height.
+			// (at this point, at most only one of left/width/right will be NaN)
+			if (isNaN(style_dimensions[topLeft])) // left is NaN
+			{	size[xy] = style_size[xy];
+				offset[xy] = parent_size[xy] - size[xy] - style_dimensions[bottomRight];
+			}
+			else if (isNaN(style_size.x)) // width is NaN
+			{	offset[xy] = style_dimensions[topLeft];
+				size[xy] = (parent_size[xy] - style_dimensions[bottomRight]) - offset[xy];
+			}
+			else // right is NaN
+			{	offset[xy] = style_dimensions[topLeft];
+				size[xy] = style_size[xy];
+			}
+		}	
 		
-		// Calculate offset
+		// Calculate absolute offset
 		if (parent)
-			offset = parent.offset + topLeft;
+			offsetAbsolute = parent.offsetAbsolute + offset;
 		else
-			offset = topLeft;
+			offsetAbsolute = offset;
 		
-		// See if anything has changed.
-		resized_by = Vec2f(this.width(), this.height()) - resized_by;
-		offset_by = offset - offset_by;		
-		float resized_length2 = resized_by.length2();
-		if (resized_length2 > 0 || offset_by.length2() > 0)
-		{	
-			calculateVertices();
-			
-			// Calculate children to update positions and offset.
+		// If resized
+		if (size != old_size)
+		{	resize_dirty = true;
+			resize(size-old_size); // trigger resize event.
 			foreach (c; children)
-				c.update();			
-			// Call resize if resized.
-			if (resized_length2 > 0)
-				resize(resized_by);
+				c.updateDimensions();
 		}
 	}
-	
-	protected void calculateVertices()
+		
+	void draw()
 	{
-		// Calculate vertices
-		Vec2f portion;
+		updateDimensions();
+		if (resize_dirty)
+			geometry.setDimensions(Vec2f(width(), height()), border, padding);
 		
-		// Portion of the Texture to use for drawing
-		// This won't be necessary when we support rectangular textures.
-		// TODO: This should also be replaceable with a texture scaling matrix.
-		if (style.backgroundMaterial)
-		{	portion.x = style.backgroundMaterial.padding.x/cast(float)style.backgroundMaterial.getWidth();
-			portion.y = style.backgroundMaterial.padding.y/cast(float)style.backgroundMaterial.getHeight();
-		} else
-		{	portion.x = 1;
-			portion.y = 1;
+		// Text
+		if (text.length && (text != old_text || resize_dirty))
+		{	int font_size = cast(int)style.fontSize.toPx(parentWidth());
+			int width = cast(int)width();
+			int height = cast(int)height();
+			Image textImage = TextLayout.render(text, style, font_size, width, height);
+			if (!textTexture)
+				textTexture = new GPUTexture(textImage, false, false, text, true);
+			else
+				textTexture.commit(textImage, false, false, text, true);
+			old_text = text;
 		}
 		
+		geometry.setColors(style.backgroundColor, style.borderColor);
+		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, style.borderImage, style.borderCornerImage, textTexture);
 		
-		switch(style.backgroundRepeat)
-		{
-			case Style.STRETCH:
-				float w = this.width();
-				float h = this.height();
-				vertices[0..8] = [0.0f, h, w, h, w, 0, 0, 0];
-				tex_coords[0..8] = [0.0f, portion.y, portion.x, portion.y, portion.x, 0, 0, 0];
-				break;
-			case Style.NINESLICE:
-				
-				// For vertex cooordinates
-				Vec2f vert1 = Vec2f(style.backgroundPositionX, style.backgroundPositionY);
-				Vec2f vert2 = Vec2f(width-style.backgroundPositionX, height-style.backgroundPositionY);
-				
-				// For texture coordinates
-				Vec2f tex1 = Vec2f(portion.x*third, portion.y*third);
-				Vec2f tex2 = Vec2f(portion.x*third*2, portion.y*third*2);
-				
-				// 0    3
-				// |	^
-				// V	|
-				// 1--->2
-				// static arrays to ensure this operation is 100% on the stack.
-				float[72] vertices_temp = [
-					0.0f, 0, 0, vert1.y, vert1.x, vert1.y, vert1.x, 0,						// top left
-					vert1.x, 0, vert1.x, vert1.y, vert2.x, vert1.y, vert2.x, 0,				// top
-					vert2.x, 0, vert2.x, vert1.y, width, vert1.y, width, 0,					// top right							
-					0.0f, vert1.y, 0, vert2.y, vert1.x, vert2.y, vert1.x, vert1.y,			// left
-					vert1.x, vert1.y, vert1.x, vert2.y, vert2.x, vert2.y, vert2.x, vert1.y,	// center
-					vert2.x, vert1.y, vert2.x, vert2.y, width, vert2.y, width, vert1.y,		// right							
-					0.0f, vert2.y, 0, height, vert1.x, height, vert1.x, vert2.y,			// bottom left			
-					vert1.x, vert2.y, vert1.x, height, vert2.x, height, vert2.x, vert2.y,	// bottom
-					vert2.x, vert2.y, vert2.x, height, width, height, width, vert2.y		// bottom right
-					];						
-				float[72] tex_coords_temp = [
-					0.0f, 0, 0, tex1.y, tex1.x, tex1.y, tex1.x, 0,							// top left
-					tex1.x, 0, tex1.x, tex1.y, tex2.x, tex1.y, tex2.x, 0,					// top
-					tex2.x, 0, tex2.x, tex1.y, portion.x, tex1.y, portion.x, 0,				// top right	
-					0.0f, tex1.y, 0, tex2.y, tex1.x, tex2.y, tex1.x, tex1.y,				// left
-					tex1.x, tex1.y, tex1.x, tex2.y, tex2.x, tex2.y, tex2.x, tex1.y,			// center
-					tex2.x, tex1.y, tex2.x, tex2.y, portion.x, tex2.y, portion.x, tex1.y,	// right				
-					0.0f, tex2.y, 0, portion.y, tex1.x, portion.y, tex1.x, tex2.y,			// bottom left
-					tex1.x, tex2.y, tex1.x, portion.y, tex2.x, portion.y, tex2.x, tex2.y,	// bottom
-					tex2.x, tex2.y, tex2.x, portion.y, portion.x, portion.y, portion.x, tex2.y // bottom right
-					];
-				vertices[0..72] = vertices_temp[0..72];
-				tex_coords[0..72] = tex_coords_temp[0..72];
-				
-				break;
-		}		
-	}
-	
-	/**
-	 * Render this Surface a rendering target.
-	 * TODO: Move this to Window?
-	 * Params:
-	 *     rt = TODO: Render to this target.*/
-	void render(IRenderTarget rt=null) 
-	{
-		//if (rt)
-		//	rt.bind();
-
-		glPushAttrib(0xFFFFFFFF);	// all attribs
-		glDisableClientState(GL_NORMAL_ARRAY);
+		glPushMatrix();
+		glTranslatef(offset.x, offset.y, 0);
+		Render.geometry(geometry);
 		
-		// Setup the viewport in orthogonal mode,
-		// with dimensions 0..width, 0..height
-		// with 0,0 being at the top left.
-		glViewport(0, 0, cast(int)System.size.x, cast(int)System.size.y);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, System.size.x, System.size.y, 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		// Using a z-buffer might make sorting unnecessary.  Tradeoffs?
+		if (!children.sorted(true, (Surface s){return s.style.zIndex;} ))
+			children.radixSort(true, (Surface s){return s.style.zIndex;} );
+		foreach(surf; children)
+			surf.draw();
 		
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);		
+		glPopMatrix();
 		
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			
-		//This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		draw();
-		
-		SDL_GL_SwapBuffers();
-		
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glPopAttrib();
-		
-		//if (rt)
-		//	rt.unbind();
-	}
-	
-	/**
-	 * Find the surface at the given coordinates.
-	 * Surfaces are ordered by zIndex with higher values appearing on top.
-	 * This function recurses through children and will return children, grandchildren, etc. as necessary.
-	 * TODO: Add relative argument.
-	 * Returns: The surface, or self if no surface at the coordinates, or null if coordinates are outside self. */
-	Surface findSurface(float x, float y)
-	{	if (Vec2f(x, y).inside(offset, offset - topLeft + bottomRight))
-		{	// Sort if necessary
-			if (!children.sorted(false, (Surface s){return s.style.zIndex;}))
-				children.radixSort(false, (Surface s){return s.style.zIndex;});
-			
-			// Recurse
-			foreach(surf; children)
-			{	Surface result = surf.findSurface(x, y);
-				if (result)
-					return result;
-			}
-			return this;
-		}
-		return null;
-	}
-	
-	/** 
-	 * If enabled, the mousecursor will be hidden and grabbed by the application.
-	 * This also allows for mouse position changes to be registered in a relative fashion,
-	 * i.e. even when the mouse is at the edge of the screen.  This is ideal for attaching
-	 * the mouse to the look direction of a first or third-person camera. */
-	void grabMouse(bool grab) {
-		if (grab){
-			focus();
-			SDL_WM_GrabInput(SDL_GRAB_ON);
-			SDL_ShowCursor(false);
-		}
-		else{
-			blur(); // should this be done?
-			SDL_WM_GrabInput(SDL_GRAB_OFF);
-			SDL_ShowCursor(true);
-		}
-		Input.grabbed = this._grabbed = grab;
-	}
-	
-	bool grabbed()
-	{	return _grabbed;		
-	}
-	
-	/**
-	 * Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. */
-	void raise()
-	{	this.style.zIndex = amax(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex + 1;
-	}
-	void lower() /// Ditto
-	{	this.style.zIndex = amin(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex - 1;	
-	}
-	
-	/**
-	 * Move this Surface.
-	 * This updates the top, left, bottom, and right styles accordingly, maintaining pixels/percent units.
-	 * Params:
-	 *     amount = Amount to move the surface in pixels.
-	 *     constrain = Prevent this surface from going outside the boundaries of its parent.*/
-	void move(Vec2f amount, bool constrain=false)
-	{	
-		// Ensure top and left are set in the stle if bottom and right are not.  This is required for moving.
-		if (isNaN(style.left) && isNaN(style.right))
-			style.left = 0.0f;
-		if (isNaN(style.top) && isNaN(style.bottom))
-			style.top = 0.0f;
-		
-		// Calculate real values from percents
-		float parent_width = parentWidth();
-		float parent_height= parentHeight();
-		float percent_width  = 100/parent_width;
-		float percent_height = 100/parent_height;
-		
-		// Update dimension styles with new positions.
-		if (!isNaN(style.left))
-			style.left += amount.x * (style.leftUnit==Style.PERCENT ? percent_width : 1.0f);
-		if (!isNaN(style.right))
-			style.right -= amount.x * (style.rightUnit==Style.PERCENT ? percent_width : 1.0f);
-		if (!isNaN(style.top))
-			style.top += amount.y * (style.topUnit==Style.PERCENT ? percent_height : 1.0f);
-		if (!isNaN(style.bottom))
-			style.bottom -= amount.y * (style.bottomUnit==Style.PERCENT ? percent_height : 1.0f);
-		
-		// if constrain dragging to parent dimensions.
-		if (constrain)	
-		{
-			// The constraints require the current calculations.
-			update();
-			
-			if (!isNaN(style.left))
-			{	if (style.left < 0)
-					style.left = 0;			
-				if (right() > parent_width)
-					left(parent_width - width());
-			}
-			if (!isNaN(style.right))
-			{	if (style.right < 0)
-					style.right = 0;
-				if (left() < 0)
-					right(parent_width - width());
-			}
-			if (!isNaN(style.top))
-			{	if (style.top < 0)
-					style.top = 0;			
-				if (bottom() > parent_height)
-					top(parent_height - height());
-			}	
-			if (!isNaN(style.bottom))
-			{	if (style.bottom < 0)
-					style.bottom = 0;
-				if (top() < 0)
-					bottom(parent_height - height());
-			}
-		}
-	}
-	
-	/**
-	 * Give focus to this Surface.  Only one Surface can have focus at a time.
-	 * All keyboard/mouse events will be forwarded to the surface that has focus.
-	 * If no Surface has focus, they will be given to the one under the mouse cursor.
-	 * Also calls the onFocus callback function if set. */
-	void focus(){
-		if(onFocus)
-			onFocus(this);
-		Input.surfaceLock = this;
+		resize_dirty = false;
 	}
 	
 	/**
 	 * Draw this Surface and call the Surface's onDraw method if it is not null.
 	 * When finished, the draw methods of all of this Surface's children are called. */
-	void draw()
+	void draw_old()
 	{
+		/+
 		if (onDraw)
 			onDraw(this);
 		
@@ -634,6 +438,158 @@ class Surface : Tree!(Surface)
 			
 			glPopMatrix();
 		}
+		+/
+	}
+	
+	/**
+	 * Render this Surface a rendering target.
+	 * TODO: Move this to Window?
+	 * Params:
+	 *     rt = TODO: Render to this target.*/
+	void render(IRenderTarget rt=null) 
+	{
+
+		glPushAttrib(0xFFFFFFFF);	// all attribs
+		glDisableClientState(GL_NORMAL_ARRAY);
+		
+		// Setup the viewport in orthogonal mode,
+		// with dimensions 0..width, 0..height
+		// with 0,0 being at the top left.
+		glViewport(0, 0, cast(int)System.size.x, cast(int)System.size.y);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0, System.size.x, System.size.y, 0, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);		
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			
+		//This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		draw();
+		
+		SDL_GL_SwapBuffers();
+		
+		glEnableClientState(GL_NORMAL_ARRAY);
+		glPopAttrib();
+	}
+	
+	/**
+	 * Find the surface at the given coordinates.
+	 * Surfaces are ordered by zIndex with higher values appearing on top.
+	 * This function recurses through children and will return children, grandchildren, etc. as necessary.
+	 * TODO: Add relative argument to allow x and y to be relative to another surface.
+	 * Returns: The surface, or self if no surface at the coordinates, or null if coordinates are outside self. */
+	Surface findSurface(float x, float y)
+	{	if (Vec2f(x, y).inside(offsetAbsolute, offsetAbsolute + size))
+		{	// Sort if necessary
+			if (!children.sorted(false, (Surface s){return s.style.zIndex;}))
+				children.radixSort(false, (Surface s){return s.style.zIndex;});
+			
+			// Recurse
+			foreach(surf; children)
+			{	Surface result = surf.findSurface(x, y);
+				if (result)
+					return result;
+			}
+			return this;
+		}
+		return null;
+	}
+	
+	/** 
+	 * When a Surface has grabMouse() enabled, the mouse cursor will be hidden this surface alone will receive all mouse input.
+	 * This also mouse movement so the mouse can move infinitely without encountering any boundaries.
+	 * For example, this is ideal for attaching the mouse to the look direction of a first or third-person camera. 
+	 * releaseMouse() undoes the effect. */
+	void grabMouse() {
+		focus();
+		SDL_WM_GrabInput(SDL_GRAB_ON);
+		SDL_ShowCursor(false);
+		grabbedSurface = this;
+	}
+	void releaseMouse() /// ditto
+	{	SDL_WM_GrabInput(SDL_GRAB_OFF);
+		SDL_ShowCursor(true);
+		grabbedSurface = null;
+	}
+	
+	/**
+	 * Return the Surface that is currently grabbing mouse input, or null if no Surfaces are. */
+	static Surface getGrabbedSurface()
+	{	return grabbedSurface;		
+	}
+	
+	/**
+	 * Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. */
+	void raise()
+	{	this.style.zIndex = amax(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex + 1;
+	}
+	void lower() /// ditto
+	{	this.style.zIndex = amin(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex - 1;	
+	}
+	
+	/**
+	 * Move this Surface.
+	 * This updates the top, left, bottom, and right styles accordingly, maintaining pixels/percent units.
+	 * Params:
+	 *     amount = Amount to move the surface in pixels.
+	 *     constrain = Prevent this surface from going outside the boundaries of its parent.*/
+	void move(Vec2f amount, bool constrain=false)
+	{	
+		// Get top, right, bottom, and left in terms of pixels, or nan.
+		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
+		Vec4f dimension;
+		for (int i=0; i<4; i++)
+		{	int xy = (i+1) % 2;
+			float multiplier = i==3 ? 1 : -1;				
+			dimension[i] = style.dimension[i].toPx(parent_size[xy]) + amount[xy] * multiplier;
+		}
+		
+		// Set top or left to 0 if they and their opposite are both NaN
+		if (isNaN(dimension[0]) && isNaN(dimension[2]))
+			dimension[0] = 0;
+		if (isNaN(dimension[1]) && isNaN(dimension[3]))
+			dimension[3] = 3;
+		
+		
+		for (int i=0; i<4; i++)
+		{	
+			// Apply constraint
+			int xy = (i+1) % 2;
+			if (constrain && !isNaN(dimension[i]))
+			{	if (dimension[i] < 0)				
+					dimension[i] = 0;
+				if (dimension[i] + size[xy] > parent_size[xy])
+					dimension[i] = parent_size[xy] - size[xy];									
+			}
+			
+			// Apply the movement
+			if (style.dimension[i].unit == Style.Unit.PERCENT)
+				style.dimension[i].value = dimension[i] / parent_size[xy]*100;
+			else
+				style.dimension[i].value = dimension[i];
+		}
+		updateDimensions(); // dragging breaks w/o this.
+	}
+	
+	/**
+	 * Give focus to this Surface.  Only one Surface can have focus at a time.
+	 * All keyboard/mouse events will be forwarded to the surface that has focus.
+	 * If no Surface has focus, they will be given to the one under the mouse cursor.
+	 * Also calls the onFocus callback function if set. */
+	void focus() {
+		Surface oldFocus = Surface.focusSurface;
+		if(oldFocus && oldFocus.onBlur)
+			oldFocus.onBlur(oldFocus);
+		if(onFocus)
+			onFocus(this);
+		Surface.focusSurface = this;
 	}
 	
 	/**
@@ -641,13 +597,13 @@ class Surface : Tree!(Surface)
 	void blur(){
 		if(onBlur)
 			onBlur(this);
-		Input.surfaceLock = null;
+		Surface.focusSurface = null;
 	}
 	
 	/**
 	 * Trigger a keyDown event and call the onKeyDown callback function if set. 
 	 * If the onKeyDown function is not set, call the parent's keyDown function. */ 
-	void keyDown(int key, int mod=ModifierKey.NONE)
+	void keyDown(dchar key, int mod=ModifierKey.NONE)
 	{	if(onKeyDown)
 			onKeyDown(this, key, mod);
 		else if(parent !is null) 
@@ -657,7 +613,7 @@ class Surface : Tree!(Surface)
 	/**
 	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
 	 * If the onKeyUp function is not set, call the parent's keyUp function.*/ 
-	void keyUp(int key, int mod=ModifierKey.NONE)
+	void keyUp(dchar key, int mod=ModifierKey.NONE)
 	{	if(onKeyUp)
 			onKeyUp(this, key, mod);
 		else if(parent !is null) 
@@ -698,11 +654,11 @@ class Surface : Tree!(Surface)
 	
 	/**
 	 * Trigger a mouseMove event and call the onMouseMove callback function if set. */ 
-	void mouseMove(byte buttons, Vec2i rel){
+	void mouseMove(byte buttons, Vec2i amount){
 		if(onMouseMove)
-			onMouseMove(this, buttons, rel);
+			onMouseMove(this, buttons, amount);
 		else if(parent !is null) 
-			parent.mouseMove(buttons, rel);
+			parent.mouseMove(buttons, amount);
 	}
 
 	/**
@@ -734,7 +690,7 @@ class Surface : Tree!(Surface)
 /**
  * SurfaceGeometry defines vertices and meshes for drawing a surface, including borders/border textures.
  * The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
- * Nine meshes are defined, one for each region.
+ * Nine 11 are defined, one for each border region and 3 for the center.
  * 0__4__8__12      BR
  * |\ |\ |\ |       BR
  * 1_\5_\9_\13      BR
@@ -742,61 +698,155 @@ class Surface : Tree!(Surface)
  * 2_\6_\10\14      BR
  * |\ |\ |\ |       BR
  * 3_\7_\11\15      BR
+ * 
+ * Vertices used for center2 Mesh, which is used for background-color and the border-image center.
+ * 16_18
+ * |\ |
+ * 17\19
+ * 
+ * Vertices used for text Mesh, which renders any text
+ * 20_22
+ * |\ |
+ * 21\23
+ * 
+ * Rendering occurs in up to 4 passes.
+ * First, render the borders and center1 with colors enabled and texturing disabled, for the borders and background-color
+ * Second, render center2 with texturing enabled, for the background-image
+ * Third, render the borders and center3 with colors disabled and texturing enabled for the border-image.
+ * Finally, the text itself is rendered
+ *  
+ * See: http://www.w3.org/TR/css3-background/#the-border-image
  */
 package class SurfaceGeometry : Geometry
 {
 	VertexBuffer!(Vec2f) vertices;
 	VertexBuffer!(Vec2f) texcoords;
 	
-	Mesh top_left;
-	Mesh top;
-	Mesh top_right;
-	Mesh right;
-	Mesh bottom_right;
-	Mesh bottom;
-	Mesh bottom_left;
-	Mesh left;
-	Mesh center;
+	// Meshes for border and background colors.  Meshes are defined in the order that they're rendered.
+	union {
+		struct {
+			Mesh top;
+			Mesh right;
+			Mesh bottom;
+			Mesh left;			
+		}
+		Mesh[4] borderColor;
+	}
+	Mesh backgroundColor;
+	Mesh backgroundImage; // because different texture coordinates are needed.
+	
+	// Meshes for border image
+	union {
+		struct {			
+			Mesh topImage;			
+			Mesh rightImage;		
+			Mesh bottomImage;			
+			Mesh leftImage;
+		}
+		Mesh[4] borderImage;
+	}
+	union {
+		struct {
+			Mesh topLeftImage;
+			Mesh topRightImage;
+			Mesh bottomRightImage;
+			Mesh bottomLeftImage;
+		}
+		Mesh[4] borderCornerImage;
+	}
+	Mesh centerImage;
+	
+	Mesh text;
 	
 	/**
 	 * Create the vertices, texture coordinates, meshes, and materials used for rendering a surface. */
 	this()
 	{	
 		// Create Vertex Arrays
-		setVertices(new Vec2f[16]);
-		setTexCoords0(new Vec2f[16]);
+		setVertices(new Vec2f[24]);
+		setTexCoords0(new Vec2f[24]);
 		vertices = cast(VertexBuffer!(Vec2f))getAttribute(Geometry.VERTICES);
 		texcoords = cast(VertexBuffer!(Vec2f))getAttribute(Geometry.TEXCOORDS0);
 		
-		// Create Meshes
-		top_left     = new Mesh(new Material(), [Vec3i(0, 1, 5), Vec3i(1, 5, 4)]);
-		top          = new Mesh(new Material(), [Vec3i(4, 5, 9), Vec3i(5, 9, 8)]);
-		top_right    = new Mesh(new Material(), [Vec3i(8, 9, 13),Vec3i(9, 13, 12)]);
-		right        = new Mesh(new Material(), [Vec3i(9, 10,14),Vec3i(10, 14, 13)]);
-		bottom_right = new Mesh(new Material(), [Vec3i(10, 11, 15), Vec3i(11, 15, 14)]);
-		bottom       = new Mesh(new Material(), [Vec3i(6, 7, 11),Vec3i(7, 11, 10)]);
-		bottom_left  = new Mesh(new Material(), [Vec3i(2, 3, 7), Vec3i(3, 7, 6)]);
-		left         = new Mesh(new Material(), [Vec3i(1, 2, 6), Vec3i(2, 6, 5)]);
-		center       = new Mesh(new Material(), [Vec3i(5, 6, 10),Vec3i(6, 10, 9)]);		
-		setMeshes([top_left, top, top_right, right, bottom_right, bottom, bottom_left, left, center]);
+		// Make a new material with a single layer with a diffuse color of white.
+		Material createMaterial()
+		{	auto result = new Material();
+			result.addLayer(new Layer());
+			return result;
+		}
+		
+		// Create Meshes for Borders and Background Color
+		top          = new Mesh(createMaterial(), [Vec3i(0, 5, 4), Vec3i(4, 5, 9), Vec3i(4, 9, 8), Vec3i(8, 9, 12)]);
+		right        = new Mesh(createMaterial(), [Vec3i(9, 13, 12), Vec3i(9, 10, 14), Vec3i(14, 13, 9), Vec3i(10, 15, 14)]);
+		bottom       = new Mesh(createMaterial(), [Vec3i(3, 7, 6), Vec3i(6, 7, 11), Vec3i(11, 10, 6), Vec3i(10, 11, 15)]);
+		left         = new Mesh(createMaterial(), [Vec3i(0, 1, 5), Vec3i(1, 6, 5), Vec3i(1, 2, 6), Vec3i(2, 3, 6)]);		
+		backgroundColor      = new Mesh(createMaterial(), [Vec3i(5, 6, 10), Vec3i(5, 10, 9)]);
+				
+		// Mesh for Background Image
+		backgroundImage      = new Mesh(createMaterial(), [Vec3i(16, 17, 19),Vec3i(19, 18, 16)]);
+		
+		// Create Meshes for Border Image
+		topLeftImage     = new Mesh(null, [Vec3i(0, 1, 5), Vec3i(5, 4, 0)]);
+		topImage         = new Mesh(null, [Vec3i(4, 5, 9), Vec3i(9, 8, 4)]);
+		topRightImage    = new Mesh(null, [Vec3i(8, 9, 13),Vec3i(13, 12, 8)]);
+		rightImage       = new Mesh(null, [Vec3i(9, 10,14),Vec3i(14, 13, 9)]);
+		bottomRightImage = new Mesh(null, [Vec3i(10, 11, 15), Vec3i(15, 14, 10)]);
+		bottomImage= new Mesh(null, [Vec3i(6, 7, 11),Vec3i(11, 10, 6)]);
+		bottomLeftImage  = new Mesh(null, [Vec3i(2, 3, 7), Vec3i(7, 6, 2)]);
+		leftImage        = new Mesh(null, [Vec3i(1, 2, 6), Vec3i(6, 5, 1)]);
+		centerImage      = new Mesh(null, [Vec3i(5, 6, 10), Vec3i(5, 10, 9)]);
+		
+		text   			 = new Mesh(null, [Vec3i(20, 21, 23),Vec3i(23, 22, 20)]);
+		
+		setMeshes([
+			top, right, bottom, left, backgroundColor, backgroundImage,
+			topLeftImage, topImage, topRightImage, rightImage, 
+			bottomRightImage, bottomImage, bottomLeftImage, leftImage, centerImage, text]);
+	}
+	
+	/**
+	 * Set the colors for the center and the top, right, bottom, and left borders
+	 * TODO: */
+	void setColors(Color center, Color[4] borderColor)
+	{	backgroundColor.getMaterial().getLayers()[0].color = center; // changing the color seems to have no effect.
+	
+		for (int i=0; i<4; i++) // top, right, bottom, left
+			this.borderColor[i].getMaterial().getLayers()[0].color = borderColor[i];
 	}
 	
 	/**
 	 * Set the dimensions of the surface's geometry
 	 * Params:
 	 *     dimensions = Used to set the width and the height in pixels
-	 *     borders = Used to set the size of each border in pixels (top, right, bottom, left) */
-	void setDimensions(Vec2f dimensions, Vec4f borders)
-	{	Vec2f[] vertices = cast(Vec2f[])getVertices().getData();	
+	 *     borders = Used to set the size of each border in pixels (top, right, bottom, left) 
+	 *     padding = Used to se the size of teh padding in pixels (top, right, bottom, left)*/
+	void setDimensions(Vec2f dimensions, Vec4f borders, Vec4f padding /*, Vec2f backgroundPosition, ubyte backgroundRepeatX, ubyte backgroundRepeatY*/)
+	{	Vec2f[] vertices = cast(Vec2f[])(getVertices().getData());
+		
+		// Note that some vertices are left at 0
+		// This also positions the quad for mesh backgroundColor.
 		vertices[ 4].x = vertices[ 5].x = vertices[ 6].x = vertices[ 7].x = borders.left;
-		vertices[ 8].x = vertices[ 9].x = vertices[10].x = vertices[11].x = borders.left + dimensions.width;
-		vertices[12].x = vertices[13].x = vertices[14].x = vertices[15].x = borders.left + dimensions.width + borders.right;
+		vertices[ 8].x = vertices[ 9].x = vertices[10].x = vertices[11].x = borders.left + padding.left + dimensions.width + padding.right;
+		vertices[12].x = vertices[13].x = vertices[14].x = vertices[15].x = borders.left + padding.left + dimensions.width + padding.right + borders.right;
+		
 		vertices[ 1].y = vertices[ 5].y = vertices[ 9].y = vertices[13].y = borders.top;
-		vertices[ 2].y = vertices[ 6].y = vertices[10].y = vertices[14].y = borders.top + dimensions.height;
-		vertices[ 3].y = vertices[ 7].y = vertices[11].y = vertices[15].y = borders.top + dimensions.height + borders.bottom;
+		vertices[ 2].y = vertices[ 6].y = vertices[10].y = vertices[14].y = borders.top + padding.top + dimensions.height + padding.bottom;
+		vertices[ 3].y = vertices[ 7].y = vertices[11].y = vertices[15].y = borders.top + padding.top + dimensions.height + padding.bottom + borders.bottom;		
+		
+		// Position quad for mesh backgroundImage.  For now, we just stretch it to fill the entire area.
+		vertices[16].x = vertices[17].x = borders.left;
+		vertices[18].x = vertices[19].x = borders.left + padding.left + dimensions.width + padding.right;
+		vertices[16].y = vertices[18].y = borders.top;
+		vertices[17].y = vertices[19].y = borders.top + padding.top + dimensions.height + padding.bottom;
+		
+		vertices[20].x = vertices[21].x = borders.left + padding.left;
+		vertices[22].x = vertices[23].x = borders.left + padding.left + dimensions.width;
+		vertices[20].y = vertices[22].y = borders.top + padding.top;
+		vertices[21].y = vertices[23].y = borders.top + padding.top + dimensions.height;
+		
 		setVertices(vertices);
 		
-		// Set Texture Coordinates (Currently only supports scaling)
+		// Set Texture Coordinates for Border Image
 		Vec2f[] texcoords = cast(Vec2f[])getTexCoords0().getData();
 		texcoords[4].x = texcoords[5].x = texcoords[6].x = texcoords[7].x = 1/3.0f;
 		texcoords[8].x = texcoords[9].x = texcoords[10].x= texcoords[11].x= 2/3.0f;
@@ -804,6 +854,73 @@ package class SurfaceGeometry : Geometry
 		texcoords[1].y = texcoords[5].y = texcoords[9].y = texcoords[13].y= 1/3.0f;
 		texcoords[2].y = texcoords[6].y = texcoords[10].y= texcoords[14].y= 2/3.0f;
 		texcoords[3].y = texcoords[7].y = texcoords[11].y= texcoords[15].y= 1;
+		
+		// Texture Coordinates for Background Image and Text
+		texcoords[16].x = texcoords[17].x = texcoords[20].x = texcoords[21].x = 0;
+		texcoords[18].x = texcoords[19].x = texcoords[22].x = texcoords[23].x = 1;		
+		texcoords[16].y = texcoords[18].y = texcoords[20].y = texcoords[22].y = 0;
+		texcoords[17].y = texcoords[19].y = texcoords[21].y = texcoords[23].y = 1;
+		
 		setTexCoords0(texcoords);
+	}
+
+	// TODO: Convert this to accept materials as well as textures, 
+	// or maybe just allow instantiation of a Material from a GPUTexture, Texture, or Layer
+	void setMaterials(GPUTexture backgroundImage, GPUTexture centerImage, GPUTexture[] borderImage, GPUTexture[] borderCornerImage, GPUTexture text)
+	{	
+		Layer createLayer(GPUTexture texture, bool clamp=false)
+		{	auto result = new Layer();
+			result.addTexture(Texture(texture, clamp, TEXTURE_FILTER_BILINEAR));
+			return result;
+		}
+		Layer createLayer2(Texture texture)
+		{	auto result = new Layer();
+			result.addTexture(texture);
+			return result;
+		}
+		
+		// Background Image
+		if (backgroundImage)
+		{	this.backgroundImage.setMaterial(new Material());
+			this.backgroundImage.getMaterial().addLayer(createLayer(backgroundImage));
+		} else
+			this.backgroundImage.setMaterial(cast(Material)null);
+		
+		// Border Images
+		foreach(mesh; this.borderImage)
+		{	if (borderImage[0])
+			{	mesh.setMaterial(new Material());
+				mesh.getMaterial().addLayer(createLayer(borderImage[0]));
+			} else
+				mesh.setMaterial(cast(Material)null);
+		}
+		foreach(mesh; this.borderCornerImage)
+		{	if (borderCornerImage[0])
+			{	mesh.setMaterial(new Material());
+				mesh.getMaterial().addLayer(createLayer(borderCornerImage[0]));
+			} else
+				mesh.setMaterial(cast(Material)null);
+		}
+
+		if (centerImage)
+		{	this.centerImage.setMaterial(new Material());
+			this.centerImage.getMaterial().addLayer(createLayer(centerImage));
+		} else
+			this.centerImage.setMaterial(cast(Material)null);
+				
+		if (text)
+		{	this.text.setMaterial(new Material());
+			this.text.getMaterial().addLayer(createLayer(text, true));
+			this.text.getMaterial().getLayers()[0].blend = BLEND_AVERAGE;
+			
+			// Text bottom vertices depend on text texture size.
+			Vec2f[] vertices = cast(Vec2f[])(getVertices().getData());			
+			float height = text.getHeight() - text.padding.y;
+			vertices[21].y = vertices[23].y = vertices[20].y + height;			
+			setVertices(vertices);
+			
+		} else
+			this.text.setMaterial(cast(Material)null);
+
 	}
 }

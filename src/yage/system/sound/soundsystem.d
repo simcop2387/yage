@@ -1,12 +1,11 @@
 /**
  * Copyright:  (c) 2005-2009 Eric Poggel
- * Authors:	   Eric Poggel
- * License:	   <a href="lgpl.txt">LGPL</a>
- *
- * This module contains OpenAL wrapping classes that are used internally by the engine.
- * Ideally, few if any other modules should include derelict._openal and use its functions directly.
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl.txt">LGPL</a>
  */
-module yage.system.openal;
+module yage.system.sound.soundsystem;
+
+import derelict.openal.al;
 
 import tango.math.Math;
 import tango.io.Stdout;
@@ -14,39 +13,32 @@ import tango.util.Convert;
 import tango.core.Thread;
 import tango.core.Traits;
 
-import derelict.openal.al;
-
 import yage.core.array;
 import yage.core.closure;
-import yage.core.exceptions;
-import yage.core.interfaces;
-import yage.core.math;
-import yage.core.matrix;
+import yage.core.object2;
+import yage.core.math.all;
 import yage.core.misc;
 import yage.core.repeater;
-import yage.core.vector;
 import yage.scene.camera;
 import yage.scene.sound;
 import yage.system.system;
 import yage.system.log;
+import yage.system.sound.openal;
 import yage.resource.sound;
 
 // Not defined in derelict yet
-const int ALC_MONO_SOURCES   = 0x1010;
-const int ALC_STEREO_SOURCES = 0x1011;
-const int AL_SEC_OFFSET = 0x1024;
-const int AL_SAMPLE_OFFSET = 0x1025;
-
-template e()
-{	const char[] e = "scope(failure) Stdout.format(__FILE__, \" line:\", __LINE__);";
+private {
+	const int ALC_MONO_SOURCES   = 0x1010;
+	const int ALC_STEREO_SOURCES = 0x1011;
+	const int AL_SEC_OFFSET = 0x1024;
+	const int AL_SAMPLE_OFFSET = 0x1025;
 }
-
 
 /*
  * Represents an OpenAL source (an instance of a sound playing).
  * Typical hardware can only support a small number of these, so SoundNodes map and unmap to these sources as needed. 
  * This is used internally by the engine and should never need to be instantiated manually. */
-private class ALSource : IFinalizable
+private class SoundSource : IFinalizable
 {
 	package uint al_source;
 	
@@ -70,18 +62,18 @@ private class ALSource : IFinalizable
 	/*
 	 * Create the OpenAL Source. */
 	this()
-	{	mixin(e!());		
+	{			
 		OpenAL.genSources(1, &al_source);
 	}
 	
 	/*
 	 * Stop playback, unqueue all buffers and then delete the source itself. */
 	~this()
-	{	mixin(e!());
+	{	
 		finalize();		
 	}
 	void finalize() // ditto
-	{	mixin(e!());
+	{	
 		if (al_source)
 		{	unbind();
 			alDeleteSources(1, &al_source);
@@ -90,11 +82,11 @@ private class ALSource : IFinalizable
 	}
 
 	/*
-	 * SoundNodes act as a virtual instance of a real ALSource
-	 * This function ensures the ALSource matches all of the parameters of the SoundNode. 
+	 * SoundNodes act as a virtual instance of a real SoundSource
+	 * This function ensures the SoundSource matches all of the parameters of the SoundNode. 
 	 * If called multiple times from the same SoundNode, this will just update the parameters. */
 	void bind(SoundNode soundNode)
-	{	mixin(e!());
+	{	
 		this.soundNode = soundNode;
 		this.looping = soundNode.getLooping();
 		
@@ -165,7 +157,7 @@ private class ALSource : IFinalizable
 	/*
 	 * Unbind this sound source from a sound node, stopping playback and resetting key state variables. */
 	void unbind()
-	{	mixin(e!());
+	{	
 		if (soundNode)
 		{	enqueue	= false;
 			synchronized(OpenAL.getMutex())
@@ -184,12 +176,12 @@ private class ALSource : IFinalizable
 	 * Seek to the position in the track.  Seek has a precision of .05 seconds.
 	 * @throws OpenALException if the value is outside the range of the Sound. */
 	void seek(double seconds)
-	{	mixin(e!());
+	{	
 		int buffers_per_second = sound.getBuffersPerSecond();
 		int new_start = cast(int)floor(seconds*buffers_per_second);
 		float fraction = seconds*buffers_per_second - new_start;
 		if (new_start>sound.getBuffersLength())
-			throw new OpenALException("ALSource.seek(%f) is invalid for '%s'", seconds, sound.getSource());
+			throw new OpenALException("SoundSource.seek(%f) is invalid for '%s'", seconds, sound.getSource());
 
 		// Delete any leftover buffers
 		synchronized(OpenAL.getMutex())
@@ -207,7 +199,7 @@ private class ALSource : IFinalizable
 	/*
 	 * Tell the position of the playback of the current sound file, in seconds. */ 
 	double tell()
-	{	mixin(e!());
+	{	
 		int processed; // [below] synchronization shouldn't be needed for read-only functions... ?
 		OpenAL.getSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
 		float fraction=0;
@@ -227,7 +219,7 @@ private class ALSource : IFinalizable
 		assert(sound);
 	}
 	body
-	{	mixin(e!());
+	{	
 		synchronized(OpenAL.getMutex())
 		{	if (enqueue)
 			{	
@@ -292,7 +284,7 @@ private class ALSource : IFinalizable
 	 * Unqueue all buffers that have finished playing
 	 * If the source is stopped, all buffers will be removed. */
 	protected void unqueueBuffers()
-	{	mixin(e!());
+	{	
 		if (sound)
 		{	synchronized(OpenAL.getMutex())
 			{	int processed;
@@ -309,13 +301,13 @@ private class ALSource : IFinalizable
  * It provides the following features:
  * 
  * Instantiates an OpenAL device and context upon construction.$(BR)
- * Stores a short array of ALSource wrappers that can be wrapped around with an infinite number of virtual sources.$(BR)
- * Controls a sound thread that handles buffering audio to all active ALSources. */
-class OpenALContext : IFinalizable
+ * Stores a short array of SoundSource wrappers that can be wrapped around with an infinite number of virtual sources.$(BR)
+ * Controls a sound thread that handles buffering audio to all active SoundSources. */
+class SoundContext : IFinalizable
 {	
 	protected const int MAX_SOURCES = 32;
 	protected const int UPDATE_FREQUENCY = 30;
-	protected ALSource[] sources;
+	protected SoundSource[] sources;
 	
 	protected ALCdevice* device = null;
 	protected ALCcontext* context = null;	
@@ -328,12 +320,12 @@ class OpenALContext : IFinalizable
 	 * Constructor.
 	 * Create a device, a context, and start a thread that automatically updates all sound buffers.
 	 * This function is called automatically by the Singleton template.
-	 * To get an instance, use OpenALContext.getInstance(). */
+	 * To get an instance, use SoundContext.getInstance(). */
 	protected this()
-	{	mixin(e!());
+	{	
 		// Get a device
 		device = OpenAL.openDevice(null);		
-		Log.write("Using OpenAL System '%s'.", OpenAL.getString(device, ALC_DEVICE_SPECIFIER));
+		Log.write("Using OpenAL Device '%s'.", OpenAL.getString(device, ALC_DEVICE_SPECIFIER));
 	
 		// Get a context
 		context = OpenAL.createContext(device, null);
@@ -352,7 +344,7 @@ class OpenALContext : IFinalizable
 		// Create as many soures as we can, up to a limit
 		for (int i=0; i<max_sources; i++)
 		{	try {
-				auto source = new ALSource(); // trigger any exceptions before array length increases.
+				auto source = new SoundSource(); // trigger any exceptions before array length increases.
 				sources ~= source;
 			} catch (OpenALException e)
 			{	break;				
@@ -362,7 +354,7 @@ class OpenALContext : IFinalizable
 		// Start a thread to perform sound updates.
 		sound_thread = new Repeater();
 		sound_thread.setFrequency(UPDATE_FREQUENCY);
-		sound_thread.setFunction(&updateSounds);
+		sound_thread.setFunction(&updateSounds); // why did this cause a segfault?
 		sound_thread.play();
 	}
 	
@@ -383,7 +375,7 @@ class OpenALContext : IFinalizable
 	 * Delete the dedvice and context,
 	 * delete all sources, and set the current context to null. */
 	void finalize()
-	{	mixin(e!());
+	{	
 		if (context)
 		{	sound_thread.finalize();
 			synchronized(OpenAL.getMutex())
@@ -403,16 +395,13 @@ class OpenALContext : IFinalizable
 	/**
 	 * Get the OpenAL Context. */
 	ALCcontext* getContext()
-	{	mixin(e!());
-		return context;		
+	{	return context;		
 	}
 	
 	/*
-	 * Called by the sound thread to update all active source's sound buffers. 
-	 * XXX: Access violation from this function occurred once on exit.  */
+	 * Called by the sound thread to update all active source's sound buffers. */
 	protected void updateSounds(float unused)
-	{	mixin(e!());
-			
+	{				
 		auto listener = CameraNode.getListener();
 		if (listener)
 		{	auto scene = listener.getScene();
@@ -480,128 +469,9 @@ class OpenALContext : IFinalizable
 			}
 		}
 		
-		//debugSources();
-		
 		// update each source's sound buffers.
 		foreach (source; sources)
 			if (source.soundNode)
 				source.updateBuffers();
 	}
-	
-	void debugSources()
-	{	try {
-			foreach (i, source; sources)
-			{	if (source.soundNode)
-					Stdout.format("source %d bound, vol=%s, dist=%s, file=%s", i, source.soundNode.intensity, 
-						CameraNode.getListener().getAbsolutePosition().distance(source.soundNode.getAbsolutePosition()), 
-						source.soundNode.getSound().getSource());
-				else
-					Stdout.format("source %s unbound", i);
-			}
-			foreach (i, sound; sounds)
-			{	
-				Stdout.format("sound %s, file=%s", i, sound.intensity, sound.getSound().getSource());
-			}
-		}
-		catch (Exception e) {}
-	}
-}
-
-/**
- * Create a wrapper around all OpenAL functions providing the following additional features:
- * 
- * Error results from each openal call are checked.$(BR)
- * On error, an exception is thrown with the OpenAL error code translated to a meaningful string. */
-class OpenAL
-{
-	static char[][int] ALErrorLookup;
-	static Object mutex;
-	
-	// Initialize static variables
-	static this ()
-	{	ALErrorLookup = [
-			0xA001: "AL_INVALID_NAME"[],
-			0xA002: "AL_ILLEGAL_ENUM",
-			0xA002: "AL_INVALID_ENUM",
-			0xA003: "AL_INVALID_VALUE",
-			0xA004: "AL_ILLEGAL_COMMAND",
-			0xA004: "AL_INVALID_OPERATION",
-			0xA005: "AL_OUT_OF_MEMORY" 
-		];
-		mutex = new Object();
-	}
-	
-	/*
-	 * Create a wrapper around any OpenAL function.
-	 * ReturnType execute(FunctionName)(Arguments ...);*/
-	static R execute(alias T, R=ReturnTypeOf!(baseTypedef!(typeof(T))))(ParameterTupleOf!(baseTypedef!(typeof(T))) args)
-	in {
-		if (T.stringof[0..3] != "alc" && OpenALContext.singleton) // all non-alc functions require an active OpenAL Context
-			assert(OpenALContext.getInstance().getContext());
-	}
-	body
-	{	int error = alGetError(); // clear any previous errors.
-		
-		// Check to see if an OpenAL error was set.
-		void checkError()
-		{	error = alGetError();
-			if (error != AL_NO_ERROR)
-				throw new OpenALException("OpenAL %s error %s", T.stringof, OpenAL.ALErrorLookup[error]);
-		}		
-		
-		// Call the function
-		try {
-			static if (is (R==void))
-			{	T(args);
-				if (T.stringof[0..3] != "alc")
-					checkError();
-			}
-			else
-			{	R result = T(args);
-				if (T.stringof[0..3] == "alc") // can't use alGetError for alc functions.
-				{	if (!result)
-						throw new OpenALException("OpenAL %s error. %s returned null.", T.stringof, T.stringof);
-				} else
-					checkError();
-				return result;
-			}
-		} catch (OpenALException e)
-		{	throw e;			
-		} catch (Exception e)
-		{	throw new OpenALException("OpenAL %s error. %s threw an exception with message '%s'", T.stringof, T.stringof, e);
-		}
-	}
-	
-	/**
-	 * Get an OpenAL mutex to ensure that no two threads ever execute OpenAL functionality simultaneously. */
-	static Object getMutex()
-	{	return mutex;		
-	}
-	
-	/**
-	 * Wrappers for each OpenAL function (unfinished). */
-	alias execute!(alBufferData) bufferData; /// ditto	
-	alias execute!(alDeleteBuffers) deleteBuffers; /// ditto
-	alias execute!(alDeleteSources) deleteSources; /// ditto
-	alias execute!(alGenBuffers) genBuffers; /// ditto
-	alias execute!(alGenSources) genSources; /// ditto
-	alias execute!(alGetSourcef) getSourcef; /// ditto
-	alias execute!(alGetSourcei) getSourcei; /// ditto
-	alias execute!(alIsBuffer) isBuffer; /// ditto
-	alias execute!(alListenerfv) listenerfv; /// ditto
-	alias execute!(alSourcef) sourcef; /// ditto
-	alias execute!(alSourcefv) sourcefv; /// ditto
-	alias execute!(alSourcePlay) sourcePlay; /// ditto
-	alias execute!(alSourcePause) sourcePause; /// ditto
-	alias execute!(alSourceQueueBuffers) sourceQueueBuffers; /// ditto
-	alias execute!(alSourceStop) sourceStop; /// ditto
-	alias execute!(alSourceUnqueueBuffers) sourceUnqueueBuffers; /// ditto
-	
-	alias execute!(alcCloseDevice) closeDevice; /// ditto
-	alias execute!(alcCreateContext) createContext; /// ditto
-	alias execute!(alcDestroyContext) destroyContext; /// ditto
-	alias execute!(alcGetIntegerv) getIntegerv; /// ditto
-	alias execute!(alcGetString) getString; /// ditto
-	alias execute!(alcMakeContextCurrent) makeContextCurrent; /// ditto
-	alias execute!(alcOpenDevice) openDevice; /// ditto
 }

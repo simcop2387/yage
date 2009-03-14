@@ -7,7 +7,7 @@
 module yage.scene.model;
 
 import yage.core.timer;
-import yage.core.vector;
+import yage.core.math.vector;
 import yage.system.system;
 import yage.system.log;
 import yage.resource.manager;

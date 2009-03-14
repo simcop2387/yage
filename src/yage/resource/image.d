@@ -9,7 +9,7 @@ module yage.resource.image;
 import std.string;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
-import yage.core.exceptions;
+import yage.core.object2;;
 import yage.resource.resource;
 
 /**
@@ -318,7 +318,19 @@ class Image : Resource
 					}
 				break;
 			case 4:
-				throw new ResourceManagerException("Not implemented yet :)");
+				if (this.channels == 1)
+				{	ubyte[] temp = new ubyte[data.length];
+					temp[0..length] = data[0..length];	// temp is copy of existing grayscale
+					data.length = width*height*3;
+					for (int i=0; i<temp.length; i++)
+					{	data[i*3]   = 	// copy temp into all
+						data[i*3+1] = 	// 3 channels of data
+						data[i*3+2] = temp[i];
+					}
+					delete temp;
+				}
+				else
+					throw new ResourceManagerException("Not implemented yet :)");
 				break;
 			default:
 				throw new ResourceManagerException("Unrecognized image format.");
@@ -328,6 +340,49 @@ class Image : Resource
 		
 		return this;
 	}
+	
+	void setChannel(int c, Image image)
+	in {
+		assert(image.channels==1);
+		assert(c<=channels);
+		assert(image.width==width);
+		assert(image.height==height);
+	} body
+	{	for (int i=0; i<image.data.length; i++)
+			data[i*channels+c] = image.data[i];
+	}
+	
+	
+	/*
+	1 2 3 A
+	2 2 3 A
+	3 3 3 A 
+	A A A A
+	
+	width=3, height=3
+	left=0, right=0, bottom=4, right=4	
+	 */
+	Image crop(int left, int top, int right, int bottom)
+	{
+		Image result = new Image(channels, right-left, bottom-top);
+		for (int x=left; x<right; x++)  // x from 0 to 4
+			for (int y=top; y<bottom; y++) // y from 0 to 4
+				if (0<=x && x<width && 0<=y && y<height) // if inside source image
+					if (0<=x && x<result.width && 0<=y && y<result.height) // if inside dest. image.
+					{	
+						int s = ((y-top)*width+(x-left))*channels;
+						int d = (y*result.width+x)*channels;
+						result.data[d..d+channels] = data[s..s+channels];
+					}
+		return result;
+	}
+	unittest {
+		auto img = new Image(3, 4, 5);
+		img = img.crop(0, 0, 12, 6);
+		assert(img.getWidth() == 12);
+		assert(img.getHeight() == 6);
+	}
+		
 	/**
 	 * Return a new image that is a sub-image of this image.
 	 * TODO: Replace this with crop.

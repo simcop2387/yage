@@ -7,6 +7,7 @@ module yage.core.closure;
 
 import std.stdarg;
 import std.traits;
+import tango.io.Stdout;
 import yage.core.parse;
 
 /**

@@ -7,22 +7,19 @@
 module yage.scene.camera;
 
 import tango.math.Math;
-import std.stdio;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
-import derelict.opengl.glext;
-import derelict.openal.al;
-import yage.core.matrix;
-import yage.core.plane;
-import yage.core.vector;
+import yage.core.math.matrix;
+import yage.core.math.plane;
+import yage.core.math.vector;
 import yage.resource.texture;
 import yage.scene.visible;
 import yage.scene.node;
 import yage.scene.scene;
 import yage.scene.movable;
-import yage.system.probe;
+import yage.system.graphics.probe;
 import yage.system.system;
-import yage.system.render;
+import yage.system.graphics.render;
 
 
 /**
@@ -247,30 +244,6 @@ class CameraNode : MovableNode
 		
 		frame_count++;
 	}
-
-	/**
-	 * Give the new position and velocity of the camera to OpenAL
-	 * Should setTransformDirty() be overridden instead?
-	 * TODO--Allow only one camera to play sound. */
-	void update(float delta)
-	{
-		super.update(delta);
-
-		// Deprecated:
-		// Give the camera's position, orientation, and velocity to OpenAL
-		// Look is looking into the monitor
-		// The positive y direction is up.
-		Vec3f look = Vec3f(0, 0, -1).rotate(getAbsoluteTransform());
-		Vec3f up = Vec3f(0, 1, 0).rotate(transform_abs);
-		float[6] concat;
-		concat[0..3] = look.v;
-		concat[3..6] = up.v;
-
-		alListenerfv(AL_POSITION, &transform_abs.v[12]);
-		alListenerfv(AL_ORIENTATION, concat.ptr);
-		alListenerfv(AL_VELOCITY, &linear_velocity_abs.v[0]);
-	}
-
 
 	// Add the node and all child Nodes to the framebuffer, if onscreen.
 	protected void addNodesToRender(Scene node)

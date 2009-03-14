@@ -8,11 +8,11 @@ module yage.scene.sound;
 
 import tango.stdc.math;
 import tango.math.Math;
-import yage.core.exceptions;
-import yage.core.interfaces;
-import yage.core.math;
+import yage.core.object2;;
+import yage.core.object2;;
+import yage.core.math.math;
 import yage.core.timer;
-import yage.core.vector;
+import yage.core.math.vector;
 import yage.resource.manager;
 import yage.resource.sound;
 import yage.scene.node;

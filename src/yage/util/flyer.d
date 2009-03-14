@@ -15,7 +15,8 @@ import yage.scene.movable;
 import yage.system.input;
 
 /**
- * A class to quickly allow a camera to navigate a scene via keyboard and mouse input. */
+ * A class to quickly allow a camera to navigate a scene via keyboard and mouse input. 
+ * This is out of date and needs to be updated for the new input system. */
 class Flyer
 {
 
@@ -81,6 +82,7 @@ class Flyer
 
 		float speed = 2000*delta;
 
+		/*// TODO: update for the new input system.
 		if (Input.keyDown[SDLK_w] || Input.keyDown[SDLK_UP])
 			accelerate(Vec3f(0, 0, -speed));
 		if (Input.keyDown[SDLK_s] || Input.keyDown[SDLK_DOWN])
@@ -89,11 +91,12 @@ class Flyer
 			accelerate(Vec3f(-speed, 0, 0));
 		if (Input.keyDown[SDLK_d] || Input.keyDown[SDLK_RIGHT])
 			accelerate(Vec3f(speed, 0, 0));
-
-// 		if (Input.getGrabMouse())
-// 		{	Vec2f movement = Input.getMouseDelta();
-// 			angularAccelerate(-movement.x/12.0, movement.y/16.0);
-// 		}
+		
+ 		if (Input.getGrabMouse())
+ 		{	Vec2f movement = Input.getMouseDelta();
+ 			angularAccelerate(-movement.x/12.0, movement.y/16.0);
+ 		}
+		*/
 	}
 
 }

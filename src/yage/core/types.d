@@ -6,12 +6,10 @@
 
 module yage.core.types;
 
-import std.stdio;
-import std.intrinsic;
-import yage.core.math;
+import yage.core.math.math;
 import yage.core.parse;
-import yage.core.vector;
-import yage.core.vector:Vec4f;
+import yage.core.math.vector;
+import yage.core.math.vector:Vec4f;
 private extern (C) void *memcpy(void *, void *, uint);
 
 

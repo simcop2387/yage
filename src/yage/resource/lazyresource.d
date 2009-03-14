@@ -6,6 +6,7 @@
 
 module yage.resource.lazyresource;
 
+import tango.io.Stdout;
 import yage.core.closure;
 import yage.system.system;
 

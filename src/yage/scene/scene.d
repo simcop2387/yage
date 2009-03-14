@@ -11,7 +11,7 @@ import std.stdio;
 import derelict.opengl.gl;
 import yage.core.all;
 import yage.system.system;
-import yage.system.openal;
+import yage.system.sound.soundsystem;
 import yage.scene.camera;
 import yage.scene.light;
 import yage.scene.node;

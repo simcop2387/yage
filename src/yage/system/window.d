@@ -12,9 +12,9 @@ import derelict.opengl.glu;
 import derelict.util.exception;
 import derelict.sdl.sdl;
 
-import yage.core.vector;
-import yage.core.exceptions;
-import yage.core.interfaces;
+import yage.core.math.vector;
+import yage.core.object2;;
+import yage.core.object2;;
 
 
 // TODO: Have System use this code.

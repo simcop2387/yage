@@ -6,13 +6,14 @@
 
 module yage.core.color;
 
-import yage.core.math;
-import yage.core.vector;
+import tango.core.BitManip;
+import tango.math.Math;
+
+import yage.core.math.math;
+import yage.core.math.vector;
 import yage.core.types;
 import yage.core.parse;
-import yage.core.exceptions;
-import std.intrinsic;
-import tango.math.Math;
+import yage.core.object2;
 
 /**
  * A struct used to represent a color.
@@ -34,7 +35,7 @@ struct Color
 {
 	private const real frac = 1.0f/255;
 	
-	// public static Color GREEN = toColor(0xFF008000); // fails due to CTFE union bug.
+	// public static Color GREEN = Color(0xFF008000); // fails due to CTFE union bug.
 	
 	union
 	{	uint ui;	/// Get the Color as a uint
@@ -123,6 +124,7 @@ struct Color
 		{	case "black":	return Color(0xFF000000);
 			case "blue":	return Color(0xFFFF0000);
 			case "brown":	return Color(0xFFA52A2A);
+			case "transparent":	return Color(0x00000000); // transparent
 			case "cyan":	return Color(0xFFFFFF00);
 			case "gold":	return Color(0xFF00D7FF);
 			case "gray":	
@@ -172,6 +174,12 @@ struct Color
 	/// Is this useful?
 	uint opCast()
 	{	return ui;		
+	}
+	
+	///
+	Color opAssign(char[] string)
+	{	ui = Color(string).ui;
+		return *this;
 	}
 	
 	/// Get the Color as an array of float.

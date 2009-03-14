@@ -4,14 +4,13 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.core.vector;
+module yage.core.math.vector;
 
 import tango.math.Math;
-import std.stdio;
 import yage.core.parse;
-import yage.core.matrix;
-import yage.core.math;
-import yage.core.quatrn;
+import yage.core.math.matrix;
+import yage.core.math.math;
+import yage.core.math.quatrn;
 
 /**
  * This is a template to create a vector of any type with any number of elements.
@@ -152,6 +151,30 @@ struct Vec(int S, T)
 	void opSubAssign(VST s)
 	{	for (int i=0; i<v.length; i++)
 			v[i] -= s.v[i];
+	}
+	/// ditto
+	VST opMul(VST s)
+	{	VST res;
+		for (int i=0; i<v.length; i++)
+			res.v[i] = v[i]*s.v[i];
+		return res;
+	}
+	/// ditto
+	void opMulAssign(VST s)
+	{	for (int i=0; i<v.length; i++)
+			v[i] *= s.v[i];
+	}	
+	/// ditto
+	VST opDiv(VST s)
+	{	VST res;
+		for (int i=0; i<v.length; i++)
+			res.v[i] = v[i]/s.v[i];
+		return res;
+	}
+	/// ditto
+	void opDivAssign(VST s)
+	{	for (int i=0; i<v.length; i++)
+			v[i] /= s.v[i];
 	}
 	
 	/// Allow for additions, subtractions, multiplcations, and divisions where a scalar is applied to each vector component.
@@ -400,7 +423,7 @@ struct Vec3f
 	/// Is this vector equal to vector s, discarding relative error fudge.
 	bool almostEqual(Vec3f s, float fudge=0.0001)
 	{	for (int i=0; i<v.length; i++)
-			if (!yage.core.math.almostEqual(v[i], s.v[i], fudge))
+			if (!yage.core.math.math.almostEqual(v[i], s.v[i], fudge))
 				return false;
 		return true;
 	}

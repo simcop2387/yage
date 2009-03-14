@@ -14,9 +14,9 @@ import std.string;
 import tango.util.Convert;
 
 import yage.core.types;
-import yage.core.matrix;
+import yage.core.math.matrix;
 import yage.core.misc;
-import yage.core.vector;
+import yage.core.math.vector;
 import yage.system.constant;
 import yage.resource.model;
 import yage.resource.material;

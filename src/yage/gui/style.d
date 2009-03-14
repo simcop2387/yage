@@ -8,15 +8,98 @@ module yage.gui.style;
 
 import std.regexp;
 import std.string;
-import std.stdio;
+//import tango.text.Regex;
+import tango.io.Stdout;
+import tango.math.IEEE;
 import tango.util.Convert;
 import yage.core.color;
-import yage.core.vector;
+import yage.core.math.vector;
 import yage.resource.font;
 import yage.resource.manager;
 import yage.resource.material;
 import yage.resource.texture;
 import yage.gui.exceptions;
+
+/**
+ * A value that can store pixels or percent */
+struct Value
+{	float value=float.nan; ///
+	ubyte unit = Style.Unit.PX; ///
+	
+	/**
+	 * Allow assignments from ints, floats and strings. 
+	 * Example:
+	 * --------
+	 * Value width;
+	 * width = "3%";
+	 * --------
+	 */
+	Value opAssign(float v) /// ditto
+	{	value = v;
+		unit = Style.Unit.PX;
+		return *this;
+	}
+	Value opAssign(char[] v) /// ditto
+	{	if (v[length-1] == '%')
+		{	value = to!(float)(v[0..length-1]);
+			unit = Style.Unit.PERCENT;
+		}
+		else // to!(float) still works when v has trailing characters
+		{	value = to!(float)(v[0..length]);
+			unit = Style.Unit.PX;
+		}
+		return *this;
+	}
+	unittest
+	{	Value a;
+		a = "3%";
+		assert(a.value == 3);
+		assert(a.unit == Style.Unit.PERCENT);
+		a = "5";
+		assert(a.value == 5);
+		assert(a.unit == Style.Unit.PX);
+	}
+	
+	/**
+	 * Allows for compile time initialization */
+	static Value opCall(float v, ubyte unit=0)
+	{	Value result;
+		result.value = v;
+		result.unit = unit;
+		return result;
+	}
+	static Value opCall(char[] v)
+	{	Value result;
+		result = v;
+		return result;
+	}
+	
+	/** 
+	 * Get the value in terms of pixels, if it's not already a pixel value
+	 * If it's in percent, that percentage of target will be returned. */
+	float toPx(float target, bool allow_nan=true)
+	{
+		float result = value;
+		if (unit==Style.Unit.PERCENT)
+			result *= target*0.01f;
+		if (!allow_nan && isNaN(result))
+			result = 0;
+		return result;
+	}
+	
+	/**
+	 * Get the value in terms of percent, if it's not already a percent value. 
+	 * Params:
+	 *     target = If it's a pixel value, it will be converted to a percentage in terms of this width/height. */
+	float toPercent(float target, bool allow_nan=true)
+	{	float result = value;
+		if (unit==Style.Unit.PERCENT)
+			result /= target*100f;
+		if (!allow_nan && isNaN(result))
+			result = 0;
+		return result;
+	}
+}
 
 /**
  * Specifies the style of a Surface.
@@ -25,25 +108,11 @@ import yage.gui.exceptions;
  * This struct is not fully documented. */
 struct Style
 {	
-	// Types
-	alias ubyte Unit;	
-	
-	enum { 
-		/**
-		 * Enumeration values used to set units for measurements, such as width, padding, etc. */
-		PX,			
-		PERCENT,	/// ditto
-
-		/**
-		 * Enumeration values used to set backgroundRepeat
-		 * See: http://livedocs.adobe.com/flash/9.0/UsingFlash/help.html?content=WSd60f23110762d6b883b18f10cb1fe1af6-7db8.html*/
-		NONE, 		
-		STRETCH, 	/// ditto
-		NINESLICE, 	/// ditto
-		/*, REPEAT, REPEATX, REPEATY*/ 
-
-		HIDDEN=false,
-		VISIBLE=true		
+	/**
+	 * Enumeration values used to set units for measurements, such as width, padding, etc. */
+	enum Unit
+	{	PX=0, ///
+		PERCENT=1 ///
 	}
 	
 	enum TextAlign
@@ -51,70 +120,47 @@ struct Style
 		CENTER = 1,
 		RIGHT = 2		
 	}
+	/*
+	enum BackgroundRepeat
+	{	NONE,
+		REPEAT,
+		STRETCH // non-css		
+	}
+	*/
 	
-	// Associative arrays used for translation
-	static int[char[]] translate;
-	static this()
-	{	translate["none"] = NONE;
-		translate["stretch"] = STRETCH;
-		translate["nineslice"] = NINESLICE;
+	enum BorderImageStyle
+	{	STRETCH,
+		ROUND,
+		REPEAT		
+	}
+	
+	// Dimension
+	union { 
+		struct { 
+			Value top;     /// Distance of an edge from its parent, use float.nan to leave unset.
+			Value right;   /// ditto
+			Value bottom;  /// ditto
+			Value left;    /// ditto
+		} 
+		Value[4] dimension; // internal use, not supported by css
+	}	
+	union {
+		struct {
+			Value width = Value(float.nan);
+			Value height = Value(float.nan);
+		}
+		Value[2] size; // internal use, not supported by css.
 	}
 
-	struct Edge(int S, T)
-	{	static assert (S==2 || S==4);
-		static if (S==2)
-		{	union
-			{	struct { T x, y; };
-				T[S] values;
-		}	}
-		else
-		{	union
-			{	struct { T top, right, bottom, left; };
-				T[S] values;
-		}	}
-	}
-	
-	
-	
-	// Fields
-	
-	// Background
-	GPUTexture backgroundMaterial; 
-	Color backgroundColor;
-	byte backgroundRepeat = STRETCH;
-	union {
-		struct {
-			float backgroundPositionX=0;
-			float backgroundPositionY=0;
-		}
-		Edge!(2, float) backgroundPosition;
-	}
-	union {
-		struct {
-			Unit backgroundPositionXUnit=Style.PX;
-			Unit backgroundPositionYUnit=Style.PX;
-		}
-		Edge!(2, Unit) backgroundPositionUnits;
-	}
-	
-	// Border
+	// Border sizes and colors
 	union { 
 		struct { 
-			float borderWidthTop=0;
-			float borderWidthRight=0;
-			float borderWidthBottom=0;
-			float borderWidthLeft=0; 
+			Value borderTopWidth = Value(0);
+			Value borderRightWidth = Value(0);
+			Value borderBottomWidth = Value(0);
+			Value borderLeftWidth = Value(0);
 		} 
-		Edge!(4, float) borderWidth; 
-	}
-	union { 
-		struct { 
-			Unit borderWidthTopUnit;
-			Unit borderWidthRightUnit;
-			Unit borderWidthBottomUnit;
-			Unit borderWidthLeftUnit;	
-		}
-		Edge!(4, Unit) borderWidthUnits;
+		Value[4] borderWidth;
 	}
 	union {
 		struct {
@@ -123,65 +169,82 @@ struct Style
 			Color borderColorBottom;
 			Color borderColorLeft;
 		}
-		Edge!(4, Color) borderColor;
+		Color[4] borderColor;
 	}
-		
+	
+	// Border Image (TODO: support border-style and border-image-widths?)
+	union {
+		struct {
+			GPUTexture borderTopImage;
+			GPUTexture borderRightImage;
+			GPUTexture borderBottomImage;
+			GPUTexture borderLeftImage;
+		}
+		GPUTexture[4] borderImage;
+	}
+	GPUTexture borderCenterImage;
+	
+	union {
+		struct {
+			GPUTexture borderTopLeftImage;
+			GPUTexture borderTopRightImage;			
+			GPUTexture borderBottomLeftImage;
+			GPUTexture borderBottomRightImage;
+		}
+		GPUTexture[4] borderCornerImage;
+	}
+	
+	// Padding
+	union { 
+		struct { 
+			Value paddingTop = Value(0);
+			Value paddingRight = Value(0);
+			Value paddingBottom = Value(0);
+			Value paddingLeft = Value(0);
+		} 
+		Value[4] padding;
+	}
+	
+	// Background
+	GPUTexture backgroundImage; // just streteched for now.
+	Color backgroundColor;
+	
+	/*// not yet supported
+	union {
+		struct {
+			ubyte backgroundRepeatX=BackgroundRepeat.NONE;
+			ubyte backgroundRepeatY=BackgroundRepeat.NONE;
+		}
+		ubyte[2] backgroundRepeat;
+	}
+	union {
+		struct {
+			Value backgroundPositionX = Value(0);
+			Value backgroundPositionY = Value(0);
+		}
+		Value[2] backgroundPosition;
+	}
+	*/
+	
+	float opacity; // 0 to 1.
 
 	// Cursor
 	Material cursor;
 	float cursorSize; // in pixels
 		
-	// Dimension
-	union { 
-		struct { 
-			float top=float.nan;		/// Distance of an edge from its parent, use float.nan to leave unset.
-			float right=float.nan;		/// ditto
-			float bottom=float.nan;		/// ditto
-			float left=float.nan; 		/// ditto
-		} 
-		Edge!(4, float) dimension; 	/// Store all four dimension properties in one struct (top, left, bottom, right).
-	}
-	union { 
-		struct { 
-			Unit topUnit=Style.PX;
-			Unit rightUnit=Style.PX;
-			Unit bottomUnit=Style.PX;
-			Unit leftUnit=Style.PX;	
-		}
-		Edge!(4, Unit) dimensionUnits;
-	}
-	union {
-		struct {
-			float width=float.nan;
-			float height=float.nan;
-		}
-		Edge!(2, float) size;
-	}
-	union {
-		struct {
-			Unit widthUnit=Style.PX;
-			Unit heightUnit=Style.PX;
-		}
-		Edge!(2, Unit) sizeUnits;
-	}
 	// Font
 	Font fontFamily;
-	float fontSize = 12;
-	Unit fontSizeUnit = Style.PX;
+	Value fontSize = Value(12); // default to 12px font size.
 	
 	union { // Default color to black opaque.
 		uint color_ui = 0xFF000000;
 		Color color;
 	}
-	// Padding
-	//float paddingTop, paddingRight, paddingBottom, paddingLeft;
-	//Unit paddingTopUnit, paddingRightUnit, paddingBottomUnit, paddingLeftUnit;
-
+	
 	// Text
 	TextAlign textAlign = TextAlign.LEFT;
 	//byte  textDecoration;
-	//float lineHeight;
-	//byte  lineHeightUnits;
+	//Value lineHeight;
 
 	// Other
 	union {
@@ -199,46 +262,6 @@ struct Style
 	void set(char[] style)
 	{	
 		/*
-		 * Populate values and units from string.*/ 
-		void parseUnit(char[] string, inout float value, inout Unit value_unit)
-		body
-		{	value = float.nan;
-			if (std.string.rfind(string, "%") != -1)
-				value_unit = Style.PERCENT;
-			else
-				value_unit = Style.PX;
-			char[] num = std.regexp.sub(string, "[^0-9]+", "", "g");
-			if (num.length) // val=="auto" leaves the value as float.nan
-				value = to!(float)(num);
-			else if (string != "auto") // entire string is already toLower'd
-				throw new CSSException("Could not parse CSS value: '%s'", string); // garbage!				
-		}
-		
-		void parseUnits(char[] string, float[] edge, Unit[] edge_units)
-		in { assert(edge_units.length >= edge.length); }
-		body
-		{	char[][] values = std.regexp.split(string, "\\s+");
-			
-			// Restore to defaults
-			edge[0..length] = float.nan;
-			edge_units[0..length] = Style.PX;
-			
-			// Loop through and set what we can parse.
-			for (int i=0; i<values.length && i<edge.length; i++)
-				parseUnit(values[i], edge[i], edge_units[i]);
-			
-			// If only specified 2 values and edge has 4 values.		
-			if (values.length==2 && edge.length >=4)
-			{	edge[2] = edge[0];
-				edge[3] = edge[1];
-				edge_units[2] = edge_units[0];
-				edge_units[3] = edge_units[1];
-			}
-		}
-		
-		
-		
-		/*
 		 * Remove the url('...') from a css path, if it's present.
 		 * Returns: A slice of the original url to avoid creating garbage.*/ 
 		char[] removeUrl(char[] url)
@@ -254,51 +277,91 @@ struct Style
 		//style = tolower(style); // breaks paths on linux!
 		char[][] expressions =  std.regexp.split(style, ";\\s*");
 		foreach (exp; expressions)
-		{	char[][] tokens = std.regexp.split(exp, ":[ ]*");
-			char[] property = tolower(replace(tokens[0], "-", "")); // creates garbage.
-			if (!property.length)
+		{	char[][] tokens = std.regexp.split(exp, ":\\s*"); // replacing with Tango's Regex segfaults.
+			if (tokens.length<2)
 				continue;
+		
+			char[] property = tolower(replace(tokens[0], "-", "")); // TODO: replace with tango code
+			tokens = std.regexp.split(tokens[1], "\\s+");
 			
-			// TODO: account for parse errors.
 			
+			// TODO: account for parse errors.			
 			switch (property)
 			{	/// TODO: Lots more properties
-				case "color":				color = Color(tokens[1]); break;
+				case "color":				color = Color(tokens[0]); break;
 			
-				case "backgroundcolor":		backgroundColor = Color(tokens[1]); break;
-				case "backgroundrepeat":	backgroundRepeat = translate[tokens[1]]; break;
-				case "backgroundmaterial":	backgroundMaterial = ResourceManager.texture(removeUrl(tokens[1])).texture; break;				
+				case "backgroundcolor":		backgroundColor = Color(tokens[0]); break;
+				//case "backgroundrepeat":	backgroundRepeat = translate[tokens[1]]; break;
+				case "backgroundimage":		backgroundImage = ResourceManager.texture(removeUrl(tokens[0])).texture; break;				
 			
-				case "backgroundpositionx":parseUnits(tokens[1], backgroundPosition.values[0..1], backgroundPositionUnits.values[0..1]); break;
-				case "backgroundpositiony":parseUnits(tokens[1], backgroundPosition.values[1..2], backgroundPositionUnits.values[1..2]); break;
-				case "backgroundposition": parseUnits(tokens[1], backgroundPosition.values, backgroundPositionUnits.values); break;
+				//case "backgroundpositionx":parseUnits(tokens[1], backgroundPosition.values[0..1], backgroundPositionUnits.values[0..1]); break;
+				//case "backgroundpositiony":parseUnits(tokens[1], backgroundPosition.values[1..2], backgroundPositionUnits.values[1..2]); break;
+				//case "backgroundposition": parseUnits(tokens[1], backgroundPosition.values, backgroundPositionUnits.values); break;
 				
 				//case 
-				case "font":		/*todo */ break;
-				case "fontsize":	parseUnit(tokens[1], fontSize, fontSizeUnit); break;
-				case "fontfamily":	fontFamily = ResourceManager.font(removeUrl(tokens[1])); break;		
+				case "font":		/*todo */  break;
+				case "fontsize":	fontSize = tokens[0];  break;
+				case "fontfamily":	fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;		
 			
-				case "top":			parseUnits(tokens[1], dimension.values[0..1], dimensionUnits.values[0..1]); break;
-				case "right":		parseUnits(tokens[1], dimension.values[1..2], dimensionUnits.values[1..2]); break;
-				case "bottom":		parseUnits(tokens[1], dimension.values[2..3], dimensionUnits.values[2..3]); break;
-				case "left":		parseUnits(tokens[1], dimension.values[3..4], dimensionUnits.values[3..4]); break;
-				case "dimension":	parseUnits(tokens[1], dimension.values, dimensionUnits.values); break;
-				case "width":		parseUnits(tokens[1], size.values[0..1], sizeUnits.values[0..1]); break;
-				case "height":		parseUnits(tokens[1], size.values[1..2], sizeUnits.values[1..2]); break;
-				case "size": 		parseUnits(tokens[1], size.values, sizeUnits.values); break;	
+				case "top":			top = tokens[0];  break;
+				case "right":		right = tokens[0];  break;
+				case "bottom":		bottom = tokens[0];  break;
+				case "left":		left = tokens[0];  break;
+				case "dimension":	setEdge(dimension, tokens);  break;
+				case "width":		width = tokens[0];  break;
+				case "height":		height = tokens[0];  break;
+				case "size": 		setEdge(size, tokens);  break;
 				
-				case "zIndex":		zIndex = to!(int)(tokens[1]); break;
-				case "visible":
-				case "visibility":	visible = (tokens[1] == "true" || tokens[1] == "visible"); break;
+				case "border":		setEdge(borderWidth, tokens[0..1]);  borderColor[0..4] = Color(tokens[$-1]);  break;
+				case "bordercolor":	setEdge(borderColor, tokens);  break;
+				case "borderwidth":	setEdge(borderWidth, tokens);  break;
+				case "borderimage":	borderImage[0..4] = borderCornerImage[0..4] = borderCenterImage = 
+										ResourceManager.texture(removeUrl(tokens[0])).texture;  break;
+										
+				case "bordertop":			borderWidth[0] = tokens[0];  borderColor[0] = Color(tokens[$-1]);  break;
+				case "bordertopcolor":		borderColor[0] = Color(tokens[0]);  break;
+				case "bordertopwidth":		borderWidth[0] = tokens[0];  break;
+				
+				case "borderright":			borderWidth[1] = tokens[0];  borderColor[1] = Color(tokens[$-1]);  break;
+				case "borderrightcolor":	borderColor[1] = Color(tokens[0]);  break;
+				case "borderrightwidth":	borderWidth[1] = tokens[0];  break;
+				
+				case "borderbottom":		borderWidth[2] = tokens[0];  borderColor[2] = Color(tokens[$-1]);  break;
+				case "borderbottomcolor":	borderColor[2] = Color(tokens[0]);  break;
+				case "borderbottomwidth":	borderWidth[2] = tokens[0];  break;
+				
+				case "borderleft":			borderWidth[3] = tokens[0];  borderColor[3] = Color(tokens[$-1]);  break;
+				case "borderleftcolor":		borderColor[3] = Color(tokens[0]);  break;
+				case "borderleftwidth":		borderWidth[3] = tokens[0];  break;
+				
+				case "padding":				setEdge(padding, tokens);  break;
+				case "paddingopwidth":		padding[0] = tokens[0];  break;
+				case "paddingrightwidth":	padding[1] = tokens[0];  break;
+				case "paddingbottomwidth":	padding[2] = tokens[0];  break;
+				case "paddingleftwidth":	padding[3] = tokens[0];  break;
+				
+				case "zIndex":		zIndex = to!(int)(tokens[0]); break;
+				case "visibility":	visible = tokens[0] != "hidden"; break;
 				
 				default:
-					throw new CSSException("Unsupported CSS Property: '", tokens[0], "'."); // garbage!
+					throw new CSSException("Unsupported CSS Property: '", property, "'.");
 			}
 			
 			delete property;
-		}
-		//delete style; // can't do because tolower style only someties returns a copy.
-		
-		
+		}		
+	}
+	
+	/*
+	 * Set up to values of any type from an array of tokens, using T's static opCall. */
+	protected static void setEdge(T)(T[] edge, char[][] tokens)
+	{	if (tokens.length > 0)					
+		{	edge[0..3] = edge[3] = (tokens[0]);  
+			if (tokens.length > 1)
+			{	edge[1] = edge[3] = tokens[1];
+				if (tokens.length > 2 && edge.length > 2) // edges are always 2 or 4
+				{	edge[2] = tokens[2];
+					if (tokens.length > 3)
+						edge[3] = tokens[3]; 
+		}	}	}
 	}
 }

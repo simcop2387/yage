@@ -8,6 +8,7 @@ module yage.core.tree;
 import std.gc;
 import std.stdio;
 import yage.core.array;
+import yage.core.object2;
 
 /**
  * Implements an element that can be used in a tree, with parents and children.
@@ -18,7 +19,7 @@ import yage.core.array;
  * auto n2 = n.addChild(new Node());
  * -------------------------------- 
  */
-class Tree(T)
+class Tree(T) : YageObject
 {	
 	protected T parent;			// reference to parent
 	protected T[] children;		// array of this element's children.

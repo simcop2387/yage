@@ -4,13 +4,12 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.core.quatrn;
+module yage.core.math.quatrn;
 
 import tango.math.Math;
-import std.stdio;
 import yage.core.parse;
-import yage.core.vector;
-import yage.core.matrix;
+import yage.core.math.vector;
+import yage.core.math.matrix;
 import yage.core.misc;
 
 
@@ -149,7 +148,7 @@ struct Quatrn
 	/// Is this Quatrn equal to Quatrn s, discarding relative error fudge.
 	bool almostEqual(Quatrn s, float fudge=0.0001)
 	{	for (int i=0; i<v.length; i++)
-			if (!yage.core.math.almostEqual(v[i], s.v[i], fudge))
+			if (!yage.core.math.math.almostEqual(v[i], s.v[i], fudge))
 				return false;
 		return true;
 	}

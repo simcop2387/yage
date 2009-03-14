@@ -13,24 +13,19 @@
 module yage.core.all;
 
 public
-{	import yage.core.array;
+{	import yage.core.math.all;
+	import yage.core.array;
 	import yage.core.async;
 	import yage.core.closure;
 	import yage.core.color;
-	import yage.core.exceptions;
 	import yage.core.freelist;
-	import yage.core.interfaces;
-	import yage.core.math;
-	import yage.core.matrix;
+	import yage.core.object2;
 	import yage.core.misc;
 	import yage.core.parse;
-	import yage.core.plane;
-	import yage.core.quatrn;
 	import yage.core.repeater;
 	import yage.core.timer;
 	import yage.core.tree;
 	import yage.core.types;
-	import yage.core.vector;
 	import yage.core.xml;
 }
 

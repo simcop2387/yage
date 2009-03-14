@@ -6,9 +6,6 @@
 
 module yage.core.freelist;
 
-import std.c.stdlib;
-import std.gc;
-
 /**
  * A class to allow fast allocations / de-allocations, using a free list.
  * This can be several times faster than new and delete.

@@ -15,7 +15,7 @@ import yage.scene.scene;
 import yage.scene.light;
 import yage.scene.node;
 import yage.scene.movable;
-import yage.system.probe;
+import yage.system.graphics.probe;
 import yage.system.input;
 
 

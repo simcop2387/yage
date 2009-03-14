@@ -4,7 +4,7 @@
  * License:    <a href="lgpl.txt">LGPL</a>
  */
 
-module yage.system.render;
+module yage.system.graphics.render;
 
 import tango.math.Math;
 import tango.io.Stdout;
@@ -13,7 +13,7 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 
 import yage.core.all;
-import yage.system.probe;
+import yage.system.graphics.probe;
 import yage.resource.geometry;
 import yage.resource.layer;
 import yage.resource.material;
@@ -42,9 +42,28 @@ private struct AlphaTriangle
 	
 	Vec3f[3] vertices;	// in worldspace coordinates
 	Vec3f*[3] normals;	// store pointers to these since the values aren't transformed
-	Vec2f*[3] texcoords;// by the world coordinates, helps reduce size.
+	Vec2f*[3] texcoords;// by the world coordinates, helps reduce size. (this is incorrect for normals)
 
 	//Attribute2[] attributes;
+}
+
+/**
+ * Stores statistics about the last render operation.
+ * TODO: Finish this. */
+struct RenderStatistics
+{
+	int vertexCount;
+	int triangleCount;
+	
+	//double vertexBufferTime=0;		/// time spend binding vertex buffers
+	//double lightCalculationTime=0;	/// time spent calculating which lights affect which objects.
+	//double materialStateTime=0;		/// time spent changing opengl states to render materials
+	//double lightStateTime=0;			/// time spent changing opengl states to apply lights
+	//double totalTime=0;
+	
+	void reset()
+	{	vertexCount = triangleCount = 0;
+	}
 }
 
 /**
@@ -67,6 +86,7 @@ class Render
 	// Stats
 	protected static uint poly_count;
 	protected static uint vertex_count;
+	static RenderStatistics statistics;
 	
 	/// Add a node to the queue for rendering.
 	static void add(VisibleNode node)
@@ -76,7 +96,10 @@ class Render
 	/// Render everything in the queue and empty it.
 	static void all(inout uint poly_count, inout uint vertex_count)
 	{
+		statistics.reset();
+		
 		LazyResourceManager.processQueue();
+		//VertexBuffer!(Vec3f).collect();
 		
 		this.poly_count = poly_count;
 		this.vertex_count = vertex_count;
@@ -100,7 +123,6 @@ class Render
 				glScalef(size.x, size.y, size.z);
 				
 				// Enable the appropriate lights
-				//writefln(all_lights);
 				auto lights = n.getLights(all_lights, num_lights);
 				for (int i=0; i<num_lights; i++)
 					glDisable(GL_LIGHT0+i);
@@ -237,17 +259,16 @@ class Render
 				GL_ELEMENT_ARRAY_BUFFER_ARB :
 				GL_ARRAY_BUFFER_ARB;
 		
-		// Bind the buffer, and also create it and upload data if necessary.
+		// Bind vbo and update data if necessary.
 		if (vbo)
-		{	if (!id)
-			{	glGenBuffersARB(1, &id);
-				vb.setId(id);
-			}
-			glBindBufferARB(vbo_type, id);
+		{	glBindBufferARB(vbo_type, id);
 			if (vb.getDirty())
-				glBufferDataARB(vbo_type, vb.getSizeInBytes(), vb.ptr, GL_STATIC_DRAW_ARB);
+			{	glBufferDataARB(vbo_type, vb.getSizeInBytes(), vb.ptr, GL_STATIC_DRAW_ARB);
+				vb.setDirty(false);
+			}
 		}
 		
+		// Bind the data
 		switch (type)
 		{
 			case Geometry.VERTICES:
@@ -260,8 +281,7 @@ class Render
 			case Geometry.TEXCOORDS0:
 				glTexCoordPointer(vb.getComponents(), GL_FLOAT, 0, vbo ? null : vb.ptr);
 				break;
-			case Mesh.TRIANGLES:
-				//glDrawElements(GL_TRIANGLES, vb.length*3, GL_UNSIGNED_INT, vbo ? null : vb.ptr);
+			case Mesh.TRIANGLES: // no binding necessary
 				break;
 			default:
 				// TODO: Support custom types.
@@ -281,12 +301,38 @@ class Render
 		//	glDrawArrays();
 	}
 	
+	static void geometry(Geometry geometry)
+	{
+		if (!geometry.hasAttribute(Geometry.VERTICES))
+			return;
+		
+		// Bind each vertx buffer
+		foreach (name, attrib; geometry.getAttributes())
+		{	vertexBufferBind(name, attrib);
+			if (name==Geometry.VERTICES)
+				statistics.vertexCount += attrib.length;
+		}
+		
+		// Loop through the meshes		
+		foreach (mesh; geometry.getMeshes())
+		{	if (mesh.getMaterial() !is null) // Must have a material to render
+			{	foreach (Layer l; mesh.getMaterial().getLayers()) // Loop through each layer (rendering pass)
+				{	l.bind();
+					vertexBufferDraw(Mesh.TRIANGLES, mesh.getTriangles());
+					l.unbind();
+			}	}
+		
+			statistics.triangleCount += mesh.getTriangles().length;
+		}
+	}
+	
 	/*
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
 	 * Rotation can optionally be supplied to rotate sprites so they face the camera. 
 	 * TODO: Remove dependence on node. 
-	 * TODO: Make all vbo's optional.*/
+	 * TODO: Make all vbo's optional.
+	 * TODO: Rewrite this around the simpler Render.geometry */
 	static void model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)
 	{	
 		if (!model.hasAttribute(Geometry.VERTICES))
@@ -300,7 +346,6 @@ class Render
 		Vec2f[] t = cast(Vec2f[])model.getTexCoords0().getData();
 		Matrix abs_transform = node.getAbsoluteTransform(true);
 		vertex_count += v.length;
-		
 		
 		// Apply skeletal animation.
 		if (cast(ModelNode)node)
@@ -322,23 +367,9 @@ class Render
 			glRotatef(rotation.length()*PI_180, rotation.x, rotation.y, rotation.z);
 		}
 
-		// Loop through the meshes
-		
+		// Loop through the meshes		
 		foreach (Mesh mesh; model.getMeshes())
 		{
-			// Bind and draw the triangles
-			void drawTriangles()
-			{	
-				if (mesh.getTriangles().getId()) {
-					
-					glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, mesh.getTriangles().getId());
-					glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, null);
-				}
-				else
-				{	glDrawElements(GL_TRIANGLES, mesh.getTriangles().length*3, GL_UNSIGNED_INT, mesh.getTriangles().ptr);				
-				}
-			}
-
 			poly_count += mesh.getTriangles().length;
 			Material matl = mesh.getMaterial();
 			if (matl !is null)
@@ -354,18 +385,13 @@ class Render
 					if ((l.blend != BLEND_NONE) && num==0)
 						sort = true;
 
-					// If not translucent
-					
+					// If not translucent					
 					if (!sort)
-					{	
-						l.bind(node.getLights(), node.getColor(), model);
+					{	l.bind(node.getLights(), node.getColor(), model);
 						vertexBufferDraw(Mesh.TRIANGLES, mesh.getTriangles());
 						l.unbind();
-						
-
 					} else
-					{
-						
+					{						
 						// Add to translucent
 						foreach (int index, Vec3i tri; cast(Vec3i[])mesh.getTriangles().getData())						
 						{	AlphaTriangle at;
@@ -388,7 +414,8 @@ class Render
 				}
 			}
 			else // render with no material
-				drawTriangles();
+			//	drawTriangles();
+				vertexBufferDraw(Mesh.TRIANGLES, mesh.getTriangles());
 				
 			
 			if (_debug)

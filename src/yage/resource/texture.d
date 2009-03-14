@@ -9,26 +9,26 @@ module yage.resource.texture;
 
 import std.string;
 import tango.math.Math;
-import std.stdio;
+import tango.io.Stdout;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
 import yage.core.closure;
-import yage.core.math;
-import yage.core.matrix;
+import yage.core.math.math;
+import yage.core.math.matrix;
 import yage.core.timer;
-import yage.core.vector;
-import yage.core.interfaces;
-import yage.core.exceptions;
+import yage.core.math.vector;
+import yage.core.object2;;
+import yage.core.object2;;
 import yage.resource.image;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.lazyresource;
 import yage.system.system;
 import yage.system.constant;
-import yage.system.probe;
+import yage.system.graphics.probe;
 import yage.system.log;
 
 // Used as default values for function params
@@ -44,6 +44,7 @@ private const Vec2f zero = {v:[0.0f, 0.0f]};
 struct Texture
 {
 	protected static int[int] translate;
+
 
 	/// Set how this texture is blended with others in the same layer.
 	/// See_Also: the TEXTURE_FILTER_* constants in yage.system.constant
@@ -62,30 +63,20 @@ struct Texture
 
 	/// Optional, the name of the sampler variable that uses this texture in the shader program.
 	char[] name;
-
-	/// TODO: Replace with texture matrix?
-	Vec2f position;
-	/// ditto
-	float rotation=0;
-	/// ditto
-	Vec2f scale = {v:[1.0f, 1.0f]};
 	
+	///
 	Matrix transform;
 
 	/// 
 	GPUTexture texture;
 
 	/// Create a new TextureInstance with the parameters specified.
-	static Texture opCall(GPUTexture texture, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT,
-			Vec2f position=zero, float rotation=0, Vec2f scale=one)
+	static Texture opCall(GPUTexture texture, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT)
 	{
 		Texture result;
 		result.texture = texture;
 		result.clamp = clamp;
 		result.filter = filter;
-		result.position = position;
-		result.rotation = rotation;
-		result.scale = scale;
 		return result;
 	}
 
@@ -138,15 +129,27 @@ struct Texture
 
 
 		// Texture Matrix operations
-		if (position.length2() || scale.length2() || rotation!=0)
+		//if (position.length2() || scale.length2() || rotation!=0)
 		{	glMatrixMode(GL_TEXTURE);
 			glPushMatrix();
-			glRotatef(rotation, 0, 0, 1);
-			glTranslatef(position.x, position.y, 0);
-			glScalef(scale.x, scale.y, 1);
 			
-			glMultMatrixf(transform.v.ptr);
+			Vec2f padding = texture.getPadding();			
 			
+			// Apply special texture scaling/flipping
+			if (texture.flipped || padding.length2())
+			{	Vec2f size = Vec2f(texture.getWidth(), texture.getHeight());
+				Vec2f scale = (size-padding)/size;
+				
+				if (texture.flipped)
+				{	glTranslatef(0, scale.y, 0);					
+					glScalef(scale.x, -scale.y, 1);
+				}
+				else
+					glScalef(scale.x, scale.y, 1);
+				
+			}			
+			
+			glMultMatrixf(transform.v.ptr);			
 			glMatrixMode(GL_MODELVIEW);
 		}
 
@@ -165,7 +168,7 @@ struct Texture
 	/// Undo state changes caused by binding this TextureInstance.
 	void unbind()
 	{	// Texture Matrix
-		if (position.length2() || scale.length2() || rotation!=0)
+		//if (position.length2() || scale.length2() || rotation!=0)
 		{	glMatrixMode(GL_TEXTURE);
 			glPopMatrix();
 			glMatrixMode(GL_MODELVIEW);
@@ -184,11 +187,6 @@ struct Texture
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		
 		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-
-	///
-	char[] toString()
-	{	return "Texture";
 	}
 }
 
@@ -213,7 +211,8 @@ class GPUTexture : Resource, IExternalResource
 	
 	static protected GPUTexture[GPUTexture] all;
 	
-	Vec2i padding; // amount of padding to the left and top for non-power-of-two sized textures.
+	Vec2i padding; // padding stores how many pixels of the original texture are unused.
+					// e.g. getWidth() returns the used texture + the padding.
 	
 	bool flipped = false; // TODO: Find a better solution, use texture matrix?
 	
@@ -232,9 +231,9 @@ class GPUTexture : Resource, IExternalResource
 	}
 
 	/// ditto
-	this(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
+	this(Image image, bool compress=true, bool mipmap=true, char[] source_name="", bool pad=false)
 	{	this();
-	commit(image, compress, mipmap, source_name);
+		commit(image, compress, mipmap, source_name, pad);
 	}
 
 	/// Can this be inherited?
@@ -250,21 +249,20 @@ class GPUTexture : Resource, IExternalResource
 	 * compress = Compress the image in video memory.  This causes a slight loss of quality
 	 * in exchange for four times less video memory used.
 	 * mipmap = Generate mipmaps.*/
-	void commit(Image image, bool compress=true, bool mipmap=true, char[] source_name="")
+	void commit(Image image, bool compress=true, bool mipmap=true, char[] source_name="", bool pad=false)
 	{	this.source = source_name;
 		
 		// Set as many variables as possible
 		this.compress = compress;
 		this.mipmap = mipmap;
+		
 		if (image)
-		{	this.format = image.getChannels();
-			this.width = image.getWidth();
-			this.height = image.getHeight();
-		}
+			this.format = image.getChannels();
+		
 			
 		// OpenGl functions can only be called from the rendering thread.
 		if (!System.isSystemThread())
-		{	LazyResourceManager.addToQueue(closure(&this.commit, image, compress, mipmap, source_name));
+		{	LazyResourceManager.addToQueue(closure(&this.commit, image, compress, mipmap, source_name, pad));
 			return;
 		}
 		
@@ -301,6 +299,24 @@ class GPUTexture : Resource, IExternalResource
 				default:
 					throw new ResourceManagerException("Unknown texture format " ~ .toString(format));
 			}
+			
+			if (pad) // if pad instead of resize.
+			{
+				int new_width = nextPow2(image.getWidth());
+				int new_height = nextPow2(image.getHeight());
+				padding.x = (new_width - image.getWidth());
+				padding.y = (new_height - image.getHeight()); 
+				
+				image = image.crop(0, 0, new_width, new_height);
+				
+			} else
+				padding = Vec2i(0);
+			
+			if (image)
+			{	this.width = image.getWidth();
+				this.height = image.getHeight();
+			}
+
 	
 		    // Upload image
 			// TODO: Use image's built in resizer instead of glu.
@@ -319,20 +335,18 @@ class GPUTexture : Resource, IExternalResource
 						new_height = nextPow2(new_height);
 					if (log2(new_width) != floor(log2(new_width)))
 						new_width = nextPow2(new_width);
-				}
 	
-				// Resize if necessary
-				if (new_width != width || new_height != height)
-					image = image.resize(min(new_width, max), min(new_height, max));
+					// Resize if necessary
+					if (new_width != width || new_height != height)
+						image = image.resize(min(new_width, max), min(new_height, max));
+				}
 	
 				// Uploading the texture to video memory is by far the slowest part of this function.
 				glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
 	
 			}
-		    if(padding.x == 0) 
-		    	padding.x = getWidth();
-		    if(padding.y == 0) 
-		    	padding.y = getHeight();
+		  
+		    flipped = false;
 		}
 	}
 	
@@ -386,6 +400,12 @@ class GPUTexture : Resource, IExternalResource
 	{	return width; 
 	}
 
+	/**
+	 * Amount of padding to the top and right for non-power-of-two sized textures. */
+	Vec2i getPadding()
+	{	return padding;
+	}
+	
 	///
 	char[] getSource()
 	{	return source;
@@ -393,6 +413,7 @@ class GPUTexture : Resource, IExternalResource
 
 	/// Copy the the contents of the framebuffer into this Texture.
 	void loadFrameBuffer(uint width, uint height){
+		
 		// A special value of zero to stretch to the window size.
 		if (width ==0) width  = System.getWidth();
 		if (height==0) height = System.getHeight();
@@ -402,17 +423,21 @@ class GPUTexture : Resource, IExternalResource
 		if (true)
 		{	this.width = nextPow2(width);
 			this.height =nextPow2(height);
+		} else
+		{	this.width = width;
+			this.height = height;
 		}
 
 		glBindTexture(GL_TEXTURE_2D, id);
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, this.width, this.height, 0);
-		format = 3;
+		format = 3;		
 		
-		padding.x = width;
-		padding.y = height;
+		padding.x = this.width-width;
+		padding.y = this.height-height;
+		flipped = true;
 	}
 
-	/// Get a list of all VertexBuffers that have been created but not finalized. 
+	/// Get a list of all GPUTextures that have been created but not finalized. 
 	static GPUTexture[GPUTexture] getAll()
 	{	return all;
 	}

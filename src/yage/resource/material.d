@@ -13,18 +13,20 @@ import std.stream;
 import std.string;
 import std.stdio;
 import yage.core.all;
-import yage.core.exceptions;
+import yage.core.object2;;
 import yage.resource.texture;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.shader;
 import yage.system.constant;
 import yage.system.system;
-import yage.system.probe;
+import yage.system.graphics.probe;
 import yage.system.log;
 public import yage.resource.layer;
 
 /**
+ * This is old code and will be replaced once Collada becomes the default model format.
+ * 
  * A material defines how an object in the 3D world appears.  Materials
  * can be assigned to sprite nodes, mesh nodes, and even GUI elements.
  * In addition, material parameters can be updated while the engine
@@ -194,9 +196,9 @@ class Material : Resource
 						}	}
 
 						// Position, rotation, scale
-						if (xmap.hasAttribute("position")) ti.position.v[0..2] = csvToFloat(xmap.getAttribute("position"));
-						if (xmap.hasAttribute("rotation")) ti.rotation         =       atof(xmap.getAttribute("rotation"));
-						if (xmap.hasAttribute("scale"   )) ti.scale.v[0..2]    = csvToFloat(xmap.getAttribute("scale"));
+						if (xmap.hasAttribute("position")) ti.transform.setPosition(Vec3f(csvToFloat(xmap.getAttribute("position"))));
+						//if (xmap.hasAttribute("rotation")) ti.rotation         =       atof(xmap.getAttribute("rotation"));
+						//if (xmap.hasAttribute("scale"   )) ti.scale.v[0..2]    = csvToFloat(xmap.getAttribute("scale"));
 					}
 					catch (Exception e)
 					{	throw new ResourceManagerException(
