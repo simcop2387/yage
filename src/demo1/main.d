@@ -10,10 +10,13 @@
 
 module demo1.main;
 
-import std.c.time;
+import std.demangle;
+
+import tango.core.Thread;
 import std.string;
-import std.stdio;
+import tango.io.Stdout;
 import std.gc;
+import tango.util.Convert;
 
 import derelict.opengl.gl;
 import derelict.opengl.glext;
@@ -51,7 +54,7 @@ class DemoScene : Scene
 		// Ship
 		ship = addChild(new Ship());	
 		ship.setPosition(Vec3f(0, 50, -950));
-		ship.getCameraSpot().setPosition(Vec3f(0, 1000, 3000));
+		ship.getCameraSpot().setPosition(Vec3f(0, 4000, 10000));
 		
 		// Camera
 		camera = ship.getCameraSpot().addChild(new CameraNode());
@@ -61,7 +64,7 @@ class DemoScene : Scene
 		// Music
 		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
 		music.setLooping(true);
-		music.play();
+		//music.play();
 
 		// Lights
 		light = scene.addChild(new LightNode());
@@ -91,9 +94,9 @@ class DemoScene : Scene
 
 // Current program entry point.  This may change in the future.
 int main()
-{	
+{		
 	// Init (resolution, depth, fullscreen, aa-samples)
-	System.init(800, 600, 32, false, 1);
+	System.init(647, 400, 32, false, 1); // golden ratio
 	//System.init(1024, 768, 32, true);
 	//System.init(1440, 900, 32, true);
 	
@@ -108,33 +111,9 @@ int main()
 	
 	// Main surface where camera output is rendered.
 	Surface view = new Surface();
-	view.style.backgroundMaterial = scene.camera.getTexture();
+	view.style.backgroundImage = scene.camera.getTexture();
 	view.style.set("bottom: 0; right: 0");	
 	System.setSurface(view);
-	
-	// Make a draggable window to show some useful info.
-	auto window = view.addChild(new Surface());
-	window.style.set("top: 0; right: 0; width: 150px; height: 80px; background-position: 5px 5px; color: black; " ~ 
-		"background-repeat: nineslice; background-material: url('gui/skin/clear2.png'); " ~
-		"font-family: url('gui/font/Vera.ttf'); font-size: 11px");
-	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
-		self.raise();
-		self.focus();
-	};
-	window.onMouseMove = (Surface self, byte buttons, Vec2i diff) {
-		if(buttons == 1) 
-			self.move(cast(Vec2f)diff, true);
-	};
-	window.onMouseUp = (Surface self, byte buttons, Vec2i coordinates) {
-		self.blur();
-	};
-	window.onMouseOver = (Surface self, byte buttons, Vec2i coordinates) {
-		self.style.set("background-material: url('gui/skin/clear3.png')");
-	};
-	window.onMouseOut = (Surface self, byte buttons, Vec2i coordinates) {
-		self.style.set("background-material: url('gui/skin/clear2.png')");
-	};
-	
 	
 	// Events for main surface.
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
@@ -144,7 +123,7 @@ int main()
 		// Trigger the garbage collector
 		if(key == SDLK_c) {
 			std.gc.fullCollect();
-			writefln("garbage collected");
+			Stdout("garbage collected").newline;
 		}
 		
 		// Reset the scene
@@ -153,22 +132,57 @@ int main()
 			//scene.finalize();
 			scene = new DemoScene();
 			scene.camera.setListener();
-			view.style.backgroundMaterial = scene.camera.getTexture();
+			view.style.backgroundImage = scene.camera.getTexture();
 			scene.play();
 		}
+		
+		scene.ship.keyDown(key);
 	};
+	
+	view.onKeyUp = delegate void (Surface self, int key, int modifier){
+		scene.ship.keyUp(key);
+	};
+	
 	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates){
-		self.grabMouse(!scene.ship.input);
-		scene.ship.input = !scene.ship.input;
+		scene.ship.acceptInput = !scene.ship.acceptInput;
+		if (scene.ship.acceptInput)
+			self.grabMouse();
+		else
+			self.releaseMouse();
 	};
 	view.onMouseMove = delegate void (Surface self, byte buttons, Vec2i rel){
-		if(scene.ship.input)
-			scene.ship.mouseDelta = scene.ship.mouseDelta + rel;
+		if(scene.ship.acceptInput)
+			scene.ship.input.mouseDelta += rel;
 	};
 	view.onResize = delegate void (Surface self, Vec2f amount){
 		scene.camera.setResolution(cast(int)self.width, cast(int)self.height);
 	};
+	
+		
+	// Make a draggable window to show some useful info.
+	auto window = view.addChild(new Surface());
+	window.style.set("top: 5px; right: 5px; width: 130px; height: 64px; color: black; padding: 3px; " ~ 
+		"background-color: #00008888; border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
+		"font-family: url('gui/font/Vera.ttf'); font-size: 11px");
 
+	//window.style.backgroundImage = scene.camera.getTexture();
+	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
+		self.raise();
+		self.focus();
+	};
+	window.onMouseMove = (Surface self, byte buttons, Vec2i amount) {
+		if(buttons == 1) 
+			self.move(cast(Vec2f)amount, true);
+	};
+	window.onMouseUp = (Surface self, byte buttons, Vec2i coordinates) {
+		self.blur();
+	};
+	window.onMouseOver = (Surface self, byte buttons, Vec2i coordinates) {
+		self.style.set("border-image: url('gui/skin/clear3.png')");
+	};
+	window.onMouseOut = (Surface self, byte buttons, Vec2i coordinates) {
+		self.style.set("border-image: url('gui/skin/clear2.png')");
+	};
 
 	int fps = 0;
 	Timer frame = new Timer();
@@ -185,7 +199,7 @@ int main()
 		Input.processInput();
 		scene.camera.toTexture();
 		view.render();
-
+		
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)
@@ -197,11 +211,11 @@ int main()
 		}
 		
 		// Free up a little cpu if over 60 fps.
-		if (dtime < 1/60.0)			
-			std.c.time.usleep(cast(int)((1/60.0f-dtime)*1_000_000));
+		if (dtime < 1/60.0)
+			Thread.sleep(1/60.0f-dtime);
 		scene.swapTransformRead();
 	}
+	
 	System.deInit();
-
 	return 0;
 }

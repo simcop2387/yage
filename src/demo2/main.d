@@ -39,7 +39,7 @@ int main()
 	
 	// Main surface where camera output is rendered.
 	auto view = new Surface();
-	view.style.backgroundMaterial = camera.getTexture();
+	view.style.backgroundImage = camera.getTexture();
 	view.style.set("background-color: red; font-family: url('gui/font/Vera.ttf')");	
 	System.setSurface(view);
 	
@@ -52,8 +52,11 @@ int main()
 			new GPUTexture("../res/fx/flare1.jpg"); // This proves that the LazyResource queue doesn't work yet!
 	};
 	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates) {
-		self.grabMouse(grabbed);
 		grabbed = !grabbed;
+		if (grabbed)
+			self.grabMouse();
+		else
+			self.releaseMouse();		
 	};
 	
 	// Lights
