@@ -21,7 +21,6 @@ import yage.scene.node;
 import yage.scene.visible;
 import yage.core.math.matrix;
 import yage.core.math.vector;
-import yage.system.constant;
 import yage.system.system;
 import yage.system.log;
 

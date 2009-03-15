@@ -18,7 +18,6 @@ import yage.resource.texture;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.shader;
-import yage.system.constant;
 import yage.system.system;
 import yage.system.graphics.probe;
 import yage.system.log;
@@ -189,9 +188,9 @@ class Material : Resource
 						{	char[] str = xmap.getAttribute("filter");
 							switch (str)
 							{	case "none"		:
-								case "nearest"	: ti.filter = TEXTURE_FILTER_NONE; break;
-								case "bilinear"	: ti.filter = TEXTURE_FILTER_BILINEAR; break;
-								case "trilinear": ti.filter = TEXTURE_FILTER_TRILINEAR; break;
+								case "nearest"	: ti.filter = Texture.Filter.NONE; break;
+								case "bilinear"	: ti.filter = Texture.Filter.BILINEAR; break;
+								case "trilinear": ti.filter = Texture.Filter.TRILINEAR; break;
 								default: throw new ResourceManagerException("Invalid filter value '" ~ str ~"'.");
 						}	}
 

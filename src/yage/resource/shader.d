@@ -10,7 +10,6 @@ import std.file;
 import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
-import yage.system.constant;
 import yage.system.system;
 import yage.system.log;
 import yage.core.object2;;

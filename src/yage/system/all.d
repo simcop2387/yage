@@ -9,10 +9,8 @@
 module yage.system.all;
 
 public
-{	
-	import yage.system.graphics.all;
+{	import yage.system.graphics.all;
 	import yage.system.sound.all;
-	import yage.system.constant;
 	import yage.system.input;
 	import yage.system.log;
 	import yage.system.system;

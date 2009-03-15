@@ -16,7 +16,6 @@ import derelict.opengl.glu;
 import yage.core.all;
 import yage.core.math.matrix;
 import yage.system.system;
-import yage.system.constant;
 import yage.system.input;
 import yage.system.graphics.probe;
 import yage.system.graphics.render;
@@ -870,7 +869,7 @@ package class SurfaceGeometry : Geometry
 	{	
 		Layer createLayer(GPUTexture texture, bool clamp=false)
 		{	auto result = new Layer();
-			result.addTexture(Texture(texture, clamp, TEXTURE_FILTER_BILINEAR));
+			result.addTexture(Texture(texture, clamp, Texture.Filter.BILINEAR));
 			return result;
 		}
 		Layer createLayer2(Texture texture)

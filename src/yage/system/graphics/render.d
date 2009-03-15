@@ -19,7 +19,6 @@ import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
 import yage.resource.lazyresource;
-import yage.system.constant;
 import yage.scene.all;
 import yage.scene.light;
 import yage.scene.model;

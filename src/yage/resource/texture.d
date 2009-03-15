@@ -20,14 +20,13 @@ import yage.core.math.math;
 import yage.core.math.matrix;
 import yage.core.timer;
 import yage.core.math.vector;
-import yage.core.object2;;
-import yage.core.object2;;
+import yage.core.object2;
 import yage.resource.image;
+import yage.resource.layer;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.lazyresource;
 import yage.system.system;
-import yage.system.constant;
 import yage.system.graphics.probe;
 import yage.system.log;
 
@@ -43,11 +42,16 @@ private const Vec2f zero = {v:[0.0f, 0.0f]};
  * just to change filtering, clamping, or relative scale. */
 struct Texture
 {
-	protected static int[int] translate;
+	public enum Filter ///
+	{
+		DEFAULT,	///
+		NONE,		///
+		BILINEAR,	///
+		TRILINEAR	///
+	}
 
 
 	/// Set how this texture is blended with others in the same layer.
-	/// See_Also: the TEXTURE_FILTER_* constants in yage.system.constant
 	int blend = BLEND_NONE;
 
 	/// Property enable or disable clamping of the textures of this layer.
@@ -58,8 +62,7 @@ struct Texture
 	bool reflective = false;
 
 	/// Property to set the type of filtering used for the textures of this layer.
-	/// See_Also: the TEXTURE_FILTER_* constants in yage.system.constant
-	int filter = TEXTURE_FILTER_DEFAULT;
+	int filter = Texture.Filter.DEFAULT;
 
 	/// Optional, the name of the sampler variable that uses this texture in the shader program.
 	char[] name;
@@ -69,9 +72,11 @@ struct Texture
 
 	/// 
 	GPUTexture texture;
+	
+	protected static int[int] translate;
 
 	/// Create a new TextureInstance with the parameters specified.
-	static Texture opCall(GPUTexture texture, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT)
+	static Texture opCall(GPUTexture texture, bool clamp=false, int filter=Texture.Filter.DEFAULT)
 	{
 		Texture result;
 		result.texture = texture;
@@ -94,23 +99,23 @@ struct Texture
 		glBindTexture(GL_TEXTURE_2D, texture.id);
 
 		// Filtering
-		if (filter == TEXTURE_FILTER_DEFAULT)
-			filter = TEXTURE_FILTER_TRILINEAR;	// Create option to set this later
+		if (filter == Texture.Filter.DEFAULT)
+			filter = Texture.Filter.TRILINEAR;	// Create option to set this later
 		switch(filter)
-		{	case TEXTURE_FILTER_NONE:
+		{	case Texture.Filter.NONE:
 				if (texture.mipmap)
 					 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 				else glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				break;
-			case TEXTURE_FILTER_BILINEAR:
+			case Texture.Filter.BILINEAR:
 				if (texture.mipmap)
 					 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 				else glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				break;
 			default:
-			case TEXTURE_FILTER_TRILINEAR:
+			case Texture.Filter.TRILINEAR:
 				if (texture.mipmap)
 					 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				else glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -379,8 +384,7 @@ class GPUTexture : Resource, IExternalResource
 	{ return mipmap; }
 
 	/**
-	 * Get the format of the Texture.
-	 * See_Also: yage.system.constant */
+	 * Get the format of the Texture. */
 	uint getFormat()
 	{	return format;
 	}

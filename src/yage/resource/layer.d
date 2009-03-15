@@ -13,7 +13,6 @@ import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.core.all;
-import yage.system.constant;
 import yage.system.system;
 import yage.system.log;
 import yage.system.graphics.probe;
@@ -31,6 +30,25 @@ import yage.scene.light;
 // Used as default values for function params
 private const Vec2f one = {v:[1.0f, 1.0f]};
 private const Vec2f zero = {v:[0.0f, 0.0f]};
+
+enum {
+	// Must also be the bytes per pixel (no longer true?)
+
+	// Settings for blending layers or textures
+	BLEND_NONE,					/// Draw a layer or texture as completely opaque.
+	BLEND_ADD,					/// Add the color values of a layer or texture to those behind it.
+	BLEND_AVERAGE,				/// Average the color values of a layer or texture with those behind it.
+	BLEND_MULTIPLY,				/// Mutiply the color values of a lyer or texture with those behind it.
+
+	// Settings for material layers
+	LAYER_CULL_BACK,			/// Cull the back faces of a layer and render the front.
+	LAYER_CULL_FRONT,			/// Cull the front faces of a layer and render the back.
+
+	LAYER_DRAW_DEFAULT,			// Unsupported
+	LAYER_DRAW_FILL,			/// Draw a layer as complete filled-in polygons.
+	LAYER_DRAW_LINES,			/// Draw a layer as Lines (a wireframe).
+	LAYER_DRAW_POINTS			/// Draw a layer as a series of points.
+}
 
 /**
  * This is old code and will be replaced once Collada becomes the default model format.
@@ -57,15 +75,12 @@ class Layer : Resource
 	Color	color;					// necessary for materials with no lights.
 
 	/// Property to set the blending for this Layer.
-	/// See_Also: the LAYER_BLEND_* constants in yage.system.constant;
 	int	blend = BLEND_NONE;
 
 	/// Property to set whether the front or back faces of polygons are culled (invisible).
-	/// See_Also: the LAYER_CULL_* constants in yage.system.constant
 	int	cull = LAYER_CULL_BACK;
 
 	/// Property to set whether the layer is drawn as polygons, lines or points.
-	/// See_Also: the LAYER_DRAW_* constants in yage.system.constant
 	int	draw = LAYER_DRAW_DEFAULT;
 
 	/// Property to set the width of lines and points when the layer is rendered as such.
@@ -101,7 +116,7 @@ class Layer : Resource
 	}
 
 	/// Add a new texture to this layer and return it.
-	int addTexture(GPUTexture texture, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT)
+	int addTexture(GPUTexture texture, bool clamp=false, int filter=0)
 	{
 		return addTexture(Texture(texture, clamp, filter));
 	}

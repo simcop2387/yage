@@ -19,7 +19,6 @@ import yage.resource.shader;
 import yage.resource.sound;
 import yage.core.timer;
 import yage.system.log;
-import yage.system.constant;
 import std.string;
 
 
@@ -194,7 +193,7 @@ abstract class ResourceManager
 	 * This function is called automatically for each of a material's textures when loading a material.
 	 * Keep in mind that multiple requested textures may use the same GPUTexture.
 	 * Params: source = The Texture image file that will be loaded. */
-	static Texture texture(char[] source, bool compress=true, bool mipmap=true, bool clamp=false, int filter=TEXTURE_FILTER_DEFAULT)
+	static Texture texture(char[] source, bool compress=true, bool mipmap=true, bool clamp=false, int filter=Texture.Filter.DEFAULT)
 	{	// Remember that multidimensional arrays must be accessed in reverse.
 		if (source in textures[mipmap][compress])
 			return Texture(textures[mipmap][compress][source]);
