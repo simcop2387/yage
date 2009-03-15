@@ -6,12 +6,12 @@
 
 module yage.gui.style;
 
-import std.regexp;
-import std.string;
-//import tango.text.Regex;
+import tango.text.Regex;
 import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.util.Convert;
+import tango.text.Util;
+import tango.text.Ascii;
 import yage.core.color;
 import yage.core.math.vector;
 import yage.resource.font;
@@ -275,14 +275,16 @@ struct Style
 
 		// Parse and apply the style
 		//style = tolower(style); // breaks paths on linux!
-		char[][] expressions =  std.regexp.split(style, ";\\s*");
+		char[][] expressions = Regex(";\\s*").split(style);
+		Regex rxTokens = Regex(":\\s*");
+		Regex rxProperties = Regex("\\s+");
 		foreach (exp; expressions)
-		{	char[][] tokens = std.regexp.split(exp, ":\\s*"); // replacing with Tango's Regex segfaults.
+		{	char[][] tokens = rxTokens.split(exp); // replacing with Tango's Regex segfaults.
 			if (tokens.length<2)
 				continue;
 		
-			char[] property = tolower(replace(tokens[0], "-", "")); // TODO: replace with tango code
-			tokens = std.regexp.split(tokens[1], "\\s+");
+			char[] property = toLower(substitute(tokens[0], "-", ""));
+			tokens = rxProperties.split(tokens[1]);
 			
 			
 			// TODO: account for parse errors.			
