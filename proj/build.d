@@ -170,12 +170,6 @@ int main(char[][] args)
 
 class Util
 {
-	/**
-	 * Get an absolute path from a relative path. */
-	static char[] absPath(char[] rel_path)
-	{	return std.path.join(getcwd(), rel_path);
-	}
-	
 	static bool exec(...)
 	{	char[] command;
 		void putchar(dchar c)

@@ -9,35 +9,12 @@
 
 module yage.core.misc;
 
-import std.file;
 import tango.math.Math;
-import std.path;
-import std.string;
-import std.stdarg;
-import std.traits;
+import tango.text.Util;
 import yage.core.array;
 import yage.core.parse;
 import yage.core.timer;
 
-/// Given relative path rel_path, returns an absolute path.
-char[] absPath(char[] rel_path)
-{
-	// Remove filename
-	char[] filename;
-	int index = rfind(rel_path, sep);
-	if (index != -1)
-	{	filename = rel_path[rfind(rel_path, sep)..length];
-		rel_path = replace(rel_path, filename, "");
-	}
-
-	char[] cur_path = getcwd();
-	try {	// if can't chdir, rel_path is current path.
-		chdir(rel_path);
-	} catch {};
-	char[] result = getcwd();
-	chdir(cur_path);
-	return result~filename;
-}
 
 /**
  * Resolve "../", "./", "//" and other redirections from any path.
@@ -45,11 +22,11 @@ char[] absPath(char[] rel_path)
 char[] cleanPath(char[] path)
 {	char[] sep = "/";
 
-	path = replace(path, "\\", sep);
-	path = replace(path, sep~"."~sep, sep);		// remove "./"
+	path = substitute(path, "\\", sep);
+	path = substitute(path, sep~"."~sep, sep);		// remove "./"
 
-	char[][] paths = std.string.split(path, sep);
-	char[][] result;
+	scope char[][] paths = split(path, sep);
+	scope char[][] result;
 
 	foreach (char[] token; paths)
 	{	switch (token)
@@ -64,9 +41,7 @@ char[] cleanPath(char[] path)
 				result~= token;
 		}
 	}
-	path = std.string.join(result, sep);
-	delete paths;
-	delete result;
+	path = join(result, sep);
 	return path;
 }
 

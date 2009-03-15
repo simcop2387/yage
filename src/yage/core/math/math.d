@@ -9,7 +9,7 @@ module yage.core.math.math;
 
 import tango.math.Math;
 import tango.core.BitManip;
-import std.random;
+import tango.math.random.Kiss;
 
 public const float PI_180 = 0.01745329251994;	// PI / 180
 public const float _180_PI = 57.2957795130823; // 180 / pi
@@ -71,8 +71,19 @@ float map(float v, float oldmin, float oldmax, float newmin, float newmax)
 {	return ((newmax-newmin)*v/(oldmax-oldmin))+newmin;
 }
 
+
+
 /// Generate a random number between min and max.
-float random(float min, float max)
-{	return (rand()/4294967296.0f)*(max-min)+min;
+class random
+{
+	static Kiss kiss;
+	static this()
+	{	kiss = Kiss();
+	}
+	
+	/// ditto
+	static float opCall(float min, float max)
+	{	return kiss.toReal()*(max-min)+min;
+	}
 }
 

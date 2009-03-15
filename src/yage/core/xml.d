@@ -6,8 +6,8 @@
  * Xml contains functions and classes for reading, parsing, and writing xml
  * documents.
  *
- * This hasn't been profiled and probably isn't that efficient.  Perhaps it should
- * eventually be switched to Tango's or Phobos's xml libraries.
+ * This hasn't been profiled and probably isn't that efficient.
+ * TODO: Remove this and replace it with tango's xml
  *
  * History:
  * Most of the code in this module originally came from Andy Friesen's Xmld.
@@ -21,7 +21,6 @@ module yage.core.xml;
 import std.stream;
 import std.string;
 import std.regexp;
-import std.stdio;
 import yage.core.parse;
 
 /**

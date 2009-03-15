@@ -10,8 +10,7 @@ import yage.core.math.math;
 import yage.core.parse;
 import yage.core.math.vector;
 import yage.core.math.vector:Vec4f;
-private extern (C) void *memcpy(void *, void *, uint);
-
+import tango.stdc.string : memcpy;
 
 /**
  * Allow for easy bit-by-bit conversion from one two-byte type to another.

@@ -5,8 +5,7 @@
  */
 module yage.core.closure;
 
-import std.stdarg;
-import std.traits;
+import tango.core.Traits;
 import tango.io.Stdout;
 import yage.core.parse;
 
@@ -61,16 +60,16 @@ interface Closure
  * Stores the function and arguments on the heap for later. */
 class ClosureHelper(T) : Closure
 {	protected T func;
-	protected ParameterTypeTuple!(T) func_args;
+	protected ParameterTupleOf!(T) func_args;
 	
-	this (T func, ParameterTypeTuple!(T) func_args)
+	this (T func, ParameterTupleOf!(T) func_args)
 	{	this.func = func;
 		static if (func_args.length)
 			foreach(int i, arg; func_args) // straight assignment fails in dmd.
 				this.func_args[i] = func_args[i];
 	}
 	
-	ReturnType!(T) opCall()
+	ReturnTypeOf!(T) opCall()
 	{	return func(func_args);		
 	}
 	

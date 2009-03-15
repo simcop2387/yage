@@ -21,7 +21,6 @@ import yage.core.timer;
 import yage.system.log;
 import std.string;
 
-
 /**
  * The ResourceManager Manager is a static class that keeps track of which filesystem resources are in memory.
  * All functions that load resources insert the source path of what was loaded

@@ -6,10 +6,10 @@
 
 module yage.core.timer;
 
-import std.c.math;
+import tango.stdc.math;
+import tango.util.Convert;
 import std.perf;
-import std.string;
-//import derelict.sdl.sdl;
+import tango.time.StopWatch;
 
 
 // Because they have different names on Windows and Linux
@@ -34,13 +34,14 @@ class Timer
 	protected double 	max		= double.infinity;
 	//protected double	speed	= 1.0;
 	protected ulong		us		= 0;		// microsecond counter
-	protected PerformanceCounter hpc;
+	//protected PerformanceCounter hpc;
+	protected StopWatch hpc;
 	
 	protected Timer source;
 
 	/// Initialize and start the Timer.
 	this(bool start=true)
-	{	hpc = new PerformanceCounter();
+	{	//hpc = new PerformanceCounter();
 		_paused = !start;
 		us = 0;
 		if (start)
@@ -81,7 +82,7 @@ class Timer
 			return source.tell();
 		if (!_paused)
 		{	hpc.stop();
-			us +=  hpc.microseconds(); // Update our microsecond counter
+			us +=  hpc.microsec(); // Update our microsecond counter
 			hpc.start();
 		}
 		return us*0.000001;
@@ -93,7 +94,7 @@ class Timer
 	{	synchronized(this)
 		{	_paused = true;
 			hpc.stop();
-			us += hpc.microseconds();
+			us += hpc.microsec();
 		}
 	}
 	
@@ -150,7 +151,7 @@ class Timer
 		synchronized(this)
 		{	if (!_paused)
 			{	hpc.stop();
-				us +=  hpc.microseconds(); // Update our microsecond counter
+				us +=  hpc.microsec(); // Update our microsecond counter
 				hpc.start();
 			}
 		
@@ -185,7 +186,7 @@ class Timer
 	
 	///
 	char[] toString()
-	{	return .toString(get());
+	{	return to!(char[])(get());
 	}
 	
 	

@@ -11,7 +11,6 @@ module demo1.misc;
 // Utility functions to generate fun things.
 
 import tango.math.Math;
-import std.random;
 import yage.resource.manager;
 import yage.system.input;
 import yage.scene.all;
@@ -21,11 +20,11 @@ import yage.core.all;
 void asteroidBelt(int number, float radius, Node scene)
 {
 	for (int i=0; i<number; i++)
-	{	float value = rand()/4294967296.0f;
-		float value2 = rand()/4294967296.0f;
-		float value3 = rand()/4294967296.0f;
-		float value4 = rand()/4294967296.0f;
-		float value5 = rand()/4294967296.0f;
+	{	float value = random(0,1);
+		float value2 = random(0,1);
+		float value3 = random(0,1);
+		float value4 = random(0,1);
+		float value5 = random(0,1);
 
 		ModelNode a = scene.addChild(new ModelNode());
 		a.setPosition(Vec3f(
@@ -43,11 +42,11 @@ void asteroidBelt(int number, float radius, Node scene)
 void asteroidField(int number, float radius, VisibleNode scene)
 {
 	for (int i=0; i<number; i++)
-	{	float value = rand()/4294967296.0f;
-		float value2 = rand()/4294967296.0f;
-		float value3 = rand()/4294967296.0f;
-		float value4 = rand()/4294967296.0f;
-		float value5 = rand()/4294967296.0f;
+	{	float value = random(0,1);
+		float value2 = random(0,1);
+		float value3 = random(0,1);
+		float value4 = random(0,1);
+		float value5 = random(0,1);
 
 		ModelNode a = scene.addChild(new ModelNode());
 		a.setPosition(Vec3f((value-.5)*radius, (value2-.5)*radius, (value3-.5)*radius));
@@ -61,10 +60,10 @@ void asteroidField(int number, float radius, VisibleNode scene)
 void asteroidPlane(int number, float radius, VisibleNode scene)
 {
 	for (int i=0; i<number; i++)
-	{	float value = rand()/4294967296.0f;
-		float value2 = rand()/4294967296.0f;
-		float value4 = rand()/4294967296.0f;
-		float value5 = rand()/4294967296.0f;
+	{	float value = random(0,1);
+		float value2 = random(0,1);
+		float value4 = random(0,1);
+		float value5 = random(0,1);
 
 		ModelNode a = scene.addChild(new ModelNode());
 		a.setPosition(Vec3f((value-.5)*radius, 0, (value2-.5)*radius));

@@ -16,7 +16,7 @@
  */
 module yage.core.array;
 
-import std.random;
+import yage.core.math.math;
 import yage.core.types;
 import yage.core.timer;
 
@@ -59,16 +59,16 @@ void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem
 }
 unittest
 {	float[] array;
-	array.addSorted(yage.core.types.dword(std.random.rand()).f);
-	array.addSorted(yage.core.types.dword(std.random.rand()).f);
-	array.addSorted(yage.core.types.dword(std.random.rand()).f);
-	array.addSorted(yage.core.types.dword(std.random.rand()).f);
+	array.addSorted(random(-1000, 1000));
+	array.addSorted(random(-1000, 1000));
+	array.addSorted(random(-1000, 1000));
+	array.addSorted(random(-1000, 1000));
 	assert(array.sorted());	
 	array.length = 0;
-	array.addSorted(yage.core.types.dword(std.random.rand()).f, false);
-	array.addSorted(yage.core.types.dword(std.random.rand()).f, false);
-	array.addSorted(yage.core.types.dword(std.random.rand()).f, false);
-	array.addSorted(yage.core.types.dword(std.random.rand()).f, false);
+	array.addSorted(random(-1000, 1000), false);
+	array.addSorted(random(-1000, 1000), false);
+	array.addSorted(random(-1000, 1000), false);
+	array.addSorted(random(-1000, 1000), false);
 	assert(array.sorted(false));
 }
 
@@ -176,7 +176,7 @@ unittest
 	{
 		Foo[] test;
 		for (int i=0; i<1000; i++)
-			test ~= new Foo((rand()-cast(float)rand())/rand());
+			test ~= new Foo(random(-1000, 1000));
 	
 		auto max = maxRange(test, 100, (Foo f){return f.a;} );
 		max.radixSort(true, (Foo f){return f.a;});
@@ -187,7 +187,7 @@ unittest
 	{	// same as above, but tests a min value argument.
 		Foo[] test;
 		for (int i=0; i<1000; i++)
-			test ~= new Foo((rand()-cast(float)rand())/rand());
+			test ~= new Foo(random(-1000, 1000));
 	
 		auto max = maxRange(test, 100, (Foo f){return f.a;}, 0.3f);
 		max.radixSort(true, (Foo f){return f.a;});
@@ -236,7 +236,7 @@ body
 unittest
 {	float[] test;
 	for (int i=0; i<1000; i++)
-		test ~= (rand()-cast(float)rand())/rand();
+		test ~= random(-1000, 1000);
 
 	auto max = maxRange(test, 100);
 	max.radixSort();
@@ -460,7 +460,7 @@ unittest
 	// large array of +- floats	
 	float[] test4;
 	for (int i=0; i<10000; i++)
-		test4 ~= (rand()-cast(float)rand())/rand();
+		test4 ~= random(-1000, 1000);
 	Timer a = new Timer();
 	test4.radixSort();
 	assert(test4.sorted());

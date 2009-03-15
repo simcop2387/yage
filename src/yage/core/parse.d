@@ -9,16 +9,18 @@
 module yage.core.parse;
 
 import tango.math.Math;
-import std.string;
-import std.stdio;
+import tango.text.Ascii;
+import tango.text.Util;
+import tango.util.Convert;
 
+import std.format;
 
 /// Convert a csv string of numbers to an array of floats
 float[] csvToFloat(char[] csv)
 {	float[] result;
 	char[][] explode = split(csv, ", ");
 	foreach (char[] token; explode)
-		result~= atof(token);
+		result~= to!(float)(token);
 	return result;
 }
 
@@ -37,7 +39,7 @@ char[] swritef(...)
 	void putchar(dchar c)
 	{	res~= c;
 	}
-	std.format.doFormat(&putchar, _arguments, cast(char*)_argptr);
+	doFormat(&putchar, _arguments, cast(char*)_argptr);
 	return res;
 }
 /// ditto
@@ -77,7 +79,7 @@ uint hexToUint(char[] hex)
  * "false", "no", "off", "n", and "0" will all return false,
  * and an Exception is thrown for any other value.*/
 bool strToBool(char[] word)
-{	switch (tolower(word))
+{	switch (toLower(word))
 	{	case "true":
 		case "yes":
 		case "on":
@@ -103,18 +105,18 @@ char[] boolToString(bool a)
 /// Encode characters such as &, <, >, etc. as their xml/html equivalents
 char[] xmlEncode(char[] src)
 {   char[] tempStr;
-	tempStr = replace(src    , "&", "&amp;");
-	tempStr = replace(tempStr, "<", "&lt;");
-	tempStr = replace(tempStr, ">", "&gt;");
+	tempStr = substitute(src    , "&", "&amp;");
+	tempStr = substitute(tempStr, "<", "&lt;");
+	tempStr = substitute(tempStr, ">", "&gt;");
 	return tempStr;
 }
 
 /// Convert xml-encoded special characters such as &amp;amp; back to &amp;.
 char[] xmlDecode(char[] src)
 {	char[] tempStr;
-	tempStr = replace(src    , "&amp;", "&");
-	tempStr = replace(tempStr, "&lt;",  "<");
-	tempStr = replace(tempStr, "&gt;",  ">");
+	tempStr = substitute(src    , "&amp;", "&");
+	tempStr = substitute(tempStr, "&lt;",  "<");
+	tempStr = substitute(tempStr, "&gt;",  ">");
 	return tempStr;
 }
 

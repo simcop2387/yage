@@ -5,12 +5,13 @@
  */
 module yage.core.async;
 
-import std.bind : ParameterTypeTuple;
-import std.stdarg;
+import tango.core.Traits;
+import tango.core.Vararg;
 import tango.core.Thread;
 import yage.core.parse;
 
 /**
+ * TODO: This should use closure instead of duplicating its functionality.
  * Call a function via a thread after a non-blocking delay.
  * Params:
  *     delay = Wait this many seconds before calling func.
@@ -32,7 +33,7 @@ import yage.core.parse;
 Timeout!(T) setTimeout(T)(float delay, T func, ...)
 {	
 	// Bind arguments to function
-	ParameterTypeTuple!(func) func_args;
+	ParameterTupleOf!(func) func_args;
 	assert(_arguments.length == func_args.length, 
 		swritef("Wrong number of arguments passed to setTimeout, expected %d but received %d", 
 			func_args.length, _arguments.length));
@@ -57,7 +58,7 @@ unittest
 Timeout!(T) setInterval(T)(float delay, T func, ...)
 {	
 	// Bind arguments to function
-	ParameterTypeTuple!(func) func_args;
+	ParameterTupleOf!(func) func_args;
 	assert(_arguments.length == func_args.length, 
 		swritef("Wrong number of arguments passed to setInterval, expected %d but received %d", 
 			func_args.length, _arguments.length));
@@ -90,11 +91,11 @@ alias clearTimeout clearInterval;
 private class Timeout(T) : Thread
 {	float delay;
 	T func;
-	ParameterTypeTuple!(T) func_args;
+	ParameterTupleOf!(T) func_args;
 	bool running = true;
 	bool repeating = false;
 
-	this(float delay, T func, ParameterTypeTuple!(T) func_args)
+	this(float delay, T func, ParameterTupleOf!(T) func_args)
 	{	this.delay = delay;
 		this.func = func;
 		static if (func_args.length)

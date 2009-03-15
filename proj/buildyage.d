@@ -29,6 +29,8 @@ import std.file;
 import std.path;
 import std.perf;
 import std.string;
+import std.demangle;
+import tango.io.FileSystem;
 
 // Set options for compilation.
 // Paths are relative to the build script.
@@ -59,26 +61,6 @@ version (Windows)
 
 class Util
 {
-
-	/**
-	 * Get an absolute path from a relative path. */
-	static char[] absPath(char[] rel_path)
-	{	// Remove filename
-		char[] filename;
-		int index = rfind(rel_path, sep);
-		if (index != -1)
-		{	filename = rel_path[rfind(rel_path, sep)..length];
-			rel_path = replace(rel_path, filename, "");
-		}
-
-		char[] cur_path = getcwd();
-		try {	// if can't chdir, rel_path is current path.
-			chdir(rel_path);
-		} catch {};
-		char[] result = getcwd();
-		chdir(cur_path);
-		return result~filename;
-	}
 	
 	static bool exec(...)
 	{	char[] command;
@@ -218,10 +200,10 @@ class Build
 
 		// Create absolute paths
 		cur_path = getcwd();
-		mod_path = Util.absPath(mod_path);		
-		obj_path = Util.absPath(obj_path);
-		bin_path = Util.absPath(bin_path);
-		doc_path = Util.absPath(doc_path);
+		mod_path = FileSystem.toAbsolute(mod_path);		
+		obj_path = FileSystem.toAbsolute(obj_path);
+		bin_path = FileSystem.toAbsolute(bin_path);
+		doc_path = FileSystem.toAbsolute(doc_path);
 	}
 	
 	// Fill the arrays of source and library files to include in the build.
@@ -270,7 +252,7 @@ class Build
 			
 			chdir(mod_path);
 			if (!exists(lib_path~sep~lib_name))
-			{	Util.exec("\".."~sep~"proj"~sep~"build%s\" %s -lib -%s%s", bin_ext, path, offlag, lib_name);
+			{	Util.exec("\".."~sep~"proj"~sep~"build%s\" %s -lib -g -%s%s", bin_ext, path, offlag, lib_name);
 				std.file.rename(lib_name, lib_path~sep~lib_name); // move to lib folder
 			}
 			

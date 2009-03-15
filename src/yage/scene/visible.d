@@ -7,8 +7,6 @@
 module yage.scene.visible;
 
 import tango.math.Math;
-import std.stdio;
-import std.traits;
 import yage.core.all;
 import yage.scene.all;
 import yage.scene.scene;

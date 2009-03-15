@@ -10,24 +10,17 @@
 
 module demo1.main;
 
-import std.demangle;
-
+import tango.core.Memory;
 import tango.core.Thread;
-import std.string;
 import tango.io.Stdout;
-import std.gc;
 import tango.util.Convert;
 
-import derelict.opengl.gl;
-import derelict.opengl.glext;
 import derelict.sdl.sdl;
 
 import yage.all;
-
 import demo1.ship;
 import demo1.misc;
-import derelict.openal.alfuncs;
-import std.random;
+import tango.math.random.Kiss;
 
 class DemoScene : Scene
 {
@@ -122,7 +115,7 @@ int main()
 		
 		// Trigger the garbage collector
 		if(key == SDLK_c) {
-			std.gc.fullCollect();
+			GC.collect();
 			Stdout("garbage collected").newline;
 		}
 		
@@ -188,7 +181,7 @@ int main()
 	Timer frame = new Timer();
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
-	std.gc.fullCollect();
+	GC.collect();
 	
 	// Rendering loop
 	while(!System.isAborted())

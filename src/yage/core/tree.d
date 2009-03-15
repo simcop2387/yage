@@ -5,8 +5,6 @@
  */
 module yage.core.tree;
 
-import std.gc;
-import std.stdio;
 import yage.core.array;
 import yage.core.object2;
 

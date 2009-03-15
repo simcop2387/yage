@@ -7,7 +7,6 @@
 module yage.core.math.matrix;
 
 import tango.math.Math;
-import std.random;
 import yage.core.math.vector;
 import yage.core.math.quatrn;
 import yage.core.math.math;
@@ -647,7 +646,7 @@ struct Matrix
 	protected static Matrix random()
 	{	Matrix result;
 		foreach (inout float t; result.v)
-			t = 1_000_000_000f/rand();
+			t = yage.core.math.math.random(0, 4);
 		return result;
 	}
 }
