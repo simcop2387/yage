@@ -7,7 +7,7 @@ module yage.core.object2;
 
 import tango.math.random.Kiss;
 import tango.util.Convert;
-import yage.core.parse;
+import tango.text.convert.Format;
 
 /**
  * Allow all objects to store an Id and display that id with the class name on toString(). */
@@ -44,8 +44,8 @@ class YageException : Exception
 	 * throw new YageException("Your egg carton has %d eggs.  No more than %d eggs are supported", 13, 12);
 	 * -------- 
 	 */
-	this(...)
-	{	super(swritefRelay(_arguments, _argptr));
+	this(char[] message, ...)
+	{	super(Format.convert(_arguments, _argptr, message));
 	}	
 }
 
@@ -53,8 +53,8 @@ class YageException : Exception
 class OpenALException : YageException
 {
 	///
-	this(...)
-	{	super(swritefRelay(_arguments, _argptr));
+	this(char[] message, ...)
+	{	super(Format.convert(_arguments, _argptr, message));
 	}
 }
 
@@ -62,8 +62,8 @@ class OpenALException : YageException
 class ResourceManagerException : YageException
 {	
 	///
-	this(...)
-	{	super(swritefRelay(_arguments, _argptr));
+	this(char[] message, ...)
+	{	super(Format.convert(_arguments, _argptr, message));
 	}	
 }
 

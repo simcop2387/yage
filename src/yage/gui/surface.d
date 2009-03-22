@@ -11,13 +11,10 @@ import tango.math.IEEE;
 import tango.math.Math;
 import derelict.sdl.sdl;
 import derelict.opengl.gl;
-import derelict.opengl.glext;
-import derelict.opengl.glu;
 import yage.core.all;
 import yage.core.math.matrix;
 import yage.system.system;
 import yage.system.input;
-import yage.system.graphics.probe;
 import yage.system.graphics.render;
 import yage.resource.texture;
 import yage.resource.image;
@@ -25,9 +22,6 @@ import yage.resource.geometry;
 import yage.resource.material;
 import yage.gui.style;
 import yage.gui.textlayout;
-
-
-const float third = 1.0/3.0;
 
 /** 
  * Surfaces are similar to HTML DOM elements, including having text inside it, 
@@ -234,7 +228,10 @@ class Surface : Tree!(Surface)
 				c.updateDimensions();
 		}
 	}
-		
+	
+	/**
+	 * Render this Surface.
+	 * When finished, the draw methods of all of this Surface's children are called. */
 	void draw()
 	{
 		updateDimensions();
@@ -270,174 +267,6 @@ class Surface : Tree!(Surface)
 		glPopMatrix();
 		
 		resize_dirty = false;
-	}
-	
-	/**
-	 * Draw this Surface and call the Surface's onDraw method if it is not null.
-	 * When finished, the draw methods of all of this Surface's children are called. */
-	void draw_old()
-	{
-		/+
-		if (onDraw)
-			onDraw(this);
-		
-		// Draw the quad for this surface.
-		void drawQuad(int style)
-		{	
-			// In case something else didn't leave it bound as 0.
-			if(Probe.openGL(Probe.OpenGL.VBO))
-				glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-			
-			switch(style)
-			{	case Style.NONE:
-		
-				case Style.STRETCH:
-					glDrawArrays(GL_QUADS, 0, 4);
-					break;
-				case Style.NINESLICE:
-					glDrawArrays(GL_QUADS, 0, 36);
-					break;
-				default: assert(false);
-			}
-		}
-		
-		/*
-		 * Set this Surface as non dirty and return whether it was previously dirty */
-		bool dirty()
-		{	
-			// doesn't catch parent resizes
-			
-			bool result = false;
-			if (style != old_style)
-			{	old_style = style;			
-				result = true;
-			}
-			if (parent !is old_parent)
-			{	old_parent = parent;
-				result = true;
-			}
-			if (old_parent_width != parentWidth())
-			{	old_parent_width = parentWidth();
-				result = true;
-			}
-			if (old_parent_height != parentHeight())
-			{	old_parent_height = parentHeight();
-				result = true;
-			}
-			return result;
-		}
-		
-		
-		if (style.visible)
-		{			
-			// Update positions
-			bool is_dirty = dirty();
-			if (is_dirty)
-				update();			
-			
-			// Must be called at every draw because the surface's texture's material can have its portion change.
-			// TODO: Figure out a way to only recalculate that when dirty.
-			calculateVertices();
-			
-			// Translate to the topleft corner of this 
-			glPushMatrix();
-			glTranslatef(topLeft.x, topLeft.y, 0);
-			
-			// Draw background color
-			if (style.backgroundColor.a > 0) // If backgroundColor alpha.
-			{	glColor4ubv(style.backgroundColor.ub.ptr);
-				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
-				drawQuad(Style.STRETCH);
-				glColor4f(1, 1, 1, 1);
-			}
-			
-			// Draw background material
-			if (style.backgroundMaterial !is null)
-			{	glEnable(GL_TEXTURE_2D);
-				Texture tex = Texture(style.backgroundMaterial, false, TEXTURE_FILTER_BILINEAR);				
-							
-				if (style.backgroundMaterial.flipped) // TODO: fix this horrible hack!
-				{	tex.transform = Matrix([
-						1f, 0, 0, 0,
-						0,-1, 0, 0,
-						0, 0, 1, 0,
-						0, 0, 0, 1
-					]);
-					float portion = style.backgroundMaterial.padding.y/cast(float)style.backgroundMaterial.getHeight();
-					tex.position = Vec2f(0, -1 + portion);
-				}
-				tex.bind();
-				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
-				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
-				drawQuad(style.backgroundRepeat);				
-				tex.unbind();
-			}
-			
-			// Update Text
-			// TODO: check style font properties for changes also; font size, family, text align
-			if (style.fontFamily)
-				if (is_dirty || text != old_text)
-				{	textImage = style.fontFamily.render(text, cast(int)style.fontSize, cast(int)style.fontSize, cast(int)width(), -1, style.textAlign, true);
-					if (!textTexture.texture)
-						textTexture = Texture(new GPUTexture(textImage, false, false, text), true, TEXTURE_FILTER_BILINEAR);
-					else
-						textTexture.texture.commit(textImage, false, false, text);
-					old_text = text;
-				}
-			
-			// Draw Text
-			if (textTexture.texture)
-			{					
-				float ws = textImage.getWidth();
-				float hs = textImage.getHeight();				
-				float[8] vertices = [0.0f, hs, ws, hs, ws, 0, 0, 0];
-				float[8] tex_coords=[0.0f, 1, 1, 1, 1, 0, 0, 0];
-				
-				// Apply States
-				glEnable(GL_TEXTURE_2D);
-				textTexture.bind();
-				
-				glPushMatrix();
-				glVertexPointer(2, GL_FLOAT, 0, vertices.ptr);
-				glTexCoordPointer(2, GL_FLOAT, 0, tex_coords.ptr);
-				
-				// This extension is available as of OpenGL 1.1 or 1.2 and allows drawing colored text in a single pass.
-				if (Probe.openGL(Probe.OpenGL.BLEND_COLOR))
-				{	
-					// Apply states
-					Vec4f color = style.color.vec4f;	
-					glBlendFunc(GL_CONSTANT_COLOR_EXT, GL_ONE_MINUS_SRC_COLOR);
-					glBlendColorEXT(color.r, color.g, color.b, 1);
-					glColor3f(color.a, color.a, color.a);
-				
-					glDrawArrays(GL_QUADS, 0, 4);
-					
-					// Revert states
-					glColor4f(1, 1, 1, 1);
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // reset blend function
-				} else
-				{
-					/// TODO: see http://dsource.org/projects/arclib/browser/trunk/arclib/freetype/freetype/font.d
-				}
-				
-				// Revert States
-				glPopMatrix();
-				textTexture.unbind();
-			}			
-			
-			glDisable(GL_TEXTURE_2D);
-				
-			// Using a zbuffer might make this unecessary.  tradeoffs?
-			if (!children.sorted(true, (Surface s){return s.style.zIndex;} ))
-				children.radixSort(true, (Surface s){return s.style.zIndex;} );
-			
-			// Recurse through and draw children.
-			foreach(surf; children)
-				surf.draw();
-			
-			glPopMatrix();
-		}
-		+/
 	}
 	
 	/**

@@ -16,9 +16,9 @@ import std.c.process;
 import std.file;
 import std.path;
 import std.perf;
-import std.string;
 import std.stdio;
-
+import tango.text.Util;
+import tango.text.convert.Format;
 
 class Build
 {
@@ -54,9 +54,9 @@ class Build
 					libs ~= Util.recls(arg, lib_ext);
 				} else // a single file
 				{	auto ext = "."~getExt(arg);
-					if (Util.find(ext, source_ext))
+					if (contains(source_ext, ext))
 						sources ~= arg;
-					else if (Util.find(ext, lib_ext))
+					else if (contains(lib_ext, ext))
 						libs ~= arg;
 	}	}	}	}
 	
@@ -86,7 +86,7 @@ class Build
 			version (GNU)
 			{	
 				// Add support for building libraries to gdc.
-				if (Util.find!(char[])("-lib", options))
+				if (contains(options, "-lib"))
 				{	
 					// Remove options that we don't want to pass to gcd when building files incrementally.
 					char[][] gdc_options;
@@ -98,7 +98,7 @@ class Build
 					success = true;
 					char[][] ofiles;
 					foreach(source; sources)
-					{	char[] o = source.replace(sep, "-")[0..length-2]~".o";
+					{	char[] o = substitute(source, sep, "-")[0..length-2]~".o";
 						ofiles ~= o;
 						char[] exec = "gdc " ~ source ~ " -o " ~ o ~ " -c ";// ~ std.string.join(gdc_options, " ");
 						success = success && Util.exec(exec);
@@ -170,25 +170,12 @@ int main(char[][] args)
 
 class Util
 {
-	static bool exec(...)
-	{	char[] command;
-		void putchar(dchar c)
-		{	command~= c;
-		}
-		std.format.doFormat(&putchar, _arguments, cast(char*)_argptr);
-		
-		bool success =  !system(toStringz(command));
+	static bool exec(char[] command, ...)
+	{	command = Format.convert(_arguments, _argptr, command);
+		bool success =  !system((command ~ "\0").ptr);
 		if (!success)
-			throw new Exception(command);
-		
+			throw new Exception(command);		
 		return true;
-	}
-	
-	static bool find(T)(T needle, T[] haystack)
-	{	foreach (straw; haystack)
-			if (straw==needle)
-				return true;
-		return false;		
 	}
 	
 	/**

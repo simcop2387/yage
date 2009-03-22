@@ -8,10 +8,12 @@
 
 module yage.core.parse;
 
+import tango.io.Stdout;
 import tango.math.Math;
 import tango.text.Ascii;
 import tango.text.Util;
 import tango.util.Convert;
+import tango.text.convert.Format;
 
 import std.format;
 
@@ -29,27 +31,8 @@ float[] csvToFloat(char[] csv)
 char[] floatToHex(float[] vec)
 {	char[] result;
 	foreach (float v; vec)
-		result ~= swritef("%.2X", cast(ubyte)(v*255));
+		result ~= Format.convert("{:X8}", cast(ubyte)(v*255));
 	return result;
-}
-
-/// An improved, D compatible, swritef().  This should probably be in a different module.
-char[] swritef(...)
-{	char[] res;
-	void putchar(dchar c)
-	{	res~= c;
-	}
-	doFormat(&putchar, _arguments, cast(char*)_argptr);
-	return res;
-}
-/// ditto
-char[] swritefRelay(TypeInfo[] _arguments, void* _argptr)
-{	char[] res;
-	void putchar(dchar c)
-	{	res~= c;
-	}
-	std.format.doFormat(&putchar, _arguments, cast(char*)_argptr);
-	return res;
 }
 
 /**

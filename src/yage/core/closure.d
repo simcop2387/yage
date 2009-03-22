@@ -129,13 +129,13 @@ ClosureClass!(T) closure(T)(T func, ...)
 ClosureClass!(T) closure(T)(T func, TypeInfo[] _arguments, void* _argptr) /// ditto
 {	ParameterTypeTuple!(T) func_args;
 	assert(_arguments.length == func_args.length, 
-		swritef("Wrong number of arguments passed to function %s, expected %d but received %d", 
+		Format.convert("Wrong number of arguments passed to setInterval, expected {} but received {}", , 
 			func.stringof, func_args.length, _arguments.length));
 	
 	foreach(int i, arg; func_args)
 	{	alias typeof(func_args[i]) A;
 		assert ((_arguments[i] == typeid(A)), 
-			swritef("Wrong type of argument passed to argument %d of function %s, expected %d but received %d", 
+			Format.convert("Wrong number of arguments passed to setInterval, expected {} but received {}", , 
 				i, func.stringof, typeid(A), _arguments[i]));
 		func_args[i] = va_arg!(A)(_argptr);
 	}

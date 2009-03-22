@@ -14,6 +14,8 @@ import tango.core.Memory;
 import tango.core.Thread;
 import tango.io.Stdout;
 import tango.util.Convert;
+import tango.text.xml.Document;
+import tango.text.Regex;
 
 import derelict.sdl.sdl;
 
@@ -21,6 +23,10 @@ import yage.all;
 import demo1.ship;
 import demo1.misc;
 import tango.math.random.Kiss;
+import yage.gui.style;
+
+import tango.util.Convert;
+import tango.text.convert.Format;
 
 class DemoScene : Scene
 {
@@ -89,7 +95,7 @@ class DemoScene : Scene
 int main()
 {		
 	// Init (resolution, depth, fullscreen, aa-samples)
-	System.init(647, 400, 32, false, 1); // golden ratio
+	System.init(720, 445, 32, false, 1); // golden ratio
 	//System.init(1024, 768, 32, true);
 	//System.init(1440, 900, 32, true);
 	
@@ -197,7 +203,7 @@ int main()
 		fps++;
 		if (frame.get()>=0.25f)
 		{	SDL_WM_SetCaption("Yage Demo\0", null);
-			window.text = swritef("%.2f fps\n%d objects\n%d polygons\n%d vertices",
+			window.text = Format.convert("{} fps\n{} objects\n{} polygons\n{} vertices",
 				fps/frame.get(), scene.camera.getNodeCount(), scene.camera.getPolyCount(), scene.camera.getVertexCount());
 			frame.reset();
 			fps = 0;

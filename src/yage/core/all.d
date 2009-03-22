@@ -3,7 +3,7 @@
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
  *
- * Import every module in the core package.
+ * Import every module in the yage.core package.
  *
  * The core package is somewhat of a standard library for Yage.  It includes
  * 3D math classes, array handling functions, xml parsing, and other miscellanous

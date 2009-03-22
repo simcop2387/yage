@@ -8,7 +8,7 @@ module yage.core.async;
 import tango.core.Traits;
 import tango.core.Vararg;
 import tango.core.Thread;
-import yage.core.parse;
+import tango.text.convert.Format;
 
 /**
  * TODO: This should use closure instead of duplicating its functionality.
@@ -35,7 +35,7 @@ Timeout!(T) setTimeout(T)(float delay, T func, ...)
 	// Bind arguments to function
 	ParameterTupleOf!(func) func_args;
 	assert(_arguments.length == func_args.length, 
-		swritef("Wrong number of arguments passed to setTimeout, expected %d but received %d", 
+		Format.convert("Wrong number of arguments passed to setTimeout, expected {} but received {}", 
 			func_args.length, _arguments.length));
 	foreach(int i, arg; func_args)
 	{	alias typeof(func_args[i]) A;
@@ -60,7 +60,7 @@ Timeout!(T) setInterval(T)(float delay, T func, ...)
 	// Bind arguments to function
 	ParameterTupleOf!(func) func_args;
 	assert(_arguments.length == func_args.length, 
-		swritef("Wrong number of arguments passed to setInterval, expected %d but received %d", 
+		Format.convert("Wrong number of arguments passed to setInterval, expected {} but received {}", 
 			func_args.length, _arguments.length));
 	foreach(int i, arg; func_args)
 	{	alias typeof(func_args[i]) T;

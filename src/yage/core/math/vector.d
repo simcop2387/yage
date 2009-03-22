@@ -7,7 +7,7 @@
 module yage.core.math.vector;
 
 import tango.math.Math;
-import yage.core.parse;
+import tango.text.convert.Format;
 import yage.core.math.matrix;
 import yage.core.math.math;
 import yage.core.math.quatrn;
@@ -305,10 +305,7 @@ struct Vec(int S, T)
 	char[] toString()
 	{	char[] result = "<";
 		for (int i=0; i<S; i++)
-			static if (is (T : int))
-				result ~= swritef("%d ", v[i]);
-			else
-				result ~= swritef("%.4f ", v[i]);
+			result ~= Format.convert("{} ", v[i]);
 		result ~= ">";
 		return result;
 	}
@@ -723,7 +720,7 @@ struct Vec3f
 
 	/// Return a string representation of this vector for human reading.
 	char[] toString()
-	{	return swritef("<%.4f %.4f %.4f>", x, y, z);
+	{	return Format.convert("<{} {} {}>", x, y, z);
 	}
 
 	///

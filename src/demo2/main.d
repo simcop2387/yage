@@ -103,7 +103,7 @@ int main()
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)
-		{	view.text = swritef("%.2f fps", fps/frame.get());
+		{	view.text = Format.convert("{} fps", fps/frame.get());
 			frame.reset();
 			fps = 0;			
 		}

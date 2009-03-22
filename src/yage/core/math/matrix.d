@@ -7,11 +7,11 @@
 module yage.core.math.matrix;
 
 import tango.math.Math;
+import tango.text.convert.Format;
 import yage.core.math.vector;
 import yage.core.math.quatrn;
 import yage.core.math.math;
 import yage.core.misc;
-import yage.core.parse;
 
 /**
  * A 4x4 matrix class for 3D transformations.
@@ -636,10 +636,10 @@ struct Matrix
 	/// Create a string representation of this Matrix for human reading.
 	char[] toString()
 	{	return
-		swritef("[%f %f %f %f]\n", v[0], v[4], v[8], v[12])  ~
-		swritef("[%f %f %f %f]\n", v[1], v[5], v[9], v[13])  ~
-		swritef("[%f %f %f %f]\n", v[2], v[6], v[10], v[14]) ~
-		swritef("[%f %f %f %f]\n", v[3], v[7], v[11], v[15]);
+		Format.convert("[{} {} {} {}]\n", v[0], v[4], v[8], v[12])  ~
+		Format.convert("[{} {} {} {}]\n", v[1], v[5], v[9], v[13])  ~
+		Format.convert("[{} {} {} {}]\n", v[2], v[6], v[10], v[14]) ~
+		Format.convert("[{} {} {} {}]\n", v[3], v[7], v[11], v[15]);
 	}
 	
 	// Get a random matrix, good for unit-testing.

@@ -7,12 +7,10 @@
 module yage.core.math.quatrn;
 
 import tango.math.Math;
-import yage.core.parse;
+import tango.text.convert.Format;
 import yage.core.math.vector;
 import yage.core.math.matrix;
 import yage.core.misc;
-
-
 
 /**
  * A quaternion class.
@@ -374,6 +372,6 @@ struct Quatrn
 
 	/// Return a string representation of this quaternion for human reading.
 	char[] toString()
-	{	return swritef("<%.4f %.4f %.4f %.4f>", x, y, z, w);
+	{	return Format.convert("<{} {} {} {}>", x, y, z, w);
 	}
 }

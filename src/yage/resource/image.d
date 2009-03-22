@@ -9,7 +9,8 @@ module yage.resource.image;
 import std.string;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
-import yage.core.object2;;
+import yage.core.object2;
+import yage.core.color;
 import yage.resource.resource;
 
 /**
@@ -234,6 +235,32 @@ class Image : Resource
 		}	}	}
 	}
 
+	/**
+	 * Convert a monochrome image to color and paste it over this image.
+	 * This is performed in-place.  No copy is returned.
+	 * This somewhat specialized function is used to accelerate text rendering.
+	 * Params:
+	 *     img = a monochrome image 
+	 *     xoffset = x offset of the pasted images from this images left side.
+	 *     yoffset = y offset of the pasted image from this image's top side.
+	 *     color = img will be converted to an RGBA image of this color before pasting.
+	 */
+	void overlayAndColor(Image img, Color color, int xoffset=0, int yoffset=0)
+	{	assert(img.getChannels()==1);
+		
+		for (int x=0; x<img.width; x++)
+		{	int xoffsetx = xoffset + x;
+			if (xoffsetx < width && xoffsetx > 0)
+			{	for (int y=0; y<img.height; y++)
+				{	int yoffsety = yoffset+y;
+					if (yoffsety < height && yoffsety > 0)
+						for (int c=0; c<channels; c++)
+						{	int dest = (yoffsety*width+xoffsetx)*channels;
+							int src = (y*img.width+x);
+							data[dest+c] = img.data[src] * cast(ubyte)(color.ub[c]/255.0f);
+						}
+		}	}	}
+	}
 	
 	/**
 	 * Return a c-style pointer to the image data.
@@ -353,15 +380,16 @@ class Image : Resource
 	}
 	
 	
-	/*
-	1 2 3 A
-	2 2 3 A
-	3 3 3 A 
-	A A A A
-	
-	width=3, height=3
-	left=0, right=0, bottom=4, right=4	
-	 */
+	/**
+	 * Crop the image.
+	 * The four parameters define a box, in coordinates relative to the top left of the source image.
+	 * For example, crop(0, 0, width, height) would return an exact copy of the original image.
+	 * Params:
+	 *     left = left side of the cropping box.  This and the other parameters can be positive or negative.
+	 *     top =  top side of the cropping box.
+	 *     right = right side of the cropping box
+	 *     bottom = bottom side of the cropping box.
+	 * Returns: A new image of the size right-left, bottom-top */
 	Image crop(int left, int top, int right, int bottom)
 	{
 		Image result = new Image(channels, right-left, bottom-top);

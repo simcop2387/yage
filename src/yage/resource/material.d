@@ -7,13 +7,14 @@
 module yage.resource.material;
 
 import tango.util.Convert;
+import tango.text.convert.Format;
 import std.file;
 import std.path;
 import std.stream;
 import std.string;
 import std.stdio;
 import yage.core.all;
-import yage.core.object2;;
+import yage.core.object2;
 import yage.resource.texture;
 import yage.resource.manager;
 import yage.resource.resource;
@@ -253,11 +254,11 @@ class Material : Resource
 	/// Return a string of xml for this material along with all layers.
 	char[] toString()
 	{	char[] result;
-		result = swritef("<material maxlights=%d>\n", max_lights);
+		result = Format.convert("<material maxlights={}>\n", max_lights);
 		// Loop through layers
 		foreach (Layer layer; layers)
 			result ~= layer.toString();
-		result~= swritef("</material>\n");
+		result~= "</material>\n";
 		return result;
 	}
 }

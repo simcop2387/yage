@@ -8,6 +8,7 @@ module yage.core.color;
 
 import tango.core.BitManip;
 import tango.math.Math;
+import tango.text.convert.Format;
 
 import yage.core.math.math;
 import yage.core.math.vector;
@@ -37,10 +38,15 @@ struct Color
 	
 	// public static Color GREEN = Color(0xFF008000); // fails due to CTFE union bug.
 	
-	union
+	union // this union breaks CTFE with this struct
 	{	uint ui;	/// Get the Color as a uint
 		ubyte[4] ub;/// Get the Color as an array of ubyte
 		struct { ubyte r, g, b, a; } /// Access each color component: TODO: test to ensure order is correct.
+	}
+	
+	Color opAssign(uint ui)
+	{	Color res;
+		return res;
 	}
 	
 	/// Initialize from an unsinged integer.
@@ -217,8 +223,8 @@ struct Color
 	 * lower = return lower case hexadecimal digits*/ 
 	char[] hex(bool lower=false)
 	{	if (lower)
-			return swritef("%.8x", bswap(ui));
-		return swritef("%.8X", bswap(ui));
+			return Format("{:x8}", bswap(ui));;
+		return Format("{:X8}", bswap(ui));
 	}
 	/// ditto
 	char[] toString()

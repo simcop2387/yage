@@ -28,8 +28,10 @@ import std.stdio;
 import std.file;
 import std.path;
 import std.perf;
-import std.string;
-import std.demangle;
+import tango.text.Regex;
+import tango.text.Util;
+import tango.text.Ascii;
+import tango.text.convert.Format;
 import tango.io.FileSystem;
 
 // Set options for compilation.
@@ -62,15 +64,11 @@ version (Windows)
 class Util
 {
 	
-	static bool exec(...)
-	{	char[] command;
-		void putchar(dchar c)
-		{	command~= c;
-		}
-		std.format.doFormat(&putchar, _arguments, cast(char*)_argptr);
+	static bool exec(char[] command, ...)
+	{	command = Format.convert(_arguments, _argptr, command);
 		if (Build.verbose)
 			writefln(command);
-		return !system(toStringz(command));
+		return !system((command~"\0").ptr);
 	}
 	
 	static void remove(char[] file)
@@ -113,15 +111,6 @@ class Util
 			if(isdir(directory~sep~filename) && filename[0] != '.')
 				result ~= recls(directory~sep~filename);		
 		return result;
-	}
-	
-	static char[] swritef(...)
-	{	char[] res;
-		void putchar(dchar c)
-		{	res~= c;
-		}
-		std.format.doFormat(&putchar, _arguments, cast(char*)_argptr);
-		return res;
 	}
 }
 
@@ -243,16 +232,16 @@ class Build
 		
 		// Create builder
 		chdir(cur_path);
-		Util.exec("%s %s build.d -%sbuild%s", compiler, flags, offlag, bin_ext);
+		Util.exec("{} {} build.d -{}build{}", compiler, flags, offlag, bin_ext);
 		
 		// Convert everything in imp_path into a lib in lib_path
 		foreach(path; imp_path)
 		{
-			char[] lib_name = Util.swritef("%s-%s-%s%s", path, compiler, env, lib_ext);
+			char[] lib_name = Format.convert("{}-{}-{}{}", path, compiler, env, lib_ext);
 			
 			chdir(mod_path);
 			if (!exists(lib_path~sep~lib_name))
-			{	Util.exec("\".."~sep~"proj"~sep~"build%s\" %s -lib -g -%s%s", bin_ext, path, offlag, lib_name);
+			{	Util.exec("\".."~sep~"proj"~sep~"build{}\" {} -lib -g -{}{}", bin_ext, path, offlag, lib_name);
 				std.file.rename(lib_name, lib_path~sep~lib_name); // move to lib folder
 			}
 			
@@ -371,13 +360,13 @@ class Build
 			{	chdir(path);
 				char[] modules = "MODULES = \r\n";
 				foreach(char[] src; Util.recls("./", [".d"]))
-				{	src = split(src, ".")[0];		// remove extension
-					src = path~replace(src, sep, ".");	// replace path separator with dot.
+				{	src = Regex("\\.").split(src)[0];		// remove extension
+					src = path~substitute(src, sep, ".");	// replace path separator with dot.
 					modules ~= "\t$(MODULE "~src~")\r\n";
 				}
 				// Create modules.ddoc
 				std.file.write("modules.ddoc", modules);
-				sources ~= replace(path~"/modules.ddoc", mod_path~sep, "");	// Add newly created modules.ddoc to sources
+				sources ~= substitute(path~"/modules.ddoc", mod_path~sep, "");	// Add newly created modules.ddoc to sources
 			}				
 		}
 		
@@ -405,7 +394,7 @@ class Build
 		chdir(doc_path);
 		char[][] docs = Util.recls(".", [".html"]);
 		foreach (char[] doc; docs)
-		{	char[] dest = replace(doc, sep, ".");
+		{	char[] dest = substitute(doc, sep, ".");
 			if (doc != dest)
 			{	copy(doc, dest);
 				std.file.remove(doc);
@@ -429,7 +418,7 @@ int main(char[][] args)
 {	
 	// Parse arguments
 	foreach (char[] arg; args)
-	{	switch(tolower(arg))
+	{	switch(toLower(arg))
 		{	case "-debug": 		Build._debug 	= true; break;
 			case "-release": 	Build._release 	= true; break;
 			case "-profile": 	Build.profile 	= true; break;
@@ -479,7 +468,7 @@ int main(char[][] args)
 		version(Windows)
 			Util.exec(bin_name ~ bin_ext);
 		else
-			Util.exec("./", bin_name, bin_ext);
+			Util.exec("./" ~ bin_name ~ bin_ext);
 		chdir(cur_path);
 	}
 	

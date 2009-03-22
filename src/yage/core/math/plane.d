@@ -8,7 +8,7 @@ module yage.core.math.plane;
 
 import tango.math.Math;
 import yage.core.math.vector;
-import yage.core.parse;
+import tango.text.convert.Format;
 import yage.core.misc;
 
 
@@ -97,7 +97,7 @@ struct Plane
 
 	/// Return a string representation of this Plane for human reading.
 	char[] toString()
-	{	return swritef("<%.4fx %.4fy %.4fz> + %.4f", v[0], v[1], v[2], v[3]);
+	{	return Format.convert("<{}x {}y {}> +{}", v[0], v[1], v[2], v[3]);
 	}
 
 

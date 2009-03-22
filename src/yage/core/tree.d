@@ -92,7 +92,5 @@ class Tree(T) : YageObject
 	{	if (!elem || elem.index < 0 || elem.index >= children.length)
 			return false;
 		return cast(bool)(children[elem.index] == elem);
-	}                
-
-	
+	}
 }

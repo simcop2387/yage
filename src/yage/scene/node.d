@@ -6,7 +6,7 @@
 
 module yage.scene.node;
 
-import std.stdio;
+import tango.text.convert.Format;
 import yage.core.all;
 import yage.core.tree;
 import yage.scene.scene;
@@ -183,7 +183,7 @@ abstract class Node : Tree!(Node), IFinalizable, ICloneable
 	/**
 	 * Return a string representation of this Node for human reading. */	
 	override char[] toString()
-	{	return swritef("<%s children=\"%d\"/>", getType(), children.length);
+	{	return Format.convert("<{} children=\"{}\"/>", getType(), children.length);
 	}
 	
 	/**

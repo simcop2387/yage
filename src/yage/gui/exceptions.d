@@ -6,11 +6,11 @@
 module yage.gui.exceptions;
 
 import yage.core.object2;;
-import yage.core.parse;
+import tango.text.convert.Format;
 
 ///
 class CSSException : YageException
-{	this(...)
-	{	super(swritefRelay(_arguments, _argptr));
+{	this(char[] message, ...)
+	{	super(Format.convert(_arguments, _argptr, message));
 	}	
 }

@@ -6,11 +6,11 @@
 
 module yage.gui.style;
 
-import tango.text.Regex;
 import tango.io.Stdout;
 import tango.math.IEEE;
-import tango.util.Convert;
+import tango.text.Regex;
 import tango.text.Util;
+import tango.util.Convert;
 import tango.text.Ascii;
 import yage.core.color;
 import yage.core.math.vector;
@@ -99,6 +99,12 @@ struct Value
 			result = 0;
 		return result;
 	}
+
+	char[] toString()
+	{	if (isNaN(value))
+			return "auto";
+		return to!(char[])(value) ~ (unit==Style.Unit.PX ? "px" : "%");
+	}
 }
 
 /**
@@ -107,7 +113,7 @@ struct Value
  * 
  * This struct is not fully documented. */
 struct Style
-{	
+{			
 	/**
 	 * Enumeration values used to set units for measurements, such as width, padding, etc. */
 	enum Unit
@@ -120,13 +126,6 @@ struct Style
 		CENTER = 1,
 		RIGHT = 2		
 	}
-	/*
-	enum BackgroundRepeat
-	{	NONE,
-		REPEAT,
-		STRETCH // non-css		
-	}
-	*/
 	
 	enum BorderImageStyle
 	{	STRETCH,
@@ -208,30 +207,11 @@ struct Style
 	// Background
 	GPUTexture backgroundImage; // just streteched for now.
 	Color backgroundColor;
-	
-	/*// not yet supported
-	union {
-		struct {
-			ubyte backgroundRepeatX=BackgroundRepeat.NONE;
-			ubyte backgroundRepeatY=BackgroundRepeat.NONE;
-		}
-		ubyte[2] backgroundRepeat;
-	}
-	union {
-		struct {
-			Value backgroundPositionX = Value(0);
-			Value backgroundPositionY = Value(0);
-		}
-		Value[2] backgroundPosition;
-	}
-	*/
-	
-	float opacity; // 0 to 1.
 
 	// Cursor
 	Material cursor;
 	float cursorSize; // in pixels
-		
+	
 	// Font
 	Font fontFamily;
 	Value fontSize = Value(12); // default to 12px font size.
@@ -241,17 +221,23 @@ struct Style
 		Color color;
 	}
 	
-	// Text
-	TextAlign textAlign = TextAlign.LEFT;
-	//byte  textDecoration;
-	//Value lineHeight;
+	// Text	
+	byte  textDecoration;
+	Value lineHeight;
+	Value letterSpacing;
 
 	// Other
-	union {
-		bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
-		bool visibility;
-	}
+	float opacity; // 0 to 1.
+	TextAlign textAlign = TextAlign.LEFT;
+	bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
 	int zIndex;
+	
+	/**
+	 * Struct constructor, returns the default style. */
+	static Style opCall()
+	{	Style result;
+		return result;
+	}
 	
 
 	/**
@@ -261,46 +247,25 @@ struct Style
 	 * style.set("border: 2px solid black; font-family: arial.ttf; color: white");*/
 	void set(char[] style)
 	{	
-		/*
-		 * Remove the url('...') from a css path, if it's present.
-		 * Returns: A slice of the original url to avoid creating garbage.*/ 
-		char[] removeUrl(char[] url)
-		{	if (url[0..5] == "url('" || url[0..5] == "url(\"")
-				return url[5..length-2];
-			if (url[0..4] == "url(" || url[0..4] == "url(")
-				return url[4..length-1];
-			return url;
-		}
-	
-
 		// Parse and apply the style
-		//style = tolower(style); // breaks paths on linux!
-		char[][] expressions = Regex(";\\s*").split(style);
 		Regex rxTokens = Regex(":\\s*");
 		Regex rxProperties = Regex("\\s+");
-		foreach (exp; expressions)
-		{	char[][] tokens = rxTokens.split(exp); // replacing with Tango's Regex segfaults.
+		foreach (exp; Regex(";\\s*").split(style))
+		{	char[][] tokens = rxTokens.split(exp);
 			if (tokens.length<2)
 				continue;
 		
 			char[] property = toLower(substitute(tokens[0], "-", ""));
 			tokens = rxProperties.split(tokens[1]);
 			
-			
 			// TODO: account for parse errors.			
 			switch (property)
-			{	/// TODO: Lots more properties
+			{	// TODO: more properties
 				case "color":				color = Color(tokens[0]); break;
 			
 				case "backgroundcolor":		backgroundColor = Color(tokens[0]); break;
-				//case "backgroundrepeat":	backgroundRepeat = translate[tokens[1]]; break;
 				case "backgroundimage":		backgroundImage = ResourceManager.texture(removeUrl(tokens[0])).texture; break;				
 			
-				//case "backgroundpositionx":parseUnits(tokens[1], backgroundPosition.values[0..1], backgroundPositionUnits.values[0..1]); break;
-				//case "backgroundpositiony":parseUnits(tokens[1], backgroundPosition.values[1..2], backgroundPositionUnits.values[1..2]); break;
-				//case "backgroundposition": parseUnits(tokens[1], backgroundPosition.values, backgroundPositionUnits.values); break;
-				
-				//case 
 				case "font":		/*todo */  break;
 				case "fontsize":	fontSize = tokens[0];  break;
 				case "fontfamily":	fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;		
@@ -342,6 +307,8 @@ struct Style
 				case "paddingbottomwidth":	padding[2] = tokens[0];  break;
 				case "paddingleftwidth":	padding[3] = tokens[0];  break;
 				
+				case "lineheight":			lineHeight = tokens[0]; break;
+				
 				case "zIndex":		zIndex = to!(int)(tokens[0]); break;
 				case "visibility":	visible = tokens[0] != "hidden"; break;
 				
@@ -353,17 +320,56 @@ struct Style
 		}		
 	}
 	
-	/*
-	 * Set up to values of any type from an array of tokens, using T's static opCall. */
-	protected static void setEdge(T)(T[] edge, char[][] tokens)
-	{	if (tokens.length > 0)					
-		{	edge[0..3] = edge[3] = (tokens[0]);  
-			if (tokens.length > 1)
-			{	edge[1] = edge[3] = tokens[1];
-				if (tokens.length > 2 && edge.length > 2) // edges are always 2 or 4
-				{	edge[2] = tokens[2];
-					if (tokens.length > 3)
-						edge[3] = tokens[3]; 
-		}	}	}
+	/**
+	 * Get a string representation of this style.
+	 * Only the properties that differ from the defaults will be returned. */
+	char[] toString()
+	{	Style def; // default style, req'd by styleCompare
+		char[][] result;
+	
+		mixin(styleCompare!("top"));
+		mixin(styleCompare!("right"));
+		mixin(styleCompare!("bottom"));
+		mixin(styleCompare!("left"));
+		mixin(styleCompare!("width"));
+		mixin(styleCompare!("height"));
+		
+		mixin(styleCompare!("lineHeight"));
+		mixin(styleCompare!("letterSpacing"));
+			
+		return join(result, "; ");
 	}
+}
+
+/*
+ * Helper for toString() */
+private template styleCompare(char[] name="")
+{     const char[] styleCompare =
+    	 `if (`~name~`!=def.`~name~`) result ~= "`~name~`: "~`~name~`.toString();`;
+}
+
+/* Helper for set)
+ * Remove the url('...') from a css path, if it's present.
+ * Returns: A slice of the original url to avoid creating garbage.*/ 
+private char[] removeUrl(char[] url)
+{	if (url[0..5] == "url('" || url[0..5] == "url(\"")
+		return url[5..length-2];
+	if (url[0..4] == "url(" || url[0..4] == "url(")
+		return url[4..length-1];
+	return url;
+}
+
+/*
+ * Helper for set()
+ * Set up to values of any type from an array of tokens, using T's static opCall. */
+private void setEdge(T)(T[] edge, char[][] tokens)
+{	if (tokens.length > 0)					
+	{	edge[0..3] = edge[3] = (tokens[0]);  
+		if (tokens.length > 1)
+		{	edge[1] = edge[3] = tokens[1];
+			if (tokens.length > 2 && edge.length > 2) // edges are always 2 or 4
+			{	edge[2] = tokens[2];
+				if (tokens.length > 3)
+					edge[3] = tokens[3]; 
+	}	}	}
 }

@@ -16,7 +16,7 @@ import tango.core.Thread;
 
 import yage.core.math.matrix;
 import yage.core.misc;
-import yage.core.parse;
+import tango.text.convert.Format;
 import yage.core.math.quatrn;
 import yage.core.math.vector;
 import yage.core.object2;;
@@ -36,14 +36,6 @@ import yage.scene.visible;
 struct KeyFrame
 {	float time;
 	Vec3f value;
-	
-	char[] toString()
-	{
-		char[] result = swritef(
-			"%ss, %s",
-			time, value);
-		return result;
-	}
 };
 
 ///
@@ -61,16 +53,16 @@ class Joint
 	
 	char[] toString()
 	{
-		char[] result = swritef(
-			"Name: %s\n" ~
-			"Parent: %s\n" ~
-			"Start Position: %s\n" ~
-			"Start Rotation: %s\n",
+		char[] result = Format.convert(
+			"Name: {}\n" ~
+			"Parent: {}\n" ~
+			"Start Position: {}\n" ~
+			"Start Rotation: {}\n",
 			name, parentName, startPosition, startRotation);		
-		foreach (i, k; positions)		
-			result ~= swritef("Position %d: %s\n", i, k.toString());
-		foreach (i, k; rotations)		
-			result ~= swritef("Rotation %d: %s\n", i, k.toString());
+		//foreach (i, k; positions)		
+		//	result ~= Format.convert("Position {}: {}\n", i, k.toString());
+		//foreach (i, k; rotations)		
+		//	result ~= Format.convert("Rotation {}: {}\n", i, k.toString());
 		return result;
 	}
 };

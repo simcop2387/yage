@@ -8,6 +8,7 @@ module yage.resource.sound;
 
 import std.mmfile;
 import tango.stdc.stdio : FILE, fopen;
+import tango.text.convert.Format;
 import std.string : toStringz; // what's the tango equivalent of toStringz?
 import derelict.openal.al;
 import derelict.ogg.vorbistypes;
@@ -192,8 +193,8 @@ class Sound : Resource
 
 	/// Print useful information about the loaded sound file.
 	override char[] toString()
-	{	return swritef(
-			"size of buffer: %d bytes\nsize of buffer: %d bytes\nbuffers per second: %d bytes\n", 
+	{	return Format.convert(
+			"size of buffer: {} bytes\nsize of buffer: {} bytes\nbuffers per second: {} bytes\n", 
 			buffer_size, buffer_num, buffers_per_sec
 		);
 	}
@@ -229,13 +230,13 @@ private abstract class SoundFile
 
 	/// Print useful information about the loaded sound file.
 	override char[] toString()
-	{	return swritef(
-			swritef("Sound: '%.*s'\n", source),
-			swritef("channels: %d\n", channels),
-			swritef("sample rate: %dhz\n", frequency),
-			swritef("sample bits: %d\n", bits),
-			swritef("sample length: %d bytes\n", size),
-			swritef("sample length: %f seconds\n", (8.0*size)/(bits*frequency*channels))
+	{	return (
+			Format.convert("Sound: '{}'\n", source) ~
+			Format.convert("channels: {}\n", channels) ~
+			Format.convert("sample rate: {}hz\n", frequency) ~
+			Format.convert("sample bits: {}\n", bits) ~
+			Format.convert("sample length: {} bytes\n", size) ~
+			Format.convert("sample length: {} seconds\n", (8.0*size)/(bits*frequency*channels))
 		);
 	}
 }
