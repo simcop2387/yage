@@ -7,20 +7,20 @@
  * Builds the yage game engine and optionally the html documentation.
  * This is a mess, but a working mess.  Once more of this script is modified
  * to use the newer build.d, it will be less of a mess.
- * 
+ *
  * It first builds derelict into a lib if it hasn't already been,
  * and then builds all of the files in src_path.
  *
  * Examples:
  * ------
- * dmd -run buildme.d -release -clean -ddoc -run
- * dmd -run buildme.d -gdc
+ * dmd -run buildyage.d -release -clean -ddoc -run
+ * dmd -run buildyage.d -gdc
  * ------
  *
  * This script has been tested with:
  * DMD on Windows
  * DMD on X86 Linux
- * GDC on X86 Linux
+ * GDC on X86 Linux (but not since the switch to tango)
  */
 
 import std.c.process;
@@ -63,19 +63,19 @@ version (Windows)
 
 class Util
 {
-	
+
 	static bool exec(char[] command, ...)
 	{	command = Format.convert(_arguments, _argptr, command);
 		if (Build.verbose)
 			writefln(command);
 		return !system((command~"\0").ptr);
 	}
-	
+
 	static void remove(char[] file)
 	{	if (exists(file))
-			std.file.remove(file);		
+			std.file.remove(file);
 	}
-	
+
 	/**
 	 * Recursively get all sources in directory and subdirectories that have an extension in exts
 	 * @param directory Absolute or relative path to the current directory
@@ -103,13 +103,13 @@ class Util
 	/**
 	 * Recursively get all directories in a path, except hidden ones
 	 * @param directory An absolute path, or relative path from the current directory.
-	 * @return an array of relative paths from directory. */ 
+	 * @return an array of relative paths from directory. */
 	static char[][] recls(char[] directory=".")
 	{	char[][] result;
 		result ~= directory;
 		foreach(char[] filename; listdir(directory).sort)
 			if(isdir(directory~sep~filename) && filename[0] != '.')
-				result ~= recls(directory~sep~filename);		
+				result ~= recls(directory~sep~filename);
 		return result;
 	}
 }
@@ -118,18 +118,18 @@ class Build
 {
 	// Options
 	static bool _debug, _release, profile, ddoc, _clean, verbose, run, silent, gdc;
-	
+
 	static char[][] sources;	// All source files to include in build.
 	static char[][] libs;		// All lib files to include in build.
-	
-	
+
+
 	static bool all()
 	{	makePaths();
 		getFiles();
 		clean();
 		buildLibs();
-		
-		
+
+
 		// Clean docs and generate candydoc module
 		if (ddoc)
 			try
@@ -138,20 +138,20 @@ class Build
 			{	writefln(e);
 				writefln("Error with optional documentation step.  Continuing.");
 			}
-		
+
 		// Compile
 		if (!compile())
 		{	writefln("Compile failed.  Please fix the errors and try again.");
 			return 1;
 		}
 
-		
-		// Move the output files		
+
+		// Move the output files
 		// Executable binary
-		char[] target = bin_path~sep~bin_name~bin_ext;			
+		char[] target = bin_path~sep~bin_name~bin_ext;
 		Util.remove(target); // remove old binary
 		std.file.rename(mod_path~sep~bin_name~bin_ext, target);
-		
+
 		// Remove the .map file
 		target = obj_path~sep~bin_name~".map";
 		Util.remove(target);	// shouldn't this have been removed in the initial clean?
@@ -175,10 +175,10 @@ class Build
 			{	writefln(e);
 				writefln("Error with optional clean step.  Continuing.");
 			}
-		
+
 		return 0;
 	}
-	
+
 	static public void makePaths()
 	{
 		// Create the paths we write to if they don't exist
@@ -189,16 +189,18 @@ class Build
 
 		// Create absolute paths
 		cur_path = getcwd();
-		mod_path = FileSystem.toAbsolute(mod_path);		
+		mod_path = FileSystem.toAbsolute(mod_path);
 		obj_path = FileSystem.toAbsolute(obj_path);
+		version(Windows)
+			obj_path = obj_path.substitute("/", "\\");
 		bin_path = FileSystem.toAbsolute(bin_path);
 		doc_path = FileSystem.toAbsolute(doc_path);
 	}
-	
+
 	// Fill the arrays of source and library files to include in the build.
 	static void getFiles()
 	{	sources = null;
-		
+
 		// Get a list of all files as absolute paths
 		chdir(mod_path);
 		foreach (char[] path; src_path)
@@ -207,21 +209,21 @@ class Build
 			else
 				sources ~= Util.recls(path, [".d"]);
 		}
-	
+
 	}
-	
+
 	static void buildLibs()
 	{	libs = null;
-	
+
 		version (Windows) char[] env="win32";
 		version (linux) char[] env="linux";
 		char[] compiler = gdc ? "gdc" : "dmd";
 		char[] offlag = gdc ? "o" : "of";
 		char[] flags  = gdc ? "" : "-O -inline -release";
-		
+
 		scope(exit)
 			clean2();
-		
+
 		void clean2()
 		{	Util.remove(cur_path~sep~"build");
 			Util.remove(cur_path~sep~"build.s");
@@ -229,30 +231,30 @@ class Build
 			Util.remove(cur_path~sep~"build.obj");
 			Util.remove(cur_path~sep~"build.map");
 		}
-		
+
 		// Create builder
 		chdir(cur_path);
 		Util.exec("{} {} build.d -{}build{}", compiler, flags, offlag, bin_ext);
-		
+
 		// Convert everything in imp_path into a lib in lib_path
 		foreach(path; imp_path)
 		{
 			char[] lib_name = Format.convert("{}-{}-{}{}", path, compiler, env, lib_ext);
-			
+
 			chdir(mod_path);
 			if (!exists(lib_path~sep~lib_name))
 			{	Util.exec("\".."~sep~"proj"~sep~"build{}\" {} -lib -g -{}{}", bin_ext, path, offlag, lib_name);
 				std.file.rename(lib_name, lib_path~sep~lib_name); // move to lib folder
 			}
-			
+
 			libs ~= lib_path~sep~lib_name;
-		}		
+		}
 	}
 
 	// Delete all object files
 	static void clean()
 	{	if (verbose)
-			writefln("[Cleaning]");	
+			writefln("[Cleaning]");
 
 		// Remove all intermediate files
 		char[][] files = Util.recls(obj_path, [".obj", ".o", ".map", bin_ext]);
@@ -293,10 +295,10 @@ class Build
 				flags~="-fdoc-dir"~doc_path;
 			}
 			if (!_release)
-				flags~="-funittest";			
+				flags~="-funittest";
 			flags~="-od"~obj_path;		// Set the object output directory
 			flags~="-op";					// Preserve path of object files, otherwise duplicate names will overwrite one another!
-			flags~="-o"~bin_name~bin_ext;	// output filename		
+			flags~="-o"~bin_name~bin_ext;	// output filename
 		}
 		else
 		{	if (_debug)
@@ -318,41 +320,42 @@ class Build
 				flags~="-unittest";
 			flags~="-od"~obj_path;	// Set the object output directory
 			flags~="-op";			// Preserve path of object files, otherwise duplicate names will occur!
-			flags~="-of"~bin_name~bin_ext;	// output filename			
+			flags~="-of"~bin_name~bin_ext;	// output filename
 			flags~="-quiet";
 		}
-		
-		char[][] args = flags ~ sources ~ libs;	
-		char[] compiler = gdc ? "gdc" : "dmd";				
-		
+
+		char[][] args = flags ~ sources ~ libs;
+		char[] compiler = gdc ? "gdc" : "dmd";
+
 		chdir(mod_path);
 		bool success;
 		version (Windows) // Since windows is limited to 8190 chars per command
-		{	std.file.write("compile", std.string.join(args," "));
+		{
+			std.file.write("compile", std.string.join(args," "));
 			char[] exec = compiler ~ " @compile";	// we write args out to a file in case they're too long for system to execute.
-			
+
 			success = Util.exec(exec);
 			std.file.remove("compile");
 		}
 		else
-		{	char[] dl = gdc ? " -ldl" : " -L-ldl"; // link with the dl library for derelict.		
+		{	char[] dl = gdc ? " -ldl" : " -L-ldl"; // link with the dl library for derelict.
 			char[] exec = compiler ~" " ~ std.string.join(args," ") ~ dl;
-		
+
 			success = Util.exec(exec);
 		}
 		return success;
 	}
-	
+
 
 	static void docsPreProcess()
 	{	if (verbose)
-			writefln("[Pre Processing Docs]");	
+			writefln("[Pre Processing Docs]");
 
 		// Clean out any previous docs
 		chdir(doc_path);
 		foreach (char[] doc; Util.recls(".", [".html"]))
 			std.file.remove(doc);
-		
+
 		// Create modules.ddoc
 		chdir(mod_path);
 		foreach (char[] path; src_path)
@@ -367,21 +370,8 @@ class Build
 				// Create modules.ddoc
 				std.file.write("modules.ddoc", modules);
 				sources ~= substitute(path~"/modules.ddoc", mod_path~sep, "");	// Add newly created modules.ddoc to sources
-			}				
+			}
 		}
-		
-		
-		// Create folders for the documentation
-		/*
-		chdir(mod_path);
-		if (ddoc)
-		{	char[][] paths = Util.recls();
-			foreach (char[] path; paths)
-			{	path = doc_path~sep~path;
-				if (!exists(path))
-					mkdir(path);
-		}	}
-		*/
 	}
 
 	/**
@@ -410,12 +400,12 @@ class Build
 
 		// Delete modules.ddoc
 		foreach (char[] path; src_path)
-			Util.remove(path~"/modules.ddoc");	
+			Util.remove(path~"/modules.ddoc");
 	}
 }
 
 int main(char[][] args)
-{	
+{
 	// Parse arguments
 	foreach (char[] arg; args)
 	{	switch(toLower(arg))
@@ -444,17 +434,17 @@ int main(char[][] args)
 		writefln("   -run       Run when finished.");
 		writefln("   -silent    Hide this helpful message.");
 		writefln("   -verbose   Print all commands as they're being executed.");
-		writefln("Example:  dmd -run buildme.d -clean -release -run");
+		writefln("Example:  dmd -run buildyage.d -clean -release -run");
 	}
-	
+
 	// Start timing
 	PerformanceCounter hpc = new PerformanceCounter();
 	hpc.start();
-	
+
 	// Build everything
 	if (Build.all() != 0)
 		return 1;
-	
+
 	// Completed message and time
 	hpc.stop();
 	float time = hpc.microseconds()/1000000.0f;
@@ -464,13 +454,13 @@ int main(char[][] args)
 	// Run
 	if (Build.run)
 	{	chdir(bin_path);
-		
+
 		version(Windows)
 			Util.exec(bin_name ~ bin_ext);
 		else
 			Util.exec("./" ~ bin_name ~ bin_ext);
 		chdir(cur_path);
 	}
-	
+
 	return 0;
 }

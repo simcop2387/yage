@@ -231,7 +231,10 @@ class Surface : Tree!(Surface)
 	
 	/**
 	 * Render this Surface.
-	 * When finished, the draw methods of all of this Surface's children are called. */
+	 * When finished, the draw methods of all of this Surface's children are called. 
+	 * FIXME: When the surface has a non-integer width or height, the text texture is sometmes not scaled to an 
+	 * exact pixel size, which causes some letters to appear slightly thicker.  Adding precision
+	 * to the texture matrix doesn't seem to help. */
 	void draw()
 	{
 		updateDimensions();
@@ -243,7 +246,7 @@ class Surface : Tree!(Surface)
 		{	int font_size = cast(int)style.fontSize.toPx(parentWidth());
 			int width = cast(int)width();
 			int height = cast(int)height();
-			Image textImage = TextLayout.render(text, style, font_size, width, height);
+			Image textImage = TextLayout.render(text, style, width, height);
 			if (!textTexture)
 				textTexture = new GPUTexture(textImage, false, false, text, true);
 			else
@@ -740,6 +743,7 @@ package class SurfaceGeometry : Geometry
 		{	this.text.setMaterial(new Material());
 			this.text.getMaterial().addLayer(createLayer(text, true));
 			this.text.getMaterial().getLayers()[0].blend = BLEND_AVERAGE;
+			this.text.getMaterial().getLayers()[0].getTextures()[0].filter = Texture.Filter.NONE;
 			
 			// Text bottom vertices depend on text texture size.
 			Vec2f[] vertices = cast(Vec2f[])(getVertices().getData());			

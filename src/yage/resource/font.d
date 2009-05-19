@@ -7,7 +7,7 @@
 module yage.resource.font;
 
 import tango.io.Stdout;
-import std.string;
+import tango.text.convert.Utf;
 import std.utf;
 import derelict.freetype.ft;
 import yage.core.math.math;
@@ -20,27 +20,34 @@ import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.texture;
 
-
+/**
+ * Stores a single rendered letter. */ 
+struct Letter
+{	dchar letter;	/// unicode letter
+	short top;		/// image top offset
+	short left;		/// image left offset
+	short advancex;	/// x and y distance required to move to the next letter after this one
+	short advancey;	/// ditto
+	Image image; 	/// rendered image of this letter
+	
+	void* extra;	// used internally
+	
+	/**
+	 * Get the utf8 representation of this letter. 
+	 * Params:
+	 *     lookaside = If specified, fill and return this buffer instead of allocating new memory on the heap. */
+	char[] toString(char[] lookaside=null)
+	{	dchar[1] temp;
+		temp[0] = letter;
+		return .toString(temp, lookaside);		
+	}
+}
 
 /**
  * An instance of a loaded Font.
  * Fonts are typically used to render strings of text to an image. */
 class Font : Resource
 {
-	// Stores a single rendered letter.
-	protected struct Letter
-	{	Image image;
-		int top;
-		int left;
-		int advancex;
-		int advancey;
-		dchar letter;
-		
-		char[] toString()
-		{	return toUTF8([letter]);		
-		}
-	}
-
 	// Used as a key to lookup cached letters.
 	protected struct Key
 	{	dchar letter;
@@ -58,27 +65,13 @@ class Font : Resource
 	    {  	 return toHash() - s.toHash();
 	    }
 	}
-
-	protected struct Line
-	{	Letter[] letters;
-		int width;
-	}
 	
 	protected static FT_Library library;
 	protected static bool freetype_initialized = false;
 	
-	protected static char[] br_char = " *()-+=/\\,.;:|()[]{}<>\r\n";
-	
 	protected FT_Face face;
 	protected char[] source;
 	protected Letter[Key] cache; // Using this cache of rendered character images increases performance by about 5x.
-	
-	///
-	enum TextAlign
-	{	LEFT = 0,
-		CENTER = 1,
-		RIGHT = 2		
-	}
 	
 	/**
 	 * Construct and load the font file specified by filename.
@@ -94,7 +87,7 @@ class Font : Resource
 		
 		// Load
 		source = ResourceManager.resolvePath(filename);
-		auto error = FT_New_Face(library, toStringz(source), 0, &face );
+		auto error = FT_New_Face(library, (source~"\0").ptr, 0, &face);
 		if (error == FT_Err_Unknown_File_Format)
 			throw new ResourceManagerException("Could not open font file '%s'. The format is not recognized by Freetype2.", source);
 		else if (error)
@@ -112,152 +105,100 @@ class Font : Resource
 	 * This allows a tremendous speedup in rendering speed, but uses extra memory.
 	 * Calling this function should not usually be necessary. */
 	void clearCache()
-	{
-		
+	{	cache = null;		
 	}
 	
 	/**
-	 * Render an image from text.
-	 * TODO: Fix text from Right-to-Left languages from being rendered backwards.
+	 * Render an image of a single letter.
+	 * Params:
+	 *     text = A string of text to render, can be utf-8 or unencoded unicode (dchar[]).
+	 *     width = The horizontal pixel size of the font to render.
+	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.. */
+	Letter getLetter(dchar letter, int width, int height=0)
+	{
+		Key key = Key(letter, width, height);
+		if (key in cache)
+			return cache[key];
+		else
+		{	Letter result;
+		
+			// Give our font size to freetype.
+			auto error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
+			if (error)
+				throw new ResourceManagerException("Font '{}' does not support pixel sizes of {}x{}.", source, width, height);
+		
+			// Render the character into the glyph slot.
+			error = FT_Load_Char(face, letter, FT_LOAD_RENDER);  
+			if (error)
+				throw new ResourceManagerException("Font '{}' cannot render the character '{}'.", source, toUTF8([letter]));			
+			
+			auto bitmap = face.glyph.bitmap;
+			ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				
+			
+			// Set the values of the letter.			
+			result.image = new Image(data.dup, 1, bitmap.width, bitmap.rows);
+			result.top = face.glyph.bitmap_top;
+			result.left = face.glyph.bitmap_left;
+			result.advancex = face.glyph.advance.x>>6; // fast divide by 64
+			result.advancey = face.glyph.advance.y>>6;
+			result.letter = letter;
+			
+			return cache[key] = result;
+		}
+	}
+	
+	/**
+	 * Render an image from text, without consideration for multiple lines.
+	 * TODO: Fix text from Right-to-Left languages being rendered backwards.
 	 * Params:
 	 *     text = A string of text to render, can be utf-8 or unencoded unicode (dchar[]).
 	 *     width = The horizontal pixel size of the font to render.
 	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.
-	 *     line_width = Letters will wrap to the next line after this many pixels (breaking on spaces), unsupported
-	 *     line_height = This much space will occur between each line, defaults to 1.5x height, unsupported
-	 *     align = unsupported
-	 *     image_pow2 = If true, the image returned will always have its dimensions as powers of two. */
-	Image render(char[] utf8, int width, int height=0, int line_width=-1, int line_height=-1, uint text_align=TextAlign.LEFT, bool image_pow2=false)
+	 *     max_width = Maximum width of the result image in pixels. */
+	Image render(char[] utf8, int width, int height=0, int max_width=int.max)
 	{	dchar[] unicode = toUTF32(utf8);
-		Image result = render(unicode, width, height, line_width, line_height, text_align, image_pow2);
+		Image result = render(unicode, width, height, max_width);
 		delete unicode;
 		return result;
 	}
 	
 	/// ditto
-	Image render(dchar[] text, int width, int height=0, int line_width=-1, int line_height=-1, uint text_align=TextAlign.LEFT, bool image_pow2=false) 
+	Image render(dchar[] text, int width, int height=0, int max_width=int.max) 
 	{
-		// Calculate parameters
-		if (line_height==-1)
-			line_height = cast(int)(height*1.5);
-		if (line_width==-1)
-			line_width = int.max;		
-		
-		// Give our font size to freetype.
-		auto error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
-		if (error)
-			throw new ResourceManagerException("Font '%s' does not support pixel sizes of %dx%d.", source, width, height);		
-		
 		/*
 		 * First, we render (or retrieve from cache) all letters into an array of Letter.
-		 * This allows us to calculate dimensinal information like total width/height, number of lines etc.
 		 * We then allocate an image of appropriate size, composite the letters onto it, and then return it. */
-		Letter[] letters;
+		scope Letter[] letters;
 		
 		// Create a glyph for each letter and store its parameters
-		int current_line_width = 0;
+		int line_width;
 		foreach (c; text)
 		{	
-			Key key = Key(c, width, height);
-			Letter letter;
-			if (key in cache)
-				letter = cache[key];
-			else
-			{	// Render the character into the glyph slot.
-				error = FT_Load_Char(face, c, FT_LOAD_RENDER);  
-				if (error)
-					throw new ResourceManagerException("Font '%s' cannot render the character '%s'.", source, toUTF8([c]));			
-				
-				auto bitmap = face.glyph.bitmap;
-				ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				
-				
-				// Set the values of the letter.			
-				letter.image = new Image(data.dup, 1, bitmap.width, bitmap.rows);
-				letter.top = face.glyph.bitmap_top;
-				letter.left = face.glyph.bitmap_left;
-				letter.advancex = face.glyph.advance.x>>6;
-				letter.advancey = face.glyph.advance.y>>6;
-    			letter.letter = c;
-				
-				cache[key] = letter;
-			}
-			
+			Letter letter = getLetter(c, width, height);
 			letters ~= letter;
-		}
-		
-		// Convert letters to lines
-		Line[] lines;
-		lines.length = lines.length + 1;
-		foreach (i, letter; letters)
-		{	
-			// Advance to next line if necessary			
-			if (letter.letter == '\n')
-			{	lines.length = lines.length + 1;
-				continue;
-			}
-			if (lines[$-1].width + letter.advancex > line_width)
-				lines.length = lines.length + 1;
-	
-			// If a possible breaking character
-			if (find(br_char, letter.letter) != -1) // if this letter is a breaking charater
-			{	int line_width2 = lines[$-1].width;
-				bool skip = false;
-				for (int j=i+1; j<letters.length; j++) // look ahead for more breaking characters
-				{					
-					// if there are more before the line is too long, continue
-					if (find(br_char, letters[j].letter) != -1) 
-						break;
-					
-					// if not, break on this character
-					line_width2 += letters[j].advancex;
-					if (line_width2 > line_width)
-					{	lines.length = lines.length + 1;
-						skip = true;
-						break;
-					}
-				}
-				if (skip)
-					continue;
-			}
-			
-			// If a printable character, add it to the line.
-			if (letter.letter > 31)
-			{	Line* line = &lines[$-1];			
-				line.letters ~= letter;
-				line.width += letter.advancex;
+			line_width += letter.advancex;
+			if (line_width > max_width)
+			{	line_width = max_width;
+				break;
 			}
 		}
-		
 		
 		// Create image target where glyphs will be composited.
-		int img_width = image_pow2 ? nextPow2(line_width) : line_width;
-		int img_height = image_pow2 ? nextPow2(line_height*lines.length) : line_height*lines.length;
-		//Stdout(img_width, img_height).newline;
-		Image result = new Image(1, img_width, img_height);
-		
-		
-		foreach (i, line; lines)
-		{				
-			// Calculate align offset
-			int align_offset = 0;
-			if (text_align == TextAlign.CENTER)
-				align_offset = (line_width-line.width) / 2;
-			else if (text_align == TextAlign.RIGHT)
-				align_offset = (line_width-line.width);
-			
-			// Composite letters onto main image.
-			int advancex=0, advancey=0;
-			foreach (j, letter; line.letters)
-			{	result.overlay(letter.image, align_offset+advancex+letter.left, i*line_height + (advancey-letter.top+height));			
-				advancex+= letter.advancex;
-				advancey+= letter.advancey;
-			}
+		int line_height = cast(int)(height*1.5f);
+		Image result = new Image(1, line_width, line_height);
+							
+		// Composite letters onto main image.
+		int advancex=0, advancey=0;
+		foreach (j, letter; letters)
+		{	result.overlay(letter.image, advancex+letter.left, (advancey-letter.top+height));			
+			advancex+= letter.advancex;
+			advancey+= letter.advancey;
 		}
 		
-		delete lines;
-		delete letters;
-	
 		return result;
 	}
 
+	char[] toString()
+	{	return source;
+	}
 }

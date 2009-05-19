@@ -14,6 +14,7 @@ import tango.core.Memory;
 import tango.core.Thread;
 import tango.io.Stdout;
 import tango.util.Convert;
+import tango.text.convert.Format;
 import tango.text.xml.Document;
 import tango.text.Regex;
 
@@ -22,11 +23,6 @@ import derelict.sdl.sdl;
 import yage.all;
 import demo1.ship;
 import demo1.misc;
-import tango.math.random.Kiss;
-import yage.gui.style;
-
-import tango.util.Convert;
-import tango.text.convert.Format;
 
 class DemoScene : Scene
 {
@@ -102,6 +98,7 @@ int main()
 	// Paths
 	ResourceManager.addPath("../res/");
 	ResourceManager.addPath("../res/shader");
+	ResourceManager.addPath("../res/gui/font");
 
 	// Create and start a Scene
 	Log.write("Starting update loop.");
@@ -160,9 +157,9 @@ int main()
 		
 	// Make a draggable window to show some useful info.
 	auto window = view.addChild(new Surface());
-	window.style.set("top: 5px; right: 5px; width: 130px; height: 64px; color: black; padding: 3px; " ~ 
-		"background-color: #00008888; border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font-family: url('gui/font/Vera.ttf'); font-size: 11px");
+	window.style.set("top: 5px; right: 5px; width: 110px; height: 80px; color: black; padding: 3px; line-height: 19px; " ~
+		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
+		"font-family: url('Vera.ttf'); font-size: 11px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
 	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
@@ -188,6 +185,7 @@ int main()
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
 	GC.collect();
+
 	
 	// Rendering loop
 	while(!System.isAborted())
@@ -201,9 +199,9 @@ int main()
 		
 		// Print framerate
 		fps++;
-		if (frame.get()>=0.25f)
+		if (frame.get()>=1f)
 		{	SDL_WM_SetCaption("Yage Demo\0", null);
-			window.text = Format.convert("{} fps\n{} objects\n{} polygons\n{} vertices",
+			window.text = Format.convert(`{} <span style="font-family: url('VeraBd.ttf')">fps</span><br/>{} <span style="font-family: url('VeraBd.ttf')">objects</span><br/>{} <span style="font-family: url('VeraBd.ttf')">polygons</span><br/>{} <span style="font-family: url('VeraBd.ttf')">vertices</span>`,
 				fps/frame.get(), scene.camera.getNodeCount(), scene.camera.getPolyCount(), scene.camera.getVertexCount());
 			frame.reset();
 			fps = 0;

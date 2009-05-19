@@ -198,6 +198,13 @@ struct Color
 		return res.dup;
 	}
 	
+	void f(float[4] result) /// ditto
+	{	result[0] = r * frac;
+		result[1] = g * frac;
+		result[2] = b * frac;
+		result[3] = a * frac;
+	}
+	
 	/// Get the Color as a Vec3f.
 	Vec3f vec3f()
 	{	Vec3f res;

@@ -7,6 +7,8 @@
 module yage.resource.image;
 
 import std.string;
+import tango.math.Math;
+import tango.text.Ascii;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
 import yage.core.object2;
@@ -106,7 +108,7 @@ class Image : Resource
 			data[0..length] = cast(ubyte[])sdl_image.pixels[0..data.length]; 
 			
 			// Swap Red and Blue if RGB bitmap image
-			if(tolower(filename[length-4..length])==".bmp" && channels >= 3)
+			if(toLower(filename[length-4..length])==".bmp" && channels >= 3)
 				for (int i=0; i<data.length; i+=3)
 				{	ubyte swap = data[i];				
 					data[i] = data[i+2];
@@ -145,7 +147,6 @@ class Image : Resource
 		float v_ratio = v-y;
 		float u_opposite = 1 - u_ratio;
 		float v_opposite = 1 - v_ratio;
-		
 
 		// Loop through each channel.
 		Pixel4 result;
@@ -221,16 +222,16 @@ class Image : Resource
 
 	/**
 	 * Paste another image on top of this one.
-	 * This does not make a copy. */
+	 * This does not make a copy. 
+	 * This also does not perform proper overlays of images with an alpha channel, 
+	 * TODO: Use overlayAndColor for the code needed to implement a correct RGBA solution. */
 	void overlay(Image img, int xoffset=0, int yoffset=0)
-	{
-		for (int x=0; x<img.width; x++)
-		{	int xoffsetx = xoffset + x;
-			if (xoffsetx < width && xoffsetx > 0)
-			{	for (int y=0; y<img.height; y++)
-				{	// TODO: Replace with array slice copy.
-					int yoffsety = yoffset+y;
-					if (yoffsety < height && yoffsety > 0)
+	{	for (int y=0; y<img.height; y++)
+		{	int yoffsety = yoffset+y;
+			if (yoffsety < height && yoffsety > 0)
+			{	for (int x=0; x<img.width; x++) // TODO: Replace with array slice copy.
+				{	int xoffsetx = xoffset + x;
+					if (xoffsetx < width && xoffsetx > 0)	
 						this[xoffsetx, yoffsety][0..channels] = img[x, y][0..channels]; // TODO: convert format
 		}	}	}
 	}
@@ -247,19 +248,41 @@ class Image : Resource
 	 */
 	void overlayAndColor(Image img, Color color, int xoffset=0, int yoffset=0)
 	{	assert(img.getChannels()==1);
+	
+		float[4] fcolor;
+		color.f(fcolor);
 		
-		for (int x=0; x<img.width; x++)
-		{	int xoffsetx = xoffset + x;
-			if (xoffsetx < width && xoffsetx > 0)
-			{	for (int y=0; y<img.height; y++)
-				{	int yoffsety = yoffset+y;
-					if (yoffsety < height && yoffsety > 0)
-						for (int c=0; c<channels; c++)
-						{	int dest = (yoffsety*width+xoffsetx)*channels;
-							int src = (y*img.width+x);
-							data[dest+c] = img.data[src] * cast(ubyte)(color.ub[c]/255.0f);
+		for (int y=0; y<img.height; y++)
+		{	int yoffsety = yoffset+y;
+			if (0 < yoffsety && yoffsety < height)
+			{	
+				
+				for (int x=0; x<img.width; x++)
+				{	int xoffsetx = xoffset + x;
+					if (0 < xoffsetx && xoffsetx < width)
+					{	
+						ubyte src_alpha = img.data[y*img.width+x];
+						if (src_alpha > 12)
+						{	
+							int dest = (yoffsety*width+xoffsetx)*channels;
+							ubyte dst_alpha = data[dest+3];
+									
+							for (int c=0; c<channels; c++)
+							{	
+								ubyte src_color = color.ub[c];
+								ubyte dst_color = data[dest+c];
+								
+								// This is my own blending algorithm, can it be simplified?
+								if (c<3)
+								{	int dst_ratio = ((255-src_alpha) * dst_alpha)/255;
+									data[dest+c] = cast(ubyte)((src_color*src_alpha + dst_color*dst_ratio) / (src_alpha + dst_ratio));
+								}
+								else
+									data[dest+c] = (src_alpha*src_alpha + (255-src_alpha)*dst_alpha) / 255;
+							}
 						}
-		}	}	}
+		}	}	}	}
+		
 	}
 	
 	/**

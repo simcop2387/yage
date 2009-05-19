@@ -54,7 +54,7 @@ char* toCString(char[] str)
 {
     version(Tango)
     {
-        return toStringz(str);
+        return (str~"\0").ptr; // modified by Eric Poggel
     }
     else
     {
@@ -64,10 +64,24 @@ char* toCString(char[] str)
 
 char[] toDString(char* cstr)
 {
-    version(Tango)
+    version(Tango) // modified by Eric Poggel
     {
-	    static if(is(typeof(&fromStringz))) { return fromStringz(cstr); }
-		else { return fromUtf8z(cstr); } 
+    	size_t strlenz(char* s)
+		{
+	        size_t i;
+	
+	        if (s)
+	            while (*s++)
+	                   ++i;
+	        return i;
+		}
+    	
+    	char[] fromStringz (char* s)
+		{
+		    return s ? s[0 .. strlenz(s)] : null;
+		}
+    	
+    	return fromStringz(cstr);
     }
     else
     {

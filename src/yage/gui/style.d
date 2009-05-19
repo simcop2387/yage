@@ -10,8 +10,9 @@ import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.text.Regex;
 import tango.text.Util;
-import tango.util.Convert;
 import tango.text.Ascii;
+import tango.text.convert.Format;
+import tango.util.Convert;
 import yage.core.color;
 import yage.core.math.vector;
 import yage.resource.font;
@@ -20,8 +21,10 @@ import yage.resource.material;
 import yage.resource.texture;
 import yage.gui.exceptions;
 
+import std.stdio;
+
 /**
- * A value that can store pixels or percent */
+ * Represents a CSS value.  It can store pixels or precent. */
 struct Value
 {	float value=float.nan; ///
 	ubyte unit = Style.Unit.PX; ///
@@ -100,6 +103,8 @@ struct Value
 		return result;
 	}
 
+	/**
+	 * Returns: The value as it would be printed in a CSS string. */
 	char[] toString()
 	{	if (isNaN(value))
 			return "auto";
@@ -127,10 +132,27 @@ struct Style
 		RIGHT = 2		
 	}
 	
+	enum TextDecoration
+	{	NONE,
+		UNDERLINE,
+		OVERLINE,
+		LINETHROUGH
+	}
+	
 	enum BorderImageStyle
 	{	STRETCH,
 		ROUND,
 		REPEAT		
+	}
+	
+	enum FontStyle
+	{	NORMAL,
+		ITALIC
+	}
+	
+	enum FontWeight
+	{	NORMAL,
+		BOLD
 	}
 	
 	// Dimension
@@ -210,24 +232,23 @@ struct Style
 
 	// Cursor
 	Material cursor;
-	float cursorSize; // in pixels
+	float cursorSize=16; // in pixels
 	
 	// Font
 	Font fontFamily;
 	Value fontSize = Value(12); // default to 12px font size.
-	
-	union { // Default color to black opaque.
-		uint color_ui = 0xFF000000;
-		Color color;
-	}
+	FontStyle fontStyle;
+	FontWeight fontWeight;	
 	
 	// Text	
+	Color color = {r:0, g:0, b:0, a:255};
 	byte  textDecoration;
 	Value lineHeight;
 	Value letterSpacing;
+	
 
 	// Other
-	float opacity; // 0 to 1.
+	float opacity = 1; // 0 to 1.
 	TextAlign textAlign = TextAlign.LEFT;
 	bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
 	int zIndex;
@@ -247,6 +268,9 @@ struct Style
 	 * style.set("border: 2px solid black; font-family: arial.ttf; color: white");*/
 	void set(char[] style)
 	{	
+		if (!style.length)
+			return;
+		
 		// Parse and apply the style
 		Regex rxTokens = Regex(":\\s*");
 		Regex rxProperties = Regex("\\s+");
@@ -254,8 +278,7 @@ struct Style
 		{	char[][] tokens = rxTokens.split(exp);
 			if (tokens.length<2)
 				continue;
-		
-			char[] property = toLower(substitute(tokens[0], "-", ""));
+			char[] property = toLower(substitute(tokens[0], "-", "")); // garbage?
 			tokens = rxProperties.split(tokens[1]);
 			
 			// TODO: account for parse errors.			
@@ -268,7 +291,9 @@ struct Style
 			
 				case "font":		/*todo */  break;
 				case "fontsize":	fontSize = tokens[0];  break;
-				case "fontfamily":	fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;		
+				case "fontfamily":	fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;
+				case "fontstyle":	fontStyle = translateFontStyle[tokens[0]];  break;
+				case "fontweight":	fontWeight = translateFontWeight[tokens[0]];  break;
 			
 				case "top":			top = tokens[0];  break;
 				case "right":		right = tokens[0];  break;
@@ -309,43 +334,76 @@ struct Style
 				
 				case "lineheight":			lineHeight = tokens[0]; break;
 				
-				case "zIndex":		zIndex = to!(int)(tokens[0]); break;
-				case "visibility":	visible = tokens[0] != "hidden"; break;
+				case "textdecoration":		textDecoration = translateTextDecoration[tokens[0]]; break;
+				
+				case "zIndex":				zIndex = to!(int)(tokens[0]); break;
+				case "visibility":			visible = tokens[0] != "hidden"; break;
 				
 				default:
 					throw new CSSException("Unsupported CSS Property: '", property, "'.");
 			}
-			
-			delete property;
 		}		
 	}
-	
+
 	/**
 	 * Get a string representation of this style.
 	 * Only the properties that differ from the defaults will be returned. */
 	char[] toString()
 	{	Style def; // default style, req'd by styleCompare
 		char[][] result;
-	
+		
 		mixin(styleCompare!("top"));
 		mixin(styleCompare!("right"));
 		mixin(styleCompare!("bottom"));
 		mixin(styleCompare!("left"));
 		mixin(styleCompare!("width"));
 		mixin(styleCompare!("height"));
+
+		mixin(styleCompare!("borderWidth"));
+		mixin(styleCompare!("borderColor"));
+		//mixin(styleCompare!("borderImage"));
+		//mixin(styleCompare!("borderCenterImage"));
+		//mixin(styleCompare!("borderCornerImage"));		
+		mixin(styleCompare!("padding"));
+		//mixin(styleCompare!("backgroundImage"));
+		//mixin(styleCompare!("backgroundColor"));
 		
+		//mixin(styleCompare!("cursor"));		
+		mixin(styleCompare!("cursorSize"));
+		
+		mixin(styleCompare!("fontFamily"));
+		mixin(styleCompare!("fontSize"));
+		mixin(styleCompare!("color"));
+		
+		mixin(styleCompare!("textDecoration"));
 		mixin(styleCompare!("lineHeight"));
 		mixin(styleCompare!("letterSpacing"));
+		
+		mixin(styleCompare!("opacity"));
+		mixin(styleCompare!("textAlign"));
+		mixin(styleCompare!("visible"));		
+		mixin(styleCompare!("zIndex"));
 			
 		return join(result, "; ");
 	}
+
+	// Translation tables
+	private static byte[char[]] translateTextDecoration;
+	private static FontStyle[char[]] translateFontStyle;
+	private static FontWeight[char[]] translateFontWeight;
+	static this()
+	{	translateTextDecoration = [cast(char[])"none":0, "underline": 1, "overline": 2, "line-through": 3];
+		translateFontStyle      = [cast(char[])"normal":FontStyle.NORMAL, "italic": FontStyle.ITALIC, "oblique": FontStyle.ITALIC];
+		translateFontWeight     = [cast(char[])"normal":FontWeight.NORMAL, "bold": FontWeight.BOLD];
+	}
+	
 }
 
 /*
  * Helper for toString() */
 private template styleCompare(char[] name="")
 {     const char[] styleCompare =
-    	 `if (`~name~`!=def.`~name~`) result ~= "`~name~`: "~`~name~`.toString();`;
+    	 `if (`~name~`!=def.`~name~`) result ~= "`~name~`: "~Format("{}", `~name~`);`;
 }
 
 /* Helper for set)

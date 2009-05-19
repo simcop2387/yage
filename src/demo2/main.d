@@ -9,6 +9,7 @@
 
 module demo2.main;
 
+import tango.text.convert.Format;
 import tango.io.Stdout;
 import derelict.sdl.sdl;
 import yage.all;
@@ -20,7 +21,7 @@ import derelict.opengl.glext;
 int main()
 {
 	// Init
-	System.init(800, 600, 32, false, 1);
+	System.init(814, 445, 32, false, 1);
 	ResourceManager.addPath(["../res", "../res2"]);
 
 	// Create and start a Scene
@@ -63,32 +64,30 @@ int main()
 	auto l1 = scene.addChild(new LightNode());
 	l1.setPosition(Vec3f(0, 300, -300));
 	
-	// Add to the scene's update loop
-	void update(Node self){
-		/*
-		// Test creation and removal of lots of lights and sounds and sprites.
-		for (int i=0; i<1; i++)
-		{	
-			auto flare = scene.addChild(new SpriteNode());
-			flare.setMaterial("fx/flare1.xml");
-			flare.setSize(Vec3f(2));
-			flare.setPosition(Vec3f(0, 0, -1400));
-			flare.setLifetime((rand()%100)/100.0f + 2);
-			flare.setVelocity(Vec3f(cast(int)((rand()%100)-50)/2.0f, (cast(int)(rand()%100)-50)/2.0f, (cast(int)(rand()%100)-50)/2.0f));
-			
-			auto l = flare.addChild(new LightNode());
-			l.setDiffuse(Color(1, 1, 1));
-			l.setLightRadius(1200);
-			
-			SoundNode zap = flare.addChild(new SoundNode());
-			zap.setSound("sound/laser.wav");
-			zap.setVolume(1);
-			zap.setLifetime(2); 
-			zap.play();	 	
-		}
-		*/
-	}
-	scene.onUpdate(&update);
+
+	// For Testing
+	auto window = view.addChild(new Surface());
+	window.style.set("top: 5px; left: 5px; width: 100; height: 60px; color: black; padding: 3px; " ~
+		"background-color: #00008888; border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
+		"font-family: url('gui/font/Vera.ttf'); font-size: 14px;");
+	
+	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
+		self.raise();
+		self.focus();
+	};
+	window.onMouseMove = (Surface self, byte buttons, Vec2i amount) {
+		if(buttons == 1) 
+			self.move(cast(Vec2f)amount, true);
+	};
+	window.onMouseUp = (Surface self, byte buttons, Vec2i coordinates) {
+		self.blur();
+	};
+	window.onMouseOver = (Surface self, byte buttons, Vec2i coordinates) {
+		self.style.set("border-image: url('gui/skin/clear3.png')");
+	};
+	window.onMouseOut = (Surface self, byte buttons, Vec2i coordinates) {
+		self.style.set("border-image: url('gui/skin/clear2.png')");
+	};
 	
 	// Rendering / Input Loop
 	int fps = 0;
@@ -103,7 +102,11 @@ int main()
 		// Print framerate
 		fps++;
 		if (frame.get()>=0.25f)
-		{	view.text = Format.convert("{} fps", fps/frame.get());
+		{	
+			//char[] longText = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px"><u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) <span style="text-decoration: overline">house</span> the font would refer to a complete set of metal type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not include a single definition of each character, but commonly used characters (such as vowels and periods) would have more physical type-pieces included. A font when bought new would often be sold as (for example in a roman alphabet) 12pt 14A 34a, meaning that it would be a size 12pt fount containing 14 upper-case 'A's, and 34 lower-case 'A's. The rest of the characters would be provided in quantities appropriate for the language it was required for in order to set a complete page in that language. Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and line-width spacers, were not part of a specific font in pre-digital usage, but were separate, generic pieces.[1]`;
+			//window.text = Format.convert(`{} fps<br/>{}`,
+			//	fps/frame.get());
+			window.text = Format.convert(`<span style="color: white">{}</span> fps`, fps/frame.get());
 			frame.reset();
 			fps = 0;			
 		}
