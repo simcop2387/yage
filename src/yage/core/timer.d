@@ -8,14 +8,7 @@ module yage.core.timer;
 
 import tango.stdc.math;
 import tango.util.Convert;
-import std.perf;
 import tango.time.StopWatch;
-
-
-// Because they have different names on Windows and Linux
-version (Windows)
-{	alias HighPerformanceCounter PerformanceCounter;
-}
 
 
 /**
@@ -34,15 +27,13 @@ class Timer
 	protected double 	max		= double.infinity;
 	//protected double	speed	= 1.0;
 	protected ulong		us		= 0;		// microsecond counter
-	//protected PerformanceCounter hpc;
 	protected StopWatch hpc;
 	
 	protected Timer source;
 
 	/// Initialize and start the Timer.
 	this(bool start=true)
-	{	//hpc = new PerformanceCounter();
-		_paused = !start;
+	{	_paused = !start;
 		us = 0;
 		if (start)
 			hpc.start();
@@ -61,12 +52,7 @@ class Timer
 			play();
 	}
 	
-	// TODO: This timer will use another timer as its source.
-	this (Timer source, bool as_source)
-	{
-		
-	}
-	
+	///
 	Timer clone()
 	{	auto result = new Timer(!this.paused());
 		result.pause_after = pause_after;
@@ -133,8 +119,6 @@ class Timer
 	double getPauseAfter() /// ditto
 	{	return pause_after;		
 	}
-	
-	
 	
 	/** 
 	 * Set the Timer. */

@@ -19,6 +19,7 @@ module yage.core.array;
 import yage.core.math.math;
 import yage.core.types;
 import yage.core.timer;
+import std.c.stdlib : malloc, free;
 
 /**
  * Add an element to an already sorted array, maintaining the same sort order. 
@@ -352,8 +353,8 @@ void radixSort(T, K)(inout T[] array, bool increasing, K delegate(T elem) getKey
 	
 	// Perform the radix sort.
 	int count = array.length;
-	Elem* elem_copy = cast(Elem*)std.c.stdlib.malloc(count*Elem.sizeof);
-	Elem* elem = cast(Elem*)std.c.stdlib.malloc(count*Elem.sizeof);
+	Elem* elem_copy = cast(Elem*)malloc(count*Elem.sizeof);
+	Elem* elem = cast(Elem*)malloc(count*Elem.sizeof);
 
 	// Move everything into an array of structs for faster sorting.
 	// This way we don't get all of the cache misses from using classes by reference.
@@ -431,8 +432,8 @@ void radixSort(T, K)(inout T[] array, bool increasing, K delegate(T elem) getKey
 	}
 
 	// free memory
-	std.c.stdlib.free(elem);
-	std.c.stdlib.free(elem_copy);
+	free(elem);
+	free(elem_copy);
 }
 
 unittest 

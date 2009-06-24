@@ -5,4 +5,4 @@
 cd ../src
 rebuild -g -clean demo2/main.d
 mv main ../bin/yage3d
-cd ../proj
+cd ../build
