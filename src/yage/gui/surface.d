@@ -250,7 +250,10 @@ class Surface : Tree!(Surface)
 			if (!textTexture)
 				textTexture = new GPUTexture(textImage, false, false, text, true);
 			else
+			{	//Timer a = new Timer(true);
 				textTexture.commit(textImage, false, false, text, true);
+				//Stdout("texture upload: ", a.tell()*1000).newline;
+			}
 			old_text = text;
 		}
 		

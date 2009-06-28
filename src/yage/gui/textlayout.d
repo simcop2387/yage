@@ -28,6 +28,12 @@ import std.stdio;
 class TextLayout
 {
 	private const char[] breaks = " *()-+=/\\,.;:|()[]{}<>\r\n"; // breaking characters
+	private static Regex rxSpaces;
+	private static Regex rxTags;
+	static this ()
+	{	rxSpaces = Regex(`\s{2,}`);
+		rxTags = Regex(`\>[^\<]+\<`);
+	}
 	
 	static double lastRenderTime=0;	
 
@@ -137,29 +143,27 @@ class TextLayout
 		Image result;
 		//text = .toString(lastRenderTime*1000, 6) ~ "<br/>" ~ text; // temporary profiling
 		//Stdout("test").newline();
-		Timer a = new Timer();
+		Timer a = new Timer(false);
 		
 		if (text.length && style.fontFamily)
 		{	letters.length = 0;
 			lines.length = 0;	
-				
-			// Get an array of letter structs for the entire text.
-			scope nodes = getNodes(text, InlineStyle(style));
 			
+			// Get an array of letter structs for the entire text. (1ms)
+			scope nodes = getNodes(text, InlineStyle(style));			
 			foreach (ref node; nodes) // ref is req'd so that &node.style points to the real style.
-			{	// Aditional text replacement				
+			{	// Aditional text replacement
 				node.text = htmlToText(node.text);
-				
-				foreach (c; node.text) // render each letter
+				foreach (c; node.text) 
 				{	if (node.style.fontFamily)
 					{	int h = node.style.fontSize;
 						int w = node.style.fontWeight == Style.FontWeight.BOLD ? h*3/2 : h;
-						Letter l = node.style.fontFamily.getLetter(c, w, h);
+						Letter  l= node.style.fontFamily.getLetter(c, w, h);
 						l.extra = &node.style;
 						letters ~= l;
 			}	}	}
-			
-			// Build lines		
+
+			// Build lines (.7ms)
 			{	int i;
 				while (i<letters.length)
 				{	int start=i;
@@ -209,15 +213,20 @@ class TextLayout
 					lines ~= line;
 			}	}
 			
+			lastRenderTime = a.tell();
+			
 			// Get total height
 			int totalHeight;
 			foreach (line; lines)
 				totalHeight += line.height;
-			totalHeight += lines[$-1].height / 3;
+			if (lines.length)
+				totalHeight += lines[$-1].height / 3;
 			
-			// Render Image
+			
+			
+			// Render Image (7ms)
 			int x, y;
-			result = new Image(4, width, min(totalHeight, height));
+			result = new Image(4, width, min(totalHeight, height)); // 1ms by itself
 			foreach (i, line; lines)
 			{
 				foreach (letter; line.letters)
@@ -257,47 +266,57 @@ class TextLayout
 				if (y>result.getHeight())
 					break;
 			}
+			//Stdout(a.tell()*1000).newline;
+			lastRenderTime = a.tell();
 		}
-		lastRenderTime = a.tell();
 		
+		//lastRenderTime = a.tell();
 		
 		return result;
 	}
+	
 	
 	/*
 	 * This function accepts a string of text that may contain nested html nodes and inline
 	 * styles and breaks it a part into a non-nested, in-order array of HtmlNode. */
 	private static HtmlNode[] getNodes(char[] htmlText, InlineStyle style)
 	{	
-		// Preprocessing
-		htmlText = Regex(`\s{2,}`).replaceAll(htmlText, " ");	// remove excess whitespace
+		// Preprocessing (3ms !)
+		htmlText = rxSpaces.replaceAll(htmlText, " ");	// remove excess whitespace
 		htmlText = substitute(htmlText, "<br/>", "\n");			// Add line returns
 		htmlText = "<span>"~htmlText~"</span>";
 		
+		
+		// (3ms !)
 		// This will be fixed in Tango 0.99.9: http://dsource.org/projects/tango/ticket/1619#comment:1
 		int i=0; // [below] ensure every plain text child is wrapped in <span></span> to fix tango's xml parsing.
-		htmlText = Regex(`\>[^\<]+\<`).replaceAll(htmlText, (RegExpT!(char) input) {
+		htmlText = rxTags.replaceAll(htmlText, (RegExpT!(char) input) {
 			return "><span"~input[i]~"/span><";
 			i++;
 		});
 		
+		// .05ms
 		auto doc = new Document!(char);
 		doc.parse(htmlText);
-		return getNodesHelper(doc.query.nodes[0], style);
+		
+		Timer a = new Timer();
+		auto result = getNodesHelper(doc.query.nodes[0], style); // 0.15 ms
+		return result;
 	}
 	
 	/*
 	 * Recursive helper function for getNodes.
 	 * T is always of type NodeImpl.  This only has to be templated because Tango's NodeImpl is private. */
 	private static HtmlNode[] getNodesHelper(T)(T input, InlineStyle parentStyle)
-	{	HtmlNode[] result;
+	{	
+		HtmlNode[] result;
 		char[] tagName = toLower(input.name);
 		
 		// Set the style from the parent and stle attribute
 		HtmlNode node; // our own node class.
 		if (input.query.attribute("style").count)
-		{	Style temp = parentStyle.toStyle();			
-			temp.set(input.query.attribute("style").nodes[0].value);
+		{	Style temp = parentStyle.toStyle();
+			temp.set(input.query.attribute("style").nodes[0].value); // 30ms for temp.set!
 			node.style = InlineStyle(temp);
 		} else
 			node.style = parentStyle;
@@ -314,7 +333,7 @@ class TextLayout
 		
 		// Get any text children from the node.
 		if (input.value.length)
-		{	node.text = input.value.dup;
+		{	node.text = input.value.dup; // garbage!
 			result ~= node;
 		} else if (tagName=="br")
 		{	node.isBreak = true;
@@ -325,6 +344,7 @@ class TextLayout
 		if (input.query.child.nodes.length)
 			for (auto child = input.query.child.nodes[0]; child; child=child.next())
 				result ~= getNodesHelper(child, node.style);
+		
 		return result;
 	}
 	

@@ -21,7 +21,7 @@ import yage.resource.material;
 import yage.resource.texture;
 import yage.gui.exceptions;
 
-import std.stdio;
+import yage.core.timer;
 
 /**
  * Represents a CSS value.  It can store pixels or precent. */
@@ -253,6 +253,15 @@ struct Style
 	bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
 	int zIndex;
 	
+	private static Regex rxStyles;
+	private static Regex rxTokens;
+	private static Regex rxProperties;
+	static this() {
+		rxStyles = Regex(";\\s*");
+		rxTokens = Regex(":\\s*");
+		rxProperties = Regex("\\s+");
+	}
+	
 	/**
 	 * Struct constructor, returns the default style. */
 	static Style opCall()
@@ -270,11 +279,10 @@ struct Style
 	{	
 		if (!style.length)
 			return;
-		
+
 		// Parse and apply the style
-		Regex rxTokens = Regex(":\\s*");
-		Regex rxProperties = Regex("\\s+");
-		foreach (exp; Regex(";\\s*").split(style))
+		scope styles = rxStyles.split(style);
+		foreach (exp; styles)
 		{	char[][] tokens = rxTokens.split(exp);
 			if (tokens.length<2)
 				continue;
@@ -342,7 +350,7 @@ struct Style
 				default:
 					throw new CSSException("Unsupported CSS Property: '", property, "'.");
 			}
-		}		
+		}
 	}
 
 	/**

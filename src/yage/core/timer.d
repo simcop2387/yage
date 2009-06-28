@@ -8,6 +8,7 @@ module yage.core.timer;
 
 import tango.stdc.math;
 import tango.util.Convert;
+import tango.text.convert.Format;
 import tango.time.StopWatch;
 
 
@@ -29,7 +30,7 @@ class Timer
 	protected ulong		us		= 0;		// microsecond counter
 	protected StopWatch hpc;
 	
-	protected Timer source;
+	protected Timer source; // TODO:	 allow using one timer as the souce of another, so pausing a scene could pause all timers in that scene.
 
 	/// Initialize and start the Timer.
 	this(bool start=true)
@@ -170,7 +171,7 @@ class Timer
 	
 	///
 	char[] toString()
-	{	return to!(char[])(get());
+	{	return Format.convert("{:d8}", tell());
 	}
 	
 	
