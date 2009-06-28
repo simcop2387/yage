@@ -129,7 +129,7 @@ struct Color
 		switch (std.string.tolower(string))
 		{	case "black":	return Color(0xFF000000);
 			case "blue":	return Color(0xFFFF0000);
-			case "brown":	return Color(0xFFA52A2A);
+			case "brown":	return Color(0xFF2A2AA5);
 			case "transparent":	return Color(0x00000000); // transparent
 			case "cyan":	return Color(0xFFFFFF00);
 			case "gold":	return Color(0xFF00D7FF);

@@ -136,7 +136,7 @@ class TextLayout
 	{
 		Image result;
 		//text = .toString(lastRenderTime*1000, 6) ~ "<br/>" ~ text; // temporary profiling
-		
+		//Stdout("test").newline();
 		Timer a = new Timer();
 		
 		if (text.length && style.fontFamily)
@@ -185,6 +185,7 @@ class TextLayout
 						}
 							
 						x+= letters[i].advancex;
+						
 						if (containsPattern(breaks, utf8)) // store position of last breaking character
 							last_break = i;
 						if (x<width)
@@ -199,7 +200,9 @@ class TextLayout
 					// Add a new line
 					Line line;
 					if (start<last_break)
-					{	i = last_break+1;
+					{	i = last_break;
+						if (i < letters.length && letters[i].letter=='\n')
+							i++; // skip line returns
 						line.letters = letters[start..last_break]; // slice directly from the letters array to avoid copy allocation
 					}
 					line.height = lineHeight;
@@ -267,7 +270,7 @@ class TextLayout
 	private static HtmlNode[] getNodes(char[] htmlText, InlineStyle style)
 	{	
 		// Preprocessing
-		htmlText = Regex(`[ \t\r\n]+`).replaceAll(htmlText, " ");	// remove excess whitespace
+		htmlText = Regex(`\s{2,}`).replaceAll(htmlText, " ");	// remove excess whitespace
 		htmlText = substitute(htmlText, "<br/>", "\n");			// Add line returns
 		htmlText = "<span>"~htmlText~"</span>";
 		

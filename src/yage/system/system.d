@@ -100,11 +100,10 @@ abstract class System
 			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
 		SDL_LockSurface(sdl_surface);
 
-		// Attempt to load multitexturing
+		// Attempt to load multitexturing		
 		if (Probe.openGL(Probe.OpenGL.MULTITEXTURE))
 		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
 				throw new YageException("GL_ARB_multitexture extension detected but it could not be loaded.");
-			Log.write("GL_ARB_multitexture support enabled.");
 		}else
 			Log.write("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
 
@@ -126,21 +125,6 @@ abstract class System
 			Log.write("GL_ARB_vertex_buffer_object support enabled.");
 		}else
 			Log.write("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
-		
-		// Attempt to load blend color extension
-		if (Probe.openGL(Probe.OpenGL.BLEND_COLOR))
-		{	if (!EXTBlendColor.load("GL_EXT_blend_color"))
-				throw new YageException("GL_EXT_blend_color extension detected but it could not be loaded.");
-			Log.write("GL_EXT_blend_color support enabled.");
-		}else
-			Log.write("GL_EXT_blend_color not supported.  This is still ok.");
-	
-		if (Probe.openGL(Probe.OpenGL.BLEND_FUNC_SEPARATE))
-		{	if (!EXTBlendFuncSeparate.load("GL_EXT_blend_func_separate"))
-				throw new YageException("GL_EXT_blend_func_separate extension detected but it could not be loaded.");
-			Log.write("GL_EXT_blend_func_separate support enabled.");
-		}else
-			Log.write("GL_EXT_blend_func_separate not supported.  This is still ok.");
 
 		// OpenGL options
 		// These are the engine defaults.  Any function that

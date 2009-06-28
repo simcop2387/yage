@@ -17,6 +17,8 @@ import tango.text.Ascii;
 import tango.text.Util;
 import tango.time.StopWatch;
 
+const char[] app = "demo1"; // change to the demo to run.
+
 // Get compiler
 version (DigitalMars)
 	char[] compiler = "dmd";
@@ -49,45 +51,55 @@ else
 
 // Program entry point
 int main(char[][] args)
-{	
+{
+	// Parse Options
+	char[][] options1;	// options for both derelict and yage
+	char[][] options2;  // options for only yage
+	bool silent;
+	bool release;
+	foreach (char[] arg; args)
+	{	switch(toLower(arg))
+		{	case "-ddoc": 		options2 ~= ["-D -Dd../doc/api"]; break;
+			case "-debug": 		options1 ~= ["-debug"]; break;
+			case "-profile": 	options1 ~= ["-profile"]; break;
+			case "-release": 	options2 ~= ["-O", "-inline", "-release"]; release = true; break;
+			case "-run": 		options2 ~= ["-run"]; break;
+			case "-silent": 	silent=true; break;
+			case "-verbose": 	options1 ~= ["-verbose"]; break;
+			default: break;
+	}	}
+	if (!release)
+		options1 ~= ["-unittest"];
+
 	// Show Options
-	Stdout("Building Yage...");
-	{	Stdout("If you're curious, the options are:").newline;
+	if (!silent)
+	{	Stdout("Building Yage...");
+		Stdout("If you're curious, the options are:").newline;
 		Stdout("   -ddoc      Generate documentation in doc/api").newline;
 		Stdout("   -debug     Include debugging symbols.").newline;
 		Stdout("   -profile   Compile in profiling code.").newline;
 		Stdout("   -release   Optimize, inline expand functions, and remove unit tests/asserts.").newline;
-		Stdout("   -run       Run when finished.").newline;		
+		Stdout("   -run       Run when finished.").newline;
+		Stdout("   -silent    Don't print this message.").newline;
 		Stdout("   -verbose   Print all commands as they're being executed.").newline;
 		Stdout("Example:  dmd -run buildyage.d -release -run").newline;
 	}
-	
-	// Parse Options
-	char[][] options1;
-	char[][] options2;
-	foreach (char[] arg; args)
-	{	switch(toLower(arg))
-		{	case "-ddoc": 		options2 ~= ["-D -Dd../doc/api"]; break;
-			case "-debug": 		options1 ~= ["-debug"];; break;
-			case "-profile": 	options1 ~= ["-profile"]; break;
-			case "-release": 	options2 ~= ["-O", "-inline", "-release"]; break;
-			case "-run": 		options2 ~= ["-run"]; break;
-			case "-verbose": 	options1 ~= ["-verbose"]; break;
-			default: break;
-	}	}
-	
+
 	// create cdc
-	execute(compiler, ["cdc.d"]);
+	if (!execute(compiler, ["cdc.d"]))
+		return 1;
 	StopWatch timer;
 	timer.start();
 
 	// Build derelict if not built.
 	char[] derelict = "../lib/derelict-"~compiler~"-"~platform~lib_ext;
 	if (!FilePath(derelict).exists())
-		execute("./cdc", ["-root../src", "-of"~derelict, "-lib", "derelict"] ~ options1);
+		if (!execute("./cdc", ["-root../src", "-of"~derelict, "-lib", "derelict"] ~ options1))
+			return 1;
 
 	// Build yage
-	execute("./cdc", ["-root../src", "-of../bin/yage3d", "yage", "demo1", derelict] ~ options1 ~ options2);
+	if (!execute("./cdc", ["-root../src", "-of../bin/yage3d", "yage", app, derelict] ~ options1 ~ options2))
+		return 1;
 
 	// Remove leftover files.
 	foreach (file; ["cdc", "cdc.exe", "cdc.o", "cdc.obj", "cdc.map"])
@@ -97,14 +109,14 @@ int main(char[][] args)
 	// Print success
 	Stdout.formatln("The build completed successfully in {} seconds.",  timer.microsec()/1_000_000f);
 	Stdout.formatln(`yage3d{} has been placed in ../bin`, bin_ext);
-	
+
 	return 0; // success
 }
 
 /**
  * Execute execute an arbitrary command-line program and print its output. */
-void execute(char[] command, char[][] args=null)
-{	
+bool execute(char[] command, char[][] args=null)
+{
 	Stdout(command ~ " " ~ args.join(" ")).newline;
 
 	// Does "source" begin with "beginning" ?
@@ -123,9 +135,9 @@ void execute(char[] command, char[][] args=null)
 
 	Stdout.copy(p.stdout).flush;
 	Stdout.copy(p.stderr).flush;
-	
+
 	scope result = p.wait();
-	if (result.status)
-		throw new Exception("Building Yage failed!");
+	return !result.status;
+	
 }
 

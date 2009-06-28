@@ -201,7 +201,11 @@ int main()
 		fps++;
 		if (frame.get()>=1f)
 		{	SDL_WM_SetCaption("Yage Demo\0", null);
-			window.text = Format.convert(`{} <span style="font-family: url('VeraBd.ttf')">fps</span><br/>{} <span style="font-family: url('VeraBd.ttf')">objects</span><br/>{} <span style="font-family: url('VeraBd.ttf')">polygons</span><br/>{} <span style="font-family: url('VeraBd.ttf')">vertices</span>`,
+			window.text = Format.convert(
+				`{} <span style="font-family: url('VeraBd.ttf')">fps</span><br/>`
+				`{} <span style="font-family: url('VeraBd.ttf')">objects</span><br/>`
+				`{} <span style="font-family: url('VeraBd.ttf')">polygons</span><br/>`
+				`{} <span style="font-family: url('VeraBd.ttf')">vertices</span>`,
 				fps/frame.get(), scene.camera.getNodeCount(), scene.camera.getPolyCount(), scene.camera.getVertexCount());
 			frame.reset();
 			fps = 0;

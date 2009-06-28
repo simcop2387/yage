@@ -330,8 +330,8 @@ final struct CDC
 			}
 		}
 		else // (compiler=="dmd" || compiler=="ldmd")
-		{	executeCompiler(compiler, arguments);
-
+		{	
+			executeCompiler(compiler, arguments);		
 			// Move all html files in doc_path to the doc output folder and rename with the "package.module" naming convention.
 			if (co.D)
 			{	foreach (char[] src; sources)
@@ -349,7 +349,7 @@ final struct CDC
 						FS.remove(html);
 			}	}	}
 		}
-
+		
 		// Remove extra files
 		char[] basename = co.of[String.rfind(co.of, "/")+1..$];
 		FS.remove(String.changeExt(basename, ".map"));
@@ -361,8 +361,7 @@ final struct CDC
 
 		// If -run is set.
 		if (co.run)
-		{
-			System.execute("./" ~ co.of, run_args);
+		{	System.execute("./" ~ co.of, run_args);
 			version(Windows) // give dmd windows time to release the lock.
 				if (compiler=="dmd")
 					System.sleep(.1);
@@ -374,12 +373,16 @@ final struct CDC
 
 	// A wrapper around execute to write compile options to a file, to get around max arg lenghts on Windows.
 	private static void executeCompiler(char[] compiler, char[][] arguments)
-	{	version (Windows)
-		{	FS.write("compile", String.join(arguments, " "));
-			System.execute(compiler~" ", ["@compile"]);
-			FS.remove("compile");
-		} else
-			System.execute(compiler, arguments);
+	{	try {
+			version (Windows)
+			{	FS.write("compile", String.join(arguments, " "));
+				System.execute(compiler~" ", ["@compile"]);
+				FS.remove("compile");
+			} else
+				System.execute(compiler, arguments);
+		} catch (ProcessException e)
+		{	throw new Exception("Compiler failed.");
+		}
 	}
 
 	/*
@@ -552,6 +555,8 @@ final struct System
 			Stdout.copy(p.stdout).flush; // adds extra line returns?
 			Stdout.copy(p.stderr).flush;
 			scope result = p.wait();
+			if (result.status > 0)
+				throw new ProcessException(String.format("Process '%s' exited with status %s", command, result.status));
 		} else
 		{
 			command = command ~ " " ~ String.join(args, " ");

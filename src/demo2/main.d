@@ -67,7 +67,7 @@ int main()
 
 	// For Testing
 	auto window = view.addChild(new Surface());
-	window.style.set("top: 5px; left: 5px; width: 100; height: 60px; color: black; padding: 3px; " ~
+	window.style.set("top: 5px; left: 5px; width: 500px; height: 260px; color: black; padding: 3px; color: brown; " ~
 		"background-color: #00008888; border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
 		"font-family: url('gui/font/Vera.ttf'); font-size: 14px;");
 	
@@ -103,12 +103,24 @@ int main()
 		fps++;
 		if (frame.get()>=0.25f)
 		{	
-			//char[] longText = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px"><u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) <span style="text-decoration: overline">house</span> the font would refer to a complete set of metal type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not include a single definition of each character, but commonly used characters (such as vowels and periods) would have more physical type-pieces included. A font when bought new would often be sold as (for example in a roman alphabet) 12pt 14A 34a, meaning that it would be a size 12pt fount containing 14 upper-case 'A's, and 34 lower-case 'A's. The rest of the characters would be provided in quantities appropriate for the language it was required for in order to set a complete page in that language. Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and line-width spacers, were not part of a specific font in pre-digital usage, but were separate, generic pieces.[1]`;
+			window.text = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
+			`<u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) `~
+			`<span style="text-decoration: overline">house</span> the font would refer to a complete set of metal `~
+			`type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not `~
+			`include a single definition of each character, but commonly used characters (such as vowels and periods)`~
+			`would have more physical type-pieces included. A font when bought new would often be sold as `~
+			`(for example in a roman alphabet) 12pt 14A 34a, meaning that it would be a size 12pt fount containing `~
+			`14 upper-case 'A's, and 34 lower-case 'A's. The rest of the characters would be provided in quantities `~
+			`appropriate for the language it was required for in order to set a complete page in that language. `~
+			`Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and `~
+			`line-width spacers, were not part of a specific font in pre-digital usage, but were separate, `~
+			`generic pieces.[1]             `~ Format.convert(` {} fps`, fps/frame.get());
 			//window.text = Format.convert(`{} fps<br/>{}`,
 			//	fps/frame.get());
-			window.text = Format.convert(`<span style="color: white">{}</span> fps`, fps/frame.get());
+			//window.text = Format.convert(`<span style="color: white">{}</span> fps`, fps/frame.get());
 			frame.reset();
-			fps = 0;			
+			fps = 0;	
+			//break;
 		}
 	}
 	
