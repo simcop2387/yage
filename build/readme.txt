@@ -1,15 +1,6 @@
-Run the following (the correct one for your compiler) to build yage.  
-A yage3d binary will be placed in the bin folder.
+In order to build yage, compile and run buildyage.d with your favorite compiler.
+Requirements:  DMD v1, Tango, Tangobos (for now)
 
-dmd -run buildyage.d
+If that doesn't work and you have rebuild installed, you can try running buildyage.sh
 
-- or -
 
-ldc -run buildyage.d
-
-- or -
-
-gdc buildyage.d -obuildyage
-./buildyage
-
-If these fail, try buildyage.sh

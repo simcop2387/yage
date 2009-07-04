@@ -6,7 +6,6 @@
 
 module yage.resource.image;
 
-import std.string;
 import tango.math.Math;
 import tango.text.Ascii;
 import derelict.sdl.sdl;
@@ -42,7 +41,7 @@ class Image : Resource
 	};
 
 	// Fields
-	protected ubyte[] data;
+	ubyte[] data;
 	protected int width, height, channels;
 	char[] source;
 	
@@ -57,8 +56,14 @@ class Image : Resource
 	 *     channels = number of color channels.
 	 *     width = width in pixels
 	 *     height = height in pixel */
-	this(int channels, int width, int height)
-	{	data.length = channels*width*height;
+	this(int channels, int width, int height, ubyte[] lookaside = null)
+	{	int size = channels*width*height;
+		if (lookaside.length < size)
+			lookaside.length = size;
+		data = lookaside;
+		data[0..$] = 0;
+		
+		//data.length = channels*width*height;
 		this.channels = channels;
 		this.width = width;
 		this.height = height;
@@ -91,7 +96,7 @@ class Image : Resource
 	this(char[] filename) 
 	{			
 		SDL_Surface *sdl_image;
-		char* source = toStringz(filename);
+		char* source = (filename~'\0').ptr; // garbage
 		scope(exit) delete source;
 		scope(exit) SDL_FreeSurface(sdl_image);
 		
@@ -251,38 +256,34 @@ class Image : Resource
 	
 		float[4] fcolor;
 		color.f(fcolor);
-		
-		for (int y=0; y<img.height; y++)
-		{	int yoffsety = yoffset+y;
-			if (0 < yoffsety && yoffsety < height)
+		int ymax = min(img.height+yoffset, height); 
+		for (int y=yoffset; y < ymax; y++)
+		{	int xmax = min(img.width+xoffset, width);
+			for (int x=xoffset; x<xmax; x++)
 			{	
-				
-				for (int x=0; x<img.width; x++)
-				{	int xoffsetx = xoffset + x;
-					if (0 < xoffsetx && xoffsetx < width)
-					{	
-						ubyte src_alpha = img.data[y*img.width+x];
-						if (src_alpha > 12)
-						{	
-							int dest = (yoffsety*width+xoffsetx)*channels;
-							ubyte dst_alpha = data[dest+3];
-									
-							for (int c=0; c<channels; c++)
-							{	
-								ubyte src_color = color.ub[c];
-								ubyte dst_color = data[dest+c];
-								
-								// This is my own blending algorithm, can it be simplified?
-								if (c<3)
-								{	int dst_ratio = ((255-src_alpha) * dst_alpha)/255;
-									data[dest+c] = cast(ubyte)((src_color*src_alpha + dst_color*dst_ratio) / (src_alpha + dst_ratio));
-								}
-								else
-									data[dest+c] = (src_alpha*src_alpha + (255-src_alpha)*dst_alpha) / 255;
-							}
-						}
-		}	}	}	}
+				uint src_alpha = img.data[(y-yoffset)*img.width + x - xoffset];
+				if (src_alpha > 0)
+				{	
+					uint dest = (y*width+x)*channels;
+					uint dst_alpha = data[dest+3];
+					uint dst_ratio = (255-src_alpha) * ((dst_alpha*257)>>16); // hack for faster divide by 255
+					uint src_dest_ratio = src_alpha + dst_ratio;
+					
+					// This is my own blending algorithm, can it be further optimized?
+					int reciprocal = 0xFFFF / src_dest_ratio; // calculate reciprocal for fast integer division
+
+					data[dest  ] = ((color.ub[0]*src_alpha + data[dest  ]*dst_ratio) * reciprocal)>>16; // colors
+					data[dest+1] = ((color.ub[1]*src_alpha + data[dest+1]*dst_ratio) * reciprocal)>>16;
+					data[dest+2] = ((color.ub[2]*src_alpha + data[dest+2]*dst_ratio) * reciprocal)>>16;
+					data[dest+3] = (((src_alpha*src_alpha*257)>>16) + dst_ratio) ; // alpha
+				}
+		}	}
 		
+	}
+	unittest
+	{	Image a = new Image(1, 16, 16);
+		Image b = new Image(4, 8, 8);
+		b.overlayAndColor(a, Color("#FFFFFF"), -4, -4);
 	}
 	
 	/**
