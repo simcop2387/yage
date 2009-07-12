@@ -82,7 +82,7 @@ abstract class ResourceManager
 		foreach(char[] p; paths)
 			if (std.file.exists(std.path.join(p, path)))
 				return cleanPath(p~path);
-		throw new ResourceManagerException("The path '%s' could not be resolved.", path);
+		throw new ResourceManagerException("The path '{}' could not be resolved.", path);
 	}
 
 	/// Remove a path from the array of resource search paths.

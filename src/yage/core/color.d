@@ -230,7 +230,7 @@ struct Color
 	 * lower = return lower case hexadecimal digits*/ 
 	char[] hex(bool lower=false)
 	{	if (lower)
-			return Format("{:x8}", bswap(ui));;
+			return Format("{:x8}", bswap(ui)); // TODO: Fix/Test for big-endian systems
 		return Format("{:X8}", bswap(ui));
 	}
 	/// ditto

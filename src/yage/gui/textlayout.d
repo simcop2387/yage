@@ -15,6 +15,7 @@ import tango.text.Ascii;
 import tango.text.convert.Format;
 import tango.text.Util;
 import yage.core.color;
+import yage.core.math.math;
 import yage.core.timer;
 import yage.core.types;
 import yage.resource.font;
@@ -27,12 +28,16 @@ import std.stdio;
  * Render text and simple html with styles to an image. */
 class TextLayout
 {
-	private const char[] breaks = " *()-+=/\\,.;:|()[]{}<>\r\n"; // breaking characters
-	private static Regex rxSpaces;
+	private static const char[] breaks = " *()-+=/\\,.;:|()[]{}<>\r\n"; // breaking characters
+	
+	private static ubyte[] imageLookaside;
+	private static char[] textLookaside;
+	private static HtmlNode[] nodeLookaside;
+	
+	// regular expressions
 	private static Regex rxTags;
 	static this ()
-	{	rxSpaces = Regex(`\s{2,}`);
-		rxTags = Regex(`\>[^\<]+\<`);
+	{	rxTags = Regex(`\>[^\<]+\<`);
 	}
 	
 	static double lastRenderTime=0;	
@@ -135,35 +140,34 @@ class TextLayout
 	 *     style = A style with fontSize and lineHeight in terms of pixels
 	 *     width = Available width for rendering text
 	 *     height = Available height for rendering text.
-	 * Returns:  An RGBA image of width pixels wide and is shorter or equal to height.
-	 * 
-	 * FIXME: Trailing <br/> becomes a non-printable character printed as a square. */
-	static Image render(char[] text, Style style, int width, int height)
+	 * Returns:  An RGBA image of width pixels wide and is shorter or equal to height.  
+	 *     Note that the same buffer is used for each return, so one will overwrite the previous.*/
+	static Image render(char[] text, Style style, int width, int height, bool pow2=false)
 	{
 		Image result;
 		//text = .toString(lastRenderTime*1000, 6) ~ "<br/>" ~ text; // temporary profiling
-		//Stdout("test").newline();
-		Timer a = new Timer(false);
-		
+
 		if (text.length && style.fontFamily)
 		{	letters.length = 0;
 			lines.length = 0;	
 			
 			// Get an array of letter structs for the entire text. (1ms)
-			scope nodes = getNodes(text, InlineStyle(style));			
+			scope nodes = getNodes(text, InlineStyle(style));
+			
 			foreach (ref node; nodes) // ref is req'd so that &node.style points to the real style.
 			{	// Aditional text replacement
 				node.text = htmlToText(node.text);
-				foreach (c; node.text) 
+				
+				foreach (dchar c; node.text) // dchar to iterate over each utf-8 char group
 				{	if (node.style.fontFamily)
 					{	int h = node.style.fontSize;
 						int w = node.style.fontWeight == Style.FontWeight.BOLD ? h*3/2 : h;
-						Letter  l= node.style.fontFamily.getLetter(c, w, h);
+						Letter  l= node.style.fontFamily.getLetter(c, w, h); // 1.3ms
 						l.extra = &node.style;
 						letters ~= l;
 			}	}	}
-
-			// Build lines (.7ms)
+			
+			// Build lines
 			{	int i;
 				while (i<letters.length)
 				{	int start=i;
@@ -213,7 +217,6 @@ class TextLayout
 					lines ~= line;
 			}	}
 			
-			lastRenderTime = a.tell();
 			
 			// Get total height
 			int totalHeight;
@@ -221,12 +224,15 @@ class TextLayout
 				totalHeight += line.height;
 			if (lines.length)
 				totalHeight += lines[$-1].height / 3;
+			height = min(totalHeight, height);
 			
-			
-			
-			// Render Image (7ms)
+			// Render Image	
 			int x, y;
-			result = new Image(4, width, min(totalHeight, height)); // 1ms by itself
+			if (pow2)
+				result = new Image(4, nextPow2(width), nextPow2(height), imageLookaside);
+			else
+				result = new Image(4, width, height, imageLookaside);
+			imageLookaside = result.getData();
 			foreach (i, line; lines)
 			{
 				foreach (letter; line.letters)
@@ -239,21 +245,21 @@ class TextLayout
 					int strikeline = midline*3/5 + baseline*2/5;
 					int lineWidth = istyle.fontSize/8;
 					
-					// Overlay the glyph onto the main image (x+1 to prevent left-side cuttoff, but why?)
-					result.overlayAndColor(letter.image, istyle.color, x+letter.left+1, baseline-letter.top);
-					
+					// Overlay the glyph onto the main image
+					result.overlayAndColor(letter.image, istyle.color, x+letter.left, baseline-letter.top);
+	
 					
 					// Render underline, overline, and linethrough
 					if (istyle.textDecoration == Style.TextDecoration.UNDERLINE)
-						for (int h=max(0, baseline); h<min(baseline+lineWidth, result.getHeight()); h++) // make underline 1/10th as thick as line-height
-							for (int j=x; j<x+letter.advancex; j++)
+						for (int h=max(0, baseline); h<min(baseline+lineWidth, height); h++)
+							for (int j=x; j<x+letter.advancex; j++) // [above] make underline 1/10th as thick as line-height
 								result[j, h] = istyle.color.ub;
 					else if (istyle.textDecoration == Style.TextDecoration.OVERLINE)
-						for (int h=max(0, capheight); h<min(capheight+lineWidth, result.getHeight()); h++)
+						for (int h=max(0, capheight); h<min(capheight+lineWidth, height); h++)
 							for (int j=x; j<x+letter.advancex; j++)
 								result[j, h] = istyle.color.ub;
 					else if (istyle.textDecoration == Style.TextDecoration.LINETHROUGH)
-						for (int h=max(0, midline); h<min(midline+lineWidth, result.getHeight()); h++)
+						for (int h=max(0, midline); h<min(midline+lineWidth, height); h++)
 							for (int j=x; j<x+letter.advancex; j++)
 								result[j, h] = istyle.color.ub;
 					
@@ -263,14 +269,10 @@ class TextLayout
 				}
 				x=0;
 				y+= lines[i].height; // add height of the next line.
-				if (y>result.getHeight())
+				if (y>height)
 					break;
 			}
-			//Stdout(a.tell()*1000).newline;
-			lastRenderTime = a.tell();
 		}
-		
-		//lastRenderTime = a.tell();
 		
 		return result;
 	}
@@ -278,16 +280,14 @@ class TextLayout
 	
 	/*
 	 * This function accepts a string of text that may contain nested html nodes and inline
-	 * styles and breaks it a part into a non-nested, in-order array of HtmlNode. */
+	 * styles and breaks it a part into a non-nested, in-order array of HtmlNode. 
+	 * All results of this function are written to the same buffer to avoid extra heap activity,
+	 * so subsequent calls will overwrite the result of the previous. */
 	private static HtmlNode[] getNodes(char[] htmlText, InlineStyle style)
-	{	
-		// Preprocessing (3ms !)
-		htmlText = rxSpaces.replaceAll(htmlText, " ");	// remove excess whitespace
-		htmlText = substitute(htmlText, "<br/>", "\n");			// Add line returns
-		htmlText = "<span>"~htmlText~"</span>";
+	{
+		htmlText = htmlWhitespace(htmlText);
 		
-		
-		// (3ms !)
+		// .3ms
 		// This will be fixed in Tango 0.99.9: http://dsource.org/projects/tango/ticket/1619#comment:1
 		int i=0; // [below] ensure every plain text child is wrapped in <span></span> to fix tango's xml parsing.
 		htmlText = rxTags.replaceAll(htmlText, (RegExpT!(char) input) {
@@ -296,21 +296,22 @@ class TextLayout
 		});
 		
 		// .05ms
-		auto doc = new Document!(char);
+		scope doc = new Document!(char);
 		doc.parse(htmlText);
 		
-		Timer a = new Timer();
-		auto result = getNodesHelper(doc.query.nodes[0], style); // 0.15 ms
-		return result;
+		nodeLookaside.length = 0;
+		getNodesHelper(doc.query.nodes[0], style); // 0.15 ms
+		return nodeLookaside;
 	}
 	
 	/*
 	 * Recursive helper function for getNodes.
-	 * T is always of type NodeImpl.  This only has to be templated because Tango's NodeImpl is private. */
-	private static HtmlNode[] getNodesHelper(T)(T input, InlineStyle parentStyle)
+	 * T is always of type NodeImpl.  This only has to be templated because Tango's NodeImpl is private. 
+	 * This populates nodeLookAside at each call to avoid extra heap activity.
+	 * Note that one call will overwrite the result of the previous.*/
+	private static void getNodesHelper(T)(T input, InlineStyle parentStyle)
 	{	
-		HtmlNode[] result;
-		char[] tagName = toLower(input.name);
+		char[] tagName = toLower(input.name, input.name);
 		
 		// Set the style from the parent and stle attribute
 		HtmlNode node; // our own node class.
@@ -333,37 +334,75 @@ class TextLayout
 		
 		// Get any text children from the node.
 		if (input.value.length)
-		{	node.text = input.value.dup; // garbage!
-			result ~= node;
+		{	node.text = input.value;
+			nodeLookaside ~= node;
 		} else if (tagName=="br")
 		{	node.isBreak = true;
-			result ~= node;
+			nodeLookaside ~= node;
 		}
 		
 		// Recurse through child nodes.		
 		if (input.query.child.nodes.length)
 			for (auto child = input.query.child.nodes[0]; child; child=child.next())
-				result ~= getNodesHelper(child, node.style);
-		
-		return result;
+				getNodesHelper(child, node.style);
 	}
 	
 	/*
-	 * For speed, only the xml entities are supported for now.
+	 * Convert whitespace in html text.
+	 * Multiple whitespace characters are reduced to a single one.
+	 * <br/> is converted to \n.
+	 * Returns:  Each call returns the same buffer, so a second call will overwrite the first result.
+	 * Doing this allows no heap activity after the buffer is sized to a large enough size. */ 
+	private static char[] htmlWhitespace(inout char[] input)
+	{	textLookaside.length = input.length+13;
+		textLookaside[0..6] = "<span>";
+		
+		int r, w=6; // read and write positions
+		for (r=0; r<input.length; )
+		{	
+			// Condense whitespace
+			bool space;
+			while (r<input.length && (input[r]==' ' || input[r]=='\t' || input[r]=='\r' || input[r]=='\n'))
+			{	space = true;
+				r++;
+			} if (space)
+			{	textLookaside[w] = ' ';
+				w++;
+				continue;
+			}
+			
+			// Replace line returns
+			if (r+5 < input.length && input[r..r+5] == "<br/>")
+			{	textLookaside[w] = '\n';
+				r+= 5;
+				w++;
+				continue;
+			}
+			
+			// Copy other characters
+			textLookaside[w] = input[r];
+			r++; w++;
+		}
+		textLookaside[w..w+7] = "</span>";
+		return textLookaside[0..w+7];
+	}
+	
+	/*
+	 * For speed, only xml entities are replaced for now (not html entities).
 	 * Note that this could avoid heap activity altogether with lookaside buffers.
 	 * See: http://en.wikipedia.org/wiki/Character_encodings_in_HTML#XML_character_entity_references */ 
 	private static char[] htmlToText(char[] text)
-	{	text = text.substitute("&amp;", "&");
+	{	text = text.substitute("&amp;", "&"); // todo: fix garbae created by this function.
 		text = text.substitute("&lt;", "<");
 		text = text.substitute("&gt;", ">");
 		text = text.substitute("&quot;", `"`);
 		text = text.substitute("&apos;", "'");
-		text = text.substitute("&nbsp;", "\u00A0"); // unicode 160: non-breaking space
+		text = text.substitute("&nbsp;", "\&nbsp;"); // unicode 160: non-breaking space
 		return text;
 	}
 	unittest
 	{	char[] test = "<>Hello Goodbye&nbsp; &amp;&quot;&apos;&lt;&gt;";
-		char[] result="<>Hello Goodbye\u00a0 &\"'<>";
+		char[] result="<>Hello Goodbye\&nbsp; &\"'<>";
 		assert (htmlToText(test) == result);
 	}
 	

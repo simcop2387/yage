@@ -216,8 +216,9 @@ class GPUTexture : Resource, IExternalResource
 	
 	static protected GPUTexture[GPUTexture] all;
 	
-	Vec2i padding; // padding stores how many pixels of the original texture are unused.
-					// e.g. getWidth() returns the used texture + the padding.
+	Vec2i padding;	// padding stores how many pixels of the original texture are unused.
+					// e.g. getWidth() returns the used texture + the padding.  
+					// Padding is applied to the top and the right, and can be negative.
 	
 	bool flipped = false; // TODO: Find a better solution, use texture matrix?
 	
@@ -262,8 +263,7 @@ class GPUTexture : Resource, IExternalResource
 		this.mipmap = mipmap;
 		
 		if (image)
-			this.format = image.getChannels();
-		
+			this.format = image.getChannels();		
 			
 		// OpenGl functions can only be called from the rendering thread.
 		if (!System.isSystemThread())
@@ -272,8 +272,7 @@ class GPUTexture : Resource, IExternalResource
 		}
 		
 		if (!id)
-		{
-			glGenTextures(1, &id);
+		{	glGenTextures(1, &id);
 			glBindTexture(GL_TEXTURE_2D, id);
 			
 			// For some reason these need to be called or everything runs slowly.			
@@ -284,9 +283,10 @@ class GPUTexture : Resource, IExternalResource
 		}
 		else
 			glBindTexture(GL_TEXTURE_2D, id);
-
+		
 		if (image)
-		{	// Calculate formats
+		{	
+			// Calculate formats
 			uint glformat, glinternalformat;
 			switch(format)
 			{	case Image.Format.GRAYSCALE:
@@ -305,15 +305,18 @@ class GPUTexture : Resource, IExternalResource
 					throw new ResourceManagerException("Unknown texture format " ~ .toString(format));
 			}
 			
+			
 			if (pad) // if pad instead of resize.
 			{
 				int new_width = nextPow2(image.getWidth());
 				int new_height = nextPow2(image.getHeight());
 				padding.x = (new_width - image.getWidth());
-				padding.y = (new_height - image.getHeight()); 
-				
-				image = image.crop(0, 0, new_width, new_height);
-				
+				padding.y = (new_height - image.getHeight());
+								
+				if (image.getWidth() != new_width || image.getHeight() != new_height)
+				{	image = image.crop(0, 0, new_width, new_height);
+
+				}
 			} else
 				padding = Vec2i(0);
 			
@@ -321,11 +324,11 @@ class GPUTexture : Resource, IExternalResource
 			{	this.width = image.getWidth();
 				this.height = image.getHeight();
 			}
-
-	
-		    // Upload image
+			
+			// Upload image
 			// TODO: Use image's built in resizer instead of glu.
 			// glu has resizing issues with non power of two source textures.
+			
 		    if (mipmap)
 		    	gluBuild2DMipmaps(GL_TEXTURE_2D, glinternalformat, image.getWidth(), image.getHeight(), glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
 		    else
@@ -334,7 +337,7 @@ class GPUTexture : Resource, IExternalResource
 				uint new_height= image.getHeight();
 	
 				// Ensure power of two sized if required
-				//if (!System.getSupport(DEVICE_NON_2_TEXTURE))
+				//if (!Probe.getSupport(DEVICE_NON_2_TEXTURE))
 				if (true)
 				{	if (log2(new_height) != floor(log2(new_height)))
 						new_height = nextPow2(new_height);
@@ -345,12 +348,10 @@ class GPUTexture : Resource, IExternalResource
 					if (new_width != width || new_height != height)
 						image = image.resize(min(new_width, max), min(new_height, max));
 				}
-	
-				// Uploading the texture to video memory is by far the slowest part of this function.
+				
 				glTexImage2D(GL_TEXTURE_2D, 0, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
-	
+				
 			}
-		  
 		    flipped = false;
 		}
 	}

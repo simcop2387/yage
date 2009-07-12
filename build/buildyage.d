@@ -117,6 +117,8 @@
 
 module cdc;
 
+const char[] app = "demo1"; // set which program to build against yage.
+
 // Imports
 version(Tango)
 {	import tango.core.Array : find;
@@ -216,8 +218,6 @@ int main(char[][] args)
  * Returns: True if this function is used to perform a custom build. */
 bool customBuild(char[][] args)
 {	
-	const char[] app = "demo1"; // change to the demo to run.
-	
 	// Get platform
 	version (Win32)
 		char[] platform = "win32";

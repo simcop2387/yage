@@ -24,8 +24,8 @@ DDOC =
 		<div style="margin-top: 63px">
 		<div id="slidetabsmenu">
 			<ul>
-			<li><a href="index.php" title="Yage Home"><span>Home</span></a></li>
-			<li><a href="wiki" title="Yage Wiki"><span>Wiki</span></a></li>
+			<li><a href="http://yage3d.net" title="Yage Home"><span>Home</span></a></li>
+			<li><a href="http://yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
 			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
 			<li><a href="index.html" title="Yage API Documentation"><span>API</span></a></li>
 			</ul>
