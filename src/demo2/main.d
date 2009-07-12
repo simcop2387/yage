@@ -101,9 +101,10 @@ int main()
 		
 		// Print framerate
 		fps++;
+		
 		if (frame.get()>=0.25f)
 		{	
-			window.text = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
+			window.text = `In a <s>traditional</s> 	   <span style="color: green; text-decoration: overline; font-size:40px">`~
 			`<u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) `~
 			`<span style="text-decoration: overline">house</span> the font would refer to a complete set of metal `~
 			`type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not `~
@@ -114,7 +115,9 @@ int main()
 			`appropriate for the language it was required for in order to set a complete page in that language. `~
 			`Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and `~
 			`line-width spacers, were not part of a specific font in pre-digital usage, but were separate, `~
-			`generic pieces.[1]             `~ Format.convert(` {} fps`, fps/frame.get());
+			`generic pieces.[1]             `~ Format.convert(` {} fps<br/>`, fps/frame.get());
+			
+			
 			//window.text = Format.convert(`{} fps<br/>{}`,
 			//	fps/frame.get());
 			//window.text = Format.convert(`<span style="color: white">{}</span> fps`, fps/frame.get());

@@ -6,11 +6,10 @@
 
 module yage.scene.terrain;
 /+
+This module needs to be brought up to date with the rest of the Yage API before it
+will work.
+
 import tango.util.Convert;
-import std.file;
-import std.stdio;
-import std.string;
-import std.stream;
 
 import yage.resource.manager;
 import yage.resource.material;

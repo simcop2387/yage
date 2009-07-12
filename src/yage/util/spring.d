@@ -6,8 +6,6 @@
 
 module yage.util.spring;
 
-
-import std.stdio;
 import yage.core.all;
 import yage.scene.all;
 

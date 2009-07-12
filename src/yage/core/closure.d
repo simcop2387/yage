@@ -89,8 +89,6 @@ class ClosureHelper(T) : Closure
 */
 module yage.core.closure;
 
-import std.stdarg;
-import std.traits;
 import yage.core.parse;
 import yage.core.misc;
 

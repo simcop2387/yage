@@ -6,9 +6,10 @@
 
 module yage.system.log;
 
+import tango.io.Stdout;
+import tango.text.convert.Format;
+import std.format;
 import std.stdio;
-import std.stdarg;
-
 
 /**
  * Log is a class with static members for writing log data to the standard
@@ -25,5 +26,11 @@ abstract class Log
 		std.format.doFormat(&putchar, _arguments, cast(char*)_argptr);
 		writefln(res);
 	}
+	
+	/*
+	static void write(T...)(char[] message, T args)
+	{	Stdout(Format.convert(message, args)).newline;
+	}
+	*/
 }
 

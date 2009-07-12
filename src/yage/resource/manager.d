@@ -6,8 +6,6 @@
 
 module yage.resource.manager;
 
-import std.path;
-import std.stdio;
 import yage.core.array;
 import yage.core.misc;
 import yage.core.object2;;
@@ -19,7 +17,6 @@ import yage.resource.shader;
 import yage.resource.sound;
 import yage.core.timer;
 import yage.system.log;
-import std.string;
 
 /**
  * The ResourceManager Manager is a static class that keeps track of which filesystem resources are in memory.

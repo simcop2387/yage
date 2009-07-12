@@ -9,7 +9,6 @@
 module demo1.gameobj;
 
 import tango.math.Math;
-import std.stdio;
 import yage.core.timer;
 import yage.core.color;
 import yage.core.math.vector;

@@ -52,9 +52,9 @@ class FreeList(T)
 			return hello;
 		}
 		else
-		{	void* p = std.c.stdlib.malloc(sz);
+		{	void* p = malloc(sz);
 			if (!p) throw new Exception("");
-			std.gc.addRange(p, p + sz);
+			gc.addRange(p, p + sz);
 			return p;
 	}	}
 

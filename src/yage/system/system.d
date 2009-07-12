@@ -6,9 +6,8 @@
 
 module yage.system.system;
 
-import std.gc;
-import std.stdio;
-import std.string;
+import tango.stdc.stringz;
+import tango.core.Memory;
 import tango.core.Thread;
 import derelict.openal.al;
 import derelict.opengl.gl;
@@ -84,7 +83,7 @@ abstract class System
 
 		// Initialize SDL video
 		if(SDL_Init(SDL_INIT_VIDEO) < 0)
-			throw new YageException ("Unable to initialize SDL: "~ .toString(SDL_GetError()));
+			throw new YageException ("Unable to initialize SDL: "~ fromStringz(SDL_GetError()));
 
 		// Anti-aliasing
 		if (samples > 1)
@@ -193,7 +192,7 @@ abstract class System
 		foreach (item; GPUTexture.getAll().values)
 			item.finalize();
 		// Forces cleanup of any other resources
-		fullCollect();
+		GC.collect();
 		GraphicsResource.finalize();
 		
 		LazyResourceManager.processQueue(); // required for any pending lazyresource destroys

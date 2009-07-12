@@ -22,8 +22,6 @@ import yage.resource.font;
 import yage.resource.image;
 import yage.gui.style;
 
-import std.stdio;
-
 /**
  * Render text and simple html with styles to an image. */
 class TextLayout

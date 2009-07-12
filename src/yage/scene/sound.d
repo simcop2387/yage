@@ -8,6 +8,7 @@ module yage.scene.sound;
 
 import tango.stdc.math;
 import tango.math.Math;
+import tango.text.convert.Format;
 import yage.core.object2;;
 import yage.core.object2;;
 import yage.core.math.math;
@@ -212,11 +213,6 @@ class SoundNode : MovableNode, ITemporal
 
 		char[] result = super.toString();
 		result ~= pad~"Sound: " ~ sound.getSource() ~ "\n";
-		result ~= pad~"Radius: " ~ std.string.toString(radius) ~ "\n";
-		result ~= pad~"Volume: " ~ std.string.toString(volume) ~ "\n";
-		result ~= pad~"Pitch : " ~ std.string.toString(pitch) ~ "\n";
-		result ~= pad~"Looping: " ~ std.string.toString(looping) ~ "\n";
-		result ~= pad~"Paused: " ~ std.string.toString(paused) ~ "\n";
 		delete pad;
 
 		if (recurse)

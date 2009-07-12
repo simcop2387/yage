@@ -9,7 +9,7 @@ module yage.resource.sound;
 import std.mmfile;
 import tango.stdc.stdio : FILE, fopen;
 import tango.text.convert.Format;
-import std.string : toStringz; // what's the tango equivalent of toStringz?
+import tango.stdc.stringz;
 import derelict.openal.al;
 import derelict.ogg.vorbistypes;
 import derelict.ogg.vorbisfile;
@@ -199,8 +199,6 @@ class Sound : Resource
 		);
 	}
 }
-
-
 
 /** SoundFile is an abstract class for loading and seeking
  *  sound data in a multimedia file.  A file is opened and closed

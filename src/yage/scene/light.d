@@ -7,7 +7,6 @@
 module yage.scene.light;
 
 import tango.math.Math;
-import std.stdio;
 
 import yage.core.all;
 import yage.resource.material;

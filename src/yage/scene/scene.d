@@ -6,8 +6,7 @@
 
 module yage.scene.scene;
 
-import std.date;
-import std.stdio;
+import tango.time.Clock;
 import derelict.opengl.gl;
 import yage.core.all;
 import yage.system.system;
@@ -290,7 +289,7 @@ class Scene : Node//, ITemporal
 		assert(transform_read != transform_write);
 	}body
 	{	synchronized (transform_mutex)
-		{	timestamp[transform_write] = getUTCtime();
+		{	timestamp[transform_write] = Clock.now().ticks();
 			transform_write = 3 - (transform_read+transform_write);
 		}
 	}

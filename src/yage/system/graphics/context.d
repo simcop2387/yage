@@ -7,7 +7,7 @@
  */
 module yage.system.graphics.context;
 
-
+import tango.io.Stdout;
 import tango.core.Thread;
 import derelict.opengl.gl;
 import derelict.opengl.glext;

@@ -6,8 +6,6 @@
 
 module yage.resource.texture;
 
-
-import std.string;
 import tango.math.Math;
 import tango.io.Stdout;
 import derelict.sdl.sdl;
@@ -302,7 +300,7 @@ class GPUTexture : Resource, IExternalResource
 					glinternalformat = compress ? GL_COMPRESSED_RGBA : GL_RGBA;
 					break;
 				default:
-					throw new ResourceManagerException("Unknown texture format " ~ .toString(format));
+					throw new ResourceManagerException("Unknown texture format {}", format);
 			}
 			
 			

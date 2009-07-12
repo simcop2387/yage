@@ -7,12 +7,14 @@
 module yage.resource.model;
 
 import tango.stdc.math : fmod;
-import std.string;
-import std.file;
 import tango.math.Math;
-import std.path;
 import tango.io.Stdout;
 import tango.core.Thread;
+
+// These are used by ms3d loader
+import std.string;
+import std.file;
+import std.path;
 
 import yage.core.math.matrix;
 import yage.core.misc;

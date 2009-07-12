@@ -8,6 +8,7 @@ module yage.resource.image;
 
 import tango.math.Math;
 import tango.text.Ascii;
+import tango.stdc.stringz;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
 import yage.core.object2;
@@ -96,7 +97,7 @@ class Image : Resource
 	this(char[] filename) 
 	{			
 		SDL_Surface *sdl_image;
-		char* source = (filename~'\0').ptr; // garbage
+		char* source = toStringz(filename); // garbage
 		scope(exit) delete source;
 		scope(exit) SDL_FreeSurface(sdl_image);
 		
@@ -322,7 +323,6 @@ class Image : Resource
 		for (int y=0; y<height; y++)
 			for (int x=0; x<width; x++)
 			{	//int i = (y*this.width+x)*channels;
-				//std.stdio.writefln(x, " ", y, " ", result[x, y]);
 				result[x, y][0..channels] = bilinearFilter(x*width1, y*height1).v[0..channels];	
 			}
 		

@@ -6,8 +6,10 @@
 
 module yage.core.color;
 
+import tango.io.Stdout;
 import tango.core.BitManip;
 import tango.math.Math;
+import tango.text.Ascii;
 import tango.text.convert.Format;
 
 import yage.core.math.math;
@@ -126,27 +128,30 @@ struct Color
 	static Color opCall(char[] string)
 	{	
 		// An english color name
-		switch (std.string.tolower(string))
-		{	case "black":	return Color(0xFF000000);
-			case "blue":	return Color(0xFFFF0000);
-			case "brown":	return Color(0xFF2A2AA5);
-			case "transparent":	return Color(0x00000000); // transparent
-			case "cyan":	return Color(0xFFFFFF00);
-			case "gold":	return Color(0xFF00D7FF);
-			case "gray":	
-			case "grey":	return Color(0xFF808080);
-			case "green":	return Color(0xFF008000);
-			case "indigo":	return Color(0xFF82004B);
-			case "magenta":	return Color(0xFFFF00FF);
-			case "orange":	return Color(0xFF00A5FF);
-			case "pink":	return Color(0xFFCBC0FF);
-			case "purple":	return Color(0xFF800080);
-			case "red":		return Color(0xFF0000FF);
-			case "violet":	return Color(0xFFEE82EE);
-			case "white":	return Color(0xFFFFFFFF);
-			case "yellow":	return Color(0xFF00FFFF);
-			default: break;
-		}
+		if (string.length <= 20)
+		{	char[20] lower;
+			toLower(string, lower);
+			switch (lower[0..string.length])
+			{	case "black":	return Color(0xFF000000);
+				case "blue":	return Color(0xFFFF0000);
+				case "brown":	return Color(0xFF2A2AA5);
+				case "transparent":	return Color(0x00000000); // transparent
+				case "cyan":	return Color(0xFFFFFF00);
+				case "gold":	return Color(0xFF00D7FF);
+				case "gray":	
+				case "grey":	return Color(0xFF808080);
+				case "green":	return Color(0xFF008000);
+				case "indigo":	return Color(0xFF82004B);
+				case "magenta":	return Color(0xFFFF00FF);
+				case "orange":	return Color(0xFF00A5FF);
+				case "pink":	return Color(0xFFCBC0FF);
+				case "purple":	return Color(0xFF800080);
+				case "red":		return Color(0xFF0000FF);
+				case "violet":	return Color(0xFFEE82EE);
+				case "white":	return Color(0xFFFFFFFF);
+				case "yellow":	return Color(0xFF00FFFF);
+				default: break;
+		}	}
 		
 		// Allow hex colors to start with hash.
 		if (string[0] == '#')
@@ -171,7 +176,7 @@ struct Color
 			else if (96 < h && h < 103) // a-f
 				digit = (h-87);
 			else
-				throw new YageException("Invalid character '%s' for Color()", h);
+				throw new YageException("Invalid character '{}' for Color()", h);
 			result.ub[i/2] += digit * (15*((i+1)%2)+1); // gets low or high nibble
 		}
 		return result;

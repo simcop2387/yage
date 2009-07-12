@@ -6,15 +6,13 @@
 
 module yage.system.window;
 
-import std.string;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.util.exception;
 import derelict.sdl.sdl;
 
 import yage.core.math.vector;
-import yage.core.object2;;
-import yage.core.object2;;
+import yage.core.object2;
 
 
 // TODO: Have System use this code.
@@ -36,8 +34,7 @@ class Window : IRenderTarget
 			flags |= SDL_FULLSCREEN;
 		sdl_surface = SDL_SetVideoMode(size.x, size.y, depth, flags);
 		if(sdl_surface is null)
-			throw new YageException("Unable to set " ~ .toString(size.x) ~ "x" ~ .toString(size.y) ~
-			" video mode: : " ~ .toString(SDL_GetError()));
+			throw new YageException("Unable to set {}x{} video mode: {}", size.x, size.y, SDL_GetError());
 		SDL_LockSurface(sdl_surface);
 	}
 	

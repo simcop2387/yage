@@ -6,7 +6,10 @@
 
 module yage.system.graphics.probe;
 
-import std.string;
+import tango.util.Convert;
+import tango.stdc.stringz;
+import tango.text.Ascii;
+import tango.text.Util;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.system.system;
@@ -93,8 +96,8 @@ abstract class Probe
 	/**
 	 * Searches to see if the given extension is supported in hardware.*/
 	static bool checkExtension(char[] name)
-	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
-	    int result = find(tolower(exts), tolower(name)~" "); 
+	{	char[] exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
+	    int result = containsPattern(toLower(exts), toLower(name.dup)~" "); 
 	    delete exts; // [above] append space to ensure we're not matching part of another extension.
 		if (result>=0)
 			return true;
@@ -103,7 +106,7 @@ abstract class Probe
 
 	/// Return an array of all supported OpenGL extensions.
 	static char[][] getExtensions()
-	{	char[] exts = std.string.toString(cast(char*)glGetString(GL_EXTENSIONS));
+	{	char[] exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
 		return split(exts, " ");
 	}
 }

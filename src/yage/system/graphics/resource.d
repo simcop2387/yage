@@ -5,6 +5,7 @@
  */
 module yage.system.graphics.resource;
 
+import tango.core.Memory;
 import tango.io.Stdout;
 import tango.util.container.HashSet;
 import derelict.opengl.gl;
@@ -36,7 +37,7 @@ class GraphicsResource
 		{
 			// If the reserve is empty, replenish it.
 			if (!vbo_reserve.size())
-			{	std.gc.genCollect();
+			{	GC.collect(); // force all elements to finalize.
 				if (!vbo_reserve.size())
 					synchronized(GLContext.getInstance())
 						for (int i=0; i<64; i++) // Generate 64 new vbo's

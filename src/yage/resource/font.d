@@ -8,7 +8,6 @@ module yage.resource.font;
 
 import tango.io.Stdout;
 import tango.text.convert.Utf;
-import std.utf;
 import derelict.freetype.ft;
 import yage.core.math.math;
 import yage.core.timer;
@@ -130,7 +129,7 @@ class Font : Resource
 			// Render the character into the glyph slot.
 			error = FT_Load_Char(face, letter, FT_LOAD_RENDER);  
 			if (error)
-				throw new ResourceManagerException("Font '{}' cannot render the character '{}'.", source, toUTF8([letter]));			
+				throw new ResourceManagerException("Font '{}' cannot render the character '{}'.", source, .toString([letter]));			
 			
 			auto bitmap = face.glyph.bitmap;
 			ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				
@@ -156,7 +155,7 @@ class Font : Resource
 	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.
 	 *     max_width = Maximum width of the result image in pixels. */
 	Image render(char[] utf8, int width, int height=0, int max_width=int.max)
-	{	dchar[] unicode = toUTF32(utf8);
+	{	dchar[] unicode = toString32(utf8); // garbage
 		Image result = render(unicode, width, height, max_width);
 		delete unicode;
 		return result;

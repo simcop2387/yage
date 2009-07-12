@@ -19,7 +19,7 @@ module yage.core.array;
 import yage.core.math.math;
 import yage.core.types;
 import yage.core.timer;
-import std.c.stdlib : malloc, free;
+import tango.stdc.stdlib : malloc, free;
 
 /**
  * Add an element to an already sorted array, maintaining the same sort order. 

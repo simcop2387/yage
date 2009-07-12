@@ -9,7 +9,6 @@
 module demo1.ship;
 
 import tango.math.Math;
-import std.stdio;
 import yage.all;
 import demo1.gameobj;
 

@@ -6,7 +6,9 @@
 
 module yage.scene.graph;
 /+
-import std.stdio;
+This module needs to be brought up to date with the rest of the Yage API before it
+will work.
+
 import tango.math.Math;
 import yage.core.math.vector;
 import yage.core.misc;

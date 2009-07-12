@@ -15,8 +15,6 @@ import tango.text.Util;
 import tango.util.Convert;
 import tango.text.convert.Format;
 
-import std.format;
-
 /// Convert a csv string of numbers to an array of floats
 float[] csvToFloat(char[] csv)
 {	float[] result;
