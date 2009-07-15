@@ -25,8 +25,8 @@ struct Letter
 {	dchar letter;	/// unicode letter
 	short top;		/// image top offset
 	short left;		/// image left offset
-	short advancex;	/// x and y distance required to move to the next letter after this one
-	short advancey;	/// ditto
+	short advanceX;	/// x and y distance required to move to the next letter after this one
+	short advanceY;	/// ditto
 	Image image; 	/// rendered image of this letter
 	
 	void* extra;	// used internally
@@ -52,13 +52,22 @@ class Font : Resource
 	{	dchar letter;
 		short width;
 		short height;
+		bool bold;
+		bool italic;
 		
-		// Hash recognizes that most letters are two bytes or less, most sizes are one byte or less
+		// Hash recognizes that most letters are two bytes or less, most sizes aren 7 bits or less
 	    hash_t toHash()
-	    {	return (cast(uint)letter<<16) + ((cast(uint)width)<<8) + (cast(uint)height);    	
+	    {	ushort widthBold   = cast(ushort)((width & 0x7f | (bold<<7))<<8);
+	    	ubyte heightItalic = cast(ubyte)(height & 0x7f | (italic<<7));
+	    	return (letter<<16) | widthBold | heightItalic;
 	    }
+	    unittest {
+	    	Key test = Key('A', 255, 127, false, true);
+	    	assert(test.toHash() == 0x417FFF);
+	    }
+	    
 	    int opEquals(Key s)
-	    {  	return letter==s.letter && width==s.width && height==s.height;
+	    {  	return letter==s.letter && width==s.width && height==s.height && s.bold==bold && s.italic==italic;
 	    }
 	    int opCmp(Key s)
 	    {  	 return toHash() - s.toHash();
@@ -112,17 +121,20 @@ class Font : Resource
 	 * Params:
 	 *     text = A string of text to render, can be utf-8 or unencoded unicode (dchar[]).
 	 *     width = The horizontal pixel size of the font to render.
-	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.. */
-	Letter getLetter(dchar letter, int width, int height=0)
+	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.
+	 *     bold = Get a bold version of the letter.  This is performed by compositing the same glyph multiple times 
+	 *         horizontally and then cached.
+	 *     italic = Get an italicized version of the letter.  This is performed by an image skew and then cached. */
+	Letter getLetter(dchar letter, int width, int height=0, bool bold=false, bool italic=false)
 	{
-		Key key = Key(letter, width, height);
+		Key key = Key(letter, width, height, bold, italic);
 		if (key in cache)
 			return cache[key];
 		else
 		{	Letter result;
 		
 			// Give our font size to freetype.
-			auto error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
+			scope error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
 			if (error)
 				throw new ResourceManagerException("Font '{}' does not support pixel sizes of {}x{}.", source, width, height);
 		
@@ -131,72 +143,32 @@ class Font : Resource
 			if (error)
 				throw new ResourceManagerException("Font '{}' cannot render the character '{}'.", source, .toString([letter]));			
 			
-			auto bitmap = face.glyph.bitmap;
+			scope bitmap = face.glyph.bitmap;
 			ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				
 			
-			// Set the values of the letter.			
-			result.image = new Image(data.dup, 1, bitmap.width, bitmap.rows);
+			// Set the values of the letter.
+			if (bold)
+			{	int boldness = width/8; // adjust this for boldness amount
+				result.advanceX += boldness;
+				
+				result.image = new Image(1, bitmap.width+boldness, bitmap.rows);				
+				scope embolden = new Image(data, 1, bitmap.width, bitmap.rows);
+				for (int i=0; i<=boldness; i++)
+					result.image.add(embolden, i, 0);
+			}
+			else
+				result.image = new Image(data.dup, 1, bitmap.width, bitmap.rows);
 			result.top = face.glyph.bitmap_top;
 			result.left = face.glyph.bitmap_left;
-			result.advancex = face.glyph.advance.x>>6; // fast divide by 64
-			result.advancey = face.glyph.advance.y>>6;
+			result.advanceX += face.glyph.advance.x>>6; // fast divide by 64
+			result.advanceY = face.glyph.advance.y>>6;
 			result.letter = letter;
 			
 			return cache[key] = result;
 		}
 	}
-	
-	/**
-	 * Render an image from text, without consideration for multiple lines.
-	 * TODO: Fix text from Right-to-Left languages being rendered backwards.
-	 * Params:
-	 *     text = A string of text to render, can be utf-8 or unencoded unicode (dchar[]).
-	 *     width = The horizontal pixel size of the font to render.
-	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.
-	 *     max_width = Maximum width of the result image in pixels. */
-	Image render(char[] utf8, int width, int height=0, int max_width=int.max)
-	{	dchar[] unicode = toString32(utf8); // garbage
-		Image result = render(unicode, width, height, max_width);
-		delete unicode;
-		return result;
-	}
-	
-	/// ditto
-	Image render(dchar[] text, int width, int height=0, int max_width=int.max) 
-	{
-		/*
-		 * First, we render (or retrieve from cache) all letters into an array of Letter.
-		 * We then allocate an image of appropriate size, composite the letters onto it, and then return it. */
-		scope Letter[] letters;
-		
-		// Create a glyph for each letter and store its parameters
-		int line_width;
-		foreach (c; text)
-		{	
-			Letter letter = getLetter(c, width, height);
-			letters ~= letter;
-			line_width += letter.advancex;
-			if (line_width > max_width)
-			{	line_width = max_width;
-				break;
-			}
-		}
-		
-		// Create image target where glyphs will be composited.
-		int line_height = cast(int)(height*1.5f);
-		Image result = new Image(1, line_width, line_height);
-							
-		// Composite letters onto main image.
-		int advancex=0, advancey=0;
-		foreach (j, letter; letters)
-		{	result.overlay(letter.image, advancex+letter.left, (advancey-letter.top+height));			
-			advancex+= letter.advancex;
-			advancey+= letter.advancey;
-		}
-		
-		return result;
-	}
 
+	/// Return the font filename.
 	char[] toString()
 	{	return source;
 	}

@@ -26,8 +26,8 @@ import yage.core.timer;
 /**
  * Represents a CSS value.  It can store pixels or precent. */
 struct Value
-{	float value=float.nan; ///
-	ubyte unit = Style.Unit.PX; ///
+{	package float value=float.nan; ///
+	package ubyte unit = Style.Unit.PX; ///
 	
 	/**
 	 * Allow assignments from ints, floats and strings. 
@@ -38,7 +38,7 @@ struct Value
 	 * --------
 	 */
 	Value opAssign(float v) /// ditto
-	{	value = v;
+	{	value = v>0 ? v : 0;
 		unit = Style.Unit.PX;
 		return *this;
 	}
@@ -51,6 +51,7 @@ struct Value
 		{	value = to!(float)(v[0..length]);
 			unit = Style.Unit.PX;
 		}
+		value = value>0 ? value : 0;
 		return *this;
 	}
 	unittest

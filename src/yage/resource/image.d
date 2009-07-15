@@ -6,6 +6,7 @@
 
 module yage.resource.image;
 
+import tango.io.Stdout;
 import tango.math.Math;
 import tango.text.Ascii;
 import tango.stdc.stringz;
@@ -22,7 +23,8 @@ import yage.resource.resource;
  * Bugs:
  * An RGB image will often be returned when loading grayscale images.  Use setFormat(IMAGE_FORMAT_GRAYSCALE) to correct this.
  * 
- * TODO: Add convolution support: http://www.php.net/manual/en/function.imageconvolution.php#77818 */
+ * TODO: Add convolution support: http://www.php.net/manual/en/function.imageconvolution.php#77818
+ * TODO: Convert to struct? */
 class Image : Resource
 {
 	// Types
@@ -43,7 +45,8 @@ class Image : Resource
 
 	// Fields
 	ubyte[] data;
-	protected int width, height, channels;
+	protected int width, height;
+	protected byte channels;
 	char[] source;
 	
 	// Empty Constructor, used internally
@@ -229,8 +232,7 @@ class Image : Resource
 	/**
 	 * Paste another image on top of this one.
 	 * This does not make a copy. 
-	 * This also does not perform proper overlays of images with an alpha channel, 
-	 * TODO: Use overlayAndColor for the code needed to implement a correct RGBA solution. */
+	 * This also does not perform proper overlays of images with an alpha channel.  */
 	void overlay(Image img, int xoffset=0, int yoffset=0)
 	{	for (int y=0; y<img.height; y++)
 		{	int yoffsety = yoffset+y;
@@ -240,6 +242,28 @@ class Image : Resource
 					if (xoffsetx < width && xoffsetx > 0)	
 						this[xoffsetx, yoffsety][0..channels] = img[x, y][0..channels]; // TODO: convert format
 		}	}	}
+	}
+	
+	void add(Image img, int xoffset=0, int yoffset=0)
+	{	
+		assert(channels == img.channels);
+		if (this == img)
+			img.data = img.data.dup; // TODO: Use a lookaside instead
+		
+		int ymax = max(min(img.height+yoffset, height), 0); 
+		for (int y=max(yoffset, 0); y < ymax; y++)
+		{	assert(0 <= y && y<height);
+			int xmax = max(min(img.width+xoffset, width), 0);
+			for (int x=max(xoffset, 0); x<xmax; x++)
+			{	assert(0 <= x && x<width);
+				uint src = ((y-yoffset)*img.width + x - xoffset)*channels;
+				uint dest = (y*width+x)*channels;
+				for (int c=0; c<channels; c++)
+				{	uint total = cast(int)data[dest+c] + img.data[src+c];
+					data[dest+c] = total > 255 ? 255 : total;
+				}
+			}
+		}
 	}
 
 	/**
@@ -253,15 +277,19 @@ class Image : Resource
 	 *     color = img will be converted to an RGBA image of this color before pasting.
 	 */
 	void overlayAndColor(Image img, Color color, int xoffset=0, int yoffset=0)
-	{	assert(img.getChannels()==1);
+	{	assert(getChannels()==4);
+		assert(img.getChannels()==1);
 	
 		float[4] fcolor;
 		color.f(fcolor);
-		int ymax = min(img.height+yoffset, height); 
-		for (int y=yoffset; y < ymax; y++)
-		{	int xmax = min(img.width+xoffset, width);
-			for (int x=xoffset; x<xmax; x++)
-			{	
+		int ymax = max(min(img.height+yoffset, height), 0); 
+		for (int y=max(yoffset, 0); y < ymax; y++)
+		{	assert(0 <= y && y<height);
+			
+			int xmax = max(min(img.width+xoffset, width), 0);
+			for (int x=max(xoffset, 0); x<xmax; x++)
+			{	assert(0 <= x && x<width);
+				
 				uint src_alpha = img.data[(y-yoffset)*img.width + x - xoffset];
 				if (src_alpha > 0)
 				{	
@@ -272,6 +300,7 @@ class Image : Resource
 					
 					// This is my own blending algorithm, can it be further optimized?
 					int reciprocal = 0xFFFF / src_dest_ratio; // calculate reciprocal for fast integer division
+															// A lookup table of reciprocals could make this faster.
 
 					data[dest  ] = ((color.ub[0]*src_alpha + data[dest  ]*dst_ratio) * reciprocal)>>16; // colors
 					data[dest+1] = ((color.ub[1]*src_alpha + data[dest+1]*dst_ratio) * reciprocal)>>16;

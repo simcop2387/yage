@@ -28,7 +28,7 @@ class TextLayout
 {
 	private static const char[] breaks = " *()-+=/\\,.;:|()[]{}<>\r\n"; // breaking characters
 	
-	private static ubyte[] imageLookaside;
+	private static ubyte[] imageLookaside; // TODO: Make TextLayout thread safe by making lookAsides thread-local
 	private static char[] textLookaside;
 	private static HtmlNode[] nodeLookaside;
 	
@@ -158,9 +158,8 @@ class TextLayout
 				
 				foreach (dchar c; node.text) // dchar to iterate over each utf-8 char group
 				{	if (node.style.fontFamily)
-					{	int h = node.style.fontSize;
-						int w = node.style.fontWeight == Style.FontWeight.BOLD ? h*3/2 : h;
-						Letter  l= node.style.fontFamily.getLetter(c, w, h); // 1.3ms
+					{	int h = node.style.fontSize;					
+						Letter l = node.style.fontFamily.getLetter(c, h, h, node.style.fontWeight == Style.FontWeight.BOLD);						
 						l.extra = &node.style;
 						letters ~= l;
 			}	}	}
@@ -190,7 +189,7 @@ class TextLayout
 							continue;
 						}
 							
-						x+= letters[i].advancex;
+						x+= letters[i].advanceX;
 						
 						if (containsPattern(breaks, utf8)) // store position of last breaking character
 							last_break = i;
@@ -250,20 +249,20 @@ class TextLayout
 					// Render underline, overline, and linethrough
 					if (istyle.textDecoration == Style.TextDecoration.UNDERLINE)
 						for (int h=max(0, baseline); h<min(baseline+lineWidth, height); h++)
-							for (int j=x; j<x+letter.advancex; j++) // [above] make underline 1/10th as thick as line-height
+							for (int j=x; j<x+letter.advanceX; j++) // [above] make underline 1/10th as thick as line-height
 								result[j, h] = istyle.color.ub;
 					else if (istyle.textDecoration == Style.TextDecoration.OVERLINE)
 						for (int h=max(0, capheight); h<min(capheight+lineWidth, height); h++)
-							for (int j=x; j<x+letter.advancex; j++)
+							for (int j=x; j<x+letter.advanceX; j++)
 								result[j, h] = istyle.color.ub;
 					else if (istyle.textDecoration == Style.TextDecoration.LINETHROUGH)
 						for (int h=max(0, midline); h<min(midline+lineWidth, height); h++)
-							for (int j=x; j<x+letter.advancex; j++)
+							for (int j=x; j<x+letter.advanceX; j++)
 								result[j, h] = istyle.color.ub;
 					
 					
-					x+= letter.advancex;// + istyle.letterSpacing;
-					y+= letter.advancey;
+					x+= letter.advanceX;// + istyle.letterSpacing;
+					y+= letter.advanceY;
 				}
 				x=0;
 				y+= lines[i].height; // add height of the next line.
