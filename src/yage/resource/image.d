@@ -272,11 +272,13 @@ class Image : Resource
 	 * This somewhat specialized function is used to accelerate text rendering.
 	 * Params:
 	 *     img = a monochrome image 
+	 *     color = img will be converted to an RGBA image of this color before pasting.
 	 *     xoffset = x offset of the pasted images from this images left side.
 	 *     yoffset = y offset of the pasted image from this image's top side.
-	 *     color = img will be converted to an RGBA image of this color before pasting.
+	 *     skew = horizontally skew the overlayed image by this amount.  .5 will skew it by 45 degrees
+	 * TODO: Make the top go to the right instead of taking the bottom to the left
 	 */
-	void overlayAndColor(Image img, Color color, int xoffset=0, int yoffset=0)
+	void overlaySkewAndColor(Image img, Color color, int xoffset=0, int yoffset=0, float skew=0)
 	{	assert(getChannels()==4);
 		assert(img.getChannels()==1);
 	
@@ -285,15 +287,21 @@ class Image : Resource
 		int ymax = max(min(img.height+yoffset, height), 0); 
 		for (int y=max(yoffset, 0); y < ymax; y++)
 		{	assert(0 <= y && y<height);
+		
+			float skewScaled = (img.height- (y-yoffset)) * skew; // goes from 0 to 1
 			
 			int xmax = max(min(img.width+xoffset, width), 0);
 			for (int x=max(xoffset, 0); x<xmax; x++)
 			{	assert(0 <= x && x<width);
+			
+				int x2 = cast(int)(x+skewScaled);
+				if (x2>=width)
+					continue;
 				
 				uint src_alpha = img.data[(y-yoffset)*img.width + x - xoffset];
 				if (src_alpha > 0)
 				{	
-					uint dest = (y*width+x)*channels;
+					uint dest = (y*width+x2)*channels;
 					uint dst_alpha = data[dest+3];
 					uint dst_ratio = (255-src_alpha) * ((dst_alpha*257)>>16); // hack for faster divide by 255
 					uint src_dest_ratio = src_alpha + dst_ratio;
@@ -308,12 +316,11 @@ class Image : Resource
 					data[dest+3] = (((src_alpha*src_alpha*257)>>16) + dst_ratio) ; // alpha
 				}
 		}	}
-		
 	}
 	unittest
 	{	Image a = new Image(1, 16, 16);
 		Image b = new Image(4, 8, 8);
-		b.overlayAndColor(a, Color("#FFFFFF"), -4, -4);
+		b.overlaySkewAndColor(a, Color("#FFFFFF"), -4, -4);
 	}
 	
 	/**

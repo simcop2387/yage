@@ -157,9 +157,9 @@ int main()
 		
 	// Make a draggable window to show some useful info.
 	auto window = view.addChild(new Surface());
-	window.style.set("top: 5px; right: 5px; width: 110px; height: 80px; color: black; padding: 3px; line-height: 19px; " ~
+	window.style.set("top: 5px; right: 5px; width: 160px; height: 80px; color: black; padding: 3px; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font-family: url('Vera.ttf'); font-size: 12px");
+		"font-family: url('Vera.ttf'); font-size: 16px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
 	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
