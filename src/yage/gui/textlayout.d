@@ -2,20 +2,25 @@
  * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
  * License:    <a href="lgpl.txt">LGPL</a>
+ * 
+ * This module is dedicated to my loving wife, Brittany Poggel.
  */
 module yage.gui.textlayout;
 
+import tango.core.Exception;
 import tango.io.Stdout;
 import tango.math.Math;
 import tango.math.IEEE;
 import tango.text.convert.Float;
 import tango.text.xml.Document;
 import tango.text.Regex;
-import tango.text.Ascii;
+import tango.text.Unicode;
 import tango.text.convert.Format;
 import tango.text.Util;
+import yage.core.cache;
 import yage.core.color;
 import yage.core.math.math;
+import yage.core.object2;
 import yage.core.timer;
 import yage.core.types;
 import yage.resource.font;
@@ -31,20 +36,15 @@ class TextLayout
 	private static ubyte[] imageLookaside; // TODO: Make TextLayout thread safe by making lookAsides thread-local
 	private static char[] textLookaside;
 	private static HtmlNode[] nodeLookaside;
-	
-	// regular expressions
-	private static Regex rxTags;
-	static this ()
-	{	rxTags = Regex(`\>[^\<]+\<`);
-	}
-	
+
 	static double lastRenderTime=0;	
 
-	/**
+	/*
 	 * Store a line of rendered letters. */
 	private struct Line
 	{	Letter[] letters;
-		int height;
+		int height;// height of the line, based on either a css line-height or the tallest characters
+		int width; // width of the line
 		
 		static Line opCall()
 		{	Line result;
@@ -60,8 +60,8 @@ class TextLayout
 		Font fontFamily;
 		int fontSize = 12; // default to 12px font size.
 		Color color = {r:0, g:0, b:0, a:255};
-		Style.FontWeight fontWeight;
-		Style.FontStyle fontStyle;
+		/*Style.FontWeight*/ ubyte fontWeight;
+		/*Style.FontStyle*/ ubyte fontStyle;
 		
 		// Text	
 		byte textDecoration;
@@ -84,7 +84,7 @@ class TextLayout
 			result.color = style.color;
 			result.textDecoration = style.textDecoration;
 			
-			result.letterSpacing = style.letterSpacing.toPx(0);	
+			result.letterSpacing = style.letterSpacing.toPx(0);
 			result.lineHeight = style.lineHeight.toPx(result.fontSize);
 			
 			return result;
@@ -158,8 +158,10 @@ class TextLayout
 				
 				foreach (dchar c; node.text) // dchar to iterate over each utf-8 char group
 				{	if (node.style.fontFamily)
-					{	int h = node.style.fontSize;					
-						Letter l = node.style.fontFamily.getLetter(c, h, h, node.style.fontWeight == Style.FontWeight.BOLD);						
+					{	int h = node.style.fontSize;
+						bool bold = node.style.fontWeight == Style.FontWeight.BOLD;
+						bool italic = node.style.fontStyle == Style.FontStyle.ITALIC;
+						Letter l = node.style.fontFamily.getLetter(c, h, h, bold, italic);						
 						l.extra = &node.style;
 						letters ~= l;
 			}	}	}
@@ -209,6 +211,7 @@ class TextLayout
 						if (i < letters.length && letters[i].letter=='\n')
 							i++; // skip line returns
 						line.letters = letters[start..last_break]; // slice directly from the letters array to avoid copy allocation
+						line.width = x;
 					}
 					line.height = lineHeight;
 					lines ~= line;
@@ -232,6 +235,10 @@ class TextLayout
 			imageLookaside = result.getData();
 			foreach (i, line; lines)
 			{
+				int xoffset;
+				if (style.textAlign == Style.TextAlign.RIGHT)
+					xoffset = width - line.width;
+
 				foreach (letter; line.letters)
 				{	InlineStyle* istyle = (cast(InlineStyle*)letter.extra);
 				
@@ -244,8 +251,7 @@ class TextLayout
 					
 					// Overlay the glyph onto the main image
 					float skew = istyle.fontStyle == Style.FontStyle.ITALIC ? .33f : 0;
-					result.overlaySkewAndColor(letter.image, istyle.color, x+letter.left, baseline-letter.top, skew);
-	
+					result.overlaySkewAndColor(letter.image, istyle.color, x+letter.left, baseline-letter.top, 0);
 					
 					// Render underline, overline, and linethrough
 					if (istyle.textDecoration == Style.TextDecoration.UNDERLINE)
@@ -266,7 +272,7 @@ class TextLayout
 					y+= letter.advanceY;
 				}
 				x=0;
-				y+= lines[i].height; // add height of the next line.
+				y+= line.height; // add height of the next line.
 				if (y>height)
 					break;
 			}
@@ -275,7 +281,6 @@ class TextLayout
 		return result;
 	}
 	
-	
 	/*
 	 * This function accepts a string of text that may contain nested html nodes and inline
 	 * styles and breaks it a part into a non-nested, in-order array of HtmlNode. 
@@ -283,19 +288,23 @@ class TextLayout
 	 * so subsequent calls will overwrite the result of the previous. */
 	private static HtmlNode[] getNodes(char[] htmlText, InlineStyle style)
 	{
-		htmlText = htmlWhitespace(htmlText);
+		scope htmlText2 = htmlWhitespace(htmlText);
 		
 		// .3ms
 		// This will be fixed in Tango 0.99.9: http://dsource.org/projects/tango/ticket/1619#comment:1
 		int i=0; // [below] ensure every plain text child is wrapped in <span></span> to fix tango's xml parsing.
-		htmlText = rxTags.replaceAll(htmlText, (RegExpT!(char) input) {
+		htmlText2 =  Cache.getRegex(`\>[^\<]+\<`).replaceAll(htmlText2, (RegExpT!(char) input) {
 			return "><span"~input[i]~"/span><";
 			i++;
 		});
 		
 		// .05ms
 		scope doc = new Document!(char);
-		doc.parse(htmlText);
+		try {
+			doc.parse(htmlText2);
+		} catch (AssertException e)
+		{	throw new YageException("Unable to parse xhtml:  {}", htmlText);
+		}
 		
 		nodeLookaside.length = 0;
 		getNodesHelper(doc.query.nodes[0], style); // 0.15 ms
@@ -315,7 +324,7 @@ class TextLayout
 		HtmlNode node; // our own node class.
 		if (input.query.attribute("style").count)
 		{	Style temp = parentStyle.toStyle();
-			temp.set(input.query.attribute("style").nodes[0].value); // 30ms for temp.set!
+			temp.set(input.query.attribute("style").nodes[0].value);
 			node.style = InlineStyle(temp);
 		} else
 			node.style = parentStyle;

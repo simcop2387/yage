@@ -69,7 +69,7 @@ int main()
 	auto window = view.addChild(new Surface());
 	window.style.set("top: 5px; left: 5px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font-family: url('gui/font/Vera.ttf'); font-size: 14px;");
+		"font-family: url('gui/font/Vera.ttf'); font-size: 14px; text-align: right");
 	
 	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
@@ -104,7 +104,7 @@ int main()
 		
 		if (frame.get()>=0.25f)
 		{	
-			window.text = `In a <s>traditional</s> 	   <span style="color: green; text-decoration: overline; font-size:40px">`~
+			window.text = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
 			`<u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) `~
 			`<span style="text-decoration: overline">house</span> the font would refer to a complete set of metal `~
 			`type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not `~
@@ -116,7 +116,6 @@ int main()
 			`Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and `~
 			`line-width spacers, were not part of a specific font in pre-digital usage, but were separate, `~
 			`generic pieces.[1]             `~ Format.convert(` {} fps<br/>`, fps/frame.get());
-			
 			
 			//window.text = Format.convert(`{} fps<br/>{}`,
 			//	fps/frame.get());

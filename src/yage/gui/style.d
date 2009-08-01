@@ -13,6 +13,7 @@ import tango.text.Util;
 import tango.text.Ascii;
 import tango.text.convert.Format;
 import tango.util.Convert;
+import yage.core.cache;
 import yage.core.color;
 import yage.core.math.vector;
 import yage.resource.font;
@@ -26,19 +27,20 @@ import yage.core.timer;
 /**
  * Represents a CSS value.  It can store pixels or precent. */
 struct Value
-{	package float value=float.nan; ///
-	package ubyte unit = Style.Unit.PX; ///
+{	package float value=float.nan;
+	package ubyte unit = Style.Unit.PX;
 	
 	/**
 	 * Allow assignments from ints, floats and strings. 
 	 * Example:
 	 * --------
-	 * Value width;
-	 * width = "3%";
+	 * Value height;
+	 * height = 3; // width is 3 pixels
+	 * height = "3%"; // width is 3% of parent's height
 	 * --------
 	 */
-	Value opAssign(float v) /// ditto
-	{	value = v>0 ? v : 0;
+	Value opAssign(float v)
+	{	value = v>0 || isNaN(v) ? v : 0;
 		unit = Style.Unit.PX;
 		return *this;
 	}
@@ -65,43 +67,40 @@ struct Value
 	}
 	
 	/**
-	 * Allows for compile time initialization */
-	static Value opCall(float v, ubyte unit=0)
+	 * Constructor for initializing the values
+	 * Params:
+	 *     v = the value to set
+	 *     isPercent = If precent, v will be based on the Surface parent's value from 0 to 100%*/
+	static Value opCall(float v, bool isPercent=false)
 	{	Value result;
 		result.value = v;
-		result.unit = unit;
+		result.unit = isPercent;
 		return result;
 	}
-	static Value opCall(char[] v)
+	static Value opCall(char[] v) /// ditto
 	{	Value result;
 		result = v;
 		return result;
 	}
 	
-	/** 
-	 * Get the value in terms of pixels, if it's not already a pixel value
-	 * If it's in percent, that percentage of target will be returned. */
-	float toPx(float target, bool allow_nan=true)
-	{
-		float result = value;
-		if (unit==Style.Unit.PERCENT)
-			result *= target*0.01f;
-		if (!allow_nan && isNaN(result))
-			result = 0;
-		return result;
-	}
-	
 	/**
-	 * Get the value in terms of percent, if it's not already a percent value. 
+	 * Get the value in terms of pixels or percent, if it's not already a percent value. 
 	 * Params:
-	 *     target = If it's a pixel value, it will be converted to a percentage in terms of this width/height. */
-	float toPercent(float target, bool allow_nan=true)
-	{	float result = value;
+	 *     target = If the value is a pixel value, it will be converted to a percentage in terms of this width/height. 
+	 *     allow_nan If false, nan's will be converted to 0.*/
+	float toPx(float target, bool allow_nan=true)
+	{	if (!allow_nan && isNaN(value))
+			return 0;
 		if (unit==Style.Unit.PERCENT)
-			result /= target*100f;
-		if (!allow_nan && isNaN(result))
-			result = 0;
-		return result;
+			return value*target*0.01f;
+		return value;
+	}
+	float toPercent(float target, bool allow_nan=true) /// ditto
+	{	if (!allow_nan && isNaN(value))
+			return 0;
+		if (unit==Style.Unit.PERCENT)
+			return value*target*100f;
+		return value;
 	}
 
 	/**
@@ -114,163 +113,162 @@ struct Value
 }
 
 /**
- * Specifies the style of a Surface.
+ * This struct is used to specify the style of a Surface.
  * Inspired by the <a href="http://www.w3schools.com/css/css_reference.asp">CSS specification</a>.
- * 
- * This struct is not fully documented. */
+ * Much of htis functionality is still unfinished. */
 struct Style
-{			
+{	
 	/**
-	 * Enumeration values used to set units for measurements, such as width, padding, etc. */
+	 * Values used to set units for measurements, such as width, padding, etc. */
+	// should this be in Value?
 	enum Unit
 	{	PX=0, ///
-		PERCENT=1 ///
+		PERCENT=1 /// ditto
 	}
 	
+	/// These are the possible values that can be assigned to the textAlign property.
 	enum TextAlign
-	{	LEFT = 0,
-		CENTER = 1,
-		RIGHT = 2		
+	{	LEFT, ///
+		CENTER, /// ditto
+		RIGHT, /// ditto
+		JUSTIFY /// ditto
 	}
 	
+	/// These are the possible values that can be assigned to the textDecoration property.
 	enum TextDecoration
-	{	NONE,
-		UNDERLINE,
-		OVERLINE,
-		LINETHROUGH
-	}
-	
-	enum BorderImageStyle
-	{	STRETCH,
-		ROUND,
-		REPEAT		
-	}
-	
-	enum FontStyle
-	{	NORMAL,
-		ITALIC
-	}
-	
-	enum FontWeight
-	{	NORMAL,
-		BOLD
-	}
-	
-	// Dimension
-	union { 
-		struct { 
-			Value top;     /// Distance of an edge from its parent, use float.nan to leave unset.
-			Value right;   /// ditto
-			Value bottom;  /// ditto
-			Value left;    /// ditto
-		} 
-		Value[4] dimension; // internal use, not supported by css
-	}	
-	union {
-		struct {
-			Value width = Value(float.nan);
-			Value height = Value(float.nan);
-		}
-		Value[2] size; // internal use, not supported by css.
+	{	NONE, ///
+		UNDERLINE, /// ditto
+		OVERLINE, /// ditto
+		LINETHROUGH /// ditto
 	}
 
-	// Border sizes and colors
+	/// These are the possible values that can be assigned to the borderImagestyle property.
+	enum BorderImageStyle
+	{	STRETCH, ///
+		ROUND, /// ditto
+		REPEAT	 /// ditto
+	}
+
+	/// These are the possible values that can be assigned to the fontStyle property.
+	enum FontStyle
+	{	NORMAL, ///
+		ITALIC /// ditto
+	}
+
+	/// These are the possible values that can be assigned to the fontWeight property.
+	enum FontWeight
+	{	NORMAL, ///
+		BOLD /// ditto
+	}
+	
 	union { 
 		struct { 
-			Value borderTopWidth = Value(0);
-			Value borderRightWidth = Value(0);
-			Value borderBottomWidth = Value(0);
-			Value borderLeftWidth = Value(0);
+			Value top; /// Distance of an edge from its parent, use float.nan to leave unset.
+			Value right; /// ditto
+			Value bottom; /// ditto
+			Value left; /// ditto
 		} 
-		Value[4] borderWidth;
+		package Value[4] dimension; // internal use, not supported by css
 	}
-	union {
-		struct {
-			Color borderColorTop;
-			Color borderColorRight;
-			Color borderColorBottom;
-			Color borderColorLeft;
-		}
-		Color[4] borderColor;
-	}
-	
-	// Border Image (TODO: support border-style and border-image-widths?)
-	union {
-		struct {
-			GPUTexture borderTopImage;
-			GPUTexture borderRightImage;
-			GPUTexture borderBottomImage;
-			GPUTexture borderLeftImage;
-		}
-		GPUTexture[4] borderImage;
-	}
-	GPUTexture borderCenterImage;
 	
 	union {
 		struct {
-			GPUTexture borderTopLeftImage;
-			GPUTexture borderTopRightImage;			
-			GPUTexture borderBottomLeftImage;
-			GPUTexture borderBottomRightImage;
+			Value width = Value(float.nan); /// Width and height of the Surface.  Use float.nan to leave unset.
+			Value height = Value(float.nan); /// ditto
 		}
-		GPUTexture[4] borderCornerImage;
+		package Value[2] size; // internal use, not supported by css.
 	}
-	
-	// Padding
+
+	 
 	union { 
 		struct { 
-			Value paddingTop = Value(0);
-			Value paddingRight = Value(0);
-			Value paddingBottom = Value(0);
-			Value paddingLeft = Value(0);
+			Value borderTopWidth = Value(0); /// Border widths
+			Value borderRightWidth = Value(0); /// ditto
+			Value borderBottomWidth = Value(0); /// ditto
+			Value borderLeftWidth = Value(0); /// ditto
 		} 
-		Value[4] padding;
+		Value[4] borderWidth; /// Set all four border widths in one array.
 	}
 	
-	// Background
+	
+	union {
+		struct {
+			Color borderColorTop;/// Border colors
+			Color borderColorRight; /// ditto
+			Color borderColorBottom; /// ditto
+			Color borderColorLeft; /// ditto
+		}
+		Color[4] borderColor; /// Set all four border colors in one array.
+	}
+	
+	
+	union {
+		struct {
+			GPUTexture borderTopImage; /// Border Images (TODO: support border-style and border-image-widths?)
+			GPUTexture borderRightImage; /// ditto
+			GPUTexture borderBottomImage; /// ditto
+			GPUTexture borderLeftImage; /// ditto
+		}
+		GPUTexture[4] borderImage; /// Set the four top/right/bottom/left border images in one array.
+	}
+	GPUTexture borderCenterImage; /// Border center image (not a part of CSS3.
+	
+	union {
+		struct {
+			GPUTexture borderTopLeftImage; /// Border corner images
+			GPUTexture borderTopRightImage;	 /// ditto		
+			GPUTexture borderBottomLeftImage; /// ditto
+			GPUTexture borderBottomRightImage; /// ditto
+		}
+		GPUTexture[4] borderCornerImage; /// Set the four border corner images images in one array.
+	}
+	
+	
+	union { 
+		struct { 
+			Value paddingTop = Value(0); /// Padding (the space inside the border surrounding any text or children)
+			Value paddingRight = Value(0); /// ditto
+			Value paddingBottom = Value(0); /// ditto
+			Value paddingLeft = Value(0); /// ditto
+		} 
+		Value[4] padding; /// Set all four padding sizes in one array.
+	}
+	
+	/// Background image and color.  backgroundColor is drawn first, with backgroundImage second, then borderImage on top.
 	GPUTexture backgroundImage; // just streteched for now.
-	Color backgroundColor;
+	Color backgroundColor; /// ditto
 
 	// Cursor
 	Material cursor;
 	float cursorSize=16; // in pixels
 	
-	// Font
+	/// Font properties
 	Font fontFamily;
-	Value fontSize = Value(12); // default to 12px font size.
-	FontStyle fontStyle;
-	FontWeight fontWeight;	
+	Value fontSize = Value(12); /// ditto
+	FontStyle fontStyle; /// ditto
+	FontWeight fontWeight; /// ditto
 	
-	// Text	
+	/// Text properties
 	Color color = {r:0, g:0, b:0, a:255};
-	byte  textDecoration;
-	Value lineHeight;
-	Value letterSpacing;
+	TextAlign textAlign = TextAlign.LEFT; /// ditto
+	byte  textDecoration = TextDecoration.NONE; /// ditto
+	Value lineHeight = Value(float.nan); /// ditto
+	Value letterSpacing; /// ditto
 	
 
 	// Other
 	float opacity = 1; // 0 to 1.
-	TextAlign textAlign = TextAlign.LEFT;
+	
 	bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
-	int zIndex;
-	
-	private static Regex rxStyles;
-	private static Regex rxTokens;
-	private static Regex rxProperties;
-	static this() {
-		rxStyles = Regex(";\\s*");
-		rxTokens = Regex(":\\s*");
-		rxProperties = Regex("\\s+");
-	}
-	
+	int zIndex; /// Sets the stack order of the surface relative to its siblings.
+
 	/**
-	 * Struct constructor, returns the default style. */
+	 * Constructor, returns a new Style with all properties set to their defaults. */
 	static Style opCall()
 	{	Style result;
 		return result;
 	}
 	
-
 	/**
 	 * Set properties from a string of text, css style.
 	 * TODO: Fix this function so it cleans up its garbage.
@@ -282,13 +280,13 @@ struct Style
 			return;
 
 		// Parse and apply the style
-		scope styles = rxStyles.split(style);
+		scope styles = Cache.getRegex(";\\s*").split(style);
 		foreach (exp; styles)
-		{	char[][] tokens = rxTokens.split(exp);
+		{	char[][] tokens = Cache.getRegex(":\\s*").split(exp);
 			if (tokens.length<2)
 				continue;
 			char[] property = toLower(substitute(tokens[0], "-", "")); // garbage?
-			tokens = rxProperties.split(tokens[1]);
+			tokens = Cache.getRegex("\\s+").split(tokens[1]);
 			
 			// TODO: account for parse errors.			
 			switch (property)
@@ -343,6 +341,7 @@ struct Style
 				
 				case "lineheight":			lineHeight = tokens[0]; break;
 				
+				case "textalign":			textAlign = translateTextAlign[tokens[0]]; break;
 				case "textdecoration":		textDecoration = translateTextDecoration[tokens[0]]; break;
 				
 				case "zIndex":				zIndex = to!(int)(tokens[0]); break;
@@ -355,7 +354,7 @@ struct Style
 	}
 
 	/**
-	 * Get a string representation of this style.
+	 * Get string of css text storing the values of this style.
 	 * Only the properties that differ from the defaults will be returned. */
 	char[] toString()
 	{	Style def; // default style, req'd by styleCompare
@@ -396,16 +395,17 @@ struct Style
 		return join(result, "; ");
 	}
 
-	// Translation tables
+	// Translation tables (must be here to avoid fwd reference errors)
+	private static TextAlign[char[]] translateTextAlign;
 	private static byte[char[]] translateTextDecoration;
 	private static FontStyle[char[]] translateFontStyle;
 	private static FontWeight[char[]] translateFontWeight;
 	static this()
-	{	translateTextDecoration = [cast(char[])"none":0, "underline": 1, "overline": 2, "line-through": 3];
+	{	translateTextAlign      = [cast(char[])"left":TextAlign.LEFT, "center": TextAlign.CENTER, "right": TextAlign.RIGHT, "justify": TextAlign.JUSTIFY];
+		translateTextDecoration = [cast(char[])"none":0, "underline": 1, "overline": 2, "line-through": 3];
 		translateFontStyle      = [cast(char[])"normal":FontStyle.NORMAL, "italic": FontStyle.ITALIC, "oblique": FontStyle.ITALIC];
 		translateFontWeight     = [cast(char[])"normal":FontWeight.NORMAL, "bold": FontWeight.BOLD];
 	}
-	
 }
 
 /*

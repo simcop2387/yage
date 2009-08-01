@@ -148,6 +148,11 @@ class Image : Resource
 	 *     v = A value betwen 0 and 1.*/
 	Pixel4 bilinearFilter(float u, float v)
 	{	
+		//if(0>u || u>1 ||0>v || v>1)
+		//	std.stdio.writefln("%s %s", u, v);
+		Pixel4 result;	
+		if (!(0<=u && u<=1) || !(0<=v && v<=1))
+			return result;
 		u *= (width-1);
 		v *= (height-1);
 		int x = cast(int)u; // should be the same as floor(u)
@@ -158,8 +163,6 @@ class Image : Resource
 		float v_opposite = 1 - v_ratio;
 
 		// Loop through each channel.
-		Pixel4 result;
-		
 		for (int i=0; i<channels; i++)
 		{	if (x<width-1 && y<height-1)	// Different calculations depending on what's inside array bounds.
 				result.v[i] = cast(ubyte)(
@@ -178,7 +181,37 @@ class Image : Resource
 		}
 		return result;			
 	}
-
+			
+	/**
+	 * Crop the image.
+	 * The four parameters define a box, in coordinates relative to the top left of the source image.
+	 * For example, crop(0, 0, width, height) would return an exact copy of the original image.
+	 * Params:
+	 *     left = left side of the cropping box.  This and the other parameters can be positive or negative.
+	 *     top =  top side of the cropping box.
+	 *     right = right side of the cropping box
+	 *     bottom = bottom side of the cropping box.
+	 * Returns: A new image of the size right-left, bottom-top */
+	Image crop(int left, int top, int right, int bottom)
+	{
+		Image result = new Image(channels, right-left, bottom-top);
+		for (int x=left; x<right; x++)  // x from 0 to 4
+			for (int y=top; y<bottom; y++) // y from 0 to 4
+				if (0<=x && x<width && 0<=y && y<height) // if inside source image
+					if (0<=x && x<result.width && 0<=y && y<result.height) // if inside dest. image.
+					{	
+						int s = ((y-top)*width+(x-left))*channels;
+						int d = (y*result.width+x)*channels;
+						result.data[d..d+channels] = data[s..s+channels];
+					}
+		return result;
+	}
+	unittest {
+		auto img = new Image(3, 4, 5);
+		img = img.crop(0, 0, 12, 6);
+		assert(img.getWidth() == 12);
+		assert(img.getHeight() == 6);
+	}
 
 	/**
 	 * Return the raw image data.
@@ -204,26 +237,32 @@ class Image : Resource
 	
 
 	/// Get or set the ith pixel in the image.
-	ubyte[] opIndex(size_t i)
-	in { assert(i<width*height); }
+	ubyte[] opIndex(int i)
+	in { assert(0<=i && i<width*height); }
 	body
 	{	return data[i..(i+channels)];
 	}
-	ubyte[] opIndexAssign(ubyte[] val, size_t i) /// ditto
-	in { assert(i<width*height); }
+	ubyte[] opIndexAssign(ubyte[] val, int i) /// ditto
+	in { assert(0<=i && i<width*height); }
 	body
 	{	return data[i..(i+channels)] = val[0..channels];
 	}
 
 	/// Get or set the pixel at the given coordinates.
-	ubyte[] opIndex(size_t x, size_t y)
-	in { assert(x<width && y<height); }
+	ubyte[] opIndex(int x, int y)
+	in { 
+		assert(0 <= x && x<width); 
+		assert(0 <= y && y<height);
+	}
 	body
 	{	int i = (y*width+x)*channels;
 		return data[i..(i+channels)];
 	}
-	ubyte[] opIndexAssign(ubyte[] val, size_t x, size_t y)	/// ditto
-	in { assert(x<width && y<height); }
+	ubyte[] opIndexAssign(ubyte[] val, int x, int y) /// ditto
+	in { 
+		assert(0 <= x && x<width); 
+		assert(0 <= y && y<height); 
+	}
 	body
 	{	int i = (y*width+x)*channels;
 		return data[i..(i+channels)] = val[0..channels];
@@ -231,10 +270,16 @@ class Image : Resource
 
 	/**
 	 * Paste another image on top of this one.
-	 * This does not make a copy. 
-	 * This also does not perform proper overlays of images with an alpha channel.  */
+	 * This operation is performed in-place and does not generate any heap activity.
+	 * This also does not perform proper overlays of images with an alpha channel.
+	 * Params:
+	 *     img = Image to add to this one.
+	 *     xoffset = x-offset of img from this image's left side.  Out of bounds values will be cropped.
+	 *     yoffset = y-offset of img from this image's top side.  Out of bounds values will be cropped. */
 	void overlay(Image img, int xoffset=0, int yoffset=0)
-	{	for (int y=0; y<img.height; y++)
+	{	assert(channels==img.channels);
+	
+		for (int y=0; y<img.height; y++)
 		{	int yoffsety = yoffset+y;
 			if (yoffsety < height && yoffsety > 0)
 			{	for (int x=0; x<img.width; x++) // TODO: Replace with array slice copy.
@@ -244,9 +289,16 @@ class Image : Resource
 		}	}	}
 	}
 	
+	/**
+	 * Overlay another image on top of this one, adding color channel values.
+	 * This operation is performed in-place and does not generate any heap activity.
+	 * Params:
+	 *     img = Image to add to this one.
+	 *     xoffset = x-offset of img from this image's left side.  Out of bounds values will be cropped.
+	 *     yoffset = y-offset of img from this image's top side.  Out of bounds values will be cropped. */
 	void add(Image img, int xoffset=0, int yoffset=0)
-	{	
-		assert(channels == img.channels);
+	{	assert(channels == img.channels);
+	
 		if (this == img)
 			img.data = img.data.dup; // TODO: Use a lookaside instead
 		
@@ -268,13 +320,13 @@ class Image : Resource
 
 	/**
 	 * Convert a monochrome image to color and paste it over this image.
-	 * This is performed in-place.  No copy is returned.
+	 * This operation is performed in-place and does not generate any heap activity.
 	 * This somewhat specialized function is used to accelerate text rendering.
 	 * Params:
 	 *     img = a monochrome image 
 	 *     color = img will be converted to an RGBA image of this color before pasting.
-	 *     xoffset = x offset of the pasted images from this images left side.
-	 *     yoffset = y offset of the pasted image from this image's top side.
+	 *     xoffset = x-offset of img from this image's left side.  Out of bounds values will be cropped.
+	 *     yoffset = y-offset of img from this image's top side.  Out of bounds values will be cropped.
 	 *     skew = horizontally skew the overlayed image by this amount.  .5 will skew it by 45 degrees
 	 * TODO: Make the top go to the right instead of taking the bottom to the left
 	 */
@@ -288,7 +340,7 @@ class Image : Resource
 		for (int y=max(yoffset, 0); y < ymax; y++)
 		{	assert(0 <= y && y<height);
 		
-			float skewScaled = (img.height- (y-yoffset)) * skew; // goes from 0 to 1
+			float skewScaled = (img.height - (y-yoffset)) * skew; // goes from 0 to 1
 			
 			int xmax = max(min(img.width+xoffset, width), 0);
 			for (int x=max(xoffset, 0); x<xmax; x++)
@@ -309,7 +361,6 @@ class Image : Resource
 					// This is my own blending algorithm, can it be further optimized?
 					int reciprocal = 0xFFFF / src_dest_ratio; // calculate reciprocal for fast integer division
 															// A lookup table of reciprocals could make this faster.
-
 					data[dest  ] = ((color.ub[0]*src_alpha + data[dest  ]*dst_ratio) * reciprocal)>>16; // colors
 					data[dest+1] = ((color.ub[1]*src_alpha + data[dest+1]*dst_ratio) * reciprocal)>>16;
 					data[dest+2] = ((color.ub[2]*src_alpha + data[dest+2]*dst_ratio) * reciprocal)>>16;
@@ -338,7 +389,9 @@ class Image : Resource
 	 *     height = The new height.  If 0, height will be calculated automatically with aspect ratio maintained.
 	 * Returns: A new image of the same type and of the new size, or an exact copy if the dimensions are the same. */
 	Image resize(int width, int height=0)
-	{	Image result = new Image();
+	{	assert(this.width > 0);
+		
+		Image result = new Image();
 		result.width = width;
 		if (height)
 			result.height = height;
@@ -346,7 +399,7 @@ class Image : Resource
 			result.height = width*this.height/this.width;		
 		result.channels = channels;
 		
-		// Return a copy if there's nothing to resize.
+		// Return a copy if there's nothing to resize, for consistency's sake
 		if (result.width == this.width && result.height == this.height)
 		{	result.data = this.data.dup;
 			return this;
@@ -355,7 +408,7 @@ class Image : Resource
 		result.data.length = width*height*channels;
 		float width1 = 1/(width-1.0f);
 		float height1= 1/(height-1.0f);		
-		
+
 		for (int y=0; y<height; y++)
 			for (int x=0; x<width; x++)
 			{	//int i = (y*this.width+x)*channels;
@@ -363,9 +416,9 @@ class Image : Resource
 			}
 		
 		return result;
-	} 
-
-	// TODO: modify this to return a new image in the given format.
+	}
+	
+	// Unfinished and untested.  TODO: modify this to return a new image in the given format.
 	Image setFormat(int channels)
 	{	if (channels == this.channels)
 			return this;
@@ -427,50 +480,7 @@ class Image : Resource
 		
 		return this;
 	}
-	
-	void setChannel(int c, Image image)
-	in {
-		assert(image.channels==1);
-		assert(c<=channels);
-		assert(image.width==width);
-		assert(image.height==height);
-	} body
-	{	for (int i=0; i<image.data.length; i++)
-			data[i*channels+c] = image.data[i];
-	}
-	
-	
-	/**
-	 * Crop the image.
-	 * The four parameters define a box, in coordinates relative to the top left of the source image.
-	 * For example, crop(0, 0, width, height) would return an exact copy of the original image.
-	 * Params:
-	 *     left = left side of the cropping box.  This and the other parameters can be positive or negative.
-	 *     top =  top side of the cropping box.
-	 *     right = right side of the cropping box
-	 *     bottom = bottom side of the cropping box.
-	 * Returns: A new image of the size right-left, bottom-top */
-	Image crop(int left, int top, int right, int bottom)
-	{
-		Image result = new Image(channels, right-left, bottom-top);
-		for (int x=left; x<right; x++)  // x from 0 to 4
-			for (int y=top; y<bottom; y++) // y from 0 to 4
-				if (0<=x && x<width && 0<=y && y<height) // if inside source image
-					if (0<=x && x<result.width && 0<=y && y<result.height) // if inside dest. image.
-					{	
-						int s = ((y-top)*width+(x-left))*channels;
-						int d = (y*result.width+x)*channels;
-						result.data[d..d+channels] = data[s..s+channels];
-					}
-		return result;
-	}
-	unittest {
-		auto img = new Image(3, 4, 5);
-		img = img.crop(0, 0, 12, 6);
-		assert(img.getWidth() == 12);
-		assert(img.getHeight() == 6);
-	}
-		
+
 	/**
 	 * Return a new image that is a sub-image of this image.
 	 * TODO: Replace this with crop.

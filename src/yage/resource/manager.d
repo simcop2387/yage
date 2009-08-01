@@ -6,16 +6,18 @@
 
 module yage.resource.manager;
 
+import tango.text.Unicode;
+
 import yage.core.array;
 import yage.core.misc;
-import yage.core.object2;;
+import yage.core.object2;
+import yage.core.timer;
 import yage.resource.font;
 import yage.resource.model;
 import yage.resource.material;
 import yage.resource.texture;
 import yage.resource.shader;
 import yage.resource.sound;
-import yage.core.timer;
 import yage.system.log;
 
 /**
@@ -47,7 +49,7 @@ abstract class ResourceManager
 	 * The number of paths defined after adding the path.*/
 	static int addPath(char[] path)
 	{	version (Windows)
-			path = tolower(path);
+			path = toLower(path);
 		if (path[length-1] != std.path.sep[0])
 			path ~= std.path.sep;
 		paths ~= path;
@@ -71,8 +73,8 @@ abstract class ResourceManager
 	 * Throws: A ResourceManagerException if the path could not be resolved. */
 	static char[] resolvePath(char[] path, char[] current_dir="")
 	{	version (Windows)
-		{	path = tolower(path);
-			current_dir = tolower(current_dir);
+		{	path = toLower(path);
+			current_dir = toLower(current_dir);
 		}
 		if (std.file.exists(std.path.join(current_dir, path)))
 			return cleanPath(current_dir~path);
@@ -85,7 +87,7 @@ abstract class ResourceManager
 	/// Remove a path from the array of resource search paths.
 	static bool removePath(char[] path)
 	{	version (Windows)
-			path = tolower(path);
+			path = toLower(path);
 		for (int i=0; i<paths.length; i++)
 			if (paths[i]==path)
 			{	yage.core.array.remove(paths, i);

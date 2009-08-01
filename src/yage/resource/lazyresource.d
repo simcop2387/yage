@@ -12,9 +12,9 @@ import yage.system.system;
 
 
 /**
+ * Deprecated:  Alternatively, the renderer itself should be lazy and only load recources during rendering.
  * This class manages a queue of operations that can only be performed in the rendering thread.
- * This should eventually be replaced with a glContext that manages openGL state and can allow synchronized OpenGL calls from any thread.
- * Alternatively, the renderer itself should be lazy and only load recources during rendering? */
+ * This should eventually be replaced with a glContext that manages openGL state and can allow synchronized OpenGL calls from any thread.*/
 class LazyResourceManager
 {
 	protected static Closure[] queue;

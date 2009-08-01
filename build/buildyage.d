@@ -253,7 +253,7 @@ bool customBuild(char[][] args)
 	if (!silent)
 	{	System.trace("Building Yage...");
 		System.trace("If you're curious, the options are:");
-		System.trace("   -ddoc      Generate documentation in doc/api");
+		System.trace("   -ddoc      Generate documentation in the doc folder");
 		System.trace("   -debug     Include debugging symbols.");
 		System.trace("   -profile   Compile in profiling code.");
 		System.trace("   -release   Optimize, inline expand functions, and remove unit tests/asserts.");
@@ -365,7 +365,7 @@ struct CDC
 			sources.sort;
 			foreach(char[] src; sources)
 			{	src = String.split(src, "\\.")[0]; // get filename
-				src = String.replace(src, FS.sep, "."); //
+				src = String.replace(String.replace(src, "/", "."), "\\", ".");
 				modules ~= "\t$(MODULE "~src~")\r\n";
 			}
 			FS.write("modules.ddoc", modules);
@@ -430,13 +430,15 @@ struct CDC
 			// Move all html files in doc_path to the doc output folder and rename with the "package.module" naming convention.
 			if (co.D)
 			{	foreach (char[] src; sources)
-				{	if (src[$-2..$] != ".d")
+				{	
+					if (src[$-2..$] != ".d")
 						continue;
 
 					char[] html = src[0..$-2] ~ ".html";
-					char[] dest = String.replace(html, FS.sep, ".");
+					char[] dest = String.replace(String.replace(html, "/", "."), "\\", ".");
 					if (co.Dd.length)
-					{	dest = co.Dd ~ FS.sep ~ dest;
+					{	
+						dest = co.Dd ~ FS.sep ~ dest;
 						html = co.Dd ~ FS.sep ~ html;
 					}
 					if (html != dest) // TODO: Delete remaining folders where source files were placed.
@@ -471,8 +473,9 @@ struct CDC
 	{	try {
 			version (Windows)
 			{	FS.write("compile", String.join(arguments, " "));
+				scope(exit)
+					FS.remove("compile");
 				System.execute(compiler~" ", ["@compile"]);
-				FS.remove("compile");
 			} else
 				System.execute(compiler, arguments);
 		} catch (ProcessException e)

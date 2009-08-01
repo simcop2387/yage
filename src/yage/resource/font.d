@@ -8,12 +8,13 @@ module yage.resource.font;
 
 import tango.io.Stdout;
 import tango.text.convert.Utf;
+import tango.math.Math;
 import derelict.freetype.ft;
 import yage.core.math.math;
 import yage.core.timer;
 import yage.core.types;
 import yage.core.parse;
-import yage.core.object2;;
+import yage.core.object2;
 import yage.resource.image;
 import yage.resource.manager;
 import yage.resource.resource;
@@ -133,6 +134,12 @@ class Font : Resource
 		else
 		{	Letter result;
 		
+			// Use regular or italic (shear) matrix?
+			FT_Matrix matrix;
+			matrix.xx = matrix.yy = 0x10000; // 65k (half the int bits are used as decimal)
+			matrix.xy = italic ? cast(int)(-sin(-.33333) * 0x10000) : 0; 	
+			FT_Set_Transform(face, &matrix, null);
+			
 			// Give our font size to freetype.
 			scope error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
 			if (error)
@@ -145,23 +152,26 @@ class Font : Resource
 			
 			scope bitmap = face.glyph.bitmap;
 			ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				
-			
+					
 			// Set the values of the letter.
 			if (bold)
 			{	int boldness = width/8; // adjust this for boldness amount
 				result.advanceX += boldness;
 				
-				result.image = new Image(1, bitmap.width+boldness, bitmap.rows);				
-				scope embolden = new Image(data, 1, bitmap.width, bitmap.rows);
-				for (int i=0; i<=boldness; i++)
-					result.image.add(embolden, i, 0);
+				result.image = new Image(1, bitmap.width+boldness, bitmap.rows);
+				if (boldness > 0)
+				{	scope embolden = new Image(data, 1, bitmap.width, bitmap.rows);
+					for (int i=0; i<=boldness; i++)
+						result.image.add(embolden, i, 0);
+				}
 			}
 			else
 				result.image = new Image(data.dup, 1, bitmap.width, bitmap.rows);
+			
 			result.top = face.glyph.bitmap_top;
 			result.left = face.glyph.bitmap_left;
-			result.advanceX += face.glyph.advance.x>>6; // fast divide by 64
-			result.advanceY = face.glyph.advance.y>>6;
+			result.advanceX = face.glyph.advance.x>>6; // fast divide by 64
+			result.advanceY = -face.glyph.advance.y>>6;
 			result.letter = letter;
 			
 			return cache[key] = result;
