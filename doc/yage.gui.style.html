@@ -87,9 +87,8 @@ Eric Poggel
  
 <br><br>
 
+$(DDOC_MODULE_MEMBERS 
 
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">struct 
 <span class="currsymbol">Value</span>
@@ -105,28 +104,6 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
-<span class="currsymbol">value</span>
-<script type="text/javascript">explorer.outline.addDecl('value');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">ubyte 
-<span class="currsymbol">unit</span>
-<script type="text/javascript">explorer.outline.addDecl('unit');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Value 
 <span class="currsymbol">opAssign</span>
 <script type="text/javascript">explorer.outline.addDecl('opAssign');</script>
@@ -141,19 +118,10 @@ Eric Poggel
 <dd>Allow assignments from ints, floats and strings.
 <br><br>
 <b>Example:</b><br>
-<pre class="d_code"> Value width;
- width = <span style="color: purple">"3%"</span>;
-</pre>
-	 
- ditto
-<br><br>
-
- Allow assignments from ints, floats and strings.
-<br><br>
-<b>Example:</b><br>
-<pre class="d_code"> Value width;
- width = <span style="color: purple">"3%"</span>;
-</pre>
+<pre class="d_code"> Value height;
+ height = 3; <span style="color: green">// width is 3 pixels
+</span> height = <span style="color: purple">"3%"</span>; <span style="color: green">// width is 3% of parent's height
+</span></pre>
 	 
 <br><br>
 
@@ -163,12 +131,28 @@ Eric Poggel
 <dt><span class="decl">static Value 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
-(float <span class="funcparam">v</span>, ubyte <span class="funcparam">unit</span> = cast(ubyte)0);
+(float <span class="funcparam">v</span>, bool <span class="funcparam">isPercent</span> = false);
+<br>static Value 
+<span class="currsymbol">opCall</span>
+<script type="text/javascript">explorer.outline.addDecl('opCall');</script>
+(char[] <span class="funcparam">v</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Allows for compile time initialization 
+<dd>Constructor for initializing the values
 <br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">v</span></td>
+
+               
+<td>the value to set</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">isPercent</span></td>
+
+               
+<td>If precent, <span class="funcparam">v</span> will be based on the Surface parent's value from 0 to 100%</td></tr>
+</table><br>
 
 </dd>
 
@@ -177,31 +161,23 @@ Eric Poggel
 <span class="currsymbol">toPx</span>
 <script type="text/javascript">explorer.outline.addDecl('toPx');</script>
 (float <span class="funcparam">target</span>, bool <span class="funcparam">allow_nan</span> = true);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the value in terms of pixels, if it's not already a pixel value
- If it's in percent, that percentage of <span class="funcparam">target</span> will be returned. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">float 
+<br>float 
 <span class="currsymbol">toPercent</span>
 <script type="text/javascript">explorer.outline.addDecl('toPercent');</script>
 (float <span class="funcparam">target</span>, bool <span class="funcparam">allow_nan</span> = true);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the value in terms of percent, if it's not already a percent value.
+<dd>Get the value in terms of pixels or percent, if it's not already a percent value.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
 <td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">target</span></td>
 
                
-<td>If it's a pixel value, it will be converted to a percentage in terms of this width/height. </td></tr>
+<td>If the value is a pixel value, it will be converted to a percentage in terms of this width/height.
+     <span class="funcparam">allow_nan</span> If false
+, nan's will be converted to 0.</td></tr>
 </table><br>
 
 </dd>
@@ -233,10 +209,9 @@ The value as it would be printed in a CSS string.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Specifies the style of a Surface.
+<dd>This struct is used to specify the style of a Surface.
  Inspired by the <a href="http://www.w3schools.com/css/css_reference.asp">CSS specification</a>.
-<br><br>
-This struct is not fully documented. 
+ Much of htis functionality is still unfinished. 
 <br><br>
 
 
@@ -250,7 +225,7 @@ This struct is not fully documented.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Enumeration values used to set units for measurements, such as width, padding, etc. 
+<dd>Values used to set units for measurements, such as width, padding, etc. 
 <br><br>
 
 
@@ -260,16 +235,184 @@ This struct is not fully documented.
 <dt><span class="decl">
 <span class="currsymbol">PX</span>
 <script type="text/javascript">explorer.outline.addDecl('PX');</script>
+<br>
+<span class="currsymbol">PERCENT</span>
+<script type="text/javascript">explorer.outline.addDecl('PERCENT');</script>
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd><br><br>
 </dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">TextAlign</span>
+<script type="text/javascript">explorer.outline.addDecl('TextAlign');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>These are the possible values that can be assigned to the textAlign property.
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">
-<span class="currsymbol">PERCENT</span>
-<script type="text/javascript">explorer.outline.addDecl('PERCENT');</script>
+<span class="currsymbol">LEFT</span>
+<script type="text/javascript">explorer.outline.addDecl('LEFT');</script>
+<br>
+<span class="currsymbol">CENTER</span>
+<script type="text/javascript">explorer.outline.addDecl('CENTER');</script>
+<br>
+<span class="currsymbol">RIGHT</span>
+<script type="text/javascript">explorer.outline.addDecl('RIGHT');</script>
+<br>
+<span class="currsymbol">JUSTIFY</span>
+<script type="text/javascript">explorer.outline.addDecl('JUSTIFY');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">TextDecoration</span>
+<script type="text/javascript">explorer.outline.addDecl('TextDecoration');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>These are the possible values that can be assigned to the textDecoration property.
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">NONE</span>
+<script type="text/javascript">explorer.outline.addDecl('NONE');</script>
+<br>
+<span class="currsymbol">UNDERLINE</span>
+<script type="text/javascript">explorer.outline.addDecl('UNDERLINE');</script>
+<br>
+<span class="currsymbol">OVERLINE</span>
+<script type="text/javascript">explorer.outline.addDecl('OVERLINE');</script>
+<br>
+<span class="currsymbol">LINETHROUGH</span>
+<script type="text/javascript">explorer.outline.addDecl('LINETHROUGH');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">BorderImageStyle</span>
+<script type="text/javascript">explorer.outline.addDecl('BorderImageStyle');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>These are the possible values that can be assigned to the borderImagestyle property.
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">STRETCH</span>
+<script type="text/javascript">explorer.outline.addDecl('STRETCH');</script>
+<br>
+<span class="currsymbol">ROUND</span>
+<script type="text/javascript">explorer.outline.addDecl('ROUND');</script>
+<br>
+<span class="currsymbol">REPEAT</span>
+<script type="text/javascript">explorer.outline.addDecl('REPEAT');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">FontStyle</span>
+<script type="text/javascript">explorer.outline.addDecl('FontStyle');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>These are the possible values that can be assigned to the fontStyle property.
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">NORMAL</span>
+<script type="text/javascript">explorer.outline.addDecl('NORMAL');</script>
+<br>
+<span class="currsymbol">ITALIC</span>
+<script type="text/javascript">explorer.outline.addDecl('ITALIC');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">FontWeight</span>
+<script type="text/javascript">explorer.outline.addDecl('FontWeight');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>These are the possible values that can be assigned to the fontWeight property.
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">NORMAL</span>
+<script type="text/javascript">explorer.outline.addDecl('NORMAL');</script>
+<br>
+<span class="currsymbol">BOLD</span>
+<script type="text/javascript">explorer.outline.addDecl('BOLD');</script>
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -307,6 +450,303 @@ This struct is not fully documented.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Value 
+<span class="currsymbol">width</span>
+<script type="text/javascript">explorer.outline.addDecl('width');</script>
+;
+<br>Value 
+<span class="currsymbol">height</span>
+<script type="text/javascript">explorer.outline.addDecl('height');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Width and height of the Surface.  Use float.nan to leave unset.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Value 
+<span class="currsymbol">borderTopWidth</span>
+<script type="text/javascript">explorer.outline.addDecl('borderTopWidth');</script>
+;
+<br>Value 
+<span class="currsymbol">borderRightWidth</span>
+<script type="text/javascript">explorer.outline.addDecl('borderRightWidth');</script>
+;
+<br>Value 
+<span class="currsymbol">borderBottomWidth</span>
+<script type="text/javascript">explorer.outline.addDecl('borderBottomWidth');</script>
+;
+<br>Value 
+<span class="currsymbol">borderLeftWidth</span>
+<script type="text/javascript">explorer.outline.addDecl('borderLeftWidth');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Border widths
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Value[4u] 
+<span class="currsymbol">borderWidth</span>
+<script type="text/javascript">explorer.outline.addDecl('borderWidth');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set all four border widths in one array.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Color 
+<span class="currsymbol">borderColorTop</span>
+<script type="text/javascript">explorer.outline.addDecl('borderColorTop');</script>
+;
+<br>Color 
+<span class="currsymbol">borderColorRight</span>
+<script type="text/javascript">explorer.outline.addDecl('borderColorRight');</script>
+;
+<br>Color 
+<span class="currsymbol">borderColorBottom</span>
+<script type="text/javascript">explorer.outline.addDecl('borderColorBottom');</script>
+;
+<br>Color 
+<span class="currsymbol">borderColorLeft</span>
+<script type="text/javascript">explorer.outline.addDecl('borderColorLeft');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Border colors
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Color[4u] 
+<span class="currsymbol">borderColor</span>
+<script type="text/javascript">explorer.outline.addDecl('borderColor');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set all four border colors in one array.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">GPUTexture 
+<span class="currsymbol">borderTopImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderTopImage');</script>
+;
+<br>GPUTexture 
+<span class="currsymbol">borderRightImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderRightImage');</script>
+;
+<br>GPUTexture 
+<span class="currsymbol">borderBottomImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderBottomImage');</script>
+;
+<br>GPUTexture 
+<span class="currsymbol">borderLeftImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderLeftImage');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Border Images (TODO: support border-style and border-image-widths?)
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">GPUTexture[4u] 
+<span class="currsymbol">borderImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderImage');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the four top/right/bottom/left border images in one array.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">GPUTexture 
+<span class="currsymbol">borderCenterImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderCenterImage');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Border center image (not a part of CSS3.
+)
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">GPUTexture 
+<span class="currsymbol">borderTopLeftImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderTopLeftImage');</script>
+;
+<br>GPUTexture 
+<span class="currsymbol">borderTopRightImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderTopRightImage');</script>
+;
+<br>GPUTexture 
+<span class="currsymbol">borderBottomLeftImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderBottomLeftImage');</script>
+;
+<br>GPUTexture 
+<span class="currsymbol">borderBottomRightImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderBottomRightImage');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Border corner images
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">GPUTexture[4u] 
+<span class="currsymbol">borderCornerImage</span>
+<script type="text/javascript">explorer.outline.addDecl('borderCornerImage');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set the four border corner images images in one array.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Value 
+<span class="currsymbol">paddingTop</span>
+<script type="text/javascript">explorer.outline.addDecl('paddingTop');</script>
+;
+<br>Value 
+<span class="currsymbol">paddingRight</span>
+<script type="text/javascript">explorer.outline.addDecl('paddingRight');</script>
+;
+<br>Value 
+<span class="currsymbol">paddingBottom</span>
+<script type="text/javascript">explorer.outline.addDecl('paddingBottom');</script>
+;
+<br>Value 
+<span class="currsymbol">paddingLeft</span>
+<script type="text/javascript">explorer.outline.addDecl('paddingLeft');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Padding (the space inside the border surrounding any text or children)
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Value[4u] 
+<span class="currsymbol">padding</span>
+<script type="text/javascript">explorer.outline.addDecl('padding');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set all four 
+<span class="currsymbol">padding</span>
+<script type="text/javascript">explorer.outline.addDecl('padding');</script>
+ sizes in one array.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">GPUTexture 
+<span class="currsymbol">backgroundImage</span>
+<script type="text/javascript">explorer.outline.addDecl('backgroundImage');</script>
+;
+<br>Color 
+<span class="currsymbol">backgroundColor</span>
+<script type="text/javascript">explorer.outline.addDecl('backgroundColor');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Background image and color.  backgroundColor is drawn first, with 
+<span class="currsymbol">backgroundImage</span>
+<script type="text/javascript">explorer.outline.addDecl('backgroundImage');</script>
+ second, then borderImage on top.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Font 
+<span class="currsymbol">fontFamily</span>
+<script type="text/javascript">explorer.outline.addDecl('fontFamily');</script>
+;
+<br>Value 
+<span class="currsymbol">fontSize</span>
+<script type="text/javascript">explorer.outline.addDecl('fontSize');</script>
+;
+<br>FontStyle 
+<span class="currsymbol">fontStyle</span>
+<script type="text/javascript">explorer.outline.addDecl('fontStyle');</script>
+;
+<br>FontWeight 
+<span class="currsymbol">fontWeight</span>
+<script type="text/javascript">explorer.outline.addDecl('fontWeight');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Font properties
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Color 
+<span class="currsymbol">color</span>
+<script type="text/javascript">explorer.outline.addDecl('color');</script>
+;
+<br>TextAlign 
+<span class="currsymbol">textAlign</span>
+<script type="text/javascript">explorer.outline.addDecl('textAlign');</script>
+;
+<br>byte 
+<span class="currsymbol">textDecoration</span>
+<script type="text/javascript">explorer.outline.addDecl('textDecoration');</script>
+;
+<br>Value 
+<span class="currsymbol">lineHeight</span>
+<script type="text/javascript">explorer.outline.addDecl('lineHeight');</script>
+;
+<br>Value 
+<span class="currsymbol">letterSpacing</span>
+<script type="text/javascript">explorer.outline.addDecl('letterSpacing');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Text properties
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">bool 
 <span class="currsymbol">visible</span>
 <script type="text/javascript">explorer.outline.addDecl('visible');</script>
@@ -326,6 +766,19 @@ This struct is not fully documented.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">zIndex</span>
+<script type="text/javascript">explorer.outline.addDecl('zIndex');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Sets the stack order of the surface relative to its siblings.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static Style 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
@@ -333,7 +786,7 @@ This struct is not fully documented.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Struct constructor, returns the default style. 
+<dd>Constructor, returns a new Style with all properties set to their defaults. 
 <br><br>
 
 </dd>
@@ -368,20 +821,17 @@ Fix this function so it cleans up its garbage.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get a string representation of this style.
+<dd>Get string of css text storing the values of this style.
  Only the properties that differ from the defaults will be returned. 
 <br><br>
 
 </dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
 </dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
 
+</dd>
 </td></tr>
 				</table>
 			</div>
@@ -392,7 +842,7 @@ Fix this function so it cleans up its garbage.
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul  4 17:40:05 2009
+		on Sat Aug  1 15:18:32 2009
 
 	</div>
 	
@@ -412,6 +862,8 @@ Fix this function so it cleans up its garbage.
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.async");
+
+	explorer.packageExplorer.addModule("yage.core.cache");
 
 	explorer.packageExplorer.addModule("yage.core.closure");
 
@@ -454,6 +906,8 @@ Fix this function so it cleans up its garbage.
 	explorer.packageExplorer.addModule("yage.gui.style");
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
+
+	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
 	explorer.packageExplorer.addModule("yage.gui.textlayout");
 

@@ -107,7 +107,10 @@ An RGB image will often be returned when loading grayscale images.  Use setForma
 
 <br><br>
 <b>TODO:</b><br>
-Add convolution support: http://www.php.net/manual/en/function.imageconvolution.php#77818 
+Add convolution support: http://www.php.net/manual/en/function.imageconvolution.php#77818
+<br><br>
+<b>TODO:</b><br>
+Convert to struct? 
 <br><br>
 
 
@@ -236,6 +239,49 @@ An image with the number of channels of the source image.  Paletted images are c
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Image 
+<span class="currsymbol">crop</span>
+<script type="text/javascript">explorer.outline.addDecl('crop');</script>
+(int <span class="funcparam">left</span>, int <span class="funcparam">top</span>, int <span class="funcparam">right</span>, int <span class="funcparam">bottom</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Crop the image.
+ The four parameters define a box, in coordinates relative to the <span class="funcparam">top</span> <span class="funcparam">left</span> of the source image.
+ For example, 
+<span class="currsymbol">crop</span>
+<script type="text/javascript">explorer.outline.addDecl('crop');</script>
+(0, 0, width, height) would return an exact copy of the original image.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">left</span></td>
+
+               
+<td><span class="funcparam">left</span> side of the cropping box.  This and the other parameters can be positive or negative.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">top</span></td>
+
+               
+<td><span class="funcparam">top</span> side of the cropping box.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">right</span></td>
+
+               
+<td><span class="funcparam">right</span> side of the cropping box</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">bottom</span></td>
+
+               
+<td><span class="funcparam">bottom</span> side of the cropping box.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+A new image of the size <span class="funcparam">right</span>-<span class="funcparam">left</span>, <span class="funcparam">bottom</span>-<span class="funcparam">top</span> 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">ubyte[] 
 <span class="currsymbol">getData</span>
 <script type="text/javascript">explorer.outline.addDecl('getData');</script>
@@ -294,11 +340,11 @@ An image with the number of channels of the source image.  Paletted images are c
 <dt><span class="decl">ubyte[] 
 <span class="currsymbol">opIndex</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
-(uint <span class="funcparam">i</span>);
+(int <span class="funcparam">i</span>);
 <br>ubyte[] 
 <span class="currsymbol">opIndexAssign</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndexAssign');</script>
-(ubyte[] <span class="funcparam">val</span>, uint <span class="funcparam">i</span>);
+(ubyte[] <span class="funcparam">val</span>, int <span class="funcparam">i</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -311,11 +357,11 @@ An image with the number of channels of the source image.  Paletted images are c
 <dt><span class="decl">ubyte[] 
 <span class="currsymbol">opIndex</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
-(uint <span class="funcparam">x</span>, uint <span class="funcparam">y</span>);
+(int <span class="funcparam">x</span>, int <span class="funcparam">y</span>);
 <br>ubyte[] 
 <span class="currsymbol">opIndexAssign</span>
 <script type="text/javascript">explorer.outline.addDecl('opIndexAssign');</script>
-(ubyte[] <span class="funcparam">val</span>, uint <span class="funcparam">x</span>, uint <span class="funcparam">y</span>);
+(ubyte[] <span class="funcparam">val</span>, int <span class="funcparam">x</span>, int <span class="funcparam">y</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -333,25 +379,73 @@ An image with the number of channels of the source image.  Paletted images are c
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Paste another image on top of this one.
- This does not make a copy.
- This also does not perform proper overlays of images with an alpha channel,
+ This operation is performed in-place and does not generate any heap activity.
+ This also does not perform proper overlays of images with an alpha channel.
 <br><br>
-<b>TODO:</b><br>
-Use overlayAndColor for the code needed to implement a correct RGBA solution. 
-<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">Image <span class="funcparam">img</span></td>
+
+               
+<td>Image to add to this one.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">xoffset</span></td>
+
+               
+<td>x-offset of <span class="funcparam">img</span> from this image's left side.  Out of bounds values will be cropped.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">yoffset</span></td>
+
+               
+<td>y-offset of <span class="funcparam">img</span> from this image's top side.  Out of bounds values will be cropped. </td></tr>
+</table><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">overlayAndColor</span>
-<script type="text/javascript">explorer.outline.addDecl('overlayAndColor');</script>
-(Image <span class="funcparam">img</span>, Color <span class="funcparam">color</span>, int <span class="funcparam">xoffset</span> = 0, int <span class="funcparam">yoffset</span> = 0);
+<span class="currsymbol">add</span>
+<script type="text/javascript">explorer.outline.addDecl('add');</script>
+(Image <span class="funcparam">img</span>, int <span class="funcparam">xoffset</span> = 0, int <span class="funcparam">yoffset</span> = 0);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Overlay another image on top of this one, adding color channel values.
+ This operation is performed in-place and does not generate any heap activity.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">Image <span class="funcparam">img</span></td>
+
+               
+<td>Image to 
+<span class="currsymbol">add</span>
+<script type="text/javascript">explorer.outline.addDecl('add');</script>
+ to this one.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">xoffset</span></td>
+
+               
+<td>x-offset of <span class="funcparam">img</span> from this image's left side.  Out of bounds values will be cropped.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">yoffset</span></td>
+
+               
+<td>y-offset of <span class="funcparam">img</span> from this image's top side.  Out of bounds values will be cropped. </td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">overlaySkewAndColor</span>
+<script type="text/javascript">explorer.outline.addDecl('overlaySkewAndColor');</script>
+(Image <span class="funcparam">img</span>, Color <span class="funcparam">color</span>, int <span class="funcparam">xoffset</span> = 0, int <span class="funcparam">yoffset</span> = 0, float <span class="funcparam">skew</span> = cast(float)0);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Convert a monochrome image to <span class="funcparam">color</span> and paste it over this image.
- This is performed in-place.  No copy is returned.
+ This operation is performed in-place and does not generate any heap activity.
  This somewhat specialized function is used to accelerate text rendering.
 <br><br>
 <b>Params:</b><br>
@@ -361,21 +455,30 @@ Use overlayAndColor for the code needed to implement a correct RGBA solution.
                
 <td>a monochrome image</td></tr>
 <tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">xoffset</span></td>
-
-               
-<td>x offset of the pasted images from this images left side.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">yoffset</span></td>
-
-               
-<td>y offset of the pasted image from this image's top side.</td></tr>
-<tr>
 <td nowrap valign="top" style="padding-right: 8px">Color <span class="funcparam">color</span></td>
 
                
 <td><span class="funcparam">img</span> will be converted to an RGBA image of this <span class="funcparam">color</span> before pasting.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">xoffset</span></td>
+
+               
+<td>x-offset of <span class="funcparam">img</span> from this image's left side.  Out of bounds values will be cropped.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">yoffset</span></td>
+
+               
+<td>y-offset of <span class="funcparam">img</span> from this image's top side.  Out of bounds values will be cropped.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">skew</span></td>
+
+               
+<td>horizontally <span class="funcparam">skew</span> the overlayed image by this amount.  .5 will <span class="funcparam">skew</span> it by 45 degrees</td></tr>
 </table><br>
+<b>TODO:</b><br>
+Make the top go to the right instead of taking the bottom to the left
+	 
+<br><br>
 
 </dd>
 
@@ -424,49 +527,6 @@ A new image of the same type and of the new size, or an exact copy if the dimens
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Image 
-<span class="currsymbol">crop</span>
-<script type="text/javascript">explorer.outline.addDecl('crop');</script>
-(int <span class="funcparam">left</span>, int <span class="funcparam">top</span>, int <span class="funcparam">right</span>, int <span class="funcparam">bottom</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Crop the image.
- The four parameters define a box, in coordinates relative to the <span class="funcparam">top</span> <span class="funcparam">left</span> of the source image.
- For example, 
-<span class="currsymbol">crop</span>
-<script type="text/javascript">explorer.outline.addDecl('crop');</script>
-(0, 0, width, height) would return an exact copy of the original image.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">left</span></td>
-
-               
-<td><span class="funcparam">left</span> side of the cropping box.  This and the other parameters can be positive or negative.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">top</span></td>
-
-               
-<td><span class="funcparam">top</span> side of the cropping box.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">right</span></td>
-
-               
-<td><span class="funcparam">right</span> side of the cropping box</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">bottom</span></td>
-
-               
-<td><span class="funcparam">bottom</span> side of the cropping box.</td></tr>
-</table><br>
-<b>Returns:</b><br>
-A new image of the size <span class="funcparam">right</span>-<span class="funcparam">left</span>, <span class="funcparam">bottom</span>-<span class="funcparam">top</span> 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Image 
 <span class="currsymbol">subImage</span>
 <script type="text/javascript">explorer.outline.addDecl('subImage');</script>
 (int <span class="funcparam">top</span>, int <span class="funcparam">left</span>, int <span class="funcparam">bottom</span>, int <span class="funcparam">right</span>);
@@ -502,7 +562,7 @@ Replace this with crop.
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul  4 17:40:05 2009
+		on Sat Aug  1 15:18:32 2009
 
 	</div>
 	
@@ -522,6 +582,8 @@ Replace this with crop.
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.async");
+
+	explorer.packageExplorer.addModule("yage.core.cache");
 
 	explorer.packageExplorer.addModule("yage.core.closure");
 
@@ -564,6 +626,8 @@ Replace this with crop.
 	explorer.packageExplorer.addModule("yage.gui.style");
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
+
+	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
 	explorer.packageExplorer.addModule("yage.gui.textlayout");
 

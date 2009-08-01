@@ -154,12 +154,12 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">short 
-<span class="currsymbol">advancex</span>
-<script type="text/javascript">explorer.outline.addDecl('advancex');</script>
+<span class="currsymbol">advanceX</span>
+<script type="text/javascript">explorer.outline.addDecl('advanceX');</script>
 ;
 <br>short 
-<span class="currsymbol">advancey</span>
-<script type="text/javascript">explorer.outline.addDecl('advancey');</script>
+<span class="currsymbol">advanceY</span>
+<script type="text/javascript">explorer.outline.addDecl('advanceY');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -265,7 +265,7 @@ Eric Poggel
 <dt><span class="decl">Letter 
 <span class="currsymbol">getLetter</span>
 <script type="text/javascript">explorer.outline.addDecl('getLetter');</script>
-(dchar <span class="funcparam">letter</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span> = 0);
+(dchar <span class="funcparam">letter</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span> = 0, bool <span class="funcparam">bold</span> = false, bool <span class="funcparam">italic</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -286,59 +286,32 @@ Eric Poggel
 <td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">height</span></td>
 
                
-<td>The vertical pixel size of the font to render, if 0 it will be the same as the <span class="funcparam">width</span>.. </td></tr>
+<td>The vertical pixel size of the font to render, if 0 it will be the same as the <span class="funcparam">width</span>.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">bold</span></td>
+
+               
+<td>Get a <span class="funcparam">bold</span> version of the <span class="funcparam">letter</span>.  This is performed by compositing the same glyph multiple times
+         horizontally and then cached.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">italic</span></td>
+
+               
+<td>Get an italicized version of the <span class="funcparam">letter</span>.  This is performed by an image skew and then cached. </td></tr>
 </table><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Image 
-<span class="currsymbol">render</span>
-<script type="text/javascript">explorer.outline.addDecl('render');</script>
-(char[] <span class="funcparam">utf8</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span> = 0, int <span class="funcparam">max_width</span> = 2147483647);
-<br>Image 
-<span class="currsymbol">render</span>
-<script type="text/javascript">explorer.outline.addDecl('render');</script>
-(dchar[] <span class="funcparam">text</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span> = 0, int <span class="funcparam">max_width</span> = 2147483647);
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Render an image from text, without consideration for multiple lines.
+<dd>Return the font filename.
 <br><br>
-<b>TODO:</b><br>
-Fix text from Right-to-Left languages being rendered backwards.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">text</td>
-
-               
-<td>A string of text to 
-<span class="currsymbol">render</span>
-<script type="text/javascript">explorer.outline.addDecl('render');</script>
-, can be utf-8 or unencoded unicode (dchar[]).</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">width</span></td>
-
-               
-<td>The horizontal pixel size of the font to 
-<span class="currsymbol">render</span>
-<script type="text/javascript">explorer.outline.addDecl('render');</script>
-.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">height</span></td>
-
-               
-<td>The vertical pixel size of the font to 
-<span class="currsymbol">render</span>
-<script type="text/javascript">explorer.outline.addDecl('render');</script>
-, if 0 it will be the same as the <span class="funcparam">width</span>.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">max_width</span></td>
-
-               
-<td>Maximum <span class="funcparam">width</span> of the result image in pixels. </td></tr>
-</table><br>
 
 </dd>
 </dl>
@@ -360,7 +333,7 @@ Fix text from Right-to-Left languages being rendered backwards.
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul  4 17:40:05 2009
+		on Sat Aug  1 15:18:32 2009
 
 	</div>
 	
@@ -380,6 +353,8 @@ Fix text from Right-to-Left languages being rendered backwards.
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.async");
+
+	explorer.packageExplorer.addModule("yage.core.cache");
 
 	explorer.packageExplorer.addModule("yage.core.closure");
 
@@ -422,6 +397,8 @@ Fix text from Right-to-Left languages being rendered backwards.
 	explorer.packageExplorer.addModule("yage.gui.style");
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
+
+	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
 	explorer.packageExplorer.addModule("yage.gui.textlayout");
 

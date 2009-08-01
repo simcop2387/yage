@@ -84,6 +84,9 @@ Eric Poggel
 <br><br>
 <b>License:</b><br>
 <a href="lgpl.txt">LGPL</a>
+<br><br>
+
+ This module is dedicated to my loving wife, Brittany Poggel.
  
 <br><br>
 
@@ -108,7 +111,7 @@ Eric Poggel
 <dt><span class="decl">static Image 
 <span class="currsymbol">render</span>
 <script type="text/javascript">explorer.outline.addDecl('render');</script>
-(char[] <span class="funcparam">text</span>, Style <span class="funcparam">style</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span>);
+(char[] <span class="funcparam">text</span>, Style <span class="funcparam">style</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span>, bool <span class="funcparam">pow2</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -154,10 +157,7 @@ Eric Poggel
 </table><br>
 <b>Returns:</b><br>
 An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter or equal to <span class="funcparam">height</span>.
-
-<br><br>
-<b>FIXME:</b><br>
-Trailing <br/> becomes a non-printable character printed as a square. 
+     Note that the same buffer is used for each return, so one will overwrite the previous.
 <br><br>
 
 </dd>
@@ -180,7 +180,7 @@ Trailing <br/> becomes a non-printable character printed as a square.
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul  4 17:40:05 2009
+		on Sat Aug  1 15:18:32 2009
 
 	</div>
 	
@@ -200,6 +200,8 @@ Trailing <br/> becomes a non-printable character printed as a square.
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.async");
+
+	explorer.packageExplorer.addModule("yage.core.cache");
 
 	explorer.packageExplorer.addModule("yage.core.closure");
 
@@ -242,6 +244,8 @@ Trailing <br/> becomes a non-printable character printed as a square.
 	explorer.packageExplorer.addModule("yage.gui.style");
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
+
+	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
 	explorer.packageExplorer.addModule("yage.gui.textlayout");
 

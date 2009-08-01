@@ -708,117 +708,6 @@ The surface, or self if no surface at the coordinates, or null
 
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
-<span class="currsymbol">SurfaceGeometry</span>
-<script type="text/javascript">explorer.outline.addDecl('SurfaceGeometry');</script>
-: yage.resource.geometry.Geometry;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>
-<span class="currsymbol">SurfaceGeometry</span>
-<script type="text/javascript">explorer.outline.addDecl('SurfaceGeometry');</script>
- defines vertices and meshes for drawing a surface, including borders/border textures.
- The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
- Nine 11 are defined, one for each border region and 3 for the center.
- 0_4__8__12      BR
- |\ |\ |\ |       BR
- 1\5\9\13      BR
- |\ |\ |\ |       BR
- 2\6\10\14      BR
- |\ |\ |\ |       BR
- 3\7\11\15      BR
-<br><br>
-Vertices used for center2 Mesh, which is used for background-color and the border-image center.
- 1618
- |\ |
- 17\19
-<br><br>
-
- Vertices used for text Mesh, which renders any text
- 2022
- |\ |
- 21\23
-<br><br>
-
- Rendering occurs in up to 4 passes.
- First, render the borders and center1 with colors enabled and texturing disabled, for the borders and background-color
- Second, render center2 with texturing enabled, for the background-image
- Third, render the borders and center3 with colors disabled and texturing enabled for the border-image.
- Finally, the text itself is rendered
-
-<br><br>
-<b>See:</b><br>
-<br><br>
-<b>http:</b><br>
-//www.w3.org/TR/css3-background/#the-border-image
- 
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Create the vertices, texture coordinates, meshes, and materials used for rendering a surface. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setColors</span>
-<script type="text/javascript">explorer.outline.addDecl('setColors');</script>
-(Color <span class="funcparam">center</span>, Color[4u] <span class="funcparam">borderColor</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the colors for the <span class="funcparam">center</span> and the top, right, bottom, and left borders
-<br><br>
-<b>TODO:</b><br>
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setDimensions</span>
-<script type="text/javascript">explorer.outline.addDecl('setDimensions');</script>
-(Vec!(2,float) <span class="funcparam">dimensions</span>, Vec!(4,float) <span class="funcparam">borders</span>, Vec!(4,float) <span class="funcparam">padding</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Set the <span class="funcparam">dimensions</span> of the surface's geometry
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">Vec!(2,float) <span class="funcparam">dimensions</span></td>
-
-               
-<td>Used to set the width and the height in pixels</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">Vec!(4,float) <span class="funcparam">borders</span></td>
-
-               
-<td>Used to set the size of each border in pixels (top, right, bottom, left)</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">Vec!(4,float) <span class="funcparam">padding</span></td>
-
-               
-<td>Used to se the size of teh <span class="funcparam">padding</span> in pixels (top, right, bottom, left)</td></tr>
-</table><br>
-
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -833,7 +722,7 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jul  4 17:40:05 2009
+		on Sat Aug  1 15:18:32 2009
 
 	</div>
 	
@@ -853,6 +742,8 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 	explorer.packageExplorer.addModule("yage.core.array");
 
 	explorer.packageExplorer.addModule("yage.core.async");
+
+	explorer.packageExplorer.addModule("yage.core.cache");
 
 	explorer.packageExplorer.addModule("yage.core.closure");
 
@@ -895,6 +786,8 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 	explorer.packageExplorer.addModule("yage.gui.style");
 
 	explorer.packageExplorer.addModule("yage.gui.surface");
+
+	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
 	explorer.packageExplorer.addModule("yage.gui.textlayout");
 
