@@ -216,7 +216,7 @@ class Render
 
 		// Set position and direction
 		glEnable(GL_LIGHT0+num);
-		auto type = light.getLightType();
+		auto type = light.type;
 		Matrix transform_abs = light.getAbsoluteTransform(true);
 		
 		Vec4f pos;
@@ -225,19 +225,19 @@ class Render
 		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
 
 		// Spotlight settings
-		float angle = type == LightNode.Type.SPOT ? light.getSpotAngle() : 180;
+		float angle = type == LightNode.Type.SPOT ? light.spotAngle : 180;
 		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angle);
 		if (type==LightNode.Type.SPOT)
-		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.getSpotExponent());
+		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.spotExponent);
 			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
 			// rotated by the node's rotation.  This is opposite the default direction of cameras
 			glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
 		}
 
 		// Light material properties
-		glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.getAmbient().vec4f.ptr);
-		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.getDiffuse().vec4f.ptr);
-		glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.getSpecular().vec4f.ptr);
+		glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.ambient.vec4f.ptr);
+		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.diffuse.vec4f.ptr);
+		glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.specular.vec4f.ptr);
 
 		// Attenuation properties
 		glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?

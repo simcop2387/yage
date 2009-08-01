@@ -10,6 +10,7 @@ import tango.stdc.math : fmod;
 import tango.math.Math;
 import tango.io.Stdout;
 import tango.core.Thread;
+import tango.text.Unicode;
 
 // These are used by ms3d loader
 import std.string;
@@ -233,7 +234,7 @@ class Model : Geometry
 	/// Load vertex, mesh, and material data from a 3D model file.
 	void load(char[] filename)
 	{	char[] ext = getExt(filename);
-		switch (tolower(ext))
+		switch (toLower(ext))
 		{	case "ms3d":
 				loadMs3d(filename);
 				//std.gc.genCollect();

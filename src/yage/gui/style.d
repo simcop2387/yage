@@ -10,7 +10,7 @@ import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.text.Regex;
 import tango.text.Util;
-import tango.text.Ascii;
+import tango.text.Unicode;
 import tango.text.convert.Format;
 import tango.util.Convert;
 import yage.core.cache;
@@ -126,7 +126,7 @@ struct Style
 		PERCENT=1 /// ditto
 	}
 	
-	/// These are the possible values that can be assigned to the textAlign property.
+	/// Values that can be assigned to the textAlign property.
 	enum TextAlign
 	{	LEFT, ///
 		CENTER, /// ditto
@@ -134,7 +134,7 @@ struct Style
 		JUSTIFY /// ditto
 	}
 	
-	/// These are the possible values that can be assigned to the textDecoration property.
+	/// Values that can be assigned to the textDecoration property.
 	enum TextDecoration
 	{	NONE, ///
 		UNDERLINE, /// ditto
@@ -142,20 +142,20 @@ struct Style
 		LINETHROUGH /// ditto
 	}
 
-	/// These are the possible values that can be assigned to the borderImagestyle property.
+	/// Values that can be assigned to the borderImagestyle property.
 	enum BorderImageStyle
 	{	STRETCH, ///
 		ROUND, /// ditto
 		REPEAT	 /// ditto
 	}
 
-	/// These are the possible values that can be assigned to the fontStyle property.
+	/// Values that can be assigned to the fontStyle property.
 	enum FontStyle
 	{	NORMAL, ///
 		ITALIC /// ditto
 	}
 
-	/// These are the possible values that can be assigned to the fontWeight property.
+	/// Values that can be assigned to the fontWeight property.
 	enum FontWeight
 	{	NORMAL, ///
 		BOLD /// ditto
@@ -285,7 +285,7 @@ struct Style
 		{	char[][] tokens = Cache.getRegex(":\\s*").split(exp);
 			if (tokens.length<2)
 				continue;
-			char[] property = toLower(substitute(tokens[0], "-", "")); // garbage?
+			char[] property = toLower(substitute(tokens[0], "-", "")); // garbage
 			tokens = Cache.getRegex("\\s+").split(tokens[1]);
 			
 			// TODO: account for parse errors.			

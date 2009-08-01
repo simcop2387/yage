@@ -320,24 +320,29 @@ class TextLayout
 	{	
 		char[] tagName = toLower(input.name, input.name);
 		
-		// Set the style from the parent and stle attribute
+		// Apply additional styles based on a tag name.
+		void styleByTagName(inout InlineStyle style, char[] tagName)
+		{	if (tagName=="u")
+				style.textDecoration = Style.TextDecoration.UNDERLINE;
+			if (tagName=="b")
+				style.fontWeight = Style.FontWeight.BOLD;
+			if (tagName=="i")
+				style.fontStyle = Style.FontStyle.ITALIC;
+			if (tagName=="del" || tagName=="s" || tagName=="strike")
+				style.textDecoration = Style.TextDecoration.LINETHROUGH;
+		}
+		
+		// Set the style from the parent and style attribute
 		HtmlNode node; // our own node class.
 		if (input.query.attribute("style").count)
-		{	Style temp = parentStyle.toStyle();
+		{	styleByTagName(parentStyle, tagName);
+			Style temp = parentStyle.toStyle(); // convert to Style so we can call .set on it.			
 			temp.set(input.query.attribute("style").nodes[0].value);
 			node.style = InlineStyle(temp);
 		} else
-			node.style = parentStyle;
-		
-		// Get additional styles
-		if (tagName=="u")
-			node.style.textDecoration = Style.TextDecoration.UNDERLINE;
-		if (tagName=="b")
-			node.style.fontWeight = Style.FontWeight.BOLD;
-		if (tagName=="i")
-			node.style.fontStyle = Style.FontStyle.ITALIC;
-		if (tagName=="del" || tagName=="s" || tagName=="strike")
-			node.style.textDecoration = Style.TextDecoration.LINETHROUGH;
+		{	node.style = parentStyle;
+			styleByTagName(node.style, tagName);
+		}
 		
 		// Get any text children from the node.
 		if (input.value.length)

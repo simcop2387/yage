@@ -109,8 +109,8 @@ int main()
 			`<span style="text-decoration: overline">house</span> the font would refer to a complete set of metal `~
 			`type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not `~
 			`include a single definition of each character, but commonly used characters (such as vowels and periods) `~
-			`would have more <i>physical type-pieces included. A font when bought new would often be sold as `~
-			`(for example in a roman alphabet) 12pt 14A 34a, meaning that it would be a size 12pt fount containing `~
+			`would have more <i>physical type-pieces included. A <b>font <i style="font-style: normal">when</i> bought</b> new would often be sold as `~
+			`(for example in a roman alphabet) 12pt 14A 34a, meaning that it would be a <span style="font-size: 30px">size</span> 12pt fount containing `~
 			`14 upper-case 'A's, and 34 lower-case 'A's.</i> The rest of the characters would be provided in quantities `~
 			`appropriate for the language it was required for in order to set a complete page in that language. `~
 			`Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and `~

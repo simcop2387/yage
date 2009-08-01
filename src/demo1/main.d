@@ -63,7 +63,7 @@ class DemoScene : Scene
 
 		// Lights
 		light = scene.addChild(new LightNode());
-		light.setDiffuse(Color(1, .85, .7));
+		light.diffuse = Color(1, .85, .7);
 		light.setLightRadius(7000);
 		light.setPosition(Vec3f(0, 0, -6000));
 

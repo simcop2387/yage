@@ -29,30 +29,32 @@ import yage.scene.camera;
  * (1, .5, 0, 0) is orange, since it is 100% red and 50% green.*/
 class LightNode : MovableNode
 {
-	/// Specifies the type of light.
+	/// Values that can be assigned to type.
 	enum Type
-	{	DIRECTIONAL,		/// A light that shines in one direction through the entire scene
-		POINT,				/// A light that shines outward in all directions
-		SPOT				/// A light that emits light outward from a point in a single direction
+	{	DIRECTIONAL,	/// A light that shines in one direction through the entire scene
+		POINT,			/// A light that shines outward in all directions
+		SPOT			/// A light that emits light outward from a point in a single direction
 	}
+		
+ 	public Type type = Type.POINT; /// The type of light (directional, point, or spot)
+
+	public Color ambient = {r:0,   g:0,   b:0,   a:255}; /// Ambient color of the light.  Defaults to black
+	public Color diffuse = {r:255, g:255, b:255, a:255}; /// Diffuse color of the light.  Defaults to 100% white.
+	public Color specular= {r:255, g:255, b:255, a:255}; /// Specular color of the light, defaults to 100% white.
 	
-	protected float	quad_attenuation	= 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
- 	protected int type 					= Type.POINT;
-
-	protected Color	ambient;			// The RGBA ambient color of the light, defaults to black.
-	protected Color	diffuse;			// The RGBA diffuse color of the light, defaults to 100% white.
-	protected Color	specular;			// The RGBA specular color of the light, defaults to 100% white.
-	protected float	spot_angle = 45.0;	// If the light type is SPOT, this sets the angle of the cone of light emitted.
-	protected float	spot_exponent = 0;	// If the light type is SPOT, this sets the fadeoff of the light.
-
-	package float intensity;			// Used internally as a temp variable to sort lights by intensity for each node.
-
 	/**
-	 * Constructor. */
-	this()
-	{	super();
-		specular = diffuse = Color("white");
-	}
+	 * Spotlight angle of the light, in radians.  
+	 * If the light type is a spotlight, this is the angle of the light cone. */
+	public float spotAngle = 45.0;	/// 
+	
+	/**
+	 * Spotlight exponent of the light.  
+	 * If the light type is a spotlight, this is how focussed the light is.  
+	 * Larger values produce more focussed spotlights. */
+	public float spotExponent = 0;	/// 
+
+	package float intensity; // Used internally as a temp variable to sort lights by intensity for each node.
+	protected float	quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
 	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
@@ -63,88 +65,31 @@ class LightNode : MovableNode
 	{	auto result = cast(LightNode)super.clone(children);
 		
 		// All of these assignments are atomic.
-		result.quad_attenuation = quad_attenuation;
+		result.quadAttenuation = quadAttenuation;
 		result.type = type;
 		result.ambient = ambient;
 		result.diffuse = diffuse;
 		result.specular = specular;
-		result.spot_angle = spot_angle;
-		result.spot_exponent = spot_exponent;
+		result.spotAngle = spotAngle;
+		result.spotExponent = spotExponent;
 		
 		return result;
 	}
 
-	/// Get / set the ambient color of the light.
-	Color getAmbient()
-	{	return ambient;
-	}
-	void setAmbient(Color ambient) /// Ditto
-	{	this.ambient = ambient;
-	}
-
-	/// Get /set the diffuse color of the light.
-	Color getDiffuse()
-	{	return diffuse;
-	}
-	void setDiffuse(Color diffuse) /// Ditto
-	{	this.diffuse = diffuse;
-	}
-
-
-	/// Get / set the specular color of the light.
-	Color getSpecular()
-	{	return specular;
-	}
-	void setSpecular(Color specular) /// Ditto
-	{	this.specular = specular;
-	}
-
-
-	/**
-	 * Get/ set the spotlight angle of the light, in radians.  If the light type is a
-	 * spotlight, this is the angle of the light cone. */
-	float getSpotAngle()
-	{	return spot_angle*PI/180;
-	}
-	void setSpotAngle(float radians) /// Ditto
-	{	spot_angle = radians*_180_PI;
-	}
-
-	/**
-	 * Set the spotlight exponent of the light.  If the light type is a
-	 * spotlight, this is how focussed the light is.  Higher exponents are more focussed.*/
-	float getSpotExponent()
-	{	return spot_exponent;
-	}
-	void setSpotExponent(float exponent) /// Ditto
-	{	spot_exponent = exponent;
-	}
-
-
-	/** Get / set the type of the light.
-	 *  0 for directional, 1 for point, or 2 for spot. */
-	ubyte getLightType()
-	{	return type;
-	}
-	void setLightType(int type) /// Ditto
-	{	this.type = type;
-	}
-
-
-	/// Get the radius of the light.  This is not the same as the Node's radius, see below.
-	float getLightRadius()
-	{	return tango.math.Math.sqrt(1/quad_attenuation);
-	}
-	/** Set the radius of the light.  Default value is 256.
+	
+	/** Get / set the radius of the light.  Default value is 256.
 	 *  Quadratic attenuation is used, so the brightness of an object is Radius^2/distance^2,
 	 *  Using this formula, a brightness of 1.0 or higher is 100% bright.*/
-	void setLightRadius(float radius)
-	{	quad_attenuation = 1.0/(radius*radius);
+	float getLightRadius()
+	{	return tango.math.Math.sqrt(1/quadAttenuation);
+	}
+	void setLightRadius(float radius) /// ditto
+	{	quadAttenuation = 1.0/(radius*radius);
 	}
 
 	///
 	float getQuadraticAttenuation()
-	{	return quad_attenuation;
+	{	return quadAttenuation;
 	}
 
 	/**
@@ -158,8 +103,7 @@ class LightNode : MovableNode
 	 *     margin = For spotlights, setting a margin cause this function to return brightest point inside
 	 *         of that radius, instead of the default of a single point.  
 	 *         This is used internally for nodes that have a spotlight shine on one corner of them 
-	 *         but not at all at their center.
-	 * Returns: Color.*/
+	 *         but not at all at their center.*/
 	Color getBrightness(Vec3f point, float margin=0.0)
 	{
 		// Directional lights are easy, since they don't depend on which way the light points
@@ -171,7 +115,7 @@ class LightNode : MovableNode
 		Vec3f light_direction = point - Vec3f(getAbsoluteTransform().v[12..15]);
 		// distance squared to light
 		float d2 = light_direction.x*light_direction.x + light_direction.y*light_direction.y + light_direction.z*light_direction.z;
-		float intensity = 1/(quad_attenuation*d2);	// quadratic attenuation.
+		float intensity = 1/(quadAttenuation*d2);	// quadratic attenuation.
 
 		bool add_ambient = true;	// Only if this node is in the spotlight
 		if (type==Type.SPOT)
@@ -184,8 +128,8 @@ class LightNode : MovableNode
 			// Extra spotlight angle (in radians) to satisfy margin distance
 			float m2 = margin>0 ? atan2(margin, d) : 0;
 
-			if (spotDot > cos(spot_angle*0.017453292 + m2)) // 0.017453292 = pi/180
-				intensity *= pow(spotDot, spot_exponent);
+			if (spotDot > cos(spotAngle*0.017453292 + m2)) // 0.017453292 = pi/180
+				intensity *= pow(spotDot, spotExponent);
 			else
 			{	intensity = 0;	// if the spotlight isn't shining on this point.
 				add_ambient = false;

@@ -8,7 +8,7 @@ module yage.system.graphics.probe;
 
 import tango.util.Convert;
 import tango.stdc.stringz;
-import tango.text.Ascii;
+import tango.text.Unicode;
 import tango.text.Util;
 import derelict.opengl.gl;
 import derelict.opengl.glext;

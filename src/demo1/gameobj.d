@@ -74,7 +74,7 @@ class Flare : GameObject
 		if (timer.get() > .2)
 		{	timer.reset();
 			LightNode light = addChild(new LightNode());
-			light.setDiffuse(Color("orange"));
+			light.diffuse = Color("orange");
 			light.setLightRadius(96);
 		}
 		

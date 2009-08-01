@@ -8,7 +8,7 @@ module yage.resource.image;
 
 import tango.io.Stdout;
 import tango.math.Math;
-import tango.text.Ascii;
+import tango.text.Unicode;
 import tango.stdc.stringz;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
