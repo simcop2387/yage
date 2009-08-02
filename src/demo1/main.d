@@ -157,7 +157,7 @@ int main()
 		
 	// Make a draggable window to show some useful info.
 	auto window = view.addChild(new Surface());
-	window.style.set("top: 5px; right: 5px; width: 160px; height: 80px; color: black; padding: 3px; " ~
+	window.style.set("top: 5px; right: 5px; width: 130px; height: 70px; color: black; padding: 3px; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
 		"font-family: url('Vera.ttf'); font-size: 16px");
 

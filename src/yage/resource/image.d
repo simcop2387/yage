@@ -355,16 +355,18 @@ class Image : Resource
 				{	
 					uint dest = (y*width+x2)*channels;
 					uint dst_alpha = data[dest+3];
-					uint dst_ratio = (255-src_alpha) * ((dst_alpha*257)>>16); // hack for faster divide by 255
-					uint src_dest_ratio = src_alpha + dst_ratio;
+					uint src_dest_ratio = (255-src_alpha) * dst_alpha;
+					uint dst_ratio = (src_dest_ratio * 257)>>16; // hack for faster divide by 255
 					
 					// This is my own blending algorithm, can it be further optimized?
-					int reciprocal = 0xFFFF / src_dest_ratio; // calculate reciprocal for fast integer division
+					int reciprocal = 0x10001 / (src_alpha + dst_ratio); // calculate reciprocal for fast integer division
 															// A lookup table of reciprocals could make this faster.
 					data[dest  ] = ((color.ub[0]*src_alpha + data[dest  ]*dst_ratio) * reciprocal)>>16; // colors
 					data[dest+1] = ((color.ub[1]*src_alpha + data[dest+1]*dst_ratio) * reciprocal)>>16;
 					data[dest+2] = ((color.ub[2]*src_alpha + data[dest+2]*dst_ratio) * reciprocal)>>16;
-					data[dest+3] = (((src_alpha*src_alpha*257)>>16) + dst_ratio) ; // alpha
+
+					//data[dest+3] = (src_alpha*src_alpha + (255-src_alpha)*dst_alpha) / 255;
+					data[dest+3] = ((src_alpha*src_alpha + src_dest_ratio) * 257)>>16;
 				}
 		}	}
 	}
