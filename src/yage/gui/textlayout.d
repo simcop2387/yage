@@ -31,7 +31,8 @@ import yage.gui.style;
  * Render text and simple html with styles to an image. */
 class TextLayout
 {
-	private static const char[] breaks = " *()-+=/\\,.;:|()[]{}<>\r\n"; // breaking characters
+	private static const char[] whitespace = " \t\r\n";
+	private static const char[] breaks = " *()-+=/\\,.;:|()[]{}<>\t\r\n"; // breaking characters
 	
 	private static ubyte[] imageLookaside; // TODO: Make TextLayout thread safe by making lookAsides thread-local
 	private static char[] textLookaside;
@@ -181,17 +182,12 @@ class TextLayout
 						int calculatedLineHeight = cast(int)(isNaN(istyle.lineHeight) ? istyle.fontSize : istyle.lineHeight);
 						if (lineHeight < calculatedLineHeight)
 							lineHeight = calculatedLineHeight;
+
+						x+= letters[i].advanceX;
 						
 						// Convert letter to utf-8
 						char[4] lookaside;
 						char[] utf8 = letters[i].toString(lookaside);
-						
-						if (i-start==0 && utf8[0] == ' ') // skip spaces at the beginning of a new line.
-						{	start++;
-							continue;
-						}
-							
-						x+= letters[i].advanceX;
 						
 						if (containsPattern(breaks, utf8)) // store position of last breaking character
 							last_break = i;
@@ -206,13 +202,25 @@ class TextLayout
 					
 					// Add a new line
 					Line line;
-					if (start<last_break)
+					if (start<last_break) // don't count spaces at the end of the line.
 					{	i = last_break;
 						if (i < letters.length && letters[i].letter=='\n')
 							i++; // skip line returns
 						line.letters = letters[start..last_break]; // slice directly from the letters array to avoid copy allocation
-						line.width = x;
 					}
+					
+					// trim line
+					int firstChar, lastChar=line.letters.length-1;
+					while (firstChar < line.letters.length && whitespace.contains(cast(char)line.letters[firstChar].letter))
+						firstChar++;
+					while (lastChar>=0 && whitespace.contains(cast(char)line.letters[lastChar].letter))
+						lastChar--;
+					line.letters = line.letters[firstChar..lastChar+1];
+					
+					// Calculate line width
+					foreach (letter; line.letters)
+						line.width += letter.advanceX;
+					
 					line.height = lineHeight;
 					lines ~= line;
 			}	}
@@ -235,9 +243,10 @@ class TextLayout
 			imageLookaside = result.getData();
 			foreach (i, line; lines)
 			{
-				int xoffset;
 				if (style.textAlign == Style.TextAlign.RIGHT)
-					xoffset = width - line.width;
+					x = width - line.width;
+				else if (style.textAlign == Style.TextAlign.CENTER)
+					x = (width - line.width) / 2;
 
 				foreach (letter; line.letters)
 				{	InlineStyle* istyle = (cast(InlineStyle*)letter.extra);
@@ -268,7 +277,7 @@ class TextLayout
 								result[j, h] = istyle.color.ub;
 					
 					
-					x+= letter.advanceX;// + istyle.letterSpacing;
+					x+= letter.advanceX; // + istyle.letterSpacing;
 					y+= letter.advanceY;
 				}
 				x=0;
