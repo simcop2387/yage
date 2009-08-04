@@ -26,6 +26,7 @@ import yage.core.types;
 import yage.resource.font;
 import yage.resource.image;
 import yage.gui.style;
+import yage.gui.exceptions;
 
 /**
  * Render text and simple html with styles to an image. */
@@ -312,7 +313,7 @@ class TextLayout
 		try {
 			doc.parse(htmlText2);
 		} catch (AssertException e)
-		{	throw new YageException("Unable to parse xhtml:  {}", htmlText);
+		{	throw new XHTMLException("Unable to parse xhtml:  {}", htmlText);
 		}
 		
 		nodeLookaside.length = 0;

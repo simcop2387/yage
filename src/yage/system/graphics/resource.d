@@ -11,7 +11,6 @@ import tango.util.container.HashSet;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 import yage.system.graphics.probe;
-import yage.system.graphics.context;
 
 /**
  * This static class will manage all OpenGL specific resources, such as texture, vbo, and shader id's. */
@@ -39,7 +38,7 @@ class GraphicsResource
 			if (!vbo_reserve.size())
 			{	GC.collect(); // force all elements to finalize.
 				if (!vbo_reserve.size())
-					synchronized(GLContext.getInstance())
+				//	synchronized(GLContext.getInstance())
 						for (int i=0; i<64; i++) // Generate 64 new vbo's
 						{	uint id;
 							glGenBuffersARB(1, &id);

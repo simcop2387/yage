@@ -26,44 +26,53 @@ import yage.core.timer;
 
 /**
  * Represents a CSS value.  It can store pixels or precent. */
-struct Value
-{	package float value=float.nan;
-	package ubyte unit = Style.Unit.PX;
+struct CSSValue
+{	
+	/**
+	 * CSSValues used to set units for measurements, such as width, padding, etc. */
+	// should this be in CSSValue?
+	enum Unit
+	{	PX=0, ///
+		PERCENT=1 /// ditto
+	}	
+	
+	package float value=float.nan;
+	package ubyte unit = Unit.PX;
 	
 	/**
 	 * Allow assignments from ints, floats and strings. 
 	 * Example:
 	 * --------
-	 * Value height;
+	 * CSSValue height;
 	 * height = 3; // width is 3 pixels
 	 * height = "3%"; // width is 3% of parent's height
 	 * --------
 	 */
-	Value opAssign(float v)
+	CSSValue opAssign(float v)
 	{	value = v>0 || isNaN(v) ? v : 0;
-		unit = Style.Unit.PX;
+		unit = Unit.PX;
 		return *this;
 	}
-	Value opAssign(char[] v) /// ditto
+	CSSValue opAssign(char[] v) /// ditto
 	{	if (v[length-1] == '%')
 		{	value = to!(float)(v[0..length-1]);
-			unit = Style.Unit.PERCENT;
+			unit = Unit.PERCENT;
 		}
 		else // to!(float) still works when v has trailing characters
 		{	value = to!(float)(v[0..length]);
-			unit = Style.Unit.PX;
+			unit = Unit.PX;
 		}
 		value = value>0 ? value : 0;
 		return *this;
 	}
 	unittest
-	{	Value a;
+	{	CSSValue a;
 		a = "3%";
 		assert(a.value == 3);
-		assert(a.unit == Style.Unit.PERCENT);
+		assert(a.unit == CSSValue.Unit.PERCENT);
 		a = "5";
 		assert(a.value == 5);
-		assert(a.unit == Style.Unit.PX);
+		assert(a.unit == CSSValue.Unit.PX);
 	}
 	
 	/**
@@ -71,14 +80,14 @@ struct Value
 	 * Params:
 	 *     v = the value to set
 	 *     isPercent = If precent, v will be based on the Surface parent's value from 0 to 100%*/
-	static Value opCall(float v, bool isPercent=false)
-	{	Value result;
+	static CSSValue opCall(float v, bool isPercent=false)
+	{	CSSValue result;
 		result.value = v;
 		result.unit = isPercent;
 		return result;
 	}
-	static Value opCall(char[] v) /// ditto
-	{	Value result;
+	static CSSValue opCall(char[] v) /// ditto
+	{	CSSValue result;
 		result = v;
 		return result;
 	}
@@ -91,14 +100,14 @@ struct Value
 	float toPx(float target, bool allow_nan=true)
 	{	if (!allow_nan && isNaN(value))
 			return 0;
-		if (unit==Style.Unit.PERCENT)
+		if (unit==Unit.PERCENT)
 			return value*target*0.01f;
 		return value;
 	}
 	float toPercent(float target, bool allow_nan=true) /// ditto
 	{	if (!allow_nan && isNaN(value))
 			return 0;
-		if (unit==Style.Unit.PERCENT)
+		if (unit==Unit.PERCENT)
 			return value*target*100f;
 		return value;
 	}
@@ -108,25 +117,31 @@ struct Value
 	char[] toString()
 	{	if (isNaN(value))
 			return "auto";
-		return to!(char[])(value) ~ (unit==Style.Unit.PX ? "px" : "%");
+		return to!(char[])(value) ~ (unit==Unit.PX ? "px" : "%");
 	}
 }
 
 /**
  * This struct is used to specify the style of a Surface.
  * Inspired by the <a href="http://www.w3schools.com/css/css_reference.asp">CSS specification</a>.
- * Much of htis functionality is still unfinished. */
+ * Much of htis functionality is still unfinished. 
+ * 
+ * TODO:
+ * 
+ * Additional CSS3 border-image properties? 
+ * Background image positioning
+ * inline a href
+ * cursor and cursor size.
+ * letter spacing
+ * opacity
+ * default skin
+ * toString()
+ * scale
+ * inherit?
+ * TextAlign.JUSTIFY */
 struct Style
-{	
-	/**
-	 * Values used to set units for measurements, such as width, padding, etc. */
-	// should this be in Value?
-	enum Unit
-	{	PX=0, ///
-		PERCENT=1 /// ditto
-	}
-	
-	/// Values that can be assigned to the textAlign property.
+{
+	/// CSSValues that can be assigned to the textAlign property.
 	enum TextAlign
 	{	LEFT, ///
 		CENTER, /// ditto
@@ -134,7 +149,7 @@ struct Style
 		JUSTIFY /// ditto
 	}
 	
-	/// Values that can be assigned to the textDecoration property.
+	/// CSSValues that can be assigned to the textDecoration property.
 	enum TextDecoration
 	{	NONE, ///
 		UNDERLINE, /// ditto
@@ -142,20 +157,20 @@ struct Style
 		LINETHROUGH /// ditto
 	}
 
-	/// Values that can be assigned to the borderImagestyle property.
+	/// CSSValues that can be assigned to the borderImagestyle property.
 	enum BorderImageStyle
 	{	STRETCH, ///
 		ROUND, /// ditto
 		REPEAT	 /// ditto
 	}
 
-	/// Values that can be assigned to the fontStyle property.
+	/// CSSValues that can be assigned to the fontStyle property.
 	enum FontStyle
 	{	NORMAL, ///
 		ITALIC /// ditto
 	}
 
-	/// Values that can be assigned to the fontWeight property.
+	/// CSSValues that can be assigned to the fontWeight property.
 	enum FontWeight
 	{	NORMAL, ///
 		BOLD /// ditto
@@ -163,33 +178,31 @@ struct Style
 	
 	union { 
 		struct { 
-			Value top; /// Distance of an edge from its parent, use float.nan to leave unset.
-			Value right; /// ditto
-			Value bottom; /// ditto
-			Value left; /// ditto
+			CSSValue top; /// Distance of an edge from its parent, use float.nan to leave unset.
+			CSSValue right; /// ditto
+			CSSValue bottom; /// ditto
+			CSSValue left; /// ditto
 		} 
-		package Value[4] dimension; // internal use, not supported by css
+		package CSSValue[4] dimension; // internal use, not supported by css
 	}
 	
 	union {
 		struct {
-			Value width = Value(float.nan); /// Width and height of the Surface.  Use float.nan to leave unset.
-			Value height = Value(float.nan); /// ditto
+			CSSValue width = CSSValue(float.nan); /// Width and height of the Surface.  Use float.nan to leave unset.
+			CSSValue height = CSSValue(float.nan); /// ditto
 		}
-		package Value[2] size; // internal use, not supported by css.
+		package CSSValue[2] size; // internal use, not supported by css.
 	}
-
 	 
 	union { 
 		struct { 
-			Value borderTopWidth = Value(0); /// Border widths
-			Value borderRightWidth = Value(0); /// ditto
-			Value borderBottomWidth = Value(0); /// ditto
-			Value borderLeftWidth = Value(0); /// ditto
+			CSSValue borderTopWidth = CSSValue(0); /// Border widths
+			CSSValue borderRightWidth = CSSValue(0); /// ditto
+			CSSValue borderBottomWidth = CSSValue(0); /// ditto
+			CSSValue borderLeftWidth = CSSValue(0); /// ditto
 		} 
-		Value[4] borderWidth; /// Set all four border widths in one array.
+		CSSValue[4] borderWidth; /// Set all four border widths in one array.
 	}
-	
 	
 	union {
 		struct {
@@ -200,7 +213,6 @@ struct Style
 		}
 		Color[4] borderColor; /// Set all four border colors in one array.
 	}
-	
 	
 	union {
 		struct {
@@ -223,15 +235,14 @@ struct Style
 		GPUTexture[4] borderCornerImage; /// Set the four border corner images images in one array.
 	}
 	
-	
 	union { 
 		struct { 
-			Value paddingTop = Value(0); /// Padding (the space inside the border surrounding any text or children)
-			Value paddingRight = Value(0); /// ditto
-			Value paddingBottom = Value(0); /// ditto
-			Value paddingLeft = Value(0); /// ditto
+			CSSValue paddingTop = CSSValue(0); /// Padding (the space inside the border surrounding any text or children)
+			CSSValue paddingRight = CSSValue(0); /// ditto
+			CSSValue paddingBottom = CSSValue(0); /// ditto
+			CSSValue paddingLeft = CSSValue(0); /// ditto
 		} 
-		Value[4] padding; /// Set all four padding sizes in one array.
+		CSSValue[4] padding; /// Set all four padding sizes in one array.
 	}
 	
 	/// Background image and color.  backgroundColor is drawn first, with backgroundImage second, then borderImage on top.
@@ -240,11 +251,11 @@ struct Style
 
 	// Cursor
 	Material cursor;
-	float cursorSize=16; // in pixels
+	float cursorSize=float.nan; // in pixels, float.nan to default to size of image.
 	
 	/// Font properties
 	Font fontFamily;
-	Value fontSize = Value(12); /// ditto
+	CSSValue fontSize = CSSValue(12); /// ditto
 	FontStyle fontStyle; /// ditto
 	FontWeight fontWeight; /// ditto
 	
@@ -252,13 +263,12 @@ struct Style
 	Color color = {r:0, g:0, b:0, a:255};
 	TextAlign textAlign = TextAlign.LEFT; /// ditto
 	byte  textDecoration = TextDecoration.NONE; /// ditto
-	Value lineHeight = Value(float.nan); /// ditto
-	Value letterSpacing; /// ditto
+	CSSValue lineHeight = CSSValue(float.nan); /// ditto
+	CSSValue letterSpacing; /// ditto
 	
 
 	// Other
 	float opacity = 1; // 0 to 1.
-	
 	bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
 	int zIndex; /// Sets the stack order of the surface relative to its siblings.
 
@@ -344,6 +354,7 @@ struct Style
 				case "textalign":			textAlign = translateTextAlign[tokens[0]]; break;
 				case "textdecoration":		textDecoration = translateTextDecoration[tokens[0]]; break;
 				
+				case "opacity":				opacity = to!(float)(tokens[0]);  break;
 				case "zIndex":				zIndex = to!(int)(tokens[0]); break;
 				case "visibility":			visible = tokens[0] != "hidden"; break;
 				

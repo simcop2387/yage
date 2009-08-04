@@ -73,6 +73,7 @@ class Layer : Resource
 	float	specularity=0;			/// Shininess exponential value, default is zero (no shininess).
 	
 	Color	color;					// necessary for materials with no lights.
+	float	opacity=1;
 
 	/// Property to set the blending for this Layer.
 	int	blend = BLEND_NONE;

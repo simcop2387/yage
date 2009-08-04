@@ -14,3 +14,10 @@ class CSSException : YageException
 	{	super(Format.convert(_arguments, _argptr, message));
 	}	
 }
+
+///
+class XHTMLException : YageException
+{	this(char[] message, ...)
+	{	super(Format.convert(_arguments, _argptr, message));
+	}	
+}

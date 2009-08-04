@@ -22,7 +22,7 @@ import yage.gui.surface;
 import yage.system.log;
 import yage.system.sound.soundsystem;
 import yage.system.graphics.all;
-import yage.core.object2;;
+import yage.core.object2;
 import yage.core.math.vector;
 import yage.scene.scene;
 import yage.resource.lazyresource;
@@ -159,7 +159,7 @@ abstract class System
 		surface = new Surface();
 		
 		// Not used yet
-		GLContext glc = new GLContext();
+		//GLContext glc = new GLContext();
 		
 		// Create OpenAL device, context, and start sound proessing thread.
 		SoundContext.getInstance();

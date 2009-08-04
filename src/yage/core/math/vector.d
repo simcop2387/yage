@@ -401,6 +401,15 @@ struct Vec3f
 		return res;
 	}
 
+	/// Create a new axis-angle Vec3f from rotation angle angle and the values x, y, and z
+	static Vec3f opCall(float angle, float x, float y, float z)
+	{	Vec3f res=void;
+		res.x = x;
+		res.y = y;
+		res.z = z;
+		return res.length(angle);;
+	}
+
 	/// Return a vector with the values of s; s must be at least of length 3.
 	static Vec3f opCall(float[] s)
 	{	assert(s.length>=3);

@@ -14,6 +14,7 @@ import derelict.opengl.gl;
 import yage.core.all;
 import yage.system.system;
 import yage.system.input;
+import yage.system.graphics.graphics;
 import yage.system.graphics.render;
 import yage.resource.texture;
 import yage.resource.image;
@@ -98,22 +99,22 @@ class Surface : Tree!(Surface)
 	
 	// Set style dimensions from pixels.
 	protected void top(float v)    
-	{	style.top    = style.top.unit   == Style.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	{	style.top    = style.top.unit   == CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
 	}
 	protected void right(float v)  
-	{	style.right  = style.right.unit == Style.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	{	style.right  = style.right.unit == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
 	}
 	protected void bottom(float v) 
-	{	style.bottom = style.bottom.unit== Style.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	{	style.bottom = style.bottom.unit== CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
 	}	
 	protected void left(float v)   
-	{	style.left   = style.left.unit  == Style.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	{	style.left   = style.left.unit  == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
 	}
 	protected void width(float v)  
-	{	style.width  = style.width.unit == Style.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	{	style.width  = style.width.unit == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
 	}
 	protected void height(float v) 
-	{	style.height = style.height.unit== Style.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	{	style.height = style.height.unit== CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
 	}
 	// Get dimensions of this Surface's parent in pixels
 	protected float parentWidth() { return parent ? parent.width()  : System.getWidth(); }
@@ -246,7 +247,7 @@ class Surface : Tree!(Surface)
 			int width = cast(int)width();
 			int height = cast(int)height();
 			Image textImage = TextLayout.render(text, style, width, height, true); // TODO: Change true to Probe.NextPow2
-			if (!textTexture)
+			if (!textTexture) // create texture on first go
 				textTexture = new GPUTexture(textImage, false, false, text, true);
 			else
 				textTexture.commit(textImage, false, false, text, true);
@@ -257,8 +258,9 @@ class Surface : Tree!(Surface)
 		geometry.setColors(style.backgroundColor, style.borderColor);
 		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, style.borderImage, style.borderCornerImage, textTexture);
 		
-		glPushMatrix();
-		glTranslatef(offset.x, offset.y, 0);
+		Graphics.pushMatrix();
+		Graphics.translate(offset.x, offset.y, 0);
+		Graphics.applyState();
 		Render.geometry(geometry);
 		
 		// Using a z-buffer might make sorting unnecessary.  Tradeoffs?
@@ -267,7 +269,7 @@ class Surface : Tree!(Surface)
 		foreach(surf; children)
 			surf.draw();
 		
-		glPopMatrix();
+		Graphics.popMatrix();
 		
 		resize_dirty = false;
 	}
@@ -401,7 +403,7 @@ class Surface : Tree!(Surface)
 			}
 			
 			// Apply the movement
-			if (style.dimension[i].unit == Style.Unit.PERCENT)
+			if (style.dimension[i].unit == CSSValue.Unit.PERCENT)
 				style.dimension[i].value = dimension[i] / parent_size[xy]*100;
 			else
 				style.dimension[i].value = dimension[i];
