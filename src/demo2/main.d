@@ -69,7 +69,7 @@ int main()
 	auto window = view.addChild(new Surface());
 	window.style.set("top: 5px; left: 5px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font-family: url('gui/font/Vera.ttf'); font-size: 14px; text-align: right");
+		"font-family: url('gui/font/Vera.ttf'); font-size: 14px; text-align: right; opacity: .8");
 	
 	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
 		self.raise();

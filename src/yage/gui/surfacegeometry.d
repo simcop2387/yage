@@ -190,16 +190,14 @@ package class SurfaceGeometry : Geometry
 
 	// TODO: Convert this to accept materials as well as textures, 
 	// or maybe just allow instantiation of a Material from a GPUTexture, Texture, or Layer
-	void setMaterials(GPUTexture backgroundImage, GPUTexture centerImage, GPUTexture[] borderImage, GPUTexture[] borderCornerImage, GPUTexture text)
+	void setMaterials(GPUTexture backgroundImage, GPUTexture centerImage, 
+	                  GPUTexture[] borderImage, GPUTexture[] borderCornerImage, GPUTexture text, float opacity)
 	{	
 		Layer createLayer(GPUTexture texture, bool clamp=false)
 		{	auto result = new Layer();
 			result.addTexture(Texture(texture, clamp, Texture.Filter.BILINEAR));
-			return result;
-		}
-		Layer createLayer2(Texture texture)
-		{	auto result = new Layer();
-			result.addTexture(texture);
+			result.color = Color(1f, 1f, 1f, opacity);
+			result.blend = BLEND_AVERAGE;
 			return result;
 		}
 		
@@ -235,7 +233,6 @@ package class SurfaceGeometry : Geometry
 		if (text)
 		{	this.text.setMaterial(new Material());
 			this.text.getMaterial().addLayer(createLayer(text, true));
-			this.text.getMaterial().getLayers()[0].blend = BLEND_AVERAGE;
 			this.text.getMaterial().getLayers()[0].getTextures()[0].filter = Texture.Filter.NONE;
 			
 			// Text bottom vertices depend on text texture size.

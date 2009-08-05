@@ -256,7 +256,8 @@ class Surface : Tree!(Surface)
 		}
 		
 		geometry.setColors(style.backgroundColor, style.borderColor);
-		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, style.borderImage, style.borderCornerImage, textTexture);
+		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, 
+			style.borderImage, style.borderCornerImage, textTexture, style.opacity);
 		
 		Graphics.pushMatrix();
 		Graphics.translate(offset.x, offset.y, 0);
@@ -296,10 +297,7 @@ class Surface : Tree!(Surface)
 		glLoadIdentity();
 		
 		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);		
-		
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_LIGHTING);
 			
 		//This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -73,7 +73,6 @@ class Layer : Resource
 	float	specularity=0;			/// Shininess exponential value, default is zero (no shininess).
 	
 	Color	color;					// necessary for materials with no lights.
-	float	opacity=1;
 
 	/// Property to set the blending for this Layer.
 	int	blend = BLEND_NONE;
@@ -260,6 +259,7 @@ class Layer : Resource
 		glColor4fv(this.color.vec4f.ptr);
 
 		// Blend
+		
 		if (blend != BLEND_NONE)
 		{	glEnable(GL_BLEND);
 			glDepthMask(false);
