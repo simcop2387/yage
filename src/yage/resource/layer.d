@@ -341,7 +341,7 @@ class Layer : Resource
 				setUniform("light_number", lights.length);
 			} catch{}
 			try {
-				setUniform("fog_enabled", cast(float)Render.getCurrentCamera().getScene().getFogEnabled());
+				setUniform("fog_enabled", cast(float)Render.getCurrentCamera().getScene().fogEnabled);
 			} catch{}
 
 			// Enable

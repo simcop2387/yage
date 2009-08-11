@@ -238,7 +238,7 @@ bool customBuild(char[][] args)
 	foreach (char[] arg; args)
 	{	switch(String.toLower(arg))
 		{	case "-ddoc": 		options2 ~= ["-D", "-Dd../doc"]; ddoc = true; break;
-			case "-debug": 		options1 ~= ["-debug"]; break;
+			case "-debug": 		options1 ~= ["-debug", "-g"]; break;
 			case "-profile": 	options1 ~= ["-profile"]; break;
 			case "-release": 	options2 ~= ["-O", "-inline", "-release"]; release = true; break;
 			case "-run": 		options2 ~= ["-run"]; break;

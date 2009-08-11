@@ -30,7 +30,7 @@ import yage.scene.visible;
  * --------------------------------
  * Scene scene = new Scene();
  * scene.play();                          // Start the scene updater at 60 times per second.
- * scope(exit)scene.pause();              // Ensure it stops later.
+ * scope(exit) scene.pause();             // Ensure it stops later.
  *
  * Scene skybox = new Scene();            // Create a skybox for the scene.
  * ModelNode sky = skybox.addChild(new ModelNode()); // A model with all faces pointing inward.
@@ -40,9 +40,21 @@ import yage.scene.visible;
  */
 class Scene : Node//, ITemporal
 {
-	protected static Scene[Scene] all_scenes;
 	
-	protected Scene skybox;
+	
+	public Color ambient;				/// The color of the scene's global ambient light, defaults to black.
+	public Color backgroundColor;		/// Background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
+	public Color fogColor;				/// Color of global scene fog, when fog is enabled.
+	public float fogDensity = 0.1;		/// The thickness (density) of the Scene's global fog, when fog is enabled.
+										/// Depending on the scale of your scene, decent values range between .001 and .1.
+	public bool  fogEnabled = false;	/// Get / set whether global distance fog is enabled for this scene.
+										/// For best results, use no skybox and set the clear color the same as the fog color.
+										/// For improved performance, set the cameras' max view distance to just beyond
+										/// where objects become completely obscured by the fog. */
+	public float speedOfSound = 343f;	/// Speed of sound in units/second
+	
+	public Scene skyBox;				/// A Scene can have another heirarchy of nodes that will be rendered as a skybox by any camera. 
+	
 	protected CameraNode[CameraNode] cameras;	
 	protected LightNode[LightNode] lights;
 	protected SoundNode[SoundNode] sounds;
@@ -58,20 +70,18 @@ class Scene : Node//, ITemporal
 
 	protected Timer delta; 					// time since the last time this Scene was updated.
 	protected float delta_time;
-	protected Color ambient;				// scene ambient light color.
-	protected Color background;				// scene background color.
-	protected Color fog_color;
-	protected float fog_density = 0.1;
-	protected bool  fog_enabled = false;
+
+	protected static Scene[Scene] all_scenes;
+	
 	
 	/// Construct an empty Scene.
 	this()
 	{	super();
 		delta = new Timer();
 		scene = this;
-		ambient	= Color("333333"); // OpenGL default global ambient light.
-		background = Color("black");	// OpenGL default clear color
-		fog_color = Color("gray");
+		ambient	= Color("#333333"); // OpenGL default global ambient light.
+		backgroundColor = Color("black");	// OpenGL default clear color
+		fogColor = Color("gray");
 		
 		update_thread = new Repeater();
 		update_thread.setFunction(&update);		
@@ -101,24 +111,24 @@ class Scene : Node//, ITemporal
 	{	auto result = cast(Scene)super.clone(children);
 				
 		result.ambient = ambient;
-		result.setSpeedOfSound(getSpeedOfSound());
-		result.background = background;
-		result.fog_color = fog_color;
-		result.fog_density = fog_density;
-		result.fog_enabled = fog_enabled;
+		result.speedOfSound = speedOfSound;
+		result.backgroundColor = backgroundColor;
+		result.fogColor = fogColor;
+		result.fogDensity = fogDensity;
+		result.fogEnabled = fogEnabled;
+		result.skyBox = skyBox;
 		
 		// non-atomic operations
 		synchronized (this)
 		{	result.delta.set(delta.tell());
 			result.delta.pause();
-			result.setSkybox(skybox);
 		}
 		
 		return result;
 	}
 	unittest
 	{	// Test duplication of a running scene.
-		// this no longer works since the scene constructor now requiores the openAl .dll/.so
+		// this no longer works since the scene constructor now requires the openAl .dll/.so
 		/*
 		Scene a = new Scene();
 		a.play();
@@ -150,19 +160,32 @@ class Scene : Node//, ITemporal
 	{	return lights;
 	}
 
-	/// Get / set the background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
-	Color getClearColor()
-	{	return background;
-	}	
-	void setClearColor(Color color) /// ditto
-	{	this.background = color;
-	}
-
 	/// Return the amount of time since the last time update() was called for this Scene.
 	float getDeltaTime()
 	{	return delta_time;
 	}
 	
+	/**
+	 * Get all CameraNodes that are currently a part of this scene.
+	 * Returns: a self indexed array. */
+	CameraNode[CameraNode] getAllCameras()
+	{	return cameras;		
+	}
+	
+	/**
+	 * Get all LightNodes that are currently a part of this scene.
+	 * Returns: a self indexed array. */
+	LightNode[LightNode] getAllLights()
+	{	return lights;		
+	}
+	
+	/**
+	 * Get all SoundNodes that are currently a part of this scene.
+	 * Returns: a self indexed array. */
+	SoundNode[SoundNode] getAllSounds()
+	{	return sounds;		
+	}
+
 	/**
 	 * Get / a function to call if the sound or update thread's update function throws an exception.
 	 * If this is set to null (the default), then the exception will just be thrown. 
@@ -170,76 +193,17 @@ class Scene : Node//, ITemporal
 	 *     on_error = Defaults to System.abortException.  If null, any errors from the Scene's 
 	 *     sound or update threads will cause the threads to terminate silently. */
 	void setErrorFunction(void delegate(Exception e) on_error)
-	{	//sound_thread.setErrorFunction(on_error);
-		//update_thread.setErrorFunction(on_error);
+	{	update_thread.setErrorFunction(on_error);
 	}
 	void setErrorFunction(void function(Exception e) on_error) /// ditto
-	{	//sound_thread.setErrorFunction(on_error);
-		//update_thread.setErrorFunction(on_error);
-	}
-
-	/// Get / set the color of global scene fog, when fog is enabled.
-	Color getFogColor()
-	{	return fog_color;
-	}	
-	void setFogColor(Color fog_color) /// ditto
-	{	this.fog_color = fog_color;
-	}
-	
-	/**
-	 * Get / set the thickness (density) of the Scene's global fog, when fog is enabled.
-	 * Depending on the scale of your scene, decent values range between .001 and .1.*/
-	float getFogDensity()
-	{	return fog_density;
-	}
-	void setFogDensity(float density) /// ditto
-	{	fog_density = density;
-	}
-
-	/**
-	 * Get / set whether global distance fog is enabled for this scene.
-	 * For best results, use no skybox and set the clear color the same as the fog color.
-	 * For improved performance, set the cameras' max view distance to just beyond
-	 * where objects become completely obscured by the fog. */
-	bool getFogEnabled()
-	{	return fog_enabled;
-	}
-	void setFogEnabled(bool enabled) /// ditto
-	{	fog_enabled = enabled;
-	}
-	
-	/// Get / set the color of the scene's global ambient light.
-	Color getGlobalAmbient()
-	{	return ambient;
-	}	
-	void setGlobalAmbient(Color ambient) /// ditto
-	{	this.ambient = ambient;
-	}
-
-	/**
-	 * Get / set skybox.
-	 * A Scene can have another heirarchy of nodes that will be
-	 * rendered as a skybox by any camera. */
-	Scene getSkybox()
-	{	return skybox;
-	}	
-	void setSkybox(Scene _skybox) /// ditto
-	{	skybox = _skybox;
-	}
-	
-	/// Get / set the speed of sound (in game units per second) variable that will be passed to OpenAL.
-	float getSpeedOfSound()
-	{	return 343;//return sound_thread.getDopplerVeloity();
-	}	
-	void setSpeedOfSound(float speed) /// ditto
-	{	//sound_thread.setDopplerVelocity(speed/343.3);
+	{	update_thread.setErrorFunction(on_error);
 	}
 
 	/*
 	 * Get the Repeater that calls update() in its own thread.
 	 * This allows more advanced interaction than the shorthand functions implemented below.
 	 * See:  yage.core.repeater  */
-	package Repeater getUpdateThread()
+	Repeater getUpdateThread()
 	{	return update_thread;		
 	}
 	
@@ -261,7 +225,6 @@ class Scene : Node//, ITemporal
 	}	
 	void seek(double seconds) /// ditto
 	{	update_thread.seek(seconds);
-		// no point in seeking the sound thread.
 	}
 	double tell() /// ditto
 	{	return update_thread.tell();		
@@ -309,19 +272,19 @@ class Scene : Node//, ITemporal
 	/*
 	 * Apply OpenGL options specific to this Scene.  This function is used internally by
 	 * the engine and doesn't normally need to be called.
-	 * TODO: Rename to bind */
+	 * TODO: Move to system.graphis */
 	void apply()
 	in
-	{	assert(System.isSystemThread()); /// TODO: use closure queue or glcontext mutex to allow calling from anywhere.
+	{	assert(System.isSystemThread());
 	}
 	body
 	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.vec4f.ptr);
-		Vec4f color = background.vec4f;
+		Vec4f color = backgroundColor.vec4f;
 		glClearColor(color.x, color.y, color.z, color.w);
 
-		if (fog_enabled)
-		{	glFogfv(GL_FOG_COLOR, fog_color.vec4f.ptr);
-			glFogf(GL_FOG_DENSITY, fog_density);
+		if (fogEnabled)
+		{	glFogfv(GL_FOG_COLOR, fogColor.vec4f.ptr);
+			glFogf(GL_FOG_DENSITY, fogDensity);
 			glEnable(GL_FOG);
 		} else
 			glDisable(GL_FOG);
@@ -338,13 +301,6 @@ class Scene : Node//, ITemporal
 	{	synchronized (lights_mutex) lights.remove(light);
 	}
 	
-	/**
-	 * Get all LightNodes that are currently a part of this scene.
-	 * Returns: a self indexed array. */
-	LightNode[LightNode] getAllLights()
-	{	return lights;		
-	}
-	
 	/*
 	 * Add/remove the camera from the scene's list of cameras.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
@@ -353,13 +309,6 @@ class Scene : Node//, ITemporal
 	}
 	void removeCamera(CameraNode camera) // ditto
 	{	synchronized (cameras_mutex) cameras.remove(camera);
-	}
-	
-	/**
-	 * Get all CameraNodes that are currently a part of this scene.
-	 * Returns: a self indexed array. */
-	CameraNode[CameraNode] getAllCameras()
-	{	return cameras;		
 	}
 	
 	/*
@@ -372,13 +321,8 @@ class Scene : Node//, ITemporal
 	{	synchronized (sounds_mutex) sounds.remove(sound);
 	}
 	
-	/**
-	 * Get all SoundNodes that are currently a part of this scene.
-	 * Returns: a self indexed array. */
-	SoundNode[SoundNode] getAllSounds()
-	{	return sounds;		
-	}
-	
+	/*
+	 * Used internally. */
 	Object getSoundsMutex()
 	{	return sounds_mutex;		
 	}
@@ -388,4 +332,6 @@ class Scene : Node//, ITemporal
 	static Scene[Scene] getAllScenes()
 	{	return all_scenes;		
 	}
+	
+	
 }

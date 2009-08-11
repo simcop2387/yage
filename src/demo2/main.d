@@ -27,7 +27,7 @@ int main()
 	// Create and start a Scene
 	Scene scene = new Scene();
 	scene.play();
-	scene.setClearColor(Color("green"));
+	scene.backgroundColor = Color("green");
 	
 	// Ship
 	auto ship = scene.addChild(new ModelNode());

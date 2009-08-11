@@ -208,7 +208,7 @@ class CameraNode : MovableNode
 
 		// Draw the skybox
 		// TODO: Modify this to allow for recursive skyboxes.
-		if (scene.getSkybox())
+		if (scene.skyBox)
 		{	glClear(GL_DEPTH_BUFFER_BIT);
 
 			// Reset the position to the origin for skybox rendering.
@@ -217,8 +217,8 @@ class CameraNode : MovableNode
 			cache[scene.transform_read].transform_abs.v[12..15] = 0; // read buffer
 
 			buildFrustum(); // temporary frustum exclusively for skybox rendering.
-			scene.getSkybox().apply();
-			addNodesToRender(scene.getSkybox());
+			scene.skyBox.apply();
+			addNodesToRender(scene.skyBox);
 			Render.all(poly_count, vertex_count);
 			glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -227,7 +227,7 @@ class CameraNode : MovableNode
 		
 		scene.apply();
 
-		if (!scene.getSkybox())
+		if (!scene.skyBox)
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Translate in reverse

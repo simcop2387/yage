@@ -45,19 +45,7 @@ struct Color
 		ubyte[4] ub;/// Get the Color as an array of ubyte
 		struct { ubyte r, g, b, a; } /// Access each color component: TODO: test to ensure order is correct.
 	}
-	
-	Color opAssign(uint ui)
-	{	Color res;
-		return res;
-	}
-	
-	/// Initialize from an unsinged integer.
-	static Color opCall(uint ui)
-	{	Color res;
-		res.ui = ui;
-		return res;
-	}
-	
+
 	/**
 	 * Initialize from 3 or 4 values (red, green, blue, alpha).
 	 * Integer types rante from 0 to 255 and floating point types range from 0 to 1. */
@@ -73,8 +61,7 @@ struct Color
 	{	assert(Color(0x99663300) == Color(0, 0x33, 0x66, 0x99));
 	}
 	
-	/// ditto
-	static Color opCall(float r, float g, float b, float a=1)
+	static Color opCall(float r, float g, float b, float a=1) /// ditto
 	{	Color res;
 		res.r=cast(ubyte)clamp(r*255, 0.0f, 255.0f);
 		res.b=cast(ubyte)clamp(b*255, 0.0f, 255.0f);
@@ -82,49 +69,42 @@ struct Color
 		res.a=cast(ubyte)clamp(a*255, 0.0f, 255.0f);
 		return res;
 	}
-	
-	/// ditto
-	static Color opCall(ubyte[] v)
+	static Color opCall(ubyte[] v) /// ditto
 	{	Color res;
 		for (int i=0; i<max(v.length, 4); i++)
 			res.ub[i] = cast(ubyte)(v[i]);
 		return res;
-	}	
-	
-	/// ditto
-	static Color opCall(int[] v)
+	}
+	static Color opCall(int[] v) /// ditto
 	{	Color res;
 		for (int i=0; i<max(v.length, 4); i++)
 			res.ub[i] = cast(ubyte)(v[i]);
 		return res;
-	}	
-	
-	/// ditto
-	static Color opCall(float[] f)
+	}
+	static Color opCall(float[] f) /// ditto
 	{	Color res;
 		for (int i=0; i<min(f.length, 4); i++)
 			res.ub[i] = cast(ubyte)clamp(f[i]*255, 0.0f, 255.0f);
 		return res;
 	}
-	
-	/// ditto
-	static Color opCall(Vec3f v)
+	static Color opCall(Vec3f v) /// ditto
 	{	return Color(v.v);
 	}
-	
-	/// ditto
-	static Color opCall(Vec4f v)
+	static Color opCall(Vec4f v) /// ditto
 	{	return Color(v.v);
 	}
 	
 	/**
-	 * Convert a string to a color.
-	 * The string can be a 6 or 8 digit hexadecimal or an English color name.
+	 * Initialize from a uint, string hexadecimal value, or english color name.
+	 * Strings. can be a 6 or 8 digit hexadecimal or an English color name.
 	 * Black, blue, brown, cyan, gold, gray/grey, green, indigo, magenta, orange, 
-	 * pink, purple, red, violet, white, and yellow are supported.
-	 * See: <a href="http://www.w3schools.com/css/css_colornames.asp">CSS color names</a>
-	 * Params:
-	 * string = The string to convert.*/
+	 * pink, purple, red, transparent, violet, white, and yellow are supported.
+	 * See: <a href="http://www.w3schools.com/css/css_colornames.asp">CSS color names</a>*/
+	static Color opCall(uint ui)
+	{	Color res;
+		res.ui = ui;
+		return res;
+	}
 	static Color opCall(char[] string)
 	{	
 		// An english color name
@@ -134,8 +114,7 @@ struct Color
 			switch (lower[0..string.length])
 			{	case "black":	return Color(0xFF000000);
 				case "blue":	return Color(0xFFFF0000);
-				case "brown":	return Color(0xFF2A2AA5);
-				case "transparent":	return Color(0x00000000); // transparent
+				case "brown":	return Color(0xFF2A2AA5);				
 				case "cyan":	return Color(0xFFFFFF00);
 				case "gold":	return Color(0xFF00D7FF);
 				case "gray":	
@@ -147,6 +126,7 @@ struct Color
 				case "pink":	return Color(0xFFCBC0FF);
 				case "purple":	return Color(0xFF800080);
 				case "red":		return Color(0xFF0000FF);
+				case "transparent":	return Color(0x00000000); // transparent
 				case "violet":	return Color(0xFFEE82EE);
 				case "white":	return Color(0xFFFFFFFF);
 				case "yellow":	return Color(0xFF00FFFF);
@@ -182,15 +162,24 @@ struct Color
 		return result;
 	}
 	
-	/// Is this useful?
-	uint opCast()
-	{	return ui;		
-	}
-	
-	///
+	/**
+	 * Assign from a uint, string hexadecimal value, or english color name.
+	 * Strings. can be a 6 or 8 digit hexadecimal or an English color name.
+	 * Black, blue, brown, cyan, gold, gray/grey, green, indigo, magenta, orange, 
+	 * pink, purple, red, transparent, violet, white, and yellow are supported.
+	 * See: <a href="http://www.w3schools.com/css/css_colornames.asp">CSS color names</a>*/
 	Color opAssign(char[] string)
 	{	ui = Color(string).ui;
 		return *this;
+	}
+	Color opAssign(uint value) /// ditto
+	{	ui = value;
+		return *this;
+	}
+
+	/// Allow casting color to a uint.
+	uint opCast()
+	{	return ui;		
 	}
 	
 	/// Get the Color as an array of float.
@@ -201,8 +190,7 @@ struct Color
 		res[2] = b * frac;
 		res[3] = a * frac;
 		return res.dup;
-	}
-	
+	}	
 	void f(float[4] result) /// ditto
 	{	result[0] = r * frac;
 		result[1] = g * frac;
@@ -210,7 +198,7 @@ struct Color
 		result[3] = a * frac;
 	}
 	
-	/// Get the Color as a Vec3f.
+	/// Get the Color as a Vector
 	Vec3f vec3f()
 	{	Vec3f res;
 		res.v[0] = r * frac;
@@ -218,9 +206,7 @@ struct Color
 		res.v[2] = b * frac;
 		return res;
 	}
-
-	/// Get the Color as a Vec4f.
-	Vec4f vec4f()
+	Vec4f vec4f() /// ditto
 	{	Vec4f res;
 		res.v[0] = r * frac;
 		res.v[1] = g * frac;

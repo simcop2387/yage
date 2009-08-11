@@ -41,10 +41,9 @@ class DemoScene : Scene
 		super();		
 		
 		// Skybox
-		Scene skybox = new Scene();
-		skybox.addChild(new ModelNode("sky/sanctuary.ms3d"));
-		setSkybox(skybox);
-		setGlobalAmbient(Color("#444444"));
+		skyBox = new Scene();
+		skyBox.addChild(new ModelNode("sky/sanctuary.ms3d"));
+		backgroundColor = "#444444";
 		
 		// Ship
 		ship = addChild(new Ship());	
