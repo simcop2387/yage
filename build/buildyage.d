@@ -1,118 +1,13 @@
 #!dmd -run
 /**
  * License: MIT
- *
  * Copyright (c) 2009 Eric Poggel
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * Description:
  * 
- * This is a customized version of CDC for building Yage.  See the customBuild()
- * function for more.
+ * This is a customized version of CDC for building Yage. 
+ * See the customBuild() function for yage-specific customizations
  * 
- * CDC_Description:
- *
- * This is a D programming language build script (and library) that can be used 
- * to compile D (version 1) source code.  Unlike Bud, DSSS/Rebuild, Jake, and 
- * similar tools, CDC is contained within a single file that can easily be 
- * distributed with projects.  This simplifies the build process since no other
- * tools are required.  The customBuild() function can be utilized to turn
- * CDC into a custom build script for your project.
- *
- * CDC's only requirement is a D compiler.  It is/will be supported on any 
- * operating system supported by the language.  It works with dmd, ldc (soon), 
- * and gdc, phobos or tango.
- *
- * CDC can be used just like dmd, except for the following improvements.
- * <ul>
- *   <li>CDC can accept paths as as well as individual source files for compilation.
- *    Each path is recursively searched for source, library, object, and ddoc files.</li>
- *   <li>CDC automatically creates a modules.ddoc file for use with CandyDoc and
- *    similar documentation utilities.</li>
- *   <li>CDC defaults to use the compiler that was used to build itself.  Compiler
- *    flags are passed straight through to that compiler.</li>
- *   <li>The -op flag is always used, to prevent name conflicts in object and doc files.</li>
- *   <li>Documentation files are all placed in the same folder with their full package
- *    names.  This makes relative links between documents easier.</li>
- * </ul>
-
- * These DMD/LDC options are automatically translated to the correct GDC
- * options, or handled manually:
- * <dl>
- * <dt>-c</dt>         <dd>do not link</dd>
- * <dt>-D</dt>         <dd>generate documentation</dd>
- * <dt>-Dddocdir</dt>  <dd>write fully-qualified documentation files to docdir directory</dd>
- * <dt>-Dfdocfile</dt> <dd>write fully-qualified documentation files to docfile file</dd>
- * <dt>-lib</dt>       <dd>Generate library rather than object files</dd>
- * <dt>-run</dt>       <dd>run resulting program, passing args</dd>
- * <dt>-Ipath</dt>     <dd>where to look for imports</dd>
- * <dt>-o-</dt>        <dd>do not write object file.</dd>
- * <dt>-offilename</dt><dd>name output file to filename</dd>
- * <dt>-odobjdir</dt>  <dd>write object & library files to directory objdir</dd>
- * </dl>
- *
- * In addition, these optional flags have been added.
- * <dl>
- * <dt>-dmd</dt>       <dd>Use dmd to compile</dd>
- * <dt>-gdc</dt>       <dd>Use gdc to compile</dd>
- * <dt>-ldc</dt>       <dd>Use ldc to compile</dd>
- * <dt>-verbose</dt>   <dd>Print all commands as they're executed.</dd>
- * <dt>-root</dt>      <dd>Set the root directory of all source files.
- *                 This is useful if CDC is run from a path outside the source folder.</dd>
- * </dl>
- *
- * Bugs:
- * <ul>
- * <li>Doesn't yet work with LDC.  See dsource.org/projects/ldc/ticket/323</li>
- * <li>Dmd writes out object files as foo/bar.o, while gdc writes foo.bar.o</li>
- * <li>Dmd fails to write object files when -od is an absolute path.</li>
- * </ul>
- *
- * Test_Matrix:
- * <ul>
- * <li>pass - DMD/phobos/Win32</li>
- * <li>pass - DMD/tango/Win32</li>
- * <li>pass - DMD/tango/Linux32</li>
- * <li>pass - GDC/phobos/Win32</li>
- * <li>pass - GDC/phobos/Linux32</li>
- * <li>fail - LDC/tango/Linux32</li>
- * <li>pass - GDC/phobos/OSX</li>
- * <li>? - DMD/OSX</li>
- * <li>? - BSD</li>
- * <li>? - DMD2</li>
- * </ul>
- *
- * TODO:
- * <ul>
- * <li>Add support for a -script argument to accept another .d file that calls cdc's functions.</li>
- * <li>Print help or at least info on run.</li>
- * <li>-Df option</li>
- * <li>GDC - Remove dependancy on "ar" on windows? </li>
- * <li>LDC - Scanning a folder for files is broken. </li>
- * <li>Test with D2</li>
- * <li>Unittests</li>
- * <li>More testing on paths with spaces. </li>
- * </ul>
- *
- * API:
- * Use any of these functions in your own build script.
+ * See:
+ * http://dsource.org/projects/cdc/
  */
 
 module cdc;
@@ -146,7 +41,7 @@ version(Tango)
 	import std.regexp;
 	import std.traits;
 	import std.c.process;
-	import std.c.time : sleep, usleep;
+	import std.c.time : usleep;
 }
 
 /// This is always set to the name of the default compiler, which is the compiler used to build cdc.
@@ -234,14 +129,14 @@ bool customBuild(char[][] args)
 	// Parse Options
 	char[][] options1;	// options for both derelict and yage
 	char[][] options2;  // options for only yage
-	bool silent, release, ddoc, verbose;
+	bool silent, release, ddoc, verbose, run, debug_;
 	foreach (char[] arg; args)
 	{	switch(String.toLower(arg))
 		{	case "-ddoc": 		options2 ~= ["-D", "-Dd../doc"]; ddoc = true; break;
-			case "-debug": 		options1 ~= ["-debug", "-g"]; break;
+			case "-debug": 		debug_=true; options1 ~= ["-debug", "-g"]; break;
 			case "-profile": 	options1 ~= ["-profile"]; break;
 			case "-release": 	options2 ~= ["-O", "-inline", "-release"]; release = true; break;
-			case "-run": 		options2 ~= ["-run"]; break;
+			case "-run": 		run=true; break;
 			case "-silent": 	silent=true; break;
 			case "-verbose": 	verbose=true; break;
 			default: break;
@@ -267,13 +162,14 @@ bool customBuild(char[][] args)
 	long startTime = System.time();
 
 	// Build derelict if not built.
-	char[] derelict = "../lib/derelict-"~compiler~"-"~platform~lib_ext;
+	char[] debugstr = debug_ ? "-d" : "";
+	char[] derelict = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;
 	if (!FS.exists(derelict))
 		CDC.compile(["derelict"], ["-of"~derelict, "-lib"] ~ options1, null, "../src", verbose);
 
 	// Build yage
 	CDC.compile(["yage", app, derelict], ["-of../bin/yage3d"] ~ options1 ~ options2, null, "../src", verbose);
-
+	
 	// Remove leftover files.
 	foreach (file; ["cdc", "cdc.exe", "cdc.o", "cdc.obj", "cdc.map"])
 		FS.remove(file);
@@ -283,6 +179,15 @@ bool customBuild(char[][] args)
 	System.trace(`yage3d{} executable has been placed in ../bin`, bin_ext);
 	if (ddoc)
 		System.trace(`Documentation files have been placed in ../doc`, bin_ext);
+	
+	
+	if (run)
+	{	version(Windows)
+			System.execute("../bin/yage3d.exe");
+		else
+			System.execute("../bin/yage3d");
+	}
+	
 	return true; // success
 }
 
