@@ -23,6 +23,5 @@ public
 	import yage.resource.resource;
 	import yage.resource.shader;
 	import yage.resource.sound;
-	import yage.resource.texture;	
-	import yage.resource.lazyresource;
+	import yage.resource.texture;
 }

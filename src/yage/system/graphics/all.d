@@ -12,5 +12,4 @@ public
 {	import yage.system.graphics.graphics;
 	import yage.system.graphics.probe;
 	import yage.system.graphics.render;
-	import yage.system.graphics.resource;
 }

@@ -9,8 +9,11 @@ module yage.resource.model;
 import tango.stdc.math : fmod;
 import tango.math.Math;
 import tango.io.Stdout;
-import tango.core.Thread;
 import tango.text.Unicode;
+
+import tango.text.xml.Document;
+import tango.io.Stdout;
+import tango.io.device.File;
 
 // These are used by ms3d loader
 import std.string;
@@ -22,17 +25,18 @@ import yage.core.misc;
 import tango.text.convert.Format;
 import yage.core.math.quatrn;
 import yage.core.math.vector;
-import yage.core.object2;;
+import yage.core.object2;
 import yage.resource.geometry;
 import yage.resource.material;
 import yage.resource.manager;
 import yage.resource.resource;
+import yage.resource.colladaloader;
+import yage.resource.ms3dloader;
+import yage.resource.objloader;
 import yage.system.log;
 import yage.system.graphics.probe;
 import yage.system.system;
-import yage.resource.ms3dloader;
-import yage.resource.objloader;
-import yage.resource.lazyresource;
+
 import yage.scene.visible;
 
 ///
@@ -90,6 +94,7 @@ class Model : Geometry
 	
 	mixin Ms3dLoader;
 	mixin ObjLoader;
+	mixin ColladaLoader;
 
 	/// Instantiate an empty model.
 	this()

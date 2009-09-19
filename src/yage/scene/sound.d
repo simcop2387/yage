@@ -53,9 +53,9 @@ class SoundNode : MovableNode, ITemporal
 	}
 	
 	/**
-	 * Overridden to call finalize(). */
+	 * Overridden to call dispose(). */
 	~this()
-	{	finalize();
+	{	dispose();
 	}
 	
 	/**

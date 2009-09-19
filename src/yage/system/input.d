@@ -10,6 +10,7 @@ public import derelict.sdl.sdl;
 
 import yage.core.math.vector;
 import yage.system.system;
+import yage.system.window;
 import yage.gui.surface;
 
 
@@ -19,19 +20,16 @@ import yage.gui.surface;
  */ 
 class Input
 {
-	static int mousex, mousey; // The current pixel location of the mouse cursor; (0, 0) is top left.
-
+	protected static Vec2i mouse; // The current pixel location of the mouse cursor; (0, 0) is top left.
 	protected static Surface currentSurface;	// Surface that the mouse is currently over
 
-
-	/** This function fills the above fields with the current intput data.
-	 *  See the descriptions of each field for more details.  If this function is not called,
-	 *  then input can be handled manually.  See http://www.libsdl.org/cgi/docwiki.cgi/SDL_5fEvent
-	 *  for details on manual SDL input processing. */
-	static void processInput()
+	/** 
+	 * Process input, handle window resize and close events, and send the remaining events to surface,
+	 * calling the surfaces's keyDown, keyUp, mouseDown, MouseUp, and mouseOver functions as appropriate. */
+	static void processAndSendTo(Surface surface)
 	{
 		// Disable key repeating, we'll handle that manually.
-		//SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);	// why doesn't this work? Need to try again since I have the latest version of SDL
+		//SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL); // why doesn't this work? Need to try again since I have the latest version of SDL
 				
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
@@ -41,54 +39,52 @@ class Input
 				// Keyboard
 				case SDL_KEYDOWN:
 					
-					auto surface = getMouseSurface(); // TODO: Change this to the surface that has focus
-					if(surface) // keysym.sym gets all keys on the keyboard, including separate keys for numpad, keysym.unicde should be reserved for text.
-					{	surface.keyDown(event.key.keysym.sym, event.key.keysym.mod);
-						//surface.keyDown(event.key.keysym.unicode, event.key.keysym.mod);
-						//surface.text ~= toUTF8([cast(dchar)(event.key.keysym.sym)]);
+					auto focus = getFocusSurface(surface);
+					if(focus) // keysym.sym gets all keys on the keyboard, including separate keys for numpad, keysym.unicde should be reserved for text.
+					{	focus.keyDown(event.key.keysym.sym, event.key.keysym.mod);
+						//focus.keyDown(event.key.keysym.unicode, event.key.keysym.mod);
+						//focus.text ~= toUTF8([cast(dchar)(event.key.keysym.sym)]);
 					}
 					break;
 				case SDL_KEYUP:
 	    			
-	    			auto surface = getMouseSurface();
-					if(surface)
-						surface.keyUp(event.key.keysym.sym, event.key.keysym.mod);
-					//	surface.keyUp(event.key.keysym.unicode, event.key.keysym.mod);
+	    			auto focus = getFocusSurface(surface);
+					if(focus)
+						focus.keyUp(event.key.keysym.sym, event.key.keysym.mod);
+						//focus.keyUp(event.key.keysym.unicode, event.key.keysym.mod);
 					
 					break;
 				// Mouse
 				case SDL_MOUSEBUTTONDOWN:
-					auto surface = getMouseSurface();
-	
-					if(surface) 
-						surface.mouseDown(event.button.button, Vec2i(mousex, mousey));
+					auto over = getMouseSurface(surface);
+					if(over) 
+						over.mouseDown(event.button.button, mouse);
 	
 					break;
 				case SDL_MOUSEBUTTONUP:
-					auto surface = getMouseSurface();
-	
-					if(surface)
-	 					surface.mouseUp(event.button.button, Vec2i(mousex, mousey));
+					auto over = getMouseSurface(surface);
+					if(over)
+						over.mouseUp(event.button.button, mouse);
 	
 					break;
-				case SDL_MOUSEMOTION:					
-					mousex = event.motion.x;
-					mousey = event.motion.y;
+				case SDL_MOUSEMOTION:			
+					mouse.x = event.motion.x;
+					mouse.y = event.motion.y;
 					
 					// Doing this before getMouseSurface() fixes the mouse leaving the surface while dragging.
 					if(currentSurface) // [below] negative y because opengl y goes from bottom to top
 						currentSurface.mouseMove(event.button.button, Vec2i(event.motion.xrel, -event.motion.yrel));
 	
 					//if the surface that the mouse is in has changed
-					auto surface = getMouseSurface();
-					if(currentSurface !is surface)
+					auto over = getMouseSurface(surface);
+					if(currentSurface !is over)
 					{	
 						if(currentSurface) //Tell it that the mouse left
-							currentSurface.mouseOut(surface, event.button.button, Vec2i(mousex,mousey));
-						if(surface) //Tell it that the mosue entered
-							surface.mouseOver(event.button.button, Vec2i(mousex,mousey));							
+							currentSurface.mouseOut(over, event.button.button, mouse);
+						if(over) //Tell it that the mosue entered
+							over.mouseOver(event.button.button, mouse);							
 						
-						currentSurface = surface; //The new current surface
+						currentSurface = over; //The new current surface
 					}
 					
 					break;
@@ -97,7 +93,8 @@ class Input
 				//case SDL_ACTIVEEVENT:
 				//case SDL_VIDEOEXPOSE:
 				case SDL_VIDEORESIZE:
-					System.resizeWindow(event.resize.w, event.resize.h);
+					if (Window.getInstance())
+						Window.getInstance().resizeWindow(event.resize.w, event.resize.h);
 					break;
 				case SDL_QUIT:
 					System.abort("Yage aborted by window close");
@@ -110,9 +107,17 @@ class Input
 	
 	/**
 	 * Get the surface that is under the mouse. */
-	static Surface getMouseSurface(){
+	private static Surface getMouseSurface(Surface surface) {
 		if(Surface.getGrabbedSurface()) 
 			return Surface.getGrabbedSurface();
-		return System.getSurface().findSurface(cast(float)mousex, cast(float)mousey);
+		return surface.findSurface(mouse.x, mouse.y);
+	}
+	
+	/**
+	 * Get the surface that currently has focus. */
+	private static Surface getFocusSurface(Surface surface) {
+		if(Surface.getFocusSurface()) 
+			return Surface.getFocusSurface();
+		return surface;
 	}
 }

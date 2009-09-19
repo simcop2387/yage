@@ -4,7 +4,7 @@
  * Copyright (c) 2009 Eric Poggel
  * 
  * This is a customized version of CDC for building Yage. 
- * See the customBuild() function for yage-specific customizations
+ * See the main() function for yage-specific customizations
  * 
  * See:
  * http://dsource.org/projects/cdc/
@@ -13,6 +13,97 @@
 module cdc;
 
 const char[] app = "demo1"; // set which program to build against yage.
+
+/**
+ * Use to implement your own custom build script, or pass args on to defaultBuild() 
+ * to use this file as a generic build script like bud or rebuild. */
+int main(char[][] args)
+{	
+	// Operate cdc as a generic build script
+	//return defaultBuild(args);
+	
+	// Get platform
+	version (Win32)
+		char[] platform = "win32";
+	version (Win64)
+		char[] platform = "win64";
+	version (linux)
+	{	version (X86)
+			char[] platform = "linux32";
+		version (X86_64)
+			char[] platform = "linux64";
+	}
+	
+	// Parse Options
+	char[][] options1;	// options for both derelict and yage
+	char[][] options2;  // options for only yage
+	bool silent, release, ddoc, verbose, run, debug_;
+	foreach (char[] arg; args)
+	{	switch(String.toLower(arg))
+		{	case "-ddoc": 		options2 ~= ["-D", "-Dd../doc"]; ddoc = true; break;
+			case "-debug": 		debug_=true; options1 ~= ["-debug", "-g"]; break;
+			case "-profile": 	options1 ~= ["-profile"]; break;
+			case "-release": 	options2 ~= ["-O", "-inline", "-release"]; release = true; break;
+			case "-run": 		run=true; break;
+			case "-silent": 	silent=true; break;
+			case "-verbose": 	verbose=true; break;
+			default: break;
+	}	}
+	if (!release)
+		options1 ~= ["-unittest"];
+
+	// Show Options
+	if (!silent)
+	{	System.trace("Building Yage...");
+		System.trace("If you're curious, the options are:");
+		System.trace("   -ddoc      Generate documentation in the doc folder");
+		System.trace("   -debug     Include debugging symbols and enable stack tracing on Windows.");
+		System.trace("   -profile   Compile in profiling code.");
+		System.trace("   -release   Optimize, inline expand functions, and remove unit tests/asserts.");
+		System.trace("   -run       Run when finished.");
+		System.trace("   -silent    Don't print this message.");
+		System.trace("   -verbose   Print all commands as they're being executed.");
+		System.trace("Example:  dmd -run buildyage.d -release -run");
+	}
+
+	// create cdc
+	long startTime = System.time();
+
+	// Build derelict if not built.
+	char[] debugstr = debug_ ? "-d" : "";
+	char[] derelict = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;
+	if (!FS.exists(derelict))
+		CDC.compile(["derelict"], ["-of"~derelict, "-lib"] ~ options1, null, "../src", verbose);
+
+	// Build yage
+	CDC.compile(["yage", app, derelict], ["-of../bin/yage3d"] ~ options1 ~ options2, null, "../src", verbose);
+	
+	// Remove leftover files.
+	foreach (file; ["cdc", "cdc.exe", "cdc.o", "cdc.obj", "cdc.map"])
+		FS.remove(file);
+
+	// Print success
+	System.trace("The build completed successfully in {} seconds.",  (System.time() - startTime)/1_000f);
+	System.trace(`yage3d{} executable has been placed in ../bin`, bin_ext);
+	if (ddoc)
+		System.trace(`Documentation files have been placed in ../doc`, bin_ext);
+	
+	if (run)
+	{	version(Windows)
+			System.execute("../bin/yage3d.exe");
+		else
+			System.execute("../bin/yage3d");
+	}
+
+	return 0; // success
+}
+
+
+/*
+ * ----------------------------------------------------------------------------
+ * CDC Code, modify with caution
+ * ----------------------------------------------------------------------------
+ */
 
 // Imports
 version(Tango)
@@ -41,7 +132,7 @@ version(Tango)
 	import std.regexp;
 	import std.traits;
 	import std.c.process;
-	import std.c.time : usleep;
+	import std.c.time : sleep, usleep;
 }
 
 /// This is always set to the name of the default compiler, which is the compiler used to build cdc.
@@ -65,12 +156,8 @@ else
 
 /**
  * Program entry point.  Parse args and run the compiler.*/
-int main(char[][] args)
+int defaultBuild(char[][] args)
 {	args = args[1..$];// remove self-name from args
-
-	// Omit the rest if customBuild is implemented
-	if (customBuild(args))
-		return 0; // success;
 
 	char[] root;
 	char[][] options;
@@ -105,90 +192,6 @@ int main(char[][] args)
 	CDC.compile(paths, options, run_args, root, verbose);
 
 	return 0; // success
-}
-
-/**
- * Use the body of this functio to convert cdc to a custom build script for your project.
- * If this function returns true, the normal cdc build process will not occur.
- * Returns: True if this function is used to perform a custom build. */
-bool customBuild(char[][] args)
-{	
-	// Get platform
-	version (Win32)
-		char[] platform = "win32";
-	version (Win64)
-		char[] platform = "win64";
-	version (linux)
-	{	version (X86)
-			char[] platform = "linux32";
-		version (X86_64)
-			char[] platform = "linux64";
-	}
-	
-	
-	// Parse Options
-	char[][] options1;	// options for both derelict and yage
-	char[][] options2;  // options for only yage
-	bool silent, release, ddoc, verbose, run, debug_;
-	foreach (char[] arg; args)
-	{	switch(String.toLower(arg))
-		{	case "-ddoc": 		options2 ~= ["-D", "-Dd../doc"]; ddoc = true; break;
-			case "-debug": 		debug_=true; options1 ~= ["-debug", "-g"]; break;
-			case "-profile": 	options1 ~= ["-profile"]; break;
-			case "-release": 	options2 ~= ["-O", "-inline", "-release"]; release = true; break;
-			case "-run": 		run=true; break;
-			case "-silent": 	silent=true; break;
-			case "-verbose": 	verbose=true; break;
-			default: break;
-	}	}
-	if (!release)
-		options1 ~= ["-unittest"];
-
-	// Show Options
-	if (!silent)
-	{	System.trace("Building Yage...");
-		System.trace("If you're curious, the options are:");
-		System.trace("   -ddoc      Generate documentation in the doc folder");
-		System.trace("   -debug     Include debugging symbols.");
-		System.trace("   -profile   Compile in profiling code.");
-		System.trace("   -release   Optimize, inline expand functions, and remove unit tests/asserts.");
-		System.trace("   -run       Run when finished.");
-		System.trace("   -silent    Don't print this message.");
-		System.trace("   -verbose   Print all commands as they're being executed.");
-		System.trace("Example:  dmd -run buildyage.d -release -run");
-	}
-
-	// create cdc
-	long startTime = System.time();
-
-	// Build derelict if not built.
-	char[] debugstr = debug_ ? "-d" : "";
-	char[] derelict = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;
-	if (!FS.exists(derelict))
-		CDC.compile(["derelict"], ["-of"~derelict, "-lib"] ~ options1, null, "../src", verbose);
-
-	// Build yage
-	CDC.compile(["yage", app, derelict], ["-of../bin/yage3d"] ~ options1 ~ options2, null, "../src", verbose);
-	
-	// Remove leftover files.
-	foreach (file; ["cdc", "cdc.exe", "cdc.o", "cdc.obj", "cdc.map"])
-		FS.remove(file);
-
-	// Print success
-	System.trace("The build completed successfully in {} seconds.",  (System.time() - startTime)/1_000f);
-	System.trace(`yage3d{} executable has been placed in ../bin`, bin_ext);
-	if (ddoc)
-		System.trace(`Documentation files have been placed in ../doc`, bin_ext);
-	
-	
-	if (run)
-	{	version(Windows)
-			System.execute("../bin/yage3d.exe");
-		else
-			System.execute("../bin/yage3d");
-	}
-	
-	return true; // success
 }
 
 /**
@@ -710,7 +713,7 @@ struct FS
 	}
 
 	/**
-	 * Recursively get all sources in directory and subdirectories that have an extension in exts.
+	 * Recursively get all files in directory and subdirectories that have an extension in exts.
 	 * This may return files in a different order depending on whether Tango or Phobos is used.
 	 * Params:
 	 *     directory = Absolute or relative path to the current directory
@@ -805,7 +808,7 @@ struct String
 	static int find(T)(T[] haystack, T[] needle)
 	{	if (needle.length > haystack.length)
 			return -1;
-		for (int i=0; i<haystack.length - needle.length; i++)
+		for (int i=0; i<haystack.length - needle.length+1; i++)
 			if (haystack[i..i+needle.length] == needle)
 				return i;
 		return -1;
@@ -819,8 +822,10 @@ struct String
 		return -1;
 	}
 	unittest
-	{	assert(find("hello world world", "wo") == 6);
-		assert(rfind("hello world world", "wo") == 12);
+	{	assert(find("hello world world.", "wo") == 6);
+		assert(find("hello world world.", "world.") == 12);
+		assert(rfind("hello world world.", "wo") == 12);
+		assert(rfind("hello world world.", "world.") == 12);
 	}
 
 	/**

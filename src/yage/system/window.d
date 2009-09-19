@@ -6,98 +6,228 @@
 
 module yage.system.window;
 
+import tango.stdc.stringz;
+import tango.io.Stdout;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
+import derelict.opengl.glext;
 import derelict.util.exception;
 import derelict.sdl.sdl;
+import derelict.sdl.image;
+import yage.gui.surface;
+import yage.system.log;
+import yage.system.graphics.all;
+import yage.core.all;
+import yage.core.object2;
+import yage.core.math.vector;
+import yage.scene.scene;
+import yage.system.system;
 
 import yage.core.math.vector;
 import yage.core.object2;
 
 
-// TODO: Have System use this code.
-// Note that SDL supports only one window at a time.
-// Should this extend Repeater and put all rendering in its own thread?
+//OpenGL constants to enable specular highlights with textures (why aren't these in Derelict?).
+const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
+const int SINGLE_COLOR_EXT = 0x81F9;
+const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
+
+
+/**
+ * This class is for creating and managing the Window that Yage uses for rendering.
+ * Due to the same limitation in SDL, Yage only supports one Window at a time.
+ * Example:
+ * --------
+ * System.init(); // required
+ * auto window = Window.getInstance();
+ * window.setResolution(640, 480);
+ * --------
+ */
 class Window : IRenderTarget
 {
-	protected SDL_Surface* sdl_surface;
-	protected Vec2i		size;
-	protected Vec2i 	viewport_size;
-	protected ubyte 	depth;
-	protected bool 		fullscreen;
 	
-	this()
-	{
-		// Create the screen surface (window)
-		uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
-		if (fullscreen) 
-			flags |= SDL_FULLSCREEN;
-		sdl_surface = SDL_SetVideoMode(size.x, size.y, depth, flags);
-		if(sdl_surface is null)
-			throw new YageException("Unable to set {}x{} video mode: {}", size.x, size.y, SDL_GetError());
-		SDL_LockSurface(sdl_surface);
+	protected SDL_Surface* sdlSurface;	
+	protected Vec2i	size; // size of the window
+	protected Vec2i viewportPosition;
+	protected Vec2i viewportSize;
+	protected char[] title, taskbarName;
+	
+	protected static Window instance;	
+
+	private this()
+	{	
+		DerelictGL.load();
+		DerelictGLU.load();
+		
+		// Initialize SDL video
+		if(SDL_Init(SDL_INIT_VIDEO) < 0)
+			throw new YageException ("Unable to initialize SDL: "~ fromStringz(SDL_GetError()));
+	}
+
+	
+	void dispose()
+	{	DerelictGL.unload();
+		DerelictGLU.unload();
+		instance = null;
 	}
 	
-	/// Return the aspect ratio (width/height) of the window.
-	float getAspectRatio()
-	{	if (size.y==0) 
-			size.y=1;
-		return size.x/cast(float)size.y;
-	}
-	
-	/// Return the current width of the window in pixels.
-	int getWidth()
+	/// Get the width/height of this Window's display area (not including title/borders) in pixels.
+	override int getWidth()
 	{	return size.x;		
 	}
-	/// return the current height of the window in pixels.
-	int getHeight()
-	{	return size.y;
+	override int getHeight() /// ditto
+	{	return size.y;		
 	}
 	
-	void bindRenderTarget()
-	{		
+	///
+	Vec2i getViewportPosition()
+	{	return viewportPosition;
+	}
+	///
+	Vec2i getViewportSize()
+	{	return viewportSize;
 	}
 	
-	void unbindRenderTarget()
-	{		
+	/**
+	 * Minimize the Window. */
+	void minimize()
+	{	SDL_WM_IconifyWindow();
 	}
 	
-	/** 
-	 * Resize the viewport to the given size.  
-	 * Special values of zero scale the viewport to the window size. 
-	 * This is usually called by Camera. */
-	void resizeViewport(int width, int height, float near, float far, float fov, float aspect)
-	{	viewport_size.x = width;
-		viewport_size.y = height;
-
-		// special values of 0 means stretch to window size
-		if (viewport_size.x ==0) viewport_size.x  = size.x;
-		if (viewport_size.y==0) viewport_size.y = size.y;
-
-		// Ensure our new resolution is less than the window size
-		// This might no longer be an issue once framebufferobjects are used.
-		if (viewport_size.x > size.x)  viewport_size.x  = size.x;
-		if (viewport_size.y > size.y) viewport_size.y = size.y;
-
-		glViewport(0, 0, viewport_size.x, viewport_size.y);
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		if (aspect==0) aspect = getAspectRatio();
-		gluPerspective(fov, aspect, near, far);
-
-		glMatrixMode(GL_MODELVIEW);
-
+	/**
+	 * Set the caption for the Window.
+	 * Params:
+	 *     title = The caption shown on top of the window
+	 *     taskbarName = The caption shown on the window's taskbar entry.  Defaults to title. */
+	void setCaption(char[] title, char[] taskbarName=null)
+	{	if (!taskbarName)
+			taskbarName = title;		
+		SDL_WM_SetCaption(toStringz(title), toStringz(taskbarName));
 	}
 
+	/**
+	 * Create (or recreate) the window singleton at this resolution.
+	 * Unfortunately this resets the OpenGL context on Windows, which currently causes a crash on subsequent calls.
+	 * Params:
+	 *     width = Width of the window in pixels
+	 *     height = Height of the window in pixels
+	 *     depth = Color depth of each pixel.  Should be 16, 24, 32, or 0 for auto.
+	 *     fullscreen = The window is fullscreen if true; windowed otherwise.
+	 *     samples = The number of samples to use for anti-aliasing (1 for no aa).
+	 */
+	void setResolution(int width, int height, ubyte depth=0, bool fullscreen=false, ubyte samples=1)
+	{
+		assert(depth==0 || depth==16 || depth==24 || depth==32); // 0 for current screen depth
+		assert(width>0 && height>0);
+
+		// Anti-aliasing
+		if (samples > 1)
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+		else
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+		
+		size.x = width;
+		size.y = height;
+
+		// Create the screen surface (window)
+		uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
+		if (fullscreen) flags |= SDL_FULLSCREEN;
+		sdlSurface = SDL_SetVideoMode(size.x, size.y, depth, flags);
+		if(sdlSurface is null)
+			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
+		SDL_LockSurface(sdlSurface);
+
+		// Attempt to load multitexturing		
+		if (Probe.feature(Probe.Feature.MULTITEXTURE))
+		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
+				throw new YageException("GL_ARB_multitexture extension detected but it could not be loaded.");
+			Log.write("GL_ARB_multitexture support enabled.");
+		}else
+			Log.write("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
+
+		// Attempt to load shaders
+		if (Probe.feature(Probe.Feature.SHADER))
+		{	if (!ARBShaderObjects.load("GL_ARB_shader_objects"))
+				throw new YageException("GL_ARB_shader_objects extension detected but it could not be loaded.");
+			if (!ARBVertexShader.load("GL_ARB_vertex_shader"))
+				throw new YageException("GL_ARB_vertex_shader extension detected but it could not be loaded.");
+			Log.write("GL_ARB_shader_objects support enabled.");
+		}else
+			Log.write("GL_ARB_shader_objects not supported.  This is ok, but rendering will be limited to the fixed-function pipeline.");
+
+		// Attempt to load vertex buffer object
+		if (Probe.feature(Probe.Feature.VBO))
+		{	if (!ARBVertexBufferObject.load("GL_ARB_vertex_buffer_object"))
+				throw new YageException("GL_ARB_vertex_buffer_object extension detected but it could not be loaded.");
+			Log.write("GL_ARB_vertex_buffer_object support enabled.");
+		}else
+			Log.write("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
+		
+		// Frame Buffer Object
+		if (Probe.feature(Probe.Feature.FBO))
+		{	if (!EXTFramebufferObject.load("GL_EXT_framebuffer_object"))
+				throw new YageException("GL_EXT_framebuffer_object extension detected but it could not be loaded.");
+			Log.write("GL_EXT_framebuffer_object support enabled.");
+		}else
+			Log.write("GL_EXT_framebuffer_object not supported.  This is still ok.");
+		
+		
+				
+		// OpenGL options
+		// These are the engine defaults.  Any function that modifies these should reset them when done.
+		// TODO: add these to the base of the Graphics stack instead.
+		glShadeModel(GL_SMOOTH);
+		glClearDepth(1);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_NORMALIZE);  // GL_RESCALE_NORMAL is faster but does not work for non-uniform scaling
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+		glHint(GL_FOG_HINT, GL_FASTEST); // per vertex fog
+		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, true); // [below] Specular highlights w/ textures.
+		glLightModeli(LIGHT_MODEL_COLOR_CONTROL_EXT, SEPARATE_SPECULAR_COLOR_EXT);
+
+		glEnable(GL_LIGHTING);
+		glFogi(GL_FOG_MODE, GL_EXP); // Most realistic?
+
+		// Environment Mapping (disabled by default)
+		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+
+		// Enable support for vertex arrays
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_NORMAL_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		
+		setViewport();
+	}
+	
+	/**
+	 * Set the viewport position and size
+	 * Params:
+	 *     topLeft = Top left coordinates of the viewport in pixels.
+	 *     widthHeight = Width and height of the viewport in pixels.  If zero, defaults to window width/height. */
+	void setViewport(Vec2i topLeft=Vec2i(0), Vec2i widthHeight=Vec2i(0))
+	{	if (widthHeight.x <= 0)
+			widthHeight.x = size.x;
+		if (widthHeight.y <= 0)
+			widthHeight.y = size.y;
+		glViewport(topLeft.x, topLeft.y, widthHeight.x, widthHeight.y);
+		viewportPosition = topLeft;
+		viewportSize = widthHeight;
+	}
+	
 	/** 
 	 * Stores the dimensions of the current window size.
-	 *  his is called by a resize event in Input.checkInput(). */
+	 * This is called by a resize event in Input.checkInput(). */
 	void resizeWindow(int width, int height)
 	{	size.x = width;
 		size.y = height;
+		//Vec2f dsize = Vec2f(size.x, size.y);
 		
-		//surface.update();
+		//System.surface.updateDimensions();
 		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, also try SDL lock surface)
@@ -108,10 +238,17 @@ class Window : IRenderTarget
 		{	uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
 			if (fullscreen)
 				flags |= SDL_FULLSCREEN;
-			sdl_surface = SDL_SetVideoMode(width, height, 0, flags);
-			if (sdl_surface is null)
+			sdlSurface = SDL_SetVideoMode(width, height, 0, flags);
+			if (sdlSurface is null)
 				throw new YageException("Failed to resize the window!");
 		}
 	}
-	
+
+	/**
+	 * Returns: The singleton Window instance. */
+	static Window getInstance()
+	{	if (instance)
+			return instance;
+		return instance = new Window();
+	}
 }

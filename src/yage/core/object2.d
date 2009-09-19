@@ -91,24 +91,24 @@ interface ICloneable
 
 /**
  * Any class that has to do custom cleanup operations before destruction should implement this. */
-interface IFinalizable
+interface IDisposable
 {	
 	/**
 	 * Clean up resources before garbage collection that can't safely be cleaned up in a destructor.
 	 * Finalize must be able to accept multiple calls, in case it is called manually and by a destroctor.
-	 * After finalize is called, it's object should be considered to be in a non-usable state and ready for destruction.*/
-	void finalize();
+	 * After dispose is called, it's object should be considered to be in a non-usable state and ready for destruction.*/
+	void dispose();
 }
 
 /**
  * Interface for any resource that has an external component outside of D memory, such as an OpenGL Texture. */
-interface IExternalResource : IFinalizable
+interface IExternalResource : IDisposable
 {
 	/// Initializes the external part of the resource.  This function must support multiple calls.
 	void commit();
 	
 	/// Destroyes the external part of the resource.  This function must support multiple calls.
-	void finalize();
+	void dispose();
 	
 	/// Get an id that is used to reference the external part of the resource.  This will be 0 if the external part doesn't exist.
 	uint getId();
@@ -123,8 +123,9 @@ interface IExternalResource : IFinalizable
  * Anything that implements this can act as a target for anything that
  * renders using OpenGL operations. */
 interface IRenderTarget
-{	void bindRenderTarget();
-	void unbindRenderTarget();	
+{	
+	int getWidth();
+	int getHeight();
 }
 
 

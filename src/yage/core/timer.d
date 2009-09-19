@@ -17,7 +17,7 @@ import tango.time.StopWatch;
  * Example:
  * --------------------------------
  * Timer a = new Timer();
- * real b = a.get();		// b stores the current time.
+ * double b = a.get();		// b stores the current time.
  * --------------------------------
  */
 class Timer
@@ -38,19 +38,6 @@ class Timer
 		us = 0;
 		if (start)
 			hpc.start();
-	}
-
-	/** 
-	 * Copy Constructor
-	 * Params: rhs = This Timer will be a copy of rhs.*/
-	this(Timer rhs)
-	{	seek(rhs.get());
-		min = rhs.min;
-		max = rhs.max;
-		if (rhs.paused())
-			pause();
-		else
-			play();
 	}
 	
 	///
@@ -134,13 +121,7 @@ class Timer
 	double tell()
 	{	
 		synchronized(this)
-		{	if (!_paused)
-			{	hpc.stop();
-				us +=  hpc.microsec(); // Update our microsecond counter
-				hpc.start();
-			}
-		
-			double relative = us*0.000001;
+		{	double relative = rawTime();
 			
 			// Only use pause_after if it's between min and max.
 			if (min <= pause_after && pause_after <= max)
@@ -172,49 +153,5 @@ class Timer
 	///
 	char[] toString()
 	{	return Format.convert("{:d8}", tell());
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/// @deprecated
-	void set(real time)
-	{	seek(time);
-	}
-
-	/// @deprecated alias of tell().
-	real get()
-	{	return tell();		
-	}
-
-	/// @deprecated Is the Timer paused?
-	bool getPaused()
-	{	return paused();
-	}
-
-	/// @deprecated Set whether the Timer is paused.
-	void setPaused(bool paused)
-	{	pause();		
-	}	
-
-	/// @deprecated
-	void resume()
-	{	setPaused(false);
-	}
-
-	/// @deprecated
-	void reset()
-	{	synchronized(this)
-		{	hpc.stop();
-			if(!paused)
-				hpc.start();
-			us = 0;
-		}
 	}
 }

@@ -75,7 +75,9 @@ bool strToBool(char[] word)
 			return false;
 		default:
 			throw new Exception("strToBool() cannot parse '" ~ word ~"'.");
-}	}
+	}	
+	return false;
+}
 
 /// Convert 1 to "true" and 0 to "false".
 char[] boolToString(bool a)

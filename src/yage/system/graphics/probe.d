@@ -19,8 +19,8 @@ import yage.system.system;
 abstract class Probe
 {
 	/**
-	 * Options for Probe.openGL() */
-	enum OpenGL
+	 * Options for Probe.feature() */
+	enum Feature
 	{	MAX_LIGHTS,			/// Maximum number of lights that can be used at one time
 		MAX_TEXTURE_SIZE,	/// Maximum allowed size for a texture
 		MAX_TEXTURE_UNITS,	/// Maximum number of textures that can be used in multitexturing
@@ -35,66 +35,72 @@ abstract class Probe
 	}	
 	
 	/**
-	 * Query an OpenGL value.
+	 * Query the hardware to see if a feature is supported
+	 * For OpenGL features, the window must first be created.
 	 * Params:
-	 *     constant = A value from the OpenGL enum defined above.
+	 *     constant = A value from the Feature enum defined above.
 	 * Returns: 1/0 for true/false queries or an integer value for numeric queries.
 	 * 
 	 * Example:
 	 * --------
-	 * Probe.openGL(Probe.OpenGL.SHADER); // returns 1 if shaders are supported or 0 otherwise.
+	 * Probe.feature(Probe.Feature.SHADER); // returns 1 if shaders are supported or 0 otherwise.
 	 * --------
 	 */
-	static int openGL(OpenGL query)
-	{	static int shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1, bfs=-1;	// so lookup only has to occur once.
+	static int feature(Feature query)
+	{	static int fbo=-1, shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1, bfs=-1;	// so lookup only has to occur once.
 		int result;
 		
 		switch (query)
 		{	
 			// TODO: These need to be cached so we don't do opengl calls from threads besides the rendering thread.
-			case OpenGL.MAX_LIGHTS:				
+			case Feature.MAX_LIGHTS:				
 				glGetIntegerv(GL_MAX_LIGHTS, &result);
 				return result;
-			case OpenGL.MAX_TEXTURE_SIZE:
+			case Feature.MAX_TEXTURE_SIZE:
 				glGetIntegerv(GL_MAX_TEXTURE_SIZE, &result);
 				return result;
-			case OpenGL.MAX_TEXTURE_UNITS:
+			case Feature.MAX_TEXTURE_UNITS:
 				glGetIntegerv(GL_MAX_TEXTURE_UNITS, &result);
 				return result;
-		
-			case OpenGL.SHADER:
-				//version(linux)		// Shaders often fail on linux due to poor driver support!  :(
-				//	return 0;	// ATI drivers will claim shader support but fail on shader compile.
-									// This needs a better workaround.
+				
+			case Feature.FBO:
+				if (fbo==-1)
+					fbo = cast(int)checkExtension("GL_EXT_frame_buffer_object");
+				return fbo;
+			
+			case Feature.SHADER:
 				if (shader==-1)
 					shader = cast(int)checkExtension("GL_ARB_shader_objects") && checkExtension("GL_ARB_vertex_shader");
 				return shader;				
-			case OpenGL.VBO: //return false; // true breaks custom vertex attributes
+			case Feature.VBO: //return false; // true breaks custom vertex attributes
 				if (vbo==-1)
 					vbo = cast(int)checkExtension("GL_ARB_vertex_buffer_object");
 				return cast(bool)vbo;
-			case OpenGL.MULTITEXTURE:
+			case Feature.MULTITEXTURE:
 				if (mt==-1)
 					mt = cast(int)checkExtension("GL_ARB_multitexture");
 				return mt;
-			case OpenGL.NON_2_TEXTURE:
+			case Feature.NON_2_TEXTURE:
 				if (np2==-1)
 					np2 = cast(int)checkExtension("GL_ARB_texture_non_power_of_two");
 				return np2;
-			case OpenGL.BLEND_COLOR:
+			case Feature.BLEND_COLOR:
 				if (bc==-1)
 					bc = cast(int)checkExtension("GL_EXT_blend_color");
 				return bc;
-			case OpenGL.BLEND_FUNC_SEPARATE: // unused.
+			case Feature.BLEND_FUNC_SEPARATE: // unused.
 				if (bfs==-1)
 					bfs = cast(int)checkExtension("GL_EXT_blend_func_separate");
-				return bfs;	
+				return bfs;
+			default:
+				return 0;
 		}
-		
+		return 0;		
 	}
 	
 	/**
-	 * Searches to see if the given extension is supported in hardware.*/
+	 * Searches to see if the given extension is supported in hardware.
+	 * Due to the nature of sdl, a window must first be created. */
 	static bool checkExtension(char[] name)
 	{	char[] exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
 	    int result = containsPattern(toLower(exts), toLower(name.dup)~" "); 
@@ -104,7 +110,9 @@ abstract class Probe
 	    return false;
 	}
 
-	/// Return an array of all supported OpenGL extensions.
+	/**
+	 * Return an array of all supported OpenGL extensions.
+	 * Due to the nature of sdl, a window must first be created. */ 
 	static char[][] getExtensions()
 	{	char[] exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
 		return split(exts, " ");

@@ -211,7 +211,7 @@ class Material : Resource
  					layer.addTexture(ti);
 				}
 				// If this xml node is a shader
-				else if (name == "shader" && Probe.openGL(Probe.OpenGL.SHADER))
+				else if (name == "shader" && Probe.feature(Probe.Feature.SHADER))
 				{	s++;
 					bool type;
 					char[] source, str_type;
@@ -234,7 +234,7 @@ class Material : Resource
 			// Warning for too many textures
 			static int max_textures;
 			if (max_textures==0)
-				max_textures = Probe.openGL(Probe.OpenGL.MAX_TEXTURE_UNITS);
+				max_textures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 			if (t>max_textures)
 			{	Log.write("WARNING:  layer '", i ,"' has ", t,
 					" textures, but this hardware only supports ", max_textures, ".");

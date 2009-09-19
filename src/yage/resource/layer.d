@@ -9,6 +9,7 @@ module yage.resource.layer;
 import tango.math.Math;
 import tango.io.Stdout;
 import std.string;
+import std.stdio;
 
 import derelict.opengl.gl;
 import derelict.opengl.glext;
@@ -17,7 +18,8 @@ import yage.system.system;
 import yage.system.log;
 import yage.system.graphics.probe;
 import yage.system.graphics.render;
-import yage.core.object2;;
+import yage.system.graphics.graphics;
+import yage.core.object2;
 import yage.resource.geometry;
 import yage.resource.model;
 import yage.resource.manager;
@@ -25,11 +27,6 @@ import yage.resource.resource;
 import yage.resource.shader;
 import yage.resource.texture;
 import yage.scene.light;
-
-
-// Used as default values for function params
-private const Vec2f one = {v:[1.0f, 1.0f]};
-private const Vec2f zero = {v:[0.0f, 0.0f]};
 
 enum {
 	// Must also be the bytes per pixel (no longer true?)
@@ -88,9 +85,9 @@ class Layer : Resource
 
 	// private
 	public Texture[] textures;
-	protected Shader[] shaders;
-	protected int program=0;
-	protected static int current_program=0;
+	Shader[] shaders;
+	int program=0;
+	static int current_program=0;
 
 
 	/// Set layer properties to default values.
@@ -237,177 +234,6 @@ class Layer : Resource
 	}
 
 	/*
-	 * Set all of the OpenGL states to the values of this material layer.
-	 * This essentially applies the material.  Call unApply() to reset
-	 * the OpenGL states back to the engine defaults in preparation for
-	 * whatever will be rendered next.
-	 * Params:
-	 * lights = An array containing the LightNodes that affect this material,
-	 * passed to the shader through uniform variables (unfinished).
-	 * This function is used internally by the engine and doesn't normally need to be called.
-	 * color = Used to set color on a per-instance basis, combined with existing material colors.
-	 * Model = Used to retrieve texture coordinates for multitexturing. */
-	void bind(LightNode[] lights = null, Color color = Color("white"), Geometry model=null)
-	{
-		// Material
-		glMaterialfv(GL_FRONT, GL_AMBIENT, ambient.vec4f.scale(color.vec4f).v.ptr);
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse.vec4f.scale(color.vec4f).v.ptr);
-		glMaterialfv(GL_FRONT, GL_SPECULAR, specular.vec4f.scale(color.vec4f).v.ptr);
-		glMaterialfv(GL_FRONT, GL_EMISSION, emissive.vec4f.scale(color.vec4f).v.ptr);
-		glMaterialfv(GL_FRONT, GL_SHININESS, &specularity);	
-		
-		glColor4fv(this.color.vec4f.ptr);
-
-		// Blend
-		
-		if (blend != BLEND_NONE)
-		{	glEnable(GL_BLEND);
-			glDepthMask(false);
-			switch (blend)
-			{	case BLEND_ADD:
-					glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case BLEND_AVERAGE:
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					//glBlendFuncSeparateEXT(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-				case BLEND_MULTIPLY:
-					glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-					break;
-		}	}
-		else
-		{	glEnable(GL_ALPHA_TEST);
-			glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
-		}
-
-		// Cull
-		if (cull == LAYER_CULL_FRONT)
-			glCullFace(GL_FRONT);
-
-		// Polygon
-		switch (draw)
-		{	default:
-			case LAYER_DRAW_FILL:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				break;
-			case LAYER_DRAW_LINES:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				glLineWidth(width);
-				break;
-			case LAYER_DRAW_POINTS:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-				glPointSize(width);
-				break;
-		}
-
-		// Textures
-		if (textures.length>1 && Probe.openGL(Probe.OpenGL.MULTITEXTURE))
-		{	int length = min(textures.length, Probe.openGL(Probe.OpenGL.MAX_TEXTURE_UNITS));
-
-			// Loop through all of Layer's textures up to the maximum allowed.
-			for (int i=0; i<length; i++)
-			{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
-
-				// Activate texture unit and enable texturing
-				glActiveTextureARB(GL_TEXTUREI_ARB);
-				glEnable(GL_TEXTURE_2D);
-				glClientActiveTextureARB(GL_TEXTUREI_ARB);
-
-				// Set texture coordinates
-				IVertexBuffer texcoords = model.getTexCoords0();
-				if (Probe.openGL(Probe.OpenGL.VBO))
-				{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.getId());
-					glTexCoordPointer(texcoords.getComponents(), GL_FLOAT, 0, null);
-				} else
-					glTexCoordPointer(texcoords.getComponents(), GL_FLOAT, 0, texcoords.ptr);
-
-				// Bind and blend
-				textures[i].bind();
-			}
-		}
-		else if(textures.length == 1){
-			glEnable(GL_TEXTURE_2D);
-			textures[0].bind();
-		} else
-			glDisable(GL_TEXTURE_2D);
-
-		// Shader
-		if (program != 0)
-		{	glUseProgramObjectARB(program);
-			current_program = program;
-
-			// Try to light and fog variables?
-			try {	// bad for performance?
-				setUniform("light_number", lights.length);
-			} catch{}
-			try {
-				setUniform("fog_enabled", cast(float)Render.getCurrentCamera().getScene().fogEnabled);
-			} catch{}
-
-			// Enable
-			for (int i=0; i<textures.length; i++)
-			{	if (textures[i].name.length)
-				{	char[256] cname = 0;
-					cname[0..textures[i].name.length]= textures[i].name;
-					int location = glGetUniformLocationARB(program, cname.ptr);
-					if (location == -1)
-					{}//	throw new Exception("Warning:  Unable to set texture sampler: " ~ textures[i].name);
-					else
-						glUniform1iARB(location, i);
-			}	}
-/*
-			// Attributes
-			foreach (name, attrib; model.getAttributes())
-			{	int location = glGetAttribLocation(program, toStringz(name));
-				if (location != -1)
-				{
-
-
-					if (model.getCached())
-					{	// This works as is, don't yet know why
-						//int vbo;
-						//glBindBufferARB(GL_ARRAY_BUFFER, vbo);
-
-						glEnableVertexAttribArray(location);
-						glBindBuffer(GL_ARRAY_BUFFER_ARB, attrib.index);
-						glVertexAttribPointer(location, 4, GL_FLOAT, false, 0, null);
-
-						writefln(1);
-						void **values;
-						glGetVertexAttribPointerARB(location, program, values);
-						writefln(2);
-						//writefln(values[0..attrib.values.length]);
-					}
-					else
-					{	glEnableVertexAttribArray(location);
-						glVertexAttribPointer(location, 4, GL_FLOAT, false, 0, &attrib.values[0]);
-					}
-				}
-
-			}
-*/
-			/*
-			//glBufferDataARB(GL_ARRAY_BUFFER, values.length*Vec3f.sizeof, values.ptr, GL_STATIC_DRAW);
-			//glBindBufferARB( GL_ARRAY_BUFFER_ARB, vbo);
-			//glVertexAttribPointerARB(location, 4, GL_FLOAT, 0, 0, null);
-
-			// Attributes
-			// Apparently attributes have to be used as vbo's if vertices are also
-			foreach (name, values; model.getAttributes())
-			{	int location = glGetAttribLocation(program, toStringz(name));
-
-				if (location != -1)
-				{	int vbo;
-					glBindBufferARB(GL_ARRAY_BUFFER, vbo);
-					glEnableVertexAttribArray(location);
-					glVertexAttribPointer(location, 4, 0x1406, false, 0, &values[0]);
-				}
-			}
-			*/
-		}
-	}
-
-	/*
 	 * Reset the OpenGL state to the defaults.
 	 * This function is used internally by the engine and doesn't normally need to be called. */
 	void unbind()
@@ -434,10 +260,9 @@ class Layer : Resource
 		// Cull, polygon
 		glCullFace(GL_BACK);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 		// Textures
-		if (textures.length>1 && Probe.openGL(Probe.OpenGL.VBO))
-		{	int length = min(textures.length, Probe.openGL(Probe.OpenGL.MAX_TEXTURE_UNITS));
+		if (textures.length>1 && Probe.feature(Probe.Feature.VBO))
+		{	int length = min(textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
 
 			for (int i=length-1; i>=0; i--)
 			{	glActiveTextureARB(GL_TEXTURE0_ARB+i);
@@ -476,7 +301,7 @@ class Layer : Resource
 
 	// Helper function for the public setUniform() functions.
 	protected void setUniform(char[] name, int width, float[] values)
-	{	if (!Probe.openGL(Probe.OpenGL.SHADER))
+	{	if (!Probe.feature(Probe.Feature.SHADER))
 			throw new ResourceManagerException("Layer.setUniform() is only supported on hardware that supports shaders.");
 
 		// Bind this program
@@ -499,6 +324,7 @@ class Layer : Resource
 			case 3:  glUniform3fvARB(location, values.length, values.ptr);  break;
 			case 4:  glUniform4fvARB(location, values.length, values.ptr);  break;
 			case 16: glUniformMatrix4fvARB(location, values.length, false, values.ptr);  break;
+			default: break;
 		}
 
 		// Rebind old program

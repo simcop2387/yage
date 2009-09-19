@@ -30,7 +30,7 @@ class Sound : Resource
 {	
 	protected ubyte		format;  		// wav, ogg, etc.
 	protected SoundFile	sound_file;		// see doc for SoundFile
-	protected uint		al_format;		// Number of channels and uncompressed bool-rate.
+	protected uint		al_format;		// Number of channels and uncompressed bit-rate.
 	
 	protected uint[]	buffers;		// holds the OpenAL id name of each buffer for the song
 	protected uint[]	buffers_ref;	// counts how many SoundNodes are using each buffer
@@ -62,7 +62,7 @@ class Sound : Resource
 		else if (sound_file.channels==1 && sound_file.bits==16) al_format = AL_FORMAT_MONO16;
 		else if (sound_file.channels==2 && sound_file.bits==8)  al_format = AL_FORMAT_STEREO8;
 		else if (sound_file.channels==2 && sound_file.bits==16) al_format = AL_FORMAT_STEREO16;
-		else throw new ResourceManagerException("Sound must be 8 or 16 bool and mono or stero format.");
+		else throw new ResourceManagerException("Sound must be 8 or 16 bit and mono or stero format.");
 
 		// Calculate the parameters for our buffers
 		int one_second_size = (sound_file.bits/8)*sound_file.frequency*sound_file.channels;
@@ -74,14 +74,14 @@ class Sound : Resource
 		buffers.length = buffers_ref.length = buffer_num;	// allocate empty buffers
 	}
 
-	/// Tell OpenAL to release the sound, close the file, and delete associated memory.
+	/// Release sound buffers.
 	~this()
-	{	finalize();
+	{	dispose();
 	}	
 	
-	override void finalize()
-	{	//freeBuffers(0, buffer_num);	// ensure every buffer is released
-		//buffer_num = 0;
+	override void dispose() /// ditto
+	{	freeBuffers(0, buffer_num);	// ensure every buffer is released
+		buffer_num = 0;
 		delete sound_file;
 	}
 
@@ -306,7 +306,7 @@ private class VorbisFile : SoundFile
 		// Get relevant data from the file
 		channels = vi.channels;
 		frequency = vi.rate;
-		bits = 16;	// always 16-bool for ov?
+		bits = 16;	// always 16-bit for ov?
 		size = ov_pcm_total(&vf, -1)*(bits/8)*channels;
 	}
 

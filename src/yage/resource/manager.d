@@ -31,11 +31,11 @@ abstract class ResourceManager
 	static char[][] paths = [""];		// paths to look for resources
 
 	private static Font[char[]]		fonts;
-	private static GPUTexture[char[]][2][2] textures; // [source][clamped][compressed][mipmapped][filter]
-	private static Shader[char[]]	shaders;
 	private static Material[char[]] materials;
-	private static Model[char[]]	models;
+	private static Model[char[]]	models;	
+	private static Shader[char[]]	shaders;
 	private static Sound[char[]]	sounds;
+	private static GPUTexture[char[]][2][2] textures; // [source][clamped][compressed][mipmapped][filter]
 
 	/// Get the array of path strings
 	static char[][] getPaths()
@@ -202,52 +202,20 @@ abstract class ResourceManager
 	}
 	
 	/**
-	 * Call the finalize() method on all resources that have been loaded through the resource manager, 
-	 * and then remove them from the resource managers lists of loaded resources. */
-	static void finalize()
+	 * Clear all references to loaded resources. */
+	static void dispose()
 	{	
-		foreach (path, res; fonts)
-			res.finalize();		
-		foreach (path, res; materials)
-			res.finalize();
-		//foreach (path, res; models)
-		//	res.finalize();
-		foreach (path, res; shaders)
-			res.finalize();
+		// Perhaps this should be handled elsewhere?
 		foreach (path, res; sounds)
-			res.finalize();
+			res.dispose();
+
+		fonts = null;
+		materials = null;
+		models = null;
+		shaders = null;
+		sounds = null;
 		foreach (k; textures)
 			foreach (j; k)
-				foreach (i; j)
-					i.finalize();
-		
-		//fonts.length = 0;
-		
+				j = null;
 	}
-
-
-	/// Print a list of all resources loaded
-	static void print()
-	{	
-		/*
-		foreach (Model modl; models)
-			writefln("%.*s", modl.getSource());
-		foreach (Material matl; materials)
-			writefln("%.*s", matl.getSource());
-		foreach (Sound snd; sounds)
-			snd.print();
-
-		foreach (Shader shdr; shaders)
-			writefln("%.*s", shdr.getSource());
-		
-		foreach (Texture tex1[2][2][2][char[]]; textures)
-			foreach (Texture tex2[2][2][char[]]; tex1)
-				foreach (Texture tex3[2][char[]]; tex2)
-					foreach (Texture tex4[char[]]; tex3)
-						foreach (Texture tex5; tex4)
-							printf("%.*s, %d, %d, %d, %d\n", tex5.getSource(), tex5.getClamped(),
-							tex5.getCompressed(), tex5.getMipmapped(), tex5.getFilter());
-		*/
-	}
-
 }

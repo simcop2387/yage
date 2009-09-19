@@ -5,6 +5,8 @@
  */
 module yage.system.sound.soundsystem;
 
+import std.stdio;
+
 import derelict.openal.al;
 
 import tango.math.Math;
@@ -12,6 +14,7 @@ import tango.io.Stdout;
 import tango.util.Convert;
 import tango.core.Thread;
 import tango.core.Traits;
+import tango.stdc.stringz;
 
 import yage.core.array;
 import yage.core.closure;
@@ -38,7 +41,7 @@ private {
  * Represents an OpenAL source (an instance of a sound playing).
  * Typical hardware can only support a small number of these, so SoundNodes map and unmap to these sources as needed. 
  * This is used internally by the engine and should never need to be instantiated manually. */
-private class SoundSource : IFinalizable
+private class SoundSource : IDisposable
 {
 	package uint al_source;
 	
@@ -70,9 +73,9 @@ private class SoundSource : IFinalizable
 	 * Stop playback, unqueue all buffers and then delete the source itself. */
 	~this()
 	{	
-		finalize();		
+		dispose();		
 	}
-	void finalize() // ditto
+	void dispose() // ditto
 	{	
 		if (al_source)
 		{	unbind();
@@ -295,6 +298,8 @@ private class SoundSource : IFinalizable
 	}
 }
 
+import yage.core.timer;
+
 /**
  * This is a representation of an OpenAL Context as a Singleton, simce many OpenAL implementations support only one context.
  * It is used internally by the engine and shouldn't need to be used manually.
@@ -303,7 +308,7 @@ private class SoundSource : IFinalizable
  * Instantiates an OpenAL device and context upon construction.$(BR)
  * Stores a short array of SoundSource wrappers that can be wrapped around with an infinite number of virtual sources.$(BR)
  * Controls a sound thread that handles buffering audio to all active SoundSources. */
-class SoundContext : IFinalizable
+class SoundContext : IDisposable
 {	
 	protected const int MAX_SOURCES = 32;
 	protected const int UPDATE_FREQUENCY = 30;
@@ -324,9 +329,9 @@ class SoundContext : IFinalizable
 	protected this()
 	{	
 		// Get a device
-		device = OpenAL.openDevice(null);		
-		Log.write("Using OpenAL Device '%s'.", OpenAL.getString(device, ALC_DEVICE_SPECIFIER));
-	
+		device = OpenAL.openDevice(null);	// 218 ms!
+		Log.write("Using OpenAL Device '%s'.", fromStringz(OpenAL.getString(device, ALC_DEVICE_SPECIFIER)));
+		
 		// Get a context
 		context = OpenAL.createContext(device, null);
 		OpenAL.makeContextCurrent(context);
@@ -340,7 +345,7 @@ class SoundContext : IFinalizable
 		if (max_sources<1)
 			throw new OpenALException("OpenAL reports %d sound sources available. "
 				" Please close any other applications which may be using sound resources.", max_sources);
-		
+
 		// Create as many soures as we can, up to a limit
 		for (int i=0; i<max_sources; i++)
 		{	try {
@@ -354,7 +359,7 @@ class SoundContext : IFinalizable
 		// Start a thread to perform sound updates.
 		sound_thread = new Repeater();
 		sound_thread.setFrequency(UPDATE_FREQUENCY);
-		sound_thread.setFunction(&updateSounds); // why did this cause a segfault?
+		sound_thread.setFunction(&updateSounds);
 		sound_thread.play();
 	}
 	
@@ -368,20 +373,20 @@ class SoundContext : IFinalizable
 	 * Delete the dedvice and context,
 	 * delete all sources, and set the current context to null. */
 	~this()
-	{	finalize();
+	{	dispose();
 	}
 	
 	/**
 	 * Delete the dedvice and context,
 	 * delete all sources, and set the current context to null. */
-	void finalize()
+	void dispose()
 	{	
 		if (context)
-		{	sound_thread.finalize();
+		{	sound_thread.dispose();
 			synchronized(OpenAL.getMutex())
 			{	foreach (source; sources)
 					if (source) // in case of the unpredictible order of the gc.
-						source.finalize();
+						source.dispose();
 				sources = null;
 			
 				OpenAL.makeContextCurrent(null);
@@ -389,6 +394,7 @@ class SoundContext : IFinalizable
 				OpenAL.closeDevice(device);
 				context = device = null;
 			}
+			SoundContext.singleton = null; // release singleton instance.
 		}
 	}
 	
@@ -401,7 +407,7 @@ class SoundContext : IFinalizable
 	/*
 	 * Called by the sound thread to update all active source's sound buffers. */
 	protected void updateSounds(float unused)
-	{				
+	{	
 		auto listener = CameraNode.getListener();
 		if (listener)
 		{	auto scene = listener.getScene();
@@ -467,6 +473,7 @@ class SoundContext : IFinalizable
 					}
 				}
 			}
+			
 		}
 		
 		// update each source's sound buffers.

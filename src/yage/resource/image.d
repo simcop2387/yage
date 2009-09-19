@@ -6,6 +6,8 @@
 
 module yage.resource.image;
 
+import std.stdio;
+
 import tango.io.Stdout;
 import tango.math.Math;
 import tango.text.Unicode;
@@ -148,8 +150,6 @@ class Image : Resource
 	 *     v = A value betwen 0 and 1.*/
 	Pixel4 bilinearFilter(float u, float v)
 	{	
-		//if(0>u || u>1 ||0>v || v>1)
-		//	std.stdio.writefln("%s %s", u, v);
 		Pixel4 result;	
 		if (!(0<=u && u<=1) || !(0<=v && v<=1))
 			return result;
@@ -157,31 +157,44 @@ class Image : Resource
 		v *= (height-1);
 		int x = cast(int)u; // should be the same as floor(u)
 		int y = cast(int)v;
-		float u_ratio = u-x;
-		float v_ratio = v-y;
-		float u_opposite = 1 - u_ratio;
-		float v_opposite = 1 - v_ratio;
+		int u_ratio = cast(int)(u*255)-x*255;
+		int v_ratio = cast(int)(v*255)-y*255;
+		int u_opposite = 255 - u_ratio;
+		int v_opposite = 255 - v_ratio;
 
 		// Loop through each channel.
 		for (int i=0; i<channels; i++)
-		{	if (x<width-1 && y<height-1)	// Different calculations depending on what's inside array bounds.
-				result.v[i] = cast(ubyte)(
-					(this[x,y][i]   * u_opposite + this[x+1,y][i]   * u_ratio) * v_opposite + 
-					(this[x,y+1][i] * u_opposite + this[x+1,y+1][i] * u_ratio) * v_ratio);
+		{	int ywidthx = y*width+x;
+			int y1widthx = ywidthx + width;
+			if (x<width-1 && y<height-1)	// Different calculations depending on what's inside array bounds.
+			{	result.v[i] = cast(ubyte) ((
+					(data[ywidthx*channels + i] * u_opposite + data[(ywidthx+1)*channels + i] * u_ratio) * v_opposite + 						
+					(data[y1widthx*channels + i] * u_opposite + data[(y1widthx+1)*channels + i] * u_ratio) * v_ratio
+				)>> 16) + 2;
+			}			
 			else if (x<width-1)
-				result.v[i] = cast(ubyte)(
-					(this[x,y][i] * u_opposite + this[x+1,y][i] * u_ratio) * v_opposite + 
-					(this[x,y][i] * u_opposite + this[x+1,y][i] * u_ratio) * v_ratio);
+				result.v[i] = cast(ubyte)((
+					(data[ywidthx*channels + i] * u_opposite + data[ywidthx*channels + i + channels] * u_ratio) * v_opposite + 
+					(data[ywidthx*channels + i] * u_opposite + data[ywidthx*channels + i + channels] * u_ratio) * v_ratio) >> 16);
 			else if (y<height-1)
 				result.v[i] = cast(ubyte)(
-					(this[x,y][i]   * u_opposite + this[x,y][i]   * u_ratio) * v_opposite + 
-					(this[x,y+1][i] * u_opposite + this[x,y+1][i] * u_ratio) * v_ratio);
+					((data[ywidthx*channels + i] * u_opposite + data[ywidthx*channels + i] * u_ratio) * v_opposite + 
+					(data[y1widthx*channels + i] * u_opposite + data[y1widthx*channels + i] * u_ratio) * v_ratio) >> 16);
 			else
-				result.v[i] = cast(ubyte)this[x,y][i];
+				result.v[i] = cast(ubyte)this[x,y][i]; 
 		}
 		return result;			
 	}
-			
+	unittest
+	{	// Complete coverage of all paths for a monochrome image (?)
+		auto img = new Image([255, 0, 0, 255], 1, 2, 2);
+		assert(img.bilinearFilter(0, 0).v[0] == 255);		
+		assert(img.bilinearFilter(0, 1).v[0] == 0);
+		assert(img.bilinearFilter(1, 0).v[0] == 0);
+		assert(img.bilinearFilter(1, 1).v[0] == 255);		
+		assert(img.bilinearFilter(.5, .5).v[0] == 128);
+	}
+
 	/**
 	 * Crop the image.
 	 * The four parameters define a box, in coordinates relative to the top left of the source image.

@@ -13,9 +13,9 @@ import tango.math.Math;
 import tango.math.IEEE;
 import tango.text.convert.Float;
 import tango.text.xml.Document;
+import tango.text.convert.Format;
 import tango.text.Regex;
 import tango.text.Unicode;
-import tango.text.convert.Format;
 import tango.text.Util;
 import yage.core.cache;
 import yage.core.color;
@@ -302,13 +302,18 @@ class TextLayout
 		
 		// .3ms
 		// This will be fixed in Tango 0.99.9: http://dsource.org/projects/tango/ticket/1619#comment:1
-		int i=0; // [below] ensure every plain text child is wrapped in <span></span> to fix tango's xml parsing.
-		htmlText2 =  Cache.getRegex(`\>[^\<]+\<`).replaceAll(htmlText2, (RegExpT!(char) input) {
-			return "><span"~input[i]~"/span><";
-			i++;
-		});
+		debug
+		{	// Tango 0.99.8 Regex's throw exceptions in debug mode.			
+		}
+		else
+		{	
+			int i=0; // [below] ensure every plain text child is wrapped in <span></span> to fix tango's xml parsing.
+			htmlText2 =  Cache.getRegex(`\>[^\<]+\<`).replaceAll(htmlText2, (RegExpT!(char) input) {
+				return "><span"~input[i]~"/span><";
+				i++;
+			});
+		}
 		
-		// .05ms
 		scope doc = new Document!(char);
 		try {
 			doc.parse(htmlText2);

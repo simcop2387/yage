@@ -14,7 +14,6 @@ class Cache
 {
 	static Regex[string] regexes;
 	
-	
 	///
 	static Regex getRegex(char[] exp)
 	{	synchronized(Cache.classinfo)
@@ -22,12 +21,5 @@ class Cache
 				return regexes[exp];
 			else return regexes[exp] = Regex(exp);
 		}
-	}
-	
-	
-	
-	
-	
-	
-	
+	}	
 }

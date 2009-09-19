@@ -40,7 +40,7 @@ import yage.scene.all;
  *                                   // to 0, 0, 0, instead of a.
  * --------
  */
-abstract class Node : Tree!(Node), IFinalizable, ICloneable
+abstract class Node : Tree!(Node), IDisposable, ICloneable
 {
 	// These are public for easy internal access.
 	Scene	scene;			// The Scene that this node belongs to.
@@ -145,10 +145,10 @@ abstract class Node : Tree!(Node), IFinalizable, ICloneable
 	
 	/**
 	 * Some types of Nodes may need to free resources before being destructed. */
-	override void finalize()
+	override void dispose()
 	{	if (children.length)
 		{	foreach_reverse (c; children)
-				c.finalize();
+				c.dispose();
 			children.length = 0; // prevent multiple calls.
 		}
 	}

@@ -24,6 +24,10 @@ import yage.all;
 import demo1.ship;
 import demo1.misc;
 
+import derelict.opengl.gl;
+import yage.system.graphics.all;
+import std.stdio;
+
 class DemoScene : Scene
 {
 	Scene skybox;
@@ -38,7 +42,7 @@ class DemoScene : Scene
 	// Create the scene and all elements in it
 	this()
 	{
-		super();		
+		super();
 		
 		// Skybox
 		skyBox = new Scene();
@@ -47,9 +51,9 @@ class DemoScene : Scene
 		
 		// Ship
 		ship = addChild(new Ship());	
-		ship.setPosition(Vec3f(0, 50, -950));
-		ship.getCameraSpot().setPosition(Vec3f(0, 4000, 10000));
-		
+		ship.setPosition(Vec3f(1200, 150, 0));
+		ship.getCameraSpot().setPosition(Vec3f(1000, 4000, 10000));
+
 		// Camera
 		camera = ship.getCameraSpot().addChild(new CameraNode());
 		ship.getCameraSpot().addChild(camera);
@@ -62,7 +66,7 @@ class DemoScene : Scene
 
 		// Lights
 		light = scene.addChild(new LightNode());
-		light.diffuse = Color(1, .85, .7);
+		light.diffuse = "#FFD9B3";
 		light.setLightRadius(7000);
 		light.setPosition(Vec3f(0, 0, -6000));
 
@@ -89,15 +93,11 @@ class DemoScene : Scene
 // Current program entry point.  This may change in the future.
 int main()
 {		
-	// Init (resolution, depth, fullscreen, aa-samples)
-	System.init(720, 445, 32, false, 1); // golden ratio
-	//System.init(1024, 768, 32, true);
-	//System.init(1440, 900, 32, true);
-	
-	// Paths
-	ResourceManager.addPath("../res/");
-	ResourceManager.addPath("../res/shader");
-	ResourceManager.addPath("../res/gui/font");
+	// Init and create window
+	System.init(); 
+	auto window = Window.getInstance();
+	window.setResolution(720, 445, 0, false, 1); // golden ratio
+	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
 	Log.write("Starting update loop.");
@@ -106,9 +106,7 @@ int main()
 	
 	// Main surface where camera output is rendered.
 	Surface view = new Surface();
-	view.style.backgroundImage = scene.camera.getTexture();
-	view.style.set("bottom: 0; right: 0");	
-	System.setSurface(view);
+	view.style.set("width: 100%; height: 100%");
 	
 	// Events for main surface.
 	view.onKeyDown = delegate void (Surface self, int key, int modifier){
@@ -118,16 +116,17 @@ int main()
 		// Trigger the garbage collector
 		if(key == SDLK_c) {
 			GC.collect();
-			Stdout("garbage collected").newline;
+			Log.write("Garbage collected");
 		}
+		if (key == SDLK_f)
+			window.setResolution(640, 480, 0, false, 1); // TODO: fix this
+
 		
 		// Reset the scene
 		if (key == SDLK_r)
 		{	scene.pause();
-			//scene.finalize();
 			scene = new DemoScene();
 			scene.camera.setListener();
-			view.style.backgroundImage = scene.camera.getTexture();
 			scene.play();
 		}
 		
@@ -149,33 +148,29 @@ int main()
 		if(scene.ship.acceptInput)
 			scene.ship.input.mouseDelta += rel;
 	};
-	view.onResize = delegate void (Surface self, Vec2f amount){
-		scene.camera.setResolution(cast(int)self.width, cast(int)self.height);
-	};
-	
 		
 	// Make a draggable window to show some useful info.
-	auto window = view.addChild(new Surface());
-	window.style.set("top: 5px; right: 5px; width: 130px; height: 70px; color: black; padding: 3px; " ~
+	auto info = view.addChild(new Surface());
+	info.style.set("top: 5px; right: 5px; width: 130px; height: 70px; color: black; padding: 3px; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font-family: url('Vera.ttf'); font-size: 16px");
+		"font-family: url('Vera.ttf'); font-size: 14px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
-	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
+	info.onMouseDown = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.raise();
 		self.focus();
 	};
-	window.onMouseMove = (Surface self, byte buttons, Vec2i amount) {
+	info.onMouseMove = delegate void(Surface self, byte buttons, Vec2i amount) {
 		if(buttons == 1) 
 			self.move(cast(Vec2f)amount, true);
 	};
-	window.onMouseUp = (Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseUp = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.blur();
 	};
-	window.onMouseOver = (Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseOver = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear3.png')");
 	};
-	window.onMouseOut = (Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseOut = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear2.png')");
 	};
 
@@ -184,36 +179,36 @@ int main()
 	Timer delta = new Timer();
 	Log.write("Starting rendering loop.");
 	GC.collect();
-
 	
 	// Rendering loop
 	while(!System.isAborted())
 	{
-		float dtime = delta.get();
-		delta.reset();
+		float dtime = delta.tell();
+		delta.seek(0);
 
-		Input.processInput();
-		scene.camera.toTexture();
-		view.render();
+		Input.processAndSendTo(view);
+		auto stats = Render.scene(scene.camera, window);
+		Render.surface(view, window);
+		Render.complete(); // swap buffers
 		
 		// Print framerate
 		fps++;
-		if (frame.get()>=1f)
-		{	SDL_WM_SetCaption("Yage Demo\0", null);
-			window.text = Format.convert(
+		if (frame.tell()>=1f)
+		{	float framerate = fps/frame.tell();
+			window.setCaption(Format.convert("Yage Demo | {} fps\0", framerate));
+			info.text = Format.convert(
 				`{} <b>fps</span><br/>`
 				`{} <b>objects</b><br/>`
 				`{} <b>polygons</b><br/>`
 				`{} <b>vertices</b>`,
-				fps/frame.get(), scene.camera.getNodeCount(), scene.camera.getPolyCount(), scene.camera.getVertexCount());
-			frame.reset();
+				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount);
+			frame.seek(0);
 			fps = 0;
 		}
 		
 		// Free up a little cpu if over 60 fps.
-		if (dtime < 1/60.0)
-			Thread.sleep(1/60.0f-dtime);
-		scene.swapTransformRead();
+		//if (dtime < 1/60.0)
+		//	Thread.sleep(1/60.0f-dtime);
 	}
 	
 	System.deInit();

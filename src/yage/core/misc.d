@@ -82,14 +82,15 @@ template baseTypedef(T)
  * auto b = new Foo();  // the same object.
  * --------
  */
-template Singleton(Class)
+template Singleton(T)
 {
 	/// Reference to the single instance
-	private static Class singleton;
+	private static T singleton;
 	
-	static Class getInstance()
-	{	if (!singleton)
-			singleton = new Class();
+	static T getInstance()
+	{	// TODO: Synchronized
+		if (!singleton)
+			singleton = new T();
 		return singleton;
 	}
 }

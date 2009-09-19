@@ -90,6 +90,15 @@ struct Vec(int S, T)
 		}
 		return res;
 	}
+	VST clamp(VST min, VST max) /// ditto
+	{	VST result;
+		for (int i=0; i<S; i++)
+		{	if (result.v[i]<min.v[i]) result.v[i] = min.v[i];
+			else if (result.v[i]>max.v[i]) result.v[i] = max.v[i];
+			else result.v[i] = v[i];
+		}
+		return result;		
+	}
 
 
 	/// Return the _dot product of this vector and s.
@@ -407,7 +416,7 @@ struct Vec3f
 		res.x = x;
 		res.y = y;
 		res.z = z;
-		return res.length(angle);;
+		return res.length(angle);
 	}
 
 	/// Return a vector with the values of s; s must be at least of length 3.

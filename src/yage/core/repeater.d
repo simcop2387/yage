@@ -7,15 +7,14 @@
 module yage.core.repeater;
 
 import tango.core.Thread;
-import yage.core.closure;
-import yage.core.object2;;
+import yage.core.object2;
 import yage.core.misc;
 import yage.core.timer;
 
 /**
  * A class to repeatedly call a function at a set inverval, in its own thread.
  * TODO: Can this be combined with setInterval / setTimeout? */
-class Repeater : Timer, IFinalizable
+class Repeater : Timer, IDisposable
 {
 	protected double frequency = 60f;
 	protected double call_time = 0f;
@@ -38,7 +37,7 @@ class Repeater : Timer, IFinalizable
 		void run()
 		{	Timer a = new Timer(); // time it takes to call func
 			while (active)
-			{	a.reset();
+			{	a.seek(0);
 				if (!paused())
 				{						
 					// Call as many times as needed to catch up.
@@ -64,9 +63,9 @@ class Repeater : Timer, IFinalizable
 				}
 				
 				// Sleep for 1/frequency - (the time it took to make the calls).
-				float sleep_time = 1/frequency - a.get();
+				float sleep_time = 1/frequency - a.tell();
 				if (sleep_time > 0)
-					Thread.sleep(1/frequency - a.get());
+					Thread.sleep(1/frequency - a.tell());
 			}
 		}
 	}	
@@ -86,18 +85,18 @@ class Repeater : Timer, IFinalizable
 	/**
 	 * Ensures that the helper thread is stopped on destruction. */
 	~this()
-	{	finalize();
+	{	dispose();
 	}
 	
 	///
-	override void finalize()
-	{	active = false;
-		if (thread)
-		{	thread.join();
+	void dispose()
+	{	if (active)
+		{	active = false; // why does this crash on exit when compilingin debug mode?
+			pause();
 			thread = null;
 		}
 	}
-	
+
 	/**
 	 * Pause the repeater.
 	 * This is guaranteed to never pause in the middle of a call to the repeater's function, but will
@@ -147,7 +146,7 @@ class Repeater : Timer, IFinalizable
 	}
 	
 	/**
-	 * Get / a function to call if the update function throws an exception.
+	 * Get / set a function to call if the update function throws an exception.
 	 * If this is set to null (the default), then the exception will just be thrown as normal. */
 	synchronized void delegate(Exception e) getErrorFunction()
 	{	return on_error;		

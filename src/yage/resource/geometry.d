@@ -8,31 +8,28 @@ module yage.resource.geometry;
 
 import tango.io.Stdout;
 import tango.math.Math;
+import tango.util.container.HashSet;
 import yage.core.closure;
-import yage.core.object2;;
-import yage.core.math.vector;
 import yage.core.object2;
+import yage.core.math.vector;
 import yage.resource.manager;
 import yage.resource.material;
 import yage.resource.resource;
-import yage.resource.lazyresource;
 import yage.system.system;
 
-import yage.system.graphics.resource;
-
 /**
- * This is a common interface shared by all VertexBuffers.  It allows them to be passed around
+ * This is a common abstract class inherited all VertexBuffers.  It allows them to be passed around
  * interchangeably and to exist as siblings in arrays. */
-interface IVertexBuffer : IFinalizable
+abstract class IVertexBuffer : ExternalResource
 {
+	private static uint[] garbageIds;
+	
 	void[] getData(); ///
 	void setData(void[]); ///
-
-	bool getDirty(); ///
-	void setDirty(bool); ///
-
-	uint getId(); ///
 	
+	uint id; /// The OpenGL id of the vertex buffer, or 0 if it hasn't yet been allocated.
+	bool dirty = true; /// If VBO's are used and the dirty flag is set, the VBO will be updated with the vertex data.
+
 	int getSizeInBytes(); ///
 	
 	byte getComponents(); ///
@@ -41,33 +38,37 @@ interface IVertexBuffer : IFinalizable
 
 	void* ptr(); ///
 
-	float itemLength2(int);
-	//char[] toString();
+	float itemLength2(int); // used internally
+
+	/**
+	 * Returns: Hardware vertex buffer id's from garbage collected VertexBuffer's. */
+	static uint[] getGarbageIds()
+	{	return garbageIds;
+	}
+	static void clearGarbageIds()
+	{	garbageIds.length = 0;
+	}
 }
+
 
 
 /**
  * A VertexBuffer stores the parameters of an OpenGL Vertex Buffer Object
- * TODO: Would it make sense to implement several array operations
- * and then have an update function to synchronize? */
-class VertexBuffer(T) : Resource, IVertexBuffer
+ * Params:
+ *     T = Type of vertex data to store (float, Vec2f, etc.)*/
+class VertexBuffer(T) : IVertexBuffer
 {
 	protected T[] data;
-	protected uint id;
-	protected bool dirty = true;
-
-	this()
-	{	id = GraphicsResource.getVBO();
-	}	
-	
+		
 	/**
 	 * Release the VBO and mark it for collection. */
 	~this()
-	{	finalize();
+	{	dispose();
 	}
-	void finalize() /// ditto
-	{	if (id)
-		{	GraphicsResource.freeVBO(id);
+	void dispose() /// ditto
+	{	super.dispose();
+		if (id)
+		{	garbageIds ~= id;
 			id = 0;
 			dirty = true;
 		}
@@ -82,23 +83,7 @@ class VertexBuffer(T) : Resource, IVertexBuffer
 	void setData(void[] data) /// ditto
 	{	dirty = true;
 		this.data = cast(T[])data;
-	}
-	
-	/**
-	 * Get/set the dirty flag.
-	 * If VBO's are used and the dirty flag is set, the VBO will be updated with the vertex data. */
-	bool getDirty()
-	{	return dirty;
-	}
-	void setDirty(bool dirty) /// ditto
-	{	this.dirty = dirty;
-	}
-
-	/**
-	 * Get/set the OpenGL id of the vertex buffer, or 0 if it hasn't yet been allocated. */
-	uint getId()
-	{	return id;
-	}
+	}	
 	
 	/**
 	 * Get the size of the vertex data in bytes. */
@@ -126,15 +111,7 @@ class VertexBuffer(T) : Resource, IVertexBuffer
 	// Hackish: used by Geometry for radius calculation
 	float itemLength2(int index)
 	{	return data[index].length2();
-	}	
-
-	/*
-	char[] toString()
-	{	char[] result = "VertexBuffer {\ndata = [";
-		foreach (token; data)
-			result ~= token.toString();
-		return result ~ "]\n}\n";
-	}*/
+	}
 }
 
 /**

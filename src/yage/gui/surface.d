@@ -9,13 +9,12 @@ module yage.gui.surface;
 import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.math.Math;
-import derelict.sdl.sdl;
-import derelict.opengl.gl;
 import yage.core.all;
 import yage.system.system;
 import yage.system.input;
 import yage.system.graphics.graphics;
 import yage.system.graphics.render;
+import yage.system.window;
 import yage.resource.texture;
 import yage.resource.image;
 import yage.resource.material;
@@ -33,13 +32,23 @@ class Surface : Tree!(Surface)
 {	
 	Style style;
 	char[] text;
-	char[] old_text;
-	GPUTexture textTexture;
-	
-	static final Style defaultStyle;
-	
-	protected static Surface grabbedSurface;
-	protected static Surface focusSurface;
+	protected char[] old_text;
+	protected GPUTexture textTexture;	
+
+	/// Callback functions
+	void delegate(Surface self) onBlur; ///
+	void delegate(Surface self) onDraw; ///
+	void delegate(Surface self) onFocus; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onClick; /// unfinished
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
+	void delegate(Surface self, int key, int modifier) onKeyDown; ///
+	void delegate(Surface self, int key, int modifier) onKeyUp; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseDown; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseUp; ///
+	void delegate(Surface self, byte buttons, Vec2i amount) onMouseMove; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOver; ///
+	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOut; ///
+	void delegate(Surface self, Vec2f amount) onResize; ///
 	
 	/// This is a mirror of SDLMod (SDL's modifier key struct)
 	enum ModifierKey
@@ -63,71 +72,46 @@ class Surface : Tree!(Surface)
 	};
 	
 	// internal values
-	Vec2f offset;		// pixel distance of the topleft corner from parent's top left, a relative offset
-	Vec2f size;			// pixel outer width/height, which includes borders and padding.
-	Vec4f border;		// pixel sizes of each border
-	Vec4f padding;		// pixel sizes of each padding	
+	protected Vec2f offset;		// pixel distance of the topleft corner from parent's top left, a relative offset
+	protected Vec2f size;			// pixel outer width/height, which includes borders and padding.
+	protected Vec4f border;		// pixel sizes of each border
+	protected Vec4f padding;		// pixel sizes of each padding	
 	
-	Vec2f offsetAbsolute;		// pixel distance of top left from the window's top left at 0, 0, an absolute offset
+	protected Vec2f offsetAbsolute;		// pixel distance of top left from the window's top left at 0, 0, an absolute offset
 	
-	bool mouseIn; 		// used to track mouseover/mouseout
-	bool _grabbed;	
-	bool resize_dirty = true;
+	protected bool mouseIn; 		// used to track mouseover/mouseout
+	protected bool _grabbed;	
+	protected bool resize_dirty = true;
 	
-	SurfaceGeometry geometry;
+	protected SurfaceGeometry geometry;
+	
+	protected static final Style defaultStyle;
+	
+	protected static Surface grabbedSurface;
+	protected static Surface focusSurface;
 
-	/// Callback functions
-	// TODO convert these to private and have functions to set them with such names as onBlur()?
-	void delegate(Surface self) onBlur; ///
-	void delegate(Surface self) onDraw; ///
-	void delegate(Surface self) onFocus; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onClick; /// unfinished
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
-	void delegate(Surface self, int key, int modifier) onKeyDown; ///
-	void delegate(Surface self, int key, int modifier) onKeyUp; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseDown; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseUp; ///
-	void delegate(Surface self, byte buttons, Vec2i amount) onMouseMove; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOver; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOut; ///
-	void delegate(Surface self, Vec2f amount) onResize; ///
-
+	///
 	this()
 	{	geometry = new SurfaceGeometry();
 		updateDimensions();
+		if (!focusSurface)
+			focus();
 	}
-	
-	// Set style dimensions from pixels.
-	protected void top(float v)    
-	{	style.top    = style.top.unit   == CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
-	}
-	protected void right(float v)  
-	{	style.right  = style.right.unit == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
-	}
-	protected void bottom(float v) 
-	{	style.bottom = style.bottom.unit== CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
-	}	
-	protected void left(float v)   
-	{	style.left   = style.left.unit  == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
-	}
-	protected void width(float v)  
-	{	style.width  = style.width.unit == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
-	}
-	protected void height(float v) 
-	{	style.height = style.height.unit== CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
-	}
-	// Get dimensions of this Surface's parent in pixels
-	protected float parentWidth() { return parent ? parent.width()  : System.getWidth(); }
-	protected float parentHeight(){ return parent ? parent.height() : System.getHeight(); }	// ditto	
-
 	
 	/**
-	 * Get the distance of this surface from its parent's top left corner. */
+	 * Release focus if this Surface has focus when it's destroyed. */
+	~this()
+	{	if (focusSurface==this)
+			focusSurface = null;
+	}
+	
+	/**
+	 * Get the pixel distance of this surface from its parent's top or left corner. */
 	float top()
-	{	return offset.x;
+	{	return offset.y;
 	}
 	float left() /// ditto
-	{	return offset.y;
+	{	return offset.x;
 	}
 	
 	/**
@@ -154,162 +138,10 @@ class Surface : Tree!(Surface)
 	float outerWidth() 	
 	{	return size.x;
 	}
-	float outerHeight()  /// ditto
+	float outerHeight() /// ditto
 	{	return size.y;
 	}
-	
-	/**
-	 * Update the internally stored x, y, width, and height based on the style.
-	 * This will also update the geometry, recurse through children, and call the resize event if necessary. */
-	void updateDimensions()
-	{
-		Vec2f old_offset = offset;
-		Vec2f old_size = size;
-		
-		// Copy/convert borders and padding to internal pixel values.
-		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
-		for (int i=0; i<4; i++)
-		{	float scale_by = i%2==0 ? parent_size.y : parent_size.x;			
-			padding[i] = style.padding[i].toPx(scale_by, false);
-			border[i] = style.borderWidth[i].toPx(scale_by, false);
-		}
-		
-		// Convert style dimensions to pixels.		
-		Vec4f style_dimensions = Vec4f(
-			style.top.toPx(parent_size.y),
-			style.right.toPx(parent_size.x),
-			style.bottom.toPx(parent_size.y),
-			style.left.toPx(parent_size.x));
-		Vec2f style_size = Vec2f( // style size doesn't include borders and padding, but the internal size does.
-			style.width.toPx(parent_size.x) + border.left + border.right + padding.left + padding.right, 
-			style.height.toPx(parent_size.y) + border.top + border.bottom + padding.top + padding.bottom);
-		
-		// This loop over xy combines the x/left/right and y/top/bottom calulations into one block of code.
-		for (int xy=0; xy<2; xy++)
-		{	int topLeft= xy==0 ? 3 : 0; // top or left
-			int bottomRight = xy ==0 ? 1 : 2; // bottom or right
-			
-			// Ensure at least 4 of the 6 style dimensions are set.
-			if (isNaN(style_dimensions[topLeft]))
-			{	if (isNaN(style_dimensions[bottomRight]))
-					style_dimensions[topLeft] = 0;
-				if (isNaN(style_size[xy]))
-					style_size[xy] = parent_size[xy];			
-			}
-			
-			// Position	
-			// Convert CSS style top, left, bottom, right, width, height to internal pixel x, y, width, height.
-			// (at this point, at most only one of left/width/right will be NaN)
-			if (isNaN(style_dimensions[topLeft])) // left is NaN
-			{	size[xy] = style_size[xy];
-				offset[xy] = parent_size[xy] - size[xy] - style_dimensions[bottomRight];
-			}
-			else if (isNaN(style_size.x)) // width is NaN
-			{	offset[xy] = style_dimensions[topLeft];
-				size[xy] = (parent_size[xy] - style_dimensions[bottomRight]) - offset[xy];
-			}
-			else // right is NaN
-			{	offset[xy] = style_dimensions[topLeft];
-				size[xy] = style_size[xy];
-			}
-		}	
-		
-		// Calculate absolute offset
-		if (parent)
-			offsetAbsolute = parent.offsetAbsolute + offset;
-		else
-			offsetAbsolute = offset;
-		
-		// If resized
-		if (size != old_size)
-		{	resize_dirty = true;
-			resize(size-old_size); // trigger resize event.
-			foreach (c; children)
-				c.updateDimensions();
-		}
-	}
-	
-	/**
-	 * Render this Surface.
-	 * When finished, the draw methods of all of this Surface's children are called. 
-	 * FIXME: When the surface has a non-integer width or height, the text texture is sometmes not scaled to an 
-	 * exact pixel size, which causes some letters to appear slightly thicker.  Adding precision
-	 * to the texture matrix doesn't seem to help. */
-	void draw()
-	{
-		updateDimensions();
-		if (resize_dirty)
-			geometry.setDimensions(Vec2f(width(), height()), border, padding);
-		
-		// Text
-		if (text.length && (text != old_text || resize_dirty))
-		{	int font_size = cast(int)style.fontSize.toPx(parentWidth());
-			int width = cast(int)width();
-			int height = cast(int)height();
-			Image textImage = TextLayout.render(text, style, width, height, true); // TODO: Change true to Probe.NextPow2
-			if (!textTexture) // create texture on first go
-				textTexture = new GPUTexture(textImage, false, false, text, true);
-			else
-				textTexture.commit(textImage, false, false, text, true);
-			textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
-			old_text = text;
-		}
-		
-		geometry.setColors(style.backgroundColor, style.borderColor);
-		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, 
-			style.borderImage, style.borderCornerImage, textTexture, style.opacity);
-		
-		Graphics.pushMatrix();
-		Graphics.translate(offset.x, offset.y, 0);
-		Graphics.applyState();
-		Render.geometry(geometry);
-		
-		// Using a z-buffer might make sorting unnecessary.  Tradeoffs?
-		if (!children.sorted(true, (Surface s){return s.style.zIndex;} ))
-			children.radixSort(true, (Surface s){return s.style.zIndex;} );
-		foreach(surf; children)
-			surf.draw();
-		
-		Graphics.popMatrix();
-		
-		resize_dirty = false;
-	}
-	
-	/**
-	 * Render this Surface a rendering target.
-	 * TODO: Move this to Window?
-	 * Params:
-	 *     rt = TODO: Render to this target.*/
-	void render(IRenderTarget rt=null) 
-	{
 
-		glPushAttrib(0xFFFFFFFF);	// all attribs
-		glDisableClientState(GL_NORMAL_ARRAY);
-		
-		// Setup the viewport in orthogonal mode,
-		// with dimensions 0..width, 0..height
-		// with 0,0 being at the top left.
-		glViewport(0, 0, cast(int)System.size.x, cast(int)System.size.y);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, System.size.x, System.size.y, 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-			
-		//This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		draw();
-		
-		SDL_GL_SwapBuffers();
-		
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glPopAttrib();
-	}
-	
 	/**
 	 * Find the surface at the given coordinates.
 	 * Surfaces are ordered by zIndex with higher values appearing on top.
@@ -333,6 +165,12 @@ class Surface : Tree!(Surface)
 		return null;
 	}
 	
+	/**
+	 * Get the geometry data used for rendering this Surface. */
+	SurfaceGeometry getGeometry()
+	{	return geometry;		
+	}
+	
 	/** 
 	 * When a Surface has grabMouse() enabled, the mouse cursor will be hidden this surface alone will receive all mouse input.
 	 * This also mouse movement so the mouse can move infinitely without encountering any boundaries.
@@ -349,13 +187,7 @@ class Surface : Tree!(Surface)
 		SDL_ShowCursor(true);
 		grabbedSurface = null;
 	}
-	
-	/**
-	 * Return the Surface that is currently grabbing mouse input, or null if no Surfaces are. */
-	static Surface getGrabbedSurface()
-	{	return grabbedSurface;		
-	}
-	
+
 	/**
 	 * Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. */
 	void raise()
@@ -410,12 +242,50 @@ class Surface : Tree!(Surface)
 	}
 	
 	/**
+	 * Update all of this Surface's dimensions, geometry, and children to prepare it for rendering. */
+	void update()
+	{
+		updateDimensions();
+		if (resize_dirty)
+			geometry.setDimensions(Vec2f(width(), height()), border, padding);
+		
+		// Text
+		if (text.length && (text != old_text || resize_dirty))
+		{	int font_size = cast(int)style.fontSize.toPx(parentWidth());
+			int width = cast(int)width();
+			int height = cast(int)height();
+			Image textImage = TextLayout.render(text, style, width, height, true); // TODO: Change true to Probe.NextPow2
+			if (!textTexture) // create texture on first go
+				textTexture = new GPUTexture(textImage, false, false, text, true);
+			else
+			//	textTexture.commit(textImage, false, false, text, true);
+				textTexture.image = textImage;
+			textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
+			old_text = text;
+		}
+		
+		geometry.setColors(style.backgroundColor, style.borderColor);
+		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, 
+			style.borderImage, style.borderCornerImage, textTexture, style.opacity);
+		
+		// Using a z-buffer might make sorting unnecessary.  Tradeoffs?
+		if (!children.sorted(true, (Surface s){return s.style.zIndex;} ))
+			children.radixSort(true, (Surface s){return s.style.zIndex;} );
+		
+		foreach(child; children)
+			child.update();
+		
+		resize_dirty = false;
+	}
+
+	
+	/**
 	 * Give focus to this Surface.  Only one Surface can have focus at a time.
 	 * All keyboard/mouse events will be forwarded to the surface that has focus.
 	 * If no Surface has focus, they will be given to the one under the mouse cursor.
 	 * Also calls the onFocus callback function if set. */
-	void focus() {
-		Surface oldFocus = Surface.focusSurface;
+	void focus() 
+	{	Surface oldFocus = Surface.focusSurface;
 		if(oldFocus && oldFocus.onBlur)
 			oldFocus.onBlur(oldFocus);
 		if(onFocus)
@@ -425,10 +295,12 @@ class Surface : Tree!(Surface)
 	
 	/**
 	 * Release focus from this surface and call the onBlur callback function if set. */
-	void blur(){
-		if(onBlur)
-			onBlur(this);
-		Surface.focusSurface = null;
+	void blur() 
+	{	if (this==focusSurface)
+		{	if(onBlur)
+				onBlur(this);
+			Surface.focusSurface = null;
+		}
 	}
 	
 	/**
@@ -437,7 +309,7 @@ class Surface : Tree!(Surface)
 	void keyDown(dchar key, int mod=ModifierKey.NONE)
 	{	if(onKeyDown)
 			onKeyDown(this, key, mod);
-		else if(parent !is null) 
+		else if(parent) 
 			parent.keyDown(key, mod);
 	}
 	
@@ -447,7 +319,7 @@ class Surface : Tree!(Surface)
 	void keyUp(dchar key, int mod=ModifierKey.NONE)
 	{	if(onKeyUp)
 			onKeyUp(this, key, mod);
-		else if(parent !is null) 
+		else if(parent) 
 			parent.keyUp(key, mod);
 	}
 
@@ -457,7 +329,7 @@ class Surface : Tree!(Surface)
 	void mouseDown(byte buttons, Vec2i coordinates){ 
 		if(onMouseDown)
 			onMouseDown(this, buttons, coordinates);
-		else if(parent !is null) 
+		else if(parent) 
 			parent.mouseDown(buttons, coordinates);
 	}
 	
@@ -467,7 +339,7 @@ class Surface : Tree!(Surface)
 	void mouseUp(byte buttons, Vec2i coordinates){ 
 		if(onMouseUp)
 			onMouseUp(this, buttons, coordinates);
-		else if(parent !is null) 
+		else if(parent) 
 			parent.mouseUp(buttons, coordinates);
 	}
 	
@@ -475,7 +347,7 @@ class Surface : Tree!(Surface)
 	 * Trigger a mouseOver event and call the onMouseOver callback function if set. */ 
 	void mouseOver(byte buttons, Vec2i coordinates){
 		if(!mouseIn )
-		{	if(parent !is null) 
+		{	if(parent) 
 				parent.mouseOver(buttons, coordinates);			
 			mouseIn = true;
 			if(onMouseOver) 
@@ -488,7 +360,7 @@ class Surface : Tree!(Surface)
 	void mouseMove(byte buttons, Vec2i amount){
 		if(onMouseMove)
 			onMouseMove(this, buttons, amount);
-		else if(parent !is null) 
+		else if(parent) 
 			parent.mouseMove(buttons, amount);
 	}
 
@@ -503,7 +375,7 @@ class Surface : Tree!(Surface)
 			{	mouseIn = false;
 				if(onMouseOut)
 					onMouseOut(this, buttons, coordinates);			
-				if(next !is parent && parent !is null)
+				if(next !is parent && parent)
 					parent.mouseOut(next, buttons, coordinates);
 			}
 		}
@@ -515,5 +387,118 @@ class Surface : Tree!(Surface)
 	void resize(Vec2f amount)
 	{	if (onResize)
 			onResize(this, amount);
+	}
+
+	
+	/**
+	 * Return the Surface that is currently grabbing mouse input, or null if no Surfaces are. */
+	static Surface getGrabbedSurface()
+	{	return grabbedSurface;		
+	}
+	
+	/**
+	 * Returns: The surface that currently has focus.  Grabbed surfaces automatically have focus. */
+	static Surface getFocusSurface()
+	{	if (grabbedSurface)
+			return grabbedSurface;
+		else return focusSurface;		
+	}
+	
+	
+	// Set style dimensions from pixels.
+	protected void top(float v)    
+	{	style.top    = style.top.unit   == CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	}
+	protected void right(float v)  
+	{	style.right  = style.right.unit == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	}
+	protected void bottom(float v) 
+	{	style.bottom = style.bottom.unit== CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	}	
+	protected void left(float v)   
+	{	style.left   = style.left.unit  == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	}
+	protected void width(float v)  
+	{	style.width  = style.width.unit == CSSValue.Unit.PERCENT ? 100*v/parentWidth() : v; 
+	}
+	protected void height(float v) 
+	{	style.height = style.height.unit== CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 
+	}
+	// Get dimensions of this Surface's parent in pixels
+	protected float parentWidth() 
+	{	return parent ? parent.width() : Window.getInstance.getWidth(); 
+	}
+	protected float parentHeight() // ditto
+	{	return parent ? parent.height() : Window.getInstance.getHeight(); 
+	}
+
+	/*
+	 * Update the internally stored x, y, width, and height based on the style.
+	 * This will also update the geometry, recurse through children, and call the resize event if necessary. */
+	protected void updateDimensions()
+	{
+		Vec2f old_offset = offset;
+		Vec2f old_size = size;
+		
+		// Copy/convert borders and padding to internal pixel values.
+		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
+		for (int i=0; i<4; i++)
+		{	float scale_by = i%2==0 ? parent_size.y : parent_size.x;			
+			padding[i] = style.padding[i].toPx(scale_by, false);
+			border[i] = style.borderWidth[i].toPx(scale_by, false);
+		}
+		
+		// Convert style dimensions to pixels.		
+		Vec4f style_dimensions = Vec4f(
+			style.top.toPx(parent_size.y),
+			style.right.toPx(parent_size.x),
+			style.bottom.toPx(parent_size.y),
+			style.left.toPx(parent_size.x));
+		Vec2f style_size = Vec2f( // style size doesn't include borders and padding, but the internal size does.
+			style.width.toPx(parent_size.x) + border.left + border.right + padding.left + padding.right, 
+			style.height.toPx(parent_size.y) + border.top + border.bottom + padding.top + padding.bottom);
+		
+		// This loop over xy combines the x/left/right and y/top/bottom calulations into one block of code.
+		for (int xy=0; xy<2; xy++)
+		{	int topLeft= xy==0 ? 3 : 0; // top or left
+			int bottomRight = xy ==0 ? 1 : 2; // bottom or right
+			
+			// Ensure at least 4 of the 6 style dimensions are set.
+			if (isNaN(style_dimensions[topLeft]))
+			{	if (isNaN(style_dimensions[bottomRight]))
+					style_dimensions[topLeft] = 0;
+				if (isNaN(style_size[xy]))
+					style_size[xy] = parent_size[xy];			
+			}
+			
+			// Position	
+			// Convert CSS style top, left, bottom, right, width, height to internal pixel x, y, width, height.
+			// (at this point, at most only one of left/width/right will be NaN)
+			if (isNaN(style_dimensions[topLeft])) // left is NaN
+			{	size[xy] = style_size[xy];
+				offset[xy] = parent_size[xy] - size[xy] - style_dimensions[bottomRight];
+			}
+			else if (isNaN(style_size.x)) // width is NaN
+			{	offset[xy] = style_dimensions[topLeft];
+				size[xy] = (parent_size[xy] - style_dimensions[bottomRight]) - offset[xy];
+			}
+			else // right is NaN
+			{	offset[xy] = style_dimensions[topLeft];
+				size[xy] = style_size[xy];
+		}	}	
+		
+		// Calculate absolute offset
+		if (parent)
+			offsetAbsolute = parent.offsetAbsolute + offset;
+		else
+			offsetAbsolute = offset;
+		
+		// If resized
+		if (size != old_size)
+		{	resize_dirty = true;
+			resize(size-old_size); // trigger resize event.
+			foreach (c; children)
+				c.updateDimensions();
+		}
 	}
 }

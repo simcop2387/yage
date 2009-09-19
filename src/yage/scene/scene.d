@@ -7,7 +7,6 @@
 module yage.scene.scene;
 
 import tango.time.Clock;
-import derelict.opengl.gl;
 import yage.core.all;
 import yage.system.system;
 import yage.system.sound.soundsystem;
@@ -96,9 +95,9 @@ class Scene : Node//, ITemporal
 	}
 	
 	/**
-	 * Call finalize() on destruction. */
+	 * Call dispose() on destruction. */
 	~this()
-	{	finalize();		
+	{	dispose();		
 	}
 	
 	/**
@@ -120,7 +119,7 @@ class Scene : Node//, ITemporal
 		
 		// non-atomic operations
 		synchronized (this)
-		{	result.delta.set(delta.tell());
+		{	result.delta.seek(delta.tell());
 			result.delta.pause();
 		}
 		
@@ -140,12 +139,12 @@ class Scene : Node//, ITemporal
 	
 	/**
 	 * Overridden to pause the scene update and sound threads and to remove this instance from the array of all scenes. */
-	override void finalize()
-	{	if (this in all_scenes) // repeater will be null if finalize has already been called.
-		{	super.finalize(); // needs to occur before sound_thread finalize to free sound nodes.
+	override void dispose()
+	{	if (this in all_scenes) // repeater will be null if dispose has already been called.
+		{	super.dispose(); // needs to occur before sound_thread dispose to free sound nodes.
 			
 			if (update_thread)
-			{	update_thread.finalize();
+			{	update_thread.dispose();
 				update_thread = null;
 			}
 			
@@ -265,32 +264,10 @@ class Scene : Node//, ITemporal
 	override void update(float delta = delta.tell())
 	{	super.update(delta);
 		delta_time = delta;
-		this.delta.reset();
+		this.delta.seek(0);
 		scene.swapTransformWrite();
 	}
 
-	/*
-	 * Apply OpenGL options specific to this Scene.  This function is used internally by
-	 * the engine and doesn't normally need to be called.
-	 * TODO: Move to system.graphis */
-	void apply()
-	in
-	{	assert(System.isSystemThread());
-	}
-	body
-	{	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.vec4f.ptr);
-		Vec4f color = backgroundColor.vec4f;
-		glClearColor(color.x, color.y, color.z, color.w);
-
-		if (fogEnabled)
-		{	glFogfv(GL_FOG_COLOR, fogColor.vec4f.ptr);
-			glFogf(GL_FOG_DENSITY, fogDensity);
-			glEnable(GL_FOG);
-		} else
-			glDisable(GL_FOG);
-	}
-
-	
 	/*
 	 * Add/remove the light from the scene's list of lights.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
@@ -328,7 +305,7 @@ class Scene : Node//, ITemporal
 	}
 
 	/**
-	 * Get a self-indexed array of all senes that are active (have been constructed but not finalized). */
+	 * Get a self-indexed array of all senes that are active (have been constructed but not disposed). */
 	static Scene[Scene] getAllScenes()
 	{	return all_scenes;		
 	}

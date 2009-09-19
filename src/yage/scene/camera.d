@@ -6,20 +6,19 @@
 
 module yage.scene.camera;
 
-import tango.math.Math;
 import derelict.opengl.gl;
-import derelict.opengl.glu;
+import tango.math.Math;
+import yage.core.array;
 import yage.core.math.matrix;
 import yage.core.math.plane;
 import yage.core.math.vector;
-import yage.resource.texture;
 import yage.scene.visible;
 import yage.scene.node;
 import yage.scene.scene;
 import yage.scene.movable;
-import yage.system.graphics.probe;
 import yage.system.system;
 import yage.system.graphics.render;
+import yage.system.window;
 
 
 /**
@@ -31,48 +30,31 @@ import yage.system.graphics.render;
  * isn't threadsafe.*/
 class CameraNode : MovableNode
 {
-	protected static CameraNode listener;
-	
-	protected uint  xres	= 0;		// special values of 0 to stretch to current display size.
-	protected uint  yres	= 0;
-	protected float near	= 1;		// the distance of the camera's near plane.
-	protected float far		= 100000;	// camera's far plane
-	protected float fov		= 45;		// field of view angle of the camera.
-	protected float aspect	= 0;		// aspect ratio of the view
-	protected float threshold = 2.25;	// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
+	public float near = 1;			// the distance of the camera's near plane.
+	public float far = 100000;		// camera's far plane
+	public float fov = 45;			// field of view angle of the camera.
+	public float aspect	= 0;		// aspect ratio of the view
+	public float threshold = 2.25;	// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
-	protected GPUTexture capture;		// The camera renders to this Texture
 	protected Plane[6] frustum;
-	protected Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
-
-	// Useful stats
-	protected uint node_count;			// The number of nodes that were rendered.
-	protected uint frame_count;
-	protected uint poly_count;
-	protected uint vertex_count;
+	public Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
+	
+	protected static CameraNode listener; // Camera that plays audio.
 
 	/**
 	 * Construct */
 	this()
-	{	super();
-		capture = new GPUTexture();
-		setResolution(xres, yres);
-		
+	{	super();		
 		if (!listener)
 			listener = this;
 	}
 
 	/**
 	 * Set the current listener to null if the listener is this CameraNode. */
-	override void finalize()
+	override void dispose()
 	{	if (listener && listener == this)
 			listener = null;
 	}	
-	
-	/// Get the number of frames this camera has rendered.
-	int getFrameCount()
-	{	return frame_count;
-	}
 
 	/**
 	 * Get six planes that make up the CameraNode's view frustum. */
@@ -108,64 +90,32 @@ class CameraNode : MovableNode
 	{	return null;
 	}
 
-	/// Get the number of Nodes onscreen and rendered in the last call to toTexture().
-	int getNodeCount()
-	{	return node_count;
-	}
-
-	/// Get the number of polygons rendered in the last call to ToTexture().
-	int getPolyCount()
-	{	return poly_count;
-	}
-
-	/// Get the number of vertices rendered in the last call to ToTexture().
-	int getVertexCount()
-	{	return vertex_count;
-	}
-
-	///
-	Vec2i getResolution()
-	{	return Vec2i(xres, yres);
-	}
-
-	/// Get the Texture that the camera renders to.
-	GPUTexture getTexture()
-	{	capture.flipped = true;
-		return capture;
-	}
-
-	/// x and y in screen coordinates, z is distance from camera. Unfinished
-	void getWorldCoordinate(int x, int y, float z, Vec3f result)
+	/**
+	 * Unfinished!
+	 * Get the 3d coordinate at the 2d screen coordinate at a distance of z from the camera.
+	 * Params:
+	 *     x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.
+	 *     x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.  */ 
+	Vec3f getWorldCoordinate(Vec2f screenCoordinate, float z)
 	{	Matrix clip;
 		Matrix modl;
 
 		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
 		glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
-	}
-
-	/**
-	 * Set the resolution of the texture that the camera renders to.
-	 * Special values of zero set the resolution to the current window size.*/
-	void setResolution(uint width, uint height)
-	{	xres = width;
-		yres = height;
 		
-		// Ensure our new resolution is below the maximum texture size
-		uint max = Probe.openGL(Probe.OpenGL.MAX_TEXTURE_SIZE);
-		if (xres > max)	xres = max;
-		if (yres > max)	yres = max;
+		return Vec3f();
 	}
 
 	/**
-	 * Set multiple variables that affect the camera's view when .toTexture() is called.
+	 * Set multiple variables that affect the camera's view.
 	 * Params:
-	 * near = Nothing closer than this will be rendered.  The default is 1.
-	 * far = Nothing further away than this will be rendered.  The default is 100,000.
-	 * fov = The field of view of the camera, in degrees.  The default is 45.
-	 * apsect = The aspect ratio of the camera.  A special value of zero allows for
-	 * it to be set automatically by the Camera resolution.  Zero is also the default value.
-	 * threshold = Minimum size of a node in pixels before it's rendered.  The default
-	 * is 0.667 (2/3rds of a pixel).*/
+	 *     near = Nothing closer than this will be rendered.  The default is 1.
+	 *     far = Nothing further away than this will be rendered.  The default is 100,000.
+	 *     fov = The field of view of the camera, in degrees.  The default is 45.
+	 *     apsect = The aspect ratio of the camera.  A special value of zero allows for
+	 *         it to be set automatically by the Camera resolution.  Zero is also the default value.
+	 *         threshold = Minimum size of a node in pixels before it's rendered.  The default
+	 *         is 0.667 (2/3rds of a pixel).*/
 	void setView(float near=1, float far=100000, float fov=45, float aspect=0, float threshold=0.667)
 	{	this.near = near;
 		this.far = far;
@@ -175,88 +125,17 @@ class CameraNode : MovableNode
 	}
 
 	/**
-	 * Render everything seen by the camera to its own Texture.  The Texture can then be
-	 * added to a material or used for any other purpose by using getTexture(). */
-	void toTexture()
-	in {
-		assert(System.isSystemThread());
-	}
-	body
-	{	node_count = poly_count = vertex_count = 0;
-		Render.setCurrentCamera(this);
-		
-		// Get Size
-		int modified_xres=xres, modified_yres=yres;
-		if (modified_xres > System.getWidth()) modified_xres=System.getWidth();
-		if (modified_yres > System.getHeight()) modified_yres=System.getHeight();
-		if (modified_xres ==0) modified_xres=System.getWidth();
-		if (modified_yres ==0) modified_yres=System.getHeight();
-		
-
-		// Precalculate the inverse of the Camera's absolute transformation Matrix.
-		Matrix xform = getAbsoluteTransform(true);
-		inverse_absolute = xform.inverse();
-
-		// Resize viewport
-		float aspect2 = aspect ? aspect : modified_xres/cast(float)modified_yres;
-		System.resizeViewport(modified_xres, modified_yres, near, far, fov, aspect2);
-		glLoadIdentity();
-
-		// Rotate in reverse
-		Vec3f axis = xform.toAxis();
-		glRotatef(-axis.length()*57.295779513, axis.x, axis.y, axis.z);
-
-		// Draw the skybox
-		// TODO: Modify this to allow for recursive skyboxes.
-		if (scene.skyBox)
-		{	glClear(GL_DEPTH_BUFFER_BIT);
-
-			// Reset the position to the origin for skybox rendering.
-			// Need to reset coordinates of cached version instead of original.
-			float[3] push = xform.v[12..15];
-			cache[scene.transform_read].transform_abs.v[12..15] = 0; // read buffer
-
-			buildFrustum(); // temporary frustum exclusively for skybox rendering.
-			scene.skyBox.apply();
-			addNodesToRender(scene.skyBox);
-			Render.all(poly_count, vertex_count);
-			glClear(GL_DEPTH_BUFFER_BIT);
-
-			cache[scene.transform_read].transform_abs.v[12..15] = push[0..3]; // restore position
-		}
-		
-		scene.apply();
-
-		if (!scene.skyBox)
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Translate in reverse
-		glTranslatef(-xform.v[12], -xform.v[13], -xform.v[14]);
-
-		// Build view frustum, cull, and render
-		buildFrustum();
-		scene.apply();
-		addNodesToRender(scene);
-		Render.all(poly_count, vertex_count);
-
-		// Copy framebuffer to our texture.
-		capture.loadFrameBuffer(modified_xres, modified_yres);
-		
-		frame_count++;
-	}
-
-	// Add the node and all child Nodes to the framebuffer, if onscreen.
-	protected void addNodesToRender(Scene node)
-	{	// Recurse through and render children.
-		foreach (Node c; node.getChildren())
-			addNodesToRender(c);
-	}
-
-	// Ditto
-	protected void addNodesToRender(Node node)
+	 * Get an array of all nodes that this camera can see.
+	 * Params:
+	 *     node = Root of the scenegraph to scan.  Defaults to the camera's scene.
+	 *     lookaside = Optional buffer to use for result to avoid memory allocation. */
+	Array!(VisibleNode) getVisibleNodes(Node root=null, inout Array!(VisibleNode) lookaside=Array!(VisibleNode)())
 	{
-		VisibleNode vnode = cast(VisibleNode)node;
-		if (node.getVisible() && vnode)
+		if (!root)
+			root=scene;
+		
+		VisibleNode vnode = cast(VisibleNode)root;
+		if (root.getVisible() && vnode)
 		{	
 			vnode.setOnscreen(true);
 
@@ -278,43 +157,48 @@ class CameraNode : MovableNode
 				float y = cam_abs.v[13]-node_abs.v[13];
 				float z = cam_abs.v[14]-node_abs.v[14];
 
-				float height = yres;
+				float height = 500; //yres;
 				if (height==0)
-					height = System.getHeight();
+					height = Window.getInstance().getHeight();
 				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
 					vnode.setOnscreen(false);
 				else // Onscreen and big enough to draw
-				{	Render.add(vnode);
-
-					// Statistics
-					node_count++;
-				}
+					lookaside ~= vnode;
 			}
 		}
 		// Recurse through and render children.
-		foreach (Node c; node.getChildren())
-			addNodesToRender(c);
+		foreach (Node c; root.getChildren())
+			getVisibleNodes(c, lookaside);
+		
+		return lookaside;
 	}
 
 	/*
-	 * Build a 6-plane view frutum based on the orientation of the camera and
+	 * Calculate a 6-plane view frutum based on the orientation of the camera and
 	 * the parameters passed to setView(). 
+	 * This needs to be recalculated 
 	 * 
 	 * This needs to be rewritten to use the camera's transform matrix + fov and
 	 * not rely on the current state of OpenGL's view matrix.
 	 * It might also be good to put this in calcTransform() instead.*/
-	protected void buildFrustum()
-	in {
-		assert(System.isSystemThread()); // this shouldn't be necessary.
-	}
-	body
-	{	// Create the clipping matrix from the modelview and projection matrices
-		Matrix clip;
-		Matrix modl;
+	public void buildFrustum(Scene scene)
+	{	//assert(!transform_dirty);
+		assert(System.isSystemThread()); // this shouldn't be necessary after removing the opengl calls.
+		
+		// Create the clipping matrix from the modelview and projection matrices
+		Matrix clip, model;
 		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
-		glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
-		clip = modl*clip;
-
+		glGetFloatv(GL_MODELVIEW_MATRIX, model.v.ptr);
+		
+		/*// Alternate approach that doesn't require glGetFloatv(GL_MODELVIEW_MATRIX
+		  // This sometimes has issues with clipping the near plane.
+		if (scene == this.scene)
+			clip = getAbsoluteTransform().inverse() * clip;
+		else
+			clip = getAbsoluteTransform().toAxis().toMatrix().inverse() * clip;
+		*/
+		clip = model*clip;
+		
 		// Convert the clipping matrix to our six frustum planes.
 		frustum[0].set(clip[3]-clip[0], clip[7]-clip[4], clip[11]-clip[ 8], clip[15]-clip[12]);
 		frustum[1].set(clip[3]+clip[0], clip[7]+clip[4], clip[11]+clip[ 8], clip[15]+clip[12]);

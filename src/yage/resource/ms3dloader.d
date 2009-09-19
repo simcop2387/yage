@@ -6,16 +6,18 @@
 
 module yage.resource.ms3dloader;
 
+import tango.text.xml.Document;
+import tango.io.Stdout;
+import tango.io.device.File;
+
 import std.string;
 import std.file;
 import std.path;
-import tango.io.Stdout;
 import yage.core.all;
 import yage.core.types;
 import yage.core.color;
 import yage.resource.all;
-import yage.core.object2;;
-import yage.system.log;
+import yage.core.object2;
 
 import std.c.string : memcpy;
 

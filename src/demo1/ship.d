@@ -53,7 +53,6 @@ class Ship : GameObject
 		sound = ship.addChild(new SoundNode());
 		sound.setSound("sound/ship-engine.ogg");
 		sound.setLooping(true);
-		sound.setVolume(1);
 	}
 
 	ModelNode getShip()

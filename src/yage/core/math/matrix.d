@@ -306,6 +306,7 @@ struct Matrix
 		result.v[13] = v[12]*b.v[ 1] + v[13]*b.v[ 5] + v[14]*b.v[ 9] + v[15]*b.v[13];
 		result.v[14] = v[12]*b.v[ 2] + v[13]*b.v[ 6] + v[14]*b.v[10] + v[15]*b.v[14];
 		result.v[15] = v[12]*b.v[ 3] + v[13]*b.v[ 7] + v[14]*b.v[11] + v[15]*b.v[15];
+		
 		return result;
 	}
 

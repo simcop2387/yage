@@ -20,39 +20,38 @@ import derelict.opengl.glext;
 // program entry point.
 int main()
 {
-	// Init
-	System.init(814, 445, 32, false, 1);
-	ResourceManager.addPath(["../res", "../res2"]);
+	// Init and create window
+	System.init(); 
+	auto window = Window.getInstance();
+	window.setResolution(720, 445, 0, false, 1); // golden ratio
+	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
 	Scene scene = new Scene();
 	scene.play();
-	scene.backgroundColor = Color("green");
+	scene.backgroundColor = "green";
 	
 	// Ship
 	auto ship = scene.addChild(new ModelNode());
-	ship.setModel("obj/tie2.obj");
+	ship.setModel("scifi/fighter.ms3d");
 	ship.setAngularVelocity(Vec3f(0, 1, 0));
 
 	// Camera
 	auto camera = scene.addChild(new CameraNode());
 	camera.setPosition(Vec3f(0, 5, 30));
 	
-	// Main surface where camera output is rendered.
+	// Main surface
 	auto view = new Surface();
-	view.style.backgroundImage = camera.getTexture();
-	view.style.set("background-color: red; font-family: url('gui/font/Vera.ttf')");	
-	System.setSurface(view);
 	
 	// Events for main surface.
 	bool grabbed = true;
-	view.onKeyDown = delegate void (Surface self, int key, int modifier){
+	view.onKeyDown = delegate void(Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
 		if (key == SDLK_c)
 			new GPUTexture("../res/fx/flare1.jpg"); // This proves that the LazyResource queue doesn't work yet!
 	};
-	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates) {
+	view.onMouseDown = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		grabbed = !grabbed;
 		if (grabbed)
 			self.grabMouse();
@@ -66,26 +65,26 @@ int main()
 	
 
 	// For Testing
-	auto window = view.addChild(new Surface());
-	window.style.set("top: 5px; left: 5px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
+	auto info = view.addChild(new Surface());
+	info.style.set("top: 5px; left: 5px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
 		"font-family: url('gui/font/Vera.ttf'); font-size: 14px; text-align: right; opacity: .8");
 	
-	window.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
+	info.onMouseDown = delegate void(Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
 		self.focus();
 	};
-	window.onMouseMove = (Surface self, byte buttons, Vec2i amount) {
+	info.onMouseMove = delegate void(Surface self, byte buttons, Vec2i amount) {
 		if(buttons == 1) 
 			self.move(cast(Vec2f)amount, true);
 	};
-	window.onMouseUp = (Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseUp = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.blur();
 	};
-	window.onMouseOver = (Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseOver = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear3.png')");
 	};
-	window.onMouseOut = (Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseOut = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear2.png')");
 	};
 	
@@ -94,17 +93,25 @@ int main()
 	Timer frame = new Timer();
 	while(!System.isAborted())
 	{		
-		Input.processInput();
-		scene.swapTransformRead(); // swap scene buffer so the latest version can be rendered.
-		camera.toTexture();
-		view.render();
+		//Input.processInput();
+		//scene.swapTransformRead(); // swap scene buffer so the latest version can be rendered.
+		//camera.toTexture();
+		
+		//Render.scene(camera, view.style.backgroundImage);
+		
+		//view.render();
+		
+		Input.processAndSendTo(view);
+		auto stats = Render.scene(camera, window);
+		Render.surface(view, window);
+		Render.complete(); // swap buffers
 		
 		// Print framerate
 		fps++;
 		
-		if (frame.get()>=0.25f)
+		if (frame.tell()>=0.25f)
 		{	
-			window.text = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
+			info.text = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
 			`<u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) `~
 			`<span style="text-decoration: overline">house</span> the font would refer to a complete set of metal `~
 			`type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not `~
@@ -115,12 +122,12 @@ int main()
 			`appropriate for the language it was required for in order to set a complete page in that language. `~
 			`Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and `~
 			`line-width spacers, were not part of a specific font in pre-digital usage, but were separate, `~
-			`generic pieces.[1]             `~ Format.convert(` {} fps<br/>`, fps/frame.get());
-			
+			`generic pieces.[1]             `~ Format.convert(` {} fps<br/>`, fps/frame.tell());
+	
 			//window.text = Format.convert(`{} fps<br/>{}`,
 			//	fps/frame.get());
 			//window.text = Format.convert(`<span style="color: white">{}</span> fps`, fps/frame.get());
-			frame.reset();
+			frame.seek(0);
 			fps = 0;	
 			//break;
 		}

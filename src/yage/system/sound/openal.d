@@ -58,7 +58,7 @@ class OpenAL
 		try {
 			static if (is (R==void))
 			{	T(args);
-				if (T.stringof[0..3] != "alc")
+				if (T.stringof[0..3] != "alc") // TODO can be static if.
 					checkError();
 			}
 			else

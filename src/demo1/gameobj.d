@@ -65,21 +65,21 @@ class Flare : GameObject
 
 		if (timer is null)
 		{	timer = new Timer();
-			timer.set(1);
+			timer.seek(1);
 			timer2 = new Timer();
-			timer2.set(1);
+			timer2.seek(1);
 		}
 
 		// don't create a new light more than 5 times per second
-		if (timer.get() > .2)
-		{	timer.reset();
+		if (timer.tell() > .2)
+		{	timer.seek(0);
 			LightNode light = addChild(new LightNode());
 			light.diffuse = Color("orange");
 			light.setLightRadius(96);
 		}
 		
-		if (timer2.get() > 1/20.0f)
-		{	timer2.reset();			
+		if (timer2.tell() > 1/20.0f)
+		{	timer2.seek(0);			
 			SoundNode zap = addChild(new SoundNode());
 			zap.setSound("sound/laser3.ogg");
 			zap.setVolume(1);

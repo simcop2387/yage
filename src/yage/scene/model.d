@@ -101,7 +101,7 @@ class ModelNode : VisibleNode
 	void animationPlayOnce(float start, float end)
 	{	Timer t1 = getAnimationTimer();
 		t1.setRange(start, end);
-		t1.set(start);
+		t1.seek(start);
 		t1.setPauseAfter(end);
 		t1.play();
 	}
@@ -109,7 +109,7 @@ class ModelNode : VisibleNode
 	void animationPlayLoop(float start, float end)
 	{	Timer t1 = getAnimationTimer();
 		t1.setRange(start, end);
-		t1.set(start);
+		t1.seek(start);
 		t1.play();
 	}	
 	
@@ -155,7 +155,7 @@ class ModelNode : VisibleNode
 		// Call animationComplete if an animation has completed.
 		if (onAnimationComplete && animation_timer)
 		{	last_time = animation_timer.tell();
-			double time = animation_timer.get();
+			double time = animation_timer.tell();
 			if (time == animation_timer.getPauseAfter() || last_time > time)
 			{	onAnimationComplete(this);
 				//onAnimationComplete = null;

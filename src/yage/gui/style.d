@@ -8,12 +8,10 @@ module yage.gui.style;
 
 import tango.io.Stdout;
 import tango.math.IEEE;
-import tango.text.Regex;
 import tango.text.Util;
 import tango.text.Unicode;
 import tango.text.convert.Format;
 import tango.util.Convert;
-import yage.core.cache;
 import yage.core.color;
 import yage.core.math.vector;
 import yage.resource.font;
@@ -288,71 +286,73 @@ struct Style
 	{	
 		if (!style.length)
 			return;
-
+		
 		// Parse and apply the style
-		scope styles = Cache.getRegex(";\\s*").split(style);
-		foreach (exp; styles)
-		{	char[][] tokens = Cache.getRegex(":\\s*").split(exp);
+		//scope styles = Cache.getRegex(";\\s*").split(style);
+		foreach (exp; patterns(style, ";"))
+		{	exp = trim(exp);
+			char[][] tokens = split(exp, ":");
 			if (tokens.length<2)
 				continue;
-			char[] property = toLower(substitute(tokens[0], "-", "")); // garbage
-			tokens = Cache.getRegex("\\s+").split(tokens[1]);
+			char[] property = trim(tokens[0]);
+			property = toLower(property, property);
+			tokens = delimit(trim(tokens[1]), " \r\n\t");
 			
 			// TODO: account for parse errors.			
 			switch (property)
 			{	// TODO: more properties
 				case "color":				color = Color(tokens[0]); break;
 			
-				case "backgroundcolor":		backgroundColor = Color(tokens[0]); break;
-				case "backgroundimage":		backgroundImage = ResourceManager.texture(removeUrl(tokens[0])).texture; break;				
+				case "background-color":	backgroundColor = Color(tokens[0]); break;
+				case "background-image":	backgroundImage = ResourceManager.texture(removeUrl(tokens[0])).texture; break;				
 			
-				case "font":		/*todo */  break;
-				case "fontsize":	fontSize = tokens[0];  break;
-				case "fontfamily":	fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;
-				case "fontstyle":	fontStyle = translateFontStyle[tokens[0]];  break;
-				case "fontweight":	fontWeight = translateFontWeight[tokens[0]];  break;
+				case "font":				/*todo */  break;
+				case "font-size":			fontSize = tokens[0];  break;
+				case "font-family":			fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;
+				case "font-style":			fontStyle = translateFontStyle[tokens[0]];  break;
+				case "font-weight":			fontWeight = translateFontWeight[tokens[0]];  break;
 			
-				case "top":			top = tokens[0];  break;
-				case "right":		right = tokens[0];  break;
-				case "bottom":		bottom = tokens[0];  break;
-				case "left":		left = tokens[0];  break;
-				case "dimension":	setEdge(dimension, tokens);  break;
-				case "width":		width = tokens[0];  break;
-				case "height":		height = tokens[0];  break;
-				case "size": 		setEdge(size, tokens);  break;
+				case "top":					top = tokens[0];  break;
+				case "right":				right = tokens[0];  break;
+				case "bottom":				bottom = tokens[0];  break;
+				case "left":				left = tokens[0];  break;
+				case "dimension":			setEdge(dimension, tokens);  break;
+				case "width":				width = tokens[0];  break;
+				case "height":				height = tokens[0];  break;
+				case "size": 				setEdge(size, tokens);  break;
 				
-				case "border":		setEdge(borderWidth, tokens[0..1]);  borderColor[0..4] = Color(tokens[$-1]);  break;
-				case "bordercolor":	setEdge(borderColor, tokens);  break;
-				case "borderwidth":	setEdge(borderWidth, tokens);  break;
-				case "borderimage":	borderImage[0..4] = borderCornerImage[0..4] = borderCenterImage = 
-										ResourceManager.texture(removeUrl(tokens[0])).texture;  break;
+				case "border":				setEdge(borderWidth, tokens[0..1]);  borderColor[0..4] = Color(tokens[$-1]);  break;
+				case "border-color":		setEdge(borderColor, tokens);  break;
+				case "border-width":		setEdge(borderWidth, tokens);  break;
+				case "border-image":		borderImage[0..4] = borderCornerImage[0..4] = borderCenterImage = 
+												ResourceManager.texture(removeUrl(tokens[0])).texture;  break;
 										
-				case "bordertop":			borderWidth[0] = tokens[0];  borderColor[0] = Color(tokens[$-1]);  break;
-				case "bordertopcolor":		borderColor[0] = Color(tokens[0]);  break;
-				case "bordertopwidth":		borderWidth[0] = tokens[0];  break;
+				case "border-top":			borderWidth[0] = tokens[0];  borderColor[0] = Color(tokens[$-1]);  break;
+				case "border-top-color":	borderColor[0] = Color(tokens[0]);  break;
+				case "border-top-width":	borderWidth[0] = tokens[0];  break;
 				
-				case "borderright":			borderWidth[1] = tokens[0];  borderColor[1] = Color(tokens[$-1]);  break;
-				case "borderrightcolor":	borderColor[1] = Color(tokens[0]);  break;
-				case "borderrightwidth":	borderWidth[1] = tokens[0];  break;
+				case "border-right":		borderWidth[1] = tokens[0];  borderColor[1] = Color(tokens[$-1]);  break;
+				case "border-right-color":	borderColor[1] = Color(tokens[0]);  break;
+				case "border-right-width":	borderWidth[1] = tokens[0];  break;
 				
-				case "borderbottom":		borderWidth[2] = tokens[0];  borderColor[2] = Color(tokens[$-1]);  break;
-				case "borderbottomcolor":	borderColor[2] = Color(tokens[0]);  break;
-				case "borderbottomwidth":	borderWidth[2] = tokens[0];  break;
+				case "border-bottom":		borderWidth[2] = tokens[0];  borderColor[2] = Color(tokens[$-1]);  break;
+				case "border-bottom-color":	borderColor[2] = Color(tokens[0]);  break;
+				case "border-bottom-width":	borderWidth[2] = tokens[0];  break;
 				
-				case "borderleft":			borderWidth[3] = tokens[0];  borderColor[3] = Color(tokens[$-1]);  break;
-				case "borderleftcolor":		borderColor[3] = Color(tokens[0]);  break;
-				case "borderleftwidth":		borderWidth[3] = tokens[0];  break;
+				case "border-left":			borderWidth[3] = tokens[0];  borderColor[3] = Color(tokens[$-1]);  break;
+				case "border-left-color":	borderColor[3] = Color(tokens[0]);  break;
+				case "border-left-width":	borderWidth[3] = tokens[0];  break;
 				
 				case "padding":				setEdge(padding, tokens);  break;
-				case "paddingopwidth":		padding[0] = tokens[0];  break;
-				case "paddingrightwidth":	padding[1] = tokens[0];  break;
-				case "paddingbottomwidth":	padding[2] = tokens[0];  break;
-				case "paddingleftwidth":	padding[3] = tokens[0];  break;
+				case "padding-top-width":	padding[0] = tokens[0];  break;
+				case "padding-right-width":	padding[1] = tokens[0];  break;
+				case "padding-bottom-width":padding[2] = tokens[0];  break;
+				case "padding-left-width":	padding[3] = tokens[0];  break;
 				
-				case "lineheight":			lineHeight = tokens[0]; break;
+				case "line-height":			lineHeight = tokens[0]; break;
 				
-				case "textalign":			textAlign = translateTextAlign[tokens[0]]; break;
-				case "textdecoration":		textDecoration = translateTextDecoration[tokens[0]]; break;
+				case "text-align":			textAlign = translateTextAlign[tokens[0]]; break;
+				case "text-decoration":		textDecoration = translateTextDecoration[tokens[0]]; break;
 				
 				case "opacity":				opacity = to!(float)(tokens[0]);  break;
 				case "zIndex":				zIndex = to!(int)(tokens[0]); break;
