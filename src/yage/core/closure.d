@@ -14,7 +14,7 @@ import yage.core.parse;
  * Params:
  *     func = The function to call.  This can also be a class methods so long as they aren't static.
  *            For now, static method calls must be wrapped inside a non-static function.
- *     ...  = A variable number of arguments to bind to the function.  Does not support out or inout arguments.
+ *     var_args = A variable number of arguments to bind to the function.  Does not support out or inout arguments.
  * Returns: An object that can be called via opCall(), which calls the original function
  * Example:
  * --------

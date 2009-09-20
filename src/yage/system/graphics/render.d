@@ -203,7 +203,6 @@ struct Render
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
 	 * Rotation can optionally be supplied to rotate sprites so they face the camera. 
-	 * TODO: Remove dependence on node. 
 	 * TODO: Make all vbo's optional.
 	 * TODO: Rewrite this around the simpler Render.geometry */
 	static RenderStatistics model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)

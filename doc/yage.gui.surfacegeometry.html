@@ -1,16 +1,16 @@
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<meta content="text/javascript" http-equiv="content-script-type">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta content="text/javascript" http-equiv="content-script-type" />
 	<title>yage.gui.surfacegeometry</title>
-	<link rel="stylesheet" type="text/css" href="css/default.css">
-	<link rel="stylesheet" type="text/css" href="css/candydoc.css">
-	<link rel="stylesheet" type="text/css" href="css/menu.css">
-	<script language="JavaScript" src="js/util.js" type="text/javascript"></script>
-	<script language="JavaScript" src="js/tree.js" type="text/javascript"></script>
-	<script language="JavaScript" src="js/explorer.js" type="text/javascript"></script>
+	<link rel="stylesheet" type="text/css" href="css/default.css" />
+	<link rel="stylesheet" type="text/css" href="css/candydoc.css" />
+	<link rel="stylesheet" type="text/css" href="css/menu.css" />
+	<script type="text/javascript" src="js/util.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/tree.js" type="text/javascript"></script>
+	<script ltype="text/javascript" src="js/explorer.js" type="text/javascript"></script>
   </head>
   <body>
 	<!-- Title Image -->	
@@ -19,7 +19,7 @@
 	</div>
 	
 	<!-- Menu -->
-	<div style="position: absolute;	height: 87px; width: 100%;">
+	<div style="position: absolute;	height: 87px; width: 100%">
 		<div style="margin-top: 63px">
 		<div id="slidetabsmenu">
 			<ul>
@@ -45,22 +45,25 @@
 		</tr>
 		
 		<tr> <!-- Bar Beneath Main title -->
-			<td width="100%" colspan="4">				
+			<td width="100%" colspan="4">
+			
+			
+	
 				<table cellpadding="0" cellspacing="0" width="100%">
 					<tr>
 						<td width="100%" style="background: url('img/bar-stretch.png') repeat-x; height: 9px;"></td>
 						<td valign="top"><img src="img/search.png" alt="" style="vertical-align: top"></td>
-						<td width="100%" style="background: url('img/search-stretch.png') repeat-x;">
+						<td style="background: url('img/search-stretch.png') repeat-x;">
 							<!-- Use Google search for now -->				
-							<form method="GET" action="http://www.google.com/search" style="padding: 2px;">
+							<form method="GET" action="http://www.google.com/search" style="padding: 2px">
 								<input type="hidden" name="ie" value="UTF-8">
 								<input type="hidden" name="oe" value="UTF-8">
 								<input type="hidden" name="domains" value="www.yage3d.net">
-								<input type="hidden" name="sitesearch" value="www.yage3d.net">
-								<input type="text" name="q" value="" style="height: 1.1em; width: 8em;"><span>
-								<input type="submit" name="btnG" value="Search" style="width: 5em;"></span>
+								<input type="hidden" name="sitesearch" value="svn.dsource.org/projects/yage/trunk/doc/">
+								<input type="text" name="q" value="" style="height: 1.1em; width: 200px"><span>
+								<input type="submit" name="btnG" value="API Search" style="width: 90px"></span>
 							</form>
-							<div style="width: 14em; height: 1px;"></div>
+							<div style="width: 320px; height: 1px;"></div>
 						</td>
 					</tr>
 				</table>
@@ -104,24 +107,27 @@ Eric Poggel
  defines vertices and meshes for drawing a surface, including borders/border textures.
  The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
  Nine 11 are defined, one for each border region and 3 for the center.
- 0_4__8__12      BR
- |\ |\ |\ |       BR
- 1\5\9\13      BR
- |\ |\ |\ |       BR
- 2\6\10\14      BR
- |\ |\ |\ |       BR
- 3\7\11\15      BR
+ <pre>
+ 0_4__8__12
+ |\ |\ |\ |
+ 1\5\9\13
+ |\ |\ |\ |
+ 2\6\10\14
+ |\ |\ |\ |
+ 3\7\11\15</pre>
 <br><br>
 Vertices used for center2 Mesh, which is used for background-color and the border-image center.
+ <pre>
  1618
  |\ |
- 17\19
+ 17\19</pre>
 <br><br>
 
  Vertices used for text Mesh, which renders any text
+ <pre>
  2022
  |\ |
- 21\23
+ 21\23</pre>
 <br><br>
 
  Rendering occurs in up to 4 passes.
@@ -132,9 +138,7 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 
 <br><br>
 <b>See:</b><br>
-<br><br>
-<b>http:</b><br>
-//www.w3.org/TR/css3-background/#the-border-image
+<a href="http://www.w3.org/TR/css3-background/#the-border-image">CSS 3's border image property</a>
  
 <br><br>
 
@@ -214,7 +218,7 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Sep 19 12:39:05 2009
+		on Sat Sep 19 21:34:49 2009
 
 	</div>
 	

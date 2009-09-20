@@ -14,24 +14,27 @@ import yage.resource.material;
 /**
  * SurfaceGeometry defines vertices and meshes for drawing a surface, including borders/border textures.
  * The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
- * Nine 11 are defined, one for each border region and 3 for the center.
- * 0__4__8__12      BR
- * |\ |\ |\ |       BR
- * 1_\5_\9_\13      BR
- * |\ |\ |\ |       BR
- * 2_\6_\10\14      BR
- * |\ |\ |\ |       BR
- * 3_\7_\11\15      BR
+ * Nine 11 are defined, one for each border region and 3 for the center. 
+ * <pre>
+ * 0__4__8__12
+ * |\ |\ |\ | 
+ * 1_\5_\9_\13 
+ * |\ |\ |\ |  
+ * 2_\6_\10\14
+ * |\ |\ |\ | 
+ * 3_\7_\11\15</pre>
  * 
  * Vertices used for center2 Mesh, which is used for background-color and the border-image center.
+ * <pre>
  * 16_18
  * |\ |
- * 17\19
+ * 17\19</pre>
  * 
  * Vertices used for text Mesh, which renders any text
+ * <pre>
  * 20_22
  * |\ |
- * 21\23
+ * 21\23</pre>
  * 
  * Rendering occurs in up to 4 passes.
  * First, render the borders and center1 with colors enabled and texturing disabled, for the borders and background-color
@@ -39,7 +42,7 @@ import yage.resource.material;
  * Third, render the borders and center3 with colors disabled and texturing enabled for the border-image.
  * Finally, the text itself is rendered
  *  
- * See: http://www.w3.org/TR/css3-background/#the-border-image
+ * See: <a href="http://www.w3.org/TR/css3-background/#the-border-image">CSS 3's border image property</a>
  */
 package class SurfaceGeometry : Geometry
 {

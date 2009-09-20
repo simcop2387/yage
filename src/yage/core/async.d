@@ -11,8 +11,8 @@ import tango.core.Thread;
 import tango.text.convert.Format;
 
 /**
- * TODO: This should use closure instead of duplicating its functionality.
  * Call a function via a thread after a non-blocking delay.
+ * TODO: This should use closure instead of duplicating its functionality.
  * Params:
  *     delay = Wait this many seconds before calling func.
  *     func = Function to call

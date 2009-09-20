@@ -131,9 +131,10 @@ class TextLayout
 	 * Characters with a italic/oblique font-style are rendered skewed.
 	 * For ideal rendering, instead use a font-family that has a bold or italic style.
 	 * Params:
-	 *     text = String of utf-8 encoded html text to render.  
-	 *       The following html tags are supported: <a>, <b>, <del>, <i>, <span>, <sub>, <sup>, <u>
-	 *       The following css is supported via inline style attributes:
+	 *     text = String of utf-8 encoded html text to render.
+	 *       The following html tags are supported:<br> 
+	 *       	a, b, br, del, i, span, sub, sup, u <br>
+	 *       The following css is supported via inline style attributes: <br>
 	 *         color, font-family, font-size[%|px], font-style[normal|italic|oblique], font-weight[normal|bold],
 	 *         letter-spacing[%|px], line-height[%|px], 
 	 *         text-align[left|center|right] text-decoration[none|underline|overline|line-through]
@@ -141,7 +142,7 @@ class TextLayout
 	 *     width = Available width for rendering text
 	 *     height = Available height for rendering text.
 	 * Returns:  An RGBA image of width pixels wide and is shorter or equal to height.  
-	 *     Note that the same buffer is used for each return, so one will overwrite the previous.*/
+	 *     Note that the same buffer is used for each return, so one call to this function will overwrite a previous result.*/
 	static Image render(char[] text, Style style, int width, int height, bool pow2=false)
 	{
 		Image result;

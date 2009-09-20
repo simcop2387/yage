@@ -110,8 +110,8 @@ class Font : Resource
 	
 	/**
 	 * Clear the cache of rendered letters.
-	 * Characters of text are cached as they're rendered.
-	 * This allows a tremendous speedup in rendering speed, but uses extra memory.
+	 * Characters of text are cached after they're rendered.
+	 * This allows a tremendous speedup in for future calls, but uses a little extra memory.
 	 * Calling this function should not usually be necessary. */
 	void clearCache()
 	{	cache = null;		

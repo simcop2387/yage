@@ -141,7 +141,7 @@ struct Style
 {
 	/// CSSValues that can be assigned to the textAlign property.
 	enum TextAlign
-	{	LEFT, ///
+	{	LEFT, /// Allowed values.
 		CENTER, /// ditto
 		RIGHT, /// ditto
 		JUSTIFY /// ditto
@@ -149,7 +149,7 @@ struct Style
 	
 	/// CSSValues that can be assigned to the textDecoration property.
 	enum TextDecoration
-	{	NONE, ///
+	{	NONE, /// Allowed values.
 		UNDERLINE, /// ditto
 		OVERLINE, /// ditto
 		LINETHROUGH /// ditto
@@ -164,13 +164,13 @@ struct Style
 
 	/// CSSValues that can be assigned to the fontStyle property.
 	enum FontStyle
-	{	NORMAL, ///
+	{	NORMAL, /// Allowed values.
 		ITALIC /// ditto
 	}
 
 	/// CSSValues that can be assigned to the fontWeight property.
 	enum FontWeight
-	{	NORMAL, ///
+	{	NORMAL, /// Allowed values.
 		BOLD /// ditto
 	}
 	
@@ -221,7 +221,7 @@ struct Style
 		}
 		GPUTexture[4] borderImage; /// Set the four top/right/bottom/left border images in one array.
 	}
-	GPUTexture borderCenterImage; /// Border center image (not a part of CSS3.
+	GPUTexture borderCenterImage; /// Border center image (not a part of CSS3, this image is stretched to fit within the borders).
 	
 	union {
 		struct {
@@ -366,7 +366,8 @@ struct Style
 
 	/**
 	 * Get string of css text storing the values of this style.
-	 * Only the properties that differ from the defaults will be returned. */
+	 * Only the properties that differ from the defaults will be returned.
+	 * TODO: Finish this function. */
 	char[] toString()
 	{	Style def; // default style, req'd by styleCompare
 		char[][] result;

@@ -100,7 +100,7 @@ abstract class Probe
 	
 	/**
 	 * Searches to see if the given extension is supported in hardware.
-	 * Due to the nature of sdl, a window must first be created. */
+	 * Due to the nature of sdl, a window must first be created before calling this function. */
 	static bool checkExtension(char[] name)
 	{	char[] exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
 	    int result = containsPattern(toLower(exts), toLower(name.dup)~" "); 
@@ -112,7 +112,7 @@ abstract class Probe
 
 	/**
 	 * Return an array of all supported OpenGL extensions.
-	 * Due to the nature of sdl, a window must first be created. */ 
+	 * Due to the nature of sdl, a window must first be created before calling this function. */ 
 	static char[][] getExtensions()
 	{	char[] exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
 		return split(exts, " ");

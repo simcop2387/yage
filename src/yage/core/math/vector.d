@@ -741,11 +741,13 @@ struct Vec3f
 	{	return Format.convert("<{} {} {}>", x, y, z);
 	}
 
-	///
-	void translate(Matrix m)
-	{	x += m.v[12];
-		y += m.v[13];
-		z += m.v[14];
+	/// Return a copy of this Vecotr translated by the translation component of Matrix m.
+	Vec3f translate(Matrix m)
+	{	Vec3f res=void;
+		res.x = x + m.v[12];
+		res.y = y + m.v[13];
+		res.z = z + m.v[14];
+		return res;
 	}
 	
 	/// Return a copy of this vector transformed by Matrix m.

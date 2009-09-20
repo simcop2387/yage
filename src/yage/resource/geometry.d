@@ -18,8 +18,8 @@ import yage.resource.resource;
 import yage.system.system;
 
 /**
- * This is a common abstract class inherited all VertexBuffers.  It allows them to be passed around
- * interchangeably and to exist as siblings in arrays. */
+ * This is a common abstract class inherited by all templated types of VertexBuffer.  
+ * It allows them to be passed around interchangeably and to exist as siblings in arrays. */
 abstract class IVertexBuffer : ExternalResource
 {
 	private static uint[] garbageIds;
@@ -120,15 +120,14 @@ class Geometry : Resource
 {	
 	/**
 	 * Constants representing fixed-function VertexBuffer types, for use with get/set attributes.
-	 * Types:
-	 *     VERTICES An array of vertices specifying x,y,z coordinates.
-	 *     NORMALS Optional normal vectors for each vertex used in lighting calculations.
-	 *     TEXCOORDS[0..7] Optional texture coordinates for each vertex, for each multi-textured level.
-	 *     COLORS0 An optional color value for each vertex.
-	 *     COLORS1 An optional secondary color value for each vertex.
-	 *     FOGCOORDS
+	 *     VERTICES: An array of vertices specifying x,y,z coordinates.
+	 *     NORMALS: Optional normal vectors for each vertex used in lighting calculations.
+	 *     TEXCOORDS: Optional texture coordinates for each vertex, one for each multi-texture unit.
+	 *     COLORS0: An optional color value for each vertex.
+	 *     COLORS1: An optional secondary color value for each vertex.
+	 *     FOGCOORDS: Currently unused.
 	 */
-	static const char[] VERTICES   = "gl_Vertex"; /// ditto
+	static const char[] VERTICES   = "gl_Vertex";
 	static const char[] NORMALS    = "gl_Normal"; /// ditto
 	static const char[] TEXCOORDS0 = "gl_MultiTexCoord0"; /// ditto
 	static const char[] TEXCOORDS1 = "gl_MultiTexCoord1"; /// ditto
@@ -247,7 +246,7 @@ class Mesh : Resource
 	protected VertexBuffer!(Vec3i) triangles;
 	protected Material material;
 
-	///
+	/// Construct an empty mesh.
 	this()
 	{	triangles = new VertexBuffer!(Vec3i);
 	}

@@ -50,7 +50,12 @@ class Tree(T) : YageObject
 		return child;	
 	}
 	
-	///
+	/**
+	 * Remove a child element
+	 * Params:
+	 *     child = An element of type T or that inherits from type T.
+	 * Returns: The child element.  For convenience, the return type is templated to match the input type.
+	 */
 	S removeChild(S /*: T*/)(S child)
 	in {
 		assert(child);
@@ -73,7 +78,7 @@ class Tree(T) : YageObject
 	}
 
 	
-	/// Get an array of this element's children
+	/// Get an array of this element's children.
 	T[] getChildren()
 	{	return children;
 	}

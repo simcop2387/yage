@@ -26,8 +26,8 @@ import tango.core.Traits;
 import tango.text.convert.Format;
 
 /**
- * deprecated: replace this with a Heap
- * Add an element to an already sorted array, maintaining the same sort order. 
+ * Add an element to an already sorted array, maintaining the same sort order.
+ * deprecated: replace this with a Heap.
  * Params:
  *     array = The array to use.
  *     value = Value to add.
@@ -168,8 +168,8 @@ unittest // complete coverage
 }
 
 /**
- * deprecated: replace this with a Heap
- * Get the maximum n elements in an unsorted array. * 
+ * Get the maximum n elements in an unsorted array.
+ * deprecated: replace this with a Heap.
  * Params:
  *     array = array to search.
  *     number = number of elements to find.

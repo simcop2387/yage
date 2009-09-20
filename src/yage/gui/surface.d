@@ -52,23 +52,23 @@ class Surface : Tree!(Surface)
 	
 	/// This is a mirror of SDLMod (SDL's modifier key struct)
 	enum ModifierKey
-	{	NONE  = 0x0000,
-		LSHIFT= 0x0001,
-		RSHIFT= 0x0002,
-		LCTRL = 0x0040,
-		RCTRL = 0x0080,
-		LALT  = 0x0100,
-		RALT  = 0x0200,
-		LMETA = 0x0400,
-		RMETA = 0x0800,
-		NUM   = 0x1000,
-		CAPS  = 0x2000,
-		MODE  = 0x4000,
-		RESERVED = 0x8000,
-		CTRL  = LCTRL | RCTRL,
-		SHIFT = LSHIFT | RSHIFT,
-		ALT   = LALT | RALT,
-		META  = LMETA | RMETA
+	{	NONE  = 0x0000, /// Allowed values.
+		LSHIFT= 0x0001, /// ditto
+		RSHIFT= 0x0002, /// ditto
+		LCTRL = 0x0040, /// ditto
+		RCTRL = 0x0080, /// ditto
+		LALT  = 0x0100, /// ditto
+		RALT  = 0x0200, /// ditto
+		LMETA = 0x0400, /// ditto
+		RMETA = 0x0800, /// ditto
+		NUM   = 0x1000, /// ditto
+		CAPS  = 0x2000, /// ditto
+		MODE  = 0x4000, /// ditto
+		RESERVED = 0x8000, /// ditto
+		CTRL  = LCTRL | RCTRL, /// ditto
+		SHIFT = LSHIFT | RSHIFT, /// ditto
+		ALT   = LALT | RALT, /// ditto
+		META  = LMETA | RMETA /// ditto
 	};
 	
 	// internal values
