@@ -184,13 +184,9 @@ struct Render
 		foreach (mesh; geometry.getMeshes())
 		{	if (mesh.getMaterial() !is null) // Must have a material to render
 			{	foreach (Layer l; mesh.getMaterial().getLayers()) // Loop through each layer (rendering pass)
-				{	//l.bind();
-					Bind.layer(l);
-					
-				
-					
+				{	Bind.layer(l);
 					vertexBuffer(Mesh.TRIANGLES, mesh.getTriangles());
-					l.unbind();
+					Bind.layerUnbind(l);
 			}	}
 		
 			result.triangleCount += mesh.getTriangles().length;
@@ -263,10 +259,10 @@ struct Render
 					if (!sort)
 					{	Bind.layer(l, node.getLights(), node.getColor(), model);
 						vertexBuffer(Mesh.TRIANGLES, mesh.getTriangles());
-						l.unbind();
+						Bind.layerUnbind(l);
 					} else
 					{						
-						// Add to translucent
+						// Add to translucent.  This may need to be rewritten at some point.
 						foreach (int index, Vec3i tri; cast(Vec3i[])mesh.getTriangles().getData())						
 						{	AlphaTriangle at;
 							for (int i=0; i<3; i++)
@@ -274,7 +270,6 @@ struct Render
 								at.texcoords[i] = &t[tri.v[i]];
 								at.normals[i] = &n[tri.v[i]];
 							}
-							// New
 							at.node 	= node;
 							at.model	= model;
 							at.mesh		= mesh;
@@ -415,7 +410,7 @@ struct Render
 					glVertex3fv(at.vertices[i].ptr);
 				}
 				glEnd();
-				layer.unbind();			
+				Bind.layerUnbind(layer);
 			}			
 		}
 
@@ -765,6 +760,72 @@ private struct Bind
 	}
 	
 	/*
+	 * This function will no longer be necessary once all OpenGL calls go through graphics.Graphics, since
+	 * it will allow the OpenGL state to be pushed and popped. */
+	static void layerUnbind(Layer layer)
+	{
+		glColor4f(1, 1, 1, 1);
+		
+		// Material
+		float s=0;
+		glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, Vec4f().v.ptr);
+		glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
+		glMaterialfv(GL_FRONT, GL_SHININESS, &s);
+
+		// Blend
+		if (layer.blend != BLEND_NONE)
+		{	glDisable(GL_BLEND);
+			glDepthMask(true);
+		}else
+		{	glDisable(GL_ALPHA_TEST);
+			glAlphaFunc(GL_ALWAYS, 0);
+		}
+
+		// Cull, polygon
+		glCullFace(GL_BACK);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		// Textures
+		if (layer.textures.length>1 && Probe.feature(Probe.Feature.VBO))
+		{	int length = min(layer.textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
+
+			for (int i=length-1; i>=0; i--)
+			{	glActiveTextureARB(GL_TEXTURE0_ARB+i);
+				glDisable(GL_TEXTURE_2D);
+
+				if (layer.textures[i].reflective)
+				{	glDisable(GL_TEXTURE_GEN_S);
+					glDisable(GL_TEXTURE_GEN_T);
+				}
+				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+				layer.textures[i].unbind();
+			}
+			glClientActiveTextureARB(GL_TEXTURE0_ARB);
+		}
+		else if(layer.textures.length == 1){	
+			layer.textures[0].unbind();			
+			//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		}
+		glDisable(GL_TEXTURE_2D);
+
+		// Shader
+		if (layer.program != 0)
+		{	glUseProgramObjectARB(0);
+			layer.current_program = 0;
+
+			// Attributes
+			/*
+			glDisableVertexAttribArrayARB(0);
+			glDisableVertexAttribArrayARB(1);
+			glDisableVertexAttribArrayARB(2);
+			glDisableVertexAttribArrayARB(3);
+			glDisableVertexAttribArrayARB(4);
+			*/
+		}
+	}
+	
+	/*
 	 * Enable this light as the given light number and apply its properties.
 	 * This function is used internally by the engine and should not be called manually or exported. */
 	static void light(LightNode light, int num)
@@ -805,60 +866,8 @@ private struct Bind
 
 		glPopMatrix();
 	}
-	
-	/+
-	/*
-	 * Enable this light as the given light number and apply its properties.
-	 * This function is used internally by the engine and should not be called manually or exported. */
-	static void light2(LightNode light, int num)
-	{	assert (num<=Probe.feature(Probe.Feature.MAX_LIGHTS));
-	
-		Matrix model;
-		glGetFloatv(GL_MODELVIEW_MATRIX, model.v.ptr);
-		Graphics.loadMatrix(model);
-	
-		Graphics.pushMatrix();
-		Graphics.loadMatrix(Render.current_camera.getInverseAbsoluteMatrix()); // required for spotlights.
-		Graphics.applyState();
-		
-		// Set position and direction
-		glEnable(GL_LIGHT0+num);
-		auto type = light.type;
-		Matrix transform_abs = light.getAbsoluteTransform(true);
-		
-		Vec4f pos;
-		pos.v[0..3] = transform_abs.v[12..15];
-		pos.v[3] = type==LightNode.Type.DIRECTIONAL ? 0 : 1;
-		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
-	
-		// Spotlight settings
-		float angle = type == LightNode.Type.SPOT ? light.spotAngle : 180;
-		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angle);
-		if (type==LightNode.Type.SPOT)
-		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.spotExponent);
-			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
-			// rotated by the node's rotation.  This is opposite the default direction of cameras
-			glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
-		}
-	
-		// Light material properties
-		glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.ambient.vec4f.ptr);
-		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.diffuse.vec4f.ptr);
-		glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.specular.vec4f.ptr);
-		
-		// Attenuation properties
-		Graphics.light(num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
-		Graphics.light(num, GL_LINEAR_ATTENUATION, 0);
-		Graphics.light(num, GL_QUADRATIC_ATTENUATION, 12/*light.getQuadraticAttenuation()*/);
-		
-		Graphics.applyState();
-	
-		Graphics.popMatrix();
-		Graphics.applyState();
-	}
-	+/
-	
-	
+
+	// Part of a test to gt renderTargt to work with fbo's.
 	static uint fbo;
 	static uint renderBuffer;
 	

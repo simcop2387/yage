@@ -9,5 +9,5 @@ import yage.core.repeater;
 void main () {	
 	auto r = new Repeater();
 	r.dispose();
-	Stdout("Creating and desposing of a Repater didn't crash.");
+	Stdout("Creating and desposing of a Repeater didn't crash.");
 }

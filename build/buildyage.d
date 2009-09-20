@@ -6,8 +6,7 @@
  * This is a customized version of CDC for building Yage. 
  * See the main() function for yage-specific customizations
  * 
- * See:
- * http://dsource.org/projects/cdc/
+ * See: <a href="http://dsource.org/projects/cdc/">The CDC Project</a>
  */
 
 module cdc;
