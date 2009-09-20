@@ -2,7 +2,7 @@
  * Yage Game Engine source code - yage3d.net
  * Copyright:  (c) 2005-2009 Eric Poggel
  * Authors:    Eric Poggel
- * License:    <a href="lgpl.txt">LGPL</a>
+ * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 module yage.system.sound.openal;
 
