@@ -42,7 +42,10 @@ import yage.core.timer;
  * OpenGL.color([1, 1, 1, 1]);
  * --------
  */
-alias OpenGL Graphics;
+OpenGL Graphics()
+{	return OpenGL.getContext();
+}
+
 
 // Used in OpenGL State for storing parameters
 private struct Float4
@@ -71,7 +74,7 @@ private struct Float4
 }
 
 
-/**
+/*
  * This represents a current OpenGL state that can be pushed or popped. 
  * It is currently unfinished and has bugs. */
 private struct OpenGLState
@@ -121,7 +124,7 @@ private struct OpenGLState
 	}
 	PolygonMode polygonMode;
 
-	/// Constructor
+	// Constructor
 	static OpenGLState opCall()
 	{	OpenGLState result;
 		result.matrix = Matrix();
@@ -180,8 +183,8 @@ private struct OpenGLState
 	 * Returns: A deep copy of this OpenGLState. */
 	OpenGLState dup()
 	{	OpenGLState result = *this;
-		result.enable = enable.dup;
-		result.enableClientState = result.enableClientState.dup;
+		result.enable = enable.dup();
+		result.enableClientState = result.enableClientState.dup();
 		result.materials = .dup(result.materials, true);		
 		result.texEnvi = .dup(result.texEnvi, true);
 		result.texParameteri = .dup(result.texParameteri, true);
@@ -203,13 +206,13 @@ private struct OpenGLState
  * It is currently unfinished and has bugs.*/
 class OpenGL
 {
-	OpenGLState state;
-	OpenGLState appliedState; // last state that was applied.
-	OpenGLState[] states; // stack of states
+	OpenGLState state;			// current modified state
+	OpenGLState appliedState;	// last state that was applied.
+	OpenGLState[] states;		// stack of states
 	
-	private static Object openGLMutex;
-	private static Object contextMutex;
-	private static OpenGL[Thread] contexts; // immutable
+	static Object openGLMutex;
+	static Object contextMutex;
+	static OpenGL[Thread] contexts; // immutable, copied on write
 	
 	static this()
 	{	contextMutex = new Object();
@@ -217,18 +220,19 @@ class OpenGL
 	}
 	
 	/// Construct and create an initial state on the state stack.
-	this()
-	{	state = appliedState = OpenGLState();
+	private this()
+	{	state = OpenGLState();
+		appliedState = state.dup();
 	}
 
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glAlphaFunc.xml
-	static void alphaFunc(uint func, float value)
-	{	st.alphaFunc.func = func;
-		st.alphaFunc.value = value;
+	void alphaFunc(uint func, float value)
+	{	state.alphaFunc.func = func;
+		state.alphaFunc.value = value;
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glBindBuffer.xml
-	static void bindBuffer(uint target, uint buffer)
+	void bindBuffer(uint target, uint buffer)
 	{	synchronized (openGLMutex)
 		{	glBindBufferARB(target, buffer);
 			checkError();
@@ -237,7 +241,7 @@ class OpenGL
 
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glBindTexture.xml, http://opengl.org/sdk/docs/man/xhtml/glActiveTexture.xml
 	/// TODO: textureUnit
-	static void bindTexture(uint target, uint texture, uint textureUnit=GL_TEXTURE0_ARB)
+	void bindTexture(uint target, uint texture, uint textureUnit=GL_TEXTURE0_ARB)
 	{	OpenGL context = getContext();
 		OpenGLState* st = &context.state;
 		OpenGLState* appliedState = &context.appliedState;
@@ -251,13 +255,13 @@ class OpenGL
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glBlendFunc.xml
-	static void blendFunc(uint sfactor, uint dfactor)
-	{	st.blendFunc.sfactor = sfactor;
-		st.blendFunc.dfactor = dfactor;
+	void blendFunc(uint sfactor, uint dfactor)
+	{	state.blendFunc.sfactor = sfactor;
+		state.blendFunc.dfactor = dfactor;
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glBufferData.xml
-	static void bufferData(uint target, void[] data, uint usage=GL_STATIC_DRAW_ARB)
+	void bufferData(uint target, void[] data, uint usage=GL_STATIC_DRAW_ARB)
 	{	synchronized (openGLMutex)
 		{	glBufferDataARB(target, data.length, data.ptr, usage);
 			checkError();
@@ -265,7 +269,7 @@ class OpenGL
 	}
 
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml
-	static void clear(uint mask)
+	void clear(uint mask)
 	{
 		applyState(); /// TODO: only need to apply the color state.
 		synchronized (openGLMutex)
@@ -275,18 +279,18 @@ class OpenGL
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml
-	static void color(float[] value)
+	void color(float[] value)
 	{	int l = value.length > 4 ? 4 : value.length;
-		st.color[0..l] = value[0..l];		
+		state.color[0..l] = value[0..l];		
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glCullFace.xml
-	static void cullFace(uint mode)
-	{	st.cullFace = mode;		
+	void cullFace(uint mode)
+	{	state.cullFace = mode;		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glDeleteBuffers.xml
-	static void deleteBuffer(uint buffer)
+	void deleteBuffer(uint buffer)
 	{	synchronized (openGLMutex)
 		{	glDeleteBuffersARB(1, &buffer);
 			checkError();
@@ -294,7 +298,7 @@ class OpenGL
 	}
 
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glDeleteTextures.xml
-	static void deleteTexture(uint texture)
+	void deleteTexture(uint texture)
 	{	synchronized (openGLMutex)
 		{	glDeleteTextures(1, &texture);
 			checkError();
@@ -302,32 +306,32 @@ class OpenGL
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glDepthMask.xml
-	static void depthMask(bool flag)
-	{	st.depthMask = flag;
+	void depthMask(bool flag)
+	{	state.depthMask = flag;
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glDisable.xml
-	static void disable(uint cap)
-	{	st.enable[cap] = false;		
+	void disable(uint cap)
+	{	state.enable[cap] = false;		
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glDisableClientState.xml
-	static void disableClientState(uint cap)
-	{	st.enableClientState[cap] = false;		
+	void disableClientState(uint cap)
+	{	state.enableClientState[cap] = false;		
 	}
 		
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glEnable.xml
-	static void enable(uint cap)
-	{	st.enable[cap] = true;		
+	void enable(uint cap)
+	{	state.enable[cap] = true;		
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glEnableClientState.xml
-	static void enableClientState(uint cap)
-	{	st.enableClientState[cap] = true;		
+	void enableClientState(uint cap)
+	{	state.enableClientState[cap] = true;		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glGenBuffers.xml
-	static uint genBuffer()
+	uint genBuffer()
 	{	uint buffer;
 		synchronized (openGLMutex)
 		{	glGenBuffersARB(1, &buffer);
@@ -337,7 +341,7 @@ class OpenGL
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
-	static uint genTexture()
+	uint genTexture()
 	{	uint buffer;
 		synchronized (openGLMutex)
 		{	glGenTextures(1, &buffer);
@@ -347,129 +351,127 @@ class OpenGL
 	}
 	
 	// broken
-	static void light(ubyte light, uint pname, float param)
-	{	st.lights[light][pname] = Float4(param);
-		assert(st.lights[light][pname].v[0] == param);
+	void light(ubyte light, uint pname, float param)
+	{	state.lights[light][pname] = Float4(param);
+		assert(state.lights[light][pname].v[0] == param);
 	}
-	static void light(ubyte light, uint pname, float[] param)
-	{	st.lights[light][pname].v[0..$] = param[0..$];
+	void light(ubyte light, uint pname, float[] param)
+	{	state.lights[light][pname].v[0..$] = param[0..$];
 	}
 		
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glLineWidth.xml
-	static void lineWidth(float width)
-	{	st.lineWidth = width;		
+	void lineWidth(float width)
+	{	state.lineWidth = width;		
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glLoadIdentity.xml
-	static void loadIdentity()
-	{	st.matrix = Matrix();	
+	void loadIdentity()
+	{	state.matrix = Matrix();	
 	}
-	static void loadIdentityTexture() /// ditto
-	{	st.textureMatrix = Matrix();
+	void loadIdentityTexture() /// ditto
+	{	state.textureMatrix = Matrix();
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glLoadMatrix.xml
-	static void loadMatrix(Matrix m)
-	{	st.matrix = m;
+	void loadMatrix(Matrix m)
+	{	state.matrix = m;
 	}
-	static void loadTextureMatrix(Matrix m) /// ditto
-	{	st.textureMatrix = m;		
+	void loadTextureMatrix(Matrix m) /// ditto
+	{	state.textureMatrix = m;		
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glMaterial.xml
-	static void material(uint face, uint pname, float[] param)
-	{	st.materials[face][pname] = param;
+	void material(uint face, uint pname, float[] param)
+	{	state.materials[face][pname] = param;
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glMultMatrix.xml
-	static void multMatrix(Matrix m)
-	{	st.matrix *= m;
+	void multMatrix(Matrix m)
+	{	state.matrix *= m;
 	}
-	static void multTextureMatrix(Matrix m) /// ditto
-	{	st.textureMatrix *= m;		
+	void multTextureMatrix(Matrix m) /// ditto
+	{	state.textureMatrix *= m;		
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glPointSize.xml
-	static void pointSize(float size)
-	{	st.pointSize = size;		
+	void pointSize(float size)
+	{	state.pointSize = size;		
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glPolygonMode.xml
-	static void polygonMode(uint face, uint mode)
+	void polygonMode(uint face, uint mode)
 	{	if (face==GL_FRONT || face==GL_FRONT_AND_BACK)
-			st.polygonMode.front = mode;
+			state.polygonMode.front = mode;
 		else if (face==GL_BACK || face==GL_FRONT_AND_BACK)
-			st.polygonMode.back = mode;
+			state.polygonMode.back = mode;
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glPopMatrix.xml
-	static void popMatrix()
-	{	assert(st.matrixStack.length);
-		st.matrix = st.matrixStack[$-1];
-		st.matrixStack.length = st.matrixStack.length-1;
+	void popMatrix()
+	{	assert(state.matrixStack.length);
+		state.matrix = state.matrixStack[$-1];
+		state.matrixStack.length = state.matrixStack.length-1;
 	}
-	static void popTextureMatrix() /// ditto
-	{	assert(st.textureMatrixStack.length);
-		st.textureMatrix = st.textureMatrixStack[$-1];
-		st.textureMatrixStack.length = st.textureMatrixStack.length-1;
+	void popTextureMatrix() /// ditto
+	{	assert(state.textureMatrixStack.length);
+		state.textureMatrix = state.textureMatrixStack[$-1];
+	state.textureMatrixStack.length = state.textureMatrixStack.length-1;
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glPushMatrix.xml
-	static void pushMatrix()
-	{	st.matrixStack ~= st.matrix;
+	void pushMatrix()
+	{	state.matrixStack ~= state.matrix;
 	}
-	static void pushTextureMatrix() /// ditto
-	{	st.textureMatrixStack ~= st.textureMatrix;
+	void pushTextureMatrix() /// ditto
+	{	state.textureMatrixStack ~= state.textureMatrix;
 	}
 	unittest
-	{	int l = st.matrixStack.length;
-		pushMatrix();
-		popMatrix();
-		assert (l==st.matrixStack.length);
+	{	OpenGL context = OpenGL.getContext();
+		int l = context.state.matrixStack.length;
+		context.pushMatrix();
+		context.popMatrix();
+		assert (l==context.state.matrixStack.length);
 	}
 
 	/// Pop all OpenGL state from the stack. This is equivalent of glPopAttrib() and glPopClientAttrib()
-	static void popState()
-	{	OpenGL context = getContext();
-		
-		assert(context.states.length);
-		context.state = context.states[$-1];
-		context.states.length = context.states.length - 1;	
+	void popState()
+	{	assert(states.length);
+		state = states[$-1];
+		states.length = states.length - 1;	
 	}
 	
 	/// Push all OpenGL state onto a stack. This is equivalent of glPushAttrib() and glPushClientAttrib()
-	static void pushState()
-	{	OpenGL context = getContext();
-		context.states ~= context.state;
+	void pushState()
+	{	states ~= state.dup();
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glRotate.xml
-	static void rotate(float angle, float x, float y, float z)
-	{	st.matrix = st.matrix.rotate(Vec3f(angle, x, y, z));
+	void rotate(float angle, float x, float y, float z)
+	{	state.matrix = state.matrix.rotate(Vec3f(angle, x, y, z));
 	}
-	static void rotateTexture(float angle, float x, float y, float z) /// ditto
-	{	st.textureMatrix = st.textureMatrix.rotate(Vec3f(angle, x, y, z));
+	void rotateTexture(float angle, float x, float y, float z) /// ditto
+	{	state.textureMatrix = state.textureMatrix.rotate(Vec3f(angle, x, y, z));
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glScale.xml
-	static void scale(float x, float y, float z)
-	{	st.matrix.v[0] *= x;
-		st.matrix.v[5] *= y;
-		st.matrix.v[9] *= z;
+	void scale(float x, float y, float z)
+	{	state.matrix.v[0] *= x;
+		state.matrix.v[5] *= y;
+		state.matrix.v[9] *= z;
 	}
-	static void scaleTexture(float x, float y, float z) /// ditto
-	{	st.textureMatrix.v[0] *= x;
-		st.textureMatrix.v[5] *= y;
-		st.textureMatrix.v[9] *= z;
+	void scaleTexture(float x, float y, float z) /// ditto
+	{	state.textureMatrix.v[0] *= x;
+		state.textureMatrix.v[5] *= y;
+		state.textureMatrix.v[9] *= z;
 	}
 	
 	//// See: http://www.opengl.org/sdk/docs/man/xhtml/glTexEnv.xml
-	static void texEnv(uint target, uint pname, int param)
-	{	st.texEnvi[target][pname] = param;
+	void texEnv(uint target, uint pname, int param)
+	{	state.texEnvi[target][pname] = param;
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
-	static void texImage2D(uint target, int level, int internalFormat, int width, int height, int border, uint format, uint type, void[] data)
+	void texImage2D(uint target, int level, int internalFormat, int width, int height, int border, uint format, uint type, void[] data)
 	{	synchronized (openGLMutex)
 		{	applyState();
 			glTexImage2D(target, level, internalFormat, width, height, border, format, type, data.ptr);
@@ -478,22 +480,20 @@ class OpenGL
 	}
 	
 	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml
-	static void texParameter(uint target, uint pname, int param)
-	{	st.texParameteri[target][pname] = param;
+	void texParameter(uint target, uint pname, int param)
+	{	state.texParameteri[target][pname] = param;
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glTranslate.xml
-	static void translate(float x, float y, float z)
-	{	float[] v = st.matrix.v;
-		v[12] += x;
-		v[13] += y;
-		v[14] += z;
+	void translate(float x, float y, float z)
+	{	state.matrix.v[12] += x;
+		state.matrix.v[13] += y;
+		state.matrix.v[14] += z;
 	}
-	static void translateTexture(float x, float y, float z) /// ditto
-	{	float[] v = st.matrix.v;
-		v[12] += x;
-		v[13] += y;
-		v[14] += z;
+	void translateTexture(float x, float y, float z) /// ditto
+	{	state.textureMatrix.v[12] += x;
+		state.textureMatrix.v[13] += y;
+		state.textureMatrix.v[14] += z;
 	}
 
 	
@@ -501,7 +501,7 @@ class OpenGL
 	
 		
 	// Get the context for the current thread.
-	private static OpenGL getContext()
+	/*private*/ static OpenGL getContext()
 	{	
 		Thread thread = Thread.getThis();
 		if (!(thread in contexts))
@@ -520,33 +520,23 @@ class OpenGL
 	{	assert(getContext() == getContext());
 	}
 	
-	/*
-	 * Shortcut for getting the state for the current virtual context. */
-	private static OpenGLState* st()
-	{	return &getContext().state;
-	}
-	unittest
-	{	assert(st == st);
-	}
-	
 	/**
 	 * Apply the current OpenGL state
 	 * Returns: the number of necessary OpenGL calls. */
-	static int applyState()
+	int applyState()
 	{	
 		int calls;
 		//synchronized (openGLMutex)
 		{	
-			OpenGL context = getContext();
-			OpenGLState* st = &context.state;
-			OpenGLState* appliedState = &context.appliedState;
-			
+					
 			//if (random(0, 1) > .99)
 			//	st.rehash();
 			
+			
+			// Enabled states
 			{
-				scope keys = st.enable.keys;
-				scope values = st.enable.values;
+				scope keys = state.enable.keys;
+				scope values = state.enable.values;
 				scope oldValues = appliedState.enable.values;
 				for (int i=0; i<values.length; i++)
 					if (values[i] != oldValues[i])
@@ -554,8 +544,8 @@ class OpenGL
 						calls++;
 					}
 				
-				keys = st.enableClientState.keys;
-				values = st.enableClientState.values;
+				keys = state.enableClientState.keys;
+				values = state.enableClientState.values;
 				oldValues = appliedState.enableClientState.values;
 				for (int i=0; i<values.length; i++)
 					if (values[i] != oldValues[i])
@@ -565,14 +555,14 @@ class OpenGL
 			}
 			
 			// Matrices
-			if (st.matrix != appliedState.matrix)
-			{	glLoadMatrixf(cast(float*)st.matrix.ptr);
+			if (state.matrix != appliedState.matrix)
+			{	glLoadMatrixf(cast(float*)state.matrix.ptr);
 				calls++;
 				//checkError();
 			}
-			if (st.textureMatrix != appliedState.textureMatrix)
+			if (state.textureMatrix != appliedState.textureMatrix)
 			{	glMatrixMode(GL_TEXTURE);
-				glLoadMatrixf(cast(float*)st.textureMatrix.ptr);
+				glLoadMatrixf(cast(float*)state.textureMatrix.ptr);
 				glMatrixMode(GL_MODELVIEW);
 				calls+= 3;
 				//checkError();
@@ -594,50 +584,50 @@ class OpenGL
 			//checkError();
 			*/
 			
-			if (st.color != appliedState.color)
-			{	glColor4fv(st.color.ptr);
+			if (state.color != appliedState.color)
+			{	glColor4fv(state.color.ptr);
 				calls++;
 				//checkError();
 			}
 			
-			if (st.alphaFunc != appliedState.alphaFunc)
-			{	glAlphaFunc(st.alphaFunc.func, st.alphaFunc.value);
+			if (state.alphaFunc != appliedState.alphaFunc)
+			{	glAlphaFunc(state.alphaFunc.func, state.alphaFunc.value);
 				calls++;
 				//checkError();
 			}
 			
-			if (st.blendFunc != appliedState.blendFunc)
-			{	glBlendFunc(st.blendFunc.sfactor, st.blendFunc.dfactor);
+			if (state.blendFunc != appliedState.blendFunc)
+			{	glBlendFunc(state.blendFunc.sfactor, state.blendFunc.dfactor);
 				calls++;
 				//checkError();
 			}
 			
-			if (st.cullFace != appliedState.cullFace)
-			{	glCullFace(GL_BACK);
+			if (state.cullFace != appliedState.cullFace)
+			{	glCullFace(state.cullFace);
 				calls++;
 				//checkError();
 			}
 			
-			if (st.depthMask != appliedState.depthMask)
-			{	glDepthMask(st.depthMask);
+			if (state.depthMask != appliedState.depthMask)
+			{	glDepthMask(state.depthMask);
 				calls++;
 				//checkError();
 			}
 			
-			if (st.lineWidth != appliedState.lineWidth)
-			{	glLineWidth(st.lineWidth);
+			if (state.lineWidth != appliedState.lineWidth)
+			{	glLineWidth(state.lineWidth);
 				calls++;
 				//checkError();
 			}
 			
-			if (st.pointSize != appliedState.pointSize)
-			{	glPointSize(st.pointSize);
+			if (state.pointSize != appliedState.pointSize)
+			{	glPointSize(state.pointSize);
 				calls++;
 				//checkError();
 			}
 			
 			if (calls)
-				context.appliedState = context.state.dup();
+				appliedState = state.dup();
 		}
 		
 		//writefln(calls);
@@ -645,15 +635,11 @@ class OpenGL
 		return calls;
 	}
 	
-	private static int applyTextures()
+	private int applyTextures()
 	{	int calls;
-	
-		OpenGL context = getContext();
-		OpenGLState* st = &context.state;
-		OpenGLState* appliedState = &context.appliedState;
 			
 		// TODO: unit
-		foreach (target, params; st.textures) // [below] Can be uncommented when all calls to glBindTexture are made through OpenGL.
+		foreach (target, params; state.textures) // [below] Can be uncommented when all calls to glBindTexture are made through OpenGL.
 			foreach (unit, value; params) 
 				if (appliedState.textures[target][unit] != value)
 				{	glBindTexture(target, value);
@@ -661,7 +647,7 @@ class OpenGL
 				}
 		//checkError();
 		
-		foreach (target, params; st.texParameteri)
+		foreach (target, params; state.texParameteri)
 			foreach (pname, value; params) 
 				if (!keysExist(appliedState.texParameteri, target, pname) || appliedState.texParameteri[target][pname] != value)
 				{	glTexParameteri(target, pname, value);
@@ -669,7 +655,7 @@ class OpenGL
 				}
 		//checkError();
 		
-		foreach (target, params; st.texEnvi)
+		foreach (target, params; state.texEnvi)
 			foreach (pname, value; params) 
 				if (!keysExist(appliedState.texEnvi, target, pname) || appliedState.texEnvi[target][pname] != value)
 				{	glTexEnvi(target, pname, value);
@@ -680,15 +666,12 @@ class OpenGL
 		return calls;
 	}
 	
-	private static int applyLights()
+	private int applyLights()
 	{	
 		int calls;
 		
-		OpenGL context = getContext();
-		OpenGLState* st = &context.state;
-		OpenGLState* appliedState = &context.appliedState;
 		checkError();
-		foreach (i, light; st.lights)
+		foreach (i, light; state.lights)
 		{	scope keys = light.keys;
 			scope values = light.values;
 			scope oldValues = appliedState.lights[i].values;
@@ -715,7 +698,7 @@ class OpenGL
 
 	/**
 	 * Throw GraphicsException if the last OpenGL operation resulted in an error. */
-	private static void checkError()
+	private void checkError()
 	{	int err = glGetError();
 		if (err != GL_NO_ERROR)
 			throw new GraphicsException("Error {}, {}", err, fromStringz(cast(char*)gluErrorString(err)));

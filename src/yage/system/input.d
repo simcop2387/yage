@@ -72,8 +72,8 @@ class Input
 					mouse.y = event.motion.y;
 					
 					// Doing this before getMouseSurface() fixes the mouse leaving the surface while dragging.
-					if(currentSurface) // [below] negative y because opengl y goes from bottom to top
-						currentSurface.mouseMove(event.button.button, Vec2i(event.motion.xrel, -event.motion.yrel));
+					if(currentSurface)
+						currentSurface.mouseMove(event.button.button, Vec2i(event.motion.xrel, event.motion.yrel));
 	
 					//if the surface that the mouse is in has changed
 					auto over = getMouseSurface(surface);

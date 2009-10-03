@@ -455,6 +455,14 @@ struct Matrix
 		return res;
 	}
 
+	Matrix scale(Vec3f s)
+	{	Matrix result = *this;
+		result.v00 = s.x;
+		result.v11 = s.y;
+		result.v22 = s.z;
+		return result;
+	}
+	
 	/// Set to an array of 16 values.
 	void set(float[16] values)
 	{	v[0..16] = values[0..16];
@@ -534,20 +542,12 @@ struct Matrix
 	}
 	
 	/**
-	 * Set the scale component of the Matrix, disregarding any rotation values already present in the scale part of the Matrix. */
-	void setScale(Vec3f scale)
-	{	v00 = scale.x;
-		v11 = scale.y;
-		v22 = scale.z;
-	}
-	
-	/**
 	 * Set the scale component of the Matrix, taking extra steps to preserve any 
 	 * rotation values already present in the scale part of the Matrix. */
 	void setScalePreservingRotation(Vec3f scale)
 	{	Matrix position, rotation, mscale;
 		decompose(position, rotation, mscale);
-		mscale.setScale(scale);
+		mscale = mscale.scale(scale);
 		setRotation(rotation.rotate(mscale));
 	}
 

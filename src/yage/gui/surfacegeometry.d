@@ -6,6 +6,8 @@
 
 module yage.gui.surfacegeometry;
 
+import std.stdio;
+
 import yage.core.all;
 
 import yage.resource.texture;
@@ -14,7 +16,7 @@ import yage.resource.material;
 /**
  * SurfaceGeometry defines vertices and meshes for drawing a surface, including borders/border textures.
  * The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
- * Nine 11 are defined, one for each border region and 3 for the center. 
+ * Eleven are defined, one for each border region and 3 for the center. 
  * <pre>
  * 0__4__8__12
  * |\ |\ |\ | 
@@ -30,7 +32,7 @@ import yage.resource.material;
  * |\ |
  * 17\19</pre>
  * 
- * Vertices used for text Mesh, which renders any text
+ * Vertices used for text Mesh, which renders any text.
  * <pre>
  * 20_22
  * |\ |
@@ -49,6 +51,8 @@ package class SurfaceGeometry : Geometry
 	VertexBuffer!(Vec2f) vertices;
 	VertexBuffer!(Vec2f) texcoords;
 	
+	private Geometry clipGeometry;
+	
 	// Meshes for border and background colors.  Meshes are defined in the order that they're rendered.
 	union {
 		struct {
@@ -60,7 +64,7 @@ package class SurfaceGeometry : Geometry
 		Mesh[4] borderColor;
 	}
 	Mesh backgroundColor;
-	Mesh backgroundImage; // because different texture coordinates are needed.
+	Mesh backgroundImage; // Shouldn't these be rendered above border center image?
 	
 	// Meshes for border image
 	union {
@@ -83,6 +87,7 @@ package class SurfaceGeometry : Geometry
 	}
 	Mesh centerImage;
 	
+	// Mesh for rendering text
 	Mesh text;
 	
 	/**
@@ -132,13 +137,33 @@ package class SurfaceGeometry : Geometry
 	}
 	
 	/**
+	 * Get the geometry used for clipping (usually rendered to a stencil buffer). */
+	Geometry getClipGeometry()
+	{
+		if (!clipGeometry)
+		{	clipGeometry = new Geometry();
+			clipGeometry.setMeshes([backgroundColor]);
+			clipGeometry.setAttribute(Geometry.VERTICES, vertices);
+			clipGeometry.setAttribute(Geometry.TEXCOORDS0, texcoords);
+		}
+		
+		return clipGeometry;
+	}
+	
+	/**
 	 * Set the colors for the center and the top, right, bottom, and left borders
 	 * TODO: */
-	void setColors(Color center, Color[4] borderColor)
-	{	backgroundColor.getMaterial().getLayers()[0].color = center; // changing the color seems to have no effect.
+	void setColors(Color center, Color[4] borderColor, float opacity)
+	{	center.a *= opacity;
 	
+		backgroundColor.getMaterial().getLayers()[0].color = center; // changing the color seems to have no effect.	
+		backgroundColor.getMaterial().getLayers()[0].blend = opacity < 1 ? BLEND_AVERAGE : BLEND_NONE;
 		for (int i=0; i<4; i++) // top, right, bottom, left
-			this.borderColor[i].getMaterial().getLayers()[0].color = borderColor[i];
+		{	Color c = borderColor[i];
+			c.a*= opacity;
+			this.borderColor[i].getMaterial().getLayers()[0].color = c;
+			this.borderColor[i].getMaterial().getLayers()[0].blend = opacity < 1 ? BLEND_AVERAGE : BLEND_NONE;
+		}
 	}
 	
 	/**
@@ -160,12 +185,13 @@ package class SurfaceGeometry : Geometry
 		vertices[ 2].y = vertices[ 6].y = vertices[10].y = vertices[14].y = borders.top + padding.top + dimensions.height + padding.bottom;
 		vertices[ 3].y = vertices[ 7].y = vertices[11].y = vertices[15].y = borders.top + padding.top + dimensions.height + padding.bottom + borders.bottom;		
 		
-		// Position quad for mesh backgroundImage.  For now, we just stretch it to fill the entire area.
+		// Position quad for mesh backgroundImage.  For now, we ignore background positioning and just stretch it to fill the entire area.
 		vertices[16].x = vertices[17].x = borders.left;
 		vertices[18].x = vertices[19].x = borders.left + padding.left + dimensions.width + padding.right;
 		vertices[16].y = vertices[18].y = borders.top;
 		vertices[17].y = vertices[19].y = borders.top + padding.top + dimensions.height + padding.bottom;
 		
+		// Vertices for text mesh
 		vertices[20].x = vertices[21].x = borders.left + padding.left;
 		vertices[22].x = vertices[23].x = borders.left + padding.left + dimensions.width;
 		vertices[20].y = vertices[22].y = borders.top + padding.top;
@@ -232,20 +258,24 @@ package class SurfaceGeometry : Geometry
 			this.centerImage.getMaterial().addLayer(createLayer(centerImage));
 		} else
 			this.centerImage.setMaterial(cast(Material)null);
-				
+		
 		if (text)
 		{	this.text.setMaterial(new Material());
 			this.text.getMaterial().addLayer(createLayer(text, true));
 			this.text.getMaterial().getLayers()[0].getTextures()[0].filter = Texture.Filter.NONE;
 			
 			// Text bottom vertices depend on text texture size.
+			float height = text.getHeight();
+			
 			Vec2f[] vertices = cast(Vec2f[])(getVertices().getData());			
-			float height = text.getHeight() - text.padding.y;
 			vertices[21].y = vertices[23].y = vertices[20].y + height;			
 			setVertices(vertices);
 			
+			Vec2f[] texcoords = cast(Vec2f[])(getTexCoords0().getData());			
+			texcoords[21].y = texcoords[23].y = height / (height-text.padding.y);	// why is padding.y negative?		
+			setTexCoords0(texcoords);
+			
 		} else
 			this.text.setMaterial(cast(Material)null);
-
 	}
 }

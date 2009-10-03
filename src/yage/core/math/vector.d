@@ -8,6 +8,7 @@ module yage.core.math.vector;
 
 import tango.math.Math;
 import tango.text.convert.Format;
+//import yage.core.math.line;
 import yage.core.math.matrix;
 import yage.core.math.math;
 import yage.core.math.quatrn;
@@ -22,14 +23,14 @@ import yage.core.math.quatrn;
  * --------------------------------
  * TODO: Convert looping code to static if's to improve performance.
  */
-struct Vec(int S, T)
+struct Vec(int S, T, int D=1)
 {
 	alias Vec!(S, T) VST;
 	static const byte components = S;
 
 	/// Allow acessiong the vector as an array of values through field v, or via .x, .y, .z, etc. up to the number of components.
 	union
-	{	T v[S] = 0; ///
+	{	T v[S] = D; ///
 	
 		struct ///
 		{	union {T x; T r; } ///
@@ -67,11 +68,11 @@ struct Vec(int S, T)
 		return res;
 	}
 
-	/// Create a new vector with the values of s; s must be at least of length S.
+	/// Create a new vector with the values of s; If s is less than the size of the vector, remaining values are set to 0.
 	static VST opCall(T[] s)
-	{	assert(s.length>=S);
-		VST res;
-		res.v[0..S] = s[0..S];
+	{	VST res;
+		for (int i=0; i<s.length && i<v.length; i++)
+			res.v[i] = s[i];
 		return res;
 	}
 
@@ -109,7 +110,7 @@ struct Vec(int S, T)
 		return res;
 	}
 
-	/// Is this Vector inside a box/cube/etc. defined by topLeft and bottomRight
+	/// Is this Vector (as a point) inside a box/cube/etc. defined by topLeft and bottomRight
 	bool inside(VST topLeft, VST bottomRight, bool inclusive=true)
 	{	if (inclusive)
 		{	for (int i=0; i<v.length; i++)
@@ -121,6 +122,42 @@ struct Vec(int S, T)
 					return false;
 		}					
 		return true;
+	}
+	
+	/**
+	 * Is this Vector (as a point) inside a polygon defined by an array of Points?
+	 * See_Also: http://www.visibone.com/inpoly */
+	bool inside(VST[] polygon)
+	{
+		Vec!(S, T) pold, p1, p2;
+		bool inside;
+		
+		if (polygon.length < 3)
+			return false;
+		
+		pold = polygon[$-1];
+		for (int i=0; i < polygon.length; i++)
+		{	VST pnew = polygon[i];
+			if (pnew.x > pold.x) {
+				p1 = pold;
+				p2 = pnew;
+			}
+			else {
+				p1 = pnew;
+				p2 = pold;
+			}
+			if ((pnew.x < x) == (x <= pold.x) // edge "open" at one end
+			    && (y-p1.y)*(p2.x-p1.x) < (p2.y-p1.y)*(x-p1.x))
+				inside= !inside;
+			pold = pnew;
+		}
+		return inside;
+	}
+	unittest
+	{
+		Vec2f[] polygon = [Vec2f(-1, -1), Vec2f(0, 1), Vec2f(1, -1)];
+		assert(Vec2f(0, 0).inside(polygon));
+		assert(!Vec2f(0, 2).inside(polygon));
 	}
 	
 	/// Return the _length of the vector (the magnitude).
@@ -310,6 +347,27 @@ struct Vec(int S, T)
 	{	v[0..S] = s[0..S];
 	}
 
+	/// Transform this vector by a Matrix.
+	VST transform(Matrix m)
+	{	VST result;
+		static if (S==2)
+		{	result.x = cast(T)(x*m.v[0] + y*m.v[4] + m.v[8] + m.v[12]);
+			result.y = cast(T)(x*m.v[1] + y*m.v[5] + m.v[9] + m.v[13]);
+		}
+		static if (S==3)
+		{	result.x = cast(T)(x*m.v[0] + y*m.v[4] + z*m.v[8] + m.v[12]);
+			result.y = cast(T)(x*m.v[1] + y*m.v[5] + z*m.v[9] + m.v[13]);
+			result.z = cast(T)(x*m.v[2] + y*m.v[6] + z*m.v[10]+ m.v[14]);
+		}			
+		static if (S>=4)
+		{	result.x = cast(T)(x*m.v[0] + y*m.v[4] + z*m.v[8] + w*m.v[12]);
+			result.y = cast(T)(x*m.v[1] + y*m.v[5] + z*m.v[9] + w*m.v[13]);
+			result.z = cast(T)(x*m.v[2] + y*m.v[6] + z*m.v[10]+ w*m.v[14]);
+			result.w = cast(T)(x*m.v[3] + y*m.v[7] + z*m.v[11]+ w*m.v[15]);
+		}	
+		return result;
+	}
+	
 	/// Return a string representation of this vector for human reading.
 	char[] toString()
 	{	char[] result = "<";
@@ -318,6 +376,31 @@ struct Vec(int S, T)
 		result ~= ">";
 		return result;
 	}
+	
+	/*
+	// Forward reference error
+	static if (S!=2)
+	{	///
+		Vec2f vec2f()
+		{	return Vec2f(v);
+		}
+	}*/
+	
+	static if (S!=3 && is(T == float))
+	{	///
+		Vec3f vec3f()
+		{	return Vec3f(v);
+		}
+	}
+	
+	/*// forward reference error
+	static if (S!=4)
+	{	///
+		Vec4f vec4f()
+		{	return Vec4f(v);
+		}
+	}
+	*/
 }
 
 alias Vec!(2, int) Vec2i;		/// A two-component int Vec
@@ -419,10 +502,14 @@ struct Vec3f
 		return res.length(angle);
 	}
 
-	/// Return a vector with the values of s; s must be at least of length 3.
+	/// Return a vector with the values of s.
 	static Vec3f opCall(float[] s)
-	{	assert(s.length>=3);
-		return Vec3f(s[0], s[1], s[2]);
+	{	if(s.length>=3)
+			return Vec3f(s[0], s[1], s[2]);
+		Vec3f result;
+		for (int i=0; i<s.length; i++)
+			result.v[i] = s[i];
+		return result;
 	}
 
 	/// Return a vector containing the absolute value of each component
@@ -481,6 +568,20 @@ struct Vec3f
 	{	return (x-s.x)*(x-s.x) + (y-s.y)*(y-s.y) + (z-s.z)*(z-s.z);
 	}
 
+	/// Is this Vector inside a box/cube/etc. defined by topLeft and bottomRight
+	bool inside(Vec3f topLeft, Vec3f bottomRight, bool inclusive=true)
+	{	if (inclusive)
+		{	for (int i=0; i<v.length; i++)
+				if (v[i] <= topLeft[i] || v[i] >= bottomRight[i])
+					return false;
+		} else
+		{	for (int i=0; i<v.length; i++)
+				if (v[i] < topLeft[i] || v[i] > bottomRight[i])
+					return false;
+		}					
+		return true;
+	}
+	
 	///
 	Vec3f inverse()
 	{	return Vec3f(1/x, 1/y, 1/z);
@@ -757,5 +858,15 @@ struct Vec3f
 			x*m.v[1] + y*m.v[5] + z*m.v[9] + m.v[13],
 			x*m.v[2] + y*m.v[6] + z*m.v[10]+ m.v[14]
 		);
+	}
+	
+	///
+	Vec2f vec2f()
+	{	return Vec2f(x, y); 		
+	}
+	
+	///
+	Vec4f vec4f()
+	{	return Vec4f(x, y, z, 0); 		
 	}
 }

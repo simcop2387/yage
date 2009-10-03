@@ -12,7 +12,9 @@ import tango.text.Util;
 import tango.text.Unicode;
 import tango.text.convert.Format;
 import tango.util.Convert;
+
 import yage.core.color;
+import yage.core.math.matrix;
 import yage.core.math.vector;
 import yage.resource.font;
 import yage.resource.manager;
@@ -60,7 +62,6 @@ struct CSSValue
 		{	value = to!(float)(v[0..length]);
 			unit = Unit.PX;
 		}
-		value = value>0 ? value : 0;
 		return *this;
 	}
 	unittest
@@ -139,21 +140,6 @@ struct CSSValue
  * TextAlign.JUSTIFY */
 struct Style
 {
-	/// CSSValues that can be assigned to the textAlign property.
-	enum TextAlign
-	{	LEFT, /// Allowed values.
-		CENTER, /// ditto
-		RIGHT, /// ditto
-		JUSTIFY /// ditto
-	}
-	
-	/// CSSValues that can be assigned to the textDecoration property.
-	enum TextDecoration
-	{	NONE, /// Allowed values.
-		UNDERLINE, /// ditto
-		OVERLINE, /// ditto
-		LINETHROUGH /// ditto
-	}
 
 	/// CSSValues that can be assigned to the borderImagestyle property.
 	enum BorderImageStyle
@@ -173,6 +159,31 @@ struct Style
 	{	NORMAL, /// Allowed values.
 		BOLD /// ditto
 	}
+	
+	///
+	enum Overflow
+	{	VISIBLE, /// Allowed values.
+		HIDDEN /// ditto
+	}
+		
+	/// CSSValues that can be assigned to the textAlign property.
+	enum TextAlign
+	{	LEFT, /// Allowed values.
+		CENTER, /// ditto
+		RIGHT, /// ditto
+		JUSTIFY /// ditto
+	}
+	
+	/// CSSValues that can be assigned to the textDecoration property.
+	enum TextDecoration
+	{	NONE, /// Allowed values.
+		UNDERLINE, /// ditto
+		OVERLINE, /// ditto
+		LINETHROUGH /// ditto
+	}
+	
+	
+	
 	
 	union { 
 		struct { 
@@ -264,9 +275,21 @@ struct Style
 	CSSValue lineHeight = CSSValue(float.nan); /// ditto
 	CSSValue letterSpacing; /// ditto
 	
+	/**
+	 * CSS 3D transform property, defaults to identity matrix.  See: http://w3.org/TR/css3-3d-transforms	 */
+	Matrix transform;
+	bool backfaceVisibility = true;
 
 	// Other
 	float opacity = 1; // 0 to 1.
+	
+	union
+	{	struct
+		{	Overflow overflowX = Overflow.VISIBLE; /// Control whether an element is clipped when placed outside its parent.
+			Overflow overflowY = Overflow.VISIBLE; /// ditto
+		}
+		Overflow[2] overflow; /// Set both overflow properties in one array.
+	}
 	bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
 	int zIndex; /// Sets the stack order of the surface relative to its siblings.
 
@@ -355,6 +378,9 @@ struct Style
 				case "text-decoration":		textDecoration = translateTextDecoration[tokens[0]]; break;
 				
 				case "opacity":				opacity = to!(float)(tokens[0]);  break;
+				case "overflow":			overflowX = overflowY = (toLower(tokens[0], tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
+				case "overflow-x":			overflowX = (toLower(tokens[0], tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
+				case "overflow-y":			overflowY = (toLower(tokens[0], tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
 				case "zIndex":				zIndex = to!(int)(tokens[0]); break;
 				case "visibility":			visible = tokens[0] != "hidden"; break;
 				

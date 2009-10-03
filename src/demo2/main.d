@@ -66,7 +66,7 @@ int main()
 
 	// For Testing
 	auto info = view.addChild(new Surface());
-	info.style.set("top: 5px; left: 5px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
+	info.style.set("top: 40px; left: 40px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
 		"font-family: url('gui/font/Vera.ttf'); font-size: 14px; text-align: right; opacity: .8");
 	
@@ -87,20 +87,14 @@ int main()
 	info.onMouseOut = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear2.png')");
 	};
+
+	info.style.transform = Matrix().rotate(Vec3f(0, 0, .1));
 	
 	// Rendering / Input Loop
 	int fps = 0;
 	Timer frame = new Timer();
 	while(!System.isAborted())
 	{		
-		//Input.processInput();
-		//scene.swapTransformRead(); // swap scene buffer so the latest version can be rendered.
-		//camera.toTexture();
-		
-		//Render.scene(camera, view.style.backgroundImage);
-		
-		//view.render();
-		
 		Input.processAndSendTo(view);
 		auto stats = Render.scene(camera, window);
 		Render.surface(view, window);
@@ -108,6 +102,10 @@ int main()
 		
 		// Print framerate
 		fps++;
+		//info.style.transform = info.style.transform.move(Vec3f(-40, -40, 0));
+		//info.style.transform *= Matrix().rotate(Vec3f(0, 0.0005, 0.0005));
+		//info.style.transform = info.style.transform.move(Vec3f(40, 40, 0));
+		
 		
 		if (frame.tell()>=0.25f)
 		{	
@@ -123,13 +121,9 @@ int main()
 			`Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and `~
 			`line-width spacers, were not part of a specific font in pre-digital usage, but were separate, `~
 			`generic pieces.[1]             `~ Format.convert(` {} fps<br/>`, fps/frame.tell());
-	
-			//window.text = Format.convert(`{} fps<br/>{}`,
-			//	fps/frame.get());
-			//window.text = Format.convert(`<span style="color: white">{}</span> fps`, fps/frame.get());
+			
 			frame.seek(0);
-			fps = 0;	
-			//break;
+			fps = 0;
 		}
 	}
 	

@@ -18,6 +18,7 @@ import derelict.sdl.sdl;
 
 import yage.core.all;
 import yage.gui.surface;
+import yage.gui.style;
 import yage.system.system;
 import yage.system.graphics.graphics;
 import yage.system.graphics.probe;
@@ -518,11 +519,10 @@ struct Render
 		glViewport(0, 0, target.getWidth(), target.getHeight());
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, target.getWidth(), target.getHeight(), 0, -1, 1);
+		glOrtho(0, target.getWidth(), target.getHeight(), 0, -1000, 1000);
 		glMatrixMode(GL_MODELVIEW);
 
 		Graphics.loadIdentity();
-		
 		
 		Graphics.disable(GL_DEPTH_TEST);
 		Graphics.disable(GL_LIGHTING);
@@ -535,21 +535,75 @@ struct Render
 		
 		surface.update();
 		
+		
+		// We increment the stencil buffer with each stencil write.
+		// This allows two partially overlapping clip regions to only allow writes in their intersection.
+		ubyte stencil=1;
+		glClear(GL_STENCIL_BUFFER_BIT); // TODO: only clear the first time necessary.
+		
 		// Function to draw surface and recurse through childrne.
 		void draw(Surface surface) {
 			Graphics.pushMatrix();
+			
+			// Bind surface properties			
+			Graphics.multMatrix(surface.style.transform);
 			Graphics.translate(surface.left(), surface.top(), 0);
+			surface.style.backfaceVisibility ? Graphics.disable(GL_CULL_FACE) : Graphics.enable(GL_CULL_FACE);
+			
 			Graphics.applyState(); // temporary
-
+			
 			Render.geometry(surface.getGeometry());
 			
+			
+			if (surface.style.overflowX == Style.Overflow.HIDDEN || surface.style.overflowY == Style.Overflow.HIDDEN)
+			{	
+				glColorMask(0, 0, 0, 0); // Disable drawing to other buffers
+				glDepthMask(0);
+				glStencilMask(0xff);
+
+				glStencilFunc(GL_ALWAYS, stencil, 0xff);			// Make the stencil test always pass, write 1
+				glStencilOp(GL_KEEP, GL_KEEP, GL_INCR_WRAP);	//Stencil & Depth test passes => replace existing value
+
+				// Allow overflowing in only one direction by scaling the stencil in that direction
+				if (surface.style.overflowX != Style.Overflow.HIDDEN)
+				{	glPushMatrix();
+					glScalef(Window.getInstance().getWidth() / surface.outerWidth(), 1, 1);
+					glTranslatef(-surface.border.left-surface.outerWidth()/2, 0, 0);
+				}
+				else if (surface.style.overflowY != Style.Overflow.HIDDEN)
+				{	glPushMatrix();
+					glScalef(1, Window.getInstance().getHeight() / surface.outerHeight(), 1);
+					glTranslatef(0, -surface.border.top-surface.outerHeight()/2, 0);
+				}
+				
+				Render.geometry(surface.getGeometry().getClipGeometry());
+				
+				if (surface.style.overflowX != Style.Overflow.HIDDEN || surface.style.overflowY != Style.Overflow.HIDDEN)
+					glPopMatrix();
+				
+			    glColorMask(1, 1, 1, 1); // Enable drawing to other buffers and disable stencil writes
+			    glDepthMask(1);
+			    glStencilMask(0);
+			    
+			    glStencilFunc(GL_GEQUAL, stencil, 0xff); //Draw only where stencil buffer >= 1
+			    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); 
+			    
+			    stencil++;
+			}
+			
+			// Recurse through and draw children.
 			foreach(child; surface.getChildren())
 				draw(child);
 			
 			Graphics.popMatrix();
 			Graphics.applyState(); // temporary
 		}
+		
+		glEnable(GL_STENCIL_TEST);
 		draw(surface);
+		glDisable(GL_STENCIL_TEST);
+		glStencilFunc(GL_ALWAYS, 0, 0xff); // reset to default value
+		
 		
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glPopAttrib();
@@ -618,7 +672,6 @@ private struct Bind
 					break;
 				case BLEND_AVERAGE:
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					//glBlendFuncSeparateEXT(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 					break;
 				case BLEND_MULTIPLY:
 					glBlendFunc(GL_ZERO, GL_SRC_COLOR);
@@ -649,7 +702,7 @@ private struct Bind
 				glPointSize(layer.width);
 				break;
 		}
-
+		
 		// Textures
 		if (layer.textures.length>1 && Probe.feature(Probe.Feature.MULTITEXTURE))
 		{	int length = min(layer.textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
@@ -672,7 +725,6 @@ private struct Bind
 					glTexCoordPointer(texcoords.getComponents(), GL_FLOAT, 0, texcoords.ptr);
 
 				// Bind and blend
-				//textures[i].bind();
 				Bind.texture(layer.textures[i]);
 			}
 		}
@@ -786,6 +838,8 @@ private struct Bind
 		// Cull, polygon
 		glCullFace(GL_BACK);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		
+		
 		// Textures
 		if (layer.textures.length>1 && Probe.feature(Probe.Feature.VBO))
 		{	int length = min(layer.textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
@@ -808,6 +862,7 @@ private struct Bind
 			//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		}
 		glDisable(GL_TEXTURE_2D);
+		
 
 		// Shader
 		if (layer.program != 0)
@@ -987,6 +1042,7 @@ private struct Bind
 			else
 				glBindTexture(GL_TEXTURE_2D, gpuTexture.id);
 			
+			// Upload new image to graphics card memory
 			if (image)
 			{	
 				// Calculate formats

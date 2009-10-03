@@ -6,6 +6,8 @@
 
 module yage.gui.surface;
 
+import std.stdio;
+
 import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.math.Math;
@@ -73,11 +75,11 @@ class Surface : Tree!(Surface)
 	
 	// internal values
 	protected Vec2f offset;		// pixel distance of the topleft corner from parent's top left, a relative offset
-	protected Vec2f size;			// pixel outer width/height, which includes borders and padding.
-	protected Vec4f border;		// pixel sizes of each border
+	protected Vec2f size;		// pixel outer width/height, which includes borders and padding.
+	public Vec4f border;		// pixel sizes of each border
 	protected Vec4f padding;		// pixel sizes of each padding	
 	
-	protected Vec2f offsetAbsolute;		// pixel distance of top left from the window's top left at 0, 0, an absolute offset
+	protected Vec2f offsetAbsolute;	// pixel distance of top left from the window's top left at 0, 0, an absolute offset
 	
 	protected bool mouseIn; 		// used to track mouseover/mouseout
 	protected bool _grabbed;	
@@ -106,7 +108,7 @@ class Surface : Tree!(Surface)
 	}
 	
 	/**
-	 * Get the pixel distance of this surface from its parent's top or left corner. */
+	 * Get the pixel distance of this surface from its parent's top or left corner (outside the border). */
 	float top()
 	{	return offset.y;
 	}
@@ -149,7 +151,11 @@ class Surface : Tree!(Surface)
 	 * TODO: Add relative argument to allow x and y to be relative to another surface.
 	 * Returns: The surface, or self if no surface at the coordinates, or null if coordinates are outside self. */
 	Surface findSurface(float x, float y)
-	{	if (Vec2f(x, y).inside(offsetAbsolute, offsetAbsolute + size))
+	{	
+		Vec2f[4] polygon;
+		getPolygon(polygon.ptr);
+		
+		if (Vec2f(x, y).inside(polygon))
 		{	// Sort if necessary
 			if (!children.sorted(false, (Surface s){return s.style.zIndex;}))
 				children.radixSort(false, (Surface s){return s.style.zIndex;});
@@ -162,7 +168,7 @@ class Surface : Tree!(Surface)
 			}
 			return this;
 		}
-		return null;
+		return null;		
 	}
 	
 	/**
@@ -208,36 +214,66 @@ class Surface : Tree!(Surface)
 		// Get top, right, bottom, and left in terms of pixels, or nan.
 		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
 		Vec4f dimension;
+
 		for (int i=0; i<4; i++)
 		{	int xy = (i+1) % 2;
-			float multiplier = i==3 ? 1 : -1;				
-			dimension[i] = style.dimension[i].toPx(parent_size[xy]) + amount[xy] * multiplier;
+			dimension[i] = style.dimension[i].toPx(parent_size[xy]);
 		}
 		
 		// Set top or left to 0 if they and their opposite are both NaN
 		if (isNaN(dimension[0]) && isNaN(dimension[2]))
 			dimension[0] = 0;
 		if (isNaN(dimension[1]) && isNaN(dimension[3]))
-			dimension[3] = 3;
-		
-		
-		for (int i=0; i<4; i++)
-		{	
-			// Apply constraint
-			int xy = (i+1) % 2;
-			if (constrain && !isNaN(dimension[i]))
-			{	if (dimension[i] < 0)				
-					dimension[i] = 0;
-				if (dimension[i] + size[xy] > parent_size[xy])
-					dimension[i] = parent_size[xy] - size[xy];									
+			dimension[3] = 0;
+				
+		// Get a bounding box that surrounds the transformed surface
+		Vec4f bounds = Vec4f(float.infinity, -float.infinity, -float.infinity, float.infinity);
+		if (constrain)
+		{
+			Vec2f[4] polygon;
+			getPolygon(polygon.ptr);
+
+			for (int i=0; i<4; i++)
+			{	if (polygon[i].y < bounds[0]) // topmost
+					bounds[0] = polygon[i].y;
+				if (polygon[i].x > bounds[1]) // rightmost
+					bounds[1] = polygon[i].x;
+				if (polygon[i].y > bounds[2]) // bottommost
+					bounds[2] = polygon[i].y;
+				if (polygon[i].x < bounds[3]) // leftmost
+					bounds[3] = polygon[i].x;
 			}
 			
-			// Apply the movement
-			if (style.dimension[i].unit == CSSValue.Unit.PERCENT)
-				style.dimension[i].value = dimension[i] / parent_size[xy]*100;
-			else
-				style.dimension[i].value = dimension[i];
+			// Move bounds by requested move amount.
+			bounds.v[0] += amount.y;	// top
+			bounds.v[1] += amount.x;	// right
+			bounds.v[2] += amount.y;	// bottom
+			bounds.v[3] += amount.x;	// left
 		}
+	
+		// Apply constraint
+		if (constrain)
+		{	if (bounds[0] < 0) // top
+				amount.y -= bounds[0];
+			if (bounds[3] < 0) // left
+				amount.x -= bounds[3];
+			
+			if (bounds[1] > parent_size.x) // right
+				amount.x -= bounds[1] - parent_size.x;
+			if (bounds[2] > parent_size.y) // bottom
+				amount.y -= bounds[2] - parent_size.y;
+		}
+	
+		// Apply the movement
+		for (int i=0; i<4; i++)
+		{	int xy = (i+1) % 2;
+			float multiplier = i==0||i==3 ? 1 : -1;
+			if (style.dimension[i].unit == CSSValue.Unit.PERCENT)
+				style.dimension[i].value = (dimension[i] + amount[xy]*multiplier) / parent_size[xy]*100;
+			else
+				style.dimension[i].value = dimension[i] + amount[xy]*multiplier;
+		}
+		
 		updateDimensions(); // dragging breaks w/o this.
 	}
 	
@@ -264,7 +300,7 @@ class Surface : Tree!(Surface)
 			old_text = text;
 		}
 		
-		geometry.setColors(style.backgroundColor, style.borderColor);
+		geometry.setColors(style.backgroundColor, style.borderColor, style.opacity);
 		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, 
 			style.borderImage, style.borderCornerImage, textTexture, style.opacity);
 		
@@ -404,6 +440,18 @@ class Surface : Tree!(Surface)
 		else return focusSurface;		
 	}
 	
+	/*
+	 * Get a 4-sided polygon of the outline of this surface, after all styles and the transformation are applied.
+	 * Coordinates are relative to the parent Surface.
+	 * Params:
+	 *     polygon = A pointer to a Vec2f[4] where the result will be stored. */
+	protected void getPolygon(Vec2f *polygon)
+	{	polygon[0] = Vec3f(0).transform(style.transform).vec2f + offset;			// top left
+		polygon[1] = Vec3f(size.x, 0, 0).transform(style.transform).vec2f + offset;	// top right
+		polygon[2] = size.vec3f.transform(style.transform).vec2f + offset;			// bottom right
+		polygon[3] = Vec3f(0, size.y, 0).transform(style.transform).vec2f + offset;	// bottom left
+	}
+	
 	
 	// Set style dimensions from pixels.
 	protected void top(float v)    
@@ -461,7 +509,7 @@ class Surface : Tree!(Surface)
 		// This loop over xy combines the x/left/right and y/top/bottom calulations into one block of code.
 		for (int xy=0; xy<2; xy++)
 		{	int topLeft= xy==0 ? 3 : 0; // top or left
-			int bottomRight = xy ==0 ? 1 : 2; // bottom or right
+			int bottomRight = xy==0 ? 1 : 2; // bottom or right
 			
 			// Ensure at least 4 of the 6 style dimensions are set.
 			if (isNaN(style_dimensions[topLeft]))
@@ -471,19 +519,22 @@ class Surface : Tree!(Surface)
 					style_size[xy] = parent_size[xy];			
 			}
 			
+			float parent_border = (parent ? parent.border[xy] : 0);
+			float parent_padding = (parent ? parent.padding[xy] : 0);
+			
 			// Position	
 			// Convert CSS style top, left, bottom, right, width, height to internal pixel x, y, width, height.
 			// (at this point, at most only one of left/width/right will be NaN)
-			if (isNaN(style_dimensions[topLeft])) // left is NaN
+			if (isNaN(style_dimensions[topLeft])) // top or left is NaN
 			{	size[xy] = style_size[xy];
-				offset[xy] = parent_size[xy] - size[xy] - style_dimensions[bottomRight];
+				offset[xy] = parent_size[xy] - size[xy] - style_dimensions[bottomRight] + parent_border + parent_padding;
 			}
-			else if (isNaN(style_size.x)) // width is NaN
+			else if (isNaN(style_size[xy])) // width or height is NaN
 			{	offset[xy] = style_dimensions[topLeft];
 				size[xy] = (parent_size[xy] - style_dimensions[bottomRight]) - offset[xy];
 			}
-			else // right is NaN
-			{	offset[xy] = style_dimensions[topLeft];
+			else // bottom or right is NaN
+			{	offset[xy] = style_dimensions[topLeft] + parent_border + parent_padding;
 				size[xy] = style_size[xy];
 		}	}	
 		

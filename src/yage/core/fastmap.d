@@ -19,12 +19,13 @@ import yage.core.array;
  */
 struct FastMap(K, V)
 {
-	private size_t[K] map; // a map from keys to their array index.
+	size_t[K] map; // a map from keys to their array index.
 	private Array!(K) k; // keys
 	private Array!(V) v; // values
 	
 	invariant {
 		assert(k.length == v.length);
+		assert(v.length == map.length);
 	}
 
 	/**
@@ -34,7 +35,13 @@ struct FastMap(K, V)
 		result.k = k.dup;
 		result.v = v.dup;
 		for (int i=0; i<k.length; i++)
-			map[k[i]] = i;
+			result.map[k[i]] = i;
+		
+		assert(result.k.length == v.length);
+		assert(result.v.length == result.k.length);
+		assert(result.map.length == result.v.length);
+		assert(&result.map != &map);
+		
 		return result;		
 	}
 	
@@ -82,8 +89,6 @@ struct FastMap(K, V)
 	{	FastMap!(int, int) map;
 		map[0] = 12;
 		map[5] = 13;
-		assert(map[0] == 12);
-		assert(map[5] == 13);
 	}
 	
 	///
@@ -96,7 +101,7 @@ struct FastMap(K, V)
 
 	///
 	void rehash()
-	{	map.rehash;		
+	{	map.rehash;
 	}
 	
 	///
