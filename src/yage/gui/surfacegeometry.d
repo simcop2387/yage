@@ -123,7 +123,7 @@ package class SurfaceGeometry : Geometry
 		topRightImage    = new Mesh(null, [Vec3i(8, 9, 13),Vec3i(13, 12, 8)]);
 		rightImage       = new Mesh(null, [Vec3i(9, 10,14),Vec3i(14, 13, 9)]);
 		bottomRightImage = new Mesh(null, [Vec3i(10, 11, 15), Vec3i(15, 14, 10)]);
-		bottomImage= new Mesh(null, [Vec3i(6, 7, 11),Vec3i(11, 10, 6)]);
+		bottomImage      = new Mesh(null, [Vec3i(6, 7, 11),Vec3i(11, 10, 6)]);
 		bottomLeftImage  = new Mesh(null, [Vec3i(2, 3, 7), Vec3i(7, 6, 2)]);
 		leftImage        = new Mesh(null, [Vec3i(1, 2, 6), Vec3i(6, 5, 1)]);
 		centerImage      = new Mesh(null, [Vec3i(5, 6, 10), Vec3i(5, 10, 9)]);
@@ -175,8 +175,8 @@ package class SurfaceGeometry : Geometry
 	void setDimensions(Vec2f dimensions, Vec4f borders, Vec4f padding /*, Vec2f backgroundPosition, ubyte backgroundRepeatX, ubyte backgroundRepeatY*/)
 	{	Vec2f[] vertices = cast(Vec2f[])(getVertices().getData());
 		
-		// Note that some vertices are left at 0
 		// This also positions the quad for mesh backgroundColor.
+	
 		vertices[ 4].x = vertices[ 5].x = vertices[ 6].x = vertices[ 7].x = borders.left;
 		vertices[ 8].x = vertices[ 9].x = vertices[10].x = vertices[11].x = borders.left + padding.left + dimensions.width + padding.right;
 		vertices[12].x = vertices[13].x = vertices[14].x = vertices[15].x = borders.left + padding.left + dimensions.width + padding.right + borders.right;

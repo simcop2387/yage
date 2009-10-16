@@ -6,6 +6,8 @@
 
 module yage.system.window;
 
+import std.stdio;
+
 import tango.stdc.stringz;
 import tango.io.Stdout;
 import derelict.opengl.gl;
@@ -66,9 +68,12 @@ class Window : IRenderTarget
 
 	
 	void dispose()
-	{	DerelictGL.unload();
-		DerelictGLU.unload();
-		instance = null;
+	{	if (instance)
+		{	SDL_FreeSurface(sdlSurface);
+			DerelictGL.unload();
+			DerelictGLU.unload();
+			instance = null;
+		}
 	}
 	
 	/// Get the width/height of this Window's display area (not including title/borders) in pixels.
@@ -229,6 +234,10 @@ class Window : IRenderTarget
 		//Vec2f dsize = Vec2f(size.x, size.y);
 		
 		//System.surface.updateDimensions();
+		
+		// Seems to do nothing.
+		SDL_UpdateRect(sdlSurface, 0, 0, 0, 0);
+
 		
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, also try SDL lock surface)

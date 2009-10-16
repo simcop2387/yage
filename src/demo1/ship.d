@@ -95,9 +95,6 @@ class Ship : GameObject
 			input.hyper = on;
 	}
 	
-	void mouseMove(Vec2f amount)
-	{
-	}
 	
 	void update(float delta)
 	{	super.update(delta);
@@ -149,7 +146,7 @@ class Ship : GameObject
 		// Rotate
 		if (acceptInput){
 			angularAccelerate(Vec3f(0, -input.mouseDelta.x/16.0, 0));
-			pitch.angularAccelerate(Vec3f(-input.mouseDelta.y/24.0, 0, 0));
+			pitch.angularAccelerate(Vec3f(input.mouseDelta.y/24.0, 0, 0));
 			input.mouseDelta.x = input.mouseDelta.y = 0;
 		}
 

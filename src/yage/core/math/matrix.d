@@ -6,6 +6,8 @@
 
 module yage.core.math.matrix;
 
+import std.stdio;
+
 import tango.math.Math;
 import tango.text.convert.Format;
 import yage.core.math.vector;
@@ -114,11 +116,25 @@ struct Matrix
 		return res;
 	}
 
-	/// Create a Matrix from the rotation values of a Quaternion.
-	static Matrix opCall(Quatrn rotation)
-	{	return Matrix().rotate(rotation);
-	}
+	/// Create an Orthographic Matrix
+	static Matrix opCall(float left, float right, float bottom, float top, float near, float far)
+	{	float rl = right-left;
+		float tb = top-bottom;
+		float fn = far-near;
+		Matrix result;
+		result.v00 = 2/rl;
+		result.v11 = 2/tb;
+		result.v22 = -2/fn;
+		result.v[12] = -(right+left)/rl;
+		result.v[13] = -(top+bottom)/tb;
+		result.v[14] = -(far+near)/fn;
 
+		//assert(result * result.transpose() == Matrix());
+		
+		
+		return result;
+	}
+	
 	/// Is this Matrix equal to Matrix s, discarding relative error fudge.
 	bool almostEqual(Matrix s, float fudge=0.0001)
 	{	for (int i=0; i<v.length; i++)

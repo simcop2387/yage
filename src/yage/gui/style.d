@@ -329,7 +329,23 @@ struct Style
 				case "background-color":	backgroundColor = Color(tokens[0]); break;
 				case "background-image":	backgroundImage = ResourceManager.texture(removeUrl(tokens[0])).texture; break;				
 			
-				case "font":				/*todo */  break;
+				case "font":  // font-style, font-weight, font-size/line-height, font-family
+					foreach (i, token; tokens)
+					{	if (token in translateFontStyle)
+							fontStyle = translateFontStyle[token];
+						else if (token in translateFontWeight)
+							fontWeight = translateFontWeight[token];
+						else if (!containsPattern(token, "url(") && (token.containsPattern("%") || token.containsPattern("px")))
+						{	if (token.containsPattern("/"))
+							{	char[][] temp =  token.split("/");
+								fontSize = temp[0];
+								lineHeight = temp[1];
+							} else
+								fontSize = token;
+						} else if (i>0)
+							fontFamily = ResourceManager.font(removeUrl(token));
+					}
+					break;
 				case "font-size":			fontSize = tokens[0];  break;
 				case "font-family":			fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;
 				case "font-style":			fontStyle = translateFontStyle[tokens[0]];  break;
@@ -457,10 +473,10 @@ private template styleCompare(char[] name="")
  * Remove the url('...') from a css path, if it's present.
  * Returns: A slice of the original url to avoid creating garbage.*/ 
 private char[] removeUrl(char[] url)
-{	if (url[0..5] == "url('" || url[0..5] == "url(\"")
-		return url[5..length-2];
-	if (url[0..4] == "url(" || url[0..4] == "url(")
-		return url[4..length-1];
+{	if (url.length>5 && (url[0..5] == "url('" || url[0..5] == "url(\""))
+		return url[5..$-2];
+	if (url.length>4 && (url[0..4] == "url(" || url[0..4] == "url("))
+		return url[4..$-1];
 	return url;
 }
 

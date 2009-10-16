@@ -133,18 +133,30 @@ struct Color
 				default: break;
 		}	}
 		
-		// Allow hex colors to start with hash.
+		//	Allow hex colors to start with hash.
 		if (string[0] == '#')
 			string = string[1..length];
-			
-		// Append alpha to 6-digit hex string.
-		if (string.length == 6)
-			string ~= "FF"; // creates garbage!
+		
+		// handle 3 and 4-digit color codes
+		char[8] color;
+		if (string.length<=4)
+		{	color[0..2] = string[0];
+			color[2..4] = string[1];
+			color[4..6] = string[2];
+			color[6..8] = 'F';
+		}
+		if (string.length==4)
+			color[6..8] = string[3];
+		else if (string.length==6)
+		{	color[0..6] = string[0..6];
+			color[6..8] = 'F';		
+		} else
+			color[0..8] = string[0..8];
 		
 		// Convert string one char at a time.
 		Color result;
 		int digit;
-		foreach (int i, char h; string)
+		foreach (int i, char h; color)
 		{	if (i>=8)
 				break;
 		
@@ -156,7 +168,7 @@ struct Color
 			else if (96 < h && h < 103) // a-f
 				digit = (h-87);
 			else
-				throw new YageException("Invalid character '{}' for Color()", h);
+				throw new YageException("Invalid character '{}' in '{}' for Color()", h, string);
 			result.ub[i/2] += digit * (15*((i+1)%2)+1); // gets low or high nibble
 		}
 		return result;

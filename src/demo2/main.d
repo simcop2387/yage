@@ -88,7 +88,7 @@ int main()
 		self.style.set("border-image: url('gui/skin/clear2.png')");
 	};
 
-	info.style.transform = Matrix().rotate(Vec3f(0, 0, .1));
+	info.style.transform = Matrix().scale(Vec3f(.5, .5, .5));
 	
 	// Rendering / Input Loop
 	int fps = 0;
@@ -102,9 +102,9 @@ int main()
 		
 		// Print framerate
 		fps++;
-		//info.style.transform = info.style.transform.move(Vec3f(-40, -40, 0));
-		//info.style.transform *= Matrix().rotate(Vec3f(0, 0.0005, 0.0005));
-		//info.style.transform = info.style.transform.move(Vec3f(40, 40, 0));
+		info.style.transform = info.style.transform.move(Vec3f(-40, -40, 0));
+		info.style.transform *= Matrix().rotate(Vec3f(0, 0.0005, 0.0005));
+		info.style.transform = info.style.transform.move(Vec3f(40, 40, 0));
 		
 		
 		if (frame.tell()>=0.25f)

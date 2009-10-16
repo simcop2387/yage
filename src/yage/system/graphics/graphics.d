@@ -79,13 +79,24 @@ private struct Float4
  * It is currently unfinished and has bugs. */
 private struct OpenGLState
 {
-	Matrix matrix;	
-	Matrix[] matrixStack;
-	//Matrix projectionMatrix;	
-	//Matrix[] projectionMatrixStack;
-	Matrix textureMatrix;
-	Matrix[] textureMatrixStack;
+	union {
+		struct {
+			Matrix matrix;	
+			Matrix textureMatrix;
+			Matrix projectionMatrix;
+		}
+		Matrix[3] matrices;
+	}
 	
+	union {
+		struct {	
+			Matrix[] matrixStack;
+			Matrix[] textureMatrixStack;
+			Matrix[] projectionMatrixStack;
+		}
+		Matrix[][3] matrixStacks;	
+	}
+
 	FastMap!(uint, bool) enable;		
 	FastMap!(uint, bool) enableClientState; // used with glEnableClientSideState
 	
@@ -190,6 +201,9 @@ private struct OpenGLState
 		result.texParameteri = .dup(result.texParameteri, true);
 		result.textures = .dup(result.textures);
 		result.lights[0..$] = result.lights.dup[0..$];
+		
+		for (int i=0; i<matrixStacks.length; i++)
+			result.matrixStacks[i] = result.matrixStacks[i].dup;
 		return result;
 	}
 	
@@ -225,7 +239,7 @@ class OpenGL
 		appliedState = state.dup();
 	}
 
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glAlphaFunc.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glAlphaFunc.xml
 	void alphaFunc(uint func, float value)
 	{	state.alphaFunc.func = func;
 		state.alphaFunc.value = value;
@@ -268,7 +282,7 @@ class OpenGL
 		}
 	}
 
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glClear.xml
 	void clear(uint mask)
 	{
 		applyState(); /// TODO: only need to apply the color state.
@@ -278,13 +292,13 @@ class OpenGL
 		}
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glColor.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glColor.xml
 	void color(float[] value)
 	{	int l = value.length > 4 ? 4 : value.length;
 		state.color[0..l] = value[0..l];		
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glCullFace.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glCullFace.xml
 	void cullFace(uint mode)
 	{	state.cullFace = mode;		
 	}
@@ -305,27 +319,27 @@ class OpenGL
 		}
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glDepthMask.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glDepthMask.xml
 	void depthMask(bool flag)
 	{	state.depthMask = flag;
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glDisable.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glDisable.xml
 	void disable(uint cap)
 	{	state.enable[cap] = false;		
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glDisableClientState.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glDisableClientState.xml
 	void disableClientState(uint cap)
 	{	state.enableClientState[cap] = false;		
 	}
 		
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glEnable.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glEnable.xml
 	void enable(uint cap)
 	{	state.enable[cap] = true;		
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glEnableClientState.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glEnableClientState.xml
 	void enableClientState(uint cap)
 	{	state.enableClientState[cap] = true;		
 	}
@@ -359,46 +373,60 @@ class OpenGL
 	{	state.lights[light][pname].v[0..$] = param[0..$];
 	}
 		
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glLineWidth.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glLineWidth.xml
 	void lineWidth(float width)
 	{	state.lineWidth = width;		
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glLoadIdentity.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glLoadIdentity.xml
 	void loadIdentity()
-	{	state.matrix = Matrix();	
+	{	state.matrix = Matrix();
 	}
-	void loadIdentityTexture() /// ditto
+	void loadTextureIdentity() /// ditto
 	{	state.textureMatrix = Matrix();
 	}
+	void loadProjectionIdentity() /// ditto
+	{	state.projectionMatrix = Matrix();
+	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glLoadMatrix.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glLoadMatrix.xml
 	void loadMatrix(Matrix m)
 	{	state.matrix = m;
 	}
 	void loadTextureMatrix(Matrix m) /// ditto
 	{	state.textureMatrix = m;		
 	}
+	void loadProjectionMatrix(Matrix m) /// ditto
+	{	state.projectionMatrix = m;		
+	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glMaterial.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glMaterial.xml
 	void material(uint face, uint pname, float[] param)
 	{	state.materials[face][pname] = param;
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glMultMatrix.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glMultMatrix.xml
 	void multMatrix(Matrix m)
 	{	state.matrix *= m;
 	}
 	void multTextureMatrix(Matrix m) /// ditto
 	{	state.textureMatrix *= m;		
 	}
+	void multProjectionMatrix(Matrix m) /// ditto
+	{	state.projectionMatrix *= m;		
+	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glPointSize.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glOrtho.xml
+	void ortho(float left, float right, float bottom, float top, float near, float far)
+	{	state.projectionMatrix = state.projectionMatrix * Matrix(left, right, bottom, top, near, far);		
+	}
+	
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glPointSize.xml
 	void pointSize(float size)
 	{	state.pointSize = size;		
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glPolygonMode.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glPolygonMode.xml
 	void polygonMode(uint face, uint mode)
 	{	if (face==GL_FRONT || face==GL_FRONT_AND_BACK)
 			state.polygonMode.front = mode;
@@ -415,7 +443,12 @@ class OpenGL
 	void popTextureMatrix() /// ditto
 	{	assert(state.textureMatrixStack.length);
 		state.textureMatrix = state.textureMatrixStack[$-1];
-	state.textureMatrixStack.length = state.textureMatrixStack.length-1;
+		state.textureMatrixStack.length = state.textureMatrixStack.length-1;
+	}
+	void popProjectionMatrix() /// ditto
+	{	assert(state.projectionMatrixStack.length);
+		state.projectionMatrix = state.textureMatrixStack[$-1];
+		state.projectionMatrixStack.length = state.textureMatrixStack.length-1;
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glPushMatrix.xml
@@ -424,6 +457,9 @@ class OpenGL
 	}
 	void pushTextureMatrix() /// ditto
 	{	state.textureMatrixStack ~= state.textureMatrix;
+	}
+	void pushProjectionMatrix() /// ditto
+	{	state.projectionMatrixStack ~= state.projectionMatrix;
 	}
 	unittest
 	{	OpenGL context = OpenGL.getContext();
@@ -452,6 +488,9 @@ class OpenGL
 	void rotateTexture(float angle, float x, float y, float z) /// ditto
 	{	state.textureMatrix = state.textureMatrix.rotate(Vec3f(angle, x, y, z));
 	}
+	void rotateProjection(float angle, float x, float y, float z) /// ditto
+	{	state.projectionMatrix = state.projectionMatrix.rotate(Vec3f(angle, x, y, z));
+	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glScale.xml
 	void scale(float x, float y, float z)
@@ -464,13 +503,18 @@ class OpenGL
 		state.textureMatrix.v[5] *= y;
 		state.textureMatrix.v[9] *= z;
 	}
+	void scaleProjection(float x, float y, float z) /// ditto
+	{	state.projectionMatrix.v[0] *= x;
+		state.projectionMatrix.v[5] *= y;
+		state.projectionMatrix.v[9] *= z;
+	}
 	
-	//// See: http://www.opengl.org/sdk/docs/man/xhtml/glTexEnv.xml
+	//// See: http://opengl.org/sdk/docs/man/xhtml/glTexEnv.xml
 	void texEnv(uint target, uint pname, int param)
 	{	state.texEnvi[target][pname] = param;
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
 	void texImage2D(uint target, int level, int internalFormat, int width, int height, int border, uint format, uint type, void[] data)
 	{	synchronized (openGLMutex)
 		{	applyState();
@@ -479,7 +523,7 @@ class OpenGL
 		}
 	}
 	
-	/// See: http://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glTexParameter.xml
 	void texParameter(uint target, uint pname, int param)
 	{	state.texParameteri[target][pname] = param;
 	}
@@ -495,13 +539,17 @@ class OpenGL
 		state.textureMatrix.v[13] += y;
 		state.textureMatrix.v[14] += z;
 	}
-
+	void translateProjection(float x, float y, float z) /// ditto
+	{	state.projectionMatrix.v[12] += x;
+		state.projectionMatrix.v[13] += y;
+		state.projectionMatrix.v[14] += z;
+	}
 	
 	// Internal functions:
 	
 		
 	// Get the context for the current thread.
-	/*private*/ static OpenGL getContext()
+	private static OpenGL getContext()
 	{	
 		Thread thread = Thread.getThis();
 		if (!(thread in contexts))
@@ -561,9 +609,16 @@ class OpenGL
 				//checkError();
 			}
 			if (state.textureMatrix != appliedState.textureMatrix)
-			{	glMatrixMode(GL_TEXTURE);
+			{	glMatrixMode(GL_TEXTURE); 
 				glLoadMatrixf(cast(float*)state.textureMatrix.ptr);
-				glMatrixMode(GL_MODELVIEW);
+				glMatrixMode(GL_MODELVIEW); // This won't be needed once everything uses Graphics.
+				calls+= 3;
+				//checkError();
+			}
+			if (state.projectionMatrix != appliedState.projectionMatrix)
+			{	glMatrixMode(GL_PROJECTION); 
+				glLoadMatrixf(cast(float*)state.projectionMatrix.ptr);
+				glMatrixMode(GL_MODELVIEW); // This won't be needed once everything uses Graphics.
 				calls+= 3;
 				//checkError();
 			}

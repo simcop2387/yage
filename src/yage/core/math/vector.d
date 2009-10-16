@@ -15,7 +15,7 @@ import yage.core.math.quatrn;
 
 /**
  * This is a template to create a vector of any type with any number of elements.
- * Use Vec.v[0..n] to access the vector's elements directly, or a-d to access
+ * Use Vec.v[0..n] to access the vector's elements directly, or x,y,z,w to access
  * elements of vector's of size less than or equal to four.
  * Example:
  * --------------------------------
@@ -23,7 +23,7 @@ import yage.core.math.quatrn;
  * --------------------------------
  * TODO: Convert looping code to static if's to improve performance.
  */
-struct Vec(int S, T, int D=1)
+struct Vec(int S, T, int D=0)
 {
 	alias Vec!(S, T) VST;
 	static const byte components = S;

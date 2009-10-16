@@ -442,7 +442,7 @@ struct Render
 			Graphics.pushState();			
 			
 			RenderStatistics result;
-			current_camera = camera;
+			
 			if (!scene)
 				scene = camera.getScene();
 			
@@ -468,15 +468,16 @@ struct Render
 				Graphics.clear(GL_DEPTH_BUFFER_BIT);
 				Graphics.popMatrix();
 			}
+			
 			// Apply scene state and clear background if necessary.
 			Bind.scene(scene);
 			if (!scene.skyBox)
-			{	if (!cleared)
-				{	Graphics.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			{	if (!cleared) // reset everyting the first time.
+				{	Graphics.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 					cleared = true;
 				}
 				else
-					Graphics.clear(GL_DEPTH_BUFFER_BIT);
+					Graphics.clear(GL_DEPTH_BUFFER_BIT); // reset depth buffer for drawing after a skybox
 			}
 			
 			Graphics.applyState();
@@ -494,7 +495,7 @@ struct Render
 		auto result = recurse(camera, target, scene);
 		Bind.renderTargetRelease();
 		cleanup();		
-		return result;
+		return RenderStatistics();;
 	}
 	
 	// Render a sprite
@@ -516,20 +517,29 @@ struct Render
 		// Setup the viewport in orthogonal mode,
 		// with dimensions 0..width, 0..height
 		// with 0,0 being at the top left.
-		glViewport(0, 0, target.getWidth(), target.getHeight());
+		glViewport(0, 0, target.getWidth(), target.getHeight()); // [below] ortho perspective, near and far are arbitrary.
+		
+		/*
+		if (cast(Window)target)
+			(cast(Window)target).setViewport(Vec2i(), Vec2i(target.getWidth(), target.getHeight()));
+		Graphics.loadProjectionMatrix(Matrix(0, target.getWidth(), target.getHeight(), 0, -32768, 32768)); 
+		Graphics.loadIdentity();
+		*/
+
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, target.getWidth(), target.getHeight(), 0, -1000, 1000);
+		glOrtho(0, target.getWidth(), target.getHeight(), 0, -32768, 32768);
 		glMatrixMode(GL_MODELVIEW);
-
 		Graphics.loadIdentity();
 		
-		Graphics.disable(GL_DEPTH_TEST);
+		
+		
+		Graphics.disable(GL_DEPTH_TEST); // TODO: something is re-enabling this further along.
 		Graphics.disable(GL_LIGHTING);
 			
 		//This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
 		if (!cleared)
-		{	Graphics.clear(GL_COLOR_BUFFER_BIT);
+		{	Graphics.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // TODO: Clearing depth buffer should be un-necessary
 			cleared = true;
 		}
 		
@@ -539,9 +549,8 @@ struct Render
 		// We increment the stencil buffer with each stencil write.
 		// This allows two partially overlapping clip regions to only allow writes in their intersection.
 		ubyte stencil=1;
-		glClear(GL_STENCIL_BUFFER_BIT); // TODO: only clear the first time necessary.
 		
-		// Function to draw surface and recurse through childrne.
+		// Function to draw surface and recurse through children.
 		void draw(Surface surface) {
 			Graphics.pushMatrix();
 			
@@ -554,7 +563,7 @@ struct Render
 			
 			Render.geometry(surface.getGeometry());
 			
-			
+			// Apply Stencil if overflow is used.  TODO: Convert to using Graphics.
 			if (surface.style.overflowX == Style.Overflow.HIDDEN || surface.style.overflowY == Style.Overflow.HIDDEN)
 			{	
 				glColorMask(0, 0, 0, 0); // Disable drawing to other buffers
@@ -631,7 +640,7 @@ private struct Bind
 	static IRenderTarget currentRenderTarget;
 	
 	static void camera(CameraNode camera, int width, int height)
-	{
+	{	Render.current_camera = camera;
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		float aspect = camera.aspect ? camera.aspect : width/cast(float)height;
@@ -868,15 +877,6 @@ private struct Bind
 		if (layer.program != 0)
 		{	glUseProgramObjectARB(0);
 			layer.current_program = 0;
-
-			// Attributes
-			/*
-			glDisableVertexAttribArrayARB(0);
-			glDisableVertexAttribArrayARB(1);
-			glDisableVertexAttribArrayARB(2);
-			glDisableVertexAttribArrayARB(3);
-			glDisableVertexAttribArrayARB(4);
-			*/
 		}
 	}
 	
