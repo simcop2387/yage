@@ -574,7 +574,6 @@ struct Render
 					   stencil--;
 					
 					glColorMask(0, 0, 0, 0); // Disable drawing to other buffers
-					glDepthMask(0);
 					glStencilMask(uint.max); // write everything to the stencil buffer
 
 					glStencilFunc(GL_ALWAYS, 0, 0);// Make the stencil test always pass, increment existing value
@@ -599,7 +598,6 @@ struct Render
 						glPopMatrix();
 					
 				    glColorMask(1, 1, 1, 1); // Enable drawing to other buffers and disable stencil writes
-				    glDepthMask(1);
 				    glStencilMask(0); // write nothing to the stencil buffer.
 				    
 				    glStencilFunc(GL_EQUAL, stencil, uint.max); //Draw only where stencil buffer = current stencil level (broken?)

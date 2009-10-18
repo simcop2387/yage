@@ -79,24 +79,6 @@ private struct Float4
  * It is currently unfinished and has bugs. */
 private struct OpenGLState
 {
-	union {
-		struct {
-			Matrix matrix;	
-			Matrix textureMatrix;
-			Matrix projectionMatrix;
-		}
-		Matrix[3] matrices;
-	}
-	
-	union {
-		struct {	
-			Matrix[] matrixStack;
-			Matrix[] textureMatrixStack;
-			Matrix[] projectionMatrixStack;
-		}
-		Matrix[][3] matrixStacks;	
-	}
-
 	FastMap!(uint, bool) enable;		
 	FastMap!(uint, bool) enableClientState; // used with glEnableClientSideState
 	
@@ -138,10 +120,7 @@ private struct OpenGLState
 	// Constructor
 	static OpenGLState opCall()
 	{	OpenGLState result;
-		result.matrix = Matrix();
-		result.textureMatrix = Matrix();
-		//result.projectionMatrix = Matrix();
-		
+	
 		// Set enable options to their defaults.
 		scope enableCaps = 
 			[GL_ALPHA_TEST, GL_AUTO_NORMAL, GL_BLEND, GL_CLIP_PLANE0, GL_CLIP_PLANE1, GL_CLIP_PLANE2, GL_CLIP_PLANE3, 
@@ -202,8 +181,8 @@ private struct OpenGLState
 		result.textures = .dup(result.textures);
 		result.lights[0..$] = result.lights.dup[0..$];
 		
-		for (int i=0; i<matrixStacks.length; i++)
-			result.matrixStacks[i] = result.matrixStacks[i].dup;
+		//for (int i=0; i<matrixStacks.length; i++)
+		//	result.matrixStacks[i] = result.matrixStacks[i].dup;
 		return result;
 	}
 	
@@ -223,6 +202,33 @@ class OpenGL
 	OpenGLState state;			// current modified state
 	OpenGLState appliedState;	// last state that was applied.
 	OpenGLState[] states;		// stack of states
+	
+	union {
+		struct {
+			Matrix matrix;	
+			Matrix textureMatrix;
+			Matrix projectionMatrix;
+		}
+		Matrix[3] matrices;
+	}
+	
+	union {
+		struct {
+			Matrix appliedMatrix;	
+			Matrix appliedTextureMatrix;
+			Matrix appliedProjectionMatrix;
+		}
+		Matrix[3] appliedMatrices;
+	}
+	
+	union {
+		struct {	
+			Matrix[] matrixStack;
+			Matrix[] textureMatrixStack;
+			Matrix[] projectionMatrixStack;
+		}
+		Matrix[][3] matrixStacks;	
+	}
 	
 	static Object openGLMutex;
 	static Object contextMutex;
@@ -380,24 +386,24 @@ class OpenGL
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glLoadIdentity.xml
 	void loadIdentity()
-	{	state.matrix = Matrix();
+	{	matrix = Matrix();
 	}
 	void loadTextureIdentity() /// ditto
-	{	state.textureMatrix = Matrix();
+	{	textureMatrix = Matrix();
 	}
 	void loadProjectionIdentity() /// ditto
-	{	state.projectionMatrix = Matrix();
+	{	projectionMatrix = Matrix();
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glLoadMatrix.xml
 	void loadMatrix(Matrix m)
-	{	state.matrix = m;
+	{	matrix = m;
 	}
 	void loadTextureMatrix(Matrix m) /// ditto
-	{	state.textureMatrix = m;		
+	{	textureMatrix = m;		
 	}
 	void loadProjectionMatrix(Matrix m) /// ditto
-	{	state.projectionMatrix = m;		
+	{	projectionMatrix = m;		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glMaterial.xml
@@ -407,18 +413,18 @@ class OpenGL
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glMultMatrix.xml
 	void multMatrix(Matrix m)
-	{	state.matrix *= m;
+	{	matrix *= m;
 	}
 	void multTextureMatrix(Matrix m) /// ditto
-	{	state.textureMatrix *= m;		
+	{	textureMatrix *= m;		
 	}
 	void multProjectionMatrix(Matrix m) /// ditto
-	{	state.projectionMatrix *= m;		
+	{	projectionMatrix *= m;		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glOrtho.xml
 	void ortho(float left, float right, float bottom, float top, float near, float far)
-	{	state.projectionMatrix = state.projectionMatrix * Matrix(left, right, bottom, top, near, far);		
+	{	projectionMatrix = projectionMatrix * Matrix(left, right, bottom, top, near, far);		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glPointSize.xml
@@ -436,37 +442,37 @@ class OpenGL
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glPopMatrix.xml
 	void popMatrix()
-	{	assert(state.matrixStack.length);
-		state.matrix = state.matrixStack[$-1];
-		state.matrixStack.length = state.matrixStack.length-1;
+	{	assert(matrixStack.length);
+		matrix = matrixStack[$-1];
+		matrixStack.length = matrixStack.length-1;
 	}
 	void popTextureMatrix() /// ditto
-	{	assert(state.textureMatrixStack.length);
-		state.textureMatrix = state.textureMatrixStack[$-1];
-		state.textureMatrixStack.length = state.textureMatrixStack.length-1;
+	{	assert(textureMatrixStack.length);
+		textureMatrix = textureMatrixStack[$-1];
+		textureMatrixStack.length = textureMatrixStack.length-1;
 	}
 	void popProjectionMatrix() /// ditto
-	{	assert(state.projectionMatrixStack.length);
-		state.projectionMatrix = state.textureMatrixStack[$-1];
-		state.projectionMatrixStack.length = state.textureMatrixStack.length-1;
+	{	assert(projectionMatrixStack.length);
+		projectionMatrix = textureMatrixStack[$-1];
+		projectionMatrixStack.length = textureMatrixStack.length-1;
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glPushMatrix.xml
 	void pushMatrix()
-	{	state.matrixStack ~= state.matrix;
+	{	matrixStack ~= matrix;
 	}
 	void pushTextureMatrix() /// ditto
-	{	state.textureMatrixStack ~= state.textureMatrix;
+	{	textureMatrixStack ~= textureMatrix;
 	}
 	void pushProjectionMatrix() /// ditto
-	{	state.projectionMatrixStack ~= state.projectionMatrix;
+	{	projectionMatrixStack ~= projectionMatrix;
 	}
 	unittest
 	{	OpenGL context = OpenGL.getContext();
-		int l = context.state.matrixStack.length;
+		int l = context.matrixStack.length;
 		context.pushMatrix();
 		context.popMatrix();
-		assert (l==context.state.matrixStack.length);
+		assert (l==context.matrixStack.length);
 	}
 
 	/// Pop all OpenGL state from the stack. This is equivalent of glPopAttrib() and glPopClientAttrib()
@@ -483,30 +489,30 @@ class OpenGL
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glRotate.xml
 	void rotate(float angle, float x, float y, float z)
-	{	state.matrix = state.matrix.rotate(Vec3f(angle, x, y, z));
+	{	matrix = matrix.rotate(Vec3f(angle, x, y, z));
 	}
 	void rotateTexture(float angle, float x, float y, float z) /// ditto
-	{	state.textureMatrix = state.textureMatrix.rotate(Vec3f(angle, x, y, z));
+	{	textureMatrix = textureMatrix.rotate(Vec3f(angle, x, y, z));
 	}
 	void rotateProjection(float angle, float x, float y, float z) /// ditto
-	{	state.projectionMatrix = state.projectionMatrix.rotate(Vec3f(angle, x, y, z));
+	{	projectionMatrix = projectionMatrix.rotate(Vec3f(angle, x, y, z));
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glScale.xml
 	void scale(float x, float y, float z)
-	{	state.matrix.v[0] *= x;
-		state.matrix.v[5] *= y;
-		state.matrix.v[9] *= z;
+	{	matrix.v[0] *= x;
+		matrix.v[5] *= y;
+		matrix.v[9] *= z;
 	}
 	void scaleTexture(float x, float y, float z) /// ditto
-	{	state.textureMatrix.v[0] *= x;
-		state.textureMatrix.v[5] *= y;
-		state.textureMatrix.v[9] *= z;
+	{	textureMatrix.v[0] *= x;
+		textureMatrix.v[5] *= y;
+		textureMatrix.v[9] *= z;
 	}
 	void scaleProjection(float x, float y, float z) /// ditto
-	{	state.projectionMatrix.v[0] *= x;
-		state.projectionMatrix.v[5] *= y;
-		state.projectionMatrix.v[9] *= z;
+	{	projectionMatrix.v[0] *= x;
+		projectionMatrix.v[5] *= y;
+		projectionMatrix.v[9] *= z;
 	}
 	
 	//// See: http://opengl.org/sdk/docs/man/xhtml/glTexEnv.xml
@@ -530,19 +536,19 @@ class OpenGL
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glTranslate.xml
 	void translate(float x, float y, float z)
-	{	state.matrix.v[12] += x;
-		state.matrix.v[13] += y;
-		state.matrix.v[14] += z;
+	{	matrix.v[12] += x;
+		matrix.v[13] += y;
+		matrix.v[14] += z;
 	}
 	void translateTexture(float x, float y, float z) /// ditto
-	{	state.textureMatrix.v[12] += x;
-		state.textureMatrix.v[13] += y;
-		state.textureMatrix.v[14] += z;
+	{	textureMatrix.v[12] += x;
+		textureMatrix.v[13] += y;
+		textureMatrix.v[14] += z;
 	}
 	void translateProjection(float x, float y, float z) /// ditto
-	{	state.projectionMatrix.v[12] += x;
-		state.projectionMatrix.v[13] += y;
-		state.projectionMatrix.v[14] += z;
+	{	projectionMatrix.v[12] += x;
+		projectionMatrix.v[13] += y;
+		projectionMatrix.v[14] += z;
 	}
 	
 	// Internal functions:
@@ -603,22 +609,25 @@ class OpenGL
 			}
 			
 			// Matrices
-			if (state.matrix != appliedState.matrix)
-			{	glLoadMatrixf(cast(float*)state.matrix.ptr);
+			if (matrix != appliedMatrix)
+			{	glLoadMatrixf(cast(float*)matrix.ptr);
+				appliedMatrix = matrix;
 				calls++;
 				//checkError();
 			}
-			if (state.textureMatrix != appliedState.textureMatrix)
+			if (textureMatrix != appliedTextureMatrix)
 			{	glMatrixMode(GL_TEXTURE); 
-				glLoadMatrixf(cast(float*)state.textureMatrix.ptr);
+				glLoadMatrixf(cast(float*)textureMatrix.ptr);
 				glMatrixMode(GL_MODELVIEW); // This won't be needed once everything uses Graphics.
+				appliedTextureMatrix = textureMatrix;
 				calls+= 3;
 				//checkError();
 			}
-			if (state.projectionMatrix != appliedState.projectionMatrix)
+			if (projectionMatrix != appliedProjectionMatrix)
 			{	glMatrixMode(GL_PROJECTION); 
-				glLoadMatrixf(cast(float*)state.projectionMatrix.ptr);
+				glLoadMatrixf(cast(float*)projectionMatrix.ptr);
 				glMatrixMode(GL_MODELVIEW); // This won't be needed once everything uses Graphics.
+				appliedProjectionMatrix = projectionMatrix;
 				calls+= 3;
 				//checkError();
 			}
