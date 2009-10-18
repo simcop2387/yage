@@ -1,7 +1,7 @@
 /**
  * Copyright:  (c) 2005-2009 Eric Poggel
- * Authors:    Eric Poggel
- * License:    <a href="lgpl3.txt">LGPL v3</a>
+ * Authors:	   Eric Poggel
+ * License:	   <a href="lgpl3.txt">LGPL v3</a>
  */
 
 module yage.system.graphics.render;
@@ -274,7 +274,7 @@ struct Render
 							at.node 	= node;
 							at.model	= model;
 							at.mesh		= mesh;
-							at.matl     = matl;
+							at.matl	 = matl;
 							at.triangle = index;						
 							
 							alpha ~= at;
@@ -348,7 +348,7 @@ struct Render
 	/**
 	 * Render noes to the current rendering target.
 	 * Params:
-	 *     nodes = Array of nodes to render.
+	 *	 nodes = Array of nodes to render.
 	 * Returns: A struct with statistics about this rendering call. */
 	static RenderStatistics nodes(VisibleNode[] nodes)
 	{
@@ -428,11 +428,11 @@ struct Render
 	 * Render a camera's view to target.
 	 * The previous contents of target are first cleared.
 	 * Params:
-	 *     camera = Render what the camera sees.
-	 *     target = Render to this target.  TODO: Convert to IRenderTarget.
-	 *     scene = Used internally for rendering skyboxes recursively.
+	 *	 camera = Render what the camera sees.
+	 *	 target = Render to this target.  TODO: Convert to IRenderTarget.
+	 *	 scene = Used internally for rendering skyboxes recursively.
 	 * Returns:
-	 *     A struct containing rendering statistics */
+	 *	 A struct containing rendering statistics */
 	static RenderStatistics scene(CameraNode camera, IRenderTarget target, Scene scene=null)
 	{		
 		Bind.renderTarget(target);
@@ -570,38 +570,39 @@ struct Render
 				{	
 					if (on)
 					   stencil++;
-				   else
+					else
 					   stencil--;
+						
+					Graphics.pushState();					
+					Graphics.colorMask(0, 0, 0, 0); // Disable drawing to other buffers
+					Graphics.stencilMask(uint.max); // write everything to the stencil buffer
+					Graphics.stencilFunc(GL_ALWAYS, 0, 0);// Make the stencil test always pass, increment existing value
+					Graphics.stencilOp(GL_KEEP, GL_KEEP, on ? GL_INCR : GL_DECR);
 					
-					glColorMask(0, 0, 0, 0); // Disable drawing to other buffers
-					glStencilMask(uint.max); // write everything to the stencil buffer
-
-					glStencilFunc(GL_ALWAYS, 0, 0);// Make the stencil test always pass, increment existing value
-					glStencilOp(GL_KEEP, GL_KEEP, on ? GL_INCR : GL_DECR);
-
 					// Allow overflowing in only one direction by scaling the stencil in that direction
 					if (surface.style.overflowX != Style.Overflow.HIDDEN)
-					{	glPushMatrix();
-						glTranslatef(-surface.offsetAbsolute.x, 0, 0);
-						glScalef(Window.getInstance().getWidth() / surface.outerWidth(), 1, 1);
+					{	Graphics.pushMatrix();
+						Graphics.translate(-surface.offsetAbsolute.x, 0, 0);
+						Graphics.scale(Window.getInstance().getWidth() / surface.outerWidth(), 1, 1);
 						
 					}
 					else if (surface.style.overflowY != Style.Overflow.HIDDEN)
-					{	glPushMatrix();
-						glTranslatef(0, -surface.offsetAbsolute.y, 0);
-						glScalef(1, Window.getInstance().getHeight() / surface.outerHeight(), 1);						
+					{	Graphics.pushMatrix();
+						Graphics.translate(0, -surface.offsetAbsolute.y, 0);
+						Graphics.scale(1, Window.getInstance().getHeight() / surface.outerHeight(), 1);						
 					}
-					
+										
+					Graphics.applyState(); // temporary
 					Render.geometry(surface.getGeometry().getClipGeometry());
 					
 					if (surface.style.overflowX != Style.Overflow.HIDDEN || surface.style.overflowY != Style.Overflow.HIDDEN)
-						glPopMatrix();
+						Graphics.popMatrix();
+
+					Graphics.popState();
 					
-				    glColorMask(1, 1, 1, 1); // Enable drawing to other buffers and disable stencil writes
-				    glStencilMask(0); // write nothing to the stencil buffer.
-				    
-				    glStencilFunc(GL_EQUAL, stencil, uint.max); //Draw only where stencil buffer = current stencil level (broken?)
-				    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+					Graphics.stencilFunc(GL_EQUAL, stencil, uint.max); //Draw only where stencil buffer = current stencil level (broken?)
+						
+					Graphics.applyState(); // temporary
 				}
 			}
 			
@@ -1036,8 +1037,8 @@ private struct Bind
 		
 		Image image = gpuTexture.image;
 		
-		bool temp = !gpuTexture.getId() || image;
-		if (temp)
+		bool reload = !gpuTexture.getId() || image;
+		if (reload)
 		{	
 			if (!gpuTexture.id)
 			{	glGenTextures(1, &gpuTexture.id);
@@ -1093,7 +1094,7 @@ private struct Bind
 					if (new_width != gpuTexture.width || new_height != gpuTexture.height)
 						image = image.resize(min(new_width, max), min(new_height, max));
 				}
-				    
+					
 				// Build mipmaps (doing it ourself is about 20% faster than gluBuild2DMipmaps,
 				int level = 0; //  but image.resize can be optimized further.
 				do {
@@ -1102,9 +1103,9 @@ private struct Bind
 					level ++;							
 				} while (gpuTexture.mipmap && image.getWidth() >= 4 && image.getHeight() >= 4)
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level-1);
-			    
 				
-			    gpuTexture.flipped = false;
+				
+				gpuTexture.flipped = false;
 			} else
 				gpuTexture.format = gpuTexture.width = gpuTexture.height = 0;
 			
@@ -1190,7 +1191,7 @@ private struct Bind
 	/*
 	 * Bind (and if necessary upload to video memory) a vertex buffer
 	 * Params:
-	 *     type = A vertex buffer type constant defined in Geometry or Mesh. */
+	 *   type = A vertex buffer type constant defined in Geometry or Mesh. */
 	static void vertexBuffer(char[] type, IVertexBuffer vb)
 	{	
 		int vbo = Probe.feature(Probe.Feature.VBO);

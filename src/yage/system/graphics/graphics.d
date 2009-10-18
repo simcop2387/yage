@@ -87,7 +87,7 @@ private struct OpenGLState
 	float[][uint][uint] materials;
 	int[uint][uint] texEnvi;
 	//float[uint][uint] texEnvf;
-	int[uint][uint] texParameteri;
+	int[uint][uint] texParameteri; // TODO: store values per-texture, do away with associative arrays?
 	//float[uint][uint] texParameterf;
 	uint[uint][uint] textures;
 	
@@ -105,6 +105,7 @@ private struct OpenGLState
 	BlendFunc blendFunc;
 	
 	float[4] color = [1f, 1, 1, 1];
+	bool[4] colorMask = [true, true, true, true];
 	uint cullFace = GL_BACK;	
 	bool depthMask = true;
 	
@@ -116,6 +117,10 @@ private struct OpenGLState
 		uint back = GL_FILL;
 	}
 	PolygonMode polygonMode;
+	
+	uint stencilMask = uint.max;
+	uint[3] stencilFunc = [GL_ALWAYS, 0, uint.max];
+	uint[3] stencilOp = [GL_KEEP, GL_KEEP, GL_KEEP];
 
 	// Constructor
 	static OpenGLState opCall()
@@ -179,10 +184,7 @@ private struct OpenGLState
 		result.texEnvi = .dup(result.texEnvi, true);
 		result.texParameteri = .dup(result.texParameteri, true);
 		result.textures = .dup(result.textures);
-		result.lights[0..$] = result.lights.dup[0..$];
-		
-		//for (int i=0; i<matrixStacks.length; i++)
-		//	result.matrixStacks[i] = result.matrixStacks[i].dup;
+		result.lights[0..$] = result.lights.dup[0..$];		
 		return result;
 	}
 	
@@ -233,6 +235,8 @@ class OpenGL
 	static Object openGLMutex;
 	static Object contextMutex;
 	static OpenGL[Thread] contexts; // immutable, copied on write
+	
+	
 	
 	static this()
 	{	contextMutex = new Object();
@@ -304,6 +308,14 @@ class OpenGL
 		state.color[0..l] = value[0..l];		
 	}
 	
+	/// See: http://opengl.org/sdk/docs/man/xhtml/glColor.xml
+	void colorMask(bool r, bool g, bool b, bool a)
+	{	state.colorMask[0] = r;
+		state.colorMask[1] = r;	
+		state.colorMask[2] = r;	
+		state.colorMask[3] = r;	
+	}
+	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glCullFace.xml
 	void cullFace(uint mode)
 	{	state.cullFace = mode;		
@@ -370,7 +382,7 @@ class OpenGL
 		return buffer;
 	}
 	
-	// broken
+	// broken? untested recently
 	void light(ubyte light, uint pname, float param)
 	{	state.lights[light][pname] = Float4(param);
 		assert(state.lights[light][pname].v[0] == param);
@@ -515,6 +527,22 @@ class OpenGL
 		projectionMatrix.v[9] *= z;
 	}
 	
+	void stencilMask(uint mask)
+	{	state.stencilMask = mask;		
+	}
+	
+	void stencilFunc(uint sfail,  uint dpfail, uint dppass)
+	{	state.stencilFunc[0] = sfail;
+		state.stencilFunc[1] = dpfail;
+		state.stencilFunc[2] = dppass;
+	}
+	
+	void stencilOp(uint sfail, uint dpfail, uint dppass)
+	{	state.stencilOp[0] = sfail;
+		state.stencilOp[1] = dpfail;
+		state.stencilOp[2] = dppass;
+	}
+	
 	//// See: http://opengl.org/sdk/docs/man/xhtml/glTexEnv.xml
 	void texEnv(uint target, uint pname, int param)
 	{	state.texEnvi[target][pname] = param;
@@ -587,7 +615,7 @@ class OpenGL
 			//	st.rehash();
 			
 			
-			// Enabled states
+			// glEnable / glDisable			
 			{
 				scope keys = state.enable.keys;
 				scope values = state.enable.values;
@@ -632,9 +660,6 @@ class OpenGL
 				//checkError();
 			}
 			
-			//if (st.enable[GL_TEXTURE_2D])
-			//	calls+= applyTextures();
-			
 			calls+= applyLights();
 			
 			/*
@@ -650,6 +675,12 @@ class OpenGL
 			
 			if (state.color != appliedState.color)
 			{	glColor4fv(state.color.ptr);
+				calls++;
+				//checkError();
+			}
+			
+			if (state.colorMask != appliedState.colorMask)
+			{	glColorMask(state.colorMask[0], state.colorMask[1], state.colorMask[2], state.colorMask[3]);
 				calls++;
 				//checkError();
 			}
@@ -688,6 +719,26 @@ class OpenGL
 			{	glPointSize(state.pointSize);
 				calls++;
 				//checkError();
+			}
+
+			if (state.stencilFunc[] != appliedState.stencilFunc[])
+			{	glStencilFunc(state.stencilFunc[0], state.stencilFunc[1], state.stencilFunc[2]);
+				calls++;
+				checkError();
+			}
+			
+			
+			if (state.stencilMask != appliedState.stencilMask)
+			{	glStencilMask(state.stencilMask);
+				calls++;
+				checkError();
+			}
+			
+			
+			if (state.stencilOp[] != appliedState.stencilOp[])
+			{	glStencilOp(state.stencilOp[0], state.stencilOp[1], state.stencilOp[2]);
+				calls++;
+				checkError();
 			}
 			
 			if (calls)
