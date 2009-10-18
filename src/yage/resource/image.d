@@ -433,7 +433,7 @@ class Image : Resource
 		return result;
 	}
 	
-	// Unfinished and untested.  TODO: modify this to return a new image in the given format.
+	// Unfinished and untested.  TODO: modify this to return a new image in the given format, allow more than one byte per channel
 	Image setFormat(int channels)
 	{	if (channels == this.channels)
 			return this;
@@ -523,3 +523,78 @@ class Image : Resource
 		return result;
 	}
 }
+
+
+interface IImage
+{
+	ubyte[] getBytes();
+	
+	Image2!(T2, C2) convert(T2: real, int C2)();
+}
+
+// Experimental, supporting templated arguments for component type and number of channels
+class Image2(T : real, int C) : IImage
+{
+	alias Image2!(T, C) ImageTC;
+	
+	int width, height;
+	T[C][] data;
+	
+	protected this(){}
+	
+	this(int width, int height)
+	{	data.length = width*height;
+		this.width = width;
+		this.height = height;
+	}
+	
+	this(T[C][] data, int width, int height=0)
+	{	if (!height)
+			height = data.length / width;
+		assert(data.length == width*height);
+		
+		this.data = data;
+		this.width = width;
+		this.height = height;		
+	}
+	
+	/*
+	 * Convert to a different image format. */
+	override Image2!(T2, C2) convert(T2: real, int C2)()
+	{
+		static if (T is T2 && C is C2) // no conversion necessary
+			return this;
+		
+		Image2!(T2, C2) result;
+		int minChannels = C<C2 ? C : C2;
+		
+		for (int i=0; i<data.length; i++)			
+		{	static if (C==1 && C2 > 1) // going from one channel to many, copy channel
+				result.data[i][0..$] = cast(T2)data[i][0];
+			else if (C2==1 && C > 1) // going from many channels to one, average channels
+			{	float average = data[i][0];
+				for (int c=1; c<C; c++)
+					average += data[i][c];
+				result.data[i][0] = cast(T2)(average/C);
+			}
+			else // copy channel for channel, ignoring missing
+				for (int c=0; c<minChannels; c++)
+					result.data[i][c] = cast(T2)data[i][c];
+		}
+	}
+	
+	ubyte[] getBytes()
+	{	return cast(ubyte[])data;		
+	}
+	
+	static if (is(T : ubyte)) // if T can be implicitly cast to ubyte
+	{
+		Image toOldImage()
+		{	return new Image(cast(ubyte[])data, C, width, height);
+		}
+	}
+}
+
+alias Image2!(ubyte, 4) Image4ub;
+alias Image2!(ubyte, 3) Image3ub;
+alias Image2!(ubyte, 1) Image1ub;

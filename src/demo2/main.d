@@ -11,6 +11,7 @@ module demo2.main;
 
 import tango.text.convert.Format;
 import tango.io.Stdout;
+import tango.io.device.File;
 import derelict.sdl.sdl;
 import yage.all;
 
@@ -48,8 +49,6 @@ int main()
 	view.onKeyDown = delegate void(Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
-		if (key == SDLK_c)
-			new GPUTexture("../res/fx/flare1.jpg"); // This proves that the LazyResource queue doesn't work yet!
 	};
 	view.onMouseDown = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		grabbed = !grabbed;
@@ -61,14 +60,15 @@ int main()
 	
 	// Lights
 	auto l1 = scene.addChild(new LightNode());
-	l1.setPosition(Vec3f(0, 300, -300));
-	
+	l1.setPosition(Vec3f(0, 300, -300));	
 
 	// For Testing
 	auto info = view.addChild(new Surface());
 	info.style.set("top: 40px; left: 40px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font-family: url('gui/font/Vera.ttf'); font-size: 14px; text-align: right; opacity: .8");
+		"font-family: url('gui/font/Vera.ttf'); font-size: 14px; text-align: right; opacity: .8; overflow: hidden");
+	info.style.overflowX = Style.Overflow.HIDDEN;
+	info.style.overflowY = Style.Overflow.HIDDEN;
 	
 	info.onMouseDown = delegate void(Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
@@ -87,8 +87,18 @@ int main()
 	info.onMouseOut = delegate void(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear2.png')");
 	};
-
-	info.style.transform = Matrix().scale(Vec3f(.5, .5, .5));
+	//info.style.transform = Matrix().scale(Vec3f(.5, .5, .5));
+	
+	auto clip = info.addChild(new Surface());
+	clip.style.set("width: 60px; height: 60px; background-color: black; top: -30px; left: -30px; overflow: hidden");
+	
+	auto clip2 = clip.addChild(new Surface());
+	clip2.style.set("width: 30px; height: 30px; background-color: blue; top: 15px; left: 45px");
+	
+	auto clip3 = info.addChild(new Surface());
+	clip3.style.set("width: 60px; height: 60px; background-color: orange; top: -30px; right: -30px");
+	
+	
 	
 	// Rendering / Input Loop
 	int fps = 0;
@@ -98,13 +108,14 @@ int main()
 		Input.processAndSendTo(view);
 		auto stats = Render.scene(camera, window);
 		Render.surface(view, window);
+
 		Render.complete(); // swap buffers
 		
 		// Print framerate
 		fps++;
-		info.style.transform = info.style.transform.move(Vec3f(-40, -40, 0));
-		info.style.transform *= Matrix().rotate(Vec3f(0, 0.0005, 0.0005));
-		info.style.transform = info.style.transform.move(Vec3f(40, 40, 0));
+		//info.style.transform = info.style.transform.move(Vec3f(-40, -40, 0));
+		//info.style.transform *= Matrix().rotate(Vec3f(0, 0.0005, 0.0005));
+		//info.style.transform = info.style.transform.move(Vec3f(40, 40, 0));
 		
 		
 		if (frame.tell()>=0.25f)

@@ -22,6 +22,7 @@ import yage.system.graphics.all;
 import yage.core.all;
 import yage.core.object2;
 import yage.core.math.vector;
+import yage.resource.image;
 import yage.scene.scene;
 import yage.system.system;
 
@@ -47,6 +48,11 @@ const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
  */
 class Window : IRenderTarget
 {
+	enum Buffer
+	{	COLOR,
+		DEPTH,
+		STENCIL
+	}
 	
 	protected SDL_Surface* sdlSurface;	
 	protected Vec2i	size; // size of the window
@@ -254,6 +260,39 @@ class Window : IRenderTarget
 		}
 	}
 
+	/**
+	 * Get an image from the Window's back-buffer (where image operations take place).
+	 * Params:
+	 *     buffer = Can be COLOR, DEPTH, or STENCIL to get the corresponding buffer.
+	 * Returns: Image1ub for the stencil buffer, Image1ui for the depth buffer, or Image3ub for the color buffer.
+	 * Example:
+	 * --------
+	 * IImage image = Window.getInstance().toImage(Window.Buffer.DEPTH);
+	 * ubyte[] data = image.convert!(ubyte, 1).getBytes();  // convert image from 32-bit grayscale to 8-bit grayscale
+	 * File file = new File("depth.raw", File.WriteCreate); // Photoshop can open raw files
+	 * file.write(image.convert!(ubyte, 1).getBytes());
+	 * file.close();
+	 * --------
+	 */
+	IImage toImage(Buffer buffer=Buffer.COLOR)
+	{
+		if (buffer==Buffer.STENCIL)		{
+			Image1ub result = new Image1ub(size.x, size.y);			
+			glReadPixels(0, 0, size.x, size.y, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, result.data.ptr);
+			return result;
+		}
+		else if (buffer==Buffer.DEPTH)
+		{	Image2!(int, 1) result = new Image2!(int, 1)(size.x, size.y);			
+			glReadPixels(0, 0, size.x, size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, result.data.ptr);
+			return result;
+		} else // color
+		{	Image3ub result = new Image3ub(size.x, size.y);			
+			glReadPixels(0, 0, size.x, size.y, GL_RGB, GL_UNSIGNED_BYTE, result.data.ptr);
+			return result;
+		}
+	}
+	
+	
 	/**
 	 * Returns: The singleton Window instance. */
 	static Window getInstance()

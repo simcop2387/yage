@@ -79,7 +79,7 @@ class Surface : Tree!(Surface)
 	public Vec4f border;		// pixel sizes of each border
 	protected Vec4f padding;		// pixel sizes of each padding	
 	
-	protected Vec2f offsetAbsolute;	// pixel distance of top left from the window's top left at 0, 0, an absolute offset
+	public Vec2f offsetAbsolute;	// pixel distance of top left from the window's top left at 0, 0, an absolute offset
 	
 	protected bool mouseIn; 		// used to track mouseover/mouseout
 	protected bool _grabbed;	
@@ -197,10 +197,12 @@ class Surface : Tree!(Surface)
 	/**
 	 * Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. */
 	void raise()
-	{	this.style.zIndex = amax(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex + 1;
+	{	if (parent)
+			style.zIndex = amax(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex + 1;
 	}
 	void lower() /// ditto
-	{	this.style.zIndex = amin(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex - 1;	
+	{	if (parent)
+			style.zIndex = amin(parent.children, (Surface s){return s.style.zIndex;}).style.zIndex - 1;	
 	}
 	
 	/**
@@ -314,7 +316,6 @@ class Surface : Tree!(Surface)
 		resize_dirty = false;
 	}
 
-	
 	/**
 	 * Give focus to this Surface.  Only one Surface can have focus at a time.
 	 * All keyboard/mouse events will be forwarded to the surface that has focus.

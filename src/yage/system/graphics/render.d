@@ -519,7 +519,7 @@ struct Render
 		// with 0,0 being at the top left.
 		glViewport(0, 0, target.getWidth(), target.getHeight()); // [below] ortho perspective, near and far are arbitrary.
 		
-		/*
+		/*// broken
 		if (cast(Window)target)
 			(cast(Window)target).setViewport(Vec2i(), Vec2i(target.getWidth(), target.getHeight()));
 		Graphics.loadProjectionMatrix(Matrix(0, target.getWidth(), target.getHeight(), 0, -32768, 32768)); 
@@ -548,7 +548,7 @@ struct Render
 		
 		// We increment the stencil buffer with each stencil write.
 		// This allows two partially overlapping clip regions to only allow writes in their intersection.
-		ubyte stencil=1;
+		ubyte stencil=0;
 		
 		// Function to draw surface and recurse through children.
 		void draw(Surface surface) {
@@ -563,46 +563,57 @@ struct Render
 			
 			Render.geometry(surface.getGeometry());
 			
-			// Apply Stencil if overflow is used.  TODO: Convert to using Graphics.
-			if (surface.style.overflowX == Style.Overflow.HIDDEN || surface.style.overflowY == Style.Overflow.HIDDEN)
-			{	
-				glColorMask(0, 0, 0, 0); // Disable drawing to other buffers
-				glDepthMask(0);
-				glStencilMask(0xff);
+			void doStencil(bool on)
+			{
+				// Apply Stencil if overflow is used.  TODO: Convert to using Graphics.
+				if (surface.style.overflowX == Style.Overflow.HIDDEN || surface.style.overflowY == Style.Overflow.HIDDEN)
+				{	
+					if (on)
+					   stencil++;
+				   else
+					   stencil--;
+					
+					glColorMask(0, 0, 0, 0); // Disable drawing to other buffers
+					glDepthMask(0);
+					glStencilMask(uint.max); // write everything to the stencil buffer
 
-				glStencilFunc(GL_ALWAYS, stencil, 0xff);			// Make the stencil test always pass, write 1
-				glStencilOp(GL_KEEP, GL_KEEP, GL_INCR_WRAP);	//Stencil & Depth test passes => replace existing value
+					glStencilFunc(GL_ALWAYS, 0, 0);// Make the stencil test always pass, increment existing value
+					glStencilOp(GL_KEEP, GL_KEEP, on ? GL_INCR : GL_DECR);
 
-				// Allow overflowing in only one direction by scaling the stencil in that direction
-				if (surface.style.overflowX != Style.Overflow.HIDDEN)
-				{	glPushMatrix();
-					glScalef(Window.getInstance().getWidth() / surface.outerWidth(), 1, 1);
-					glTranslatef(-surface.border.left-surface.outerWidth()/2, 0, 0);
+					// Allow overflowing in only one direction by scaling the stencil in that direction
+					if (surface.style.overflowX != Style.Overflow.HIDDEN)
+					{	glPushMatrix();
+						glTranslatef(-surface.offsetAbsolute.x, 0, 0);
+						glScalef(Window.getInstance().getWidth() / surface.outerWidth(), 1, 1);
+						
+					}
+					else if (surface.style.overflowY != Style.Overflow.HIDDEN)
+					{	glPushMatrix();
+						glTranslatef(0, -surface.offsetAbsolute.y, 0);
+						glScalef(1, Window.getInstance().getHeight() / surface.outerHeight(), 1);						
+					}
+					
+					Render.geometry(surface.getGeometry().getClipGeometry());
+					
+					if (surface.style.overflowX != Style.Overflow.HIDDEN || surface.style.overflowY != Style.Overflow.HIDDEN)
+						glPopMatrix();
+					
+				    glColorMask(1, 1, 1, 1); // Enable drawing to other buffers and disable stencil writes
+				    glDepthMask(1);
+				    glStencilMask(0); // write nothing to the stencil buffer.
+				    
+				    glStencilFunc(GL_EQUAL, stencil, uint.max); //Draw only where stencil buffer = current stencil level (broken?)
+				    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 				}
-				else if (surface.style.overflowY != Style.Overflow.HIDDEN)
-				{	glPushMatrix();
-					glScalef(1, Window.getInstance().getHeight() / surface.outerHeight(), 1);
-					glTranslatef(0, -surface.border.top-surface.outerHeight()/2, 0);
-				}
-				
-				Render.geometry(surface.getGeometry().getClipGeometry());
-				
-				if (surface.style.overflowX != Style.Overflow.HIDDEN || surface.style.overflowY != Style.Overflow.HIDDEN)
-					glPopMatrix();
-				
-			    glColorMask(1, 1, 1, 1); // Enable drawing to other buffers and disable stencil writes
-			    glDepthMask(1);
-			    glStencilMask(0);
-			    
-			    glStencilFunc(GL_GEQUAL, stencil, 0xff); //Draw only where stencil buffer >= 1
-			    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); 
-			    
-			    stencil++;
 			}
+			
+			doStencil(true);
 			
 			// Recurse through and draw children.
 			foreach(child; surface.getChildren())
 				draw(child);
+			
+			doStencil(false);
 			
 			Graphics.popMatrix();
 			Graphics.applyState(); // temporary
