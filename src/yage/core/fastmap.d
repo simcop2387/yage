@@ -29,13 +29,13 @@ struct FastMap(K, V)
 	}
 
 	/**
-	 * Perform a deep copy of the chain and its key value arrays. */
+	 * Perform a deep copy of the FastMap and its key value arrays. */
 	FastMap!(K, V) dup()
 	{	FastMap!(K, V) result;
 		result.k = k.dup;
 		result.v = v.dup;
 		for (int i=0; i<k.length; i++)
-			result.map[k[i]] = i;
+			result.map[k[i]] = i; // this part is slow.
 		
 		assert(result.k.length == v.length);
 		assert(result.v.length == result.k.length);

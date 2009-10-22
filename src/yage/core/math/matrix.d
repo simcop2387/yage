@@ -471,6 +471,7 @@ struct Matrix
 		return res;
 	}
 
+	///
 	Matrix scale(Vec3f s)
 	{	Matrix result = *this;
 		result.v00 = s.x;
@@ -479,11 +480,6 @@ struct Matrix
 		return result;
 	}
 	
-	/// Set to an array of 16 values.
-	void set(float[16] values)
-	{	v[0..16] = values[0..16];
-	}
-
 	///
 	void setPosition(Vec3f position)
 	{	v[12..15] = position.v[0..3];
@@ -578,7 +574,7 @@ struct Matrix
 	 * Return the rotation values of this Matrix as a Quatern.
 	 * Note that the non-rotation values of the Matrix are lost. */
 	Quatrn toQuatrn()
-	{	Quatrn res=void;
+	{	
 		// If an identity matrix, return default quaternion.
 		if (almostEqual(Matrix()))
 			return Quatrn();
@@ -589,18 +585,17 @@ struct Matrix
 		{	float s = sqrt(t)*2;
 			// Differs from gamedev.net's matrix & quaternion FAQ:
 			// All subtractions on res.set lines have been reversed.
-			res.set((v[6]-v[9])/s, (v[8]-v[2])/s, (v[1]-v[4])/s, .25*s);
+			return Quatrn((v[6]-v[9])/s, (v[8]-v[2])/s, (v[1]-v[4])/s, .25*s);
 		}else if ((v[0]>v[5]) && (v[0]>v[10]))	// if 0 is greatest
 		{	float s = sqrt(1 + v[0] - v[5] - v[10])*2;
-			res.set(.25*s, (v[4]+v[1])/s, (v[2]+v[8])/s, (v[9]-v[6])/s);
+			return Quatrn(.25*s, (v[4]+v[1])/s, (v[2]+v[8])/s, (v[9]-v[6])/s);
 		}else if (v[5]>v[10])					// if 5 is greatest
 		{	float s = sqrt(1 + v[5] - v[0] - v[10])*2;
-			res.set((v[4]+v[1])/s, .25*s, (v[9]+v[6])/s, (v[2]-v[8])/s);
+			return Quatrn((v[4]+v[1])/s, .25*s, (v[9]+v[6])/s, (v[2]-v[8])/s);
 		}else									// if 10 is greatest
 		{	float s = sqrt(1 + v[10] - v[0] - v[5])*2;
-			res.set((v[2]+v[8])/s, (v[9]+v[6])/s, .25*s, (v[4]-v[1])/s);
+			return Quatrn((v[2]+v[8])/s, (v[9]+v[6])/s, .25*s, (v[4]-v[1])/s);
 		}
-		return res;
     }
 
 	/** Convert the rotation part of the Matrix to Euler angles.

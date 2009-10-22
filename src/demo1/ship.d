@@ -11,6 +11,7 @@ module demo1.ship;
 import tango.math.Math;
 import yage.all;
 import demo1.gameobj;
+import demo1.spring;
 
 class Ship : GameObject
 {

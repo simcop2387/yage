@@ -43,25 +43,5 @@ class FreeList(T)
 			freelist = a;
 		}
     }
-/*
-	new(size_t sz)
-	{	if (freelist)
-		{	T hello;
-			hello = freelist;
-			freelist = hello.next;
-			return hello;
-		}
-		else
-		{	void* p = malloc(sz);
-			if (!p) throw new Exception("");
-			gc.addRange(p, p + sz);
-			return p;
-	}	}
 
-	delete(void* p)
-	{	if (p)
-		{	(cast(T)p).next = freelist;
-			freelist = (cast(T)p);
-	}	}
-*/
 }

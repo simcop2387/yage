@@ -534,8 +534,8 @@ struct Render
 		
 		
 		
-		Graphics.disable(GL_DEPTH_TEST); // TODO: something is re-enabling this further along.
-		Graphics.disable(GL_LIGHTING);
+		Graphics.disable(Enable.DEPTH_TEST); // TODO: something is re-enabling this further along.
+		Graphics.disable(Enable.LIGHTING);
 			
 		//This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
 		if (!cleared)
@@ -557,12 +557,13 @@ struct Render
 			// Bind surface properties			
 			Graphics.multMatrix(surface.style.transform);
 			Graphics.translate(surface.left(), surface.top(), 0);
-			surface.style.backfaceVisibility ? Graphics.disable(GL_CULL_FACE) : Graphics.enable(GL_CULL_FACE);
+			surface.style.backfaceVisibility ? Graphics.disable(Enable.CULL_FACE) : Graphics.enable(Enable.CULL_FACE);
 			
 			Graphics.applyState(); // temporary
 			
 			Render.geometry(surface.getGeometry());
 			
+			// Apply or remove a stencil mask
 			void doStencil(bool on)
 			{
 				// Apply Stencil if overflow is used.  TODO: Convert to using Graphics.
@@ -572,8 +573,7 @@ struct Render
 					   stencil++;
 					else
 					   stencil--;
-						
-					Graphics.pushState();					
+									
 					Graphics.colorMask(0, 0, 0, 0); // Disable drawing to other buffers
 					Graphics.stencilMask(uint.max); // write everything to the stencil buffer
 					Graphics.stencilFunc(GL_ALWAYS, 0, 0);// Make the stencil test always pass, increment existing value
@@ -598,7 +598,9 @@ struct Render
 					if (surface.style.overflowX != Style.Overflow.HIDDEN || surface.style.overflowY != Style.Overflow.HIDDEN)
 						Graphics.popMatrix();
 
-					Graphics.popState();
+					// Undo state changes above (this is faster than push/popState)
+					Graphics.colorMask(1, 1, 1, 1);
+					Graphics.stencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 					
 					Graphics.stencilFunc(GL_EQUAL, stencil, uint.max); //Draw only where stencil buffer = current stencil level (broken?)
 						

@@ -67,6 +67,7 @@ int main(char[][] args)
 	
 	// Build Yage into a lib to be re-used with each test, and deleted when finished.
 	char[] yage_lib = "../lib/yage-"~compiler~"-"~platform~debugstr~lib_ext;
+	FS.remove(yage_lib);
 	CDC.compile(["yage"], ["-of"~yage_lib, "-lib"] ~ options1 ~ options2, null, src_path, verbose);
 	scope(exit)
 		FS.remove(yage_lib);

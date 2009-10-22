@@ -139,8 +139,10 @@ struct Quatrn
 	{	float qw = w*b.w - x*b.x - y*b.y - z*b.z;
 		float qx = w*b.x + x*b.w + y*b.z - z*b.y;
 		float qy = w*b.y + y*b.w + z*b.x - x*b.z;
-		float qz = w*b.z + z*b.w + x*b.y - y*b.x;
-		set(qx, qy, qz, qw);
+		z = w*b.z + z*b.w + x*b.y - y*b.x;
+		w = qw;
+		x = qx;
+		y = qy;
 	}
 
 	/// Is this Quatrn equal to Quatrn s, discarding relative error fudge.
@@ -229,31 +231,6 @@ struct Quatrn
 	{	Quatrn qr;
 		qr.setEuler(euler);
 		return qr*(*this);
-	}
-
-	/// Set the Quaternion using four scalar values.
-	void set(float x, float y, float z, float w)
-	{	*this = Quatrn(x, y, z, w);
-	}
-
-	/// Set to an array of floats (x,y,z,w)
-	void set(float[] s)
-	{	*this = Quatrn(s[0], s[1], s[2], s[3]);
-	}
-
-	/// Set the Quaternion using a rotation axis Vec3f.
-	void set(Vec3f axis)
-	{	double l = axis.length();
-		double s = sin(l*0.5f)/l;
-		w = cos(l*0.5f);
-		x = axis.v[0] * s;
-		y = axis.v[1] * s;
-		z = axis.v[2] * s;
-	}
-
-	/// Set the Quaternion to the rotation part of a Matrix.
-	void set(Matrix r)
-	{	*this = r.toQuatrn();
 	}
 
 	/// Set the rotation using a Vec3f of Euler angles. TODO: replace with code below.

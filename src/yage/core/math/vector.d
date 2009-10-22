@@ -762,27 +762,6 @@ struct Vec3f
 	{	return Vec3f(x*v.x, y*v.y, z*v.z);
 	}
 
-	/// Assign s to x, y, and z.
-	void set(float s)
-	{	v[0..3]=s;
-	}
-
-	/// Assign a, b, and c to x, y, and z.
-	void set(float a, float b, float c)
-	{	x=a; y=b; z=c;
-	}
-
-	/// Set to an array of three floats.
-	void set(float[] s)
-	{	assert(s.length>=3);
-		x=s[0]; y=s[1]; z=s[2];
-	}
-
-	/// Set this vector to the translation (position) part of a 4x4 Matrix
-	void set(Matrix m)
-	{	v[0..3] = m.v[12..15];
-	}
-
 	/// Set to a rotation axis from the rotation values of Matrix m.
 	void setAxis(Matrix m)
 	{	*this = m.toAxis();
@@ -802,17 +781,27 @@ struct Vec3f
 	 * Interpret the values of this vector as a rotation axis and convert to a Quatrn.*/
 	Quatrn toQuatrn()
 	{	Quatrn res;
-		float angle = length;
-		if (length==0) // no rotation for zero-vector
+		float angle = length();
+		if (angle==0) // no rotation for zero-vector
 			return res;
 		Vec3f axis = normalize();
-		float sin_a = sin( angle / 2 );
-		float cos_a = cos( angle / 2 );
-		res.x = axis.x * sin_a;
-		res.y = axis.y * sin_a;
-		res.z = axis.z * sin_a;
-		res.w = cos_a;
+		float s = sin(angle * .5);
+		res.w = cos(angle * .5);
+		res.x = axis.x * s;
+		res.y = axis.y * s;
+		res.z = axis.z * s;		
 		return res;
+		
+		/*
+		void Quatrn.set(Vec3f axis)
+		{	double l = axis.length();
+			double s = sin(l*0.5f)/l;
+			w = cos(l*0.5f);
+			x = axis.v[0] * s;
+			y = axis.v[1] * s;
+			z = axis.v[2] * s;
+		}
+		 */
 	}
 
 	/**

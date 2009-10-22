@@ -70,12 +70,6 @@ class ResourceManagerException : YageException
 
 
 
-
-
-
-
-
-
 ///
 interface IBindable
 {	void bind(); ///

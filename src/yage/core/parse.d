@@ -79,12 +79,6 @@ bool strToBool(char[] word)
 	return false;
 }
 
-/// Convert 1 to "true" and 0 to "false".
-char[] boolToString(bool a)
-{	if (a) return "true";
-	return "false";
-}
-
 /// Encode characters such as &, <, >, etc. as their xml/html equivalents
 char[] xmlEncode(char[] src)
 {   char[] tempStr;

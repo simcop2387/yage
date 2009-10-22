@@ -4,7 +4,7 @@
  * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 
-module yage.util.flyer;
+module demo1.flyer;
 
 import tango.math.Math;
 

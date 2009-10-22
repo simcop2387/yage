@@ -7,9 +7,11 @@
 module yage.core.math.plane;
 
 import tango.math.Math;
-import yage.core.math.vector;
 import tango.text.convert.Format;
+import yage.core.math.vector;
 import yage.core.misc;
+
+import yage.system.log;
 
 
 /**
@@ -78,28 +80,11 @@ struct Plane
 	{	return v.ptr;
 	}
 
-	/// Set the values of the plane.
-	void set(float _x, float _y, float _z, float distance)
-	{	v[0] = _x;  v[1] = _y;  v[2] = _z;
-		v[3] = distance;
-	}
-
-	/// Set the values of the plane.
-	void set(Vec3f normal, float distance)
-	{	v[0..3] = normal.v[0..3];
-		v[3] = distance;
-	}
-
-	/// Set the values of the plane.
-	void set(float[] values)
-	{	v[0..4] = values[0..4];
-	}
-
 	/// Return a string representation of this Plane for human reading.
 	char[] toString()
-	{	return Format.convert("<{}x {}y {}> +{}", v[0], v[1], v[2], v[3]);
+	{	return "{" ~ Format.convert("x: {}, y: {}, z: {}, d: {}", x, y, z, d) ~ "}";
 	}
-
-
-
+	unittest
+	{	assert(Plane().toString() == "{x: 0.00, y: 0.00, z: 0.00, d: 0.00}");		
+	}
 }

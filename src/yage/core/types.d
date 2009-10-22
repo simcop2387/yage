@@ -111,4 +111,3 @@ union qword
 		assert(qword(3.0).l == qword(qword(1.0).d + qword(2.0).d).l);
 	}
 }
-

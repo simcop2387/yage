@@ -4,7 +4,7 @@
  * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 
-module yage.util.spring;
+module demo1.spring;
 
 import yage.core.all;
 import yage.scene.all;

@@ -114,4 +114,3 @@ private class Timeout(T) : Thread
 		return 1;
 	}
 }
-

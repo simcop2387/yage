@@ -15,7 +15,6 @@ public
 {	import yage.core.all;
 	import yage.resource.all;
 	import yage.scene.all;
-	import yage.util.all;
 	import yage.system.all;
 	import yage.gui.all;
 }

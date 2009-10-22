@@ -91,7 +91,9 @@ class VisibleNode : MovableNode
 	 * Get / set the scale of this VisibleNode in the x, y, and z directions.
 	 * The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. */	
 	void setSize(float x, float y, float z) 
-	{	size.set(x, y, z); 
+	{	size.x = x;
+		size.y = y;
+		size.z = z;
 	}
 	void setSize(Vec3f size) /// ditto
 	{	setSize(size.x, size.y, size.z); 
@@ -128,7 +130,7 @@ class VisibleNode : MovableNode
 		// Calculate the intensity of all lights on this node
 		lights.length = 0;
 		Vec3f position;
-		position.set(getAbsoluteTransform(true));
+		position.v[0..3] = (getAbsoluteTransform(true)).v[12..15];
 		
 		/*
 		// This i sprobably slower until maxRange can be sped up and no longer do allocations.

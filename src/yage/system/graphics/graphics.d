@@ -19,6 +19,8 @@
 module yage.system.graphics.graphics;
 
 import std.stdio;
+import yage.system.log;
+
 import tango.core.Thread;
 import tango.math.IEEE;
 import tango.stdc.stringz;
@@ -42,10 +44,91 @@ import yage.core.timer;
  * OpenGL.color([1, 1, 1, 1]);
  * --------
  */
+
+enum Enable
+{	ALPHA_TEST,
+	AUTO_NORMAL,
+	BLEND,
+	CLIP_PLANE0,
+	CLIP_PLANE1,
+	CLIP_PLANE2,
+	CLIP_PLANE3,
+	CLIP_PLANE4,
+	CLIP_PLANE5,
+	COLOR_LOGIC_OP,
+	COLOR_MATERIAL,
+	COLOR_SUM/*,
+	COLOR_TABLE,
+	CONVOLUTION_1D,
+	CONVOLUTION_2D*/,
+	CULL_FACE,
+	DEPTH_TEST,
+	DITHER,
+	FOG/*,
+	HISTOGRAM*/,
+	INDEX_LOGIC_OP,
+	LIGHT0,
+	LIGHT1,
+	LIGHT2,
+	LIGHT3,
+	LIGHT4,
+	LIGHT5,
+	LIGHT6,
+	LIGHT7,
+	LIGHTING,
+	LINE_SMOOTH,
+	LINE_STIPPLE,
+	MAP1_COLOR_4,
+	MAP1_INDEX,
+	MAP1_NORMAL,
+	MAP1_TEXTURE_COORD_1,
+	MAP1_TEXTURE_COORD_2,
+	MAP1_TEXTURE_COORD_3,
+	MAP1_TEXTURE_COORD_4,
+	MAP1_VERTEX_3,
+	MAP1_VERTEX_4,
+	MAP2_COLOR_4,
+	MAP2_INDEX,
+	MAP2_NORMAL,
+	MAP2_TEXTURE_COORD_1,
+	MAP2_TEXTURE_COORD_2,
+	MAP2_TEXTURE_COORD_3,
+	MAP2_TEXTURE_COORD_4,
+	MAP2_VERTEX_3,
+	MAP2_VERTEX_4/*,
+	MINMAX*/,
+	MULTISAMPLE,
+	NORMALIZE,
+	POINT_SMOOTH,
+	POINT_SPRITE,
+	POLYGON_OFFSET_FILL,
+	POLYGON_OFFSET_LINE,
+	POLYGON_OFFSET_POINT,
+	POLYGON_SMOOTH,
+	POLYGON_STIPPLE/*,
+	POST_COLOR_MATRIX_COLOR_TABLE,
+	POST_CONVOLUTION_COLOR_TABLE*/,
+	RESCALE_NORMAL,
+	SAMPLE_ALPHA_TO_COVERAGE,
+	SAMPLE_ALPHA_TO_ONE,
+	SAMPLE_COVERAGE/*,
+	SEPARABLE_2D*/,
+	SCISSOR_TEST,
+	TEXTURE_1D,
+	TEXTURE_2D,
+	TEXTURE_3D,
+	TEXTURE_CUBE_MAP,
+	TEXTURE_GEN_Q,
+	TEXTURE_GEN_R,
+	TEXTURE_GEN_S,
+	TEXTURE_GEN_T,
+	VERTEX_PROGRAM_POINT_SIZE,
+	VERTEX_PROGRAM_TWO_SIDE
+}
+
 OpenGL Graphics()
 {	return OpenGL.getContext();
 }
-
 
 // Used in OpenGL State for storing parameters
 private struct Float4
@@ -73,13 +156,13 @@ private struct Float4
 	}
 }
 
-
 /*
  * This represents a current OpenGL state that can be pushed or popped. 
  * It is currently unfinished and has bugs. */
 private struct OpenGLState
 {
-	FastMap!(uint, bool) enable;		
+	bool[] enableCaps;
+	private static uint[] enableCapsMap; // map Enable enumeration to OpenGL constants.
 	FastMap!(uint, bool) enableClientState; // used with glEnableClientSideState
 	
 	FastMap!(uint, Float4)[8] lights;
@@ -121,32 +204,32 @@ private struct OpenGLState
 	uint stencilMask = uint.max;
 	uint[3] stencilFunc = [GL_ALWAYS, 0, uint.max];
 	uint[3] stencilOp = [GL_KEEP, GL_KEEP, GL_KEEP];
-
+	
 	// Constructor
 	static OpenGLState opCall()
 	{	OpenGLState result;
 	
 		// Set enable options to their defaults.
-		scope enableCaps = 
-			[GL_ALPHA_TEST, GL_AUTO_NORMAL, GL_BLEND, GL_CLIP_PLANE0, GL_CLIP_PLANE1, GL_CLIP_PLANE2, GL_CLIP_PLANE3, 
-			  GL_CLIP_PLANE4, GL_CLIP_PLANE5, GL_COLOR_LOGIC_OP, GL_COLOR_MATERIAL, GL_COLOR_SUM/*, GL_COLOR_TABLE, 
-			 GL_CONVOLUTION_1D, GL_CONVOLUTION_2D*/, GL_CULL_FACE, GL_DEPTH_TEST, GL_FOG/*, GL_HISTOGRAM*/, 
-			 GL_INDEX_LOGIC_OP, GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3, GL_LIGHT4, GL_LIGHT5, GL_LIGHT6, GL_LIGHT7, 
-			 GL_LIGHTING, GL_LINE_SMOOTH, GL_LINE_STIPPLE, GL_MAP1_COLOR_4, GL_MAP1_INDEX, GL_MAP1_NORMAL, 
-			 GL_MAP1_TEXTURE_COORD_1, GL_MAP1_TEXTURE_COORD_2, GL_MAP1_TEXTURE_COORD_3, GL_MAP1_TEXTURE_COORD_4, 
-			 GL_MAP1_VERTEX_3, GL_MAP1_VERTEX_4, GL_MAP2_COLOR_4, GL_MAP2_INDEX, GL_MAP2_NORMAL, 
-			 GL_MAP2_TEXTURE_COORD_1, GL_MAP2_TEXTURE_COORD_2, GL_MAP2_TEXTURE_COORD_3, GL_MAP2_TEXTURE_COORD_4, 
-			 GL_MAP2_VERTEX_3, GL_MAP2_VERTEX_4/*, GL_MINMAX*/, GL_NORMALIZE, GL_POINT_SMOOTH, GL_POINT_SPRITE, 
-			 GL_POLYGON_OFFSET_FILL, GL_POLYGON_OFFSET_LINE, GL_POLYGON_OFFSET_POINT, GL_POLYGON_SMOOTH, 
-			 GL_POLYGON_STIPPLE/*, GL_POST_COLOR_MATRIX_COLOR_TABLE, GL_POST_CONVOLUTION_COLOR_TABLE*/, 
-			 GL_RESCALE_NORMAL, GL_SAMPLE_ALPHA_TO_COVERAGE, GL_SAMPLE_ALPHA_TO_ONE, GL_SAMPLE_COVERAGE/*, 
-			 GL_SEPARABLE_2D*/, GL_SCISSOR_TEST, GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP, 
-			 GL_TEXTURE_GEN_Q, GL_TEXTURE_GEN_R, GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_VERTEX_PROGRAM_POINT_SIZE, 
-			 GL_VERTEX_PROGRAM_TWO_SIDE];
-		foreach (cap; enableCaps)
-			result.enable[cap] = false;
-		result.enable[GL_DITHER] = true;		
-		result.enable[GL_MULTISAMPLE] = true;
+		if (!enableCapsMap.length)
+			enableCapsMap = 
+				[GL_ALPHA_TEST, GL_AUTO_NORMAL, GL_BLEND, GL_CLIP_PLANE0, GL_CLIP_PLANE1, GL_CLIP_PLANE2, GL_CLIP_PLANE3, 
+				 GL_CLIP_PLANE4, GL_CLIP_PLANE5, GL_COLOR_LOGIC_OP, GL_COLOR_MATERIAL, GL_COLOR_SUM/*, GL_COLOR_TABLE, 
+				 GL_CONVOLUTION_1D, GL_CONVOLUTION_2D*/, GL_CULL_FACE, GL_DEPTH_TEST, GL_FOG/*, GL_HISTOGRAM*/, 
+				 GL_INDEX_LOGIC_OP, GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3, GL_LIGHT4, GL_LIGHT5, GL_LIGHT6, GL_LIGHT7, 
+				 GL_LIGHTING, GL_LINE_SMOOTH, GL_LINE_STIPPLE, GL_MAP1_COLOR_4, GL_MAP1_INDEX, GL_MAP1_NORMAL, 
+				 GL_MAP1_TEXTURE_COORD_1, GL_MAP1_TEXTURE_COORD_2, GL_MAP1_TEXTURE_COORD_3, GL_MAP1_TEXTURE_COORD_4, 
+				 GL_MAP1_VERTEX_3, GL_MAP1_VERTEX_4, GL_MAP2_COLOR_4, GL_MAP2_INDEX, GL_MAP2_NORMAL, 
+				 GL_MAP2_TEXTURE_COORD_1, GL_MAP2_TEXTURE_COORD_2, GL_MAP2_TEXTURE_COORD_3, GL_MAP2_TEXTURE_COORD_4, 
+				 GL_MAP2_VERTEX_3, GL_MAP2_VERTEX_4/*, GL_MINMAX*/, GL_NORMALIZE, GL_POINT_SMOOTH, GL_POINT_SPRITE, 
+				 GL_POLYGON_OFFSET_FILL, GL_POLYGON_OFFSET_LINE, GL_POLYGON_OFFSET_POINT, GL_POLYGON_SMOOTH, 
+				 GL_POLYGON_STIPPLE/*, GL_POST_COLOR_MATRIX_COLOR_TABLE, GL_POST_CONVOLUTION_COLOR_TABLE*/, 
+				 GL_RESCALE_NORMAL, GL_SAMPLE_ALPHA_TO_COVERAGE, GL_SAMPLE_ALPHA_TO_ONE, GL_SAMPLE_COVERAGE/*, 
+				 GL_SEPARABLE_2D*/, GL_SCISSOR_TEST, GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP, 
+				 GL_TEXTURE_GEN_Q, GL_TEXTURE_GEN_R, GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_VERTEX_PROGRAM_POINT_SIZE, 
+				 GL_VERTEX_PROGRAM_TWO_SIDE];
+		result.enableCaps.length = enableCapsMap.length;
+		result.enableCaps[Enable.DITHER] = true;		
+		result.enableCaps[Enable.MULTISAMPLE] = true;
 		
 		// Set light values to their defaults
 		foreach (inout light; result.lights)
@@ -178,7 +261,7 @@ private struct OpenGLState
 	 * Returns: A deep copy of this OpenGLState. */
 	OpenGLState dup()
 	{	OpenGLState result = *this;
-		result.enable = enable.dup();
+		result.enableCaps = enableCaps.dup;
 		result.enableClientState = result.enableClientState.dup();
 		result.materials = .dup(result.materials, true);		
 		result.texEnvi = .dup(result.texEnvi, true);
@@ -203,7 +286,7 @@ class OpenGL
 {
 	OpenGLState state;			// current modified state
 	OpenGLState appliedState;	// last state that was applied.
-	OpenGLState[] states;		// stack of states
+	Array!(OpenGLState) states;		// stack of states
 	
 	union {
 		struct {
@@ -244,7 +327,7 @@ class OpenGL
 	}
 	
 	/// Construct and create an initial state on the state stack.
-	private this()
+	this()
 	{	state = OpenGLState();
 		appliedState = state.dup();
 	}
@@ -343,8 +426,8 @@ class OpenGL
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glDisable.xml
-	void disable(uint cap)
-	{	state.enable[cap] = false;		
+	void disable(Enable cap)
+	{	state.enableCaps[cap] = false;		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glDisableClientState.xml
@@ -353,8 +436,8 @@ class OpenGL
 	}
 		
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glEnable.xml
-	void enable(uint cap)
-	{	state.enable[cap] = true;		
+	void enable(Enable cap)
+	{	state.enableCaps[cap] = true;		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glEnableClientState.xml
@@ -490,7 +573,7 @@ class OpenGL
 	/// Pop all OpenGL state from the stack. This is equivalent of glPopAttrib() and glPopClientAttrib()
 	void popState()
 	{	assert(states.length);
-		state = states[$-1];
+		state = states[states.length-1];
 		states.length = states.length - 1;	
 	}
 	
@@ -583,7 +666,7 @@ class OpenGL
 	
 		
 	// Get the context for the current thread.
-	private static OpenGL getContext()
+	static OpenGL getContext()
 	{	
 		Thread thread = Thread.getThis();
 		if (!(thread in contexts))
@@ -607,6 +690,10 @@ class OpenGL
 	 * Returns: the number of necessary OpenGL calls. */
 	int applyState()
 	{	
+		//Log2.trace("0");
+		//writefln(0);
+		
+		
 		int calls;
 		//synchronized (openGLMutex)
 		{	
@@ -617,18 +704,21 @@ class OpenGL
 			
 			// glEnable / glDisable			
 			{
-				scope keys = state.enable.keys;
-				scope values = state.enable.values;
-				scope oldValues = appliedState.enable.values;
-				for (int i=0; i<values.length; i++)
-					if (values[i] != oldValues[i])
-					{	values[i] ? glEnable(keys[i]) : glDisable(keys[i]);
+				
+				//scope keys = state.enable.keys;
+				//scope values = state.enable.values;
+				//scope oldValues = appliedState.enable.values;
+				
+				for (int i=0; i<state.enableCaps.length; i++)
+					if (state.enableCaps[i] != appliedState.enableCaps[i])
+					{	state.enableCaps[i] ? glEnable(OpenGLState.enableCapsMap[state.enableCaps[i]]) : 
+							glDisable(OpenGLState.enableCapsMap[state.enableCaps[i]]);
 						calls++;
 					}
 				
-				keys = state.enableClientState.keys;
-				values = state.enableClientState.values;
-				oldValues = appliedState.enableClientState.values;
+				scope keys = state.enableClientState.keys;
+				scope values = state.enableClientState.values;
+				scope oldValues = appliedState.enableClientState.values;
 				for (int i=0; i<values.length; i++)
 					if (values[i] != oldValues[i])
 					{	values[i] ? glEnableClientState(keys[i]) : glEnableClientState(keys[i]);
@@ -659,8 +749,8 @@ class OpenGL
 				calls+= 3;
 				//checkError();
 			}
-			
 			calls+= applyLights();
+
 			
 			/*
 			// Material
@@ -678,7 +768,6 @@ class OpenGL
 				calls++;
 				//checkError();
 			}
-			
 			if (state.colorMask != appliedState.colorMask)
 			{	glColorMask(state.colorMask[0], state.colorMask[1], state.colorMask[2], state.colorMask[3]);
 				calls++;
@@ -708,7 +797,6 @@ class OpenGL
 				calls++;
 				//checkError();
 			}
-			
 			if (state.lineWidth != appliedState.lineWidth)
 			{	glLineWidth(state.lineWidth);
 				calls++;
@@ -725,15 +813,13 @@ class OpenGL
 			{	glStencilFunc(state.stencilFunc[0], state.stencilFunc[1], state.stencilFunc[2]);
 				calls++;
 				checkError();
-			}
-			
+			}			
 			
 			if (state.stencilMask != appliedState.stencilMask)
 			{	glStencilMask(state.stencilMask);
 				calls++;
 				checkError();
 			}
-			
 			
 			if (state.stencilOp[] != appliedState.stencilOp[])
 			{	glStencilOp(state.stencilOp[0], state.stencilOp[1], state.stencilOp[2]);
@@ -785,25 +871,28 @@ class OpenGL
 	{	
 		int calls;
 		
-		checkError();
+		//checkError();
 		foreach (i, light; state.lights)
-		{	scope keys = light.keys;
-			scope values = light.values;
-			scope oldValues = appliedState.lights[i].values;
-			for (int j=0; j<values.length; j++)
-			{	//writefln("%s %s %s", keys[j], values[j].v, oldValues[j].v);
-				if (values[j] != oldValues[j])
-				{	if (values[j].length > 1)
-					{//	writefln("%0x %0x %f", GL_LIGHT0+i, keys[j], values[j].v);
-						glLightfv(GL_LIGHT0+i, keys[j], values[j].v.ptr);
-					//	checkError();
+		{	
+			auto values = light.values;
+			auto oldValues = appliedState.lights[i].values;
+			if (values[] != oldValues[]) // benchmarks shows this cuts the total time of OpenGL.applyState almost in half
+			{	scope keys = light.keys;
+				for (int j=0; j<values.length; j++)
+				{	//writefln("%s %s %s", keys[j], values[j].v, oldValues[j].v);
+					if (values[j] != oldValues[j])
+					{	if (values[j].length > 1)
+						{//	writefln("%0x %0x %f", GL_LIGHT0+i, keys[j], values[j].v);
+							glLightfv(GL_LIGHT0+i, keys[j], values[j].v.ptr);
+						//	checkError();
+						}
+						else
+						{//	writefln("%0x %0x %f", GL_LIGHT0+i, keys[j], values[j]);
+							glLightf(GL_LIGHT0+i, keys[j], values[j].v[0]);
+						//	checkError();
+						}
+						calls++;
 					}
-					else
-					{//	writefln("%0x %0x %f", GL_LIGHT0+i, keys[j], values[j]);
-						glLightf(GL_LIGHT0+i, keys[j], values[j].v[0]);
-					//	checkError();
-					}
-					calls++;
 				}
 			}
 		}

@@ -194,7 +194,7 @@ class Window : IRenderTarget
 		glDepthFunc(GL_LEQUAL);
 
 		glEnable(GL_CULL_FACE);
-		Graphics.enable(GL_CULL_FACE);
+		Graphics.enable(Enable.CULL_FACE);
 		glEnable(GL_NORMALIZE);  // GL_RESCALE_NORMAL is faster but does not work for non-uniform scaling
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glHint(GL_FOG_HINT, GL_FASTEST); // per vertex fog
