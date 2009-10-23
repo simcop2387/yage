@@ -7,21 +7,14 @@
 module yage.resource.texture;
 
 import tango.math.Math;
-import tango.io.Stdout;
-import derelict.opengl.gl;
-import derelict.opengl.glu;
-import yage.core.closure;
 import yage.core.math.math;
 import yage.core.math.matrix;
-import yage.core.timer;
 import yage.core.math.vector;
 import yage.core.object2;
 import yage.resource.image;
-import yage.resource.layer;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.system.system;
-import yage.system.graphics.probe;
 import yage.system.log;
 
 import yage.system.graphics.graphics;
@@ -40,10 +33,18 @@ struct Texture
 		BILINEAR,	///
 		TRILINEAR	///
 	}
+	
+	public enum Blend
+	{
+		NONE,
+		ADD,
+		AVERAGE,
+		MULTIPLY
+	}
 
 
 	/// Set how this texture is blended with others in the same layer.
-	int blend = BLEND_NONE;
+	int blend = Blend.NONE;
 
 	/// Property enable or disable clamping of the textures of this layer.
 	/// See_Also: <a href="http://en.wikipedia.org/wiki/Texel_%28graphics%29">The Wikipedia entry for texel</a>
@@ -74,32 +75,6 @@ struct Texture
 		result.clamp = clamp;
 		result.filter = filter;
 		return result;
-	}
-	
-	/// deprecated.
-	/// Undo state changes caused by binding this TextureInstance.
-	void unbind()
-	{	
-		// Texture Matrix
-		//if (position.length2() || scale.length2() || rotation!=0)
-		{	glMatrixMode(GL_TEXTURE);
-			glPopMatrix();
-			glMatrixMode(GL_MODELVIEW);
-		}
-
-		// Environment Map
-		if (reflective)
-		{	glEnable(GL_TEXTURE_GEN_S);
-			glEnable(GL_TEXTURE_GEN_T);
-			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-		}
-
-		// Blend
-		if (blend != BLEND_MULTIPLY)
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 

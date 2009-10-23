@@ -25,15 +25,12 @@ import tango.core.Thread;
 import tango.math.IEEE;
 import tango.stdc.stringz;
 import tango.text.convert.Format;
-import tango.util.container.HashMap;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
 import yage.core.array;
-import yage.core.fastmap;
 import yage.core.object2;
 import yage.core.math.all;
-import yage.core.timer;
 
 /**
  * Use OpenGL for graphics API calls. 
@@ -57,10 +54,10 @@ enum Enable
 	CLIP_PLANE5,
 	COLOR_LOGIC_OP,
 	COLOR_MATERIAL,
-	COLOR_SUM/*,
+	COLOR_SUM,/*,
 	COLOR_TABLE,
 	CONVOLUTION_1D,
-	CONVOLUTION_2D*/,
+	CONVOLUTION_2D.*/
 	CULL_FACE,
 	DEPTH_TEST,
 	DITHER,
@@ -126,6 +123,31 @@ enum Enable
 	VERTEX_PROGRAM_TWO_SIDE
 }
 
+enum EnableClientState
+{	COLOR_ARRAY,
+	EDGE_FLAG_ARRAY,
+	FOG_COORD_ARRAY,
+	INDEX_ARRAY,
+	NORMAL_ARRAY,
+	SECONDARY_COLOR_ARRAY,
+	TEXTURE_COORD_ARRAY,
+	VERTEX_ARRAY
+}
+
+enum Light
+{
+	AMBIENT,
+	DIFFUSE,
+	SPECULAR,
+	POSITION,
+	SPOT_DIRECTION,
+	SPOT_EXPONENT,
+	SPOT_CUTOFF,
+	CONSTANT_ATTENUATION,
+	LINEAR_ATTENUATION,
+	QUADRATIC_ATTENUATION	
+}
+
 OpenGL Graphics()
 {	return OpenGL.getContext();
 }
@@ -161,11 +183,16 @@ private struct Float4
  * It is currently unfinished and has bugs. */
 private struct OpenGLState
 {
-	bool[] enableCaps;
-	private static uint[] enableCapsMap; // map Enable enumeration to OpenGL constants.
-	FastMap!(uint, bool) enableClientState; // used with glEnableClientSideState
+	bool[Enable.max+1] enable;
+	private static uint[] enableMap; // map Enable enumeration to OpenGL constants.
 	
-	FastMap!(uint, Float4)[8] lights;
+	bool[EnableClientState.max+1] enableClientState;
+	private static uint[] enableClientStateMap;  // map EnableClientState enumeration to OpenGL constants.
+	
+	Float4[Light.max+1][8] lights; // Stores parameter name and float[4] values for each of th 8 lights.
+	private static uint[] lightsMap;
+	
+	//FastMap!(uint, Float4)[8] lights;
 
 	float[][uint][uint] materials;
 	int[uint][uint] texEnvi;
@@ -210,8 +237,8 @@ private struct OpenGLState
 	{	OpenGLState result;
 	
 		// Set enable options to their defaults.
-		if (!enableCapsMap.length)
-			enableCapsMap = 
+		if (!enableMap.length)
+		{	enableMap = 
 				[GL_ALPHA_TEST, GL_AUTO_NORMAL, GL_BLEND, GL_CLIP_PLANE0, GL_CLIP_PLANE1, GL_CLIP_PLANE2, GL_CLIP_PLANE3, 
 				 GL_CLIP_PLANE4, GL_CLIP_PLANE5, GL_COLOR_LOGIC_OP, GL_COLOR_MATERIAL, GL_COLOR_SUM/*, GL_COLOR_TABLE, 
 				 GL_CONVOLUTION_1D, GL_CONVOLUTION_2D*/, GL_CULL_FACE, GL_DEPTH_TEST, GL_FOG/*, GL_HISTOGRAM*/, 
@@ -227,23 +254,32 @@ private struct OpenGLState
 				 GL_SEPARABLE_2D*/, GL_SCISSOR_TEST, GL_TEXTURE_1D, GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP, 
 				 GL_TEXTURE_GEN_Q, GL_TEXTURE_GEN_R, GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_VERTEX_PROGRAM_POINT_SIZE, 
 				 GL_VERTEX_PROGRAM_TWO_SIDE];
-		result.enableCaps.length = enableCapsMap.length;
-		result.enableCaps[Enable.DITHER] = true;		
-		result.enableCaps[Enable.MULTISAMPLE] = true;
+		
+			enableClientStateMap = [
+				GL_COLOR_ARRAY, GL_EDGE_FLAG_ARRAY, GL_FOG_COORD_ARRAY, GL_INDEX_ARRAY, GL_NORMAL_ARRAY, 
+				GL_SECONDARY_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY, GL_VERTEX_ARRAY];
+			
+			lightsMap = [ 
+				GL_AMBIENT, GL_DIFFUSE, GL_SPECULAR, GL_POSITION, GL_SPOT_DIRECTION, GL_SPOT_EXPONENT, GL_SPOT_CUTOFF, GL_CONSTANT_ATTENUATION, GL_LINEAR_ATTENUATION, GL_QUADRATIC_ATTENUATION];
+		
+		}
+		//result.enable.length = enableMap.length;
+		result.enable[Enable.DITHER] = true;		
+		result.enable[Enable.MULTISAMPLE] = true;
 		
 		// Set light values to their defaults
 		foreach (inout light; result.lights)
 		{
-			light[GL_AMBIENT]               = Float4(0, 0, 0, 1);
-			light[GL_DIFFUSE]               = Float4(0, 0, 0, 1);
-			light[GL_SPECULAR]              = Float4(0, 0, 0, 1);
-			light[GL_POSITION]              = Float4(0, 0, 1, 0);
-			light[GL_SPOT_DIRECTION]        = Float4(0, 0, -1);
-			light[GL_SPOT_EXPONENT]         = Float4(0);
-			light[GL_SPOT_CUTOFF]           = Float4(180);
-			light[GL_CONSTANT_ATTENUATION]  = Float4(1);
-			light[GL_LINEAR_ATTENUATION]    = Float4(0);
-			light[GL_QUADRATIC_ATTENUATION] = Float4(0);
+			light[Light.AMBIENT]               = Float4(0, 0, 0, 1);
+			light[Light.DIFFUSE]               = Float4(0, 0, 0, 1);
+			light[Light.SPECULAR]              = Float4(0, 0, 0, 1);
+			light[Light.POSITION]              = Float4(0, 0, 1, 0);
+			light[Light.SPOT_DIRECTION]        = Float4(0, 0, -1);
+			light[Light.SPOT_EXPONENT]         = Float4(0);
+			light[Light.SPOT_CUTOFF]           = Float4(180);
+			light[Light.CONSTANT_ATTENUATION]  = Float4(1);
+			light[Light.LINEAR_ATTENUATION]    = Float4(0);
+			light[Light.QUADRATIC_ATTENUATION] = Float4(0);
 		}
 	
 			
@@ -261,13 +297,10 @@ private struct OpenGLState
 	 * Returns: A deep copy of this OpenGLState. */
 	OpenGLState dup()
 	{	OpenGLState result = *this;
-		result.enableCaps = enableCaps.dup;
-		result.enableClientState = result.enableClientState.dup();
 		result.materials = .dup(result.materials, true);		
 		result.texEnvi = .dup(result.texEnvi, true);
 		result.texParameteri = .dup(result.texParameteri, true);
-		result.textures = .dup(result.textures);
-		result.lights[0..$] = result.lights.dup[0..$];		
+		result.textures = .dup(result.textures);	
 		return result;
 	}
 	
@@ -427,7 +460,7 @@ class OpenGL
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glDisable.xml
 	void disable(Enable cap)
-	{	state.enableCaps[cap] = false;		
+	{	state.enable[cap] = false;		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glDisableClientState.xml
@@ -437,7 +470,7 @@ class OpenGL
 		
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glEnable.xml
 	void enable(Enable cap)
-	{	state.enableCaps[cap] = true;		
+	{	state.enable[cap] = true;		
 	}
 	
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glEnableClientState.xml
@@ -704,24 +737,17 @@ class OpenGL
 			
 			// glEnable / glDisable			
 			{
-				
-				//scope keys = state.enable.keys;
-				//scope values = state.enable.values;
-				//scope oldValues = appliedState.enable.values;
-				
-				for (int i=0; i<state.enableCaps.length; i++)
-					if (state.enableCaps[i] != appliedState.enableCaps[i])
-					{	state.enableCaps[i] ? glEnable(OpenGLState.enableCapsMap[state.enableCaps[i]]) : 
-							glDisable(OpenGLState.enableCapsMap[state.enableCaps[i]]);
+								
+				for (int i=0; i<state.enable.length; i++)
+					if (state.enable[i] != appliedState.enable[i])
+					{	state.enable[i] ? glEnable(OpenGLState.enableMap[state.enable[i]]) : 
+							glDisable(OpenGLState.enableMap[state.enable[i]]);
 						calls++;
 					}
-				
-				scope keys = state.enableClientState.keys;
-				scope values = state.enableClientState.values;
-				scope oldValues = appliedState.enableClientState.values;
-				for (int i=0; i<values.length; i++)
-					if (values[i] != oldValues[i])
-					{	values[i] ? glEnableClientState(keys[i]) : glEnableClientState(keys[i]);
+				for (int i=0; i<state.enableClientState.length; i++)
+					if (state.enableClientState[i] != appliedState.enableClientState[i])
+					{	state.enableClientState[i] ? glEnable(OpenGLState.enableMap[state.enableClientState[i]]) : 
+							glDisable(OpenGLState.enableMap[state.enableClientState[i]]);
 						calls++;
 					}
 			}
@@ -870,33 +896,27 @@ class OpenGL
 	private int applyLights()
 	{	
 		int calls;
-		
-		//checkError();
-		foreach (i, light; state.lights)
+		/*
+		foreach (i, light; state.lights) // 0-8
 		{	
-			auto values = light.values;
-			auto oldValues = appliedState.lights[i].values;
-			if (values[] != oldValues[]) // benchmarks shows this cuts the total time of OpenGL.applyState almost in half
-			{	scope keys = light.keys;
-				for (int j=0; j<values.length; j++)
-				{	//writefln("%s %s %s", keys[j], values[j].v, oldValues[j].v);
-					if (values[j] != oldValues[j])
-					{	if (values[j].length > 1)
-						{//	writefln("%0x %0x %f", GL_LIGHT0+i, keys[j], values[j].v);
-							glLightfv(GL_LIGHT0+i, keys[j], values[j].v.ptr);
-						//	checkError();
-						}
+			Float4[Light.max]* oldLight = appliedState.light[i];
+			if (light != oldLight) // benchmarks shows this cuts the total time of OpenGL.applyState almost in half
+			{	
+				for (int j=0; j<light.length; j++) // loop through each setting for this light
+				{	
+					if (light[j] != oldLight[j])
+					{	if (light[j].length > 1)
+							glLightfv(GL_LIGHT0+i, OpenGLState.lightsMap[j], light[j].v.ptr);
 						else
-						{//	writefln("%0x %0x %f", GL_LIGHT0+i, keys[j], values[j]);
-							glLightf(GL_LIGHT0+i, keys[j], values[j].v[0]);
-						//	checkError();
-						}
+							glLightf(GL_LIGHT0+i, OpenGLState.lightsMap[j], light[j].v[0]);
+						// checkError();
 						calls++;
 					}
+					
 				}
 			}
 		}
-		//writefln("apply lights");
+		*/
 		return calls;
 	}
 

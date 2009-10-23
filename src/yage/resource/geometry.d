@@ -9,7 +9,6 @@ module yage.resource.geometry;
 import tango.io.Stdout;
 import tango.math.Math;
 import tango.util.container.HashSet;
-import yage.core.closure;
 import yage.core.object2;
 import yage.core.math.vector;
 import yage.resource.manager;

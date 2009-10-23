@@ -15,12 +15,8 @@ module yage.core.all;
 public
 {	import yage.core.math.all;
 	import yage.core.array;
-	import yage.core.async;
 	import yage.core.cache;
-	import yage.core.closure;
 	import yage.core.color;
-	import yage.core.fastmap;
-	import yage.core.freelist;
 	import yage.core.misc;
 	import yage.core.object2;
 	import yage.core.parse;

@@ -874,12 +874,12 @@ private struct Bind
 					glDisable(GL_TEXTURE_GEN_T);
 				}
 				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-				layer.textures[i].unbind();
+				Bind.textureUnbind(layer.textures[i]);
 			}
 			glClientActiveTextureARB(GL_TEXTURE0_ARB);
 		}
 		else if(layer.textures.length == 1){	
-			layer.textures[0].unbind();			
+			Bind.textureUnbind(layer.textures[0]);			
 			//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		}
 		glDisable(GL_TEXTURE_2D);
@@ -1033,7 +1033,7 @@ private struct Bind
 		}
 	}
 	
-	
+	///
 	static void texture(Texture texture)
 	{	GPUTexture gpuTexture = texture.texture;
 		
@@ -1181,13 +1181,38 @@ private struct Bind
 		// Blend Mode
 		uint blendTranslated;
 		switch (texture.blend)
-		{	case BLEND_ADD: blendTranslated = GL_ADD; break;
-			case BLEND_AVERAGE: blendTranslated = GL_DECAL; break;
-			case BLEND_NONE:
-			case BLEND_MULTIPLY:
+		{	case Texture.Blend.ADD: blendTranslated = GL_ADD; break;
+			case Texture.Blend.AVERAGE: blendTranslated = GL_DECAL; break;
+			case Texture.Blend.NONE:
+			case Texture.Blend.MULTIPLY:
 			default: blendTranslated = GL_MODULATE; break;				
 		}
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blendTranslated);
+	}
+	
+	// This won't be necessary once the transition to using Graphics is complete
+	static void textureUnbind(Texture texture)
+	{
+		// Texture Matrix
+		//if (position.length2() || scale.length2() || rotation!=0)
+		{	glMatrixMode(GL_TEXTURE);
+			glPopMatrix();
+			glMatrixMode(GL_MODELVIEW);
+		}
+
+		// Environment Map
+		if (texture.reflective)
+		{	glEnable(GL_TEXTURE_GEN_S);
+			glEnable(GL_TEXTURE_GEN_T);
+			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+		}
+
+		// Blend
+		if (texture.blend != Texture.Blend.MULTIPLY)
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	/*

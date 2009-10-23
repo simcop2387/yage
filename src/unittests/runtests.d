@@ -80,6 +80,7 @@ int main(char[][] args)
 		CDC.compile(["unittests/"~test, derelict_lib, yage_lib], ["-run"] ~ options1 ~ options2, null, src_path, verbose);
 	}
 	System.trace("");
+	FS.remove(yage_lib);
 
 	return 0; // success
 }

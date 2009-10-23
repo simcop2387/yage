@@ -17,7 +17,6 @@ import tango.core.Traits;
 import tango.stdc.stringz;
 
 import yage.core.array;
-import yage.core.closure;
 import yage.core.object2;
 import yage.core.math.all;
 import yage.core.misc;
