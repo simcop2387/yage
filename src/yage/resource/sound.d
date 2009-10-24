@@ -217,7 +217,7 @@ private abstract class SoundFile
 	/// Load the given file and parse its headers
 	this(char[] filename)
 	{	source = filename;
-		Log.write("Loading sound '" ~ source ~ "'.");
+		Log.info("Loading sound '" ~ source ~ "'.");
 	}
 
 	/** Return a buffer of uncompressed sound data.

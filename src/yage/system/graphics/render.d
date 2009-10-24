@@ -495,7 +495,7 @@ struct Render
 		auto result = recurse(camera, target, scene);
 		Bind.renderTargetRelease();
 		cleanup();		
-		return RenderStatistics();;
+		return result;
 	}
 	
 	// Render a sprite

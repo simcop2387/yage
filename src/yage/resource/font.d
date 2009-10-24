@@ -39,7 +39,7 @@ struct Letter
 	char[] toString(char[] lookaside=null)
 	{	dchar[1] temp;
 		temp[0] = letter;
-		return .toString(temp, lookaside);		
+		return .toString(temp, lookaside);
 	}
 }
 

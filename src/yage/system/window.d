@@ -153,9 +153,9 @@ class Window : IRenderTarget
 		if (Probe.feature(Probe.Feature.MULTITEXTURE))
 		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
 				throw new YageException("GL_ARB_multitexture extension detected but it could not be loaded.");
-			Log.write("GL_ARB_multitexture support enabled.");
+			Log.info("GL_ARB_multitexture support enabled.");
 		}else
-			Log.write("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
+			Log.info("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
 
 		// Attempt to load shaders
 		if (Probe.feature(Probe.Feature.SHADER))
@@ -163,25 +163,25 @@ class Window : IRenderTarget
 				throw new YageException("GL_ARB_shader_objects extension detected but it could not be loaded.");
 			if (!ARBVertexShader.load("GL_ARB_vertex_shader"))
 				throw new YageException("GL_ARB_vertex_shader extension detected but it could not be loaded.");
-			Log.write("GL_ARB_shader_objects support enabled.");
+			Log.info("GL_ARB_shader_objects support enabled.");
 		}else
-			Log.write("GL_ARB_shader_objects not supported.  This is ok, but rendering will be limited to the fixed-function pipeline.");
+			Log.info("GL_ARB_shader_objects not supported.  This is ok, but rendering will be limited to the fixed-function pipeline.");
 
 		// Attempt to load vertex buffer object
 		if (Probe.feature(Probe.Feature.VBO))
 		{	if (!ARBVertexBufferObject.load("GL_ARB_vertex_buffer_object"))
 				throw new YageException("GL_ARB_vertex_buffer_object extension detected but it could not be loaded.");
-			Log.write("GL_ARB_vertex_buffer_object support enabled.");
+			Log.info("GL_ARB_vertex_buffer_object support enabled.");
 		}else
-			Log.write("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
+			Log.info("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
 		
 		// Frame Buffer Object
 		if (Probe.feature(Probe.Feature.FBO))
 		{	if (!EXTFramebufferObject.load("GL_EXT_framebuffer_object"))
 				throw new YageException("GL_EXT_framebuffer_object extension detected but it could not be loaded.");
-			Log.write("GL_EXT_framebuffer_object support enabled.");
+			Log.info("GL_EXT_framebuffer_object support enabled.");
 		}else
-			Log.write("GL_EXT_framebuffer_object not supported.  This is still ok.");
+			Log.info("GL_EXT_framebuffer_object not supported.  This is still ok.");
 		
 		
 				

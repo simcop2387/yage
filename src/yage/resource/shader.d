@@ -39,11 +39,11 @@ class Shader : Resource
 		// Load
 		source = ResourceManager.resolvePath(filename);
 		this.type = type;
-		Log.write("Loading shader '", filename, "'.");
+		Log.info("Loading shader '", filename, "'.");
 		code = cast(char[])read(source);
 
 		// Compile
-		Log.write("Compiling shader '", source, "'.");
+		Log.info("Compiling shader '", source, "'.");
 		char** charcode = (new char*[1]).ptr;
 		charcode[0] = (code~"\0").ptr;
 		if (type==0)
@@ -57,14 +57,14 @@ class Shader : Resource
 		int status;
 		glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
 		if (!status)
-		{	Log.write(getCompileLog());
+		{	Log.info(getCompileLog());
 			throw new ResourceManagerException("Could not compile shader '" ~ source ~ "'.");
 		}
 	}
 
 	/// Free the shader object from OpenGL memory.
 	~this()
-	{	Log.write("Removing shader '", source, "'.");
+	{	Log.info("Removing shader '", source, "'.");
 		glDeleteObjectARB(shader);
 	}
 

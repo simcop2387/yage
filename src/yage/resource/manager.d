@@ -123,7 +123,7 @@ abstract class ResourceManager
 			return fonts[source];
 		Timer t = new Timer();
 		fonts[source] = new Font(source);
-		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.info("Font ", source ~ " loaded in ", t, " seconds.");
 		return fonts[source];
 	}
 	
@@ -139,7 +139,7 @@ abstract class ResourceManager
 			return models[source];
 		Timer t = new Timer();
 		models[source] = new Model(source);
-		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.info("Model ", source ~ " loaded in ", t, " seconds.");
 		return models[source];
 	}
 
@@ -153,7 +153,7 @@ abstract class ResourceManager
 			return materials[source];
 		Timer t = new Timer();
 		materials[source] = new Material(source);
-		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.info("Material ", source ~ " loaded in ", t, " seconds.");
 		return materials[source];
 	}
 
@@ -167,7 +167,7 @@ abstract class ResourceManager
 			return shaders[source];
 		Timer t = new Timer();
 		shaders[source] = new Shader(source, type);
-		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.info("Shader ", source ~ " loaded in ", t, " seconds.");
 		return shaders[source];
 	}
 
@@ -180,7 +180,7 @@ abstract class ResourceManager
 			return sounds[source];
 		Timer t = new Timer();
 		sounds[source] = new Sound(source);
-		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.info("Sound ", source ~ " loaded in ", t, " seconds.");
 		return sounds[source];
 	}
 	
@@ -197,7 +197,7 @@ abstract class ResourceManager
 			return Texture(textures[mipmap][compress][source]);
 		Timer t = new Timer();
 		textures[mipmap][compress][source] = new GPUTexture(source, compress, mipmap);
-		Log.write("ResourceManager ", source ~ " loaded in ", t, " seconds.");
+		Log.info("ResourceManager ", source ~ " loaded in ", t, " seconds.");
 		return Texture(textures[mipmap][compress][source], clamp, filter);
 	}
 	

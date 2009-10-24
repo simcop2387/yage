@@ -172,22 +172,22 @@ class Layer : Resource
 		// Add shaders to the program
 		foreach (Shader shader; shaders)
 		{	glAttachObjectARB(program, shader.getShader());
-			Log.write("Linking shader ", shader.getSource());
+			Log.info("Linking shader ", shader.getSource());
 		}
 
 		// Link the program and check for errors
 		int status;
 		try {
 			glLinkProgramARB(program);
-		} catch { Log.write("Link Failed");}
+		} catch { Log.info("Link Failed");}
 		glGetObjectParameterivARB(program, GL_OBJECT_LINK_STATUS_ARB, &status);
 		if (!status)
-		{	Log.write(getShaderProgramLog());
+		{	Log.warn(getShaderProgramLog());
 			throw new ResourceManagerException("Could not link the shaders.");
 		}
 		glValidateProgramARB(program);
-		Log.write(getShaderProgramLog());
-		Log.write("Linking successful.");
+		Log.info(getShaderProgramLog());
+		Log.info("Linking successful.");
 	}
 
 	/// Set a the value of a uniform variable (or array of uniform variables) in this Layer's Shader program.

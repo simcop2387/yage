@@ -236,7 +236,7 @@ class Material : Resource
 			if (max_textures==0)
 				max_textures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 			if (t>max_textures)
-			{	Log.write("WARNING:  layer '", i ,"' has ", t,
+			{	Log.info("WARNING:  layer '", i ,"' has ", t,
 					" textures, but this hardware only supports ", max_textures, ".");
 			}
 

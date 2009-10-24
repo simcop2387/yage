@@ -23,7 +23,7 @@ import yage.core.math.quatrn;
  * --------------------------------
  * TODO: Convert looping code to static if's to improve performance.
  */
-struct Vec(int S, T, int D=0)
+struct Vec(int S, T : real, int D=0)
 {
 	alias Vec!(S, T) VST;
 	static const byte components = S;
@@ -377,37 +377,32 @@ struct Vec(int S, T, int D=0)
 		return result;
 	}
 	
-	/*
-	// Forward reference error
-	static if (S!=2)
-	{	///
-		Vec2f vec2f()
-		{	return Vec2f(v);
-		}
-	}*/
-	
-	static if (S!=3 && is(T == float))
-	{	///
-		Vec3f vec3f()
-		{	return Vec3f(v);
-		}
+	/**
+	 * Convert to one type of Vec to another.
+	 * Params:
+	 *     S2 = Size (number of components) of new Vec.
+	 *     T2 = type of new Vec. */
+	Vec!(S2, T2) toVec(int S2, T2 : real)()
+	{
+		Vec!(S2, T2) result = Vec!(S2, T2)();
+		for (int i=0; i<min(S, S2); i++)
+			result.v[i] = cast(T2)v[i];
+		return result;
 	}
 	
-	/*// forward reference error
-	static if (S!=4)
-	{	///
-		Vec4f vec4f()
-		{	return Vec4f(v);
-		}
-	}
-	*/
+	alias toVec!(2, float) vec2f; /// Convert to these types of vectors
+	alias toVec!(3, float) vec3f; /// ditto
+	alias toVec!(4, float) vec4f; /// ditto
+	alias toVec!(2, int) vec2i; /// ditto
+	alias toVec!(3, int) vec3i; /// ditto
+	alias toVec!(4, int) vec4i; /// ditto
 }
 
 alias Vec!(2, int) Vec2i;		/// A two-component int Vec
 alias Vec!(3, int) Vec3i;		/// A three-component int Vec
 alias Vec!(4, int) Vec4i;		/// A four-component int Vec
 alias Vec!(2, float) Vec2f;		/// A two-component float Vec
-alias Vec!(3, float) Vec3f2;			// Defined below
+alias Vec!(3, float) Vec3f2;	
 alias Vec!(4, float) Vec4f;		/// A four-component float Vec
 
 /**

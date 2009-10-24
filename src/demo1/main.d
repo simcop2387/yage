@@ -100,7 +100,7 @@ int main()
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
-	Log.write("Starting update loop.");
+	Log.info("Starting update loop.");
 	auto scene = new DemoScene();
 	scene.play(); // update 60 times per second
 	
@@ -116,7 +116,7 @@ int main()
 		// Trigger the garbage collector
 		if(key == SDLK_c) {
 			GC.collect();
-			Log.write("Garbage collected");
+			Log.info("Garbage collected");
 		}
 		if (key == SDLK_f)
 			window.setResolution(640, 480, 0, false, 1); // TODO: fix this
@@ -177,7 +177,7 @@ int main()
 	int fps = 0;
 	Timer frame = new Timer();
 	Timer delta = new Timer();
-	Log.write("Starting rendering loop.");
+	Log.info("Starting rendering loop.");
 	GC.collect();
 	
 	// Rendering loop

@@ -79,7 +79,7 @@ abstract class System
 		SoundContext.getInstance();
 				
 		initialized = true;
-		Log.write("Yage has been initialized successfully.");
+		Log.info("Yage has been initialized successfully.");
 	}
 	
 	/**
@@ -119,7 +119,7 @@ abstract class System
 		DerelictVorbisFile.unload();
 		
 		active = false;
-		Log.write("Yage has been de-initialized successfully.");
+		Log.info("Yage has been de-initialized successfully.");
 	}
 
 	/**
@@ -138,7 +138,7 @@ abstract class System
 	 * abortException provides a good exception callback for any asynchronous code that may throw an exception. */
 	static void abort(char[] message)
 	{	if (message.length)
-			Log.write(message);
+			Log.info(message);
 		aborted = true;
 	}
 	static void abortException(Exception e) /// ditto
