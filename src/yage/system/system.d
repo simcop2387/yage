@@ -6,8 +6,6 @@
 
 module yage.system.system;
 
-import std.stdio;
-
 import tango.stdc.stringz;
 import tango.core.Memory;
 import tango.core.Thread;

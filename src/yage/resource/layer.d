@@ -183,7 +183,7 @@ class Layer : Resource
 		glGetObjectParameterivARB(program, GL_OBJECT_LINK_STATUS_ARB, &status);
 		if (!status)
 		{	Log.warn(getShaderProgramLog());
-			throw new ResourceManagerException("Could not link the shaders.");
+			throw new ResourceException("Could not link the shaders.");
 		}
 		glValidateProgramARB(program);
 		Log.info(getShaderProgramLog());
@@ -236,7 +236,7 @@ class Layer : Resource
 	// Helper function for the public setUniform() functions.
 	protected void setUniform(char[] name, int width, float[] values)
 	{	if (!Probe.feature(Probe.Feature.SHADER))
-			throw new ResourceManagerException("Layer.setUniform() is only supported on hardware that supports shaders.");
+			throw new ResourceException("Layer.setUniform() is only supported on hardware that supports shaders.");
 
 		// Bind this program
 		if (current_program != program)
@@ -244,12 +244,12 @@ class Layer : Resource
 
 		// Get the location of name
 		if (program == 0)
-			throw new ResourceManagerException("Cannot set uniform variable for a layer with no shader program.");
+			throw new ResourceException("Cannot set uniform variable for a layer with no shader program.");
 		char[256] cname = 0;
 		cname[0..name.length] = name;
 		int location = glGetUniformLocationARB(program, cname.ptr);
 		if (location == -1)
-			throw new ResourceManagerException("Unable to set uniform variable: " ~ name);
+			throw new ResourceException("Unable to set uniform variable: " ~ name);
 
 		// Send the uniform data
 		switch (width)

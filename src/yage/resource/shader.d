@@ -58,7 +58,7 @@ class Shader : Resource
 		glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
 		if (!status)
 		{	Log.info(getCompileLog());
-			throw new ResourceManagerException("Could not compile shader '" ~ source ~ "'.");
+			throw new ResourceException("Could not compile shader '" ~ source ~ "'.");
 		}
 	}
 

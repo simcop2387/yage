@@ -59,7 +59,7 @@ class OpenALException : YageException
 }
 
 ///
-class ResourceManagerException : YageException
+class ResourceException : YageException
 {	
 	///
 	this(char[] message, ...)

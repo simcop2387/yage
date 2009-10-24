@@ -75,14 +75,14 @@ class Material : Resource
 		try
 		{	xml = readDocument(source);
 		} catch
-		{	throw new ResourceManagerException("Unable to parse xml material file '"~source~"'.");
+		{	throw new ResourceException("Unable to parse xml material file '"~source~"'.");
 		}
 
 		// Load material attributes
 		try
 		{	max_lights = to!(int)(xml.getAttribute("maxlights"));
 		}catch
-		{	throw new ResourceManagerException("Could not parse material attributes.");
+		{	throw new ResourceException("Could not parse material attributes.");
 		}
 
 		// Loop through each xml layer node
@@ -110,7 +110,7 @@ class Material : Resource
 				if (xml_layer.hasAttribute("specularity"))
 					layer.specularity = atoi(xml_layer.getAttribute("specularity"));
 				if (layer.specularity<0 || layer.specularity>128)
-					throw new ResourceManagerException("Could not parse layer '", i,
+					throw new ResourceException("Could not parse layer '", i,
 						"' attributes.  Specularity must be between 0 and 128.\n");
 
 				// Blend
@@ -121,7 +121,7 @@ class Material : Resource
 						case "add"		: layer.blend = BLEND_ADD;  break;
 						case "multiply"	: layer.blend = BLEND_MULTIPLY;  break;
 						case "average"	: layer.blend = BLEND_AVERAGE;  break;
-						default: throw new ResourceManagerException("Invalid blend value '" ~ blend ~"'.");
+						default: throw new ResourceException("Invalid blend value '" ~ blend ~"'.");
 				}	}
 
 				// Cull, mode, width
@@ -130,7 +130,7 @@ class Material : Resource
 					switch (cull)
 					{	case "front"	: layer.cull = LAYER_CULL_FRONT;  break;
 						case "back"		: layer.cull = LAYER_CULL_FRONT;  break;
-						default: throw new ResourceManagerException("Invalid cull value '" ~ cull ~"'.");
+						default: throw new ResourceException("Invalid cull value '" ~ cull ~"'.");
 				}	}
 				if(xml_layer.hasAttribute("draw"))
 				{	char[] draw = tolower(xml_layer.getAttribute("draw"));
@@ -142,13 +142,13 @@ class Material : Resource
 						case "lines"	: layer.draw = LAYER_DRAW_LINES;  break;
 						case "point"	:
 						case "points"	: layer.draw = LAYER_DRAW_POINTS;  break;
-						default: throw new ResourceManagerException("Invalid draw value '" ~ draw~"'.");
+						default: throw new ResourceException("Invalid draw value '" ~ draw~"'.");
 				}	}
 				if(xml_layer.hasAttribute("width"))
 					layer.width = atoi(xml_layer.getAttribute("width"));
 
 			}catch (Exception e)
-			{	throw new ResourceManagerException("Could not parse layer '", i, "' attributes.\n", e);
+			{	throw new ResourceException("Could not parse layer '", i, "' attributes.\n", e);
 			}
 
 			// Loop through each xml texture and shader of the layer
@@ -181,7 +181,7 @@ class Material : Resource
 								case "add"		: ti.blend = BLEND_ADD;  break;
 								case "multiply"	: ti.blend = BLEND_MULTIPLY;  break;
 								case "average"	: ti.blend = BLEND_AVERAGE;  break;
-								default: throw new ResourceManagerException("Invalid blend value '" ~ blend ~"'.");
+								default: throw new ResourceException("Invalid blend value '" ~ blend ~"'.");
 						}	}
 
 						// Filter
@@ -192,7 +192,7 @@ class Material : Resource
 								case "nearest"	: ti.filter = Texture.Filter.NONE; break;
 								case "bilinear"	: ti.filter = Texture.Filter.BILINEAR; break;
 								case "trilinear": ti.filter = Texture.Filter.TRILINEAR; break;
-								default: throw new ResourceManagerException("Invalid filter value '" ~ str ~"'.");
+								default: throw new ResourceException("Invalid filter value '" ~ str ~"'.");
 						}	}
 
 						// Position, rotation, scale
@@ -201,7 +201,7 @@ class Material : Resource
 						//if (xmap.hasAttribute("scale"   )) ti.scale.v[0..2]    = csvToFloat(xmap.getAttribute("scale"));
 					}
 					catch (Exception e)
-					{	throw new ResourceManagerException(
+					{	throw new ResourceException(
 							"Could not parse texture '", t, "' in layer '", i, "'.\n"
 							~ e.toString());
 					}
@@ -219,13 +219,13 @@ class Material : Resource
 					{	source	= xmap.getAttribute("src");
 						str_type= tolower(xmap.getAttribute("type"));
 					}catch
-					{	throw new ResourceManagerException(
+					{	throw new ResourceException(
 							"Could not parse shader '", s, "' in layer '", i, "'.\n");
 					}
 					// Convert type from string to bool, and load
 					if (str_type=="vertex") type = 0;
 					else if (str_type=="fragment") type = 1;
-					else throw new ResourceManagerException("Could not parse shader type '" ~ str_type ~ "' in shader '",
+					else throw new ResourceException("Could not parse shader type '" ~ str_type ~ "' in shader '",
 									s, "'.  Must be 'vertex' or 'fragment'.");
 					layer.addShader(ResourceManager.shader(ResourceManager.resolvePath(source, path), type));
 				}

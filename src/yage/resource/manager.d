@@ -7,6 +7,8 @@
 module yage.resource.manager;
 
 import tango.text.Unicode;
+import tango.io.Path;
+import tango.io.model.IFile : FileConst;
 
 import yage.core.array;
 import yage.core.misc;
@@ -50,8 +52,8 @@ abstract class ResourceManager
 	static int addPath(char[] path)
 	{	version (Windows)
 			path = toLower(path);
-		if (path[length-1] != std.path.sep[0])
-			path ~= std.path.sep;
+		if (path[length-1] != FileConst.PathSeparatorChar)
+			path ~= FileConst.PathSeparatorChar;
 		paths ~= path;
 		return paths.length;
 	}
@@ -63,25 +65,27 @@ abstract class ResourceManager
 	}
 
 	/**
-	 * /**
 	 * Resolve a relative path to a path relative to the working directory.
 	 * Any paths defined by ResourceManager.addPath() are taken into account.
 	 * Params:
 	 *     path = Path to a file, relative to a path defined by addPath().
 	 *     current_dir = Optional.  A directory relative to the working directory to search for the file pointed to by path.
 	 * Returns: The resolved path.
-	 * Throws: A ResourceManagerException if the path could not be resolved. */
+	 * Throws: A Log.info if the path could not be resolved. */
 	static char[] resolvePath(char[] path, char[] current_dir="")
 	{	version (Windows)
 		{	path = toLower(path);
 			current_dir = toLower(current_dir);
 		}
-		if (std.file.exists(std.path.join(current_dir, path)))
-			return cleanPath(current_dir~path);
+		char[] result = cleanPath(FS.join(current_dir, path));
+		if (std.file.exists(result))
+			return result;
 		foreach(char[] p; paths)
-			if (std.file.exists(std.path.join(p, path)))
-				return cleanPath(p~path);
-		throw new ResourceManagerException("The path '{}' could not be resolved.", path);
+		{	result = cleanPath(FS.join(p, path));
+			if (std.file.exists(result))
+				return result;
+		}
+		throw new ResourceException("The path '{}' could not be resolved.", path);
 	}
 
 	/// Remove a path from the array of resource search paths.

@@ -5,8 +5,6 @@
  */
 module yage.system.sound.soundsystem;
 
-import std.stdio;
-
 import derelict.openal.al;
 
 import tango.math.Math;

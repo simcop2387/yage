@@ -16,8 +16,6 @@
  */
 module yage.core.array;
 
-import std.stdio;
-
 import yage.core.math.math;
 import yage.core.types;
 import yage.core.timer;

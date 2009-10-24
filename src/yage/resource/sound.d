@@ -54,7 +54,7 @@ class Sound : Resource
 			sound_file = new WaveFile(source);
 		else if (file[0..4]=="OggS")
 			sound_file = new VorbisFile(source);
-		else throw new ResourceManagerException("Unrecognized sound format '"~cast(char[])file[0..4]~"' for file '"~source~"'.");
+		else throw new ResourceException("Unrecognized sound format '"~cast(char[])file[0..4]~"' for file '"~source~"'.");
 		delete file;
 
 		// Determine OpenAL format
@@ -62,7 +62,7 @@ class Sound : Resource
 		else if (sound_file.channels==1 && sound_file.bits==16) al_format = AL_FORMAT_MONO16;
 		else if (sound_file.channels==2 && sound_file.bits==8)  al_format = AL_FORMAT_STEREO8;
 		else if (sound_file.channels==2 && sound_file.bits==16) al_format = AL_FORMAT_STEREO16;
-		else throw new ResourceManagerException("Sound must be 8 or 16 bit and mono or stero format.");
+		else throw new ResourceException("Sound must be 8 or 16 bit and mono or stero format.");
 
 		// Calculate the parameters for our buffers
 		int one_second_size = (sound_file.bits/8)*sound_file.frequency*sound_file.channels;
@@ -181,11 +181,11 @@ class Sound : Resource
 					if (OpenAL.isBuffer(buffers[i]))
 					{	OpenAL.deleteBuffers(1, &buffers[i]); /// TODO, delete multiple buffers at once?
 						if (OpenAL.isBuffer(buffers[i]))
-							throw new ResourceManagerException(
+							throw new ResourceException(
 								"OpenAL Sound buffer %d of '%s' could not be deleted; probably because it is in use.\n", 
 								i, sound_file.source);
 					} else
-						throw new ResourceManagerException( // this should never happen.
+						throw new ResourceException( // this should never happen.
 							"OpenAL Sound buffer %d of '%s' cannot be deleted because it is has not been allocated.\n", 
 							i, sound_file.source);
 		}	}
@@ -252,10 +252,10 @@ private class WaveFile : SoundFile
 
 		// First 4 bytes of Wave file should be "RIFF"
 		if (file[0..4] != "RIFF")
-			throw new ResourceManagerException("'"~filename~"' is not a RIFF file.");
+			throw new ResourceException("'"~filename~"' is not a RIFF file.");
 		// Skip size value (4 bytes)
 		if (file[8..12] != "WAVE")
-			throw new ResourceManagerException("'"~filename~"' is not a WAVE file.");
+			throw new ResourceException("'"~filename~"' is not a WAVE file.");
 		// Skip "fmt ", format length, format tag (10 bytes)
 		channels 	= (cast(ushort[])file[22..24])[0];
 		frequency	= (cast(uint[])file[24..28])[0];
@@ -299,7 +299,7 @@ private class VorbisFile : SoundFile
 		version(linux){}
 		else  // this returns false errors on linux?
 		{	if(status < 0)
-				throw new ResourceManagerException("'"~filename~"' is not an ogg vorbis file.\n");
+				throw new ResourceException("'"~filename~"' is not an ogg vorbis file.\n");
 		}
 		vorbis_info *vi = ov_info(&vf, -1);
 

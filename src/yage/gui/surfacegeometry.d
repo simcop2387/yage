@@ -6,8 +6,6 @@
 
 module yage.gui.surfacegeometry;
 
-import std.stdio;
-
 import yage.core.all;
 
 import yage.resource.texture;

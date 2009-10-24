@@ -8,8 +8,6 @@ module yage.system.input;
 
 public import derelict.sdl.sdl;
 
-import std.stdio;
-
 import yage.core.math.vector;
 import yage.system.system;
 import yage.system.window;

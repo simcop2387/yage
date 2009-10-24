@@ -6,8 +6,6 @@
 
 module yage.gui.surface;
 
-import std.stdio;
-
 import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.math.Math;

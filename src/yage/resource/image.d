@@ -6,8 +6,6 @@
 
 module yage.resource.image;
 
-import std.stdio;
-
 import tango.io.Stdout;
 import tango.math.Math;
 import tango.text.Unicode;
@@ -108,7 +106,7 @@ class Image : Resource
 		
 		// Attempt to load image
 		if ((sdl_image = IMG_Load(source)) is null)
-			throw new ResourceManagerException("Could not open image file '%s'.", filename);		
+			throw new ResourceException("Could not open image file '%s'.", filename);		
 		width = sdl_image.w;
 		height = sdl_image.h;
 		
@@ -485,10 +483,10 @@ class Image : Resource
 					delete temp;
 				}
 				else
-					throw new ResourceManagerException("Not implemented yet :)");
+					throw new ResourceException("Not implemented yet :)");
 				break;
 			default:
-				throw new ResourceManagerException("Unrecognized image format.");
+				throw new ResourceException("Unrecognized image format.");
 	
 		}
 		this.channels = channels;

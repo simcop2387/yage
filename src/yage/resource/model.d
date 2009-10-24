@@ -249,7 +249,7 @@ class Model : Geometry
 				//std.gc.genCollect();
 				break;
 			default:
-				throw new ResourceManagerException("Unrecognized model file format '"~ext~"'.");
+				throw new ResourceException("Unrecognized model file format '"~ext~"'.");
 		}
 	}
 }

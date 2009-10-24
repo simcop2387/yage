@@ -6,8 +6,6 @@
 
 module yage.system.window;
 
-import std.stdio;
-
 import tango.stdc.stringz;
 import tango.io.Stdout;
 import derelict.opengl.gl;

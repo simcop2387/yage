@@ -6,8 +6,6 @@
 
 module yage.core.math.matrix;
 
-import std.stdio;
-
 import tango.math.Math;
 import tango.text.convert.Format;
 import yage.core.math.vector;

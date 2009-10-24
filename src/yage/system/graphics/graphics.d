@@ -18,7 +18,6 @@
  */
 module yage.system.graphics.graphics;
 
-import std.stdio;
 import yage.system.log;
 
 import tango.core.Thread;

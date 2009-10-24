@@ -98,11 +98,11 @@ else
  */
 class FormatError : Exception
 {   this()
-    {  	super("std.format");
+    {  	super("yage.core.format");
     }
 
     this(char[] msg)
-    {	super("std.format " ~ msg);
+    {	super("yage.core.format " ~ msg);
     }
 }
 
@@ -1338,7 +1338,7 @@ unittest
     int i;
     string s;
 
-    debug(format) printf("std.format.format.unittest\n");
+    debug(format) printf("yage.core.format.format.unittest\n");
  
     s = swritef("hello world! %s %s ", true, 57, 1_000_000_000, 'x', " foo");
     assert(s == "hello world! true 57 1000000000x foo");

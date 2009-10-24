@@ -92,15 +92,15 @@ class Font : Resource
 		// TODO: Move this into System?
 		if (!freetype_initialized)
 			if (FT_Init_FreeType(&library))
-				throw new ResourceManagerException("Freetype2 Failed to load.");
+				throw new ResourceException("Freetype2 Failed to load.");
 		
 		// Load
 		source = ResourceManager.resolvePath(filename);
 		auto error = FT_New_Face(library, (source~"\0").ptr, 0, &face);
 		if (error == FT_Err_Unknown_File_Format)
-			throw new ResourceManagerException("Could not open font file '%s'. The format is not recognized by Freetype2.", source);
+			throw new ResourceException("Could not open font file '%s'. The format is not recognized by Freetype2.", source);
 		else if (error)
-			throw new ResourceManagerException("Freetype2 could not open font file '%s'.", source);		
+			throw new ResourceException("Freetype2 could not open font file '%s'.", source);		
 	}
 	
 	//
@@ -143,12 +143,12 @@ class Font : Resource
 			// Give our font size to freetype.
 			scope error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
 			if (error)
-				throw new ResourceManagerException("Font '{}' does not support pixel sizes of {}x{}.", source, width, height);
+				throw new ResourceException("Font '{}' does not support pixel sizes of {}x{}.", source, width, height);
 		
 			// Render the character into the glyph slot.
 			error = FT_Load_Char(face, letter, FT_LOAD_RENDER);  
 			if (error)
-				throw new ResourceManagerException("Font '{}' cannot render the character '{}'.", source, .toString([letter]));			
+				throw new ResourceException("Font '{}' cannot render the character '{}'.", source, .toString([letter]));			
 			
 			scope bitmap = face.glyph.bitmap;
 			ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				

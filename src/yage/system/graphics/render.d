@@ -6,8 +6,6 @@
 
 module yage.system.graphics.render;
 
-import std.stdio;
-
 import tango.math.Math;
 import tango.io.Stdout;
 
@@ -1074,7 +1072,7 @@ private struct Bind
 						glinternalformat = gpuTexture.compress ? GL_COMPRESSED_RGBA : GL_RGBA;
 						break;
 					default:
-						throw new ResourceManagerException("Unknown texture format {}", gpuTexture.format);
+						throw new ResourceException("Unknown texture format {}", gpuTexture.format);
 				}
 				
 				gpuTexture.width = image.getWidth();
