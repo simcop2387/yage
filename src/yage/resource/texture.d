@@ -125,7 +125,9 @@ class GPUTexture : ExternalResource, IRenderTarget
 
 	/// ditto
 	this(Image image, bool compress=true, bool mipmap=true, char[] source="", bool pad=false)
-	{	super();
+	{	assert(image !is null);
+		assert(image.getData() !is null);
+		super();		
 		this.image = image;
 		this.compress=  compress;
 		this.mipmap = mipmap;

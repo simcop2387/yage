@@ -10,7 +10,6 @@
 module unittests.demo.ui;
 
 import tango.text.convert.Format;
-import tango.io.Stdout;
 import yage.all;
 
 // program entry point.
@@ -27,7 +26,7 @@ void main()
 	{	Graphics.pushState();
 		Graphics.popState();
 	}
-	Log2.trace(a.toString());
+	Log.trace(a.toString());
 	
 	//a = new Timer();
 	//for (int i=0; i<1000; i++)
@@ -41,7 +40,7 @@ void main()
 		//assert(o);
 		Graphics.applyState();
 	}
-	Log2.trace(a.toString());
+	Log.trace(a.toString());
 	
 
 }

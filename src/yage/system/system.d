@@ -61,7 +61,7 @@ abstract class System
 		active = true;
 		this.self_thread = Thread.getThis();
 
-		// load shared libraries
+		// load shared libraries (should these be loaded lazily?)
 		DerelictSDL.load();
 		DerelictSDLImage.load();
 		DerelictFT.load();
@@ -73,7 +73,10 @@ abstract class System
 		SDL_EnableUNICODE(true);
 		SDL_EnableKeyRepeat(1, 100);
 				
-		// Create OpenAL device, context, and start sound proessing thread.
+		// Load embedded resources.
+		ResourceManager.init();
+		
+		// Create OpenAL device, context, and start sound processing thread.
 		SoundContext.getInstance();
 				
 		initialized = true;

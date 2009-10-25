@@ -9,10 +9,11 @@ module yage.gui.surface;
 import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.math.Math;
+import tango.text.convert.Utf;
 import yage.core.all;
 import yage.system.system;
 import yage.system.input;
-import yage.system.graphics.graphics;
+import yage.system.log;
 import yage.system.graphics.render;
 import yage.system.window;
 import yage.resource.texture;
@@ -32,22 +33,26 @@ class Surface : Tree!(Surface)
 {	
 	Style style;
 	char[] text;
+	bool editable = true;
+	bool mouseChildren = true;
+	
 	protected char[] old_text;
 	protected GPUTexture textTexture;	
 
 	/// Callback functions
-	void delegate(Surface self) onBlur; ///
-	void delegate(Surface self) onDraw; ///
-	void delegate(Surface self) onFocus; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onClick; /// unfinished
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
-	void delegate(Surface self, int key, int modifier) onKeyDown; ///
-	void delegate(Surface self, int key, int modifier) onKeyUp; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseDown; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseUp; ///
-	void delegate(Surface self, byte buttons, Vec2i amount) onMouseMove; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOver; ///
-	void delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOut; ///
+	bool delegate(Surface self) onBlur; ///
+	bool delegate(Surface self) onDraw; ///
+	bool delegate(Surface self) onFocus; ///
+	bool delegate(Surface self, byte buttons, Vec2i coordinates) onClick; /// unfinished
+	bool delegate(Surface self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
+	bool delegate(Surface self, int key, int modifier) onKeyDown; /// Triggered once when a key is pressed down
+	bool delegate(Surface self, int key, int modifier) onKeyUp; /// Triggered once when a key is released
+	bool delegate(Surface self, int key, int modifier) onKeyPress; /// Triggered when a key is pressed down and repeats at the key repeat rate.
+	bool delegate(Surface self, byte buttons, Vec2i coordinates, char[] href) onMouseDown; ///
+	bool delegate(Surface self, byte buttons, Vec2i coordinates, char[] href) onMouseUp; ///
+	bool delegate(Surface self, byte buttons, Vec2i amount, char[] href) onMouseMove; ///
+	bool delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOver; ///
+	bool delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOut; ///
 	void delegate(Surface self, Vec2f amount) onResize; ///
 	
 	/// This is a mirror of SDLMod (SDL's modifier key struct)
@@ -147,25 +152,33 @@ class Surface : Tree!(Surface)
 	 * Surfaces are ordered by zIndex with higher values appearing on top.
 	 * This function recurses through children and will return children, grandchildren, etc. as necessary.
 	 * TODO: Add relative argument to allow x and y to be relative to another surface.
-	 * Returns: The surface, or self if no surface at the coordinates, or null if coordinates are outside self. */
-	Surface findSurface(float x, float y)
+	 * Params:
+	 *     x = X coordinate in pixels
+	 *     y = Y coordinate in pixels
+	 *     useMouseChildren = If true (the default), and a surface has mouseChildren=false, 
+	 *         the children will not be searched.
+	 * Returns: The surface at the coordinates (may be self), or null if coordinates are outside of this surface. */
+	Surface findSurface(float x, float y, bool useMouseChildren=true)
 	{	
-		Vec2f[4] polygon;
-		getPolygon(polygon.ptr);
-		
-		if (Vec2f(x, y).inside(polygon))
+		// Search children
+		if (useMouseChildren && mouseChildren)
 		{	// Sort if necessary
 			if (!children.sorted(false, (Surface s){return s.style.zIndex;}))
 				children.radixSort(false, (Surface s){return s.style.zIndex;});
 			
-			// Recurse
 			foreach(surf; children)
 			{	Surface result = surf.findSurface(x, y);
 				if (result)
 					return result;
 			}
-			return this;
 		}
+		
+		// Search self
+		Vec2f[4] polygon;
+		getPolygon(polygon.ptr);
+		if (Vec2f(x, y).inside(polygon))
+			return this;
+		
 		return null;		
 	}
 	
@@ -291,6 +304,7 @@ class Surface : Tree!(Surface)
 			int width = cast(int)width();
 			int height = cast(int)height();
 			Image textImage = TextLayout.render(text, style, width, height, true); // TODO: Change true to Probe.NextPow2
+			assert(textImage !is null);
 			if (!textTexture) // create texture on first go
 				textTexture = new GPUTexture(textImage, false, false, text, true);
 			else
@@ -342,9 +356,10 @@ class Surface : Tree!(Surface)
 	 * Trigger a keyDown event and call the onKeyDown callback function if set. 
 	 * If the onKeyDown function is not set, call the parent's keyDown function. */ 
 	void keyDown(dchar key, int mod=ModifierKey.NONE)
-	{	if(onKeyDown)
-			onKeyDown(this, key, mod);
-		else if(parent) 
+	{	bool propagate = true;
+		if(onKeyDown)
+			propagate = onKeyDown(this, key, mod);
+		else if(parent && propagate) 
 			parent.keyDown(key, mod);
 	}
 	
@@ -352,51 +367,76 @@ class Surface : Tree!(Surface)
 	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
 	 * If the onKeyUp function is not set, call the parent's keyUp function.*/ 
 	void keyUp(dchar key, int mod=ModifierKey.NONE)
-	{	if(onKeyUp)
-			onKeyUp(this, key, mod);
-		else if(parent) 
+	{	bool propagate = true;
+		if(onKeyUp)
+			propagate = onKeyUp(this, key, mod);
+		else if(parent && propagate) 
 			parent.keyUp(key, mod);
+	}
+	
+	/**
+	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
+	 * If the onKeyUp function is not set, call the parent's keyUp function.*/ 
+	void keyPress(dchar key, int mod=ModifierKey.NONE)
+	{	bool propagate = true;
+		if(onKeyPress)
+			propagate = onKeyPress(this, key, mod);		
+		if (propagate)
+		{	if (editable)
+			{	dchar[1] temp; // avoid allocation
+				temp[0] = key;
+				char[4] lookaside;
+			//	text ~= .toString(temp, lookaside); // unfinished
+			}
+			if(parent) 
+				parent.keyPress(key, mod);
+		}
 	}
 
 	/**
 	 * Trigger a mouseDown event and call the onMouseDown callback function if set. 
 	 * If the onMouseDown function is not set, call the parent's mouseDown function.*/ 
-	void mouseDown(byte buttons, Vec2i coordinates){ 
+	void mouseDown(byte buttons, Vec2i coordinates, char[] href=null){ 
+		bool propagate = true;
 		if(onMouseDown)
-			onMouseDown(this, buttons, coordinates);
-		else if(parent) 
-			parent.mouseDown(buttons, coordinates);
+			propagate = onMouseDown(this, buttons, coordinates, href);
+		else if(parent && propagate) 
+			parent.mouseDown(buttons, coordinates, href);
 	}
 	
 	/**
 	 * Trigger a mouseUp event and call the onMouseUp callback function if set. 
 	 * If the onMouseUp function is not set, call the parent's mouseUp function.*/ 
-	void mouseUp(byte buttons, Vec2i coordinates){ 
+	void mouseUp(byte buttons, Vec2i coordinates, char[] href=null){ 
+		bool propagate = true;
 		if(onMouseUp)
-			onMouseUp(this, buttons, coordinates);
-		else if(parent) 
-			parent.mouseUp(buttons, coordinates);
-	}
-	
-	/**
-	 * Trigger a mouseOver event and call the onMouseOver callback function if set. */ 
-	void mouseOver(byte buttons, Vec2i coordinates){
-		if(!mouseIn )
-		{	if(parent) 
-				parent.mouseOver(buttons, coordinates);			
-			mouseIn = true;
-			if(onMouseOver) 
-				onMouseOver(this, buttons, coordinates);
-		}
+			propagate = onMouseUp(this, buttons, coordinates, href);
+		else if(parent && propagate) 
+			parent.mouseUp(buttons, coordinates, href);
 	}
 	
 	/**
 	 * Trigger a mouseMove event and call the onMouseMove callback function if set. */ 
-	void mouseMove(byte buttons, Vec2i amount){
+	void mouseMove(byte buttons, Vec2i amount, char[] href=null){
+		bool propagate = true;
 		if(onMouseMove)
-			onMouseMove(this, buttons, amount);
-		else if(parent) 
-			parent.mouseMove(buttons, amount);
+			propagate = onMouseMove(this, buttons, amount, href);
+		else if(parent && propagate) 
+			parent.mouseMove(buttons, amount, href);
+	}
+
+	/**
+	 * Trigger a mouseOver event and call the onMouseOver callback function if set. */ 
+	void mouseOver(byte buttons, Vec2i coordinates) {
+		if(!mouseIn )
+		{	bool propagate = true;
+				
+			mouseIn = true;
+			if(onMouseOver) 
+				propagate = onMouseOver(this, buttons, coordinates);
+			if(parent && propagate) 
+				parent.mouseOver(buttons, coordinates);		
+		}
 	}
 
 	/**
@@ -404,13 +444,14 @@ class Surface : Tree!(Surface)
 	void mouseOut(Surface next, byte buttons, Vec2i coordinates)
 	{
 		if(mouseIn)
-		{	if(isChild(next))
+		{	bool propagate = true;
+			if(isChild(next))
 				return;
 			else
 			{	mouseIn = false;
 				if(onMouseOut)
-					onMouseOut(this, buttons, coordinates);			
-				if(next !is parent && parent)
+					propagate = onMouseOut(this, buttons, coordinates);			
+				if(next !is parent && parent && propagate)
 					parent.mouseOut(next, buttons, coordinates);
 			}
 		}

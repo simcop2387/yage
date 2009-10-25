@@ -109,7 +109,7 @@ int main()
 	view.style.set("width: 100%; height: 100%");
 	
 	// Events for main surface.
-	view.onKeyDown = delegate void (Surface self, int key, int modifier){
+	view.onKeyDown = delegate bool (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
 		
@@ -118,8 +118,8 @@ int main()
 			GC.collect();
 			Log.info("Garbage collected");
 		}
-		if (key == SDLK_f)
-			window.setResolution(640, 480, 0, false, 1); // TODO: fix this
+		//if (key == SDLK_f)
+		//	window.setResolution(640, 480, 0, false, 1); // TODO: fix this
 
 		
 		// Reset the scene
@@ -131,22 +131,26 @@ int main()
 		}
 		
 		scene.ship.keyDown(key);
+		return true;
 	};
 	
-	view.onKeyUp = delegate void (Surface self, int key, int modifier){
+	view.onKeyUp = delegate bool (Surface self, int key, int modifier){
 		scene.ship.keyUp(key);
+		return true;
 	};
 	
-	view.onMouseDown = delegate void (Surface self, byte buttons, Vec2i coordinates){
+	view.onMouseDown = delegate bool (Surface self, byte buttons, Vec2i coordinates, char[] href){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
 		if (scene.ship.acceptInput)
 			self.grabMouse();
 		else
 			self.releaseMouse();
+		return true;
 	};
-	view.onMouseMove = delegate void (Surface self, byte buttons, Vec2i rel){
+	view.onMouseMove = delegate bool (Surface self, byte buttons, Vec2i rel, char[] href){
 		if(scene.ship.acceptInput)
 			scene.ship.input.mouseDelta += rel;
+		return true;
 	};
 		
 	// Make a draggable window to show some useful info.
@@ -156,22 +160,27 @@ int main()
 		"font-family: url('Vera.ttf'); font-size: 14px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
-	info.onMouseDown = delegate void(Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href) {
 		self.raise();
 		self.focus();
+		return true;
 	};
-	info.onMouseMove = delegate void(Surface self, byte buttons, Vec2i amount) {
+	info.onMouseMove = delegate bool(Surface self, byte buttons, Vec2i amount, char[] href) {
 		if(buttons == 1) 
 			self.move(cast(Vec2f)amount, true);
+		return true;
 	};
-	info.onMouseUp = delegate void(Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseUp = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href) {
 		self.blur();
+		return true;
 	};
-	info.onMouseOver = delegate void(Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseOver = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear3.png')");
+		return true;
 	};
-	info.onMouseOut = delegate void(Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseOut = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear2.png')");
+		return true;
 	};
 
 	int fps = 0;

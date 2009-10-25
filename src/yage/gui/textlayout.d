@@ -17,6 +17,7 @@ import tango.text.convert.Format;
 import tango.text.Regex;
 import tango.text.Unicode;
 import tango.text.Util;
+
 import yage.core.cache;
 import yage.core.color;
 import yage.core.math.math;
@@ -25,6 +26,7 @@ import yage.core.timer;
 import yage.core.types;
 import yage.resource.font;
 import yage.resource.image;
+import yage.resource.manager;
 import yage.gui.style;
 import yage.gui.exceptions;
 
@@ -75,7 +77,7 @@ class TextLayout
 		static InlineStyle opCall(Style style)
 		{	
 			InlineStyle result;
-			result.fontFamily = style.fontFamily;
+			result.fontFamily = style.fontFamily ? style.fontFamily : ResourceManager.font("auto");
 			
 			float fontSizePx = style.fontSize.toPx(0); // incorrect, should inherit from parent font size
 			result.fontSize = isNaN(fontSizePx) ? cast(int)Style().fontSize.toPx(0): cast(int)fontSizePx;
@@ -146,9 +148,8 @@ class TextLayout
 	static Image render(char[] text, Style style, int width, int height, bool pow2=false)
 	{
 		Image result;
-		//text = .toString(lastRenderTime*1000, 6) ~ "<br/>" ~ text; // temporary profiling
 
-		if (text.length && style.fontFamily)
+		if (text.length)
 		{	letters.length = 0;
 			lines.length = 0;	
 			

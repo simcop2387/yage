@@ -14,10 +14,13 @@ import yage.core.array;
 import yage.core.misc;
 import yage.core.object2;
 import yage.core.timer;
+
+import yage.resource.embed.juras_medium_ascii_ttf;
 import yage.resource.font;
 import yage.resource.model;
 import yage.resource.material;
 import yage.resource.texture;
+import yage.resource.resource;
 import yage.resource.shader;
 import yage.resource.sound;
 import yage.system.log;
@@ -28,7 +31,7 @@ import yage.system.log;
  * as a key in the associative array while the value returns the class itself.
  * When a manual request is made to load a resource, such as a Texture or a Material,
  * a check should first be made with the resource manager.*/
-abstract class ResourceManager
+struct ResourceManager
 {
 	static char[][] paths = [""];		// paths to look for resources
 
@@ -39,6 +42,18 @@ abstract class ResourceManager
 	private static Sound[char[]]	sounds;
 	private static GPUTexture[char[]][2][2] textures; // [source][clamped][compressed][mipmapped][filter]
 
+	
+	/**
+	 * Load embedded resources.  This is called from System.init() and shouldn't be called manually.
+	 * Embedded resources includes:
+	 * A font named "auto" that 
+	 */
+	static void init()
+	{
+		//  Load default font (embedded in source)
+		fonts["auto"] = new Font(jurasMediumAscii_ttf, "auto"); // warning, this triggered derelict.loadFT;
+	}
+	
 	/// Get the array of path strings
 	static char[][] getPaths()
 	{	return paths;
@@ -223,3 +238,29 @@ abstract class ResourceManager
 				j = null;
 	}
 }
+/*
+struct Cleanup
+{
+	private static Array!(Resource) resources;
+	private static Object mutex;
+	
+	static this()
+	{//	mutex = new Object();		
+	}
+	
+	private static void add(Resource resource)
+	{	synchronized(mutex)
+			resources ~= resources;
+	}
+	
+	private static void dispose(Resource resource)
+	{
+		
+	}
+	
+	private static void disposeAll()
+	{
+		
+	}
+}
+*/

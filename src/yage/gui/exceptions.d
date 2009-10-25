@@ -5,19 +5,19 @@
  */
 module yage.gui.exceptions;
 
-import yage.core.object2;;
-import tango.text.convert.Format;
+import yage.core.object2;
+import yage.core.format;
 
 ///
 class CSSException : YageException
-{	this(char[] message, ...)
-	{	super(Format.convert(_arguments, _argptr, message));
+{	this(...)
+	{	super(swritefArgs(_arguments, _argptr));
 	}	
 }
 
 ///
 class XHTMLException : YageException
-{	this(char[] message, ...)
-	{	super(Format.convert(_arguments, _argptr, message));
+{	this(...)
+	{	super(swritefArgs(_arguments, _argptr));
 	}	
 }

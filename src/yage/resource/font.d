@@ -6,10 +6,15 @@
 
 module yage.resource.font;
 
-import tango.io.Stdout;
+import tango.io.device.File;
+import tango.io.FilePath;
+import tango.io.device.TempFile;
+
 import tango.text.convert.Utf;
 import tango.math.Math;
+
 import derelict.freetype.ft;
+
 import yage.core.math.math;
 import yage.core.timer;
 import yage.core.types;
@@ -19,6 +24,7 @@ import yage.resource.image;
 import yage.resource.manager;
 import yage.resource.resource;
 import yage.resource.texture;
+import yage.system.log;
 
 /**
  * Stores a single rendered letter. */ 
@@ -76,10 +82,9 @@ class Font : Resource
 	}
 	
 	protected static FT_Library library;
-	protected static bool freetype_initialized = false;
 	
 	protected FT_Face face;
-	protected char[] source;
+	protected char[] resourceName;
 	protected Letter[Key] cache; // Using this cache of rendered character images increases performance by about 5x.
 	
 	/**
@@ -89,23 +94,66 @@ class Font : Resource
 	this(char[] filename)
 	{
 		// Initialize Freetype library if not initialized
-		// TODO: Move this into System?
-		if (!freetype_initialized)
-			if (FT_Init_FreeType(&library))
-				throw new ResourceException("Freetype2 Failed to load.");
+		uint error;
+		if (!library)
+		{	error = FT_Init_FreeType(&library); // TODO: FT_DONE_LIBRARY
+			if (error)
+				throw new ResourceException("Freetype2 Failed to load.  Error code %s", error);
+		}
+		
+		//ubyte[] contents = cast(ubyte[])File.get(resourceName);	
+		//this(cast(ubyte[])File.get(resourceName), resourceName);
 		
 		// Load
-		source = ResourceManager.resolvePath(filename);
-		auto error = FT_New_Face(library, (source~"\0").ptr, 0, &face);
+		resourceName = ResourceManager.resolvePath(filename);
+		error = FT_New_Face(library, (resourceName~'\0').ptr, 0, &face);
 		if (error == FT_Err_Unknown_File_Format)
-			throw new ResourceException("Could not open font file '%s'. The format is not recognized by Freetype2.", source);
+			throw new ResourceException("Could not open font file '%s'. The format is not recognized by Freetype2.", resourceName);
 		else if (error)
-			throw new ResourceException("Freetype2 could not open font file '%s'.", source);		
+			throw new ResourceException("Freetype2 could not open font file '%s'.  Error code %d.", resourceName, error);
+		else if(face is null)
+			throw new ResourceException("Freetype2 could not open font file '%s'.", resourceName);
+	}
+	
+	this(ubyte[] data, char[] resourceName)
+	{
+		// Initialize Freetype library if not initialized
+		uint error;
+		if (!library)
+		{	error = FT_Init_FreeType(&library);
+			if (error)
+				throw new ResourceException("Freetype2 Failed to load.  Error code %s", error);
+		}
+		
+		// HACK: write a temporary file and then read it.
+		TempFile.Style style;
+		style.transience = TempFile.Transience.Permanent; // some os's won't actually create the file unless it's marked perm.
+		auto file = new TempFile(style);
+		char[] tempFile = file.path();
+		file.close();
+		File.set(tempFile, data);
+		
+		this(tempFile);
+		//FilePath(tempFile).remove(); // freetype maintains lock, can't delete.
+		this.resourceName = resourceName;
+		
+		/*
+		// Use freetypes API to load the font directly from memory.  This breaks for unknown reasons.
+		this.resourceName = resourceName;
+		auto error = FT_New_Memory_Face(library, data.ptr, data.length, 0, &face);
+		if (error == FT_Err_Unknown_File_Format)
+			throw new ResourceException("Could not open font file '%s'. The format is not recognized by Freetype2.", resourceName);
+		else if (error)
+			throw new ResourceException("Freetype2 could not open font file '%s'.  Error code %d.", resourceName, error);
+		else if(face is null)
+			throw new ResourceException("Freetype2 could not open font file '%s'.", resourceName);
+		*/
 	}
 	
 	//
 	~this()
-	{	// Do freetype libraries not require any type of cleanup?
+	{	
+		//FT_Done_Face
 	}
 	
 	/**
@@ -120,7 +168,7 @@ class Font : Resource
 	/**
 	 * Render an image of a single letter.
 	 * Params:
-	 *     text = A string of text to render, can be utf-8 or unencoded unicode (dchar[]).
+	 *     text = A string of text to render, must be unencoded unicode (dchar[]).
 	 *     width = The horizontal pixel size of the font to render.
 	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.
 	 *     bold = Get a bold version of the letter.  This is performed by compositing the same glyph multiple times 
@@ -141,14 +189,14 @@ class Font : Resource
 			FT_Set_Transform(face, &matrix, null);
 			
 			// Give our font size to freetype.
-			scope error = FT_Set_Pixel_Sizes(face, width, height);   // face, pixel width, pixel height
+			scope error = FT_Set_Pixel_Sizes(face, width, height); // face, pixel width, pixel height
 			if (error)
-				throw new ResourceException("Font '{}' does not support pixel sizes of {}x{}.", source, width, height);
+				throw new ResourceException("Font '%s' does not support pixel sizes of %sx%s.  Freetype2 error %s", resourceName, width, height, error);
 		
 			// Render the character into the glyph slot.
 			error = FT_Load_Char(face, letter, FT_LOAD_RENDER);  
 			if (error)
-				throw new ResourceException("Font '{}' cannot render the character '{}'.", source, .toString([letter]));			
+				throw new ResourceException("Font '%s' cannot render the character '%s', Freetype2 error %s", resourceName, .toString([letter]), error);			
 			
 			scope bitmap = face.glyph.bitmap;
 			ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				
@@ -180,6 +228,6 @@ class Font : Resource
 
 	/// Return the font filename.
 	char[] toString()
-	{	return source;
+	{	return resourceName;
 	}
 }
