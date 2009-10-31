@@ -76,14 +76,17 @@ float map(float v, float oldmin, float oldmax, float newmin, float newmax)
 /// Generate a random number between min and max.
 class random
 {
+	static bool initialized;
 	static Kiss kiss;
-	static this()
-	{	kiss = Kiss();
-	}
 	
 	/// ditto
 	static float opCall(float min, float max)
-	{	return kiss.toReal()*(max-min)+min;
+	{	if (!initialized)
+		{	kiss = Kiss();
+			initialized = true;
+		}
+		
+		return kiss.toReal()*(max-min)+min;
 	}
 }
 

@@ -14,6 +14,7 @@ import tango.math.IEEE;
 import tango.text.convert.Float;
 import tango.text.xml.Document;
 import tango.text.convert.Format;
+import tango.text.convert.Utf;
 import tango.text.Regex;
 import tango.text.Unicode;
 import tango.text.Util;
@@ -291,6 +292,10 @@ class TextLayout
 		}
 		
 		return result;
+	}
+	static Image render(dchar[] text, Style style, int width, int height, bool pow2=false)
+	{
+		return render(tango.text.convert.Utf.toString(text), style, width, height, pow2);
 	}
 	
 	/*

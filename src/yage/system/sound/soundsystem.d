@@ -363,7 +363,7 @@ class SoundContext : IDisposable
 	/**
 	 * Add the getInstance() method to get an instance of this singleton.
 	 * On the first requiest (which happens automatically in System.init(), the constructor is called. */
-	mixin Singleton!(typeof(this));
+	mixin SharedSingleton!(typeof(this));
 	
 	
 	/**

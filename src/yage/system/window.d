@@ -146,6 +146,10 @@ class Window : IRenderTarget
 		if(sdlSurface is null)
 			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
 		SDL_LockSurface(sdlSurface);
+		
+		// These have to be set after window creation.
+		SDL_EnableUNICODE(1);
+		SDL_EnableKeyRepeat(1, 100);
 
 		// Attempt to load multitexturing		
 		if (Probe.feature(Probe.Feature.MULTITEXTURE))

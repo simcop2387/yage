@@ -109,7 +109,8 @@ struct Render
 		msprite.setNormals([Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
 		msprite.setTexCoords0([Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
 		msprite.setMeshes([new Mesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)])]);
-
+		
+		/*
 		// Cube (in as little code as possible :)
 		mcube = new Model();
 		Vec3f[] vertices, normals;
@@ -130,6 +131,7 @@ struct Render
 			Vec3i(2, 14, 20), Vec3i(20,  8, 2), Vec3i(12, 15, 21), Vec3i(21, 18, 12),
 			Vec3i(7, 19, 22), Vec3i(22, 10, 7), Vec3i( 5, 11, 23), Vec3i(23, 17, 5)];
 		mcube.setMeshes([new Mesh(null, triangles)]);
+		*/
 	}
 	
 	/**

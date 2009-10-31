@@ -30,6 +30,8 @@ class Input
 	{
 		// Disable key repeating, we'll handle that manually.
 		//SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL); // why doesn't this work? Need to try again since I have the latest version of SDL
+		
+		SDL_EnableUNICODE(1);
 				
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
@@ -42,7 +44,7 @@ class Input
 					auto focus = getFocusSurface(surface);
 					if(focus) // keysym.sym gets all keys on the keyboard, including separate keys for numpad, keysym.unicde should be reserved for text.
 					{	focus.keyDown(event.key.keysym.sym, event.key.keysym.mod);
-						focus.keyPress(event.key.keysym.sym, event.key.keysym.mod);
+						focus.keyPress(event.key.keysym.sym, event.key.keysym.mod, event.key.keysym.unicode);
 						//focus.keyDown(event.key.keysym.unicode, event.key.keysym.mod);
 						//focus.text ~= toUTF8([cast(dchar)(event.key.keysym.sym)]);
 					}

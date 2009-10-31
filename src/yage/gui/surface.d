@@ -32,11 +32,13 @@ import yage.gui.surfacegeometry;
 class Surface : Tree!(Surface)
 {	
 	Style style;
-	char[] text;
+	
+	protected dchar[] text;
 	bool editable = true;
+	uint cursorPosition;
 	bool mouseChildren = true;
 	
-	protected char[] old_text;
+	protected dchar[] old_text;
 	protected GPUTexture textTexture;	
 
 	/// Callback functions
@@ -47,7 +49,13 @@ class Surface : Tree!(Surface)
 	bool delegate(Surface self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
 	bool delegate(Surface self, int key, int modifier) onKeyDown; /// Triggered once when a key is pressed down
 	bool delegate(Surface self, int key, int modifier) onKeyUp; /// Triggered once when a key is released
-	bool delegate(Surface self, int key, int modifier) onKeyPress; /// Triggered when a key is pressed down and repeats at the key repeat rate.
+	
+	/**
+	 * Triggered when a key is pressed down and repeats at the key repeat rate.
+	 * Unlike onKeyDown and onKeyUp, key is the unicode value of the key press, instead of the sdl key code. */
+	bool delegate(Surface self, dchar key, int modifier) onKeyPress; 
+	
+	
 	bool delegate(Surface self, byte buttons, Vec2i coordinates, char[] href) onMouseDown; ///
 	bool delegate(Surface self, byte buttons, Vec2i coordinates, char[] href) onMouseUp; ///
 	bool delegate(Surface self, byte buttons, Vec2i amount, char[] href) onMouseMove; ///
@@ -206,6 +214,15 @@ class Surface : Tree!(Surface)
 	}
 
 	/**
+	 * Set the html text of this surface. */
+	void html(char[] text)
+	{	this.text = toString32(text);		
+	}
+	void html(dchar[] text) /// ditto
+	{	this.text = text;		
+	}
+	
+	/**
 	 * Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. */
 	void raise()
 	{	if (parent)
@@ -306,7 +323,7 @@ class Surface : Tree!(Surface)
 			Image textImage = TextLayout.render(text, style, width, height, true); // TODO: Change true to Probe.NextPow2
 			assert(textImage !is null);
 			if (!textTexture) // create texture on first go
-				textTexture = new GPUTexture(textImage, false, false, text, true);
+				textTexture = new GPUTexture(textImage, false, false, "Surface Text", true);
 			else
 			//	textTexture.commit(textImage, false, false, text, true);
 				textTexture.image = textImage;
@@ -355,7 +372,7 @@ class Surface : Tree!(Surface)
 	/**
 	 * Trigger a keyDown event and call the onKeyDown callback function if set. 
 	 * If the onKeyDown function is not set, call the parent's keyDown function. */ 
-	void keyDown(dchar key, int mod=ModifierKey.NONE)
+	void keyDown(int key, int mod=ModifierKey.NONE)
 	{	bool propagate = true;
 		if(onKeyDown)
 			propagate = onKeyDown(this, key, mod);
@@ -366,7 +383,7 @@ class Surface : Tree!(Surface)
 	/**
 	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
 	 * If the onKeyUp function is not set, call the parent's keyUp function.*/ 
-	void keyUp(dchar key, int mod=ModifierKey.NONE)
+	void keyUp(int key, int mod=ModifierKey.NONE)
 	{	bool propagate = true;
 		if(onKeyUp)
 			propagate = onKeyUp(this, key, mod);
@@ -377,16 +394,15 @@ class Surface : Tree!(Surface)
 	/**
 	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
 	 * If the onKeyUp function is not set, call the parent's keyUp function.*/ 
-	void keyPress(dchar key, int mod=ModifierKey.NONE)
+	void keyPress(int key, int mod=ModifierKey.NONE, dchar unicode=0)
 	{	bool propagate = true;
 		if(onKeyPress)
 			propagate = onKeyPress(this, key, mod);		
 		if (propagate)
 		{	if (editable)
-			{	dchar[1] temp; // avoid allocation
-				temp[0] = key;
-				char[4] lookaside;
-			//	text ~= .toString(temp, lookaside); // unfinished
+			{	
+				Log.trace(cast(int)key, " ", unicode);
+				text ~= unicode;
 			}
 			if(parent) 
 				parent.keyPress(key, mod);

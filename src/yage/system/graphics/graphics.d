@@ -30,6 +30,7 @@ import derelict.opengl.glext;
 import yage.core.array;
 import yage.core.object2;
 import yage.core.math.all;
+import yage.core.misc;
 
 /**
  * Use OpenGL for graphics API calls. 
@@ -148,7 +149,7 @@ enum Light
 }
 
 OpenGL Graphics()
-{	return OpenGL.getContext();
+{	return OpenGL.getInstance();
 }
 
 // Used in OpenGL State for storing parameters
@@ -316,6 +317,8 @@ private struct OpenGLState
  * It is currently unfinished and has bugs.*/
 class OpenGL
 {
+	mixin Singleton!(OpenGL);
+	
 	OpenGLState state;			// current modified state
 	OpenGLState appliedState;	// last state that was applied.
 	Array!(OpenGLState) states;		// stack of states
@@ -347,15 +350,10 @@ class OpenGL
 		Matrix[][3] matrixStacks;	
 	}
 	
-	static Object openGLMutex;
-	static Object contextMutex;
-	static OpenGL[Thread] contexts; // immutable, copied on write
-	
-	
+	static Object openGLMutex;	
 	
 	static this()
-	{	contextMutex = new Object();
-		openGLMutex = new Object();
+	{	openGLMutex = new Object();
 	}
 	
 	/// Construct and create an initial state on the state stack.
@@ -381,7 +379,7 @@ class OpenGL
 	/// See: http://opengl.org/sdk/docs/man/xhtml/glBindTexture.xml, http://opengl.org/sdk/docs/man/xhtml/glActiveTexture.xml
 	/// TODO: textureUnit
 	void bindTexture(uint target, uint texture, uint textureUnit=GL_TEXTURE0_ARB)
-	{	OpenGL context = getContext();
+	{	OpenGL context = getInstance();
 		OpenGLState* st = &context.state;
 		OpenGLState* appliedState = &context.appliedState;
 		
@@ -595,7 +593,7 @@ class OpenGL
 	{	projectionMatrixStack ~= projectionMatrix;
 	}
 	unittest
-	{	OpenGL context = OpenGL.getContext();
+	{	OpenGL context = OpenGL.getInstance();
 		int l = context.matrixStack.length;
 		context.pushMatrix();
 		context.popMatrix();
@@ -693,38 +691,13 @@ class OpenGL
 		projectionMatrix.v[13] += y;
 		projectionMatrix.v[14] += z;
 	}
-	
-	// Internal functions:
-	
-		
-	// Get the context for the current thread.
-	static OpenGL getContext()
-	{	
-		Thread thread = Thread.getThis();
-		if (!(thread in contexts))
-		{			
-			// Add to a copy of contexts to preserve immutability (and keep things thread safe)
-			synchronized(contextMutex) // would ReadWriteMutex work better?
-			{	scope newContexts = contexts; // TODO: need to .dup
-				newContexts[thread] = new OpenGL();
-				contexts = newContexts; // array assignment isn't atomic?
-				contexts.rehash;
-		}	}
-	
-		return contexts[thread];
-	}
-	unittest
-	{	assert(getContext() == getContext());
-	}
+
 	
 	/**
 	 * Apply the current OpenGL state
 	 * Returns: the number of necessary OpenGL calls. */
 	int applyState()
 	{	
-		//Log2.trace("0");
-		//writefln(0);
-		
 		
 		int calls;
 		//synchronized (openGLMutex)

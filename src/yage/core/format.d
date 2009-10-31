@@ -1,23 +1,31 @@
 module yage.core.format;
 
 import tango.text.convert.Utf;
+import tango.core.Vararg;
 
 /**
  * Perform formatting on a string.
- * This behaves exactly the same as writef, but returns a string instead of printing it. */
+ * This behaves exactly the same as writef, but returns a string instead of printing it. 
+ * It can also accept the _arguments, and _argptr directly from another var arg function.
+ * It would be nice to have this functionality in less than 1600 lines of code. */
 char[] swritef(...)
-{	return swritefArgs(_arguments, _argptr);
-}
-char[] swritefArgs(TypeInfo[] _arguments, void* _argptr) /// ditto
-{	char[] result;
-	void putc(dchar c)
-	{	
-		dchar[1] temp;
-		temp[0] = c;
-		result ~= .toString(temp);
-	}
-	doFormatPtr(&putc, _arguments, _argptr, null);
-	return result;
+{	
+	// If called with _arguments and _argptr from another vararg function.
+	if (_arguments.length==2 && _arguments[0] == typeid(TypeInfo[]) && _arguments[1] == typeid(void*))
+	{
+		char[] result;
+		void putc(dchar c)
+		{	dchar[1] temp;
+			temp[0] = c;
+			char[4] lookaside;
+			result ~= .toString(temp, lookaside);
+		}
+		TypeInfo[] arguments = va_arg!(TypeInfo[])(_argptr);
+		void* argptr = va_arg!(void*)(_argptr);
+		doFormatPtr(&putc, arguments, argptr, null);
+		return result;
+	} 
+	return swritef(_arguments, _argptr); // recurse to take first path.
 }
 
 

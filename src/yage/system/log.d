@@ -46,22 +46,22 @@ struct Log
 
 	/// Write to the log.  Arguments are the same as std.stdio.writefln in Phobos.
 	static bool info(...)
-	{	return write(Level.INFO, Type.SYSTEM, swritefArgs(_arguments, _argptr));
+	{	return write(Level.INFO, Type.SYSTEM, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
 	static bool warn(...)
-	{	return write(Level.WARN, Type.SYSTEM, swritefArgs(_arguments, _argptr));
+	{	return write(Level.WARN, Type.SYSTEM, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
 	static bool error(...)
-	{	return write(Level.ERROR, Type.SYSTEM, swritefArgs(_arguments, _argptr));
+	{	return write(Level.ERROR, Type.SYSTEM, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
 	static bool trace(...)
-	{	return write(Level.TRACE, Type.SYSTEM, swritefArgs(_arguments, _argptr));
+	{	return write(Level.TRACE, Type.SYSTEM, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
@@ -69,7 +69,7 @@ struct Log
 	{
 		if ((level >= this.level) && (type & this.type) && output)
 		{	
-			char[] msg = swritefArgs(_arguments, _argptr);
+			char[] msg = swritef(_arguments, _argptr);
 			if (output & Output.CONSOLE)
 				Cout.append(msg~"\n").flush;
 			if (output & Output.FILE)

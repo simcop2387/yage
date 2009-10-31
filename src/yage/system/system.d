@@ -68,16 +68,12 @@ abstract class System
 		DerelictAL.load();
 		DerelictVorbis.load();
 		DerelictVorbisFile.load();
-	
-		// Input options
-		SDL_EnableUNICODE(true);
-		SDL_EnableKeyRepeat(1, 100);
 				
 		// Load embedded resources.
 		ResourceManager.init();
 		
 		// Create OpenAL device, context, and start sound processing thread.
-		SoundContext.getInstance();
+		SoundContext.getSharedInstance();
 				
 		initialized = true;
 		Log.info("Yage has been initialized successfully.");
@@ -102,7 +98,7 @@ abstract class System
 		
 		Render.cleanup(); // textures, vbo's, etc.
 		
-		SoundContext.getInstance().dispose();		
+		SoundContext.getSharedInstance().dispose();		
 		ResourceManager.dispose();
 		
 		if (Window.getInstance())

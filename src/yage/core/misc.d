@@ -3,12 +3,13 @@
  * Authors:	   Eric Poggel
  * License:	   <a href="lgpl3.txt">LGPL v3</a>
  *
- * Miscellaneous core functions and templates that have no other place.
+ * Miscellaneous core functions and templates that haven't found a place yet.
  */
 
 
 module yage.core.misc;
 
+import tango.core.Thread;
 import tango.math.Math;
 import tango.text.Util;
 import yage.core.array;
@@ -68,30 +69,56 @@ template baseTypedef(T)
 }
 
 /**
- * Turn any class into a Singleton via a template mixin
+ * Turn any class into a Singleton via a template mixin.
  * Example:
  * --------
  * class Foo
  * {   private this()
  *     {   // do stuff
  *     }
- *     mixin Singleton!(Foo);
+ *     mixin SharedSingleton!(Foo);
  * }
  * 
  * auto a = new Foo();  // a and b reference 
  * auto b = new Foo();  // the same object.
  * --------
  */
-template Singleton(T)
+template SharedSingleton(T)
 {
 	/// Reference to the single instance
 	private static T singleton;
 	
-	static T getInstance()
+	/**
+	 * Get an instance shared among all threads. */
+	static T getSharedInstance()
 	{	// TODO: Synchronized
 		if (!singleton)
 			singleton = new T();
 		return singleton;
+	}
+}
+
+/**
+ * Unlike shared singleton, this mixin allows one unique instance per thread. */
+template Singleton(T)
+{
+	private static uint tls_key=uint.max;
+	
+	/**
+	 * Get an instance unique to the calling thread.
+	 * Each thread can only have one instance. */
+	static T getInstance()
+	{	
+		if (tls_key==uint.max)
+			synchronized(T.classinfo)
+				tls_key = Thread.createLocal();
+		
+		T result = cast(T)Thread.getLocal(tls_key);		
+		if (!result)
+		{	result = new T();
+			Thread.setLocal(tls_key, cast(void*)result);
+		}
+		return result;
 	}
 }
 /*

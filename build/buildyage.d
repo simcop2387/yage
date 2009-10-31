@@ -12,6 +12,7 @@
 module cdc;
 
 const char[] app = "demo1"; // set which program to build against yage.
+//const char[] app = "unittests/benchmark/memory.d";
 
 /**
  * Use to implement your own custom build script, or pass args on to defaultBuild() 

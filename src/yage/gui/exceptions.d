@@ -11,13 +11,13 @@ import yage.core.format;
 ///
 class CSSException : YageException
 {	this(...)
-	{	super(swritefArgs(_arguments, _argptr));
+	{	super(swritef(_arguments, _argptr));
 	}	
 }
 
 ///
 class XHTMLException : YageException
 {	this(...)
-	{	super(swritefArgs(_arguments, _argptr));
+	{	super(swritef(_arguments, _argptr));
 	}	
 }

@@ -45,7 +45,7 @@ class YageException : Exception
 	 * -------- 
 	 */
 	this(...)
-	{	super(swritefArgs(_arguments, _argptr));
+	{	super(swritef(_arguments, _argptr));
 	}	
 }
 
@@ -54,7 +54,7 @@ class OpenALException : YageException
 {
 	///
 	this(...)
-	{	super(swritefArgs(_arguments, _argptr));
+	{	super(swritef(_arguments, _argptr));
 	}	
 }
 
@@ -63,7 +63,7 @@ class ResourceException : YageException
 {	
 	///
 	this(...)
-	{	super(swritefArgs(_arguments, _argptr));
+	{	super(swritef(_arguments, _argptr));
 	}	
 }
 

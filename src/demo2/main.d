@@ -128,7 +128,7 @@ int main()
 		
 		if (frame.tell()>=0.25f)
 		{	
-			info.text = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
+			info.html = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
 			`<u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) `~
 			`<span style="text-decoration: overline">house</span> the font would refer to a complete set of metal `~
 			`type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not `~
