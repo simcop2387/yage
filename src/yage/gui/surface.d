@@ -34,9 +34,10 @@ class Surface : Tree!(Surface)
 	Style style;
 	
 	protected dchar[] text;
-	bool editable = true;
-	uint cursorPosition;
+	bool editable = true;	
 	bool mouseChildren = true;
+	
+	TextLayout textLayout;
 	
 	protected dchar[] old_text;
 	protected GPUTexture textTexture;	
@@ -320,7 +321,7 @@ class Surface : Tree!(Surface)
 		{	int font_size = cast(int)style.fontSize.toPx(parentWidth());
 			int width = cast(int)width();
 			int height = cast(int)height();
-			Image textImage = TextLayout.render(text, style, width, height, true); // TODO: Change true to Probe.NextPow2
+			Image textImage = textLayout.render(text, style, width, height, true); // TODO: Change true to Probe.NextPow2
 			assert(textImage !is null);
 			if (!textTexture) // create texture on first go
 				textTexture = new GPUTexture(textImage, false, false, "Surface Text", true);
@@ -401,7 +402,7 @@ class Surface : Tree!(Surface)
 		if (propagate)
 		{	if (editable)
 			{	
-				Log.trace(cast(int)key, " ", unicode);
+				// Log.trace(cast(int)key, " ", unicode);
 				text ~= unicode;
 			}
 			if(parent) 

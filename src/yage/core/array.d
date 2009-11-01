@@ -416,6 +416,11 @@ struct Array(T)
 	}
 	
 	///
+	void dispose()
+	{	delete array;		
+	}
+	
+	///
 	AT dup()
 	{	AT result;
 		result.array = array.dup;
