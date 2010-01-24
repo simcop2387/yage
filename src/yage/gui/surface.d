@@ -33,13 +33,13 @@ class Surface : Tree!(Surface)
 {	
 	Style style;
 	
-	protected dchar[] text;
+	char[] text;
 	bool editable = true;	
 	bool mouseChildren = true;
 	
 	TextLayout textLayout;
 	
-	protected dchar[] old_text;
+	protected char[] oldText;
 	protected GPUTexture textTexture;	
 
 	/// Callback functions
@@ -85,11 +85,13 @@ class Surface : Tree!(Surface)
 		META  = LMETA | RMETA /// ditto
 	};
 	
-	// internal values
+	// internal values (TODO: these should be replaced with calculated style values)
+	Style calculatedStyle;
+	
 	protected Vec2f offset;		// pixel distance of the topleft corner from parent's top left, a relative offset
 	protected Vec2f size;		// pixel outer width/height, which includes borders and padding.
-	public Vec4f border;		// pixel sizes of each border
-	protected Vec4f padding;		// pixel sizes of each padding	
+	//public Vec4f border;		// now stored in calculatedStyle
+	//protected Vec4f padding;	
 	
 	public Vec2f offsetAbsolute;	// pixel distance of top left from the window's top left at 0, 0, an absolute offset
 	
@@ -131,19 +133,19 @@ class Surface : Tree!(Surface)
 	/**
 	 * Get the inner-most width/height of the surface.  Just as with CSS, this is the width/height inside the padding. */
 	float width() 
-	{	return innerWidth() - padding.left - padding.right;
+	{	return innerWidth() - calculatedStyle.paddingLeft.value - calculatedStyle.paddingRight.value;
 	}	
 	float height() /// ditto
-	{	return innerHeight() - padding.top - padding.bottom;
+	{	return innerHeight() - calculatedStyle.paddingTop.value - calculatedStyle.paddingBottom.value;
 	}
 	
 	/**
 	 * Get the width/height of the surface, including the width/height of the padding, but not including the border. */
 	float innerWidth()
-	{	return outerWidth() - border.left - border.right;
+	{	return outerWidth() - calculatedStyle.borderLeftWidth.value - calculatedStyle.borderRightWidth.value;
 	}
 	float innerHeight() /// ditto
-	{	return outerHeight() - border.top - border.bottom;
+	{	return outerHeight() - calculatedStyle.borderTopWidth.value - calculatedStyle.borderBottomWidth.value;
 	}
 	
 	/**
@@ -191,6 +193,14 @@ class Surface : Tree!(Surface)
 		return null;		
 	}
 	
+	
+	/**
+	 * Get a style with all auto/null/inherit/% values replaced with absolute values. */
+	Style getCalculatedStyle()
+	{	return calculatedStyle;
+	}
+	
+	
 	/**
 	 * Get the geometry data used for rendering this Surface. */
 	SurfaceGeometry getGeometry()
@@ -212,15 +222,6 @@ class Surface : Tree!(Surface)
 	{	SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);
 		grabbedSurface = null;
-	}
-
-	/**
-	 * Set the html text of this surface. */
-	void html(char[] text)
-	{	this.text = toString32(text);		
-	}
-	void html(dchar[] text) /// ditto
-	{	this.text = text;		
 	}
 	
 	/**
@@ -314,23 +315,39 @@ class Surface : Tree!(Surface)
 	{
 		updateDimensions();
 		if (resize_dirty)
+		{	
+			Vec4f border;
+			Vec4f padding;
+			for (int i=0; i<4; i++)
+			{	border[i] = calculatedStyle.borderWidth[i].value;
+				padding[i] = calculatedStyle.padding[i].value;
+			}
 			geometry.setDimensions(Vec2f(width(), height()), border, padding);
 		
+		
+		}
+		
 		// Text
-		if (text.length && (text != old_text || resize_dirty))
-		{	int font_size = cast(int)style.fontSize.toPx(parentWidth());
+		if (text.length && (text != oldText || resize_dirty))
+		{
 			int width = cast(int)width();
 			int height = cast(int)height();
-			Image textImage = textLayout.render(text, style, width, height, true); // TODO: Change true to Probe.NextPow2
+			textLayout.update(text, style, width, height);
+			Image textImage = textLayout.render(style, true); // TODO: Change true to Probe.NextPow2
 			assert(textImage !is null);
+			
 			if (!textTexture) // create texture on first go
 				textTexture = new GPUTexture(textImage, false, false, "Surface Text", true);
 			else
 			//	textTexture.commit(textImage, false, false, text, true);
 				textTexture.image = textImage;
 			textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
-			old_text = text;
+			
+			oldText = text;
 		}
+		
+		if (!text.length)
+			textTexture = null;
 		
 		geometry.setColors(style.backgroundColor, style.borderColor, style.opacity);
 		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, 
@@ -403,7 +420,9 @@ class Surface : Tree!(Surface)
 		{	if (editable)
 			{	
 				// Log.trace(cast(int)key, " ", unicode);
-				text ~= unicode;
+				//text ~= unicode; // TODO: send calculatedStyle to surface so
+				// it can have the correct font for adding letters.
+				//text = textLayout.input(key, mod, unicode);
 			}
 			if(parent) 
 				parent.keyPress(key, mod);
@@ -545,12 +564,14 @@ class Surface : Tree!(Surface)
 		Vec2f old_offset = offset;
 		Vec2f old_size = size;
 		
+		alias calculatedStyle cs;
+		
 		// Copy/convert borders and padding to internal pixel values.
 		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
 		for (int i=0; i<4; i++)
 		{	float scale_by = i%2==0 ? parent_size.y : parent_size.x;			
-			padding[i] = style.padding[i].toPx(scale_by, false);
-			border[i] = style.borderWidth[i].toPx(scale_by, false);
+			cs.padding[i] = style.padding[i].toPx(scale_by, false);
+			cs.borderWidth[i] = style.borderWidth[i].toPx(scale_by, false);
 		}
 		
 		// Convert style dimensions to pixels.		
@@ -560,8 +581,8 @@ class Surface : Tree!(Surface)
 			style.bottom.toPx(parent_size.y),
 			style.left.toPx(parent_size.x));
 		Vec2f style_size = Vec2f( // style size doesn't include borders and padding, but the internal size does.
-			style.width.toPx(parent_size.x) + border.left + border.right + padding.left + padding.right, 
-			style.height.toPx(parent_size.y) + border.top + border.bottom + padding.top + padding.bottom);
+			style.width.toPx(parent_size.x) + cs.borderLeftWidth.value + cs.borderRightWidth.value + cs.paddingLeft.value + cs.paddingRight.value, 
+			style.height.toPx(parent_size.y) + cs.borderTopWidth.value + cs.borderBottomWidth.value + cs.paddingTop.value + cs.paddingBottom.value);
 		
 		// This loop over xy combines the x/left/right and y/top/bottom calulations into one block of code.
 		for (int xy=0; xy<2; xy++)
@@ -576,8 +597,8 @@ class Surface : Tree!(Surface)
 					style_size[xy] = parent_size[xy];			
 			}
 			
-			float parent_border = (parent ? parent.border[xy] : 0);
-			float parent_padding = (parent ? parent.padding[xy] : 0);
+			float parent_border = (parent ? parent.calculatedStyle.borderWidth[xy].value : 0);
+			float parent_padding = (parent ? parent.calculatedStyle.padding[xy].value : 0);
 			
 			// Position	
 			// Convert CSS style top, left, bottom, right, width, height to internal pixel x, y, width, height.

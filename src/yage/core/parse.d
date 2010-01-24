@@ -34,22 +34,25 @@ char[] floatToHex(float[] vec)
 }
 
 /**
+ * TODO: Color has a constructor that deprecates this function.
  * Convert a hexadecimal string to an unsigned int.
+ * Params:
+ *     hex = 6 or 8 (includes alpha) character hexadecimal color.
  * Throws:
  * Exception if hex contains an invalid hexadecimal character. */
 uint hexToUint(char[] hex)
 {	uint result = 0, digit;
 	for (int i=0; i<hex.length; i++)
 	{	digit=0;
-		if (47 < hex[i] && hex[i] < 58)
+		if (47 < hex[i] && hex[i] < 58) // 0-9
 			digit = (hex[i]-48);
-		else if (64 < hex[i] && hex[i] < 71)
+		else if (64 < hex[i] && hex[i] < 71) // A-F
 			digit = (hex[i]-55);
-		else if (96 < hex[i] && hex[i] < 103)
+		else if (96 < hex[i] && hex[i] < 103) // a-f
 			digit = (hex[i]-87);
 		else
 			throw new Exception("Invalid character '" ~ hex[i] ~"' for hexToUint()");
-		result+=digit*pow(16, cast(float)hex.length-i-1);;
+		result+=digit*pow(16, cast(float)hex.length-i-1); // TODO: Use bit-shift for better performance
 	}
 	return result;
 }

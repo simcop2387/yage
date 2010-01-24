@@ -10,8 +10,8 @@ import tango.io.Stdout;
 import tango.core.BitManip;
 import tango.math.Math;
 import tango.text.Ascii;
-import tango.text.convert.Format;
 
+import yage.core.format;
 import yage.core.math.math;
 import yage.core.math.vector;
 import yage.core.types;
@@ -231,14 +231,14 @@ struct Color
 	 * Get the color as a string.
 	 * Params:
 	 * lower = return lower case hexadecimal digits*/ 
-	char[] hex(bool lower=false)
+	char[] hex(bool lower=false, char[] lookaside=null)
 	{	if (lower)
-			return Format("{:x8}", bswap(ui)); // TODO: Fix/Test for big-endian systems
-		return Format("{:X8}", bswap(ui));
+			return swritef("%.8x", bswap(ui));
+		return swritef("%.8X", bswap(ui));
 	}
 	/// ditto
 	char[] toString()
-	{	return hex();
+	{	return "#"~hex();
 	}
 	
 	unittest

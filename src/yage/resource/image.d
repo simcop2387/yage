@@ -153,7 +153,7 @@ class Image : Resource
 			return result;
 		u *= (width-1);
 		v *= (height-1);
-		int x = cast(int)u; // should be the same as floor(u)
+		int x = cast(int)u; // should be the same as floor(u), but faster
 		int y = cast(int)v;
 		int u_ratio = cast(int)(u*255)-x*255;
 		int v_ratio = cast(int)(v*255)-y*255;

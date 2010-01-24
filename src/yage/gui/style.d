@@ -14,6 +14,7 @@ import tango.text.convert.Format;
 import tango.util.Convert;
 
 import yage.core.color;
+import yage.core.format;
 import yage.core.math.matrix;
 import yage.core.math.vector;
 import yage.resource.font;
@@ -181,9 +182,12 @@ struct Style
 		OVERLINE, /// ditto
 		LINETHROUGH /// ditto
 	}
-	
-	
-	
+
+	/*
+	char[] enumToString(T)(T e)
+	{
+		return e.stringof;
+	}*/
 	
 	union { 
 		struct { 
@@ -271,7 +275,7 @@ struct Style
 	/// Text properties
 	Color color = {r:0, g:0, b:0, a:255};
 	TextAlign textAlign = TextAlign.LEFT; /// ditto
-	byte  textDecoration = TextDecoration.NONE; /// ditto
+	TextDecoration textDecoration = TextDecoration.NONE; /// ditto
 	CSSValue lineHeight = CSSValue(float.nan); /// ditto
 	CSSValue letterSpacing; /// ditto
 	
@@ -331,10 +335,10 @@ struct Style
 			
 				case "font":  // font-style, font-weight, font-size/line-height, font-family
 					foreach (i, token; tokens)
-					{	if (token in translateFontStyle)
-							fontStyle = translateFontStyle[token];
-						else if (token in translateFontWeight)
-							fontWeight = translateFontWeight[token];
+					{	if (token=="normal" || token=="italic" || token=="oblique")
+							fontStyle = Style.stringToEnum!(FontStyle)(token);
+						else if (token=="normal" || token=="bold")
+							fontWeight = Style.stringToEnum!(FontWeight)(token);
 						else if (!containsPattern(token, "url(") && (token.containsPattern("%") || token.containsPattern("px")))
 						{	if (token.containsPattern("/"))
 							{	char[][] temp =  token.split("/");
@@ -348,8 +352,8 @@ struct Style
 					break;
 				case "font-size":			fontSize = tokens[0];  break;
 				case "font-family":			fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;
-				case "font-style":			fontStyle = translateFontStyle[tokens[0]];  break;
-				case "font-weight":			fontWeight = translateFontWeight[tokens[0]];  break;
+				case "font-style":			fontStyle = Style.stringToEnum!(FontStyle)(tokens[0]);  break;
+				case "font-weight":			fontWeight = Style.stringToEnum!(FontWeight)(tokens[0]);  break;
 			
 				case "top":					top = tokens[0];  break;
 				case "right":				right = tokens[0];  break;
@@ -390,8 +394,8 @@ struct Style
 				
 				case "line-height":			lineHeight = tokens[0]; break;
 				
-				case "text-align":			textAlign = translateTextAlign[tokens[0]]; break;
-				case "text-decoration":		textDecoration = translateTextDecoration[tokens[0]]; break;
+				case "text-align":			textAlign = Style.stringToEnum!(TextAlign)(tokens[0]); break;
+				case "text-decoration":		textDecoration = Style.stringToEnum!(TextDecoration)(tokens[0]); break;
 				
 				case "opacity":				opacity = to!(float)(tokens[0]);  break;
 				case "overflow":			overflowX = overflowY = (toLower(tokens[0], tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
@@ -431,9 +435,12 @@ struct Style
 		//mixin(styleCompare!("backgroundColor"));
 		
 		//mixin(styleCompare!("cursor"));		
-		mixin(styleCompare!("cursorSize"));
+		//mixin(styleCompare!("cursorSize"));
 		
-		mixin(styleCompare!("fontFamily"));
+		if (cursorSize!=def.cursorSize && (!isNaN(cursorSize) && !isNaN(def.cursorSize))) 
+			result ~= swritef("cursor-size: '%s'", cursorSize);
+		
+		if (fontFamily!=def.fontFamily) result ~= swritef("font-family: url('%s')", fontFamily);
 		mixin(styleCompare!("fontSize"));
 		mixin(styleCompare!("color"));
 		
@@ -448,49 +455,113 @@ struct Style
 			
 		return join(result, "; ");
 	}
+	
+	/**
+	 * Convert the various Style enumerations to their css string format. */
+	static char[] enumToString(Style.BorderImageStyle style)
+	{	switch(style)
+		{	case Style.BorderImageStyle.STRETCH: return "stretch";
+			case Style.BorderImageStyle.ROUND: return "round";
+			case Style.BorderImageStyle.REPEAT: return "repeat";
+	}	}
+	static char[] enumToString(Style.FontStyle style) /// ditto
+	{	return style==Style.FontStyle.NORMAL ? "normal" : "italic";
+	}
+	static char[] enumToString(Style.FontWeight style) /// ditto
+	{	return style==Style.FontWeight.NORMAL ? "normal" : "bold";
+	}
+	static char[] enumToString(Style.Overflow style) /// ditto
+	{	return style==Style.Overflow.VISIBLE ? "visible" : "hidden";
+	}
+	static char[] enumToString(Style.TextAlign style) /// ditto
+	{	switch(style)
+		{	case Style.TextAlign.LEFT: return "left";
+			case Style.TextAlign.CENTER: return "center";
+			case Style.TextAlign.RIGHT: return "right";
+			case Style.TextAlign.JUSTIFY: return "justify";
+	}	}
+	static char[] enumToString(Style.TextDecoration style) /// ditto
+	{	switch(style)
+		{	case Style.TextDecoration.NONE: return "none";
+			case Style.TextDecoration.UNDERLINE: return "underline";
+			case Style.TextDecoration.OVERLINE: return "overline";
+			case Style.TextDecoration.LINETHROUGH: return "line-through";
+		}
+	}
+	
+	static T stringToEnum(T)(char[] string)
+	{	static if (is (T==Style.TextAlign))
+			switch (string)
+			{	case "left": return TextAlign.LEFT; 
+				case "center": return TextAlign.CENTER; 
+				case "right": return TextAlign.RIGHT; 
+				case "justify": return TextAlign.JUSTIFY;
+			}
+		static if (is (T==Style.TextDecoration))
+			switch(string)
+			{	case "none": return TextDecoration.NONE; 
+				case "underline": return TextDecoration.UNDERLINE; 
+				case "overline": return TextDecoration.OVERLINE; 
+				case "line-through": return TextDecoration.LINETHROUGH;
+			}
+		static if (is (T==Style.FontStyle))
+			switch(string)
+			{	case "normal":return FontStyle.NORMAL; 
+				case "italic": return FontStyle.ITALIC; 
+				case "oblique": return FontStyle.ITALIC;
+			}
+		static if (is (T==Style.FontWeight))
+			return string=="normal" ? FontWeight.NORMAL : FontWeight.BOLD;
+	}
 
-	// Translation tables (must be here to avoid fwd reference errors)
-	private static TextAlign[char[]] translateTextAlign;
-	private static byte[char[]] translateTextDecoration;
-	private static FontStyle[char[]] translateFontStyle;
-	private static FontWeight[char[]] translateFontWeight;
-	static this()
-	{	translateTextAlign      = [cast(char[])"left":TextAlign.LEFT, "center": TextAlign.CENTER, "right": TextAlign.RIGHT, "justify": TextAlign.JUSTIFY];
-		translateTextDecoration = [cast(char[])"none":0, "underline": 1, "overline": 2, "line-through": 3];
-		translateFontStyle      = [cast(char[])"normal":FontStyle.NORMAL, "italic": FontStyle.ITALIC, "oblique": FontStyle.ITALIC];
-		translateFontWeight     = [cast(char[])"normal":FontWeight.NORMAL, "bold": FontWeight.BOLD];
+	/* Helper for set)
+	 * Remove the url('...') from a css path, if it's present.
+	 * Returns: A slice of the original url to avoid creating garbage.*/ 
+	private char[] removeUrl(char[] url)
+	{	if (url.length>5 && (url[0..5] == "url('" || url[0..5] == "url(\""))
+			return url[5..$-2];
+		if (url.length>4 && (url[0..4] == "url(" || url[0..4] == "url("))
+			return url[4..$-1];
+		return url;
+	}
+
+	/*
+	 * Helper for set()
+	 * Set up to values of any type from an array of tokens, using T's static opCall. */
+	private void setEdge(T)(T[] edge, char[][] tokens)
+	{	if (tokens.length > 0)					
+		{	edge[0..3] = edge[3] = (tokens[0]);  
+			if (tokens.length > 1)
+			{	edge[1] = edge[3] = tokens[1];
+				if (tokens.length > 2 && edge.length > 2) // edges are always 2 or 4
+				{	edge[2] = tokens[2];
+					if (tokens.length > 3)
+						edge[3] = tokens[3]; 
+		}	}	}
 	}
 }
+
+
+
 
 /*
  * Helper for toString() */
 private template styleCompare(char[] name="")
 {     const char[] styleCompare =
-    	 `if (`~name~`!=def.`~name~`) result ~= "`~name~`: "~Format("{}", `~name~`);`;
-}
-
-/* Helper for set)
- * Remove the url('...') from a css path, if it's present.
- * Returns: A slice of the original url to avoid creating garbage.*/ 
-private char[] removeUrl(char[] url)
-{	if (url.length>5 && (url[0..5] == "url('" || url[0..5] == "url(\""))
-		return url[5..$-2];
-	if (url.length>4 && (url[0..4] == "url(" || url[0..4] == "url("))
-		return url[4..$-1];
-	return url;
+    	 `if (`~name~`!=def.`~name~`) result ~= "`~toCSSName(name)~`: "~Format("{}", `~name~`);`;
 }
 
 /*
- * Helper for set()
- * Set up to values of any type from an array of tokens, using T's static opCall. */
-private void setEdge(T)(T[] edge, char[][] tokens)
-{	if (tokens.length > 0)					
-	{	edge[0..3] = edge[3] = (tokens[0]);  
-		if (tokens.length > 1)
-		{	edge[1] = edge[3] = tokens[1];
-			if (tokens.length > 2 && edge.length > 2) // edges are always 2 or 4
-			{	edge[2] = tokens[2];
-				if (tokens.length > 3)
-					edge[3] = tokens[3]; 
-	}	}	}
+ * Convert from a property name to a css name. "
+ * For example, fontSize" to "font-size". */
+private char[] toCSSName(char[] name)
+{
+	char[] result;
+	foreach(c; name)
+	{	if (c>64 && c<=90) // if capital letter
+			result ~= '-';
+		result ~= c;
+	}
+	return result;
 }
+

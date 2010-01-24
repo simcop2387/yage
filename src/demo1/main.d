@@ -205,7 +205,7 @@ int main()
 		if (frame.tell()>=1f)
 		{	float framerate = fps/frame.tell();
 			window.setCaption(Format.convert("Yage Demo | {} fps\0", framerate));
-			info.html = Format.convert(
+			info.text = Format.convert(
 				`{} <b>fps</span><br/>`
 				`{} <b>objects</b><br/>`
 				`{} <b>polygons</b><br/>`

@@ -115,7 +115,7 @@ class FormatError : Exception
 }
 
 
-enum Mangle : char
+private enum Mangle : char
 {
     Tvoid     = 'v',
     Tbool     = 'b',
@@ -192,7 +192,7 @@ private TypeInfo primitiveTypeInfo(Mangle m)
 	return ti;
 }
 
-void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void* argptr, void* p_args)
+private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void* argptr, void* p_args)
 {   int j;
     TypeInfo ti;
     Mangle m;

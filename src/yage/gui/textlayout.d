@@ -24,6 +24,7 @@ import derelict.sdl.sdl;
 import yage.core.array;
 import yage.core.cache;
 import yage.core.color;
+import yage.core.format;
 import yage.core.math.math;
 import yage.core.memory;
 import yage.core.object2;
@@ -42,8 +43,30 @@ struct TextLayout
 	private static const char[] whitespace = " \t\r\n";
 	private static const char[] breaks = " *()-+=/\\,.;:|()[]{}<>\t\r\n"; // breaking characters
 	
-	private static ubyte[] imageLookaside; // TODO: Make TextLayout thread safe by making lookAsides thread-local
-	private static char[] textLookaside;
+	private ubyte[] imageLookaside; // TODO: Use Memory.allocate instead?
+	
+	private char[] text;
+	InlineStyle style;
+	int width;
+	int height;
+	int cursorPosition;
+	int selectionStart;
+	int selectionEnd;
+	
+	// Previous settings
+	/*
+	struct Previous
+	{	char[] text;
+		InlineStyle style;
+		int width;
+		int height;
+		int cursorPosition;
+		int selectionStart;
+		int selectionEnd;
+	}
+	Previous previous;
+	*/
+	
 	
 	/*
 	 * Store a line of rendered letters. */
@@ -58,19 +81,15 @@ struct TextLayout
 		}
 	}
 	
-	int cursorPosition;
-	int selectionStart;
-	int selectionEnd;
-	
 	private Line[] lines;
 	private Array!(Letter) letters;
 	private Array!(InlineStyle) styles;	
 	
 	/**
-	 * Update lines and letters data structures
+	 * Update lines and letters data structures from keyboard input
 	 * Params:
 	 *     key = 
-	 *     mod = 
+	 *     mod = modifier key.
 	 *     unicode = 
 	 * Returns: new html text.
 	 */
@@ -78,8 +97,8 @@ struct TextLayout
 	{
 		switch(key) 
 		{
-			case SDLK_LEFT: cursorPosition--; if (cursorPosition>letters.length) cursorPosition=letters.length; break;
-			case SDLK_RIGHT: cursorPosition++; if (cursorPosition<0) cursorPosition=0; break;
+			case SDLK_LEFT: cursorPosition--; if (cursorPosition<0) cursorPosition=0; break;
+			case SDLK_RIGHT: cursorPosition++; if (cursorPosition>letters.length) cursorPosition=letters.length; break;
 			case SDLK_UP: break;
 			case SDLK_DOWN: break;
 			case SDLK_HOME: break;
@@ -88,100 +107,19 @@ struct TextLayout
 			
 			case SDLK_BACKSPACE: break;
 			case SDLK_DELETE:  break;
+			default: break;
 			
 			// ctrl+a, z, x, c, v
 		}
 		if (unicode)
-		{
-					
-			
-		}
-			
-		
+		{	Log.trace(style.fontFamily);
+			Letter l = style.fontFamily.getLetter(unicode, 10, 10);
+			letters ~= l;
+		}		
 		// TODO: rebuild lines from letters.
 		
 		return toString();
 	}
-
-	/*
-	 * Update the arrays of lines, letters, and styles. */
-	void update(char[] text, ref Style style, int width, int height)
-	{
-		if (text.length)
-		{	lines.length = 0;
-			letters.length = 0;			
-			styles.length = 0;
-			
-			// Update letters and styles
-			HtmlParser.htmlToLetters(text, style, letters, styles);
-			
-			// Build lines from letters
-			int i;
-			while (i<letters.length)
-			{	int start=i;
-				int x=0, lineHeight=0;
-				int last_break=i;
-				
-				// Loop through as many as we can fit on this line
-				while (x<width && i<letters.length)
-				{	InlineStyle* istyle = (cast(InlineStyle*)letters[i].extra);
-					
-					// Get line height (Defaults to fontSize*1.2 if not specified)
-					int calculatedLineHeight = cast(int)(isNaN(istyle.lineHeight) ? istyle.fontSize : istyle.lineHeight);
-					if (lineHeight < calculatedLineHeight)
-						lineHeight = calculatedLineHeight;
-
-					x+= letters[i].advanceX;
-					
-					// Convert letter to utf-8
-					char[4] lookaside;
-					char[] utf8 = letters[i].toString(lookaside);
-					
-					if (containsPattern(breaks, utf8)) // store position of last breaking character
-						last_break = i;
-					if (x<width)
-						i++;
-					if (i==letters.length) // include the final characters.
-						last_break = i;
-					
-					if (utf8[0] == '\n') // break on line returns.
-						break;
-				}
-				
-				// Add a new line
-				Line line;
-				if (start<last_break) // don't count spaces at the end of the line.
-				{	i = last_break;
-					if (i < letters.length && letters[i].letter=='\n')
-						i++; // skip line returns
-					assert(last_break <= letters.length);
-					line.letters = letters.data[start..last_break]; // slice directly from the letters array to avoid copy allocation
-				}
-				
-				// trim line
-				int firstChar, lastChar=line.letters.length-1;
-				while (firstChar < line.letters.length && whitespace.contains(cast(char)line.letters[firstChar].letter))
-					firstChar++;
-				while (lastChar>=0 && whitespace.contains(cast(char)line.letters[lastChar].letter))
-					lastChar--;
-				line.letters = line.letters[firstChar..lastChar+1];
-					
-					// Calculate line width
-					foreach (letter; line.letters)
-						line.width += letter.advanceX;
-					
-					line.height = lineHeight;
-					lines ~= line;
-			}	
-		}
-	}
-	
-	// Use letters to regenerate a string of html text.
-	char[] toString()
-	{
-		return "";
-	}
-
 	
 	/**
 	 * Convert a string of primitive html text and render it to an image.
@@ -203,14 +141,12 @@ struct TextLayout
 	 *     height = Available height for rendering text.
 	 * Returns:  An RGBA image of width pixels wide and is shorter or equal to height.  
 	 *     Note that the same buffer is used for each return, so one call to this function will overwrite a previous result.*/
-	Image render(char[] text, Style style, int width, int height, bool pow2=false)
+	Image render(Style style, bool pow2=false)
 	{
 		Image result;
 
 		if (text.length)
-		{	update(text, style, width, height);
-			
-			
+		{	
 			// Get total height of all lines
 			int totalHeight;
 			foreach (line; lines)
@@ -274,10 +210,150 @@ struct TextLayout
 		
 		return result;
 	}
-	Image render(dchar[] text, Style style, int width, int height, bool pow2=false)
+	
+	
+	/**
+	 * Reverse the normal function of TextLayout and convert letters[] back to a string of html text.
+	 * The text may use different tags (since some information is lost) 
+	 * but will be functionally the same. */
+	char[] toString()
 	{
-		return render(tango.text.convert.Utf.toString(text), style, width, height, pow2);
+		char[] result = "<span>";
+		InlineStyle style = this.style;		
+		InlineStyle currentStyle = style; // style of the previous letter
+		
+		foreach(Letter l; letters)
+		{
+			InlineStyle* newStyle = cast(InlineStyle*) l.extra;
+			if (currentStyle != *newStyle) // if style has changed since last letter
+			{	
+				char[][] styleString;			
+				
+				if (style.fontFamily && style.fontFamily != newStyle.fontFamily)
+					styleString ~= swritef(`font-family: url('%s')`, newStyle.fontFamily);
+				if (dword(style.fontSize) != dword(newStyle.fontSize)) // BUG: converts % font size to px.
+					styleString ~= swritef(`font-size: %spx`, newStyle.fontSize);
+				if (style.color != newStyle.color)
+					styleString ~= swritef(`color: %spx`, newStyle.color);
+				if (style.fontWeight != newStyle.fontWeight)
+					styleString ~= swritef(`font-weight: %s`, Style.enumToString(newStyle.fontWeight));
+				if (style.fontStyle != newStyle.fontStyle)
+					styleString ~= swritef(`font-style: %s`, Style.enumToString(newStyle.fontStyle));
+				if (style.textDecoration != newStyle.textDecoration) 
+					styleString ~= swritef(`text-decoration: %s`, Style.enumToString(newStyle.textDecoration));
+				if (dword(style.lineHeight) != dword(newStyle.lineHeight))
+					styleString ~= swritef(`lineHeight: %spx`, newStyle.lineHeight);
+				if (dword(style.letterSpacing) != dword(newStyle.letterSpacing)) 
+					styleString ~= swritef(`letterSpacing: %spx`, newStyle.letterSpacing);				
+				
+				result ~= swritef(`</span><span style="%s">`, join(styleString, "; "));
+				currentStyle = *newStyle;
+			}
+			result ~= l.toString();
+		}
+		
+		return result ~ "</span>";
 	}
+
+	/**
+	 * Replace the text with new text, rebuilding the internal lines and letters data structures.
+	 * This is unlike input(), which modifies the text based on a single keystroke.
+	 * Params:
+	 *     text = 
+	 *     style = Root style of the text.  Inline styles override this.
+	 *     width = 
+	 *     height = 
+	 * Returns: True if the text will need to be re-rendered, false otherwise.
+	 * TODO: Should this be a constructor to maintain RAII?
+	 */
+	bool update(char[] text, Style style, int width, int height)
+	{
+		InlineStyle istyle = InlineStyle(style);
+		
+		// If text has changed
+		bool newLetters = text!=(*this).text || istyle != (*this).style;
+		if (newLetters)
+		{	
+			// Update the arrays of letters and styles
+			letters.length = 0;			
+			styles.length = 0;
+			HtmlParser.htmlToLetters(text, style, letters, styles);
+			
+			this.text = text;
+			this.style = istyle;
+		}
+		
+		// If text or dimensions have changed
+		if (newLetters || width!=this.width || height != this.height)
+		{				
+			this.width = width;
+			this.height = height;			
+			lines.length = 0;
+			
+			// Build lines from letters
+			int i;
+			while (i<letters.length)
+			{	int start=i;
+				int x=0, lineHeight=0;
+				int last_break=i;
+				
+				// Loop through as many as we can fit on this line
+				while (x<width && i<letters.length)
+				{	InlineStyle* letterStyle = (cast(InlineStyle*)letters[i].extra);
+					
+					// Get line height (Defaults to fontSize*1.2 if not specified)
+					int calculatedLineHeight = cast(int)(isNaN(letterStyle.lineHeight) ? letterStyle.fontSize : letterStyle.lineHeight);
+					if (lineHeight < calculatedLineHeight)
+						lineHeight = calculatedLineHeight;
+
+					x+= letters[i].advanceX;
+					
+					// Convert letter to utf-8
+					char[4] lookaside;
+					char[] utf8 = letters[i].toString(lookaside);
+					
+					if (containsPattern(breaks, utf8)) // store position of last breaking character
+						last_break = i;
+					if (x<width)
+						i++;
+					if (i==letters.length) // include the final characters.
+						last_break = i;
+					
+					if (utf8[0] == '\n') // break on line returns.
+						break;
+				}
+				
+				// Add a new line
+				Line line;
+				if (start<last_break) // don't count spaces at the end of the line.
+				{	i = last_break;
+					if (i < letters.length && letters[i].letter=='\n')
+						i++; // skip line returns
+					assert(last_break <= letters.length);
+					line.letters = letters.data[start..last_break]; // slice directly from the letters array to avoid copy allocation
+				}
+				
+				// trim line
+				int firstChar, lastChar=line.letters.length-1;
+				while (firstChar < line.letters.length && whitespace.contains(cast(char)line.letters[firstChar].letter))
+					firstChar++;
+				while (lastChar>=0 && whitespace.contains(cast(char)line.letters[lastChar].letter))
+					lastChar--;
+				line.letters = line.letters[firstChar..lastChar+1];
+					
+				// Calculate line width
+				foreach (letter; line.letters)
+					line.width += letter.advanceX;
+				
+				line.height = lineHeight;
+				lines ~= line;
+			}
+			
+			return true;
+		}
+		return false;
+	}
+	
 }
 
 /*
@@ -288,11 +364,11 @@ private struct InlineStyle
 	Font fontFamily;
 	int fontSize = 12; // default to 12px font size.
 	Color color = {r:0, g:0, b:0, a:255};
-	/*Style.FontWeight*/ ubyte fontWeight;
-	/*Style.FontStyle*/ ubyte fontStyle;
+	Style.FontWeight fontWeight;
+	Style.FontStyle fontStyle;
 	
 	// Text	
-	byte textDecoration;
+	Style.TextDecoration textDecoration;
 	float lineHeight;
 	float letterSpacing;
 	
@@ -332,7 +408,7 @@ private struct InlineStyle
 	}
 }
 
-//
+
 private struct HtmlParser
 {
 	/*
