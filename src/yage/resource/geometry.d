@@ -19,7 +19,7 @@ import yage.system.system;
 /**
  * This is a common abstract class inherited by all templated types of VertexBuffer.  
  * It allows them to be passed around interchangeably and to exist as siblings in arrays. */
-abstract class IVertexBuffer : ExternalResource
+abstract class IVertexBuffer : IDisposable
 {
 	private static uint[] garbageIds;
 	
@@ -65,8 +65,7 @@ class VertexBuffer(T) : IVertexBuffer
 	{	dispose();
 	}
 	void dispose() /// ditto
-	{	super.dispose();
-		if (id)
+	{	if (id)
 		{	garbageIds ~= id;
 			id = 0;
 			dirty = true;

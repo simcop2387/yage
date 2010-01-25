@@ -298,32 +298,31 @@ private class SoundSource : IDisposable
 import yage.core.timer;
 
 /**
- * This is a representation of an OpenAL Context as a Singleton, simce many OpenAL implementations support only one context.
+ * This is a representation of an OpenAL Context as a statif class, simce many OpenAL implementations support only one context.
  * It is used internally by the engine and shouldn't need to be used manually.
  * It provides the following features:
  * 
- * Instantiates an OpenAL device and context upon construction.$(BR)
+ * Instantiates an OpenAL device and context upon init().$(BR)
  * Stores a short array of SoundSource wrappers that can be wrapped around with an infinite number of virtual sources.$(BR)
  * Controls a sound thread that handles buffering audio to all active SoundSources. */
-class SoundContext : IDisposable
+class SoundContext
 {	
-	protected const int MAX_SOURCES = 32;
-	protected const int UPDATE_FREQUENCY = 30;
-	protected SoundSource[] sources;
+	protected static const int MAX_SOURCES = 32;
+	protected static const int UPDATE_FREQUENCY = 30;
+	protected static SoundSource[] sources;
 	
-	protected ALCdevice* device = null;
-	protected ALCcontext* context = null;	
+	protected static ALCdevice* device = null;
+	protected static ALCcontext* context = null;	
 	
-	protected Repeater sound_thread = null;
+	protected static Repeater sound_thread = null;
 	
-	protected SoundNode[] sounds; // currently playing sounds.
+	protected static SoundNode[] sounds; // currently playing sounds.
 	
 	/**
-	 * Constructor.
 	 * Create a device, a context, and start a thread that automatically updates all sound buffers.
 	 * This function is called automatically by the Singleton template.
 	 * To get an instance, use SoundContext.getInstance(). */
-	protected this()
+	public static void init()
 	{	
 		// Get a device
 		device = OpenAL.openDevice(null);	// 218 ms!
@@ -359,25 +358,12 @@ class SoundContext : IDisposable
 		sound_thread.setFunction(&updateSounds);
 		sound_thread.play();
 	}
-	
-	/**
-	 * Add the getInstance() method to get an instance of this singleton.
-	 * On the first requiest (which happens automatically in System.init(), the constructor is called. */
-	mixin SharedSingleton!(typeof(this));
-	
-	
+
 	/**
 	 * Delete the dedvice and context,
 	 * delete all sources, and set the current context to null. */
-	~this()
-	{	dispose();
-	}
-	
-	/**
-	 * Delete the dedvice and context,
-	 * delete all sources, and set the current context to null. */
-	void dispose()
-	{	
+	static void deInit()
+	{
 		if (context)
 		{	sound_thread.dispose();
 			synchronized(OpenAL.getMutex())
@@ -391,19 +377,18 @@ class SoundContext : IDisposable
 				OpenAL.closeDevice(device);
 				context = device = null;
 			}
-			SoundContext.singleton = null; // release singleton instance.
 		}
 	}
 	
 	/**
 	 * Get the OpenAL Context. */
-	ALCcontext* getContext()
+	static ALCcontext* getContext()
 	{	return context;		
 	}
 	
 	/*
 	 * Called by the sound thread to update all active source's sound buffers. */
-	protected void updateSounds(float unused)
+	protected static void updateSounds(float unused)
 	{	
 		auto listener = CameraNode.getListener();
 		if (listener)

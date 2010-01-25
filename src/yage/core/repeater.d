@@ -91,7 +91,7 @@ class Repeater : Timer, IDisposable
 	///
 	void dispose()
 	{	if (active)
-		{	active = false; // why does this crash on exit when compilingin debug mode?
+		{	active = false; // why does this crash on exit when compiling in debug mode?
 			pause();
 			thread = null;
 		}

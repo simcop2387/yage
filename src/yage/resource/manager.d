@@ -225,7 +225,7 @@ struct ResourceManager
 	static void dispose()
 	{	
 		// Perhaps this should be handled elsewhere?
-		foreach (path, res; sounds)
+		foreach (res; sounds)
 			res.dispose();
 
 		fonts = null;

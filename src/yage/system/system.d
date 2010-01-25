@@ -73,7 +73,7 @@ abstract class System
 		ResourceManager.init();
 		
 		// Create OpenAL device, context, and start sound processing thread.
-		SoundContext.getSharedInstance();
+		SoundContext.init();
 				
 		initialized = true;
 		Log.info("Yage has been initialized successfully.");
@@ -91,30 +91,28 @@ abstract class System
 		SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);
 		
+		SoundContext.deInit(); // stop the sound thread
+		
 		foreach_reverse (s; Scene.getAllScenes().values)
 			s.dispose();
-		foreach (item; ExternalResource.getAll().values)
-			item.dispose();
 		
-		Render.cleanup(); // textures, vbo's, etc.
+		Render.cleanup(); // textures, vbo's, and other OpenGL resources	
 		
-		SoundContext.getSharedInstance().dispose();		
 		ResourceManager.dispose();
 		
 		if (Window.getInstance())
 			Window.getInstance().dispose();
 	
-		GC.collect();
+		// TODO: This shouldn't be needed to force any calls to dispose.
+		//GC.collect(); // Crashes when called in debug mode
 		
 		SDL_Quit();
-		
 		DerelictSDL.unload();
 		DerelictSDLImage.unload();
 		DerelictFT.unload();
 		DerelictAL.unload();
 		DerelictVorbis.unload();
 		DerelictVorbisFile.unload();
-		
 		active = false;
 		Log.info("Yage has been de-initialized successfully.");
 	}

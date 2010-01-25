@@ -41,8 +41,8 @@ class OpenAL
 	 * ReturnType execute(FunctionName)(Arguments ...);*/
 	static R execute(alias T, R=ReturnTypeOf!(baseTypedef!(typeof(T))))(ParameterTupleOf!(baseTypedef!(typeof(T))) args)
 	in {
-		if (T.stringof[0..3] != "alc" && SoundContext.singleton) // all non-alc functions require an active OpenAL Context
-			assert(SoundContext.getSharedInstance().getContext());
+		if (T.stringof[0..3] != "alc") // all non-alc functions require an active OpenAL Context
+			assert(SoundContext.getContext());
 	}
 	body
 	{	int error = alGetError(); // clear any previous errors.

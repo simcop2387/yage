@@ -86,7 +86,7 @@ struct Texture
  * texture dimensions a power of two, as they're automatically resized up to
  * the next highest supported size if the non_power_of_two OpenGL extension
  * isn't supported in hardware.*/
-class GPUTexture : ExternalResource, IRenderTarget
+class GPUTexture : IDisposable, IRenderTarget
 {
 	public bool compress;
 	public bool mipmap;
@@ -109,15 +109,14 @@ class GPUTexture : ExternalResource, IRenderTarget
 	
 	///
 	this()
-	{	super();
+	{
 	}
 
 	/**
 	 * Create a GPUTexture from an image.
 	 * The image will be uploaded to memory when the GPUTexture is first bound. */
 	this(char[] filename, bool compress=true, bool mipmap=true)
-	{	super();
-		source = ResourceManager.resolvePath(filename);		
+	{	source = ResourceManager.resolvePath(filename);		
 		this.compress=  compress;
 		this.mipmap = mipmap;
 		this.image = new Image(source);
@@ -126,8 +125,7 @@ class GPUTexture : ExternalResource, IRenderTarget
 	/// ditto
 	this(Image image, bool compress=true, bool mipmap=true, char[] source="", bool pad=false)
 	{	assert(image !is null);
-		assert(image.getData() !is null);
-		super();		
+		assert(image.getData() !is null);		
 		this.image = image;
 		this.compress=  compress;
 		this.mipmap = mipmap;
@@ -152,8 +150,7 @@ class GPUTexture : ExternalResource, IRenderTarget
 	{	dispose();
 	}
 	void dispose() /// ditto
-	{	super.dispose();
-		if (id)
+	{	if (id)
 		{	garbageIds ~= id;
 			id = 0;
 		}
