@@ -17,6 +17,8 @@ public
 	import yage.core.array;
 	import yage.core.cache;
 	import yage.core.color;
+	import yage.core.format;
+	import yage.core.memory;
 	import yage.core.misc;
 	import yage.core.object2;
 	import yage.core.parse;

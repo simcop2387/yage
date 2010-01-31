@@ -18,10 +18,13 @@ import yage.system.system;
  * Provides hardware probing capabilities for Yage. */
 abstract class Probe
 {
+	private static char[] extensions; // return value from glGetString(GL_EXTENSIONS)
+	private static int fbo=-1, shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1, bfs=-1;	// so lookup only has to occur once.
+	
 	/**
 	 * Options for Probe.feature() */
 	enum Feature
-	{	MAX_LIGHTS,			/// Maximum number of lights that can be used at one time
+	{	MAX_LIGHTS,			/// Maximum number of lights that can be used at one time (isn't this always 8?)
 		MAX_TEXTURE_SIZE,	/// Maximum allowed size for a texture
 		MAX_TEXTURE_UNITS,	/// Maximum number of textures that can be used in multitexturing
 		
@@ -47,7 +50,7 @@ abstract class Probe
 	 * --------
 	 */
 	static int feature(Feature query)
-	{	static int fbo=-1, shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1, bfs=-1;	// so lookup only has to occur once.
+	{	
 		int result;
 		
 		switch (query)
@@ -62,12 +65,11 @@ abstract class Probe
 			case Feature.MAX_TEXTURE_UNITS:
 				glGetIntegerv(GL_MAX_TEXTURE_UNITS, &result);
 				return result;
-				
+			
 			case Feature.FBO:
 				if (fbo==-1)
 					fbo = cast(int)checkExtension("GL_EXT_frame_buffer_object");
-				return fbo;
-			
+				return fbo;			
 			case Feature.SHADER:
 				if (shader==-1)
 					shader = cast(int)checkExtension("GL_ARB_shader_objects") && checkExtension("GL_ARB_vertex_shader");
@@ -102,12 +104,12 @@ abstract class Probe
 	 * Searches to see if the given extension is supported in hardware.
 	 * Due to the nature of sdl, a window must first be created before calling this function. */
 	static bool checkExtension(char[] name)
-	{	char[] exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
-	    int result = containsPattern(toLower(exts), toLower(name.dup)~" "); 
-	    delete exts; // [above] append space to ensure we're not matching part of another extension.
-		if (result>=0)
-			return true;
-	    return false;
+	{	if (!extensions.length)
+			extensions = toLower(fromStringz(cast(char*)glGetString(GL_EXTENSIONS)));
+	    int result = containsPattern(extensions, toLower(name.dup)~" "); 
+	    // [above] append space to ensure we're not matching part of another extension.
+		
+	    return result >= 0;
 	}
 
 	/**

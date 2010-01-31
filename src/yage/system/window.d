@@ -15,13 +15,14 @@ import derelict.util.exception;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
 import yage.gui.surface;
-import yage.system.log;
-import yage.system.graphics.all;
+
 import yage.core.all;
 import yage.core.object2;
 import yage.core.math.vector;
 import yage.resource.image;
 import yage.scene.scene;
+import yage.system.log;
+import yage.system.graphics.all;
 import yage.system.system;
 
 import yage.core.math.vector;
@@ -41,7 +42,7 @@ const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
  * --------
  * System.init(); // required
  * auto window = Window.getInstance();
- * window.setResolution(640, 480);
+ * window.setResolution(640, 480); // window is created/recreated here
  * --------
  */
 class Window : IRenderTarget
@@ -139,6 +140,7 @@ class Window : IRenderTarget
 		size.x = width;
 		size.y = height;
 
+		// If SDL ever decouples window creation from initialization, we can move these to System.init().
 		// Create the screen surface (window)
 		uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
 		if (fullscreen) flags |= SDL_FULLSCREEN;
@@ -195,8 +197,7 @@ class Window : IRenderTarget
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
-		glEnable(GL_CULL_FACE);
-		Graphics.enable(Enable.CULL_FACE);
+		glEnable(GL_CULL_FACE);		
 		glEnable(GL_NORMALIZE);  // GL_RESCALE_NORMAL is faster but does not work for non-uniform scaling
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glHint(GL_FOG_HINT, GL_FASTEST); // per vertex fog

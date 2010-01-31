@@ -216,7 +216,7 @@ package class SurfaceGeometry : Geometry
 	}
 
 	// TODO: Convert this to accept materials as well as textures, 
-	// or maybe just allow instantiation of a Material from a GPUTexture, Texture, or Layer
+	// or maybe just allow instantiation of a Material from a GPUTexture or Texture
 	void setMaterials(GPUTexture backgroundImage, GPUTexture centerImage, 
 	                  GPUTexture[] borderImage, GPUTexture[] borderCornerImage, GPUTexture text, float opacity)
 	{	
@@ -225,6 +225,7 @@ package class SurfaceGeometry : Geometry
 			result.addTexture(Texture(texture, clamp, Texture.Filter.BILINEAR));
 			result.color = Color(1f, 1f, 1f, opacity);
 			result.blend = BLEND_AVERAGE;
+			result.emissive = Color(0xffffffff); // even with this, we still have to turn off lighting to render
 			return result;
 		}
 		

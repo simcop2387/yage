@@ -340,7 +340,7 @@ class Surface : Tree!(Surface)
 				textTexture = new GPUTexture(textImage, false, false, "Surface Text", true);
 			else
 			//	textTexture.commit(textImage, false, false, text, true);
-				textTexture.image = textImage;
+				textTexture.setImage(textImage);
 			textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
 			
 			oldText = text;

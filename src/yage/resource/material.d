@@ -25,7 +25,9 @@ import yage.system.log;
 public import yage.resource.layer;
 
 /**
+ * @deprecated
  * This is old code and will be replaced once Collada becomes the default model format.
+ * Layer should be renamed to Material, and Meshes should have an array of materials
  * 
  * A material defines how an object in the 3D world appears.  Materials
  * can be assigned to sprite nodes, mesh nodes, and even GUI elements.

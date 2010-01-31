@@ -17,8 +17,6 @@ import yage.resource.resource;
 import yage.system.system;
 import yage.system.log;
 
-import yage.system.graphics.graphics;
-
 /**
  * An instance of a GPUTexture.
  * This allows many options to be set per instance of a GPUTexture instead of
@@ -85,27 +83,27 @@ struct Texture
  * Also, there's no need to be concerned about making
  * texture dimensions a power of two, as they're automatically resized up to
  * the next highest supported size if the non_power_of_two OpenGL extension
- * isn't supported in hardware.*/
-class GPUTexture : IDisposable, IRenderTarget
+ * isn't supported in hardware.
+ * 
+ * TODO: Should GPUTextue inherit Image? */
+class GPUTexture : IRenderTarget
 {
 	public bool compress;
 	public bool mipmap;
 	public uint format;
 
-	public uint id = 0;	// opengl index of this texture
 	public int width = 0;
 	public int height = 0;
 	public char[] source;
 	
-	public Image image; // if not null, the texture will be updated with this image the next time it is used.
-
-	static uint[] garbageIds;
+	protected Image image; // if not null, the texture will be updated with this image the next time it is used.
 	
 	Vec2i padding;	// padding stores how many pixels of the original texture are unused.
 					// e.g. getWidth() returns the used texture + the padding.  
 					// Padding is applied to the top and the right, and can be negative.
 	
 	bool flipped = false; // TODO: Find a better solution, use texture matrix?
+	bool dirty = true; // if true the texture will be reuploaded
 	
 	///
 	this()
@@ -117,13 +115,19 @@ class GPUTexture : IDisposable, IRenderTarget
 	 * The image will be uploaded to memory when the GPUTexture is first bound. */
 	this(char[] filename, bool compress=true, bool mipmap=true)
 	{	source = ResourceManager.resolvePath(filename);		
-		this.compress=  compress;
-		this.mipmap = mipmap;
-		this.image = new Image(source);
+		setImage(new Image(source), compress, mipmap, source);
 	}
 
 	/// ditto
 	this(Image image, bool compress=true, bool mipmap=true, char[] source="", bool pad=false)
+	{	setImage(image, compress, mipmap, source, pad);
+	}
+
+	/// Get / set the Image used by this texture.
+	Image getImage()
+	{	return image;		
+	}
+	void setImage(Image image, bool compress=true, bool mipmap=true, char[] source="", bool pad=false) /// ditto
 	{	assert(image !is null);
 		assert(image.getData() !is null);		
 		this.image = image;
@@ -142,26 +146,7 @@ class GPUTexture : IDisposable, IRenderTarget
 				image = image.crop(0, 0, new_width, new_height);
 		} else
 			padding = Vec2i(0);
-	}
-
-	/**
-	 * Release the Texture id and mark it for collection. */
-	~this()
-	{	dispose();
-	}
-	void dispose() /// ditto
-	{	if (id)
-		{	garbageIds ~= id;
-			id = 0;
-		}
-		if (image)
-			image = null;
-	}
-	
-	/**
-	 * Returns:  The image that's used for this texture. */
-	Image getImage()
-	{	return image;		
+		dirty = true;
 	}
 
 	/// Is texture compression used in video memory?
@@ -178,11 +163,6 @@ class GPUTexture : IDisposable, IRenderTarget
 	 * Get the format of the Texture. */
 	uint getFormat()
 	{	return format;
-	}
-
-	/// What is the OpenGL index of this texture?
-	uint getId() 
-	{	return id;
 	}
 
 	/**
@@ -203,14 +183,5 @@ class GPUTexture : IDisposable, IRenderTarget
 	///
 	char[] getSource()
 	{	return source;
-	}
-
-	/**
-	 * Returns: Hardware vertex buffer id's from garbage collected VertexBuffer's. */
-	static uint[] getGarbageIds()
-	{	return garbageIds;
-	}
-	static void clearGarbageIds()
-	{	garbageIds.length = 0;
 	}
 }

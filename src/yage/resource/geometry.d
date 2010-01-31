@@ -61,7 +61,7 @@ class VertexBuffer(T) : IVertexBuffer
 		
 	/**
 	 * Release the VBO and mark it for collection. */
-	~this()
+	~this() // TODO: It would be good if we didn't have to rely on the gc to free up opengl resources, but how?
 	{	dispose();
 	}
 	void dispose() /// ditto
@@ -142,27 +142,31 @@ class Geometry : Resource
 	protected IVertexBuffer[char[]] attributes;
 	protected Mesh[] meshes;
 	
-	
+	/// Get / set the Vertex positions with an array of floats, Vec2f or Vec3f.
 	public IVertexBuffer getVertices()
 	{	return attributes[VERTICES];
 	}
-	public void setVertices(T)(T[] vertices)
+	public void setVertices(T)(T[] vertices) /// ditto
 	{	setAttributeData(VERTICES, vertices);
 	}
+	
+	/// Get / set the normals array
 	public VertexBuffer!(Vec3f) getNormals()
 	{	return cast(VertexBuffer!(Vec3f))attributes[NORMALS];
 	}
 	public void setNormals(Vec3f[] normals)
 	{	setAttributeData(NORMALS, normals);
 	}
+	
+	/// Get / set the texture coordinates array with 2D or 3D texture coodinates
 	public IVertexBuffer getTexCoords0()
 	{	return attributes[TEXCOORDS0];
 	}
-	public void setTexCoords0(Vec2f[] tex_coords1)
-	{	setAttributeData(TEXCOORDS0, tex_coords1);
+	public void setTexCoords0(Vec2f[] tex_coords0) /// ditto
+	{	setAttributeData(TEXCOORDS0, tex_coords0);
 	}
-	public void setTexCoords0(Vec3f[] tex_coords1)
-	{	setAttributeData(TEXCOORDS0, tex_coords1);
+	public void setTexCoords0(Vec3f[] tex_coords0) /// ditto
+	{	setAttributeData(TEXCOORDS0, tex_coords0);
 	}
 
 	/**

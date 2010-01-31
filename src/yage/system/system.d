@@ -96,7 +96,7 @@ abstract class System
 		foreach_reverse (s; Scene.getAllScenes().values)
 			s.dispose();
 		
-		Render.cleanup(); // textures, vbo's, and other OpenGL resources	
+		Render.cleanup(0); // textures, vbo's, and other OpenGL resources	
 		
 		ResourceManager.dispose();
 		

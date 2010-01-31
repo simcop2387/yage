@@ -344,7 +344,7 @@ struct Matrix
 	}
 	
 	///
-	void *ptr()
+	float* ptr()
 	{	return v.ptr;
 	}
 
