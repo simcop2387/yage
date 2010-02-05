@@ -1,5 +1,6 @@
 module yage.system.graphics.api.api;
 
+import yage.core.format;
 import yage.core.object2;
 import yage.resource.texture;
 import yage.resource.layer;
@@ -18,4 +19,13 @@ class GraphicsAPI
 	}
 	Current current;
 
+}
+
+/**
+ * Exception thrown on glError. */
+class GraphicsException : YageException
+{	///
+	this(...)
+	{	super(swritef(_arguments, _argptr));
+	}	
 }

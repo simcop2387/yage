@@ -120,13 +120,7 @@ struct Render
 	/**
 	 * Cleanup no-longer used graphics resources. */
 	static void cleanup(int age=3600)
-	{
-		// @deprecated
-		foreach (oldId; IVertexBuffer.getGarbageIds())
-			glDeleteBuffersARB(1, &oldId);
-		IVertexBuffer.clearGarbageIds();
-		
-		graphics.cleanup(age);
+	{	graphics.cleanup(age);
 	}
 
 	/**
@@ -329,7 +323,6 @@ struct Render
 					for (int i=0; i<min(num_lights, lights.length); i++)
 						graphics.bindLight(lights[i], i);
 					
-					
 					// Render
 					if (cast(ModelNode)n)
 						result += model((cast(ModelNode)n).getModel(), n);			
@@ -364,15 +357,11 @@ struct Render
 					}
 					glEnd();
 					graphics.bindLayer(null); // can this be moved outside the loop?
-				}			
-			}
+			}	}
 
 			// Unbind current VBO
-			if(Probe.feature(Probe.Feature.VBO))
-				glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-
+			graphics.bindVertexBuffer(null);
 			alpha.length = 0;
-
 			return result;
 		}
 		

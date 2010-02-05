@@ -19,14 +19,11 @@ import yage.system.system;
 /**
  * This is a common abstract class inherited by all templated types of VertexBuffer.  
  * It allows them to be passed around interchangeably and to exist as siblings in arrays. */
-abstract class IVertexBuffer : IDisposable
+abstract class IVertexBuffer
 {
-	private static uint[] garbageIds;
-	
 	void[] getData(); ///
 	void setData(void[]); ///
 	
-	uint id; /// The OpenGL id of the vertex buffer, or 0 if it hasn't yet been allocated.
 	bool dirty = true; /// If VBO's are used and the dirty flag is set, the VBO will be updated with the vertex data.
 
 	int getSizeInBytes(); ///
@@ -39,14 +36,6 @@ abstract class IVertexBuffer : IDisposable
 
 	float itemLength2(int); // used internally
 
-	/**
-	 * Returns: Hardware vertex buffer id's from garbage collected VertexBuffer's. */
-	static uint[] getGarbageIds()
-	{	return garbageIds;
-	}
-	static void clearGarbageIds()
-	{	garbageIds.length = 0;
-	}
 }
 
 
@@ -58,19 +47,6 @@ abstract class IVertexBuffer : IDisposable
 class VertexBuffer(T) : IVertexBuffer
 {
 	protected T[] data;
-		
-	/**
-	 * Release the VBO and mark it for collection. */
-	~this() // TODO: It would be good if we didn't have to rely on the gc to free up opengl resources, but how?
-	{	dispose();
-	}
-	void dispose() /// ditto
-	{	if (id)
-		{	garbageIds ~= id;
-			id = 0;
-			dirty = true;
-		}
-	}
 
 	/**
 	 * Get/set the vertex data of this buffer.
@@ -106,7 +82,7 @@ class VertexBuffer(T) : IVertexBuffer
 	{	return data.ptr;
 	}
 
-	// Hackish: used by Geometry for radius calculation
+	// Hackish, used by Geometry for radius calculation
 	float itemLength2(int index)
 	{	return data[index].length2();
 	}

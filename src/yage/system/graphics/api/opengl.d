@@ -7,6 +7,7 @@ import tango.stdc.time : time;
 import tango.core.Traits;
 import tango.math.Math;
 import tango.stdc.stringz;
+import tango.util.container.HashMap;
 import derelict.opengl.gl;
 import derelict.opengl.glu;
 import derelict.opengl.glext;
@@ -32,10 +33,25 @@ import yage.system.graphics.probe;
 import yage.system.graphics.api.api;
 import yage.system.log;
 
-private struct OpenGLResource
+private class ResourceInfo
 {	uint id;
 	uint time; // seconds from 1970, watch out for 2038!
 	WeakRef!(Object) resource;
+	
+	// Create ResourceInfo for a resource in map if it doesn't exist, or return it if it does
+	static ResourceInfo getOrCreate(Object resource, HashMap!(uint, ResourceInfo) map)
+	{	uint hash = resource.toHash();
+		ResourceInfo* temp = (hash in map);
+		ResourceInfo info;
+		if (!temp)
+		{	info = new ResourceInfo();
+			map[hash] = info;
+			info.resource = new WeakRef!(Object)(resource);
+		} else
+			info = *temp;	
+		info.time = tango.stdc.time.time(null);
+		return info;
+	}
 }
 
 
@@ -47,13 +63,15 @@ private struct OpenGLResource
  */
 class OpenGL : GraphicsAPI 
 {
-	protected static Model msprite;
+	protected Model msprite;
+		
+	protected HashMap!(uint, ResourceInfo) textures; // aa's fail, so we have to use Tango's Hashmap
+	protected HashMap!(uint, ResourceInfo) vbos;
 	
-	protected OpenGLResource[GPUTexture] textures;
 	
 	/**
 	 * Free any resources from graphics memory are either:
-	 * - older than age, or
+	 * - haven't been used for longer than age,
 	 * - are no longer referenced.
 	 * If removed from graphics memory, they will be re-uploaded when needed again.
 	 * Params:
@@ -61,16 +79,26 @@ class OpenGL : GraphicsAPI
 	 */
 	void cleanup(uint age=3600)
 	{
-		/// TODO: VBO's and Shaders as well
-		foreach (t; textures)
-			if (t.resource is null || t.time <= time(null)-age)
-			{	glDeleteTextures(1, &t.id);
-				textures.remove(cast(GPUTexture)t.resource);
-			}
+		
+		foreach (key, info; textures)
+		{	if (info.resource is null || info.time <= time(null)-age)
+			{	glDeleteTextures(1, &info.id);
+				textures.removeKey(key);
+				delete info; // nothing else references it at this point.
+		}	}
+		foreach (key, info; vbos)
+		{	if (info.resource is null || info.time <= time(null)-age)
+			{	glDeleteBuffersARB(1, &info.id);
+				vbos.removeKey(key);
+				delete info; // nothing else references it at this point.
+		}	}
 	}
 	
 	this()
 	{	
+		textures = new HashMap!(uint, ResourceInfo);
+		vbos = new HashMap!(uint, ResourceInfo);
+		
 		// Sprite
 		msprite = new Model();
 		msprite.setVertices([Vec3f(-1,-1, 0), Vec3f( 1,-1, 0), Vec3f( 1, 1, 0), Vec3f(-1, 1, 0)]);
@@ -155,6 +183,7 @@ class OpenGL : GraphicsAPI
 			{	int length = min(layer.textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
 
 				// Loop through all of Layer's textures up to the maximum allowed.
+				// TODO: there's currently no coverage for this block
 				for (int i=0; i<length; i++)
 				{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
 
@@ -162,22 +191,14 @@ class OpenGL : GraphicsAPI
 					glActiveTextureARB(GL_TEXTUREI_ARB);
 					glEnable(GL_TEXTURE_2D);
 					glClientActiveTextureARB(GL_TEXTUREI_ARB);
-
-					// Set texture coordinates
-					IVertexBuffer texcoords = model.getTexCoords0();
-					if (Probe.feature(Probe.Feature.VBO))
-					{	glBindBufferARB(GL_ARRAY_BUFFER, texcoords.id);
-						glTexCoordPointer(texcoords.getComponents(), GL_FLOAT, 0, null);
-					} else
-						glTexCoordPointer(texcoords.getComponents(), GL_FLOAT, 0, texcoords.ptr);
-
-					// Bind and blend
+					
+					// TODO: bind closest level of texture coordinates available instead of always using 0.
+					bindVertexBuffer(model.getTexCoords0, Geometry.TEXCOORDS0);
 					bindTexture(layer.textures[i]);
 				}
 			}
 			else if(layer.textures.length == 1){
 				glEnable(GL_TEXTURE_2D);
-			//	textures[0].bind();
 				bindTexture(layer.textures[0]);
 			} else
 				glDisable(GL_TEXTURE_2D);
@@ -343,7 +364,7 @@ class OpenGL : GraphicsAPI
 					glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, renderBuffer);
 
 					/// TODO: textures[texture].id will fail if Texture isn't bound.
-					glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, textures[texture].id, 0);
+					glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, textures[texture.toHash()].id, 0);
 					
 					auto status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 				} else
@@ -379,8 +400,8 @@ class OpenGL : GraphicsAPI
 						texture.padding = Vec2i(0);
 					}
 					
-					// TODO: textures[texture].id will fail if Texture isn't bound.
-					glBindTexture(GL_TEXTURE_2D, textures[texture].id);
+					// TODO: textures[texture].id will fail if Texture isn't created.
+					glBindTexture(GL_TEXTURE_2D, textures[texture.toHash()].id);
 					glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, texture.width, texture.height, 0);
 					texture.format = 3;	// RGB
 					texture.flipped = true;
@@ -424,35 +445,29 @@ class OpenGL : GraphicsAPI
 	///
 	void bindTexture(ref Texture texture)
 	{	GPUTexture gpuTexture = texture.texture;
+		assert(gpuTexture);
 		
+		ResourceInfo info = ResourceInfo.getOrCreate(gpuTexture, textures);
 		
-		
-		OpenGLResource* resource = (gpuTexture in textures);
-		bool exists = resource !is null;
-		if (!resource)
-		{	OpenGLResource temp;			
-			temp.resource = new WeakRef!(Object)(gpuTexture);
-			textures[gpuTexture] = temp;
-			resource = &textures[gpuTexture];		
-		}
-		
-		resource.time = time(null);
-		
-		if (!exists || gpuTexture.dirty)
-		{	
-			if (!exists)
-			{	
-				glGenTextures(1, &resource.id);
-				glBindTexture(GL_TEXTURE_2D, resource.id);
-				assert(glIsTexture(resource.id)); // why does this fail if before bindTexture (because we need glFlush?)
-				
-				// For some reason these need to be called or everything runs slowly.			
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			}
-			else
-				glBindTexture(GL_TEXTURE_2D, resource.id);
+		// If it doesn't have an OpenGL id
+		if (!info.id)
+		{				
+			glGenTextures(1, &info.id);
+			glBindTexture(GL_TEXTURE_2D, info.id);
+			assert(glIsTexture(info.id)); // why does this fail if before bindTexture (because we need glFlush?)
 			
+			// For some reason these need to be called or everything runs slowly.			
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			
+			gpuTexture.dirty = true;
+		}
+		else
+			glBindTexture(GL_TEXTURE_2D, info.id);
+		
+		// If texture needs to be uploaded
+		if (gpuTexture.dirty)
+		{	
 			// Upload new image to graphics card memory
 			Image image = gpuTexture.getImage();
 			assert(image);
@@ -485,9 +500,9 @@ class OpenGL : GraphicsAPI
 			uint new_height= image.getHeight();
 			
 			// Ensure power of two sized if required
-			//if (!Probe.getSupport(DEVICE_NON_2_TEXTURE))
-			if (true)
-			{	if (log2(new_height) != floor(log2(new_height)))
+			if (!Probe.feature(Probe.Feature.NON_2_TEXTURE))
+			{	Log.info("resizing texture");
+				if (log2(new_height) != floor(log2(new_height)))
 					new_height = nextPow2(new_height);
 				if (log2(new_width) != floor(log2(new_width)))
 					new_width = nextPow2(new_width);
@@ -509,8 +524,6 @@ class OpenGL : GraphicsAPI
 			gpuTexture.dirty = false;
 			gpuTexture.flipped = false;	
 		}
-		else
-			glBindTexture(GL_TEXTURE_2D, resource.id);
 		
 		// Filtering
 		if (texture.filter == Texture.Filter.DEFAULT)
@@ -585,7 +598,7 @@ class OpenGL : GraphicsAPI
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blendTranslated);
 	}
 	
-	//
+	/// TODO: merge into bindTexture
 	void textureUnbind(Texture texture)
 	{
 		// Texture Matrix
@@ -610,55 +623,62 @@ class OpenGL : GraphicsAPI
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	/*
+	/**
 	 * Bind (and if necessary upload to video memory) a vertex buffer
 	 * Params:
 	 *   type = A vertex buffer type constant defined in Geometry or Mesh. */
-	void bindVertexBuffer(IVertexBuffer vb, char[] type)
-	{	
-		int vbo = Probe.feature(Probe.Feature.VBO);
+	void bindVertexBuffer(IVertexBuffer vb, char[] type="")
+	{	if (vb)
+			assert(type.length);
 		
-		// Bind vbo and update data if necessary.
-		if (vbo)
-		{	
-			uint vbo_type = type==Mesh.TRIANGLES ? 
+		uint vbo_type = type==Mesh.TRIANGLES ? 
 				GL_ELEMENT_ARRAY_BUFFER_ARB :
 				GL_ARRAY_BUFFER_ARB;
-			
-			// Get a new OpenGL buffer if there isn't one assigned yet.
-			if (!vb.id)
-			{	assert(vb.dirty); 
-				glGenBuffersARB(1, &vb.id);
-			}
 		
-			// Bind buffer and update with new data if necessary.
-			glBindBufferARB(vbo_type, vb.id);
-			if (vb.dirty)
-			{	glBufferDataARB(vbo_type, vb.getData().length, vb.getData().ptr, GL_STATIC_DRAW_ARB);
-				vb.dirty = false;
-			}
-		}
-		
-		// Bind the data
-		switch (type)
+		if (vb)
 		{
-			case Geometry.VERTICES:
-				glVertexPointer(vb.getComponents(), GL_FLOAT, 0, vbo ? null : vb.ptr);
-				break;
-			case Geometry.NORMALS:
-				assert(vb.getComponents() == 3); // normals are always Vec3
-				glNormalPointer(GL_FLOAT, 0, vbo ? null : vb.ptr);
-				break;
-			case Geometry.TEXCOORDS0:
-				glTexCoordPointer(vb.getComponents(), GL_FLOAT, 0, vbo ? null : vb.ptr);
-				break;
-			case Mesh.TRIANGLES: // no binding necessary
-			default:
-				// TODO: Support custom types.
-				//if (vb.length())
-				//	throw new OpenGLException("Unsupported vertex buffer type %s", type);
-				break;
-		}		
+			int featureVbo = Probe.feature(Probe.Feature.VBO);
+			
+			// Bind vbo and update data if necessary.
+			if (featureVbo)
+			{	
+				// Get a new OpenGL buffer if there isn't one assigned yet.
+				ResourceInfo info = ResourceInfo.getOrCreate(vb, vbos);
+				if (!info.id)
+				{	glGenBuffersARB(1, &info.id);
+					vb.dirty = true;
+				}
+			
+				// Bind buffer and update with new data if necessary.
+				glBindBufferARB(vbo_type, info.id);
+				if (vb.dirty)
+				{	glBufferDataARB(vbo_type, vb.getData().length, vb.getData().ptr, GL_STATIC_DRAW_ARB);
+					vb.dirty = false;
+				}
+			}
+			
+			// Bind the data
+			switch (type)
+			{
+				case Geometry.VERTICES:
+					glVertexPointer(vb.getComponents(), GL_FLOAT, 0, featureVbo ? null : vb.ptr);
+					break;
+				case Geometry.NORMALS:
+					assert(vb.getComponents() == 3); // normals are always Vec3
+					glNormalPointer(GL_FLOAT, 0, featureVbo ? null : vb.ptr);
+					break;
+				case Geometry.TEXCOORDS0:
+					glTexCoordPointer(vb.getComponents(), GL_FLOAT, 0, featureVbo ? null : vb.ptr);
+					break;
+				case Mesh.TRIANGLES: // no binding necessary
+				default:
+					// TODO: Support custom types.
+					//if (vb.length())
+					//	throw new GraphicsException("Unsupported vertex buffer type %s", type);
+					break;
+			}		
+		} else // unbind
+			glBindBufferARB(vbo_type, 0);
 	}
 	
 	///
@@ -731,18 +751,11 @@ class OpenGL : GraphicsAPI
 		void check()
 		{	int err = glGetError();
 			if (err != GL_NO_ERROR)
-				throw new OpenGLException("Error %s, %s", err, fromStringz(cast(char*)gluErrorString(err)));
+				throw new GraphicsException("Error %s, %s", err, fromStringz(cast(char*)gluErrorString(err)));
 		}
 	}
 	
 	
 }
 
-/**
- * Exception thrown on glError. */
-class OpenGLException : YageException
-{	///
-	this(...)
-	{	super(swritef(_arguments, _argptr));
-	}	
-}
+
