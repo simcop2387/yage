@@ -8,6 +8,7 @@ module yage.resource.material;
 
 import tango.util.Convert;
 import tango.text.convert.Format;
+import tango.io.device.File;
 import std.file;
 import std.path;
 import std.stream;
@@ -152,6 +153,9 @@ class Material : Resource
 			}catch (Exception e)
 			{	throw new ResourceException("Could not parse layer '", i, "' attributes.\n", e);
 			}
+			
+			char[] vertexShader;
+			char[] fragmentShader;
 
 			// Loop through each xml texture and shader of the layer
 			int t, s;	// texture and shader counters

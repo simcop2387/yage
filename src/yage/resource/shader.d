@@ -18,18 +18,56 @@ import yage.resource.resource;
 
 
 /**
+ * TODO: Modify this to accept vert and frag source code in the constructor, 
+ * so it represents a program instead of an unlinked shader object.
+ * Move compilation to OpenGL.bindShader
+ * 
  * A Shader is a class used to represent a vertex or fragment shader.
  * Material layers link shader objects together to form shader programs.
  * When a node that uses that material is rendered, the shader program is applied.*/
-class Shader : Resource
+class Shader
 {
+	///
+	enum Status
+	{	NONE,
+		COMPILED,
+		LINKED,
+		EXECUTED		
+	}	
+	
+	Status status;			///
+	char[] compileLog;		///
+	
+	protected char[] vertexSource;
+	protected char[] fragmentSource;
+	
+	///
+	this(char[] vertexSource, char[] fragmentSource)
+	{	this.vertexSource = vertexSource;
+		this.fragmentSource = fragmentSource;
+	}
+	
+	///
+	char[] getVertexSource()
+	{	return vertexSource;		
+	}
+	
+	///
+	char[] getFragmentSource()
+	{	return fragmentSource;		
+	}
+	
+	
+	
+	// Old Version:
+	
 	protected char[]	source;		// path to the source code.
 	protected char[]	code;		// Source code of the shader.
 	protected uint		shader;		// OpenGL handle to the compiled object code
 	protected bool		type;		// 0 for vertex, 1 for fragment shader.
 
 
-	/**
+	/*
 	 * Construct this shader and then load and compile the given shader file.
 	 * Params:
 	 * filename = The shader source code file to load.
@@ -62,28 +100,28 @@ class Shader : Resource
 		}
 	}
 
-	/// Free the shader object from OpenGL memory.
+	// Free the shader object from OpenGL memory.
 	~this()
 	{	Log.info("Removing shader '", source, "'.");
 		glDeleteObjectARB(shader);
 	}
 
-	/// Return the source filename of this shader.
+	// Return the source filename of this shader.
 	char[] getSource()
 	{	return source;
 	}
 
-	/// Return the source code of this shader.
+	// Return the source code of this shader.
 	char[] getCode()
 	{	return code;
 	}
 
-	/// Return the OpenGL handle of the compiled shader.
+	// Return the OpenGL handle of the compiled shader.
 	uint getShader()
 	{	return shader;
 	}
 
-	/**
+	/*
 	 * Get messages from the shader compiler.*/
 	char[] getCompileLog()
 	{	int len;  char *log;

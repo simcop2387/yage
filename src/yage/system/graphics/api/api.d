@@ -1,9 +1,16 @@
+/**
+ * Copyright:  (c) 2005-2009 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl3.txt">LGPL v3</a>
+ */
+
 module yage.system.graphics.api.api;
 
 import yage.core.format;
 import yage.core.object2;
 import yage.resource.texture;
 import yage.resource.layer;
+import yage.resource.shader;
 import yage.system.graphics.api.opengl;
 
 /**
@@ -11,18 +18,20 @@ import yage.system.graphics.api.opengl;
  * TODO: Add more functions to this class. */
 class GraphicsAPI
 {
+	/// Track the currently bound resource to minimize state changes.
 	protected struct Current
-	{	static CameraNode camera;
-		static IRenderTarget renderTarget;
-		static Texture texture;
-		static Layer layer;
+	{	static CameraNode camera; ///
+		static IRenderTarget renderTarget; ///
+		static Shader shader; ///
+		static Texture texture; ///
+		static Layer layer; ///
 	}
-	Current current;
+	Current current; /// ditto
 
 }
 
 /**
- * Exception thrown on glError. */
+ * Exception thrown on an error in the graphics system.. */
 class GraphicsException : YageException
 {	///
 	this(...)

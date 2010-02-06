@@ -1,5 +1,8 @@
-
-//TODO: Move graphics.d into here, see wiki/ideas
+/**
+ * Copyright:  (c) 2005-2009 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    <a href="lgpl3.txt">LGPL v3</a>
+ */
 
 module yage.system.graphics.api.opengl;
 
@@ -20,6 +23,7 @@ import yage.resource.image;
 import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
+import yage.resource.shader;
 import yage.resource.texture;
 import yage.scene.all;
 import yage.scene.light;
@@ -67,6 +71,7 @@ class OpenGL : GraphicsAPI
 		
 	protected HashMap!(uint, ResourceInfo) textures; // aa's fail, so we have to use Tango's Hashmap
 	protected HashMap!(uint, ResourceInfo) vbos;
+	protected HashMap!(uint, ResourceInfo) shaders;
 	
 	
 	/**
@@ -98,6 +103,7 @@ class OpenGL : GraphicsAPI
 	{	
 		textures = new HashMap!(uint, ResourceInfo);
 		vbos = new HashMap!(uint, ResourceInfo);
+		shaders = new HashMap!(uint, ResourceInfo);
 		
 		// Sprite
 		msprite = new Model();
@@ -442,6 +448,99 @@ class OpenGL : GraphicsAPI
 		}
 	}
 	
+	
+	/// Doesn't work and isn't used yet.
+	void bindShader(Shader shader)
+	{	
+		//if (shader==current.shader)
+		//	return;
+		
+		if (shader)
+		{	assert(shader.getVertexSource());
+			assert(shader.getFragmentSource());
+			
+			ResourceInfo info = ResourceInfo.getOrCreate(shader, shaders);
+			
+			// Compile and link shader if necessary.
+			if (!info.id)
+			{	char[] log;
+				
+				char[] getLog(uint id)
+				{	int len;  char *log;
+					glGetObjectParameterivARB(id, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
+					if (len > 0)
+					{	log = (new char[len]).ptr;
+						glGetInfoLogARB(id, len, &len, log);
+					}
+					return log[0..len];
+				}
+				
+				uint compile(char[] source, uint type)
+				{
+					// Compile this shader into a binary object
+					uint shaderObj;
+					{	scope char** sourceZ = (new char*[1]).ptr;
+						shaderObj = glCreateShaderObjectARB(type);
+						sourceZ[0] = (source ~ "\0").ptr;
+						glShaderSourceARB(shaderObj, 1, sourceZ, null);
+						glCompileShaderARB(shaderObj);
+						delete sourceZ[0];
+					}
+					
+					// Get the compile log and check for errors
+					char[] objLog = getLog(shaderObj);
+					log ~= log;
+					int status;
+					glGetObjectParameterivARB(shaderObj, GL_OBJECT_COMPILE_STATUS_ARB, &status);
+					if (!status)
+					{	try {
+							glDeleteObjectARB(shaderObj);
+						} finally {
+							throw new GraphicsException("Could not compile %s shader.\nReason:  %s\nSource:  %s", 
+								type==GL_VERTEX_SHADER_ARB ? "vertex" : "fragment", objLog, source);
+					}	}
+					
+					return shaderObj;
+				}
+				
+				// Compile
+				uint vertexObj = compile(shader.getVertexSource(), GL_VERTEX_SHADER_ARB);
+				uint fragmentObj = compile(shader.getFragmentSource(), GL_FRAGMENT_SHADER_ARB);
+				assert(vertexObj);
+				assert(fragmentObj);
+				
+				// Link				
+				info.id = glCreateProgramObjectARB();
+				glAttachObjectARB(info.id, vertexObj);
+				glAttachObjectARB(info.id, fragmentObj);
+				glLinkProgramARB(info.id); // common failure point
+				
+				char[] linkLog = getLog(info.id);
+				log ~= linkLog;
+			
+				// Check for errors
+				int status;
+				glGetObjectParameterivARB(info.id, GL_OBJECT_LINK_STATUS_ARB, &status);
+				if (!status)
+				{	throw new GraphicsException("Could not link the shaders.\nReason:  %s", linkLog);
+				
+				}
+				
+				glValidateProgramARB(info.id);
+				log ~= getLog(info.id);
+				
+				
+				Log.info(log); // temporary
+			}
+			
+			assert(info.id);
+			glUseProgramObjectARB(info.id);
+		} else
+			glUseProgramObjectARB(0); // no shader
+		
+		current.shader = shader;
+	}
+	
 	///
 	void bindTexture(ref Texture texture)
 	{	GPUTexture gpuTexture = texture.texture;
@@ -680,6 +779,8 @@ class OpenGL : GraphicsAPI
 		} else // unbind
 			glBindBufferARB(vbo_type, 0);
 	}
+	
+	
 	
 	///
 	RenderStatistics drawGeometry(Geometry geometry)

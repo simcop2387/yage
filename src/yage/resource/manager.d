@@ -176,7 +176,10 @@ struct ResourceManager
 		return materials[source];
 	}
 
-	/** Acquire and return a requested Shader.
+	/** 
+	 * @deprecated
+	 * TODO: Update this to store a hash of the source code for future lookups.
+	 * Acquire and return a requested Shader.
 	 *  If the Shader has already been loaded, the in-memory copy will be returned.
 	 *  If not, it will be loaded and stored in the resource pool.  This function
 	 *  is called automatically for each of a Material's Shaders when loading a Material.

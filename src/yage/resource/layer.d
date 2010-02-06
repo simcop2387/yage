@@ -82,7 +82,6 @@ class Layer : Resource
 	/// Property to set the width of lines and points when the layer is rendered as such.
 	int	width = 1;
 
-	// private
 	public Texture[] textures;
 	Shader[] shaders;
 	int program=0;
@@ -103,9 +102,6 @@ class Layer : Resource
 			glDeleteObjectARB(program);
 	}
 
-	/**
-	 * Add a Shader to this Layer.  Call linkShaders() to recompile the program.
-	 * Returns: the index of the new Shader in the Shader array. */
 	int addShader(Shader shader)
 	{	shaders ~= shader;
 		return shaders.length; 

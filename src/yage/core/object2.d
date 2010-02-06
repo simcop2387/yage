@@ -9,29 +9,10 @@ import tango.math.random.Kiss;
 import tango.util.Convert;
 import yage.core.format;
 
-/**
- * Allow all objects to store an Id and display that id with the class name on toString(). */
+/*
+ * Unused. */
 class YageObject
-{
-	private char[] id;
-	
-	///
-	void setInternalId(char[] id)
-	{	this.id = id;
-	}
-	
-	///
-	char[] getInternalId()
-	{	if (id.length)
-			return id;
-		return id = to!(char[])(Kiss().toInt(1, 65536*256));
-	}
-	
-	///
-	char[] toString()
-	{	return this.classinfo.name ~ "[" ~ getInternalId() ~ "]";
-	}
-}
+{}
 
 /**
  * This is the default exception type for Yage. */
@@ -45,7 +26,8 @@ class YageException : Exception
 	 * -------- 
 	 */
 	this(...)
-	{	super(swritef(_arguments, _argptr));
+	{	// TODO: Log.warn?
+		super(swritef(_arguments, _argptr));
 	}	
 }
 
