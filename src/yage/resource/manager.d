@@ -176,14 +176,14 @@ struct ResourceManager
 		return materials[source];
 	}
 
-	/** 
+	/*
 	 * @deprecated
 	 * TODO: Update this to store a hash of the source code for future lookups.
 	 * Acquire and return a requested Shader.
 	 *  If the Shader has already been loaded, the in-memory copy will be returned.
 	 *  If not, it will be loaded and stored in the resource pool.  This function
 	 *  is called automatically for each of a Material's Shaders when loading a Material.
-	 *  Params: type = set to 0 for vertex shader or 1 for fragment shader.*/
+	 *  Params: type = set to 0 for vertex shader or 1 for fragment shader.
 	static Shader shader(char[] source, bool type)
 	{	if (source in shaders)
 			return shaders[source];
@@ -192,6 +192,7 @@ struct ResourceManager
 		Log.info("Shader ", source ~ " loaded in ", t, " seconds.");
 		return shaders[source];
 	}
+	*/
 
 	/** Acquire and return a requested Sound.
 	 *  If the Sound has already been loaded, the in-memory copy will be returned.

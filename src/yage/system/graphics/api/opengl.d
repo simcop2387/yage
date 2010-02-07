@@ -208,11 +208,11 @@ class OpenGL : GraphicsAPI
 				bindTexture(layer.textures[0]);
 			} else
 				glDisable(GL_TEXTURE_2D);
-
-			// Shader
-			if (layer.program != 0)
-			{	glUseProgramObjectARB(layer.program);
-				layer.current_program = layer.program;
+			
+			// New
+			if (layer.shader)
+			{	bindShader(layer.shader, layer);
+				//layer.current_program = layer.program;
 
 				// Try to light and fog variables?
 				try {	// bad for performance?
@@ -283,12 +283,8 @@ class OpenGL : GraphicsAPI
 			}
 			glDisable(GL_TEXTURE_2D);
 			
-
-			// Shader
-			if (current.layer.program != 0)
-			{	glUseProgramObjectARB(0);
-				current.layer.current_program = 0;
-			}
+			bindShader(null, null);
+			//current.layer.current_program = 0;
 		}
 		current.layer = layer;
 	}
@@ -448,22 +444,25 @@ class OpenGL : GraphicsAPI
 		}
 	}
 	
-	
-	/// Doesn't work and isn't used yet.
-	void bindShader(Shader shader)
+	/// TODO: Allow specifying uniform variable assignments.
+	void bindShader(Shader shader, Layer layer)
 	{	
+		// Causes null pointer exception
 		//if (shader==current.shader)
 		//	return;
 		
 		if (shader)
-		{	assert(shader.getVertexSource());
-			assert(shader.getFragmentSource());
+		{	assert(shader.getVertexSource().length);
+			assert(shader.getFragmentSource().length);
 			
+			// temporary
 			ResourceInfo info = ResourceInfo.getOrCreate(shader, shaders);
 			
-			// Compile and link shader if necessary.
-			if (!info.id)
-			{	char[] log;
+			info.id = layer.program;
+		
+			if (!layer.program)
+			{	
+				char[] log; // accumulates all log entries
 				
 				char[] getLog(uint id)
 				{	int len;  char *log;
@@ -489,7 +488,7 @@ class OpenGL : GraphicsAPI
 					
 					// Get the compile log and check for errors
 					char[] objLog = getLog(shaderObj);
-					log ~= log;
+					log ~= objLog;
 					int status;
 					glGetObjectParameterivARB(shaderObj, GL_OBJECT_COMPILE_STATUS_ARB, &status);
 					if (!status)
@@ -509,7 +508,7 @@ class OpenGL : GraphicsAPI
 				assert(vertexObj);
 				assert(fragmentObj);
 				
-				// Link				
+				// Link
 				info.id = glCreateProgramObjectARB();
 				glAttachObjectARB(info.id, vertexObj);
 				glAttachObjectARB(info.id, fragmentObj);
@@ -522,15 +521,13 @@ class OpenGL : GraphicsAPI
 				int status;
 				glGetObjectParameterivARB(info.id, GL_OBJECT_LINK_STATUS_ARB, &status);
 				if (!status)
-				{	throw new GraphicsException("Could not link the shaders.\nReason:  %s", linkLog);
-				
-				}
-				
+					throw new GraphicsException("Could not link the shaders.\nReason:  %s", linkLog);
 				glValidateProgramARB(info.id);
 				log ~= getLog(info.id);
-				
-				
-				Log.info(log); // temporary
+					
+				// Temporary
+				layer.program = info.id;
+				Log.info(log);
 			}
 			
 			assert(info.id);
@@ -538,7 +535,7 @@ class OpenGL : GraphicsAPI
 		} else
 			glUseProgramObjectARB(0); // no shader
 		
-		current.shader = shader;
+		current.shader = shader;		
 	}
 	
 	///

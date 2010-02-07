@@ -160,8 +160,8 @@ class Material : Resource
 			// Loop through each xml texture and shader of the layer
 			int t, s;	// texture and shader counters
 			foreach (XmlNode xmap; xml_layer.getChildren())
-			{	char[] name = tolower(xmap.getName());
-
+			{	char[] name = tolower(xmap.getName());				
+			
 				// If this xml node is a texture
 				if (name == "texture" || name == "map")
 				{	t++;
@@ -219,23 +219,28 @@ class Material : Resource
 				// If this xml node is a shader
 				else if (name == "shader" && Probe.feature(Probe.Feature.SHADER))
 				{	s++;
-					bool type;
-					char[] source, str_type;
+					char[] source, type;
 					try
 					{	source	= xmap.getAttribute("src");
-						str_type= tolower(xmap.getAttribute("type"));
+						type= tolower(xmap.getAttribute("type"));
 					}catch
 					{	throw new ResourceException(
 							"Could not parse shader '", s, "' in layer '", i, "'.\n");
 					}
 					// Convert type from string to bool, and load
-					if (str_type=="vertex") type = 0;
-					else if (str_type=="fragment") type = 1;
-					else throw new ResourceException("Could not parse shader type '" ~ str_type ~ "' in shader '",
-									s, "'.  Must be 'vertex' or 'fragment'.");
-					layer.addShader(ResourceManager.shader(ResourceManager.resolvePath(source, path), type));
+					if (type=="vertex")
+						vertexShader = cast(char[])tango.io.device.File.File.get(ResourceManager.resolvePath(source, path));
+					else if (type=="fragment") 
+						fragmentShader = cast(char[])tango.io.device.File.File.get(ResourceManager.resolvePath(source, path));
+					else 
+						throw new ResourceException("Could not parse shader type '" ~ type ~ "' in shader '",
+									s, "'.  Must be 'vertex' or 'fragment'.");					
 				}
 			}
+			
+			// New
+			if (vertexShader.length && fragmentShader.length) // TODO: Send through resource manager.
+				layer.shader = new Shader(vertexShader, fragmentShader);
 
 			// Warning for too many textures
 			static int max_textures;
@@ -245,10 +250,6 @@ class Material : Resource
 			{	Log.info("WARNING:  layer '", i ,"' has ", t,
 					" textures, but this hardware only supports ", max_textures, ".");
 			}
-
-			// Link Shaders
-			if (layer.getShaders().length)
-				layer.linkShaders();
 		}
 	}
 

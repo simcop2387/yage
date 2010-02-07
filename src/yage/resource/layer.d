@@ -83,10 +83,12 @@ class Layer : Resource
 	int	width = 1;
 
 	public Texture[] textures;
-	Shader[] shaders;
+	
+	
+	Shader shader;
+	
+	// Deprecated
 	int program=0;
-	static int current_program=0;
-
 
 	/// Set layer properties to default values.
 	this()
@@ -95,16 +97,6 @@ class Layer : Resource
 		specular = Color("black");
 		emissive = Color("black");
 		color = Color("white");
-	}
-
-	~this()
-	{	if (program != 0)
-			glDeleteObjectARB(program);
-	}
-
-	int addShader(Shader shader)
-	{	shaders ~= shader;
-		return shaders.length; 
 	}
 
 	/// Add a new texture to this layer and return it.
@@ -118,17 +110,9 @@ class Layer : Resource
 		return textures.length;
 	}
 
-	/**
-	 * Return the OpenGL handle to the linked shader program.
-	 * This value will most likely be zero unless shaders have been
-	 * loaded and linked.*/
-	uint getShaderProgram()
-	{	return program;
-	}
-
-	/// Return the array of shader obects used by this layer.
-	Shader[] getShaders()
-	{	return shaders;
+	/// Return the shader object used by this layer.
+	Shader getShader()
+	{	return shader;
 	}
 
 	/// Get an array of all the textures of this layer.
@@ -136,55 +120,7 @@ class Layer : Resource
 	{	return textures;
 	}
 
-	///
-	int getProgram()
-	{	return program;
-	}
-
-	/**
-	 * Get messages from the shader program.*/
-	char[] getShaderProgramLog()
-	{	int len;  char *log;
-		glGetObjectParameterivARB(program, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
-		if (len > 0)
-		{	log = (new char[len]).ptr;
-			glGetInfoLogARB(program, len, &len, log);
-		}
-		return .toString(log);
-	}
-
-	/// Link all vertex and fragment shaders together into a shader program.
-	void linkShaders()
-	{
-		if (program != 0)
-			glDeleteObjectARB(program);
-
-		// Don't do anything if we have no shaders
-		if (shaders.length ==0)
-			return;
-		program = glCreateProgramObjectARB();
-
-		// Add shaders to the program
-		foreach (Shader shader; shaders)
-		{	glAttachObjectARB(program, shader.getShader());
-			Log.info("Linking shader ", shader.getSource());
-		}
-
-		// Link the program and check for errors
-		int status;
-		try {
-			glLinkProgramARB(program);
-		} catch { Log.info("Link Failed");}
-		glGetObjectParameterivARB(program, GL_OBJECT_LINK_STATUS_ARB, &status);
-		if (!status)
-		{	Log.warn(getShaderProgramLog());
-			throw new ResourceException("Could not link the shaders.");
-		}
-		glValidateProgramARB(program);
-		Log.info(getShaderProgramLog());
-		Log.info("Linking successful.");
-	}
-
+	
 	/// Set a the value of a uniform variable (or array of uniform variables) in this Layer's Shader program.
 	void setUniform(char[] name, float[] values ...)
 	{	setUniform(name, 1, values);
@@ -220,8 +156,7 @@ class Layer : Resource
 			" draw=\"" ~ .toString(draw) ~ "\"" ~
 			" width=\"" ~ .toString(width) ~ "\"" ~
 			">\n";
-			foreach (Shader s; shaders)
-				result~= s.toString();
+		
 			//foreach (TextureInstance t; textures)
 			//	result~= t.toString();
 		result~= "</layer>";
@@ -232,10 +167,6 @@ class Layer : Resource
 	protected void setUniform(char[] name, int width, float[] values)
 	{	if (!Probe.feature(Probe.Feature.SHADER))
 			throw new ResourceException("Layer.setUniform() is only supported on hardware that supports shaders.");
-
-		// Bind this program
-		if (current_program != program)
-			glUseProgramObjectARB(program);
 
 		// Get the location of name
 		if (program == 0)
@@ -255,9 +186,5 @@ class Layer : Resource
 			case 16: glUniformMatrix4fvARB(location, values.length, false, values.ptr);  break;
 			default: break;
 		}
-
-		// Rebind old program
-		if (current_program != program)
-			glUseProgramObjectARB(current_program);
 	}
 }
