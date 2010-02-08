@@ -3,7 +3,7 @@
  * License:    public domain
  *
  * Same as diffuse.frag except with max_brightness to allow materials to be
- * brighter than 100%.  This probably requires floating point textures and a
+ * brighter than 100 percent.  This probably requires floating point textures and a
  * few other tricks to be true HDR.
  */
 

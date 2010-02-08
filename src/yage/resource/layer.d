@@ -8,11 +8,7 @@ module yage.resource.layer;
 
 import tango.math.Math;
 import tango.io.Stdout;
-import std.string;
-import std.stdio;
 
-import derelict.opengl.gl;
-import derelict.opengl.glext;
 import yage.core.all;
 import yage.system.system;
 import yage.system.log;
@@ -120,71 +116,4 @@ class Layer : Resource
 	{	return textures;
 	}
 
-	
-	/// Set a the value of a uniform variable (or array of uniform variables) in this Layer's Shader program.
-	void setUniform(char[] name, float[] values ...)
-	{	setUniform(name, 1, values);
-	}
-	/// Ditto
-	void setUniform(char[] name, Vec2f[] values ...)
-	{	setUniform(name, 2, cast(float[])values);
-	}
-	/// Ditto
-	void setUniform(char[] name, Vec3f[] values ...)
-	{	setUniform(name, 3, cast(float[])values);
-	}
-	/// Ditto
-	void setUniform(char[] name, Vec4f[] values ...)
-	{	setUniform(name, 4, cast(float[])values);
-	}
-	/// Ditto
-	void setUniform(char[] name, Matrix[] values ...)
-	{	setUniform(name, 14, cast(float[])values);
-	}
-
-	/// Return a string of xml for this layer.
-	char[] toString()
-	{	char[] result;
-		result = "<layer" ~
-			" ambient=\"" ~ ambient.hex ~ "\"" ~
-			" diffuse=\"" ~ diffuse.hex ~ "\"" ~
-			" specular=\"" ~ specular.hex ~ "\"" ~
-			" emissive=\"" ~ emissive.hex ~ "\"" ~
-			" specularity=\"" ~ .toString(specularity) ~ "\"" ~
-		//	" blend=\"" ~ .toString(blend) ~ "\"" ~
-		//	" cull=\"" ~ .toString(cull) ~ "\"" ~
-			" draw=\"" ~ .toString(draw) ~ "\"" ~
-			" width=\"" ~ .toString(width) ~ "\"" ~
-			">\n";
-		
-			//foreach (TextureInstance t; textures)
-			//	result~= t.toString();
-		result~= "</layer>";
-		return result;
-	}
-
-	// Helper function for the public setUniform() functions.
-	protected void setUniform(char[] name, int width, float[] values)
-	{	if (!Probe.feature(Probe.Feature.SHADER))
-			throw new ResourceException("Layer.setUniform() is only supported on hardware that supports shaders.");
-
-		// Get the location of name
-		if (program == 0)
-			throw new ResourceException("Cannot set uniform variable for a layer with no shader program.");
-		char[256] cname = 0;
-		cname[0..name.length] = name;
-		int location = glGetUniformLocationARB(program, cname.ptr);
-		if (location == -1)
-			throw new ResourceException("Unable to set uniform variable: " ~ name);
-
-		// Send the uniform data
-		switch (width)
-		{	case 1:  glUniform1fvARB(location, values.length, values.ptr);  break;
-			case 2:  glUniform2fvARB(location, values.length, values.ptr);  break;
-			case 3:  glUniform3fvARB(location, values.length, values.ptr);  break;
-			case 4:  glUniform4fvARB(location, values.length, values.ptr);  break;
-			case 16: glUniformMatrix4fvARB(location, values.length, false, values.ptr);  break;
-			default: break;
-		}
-	}
 }

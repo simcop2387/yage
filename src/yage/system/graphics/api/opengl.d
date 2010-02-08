@@ -73,32 +73,8 @@ class OpenGL : GraphicsAPI
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
 	
-	
-	/**
-	 * Free any resources from graphics memory are either:
-	 * - haven't been used for longer than age,
-	 * - are no longer referenced.
-	 * If removed from graphics memory, they will be re-uploaded when needed again.
-	 * Params:
-	 *     age = maximum age (in seconds) of objects to keep.  Set to 0 to remove all items.  Defaults to 3600.
-	 */
-	void cleanup(uint age=3600)
-	{
-		
-		foreach (key, info; textures)
-		{	if (info.resource is null || info.time <= time(null)-age)
-			{	glDeleteTextures(1, &info.id);
-				textures.removeKey(key);
-				delete info; // nothing else references it at this point.
-		}	}
-		foreach (key, info; vbos)
-		{	if (info.resource is null || info.time <= time(null)-age)
-			{	glDeleteBuffersARB(1, &info.id);
-				vbos.removeKey(key);
-				delete info; // nothing else references it at this point.
-		}	}
-	}
-	
+
+	///
 	this()
 	{	
 		textures = new HashMap!(uint, ResourceInfo);
@@ -113,6 +89,7 @@ class OpenGL : GraphicsAPI
 		msprite.setMeshes([new Mesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)])]);
 	}
 	
+	///
 	void bindCamera(CameraNode camera, int width, int height)
 	{	current.camera = camera;
 		glMatrixMode(GL_PROJECTION);
@@ -209,22 +186,21 @@ class OpenGL : GraphicsAPI
 			} else
 				glDisable(GL_TEXTURE_2D);
 			
-			// New
+			
 			if (layer.shader)
-			{	bindShader(layer.shader, layer);
-				//layer.current_program = layer.program;
+			{	
+				ShaderUniform[3] uniforms;
+				uniforms[0] = ShaderUniform("light_number", ShaderUniform.Type.F1, cast(float)lights.length); 
+				uniforms[1] = ShaderUniform("fog_enabled", ShaderUniform.Type.F1, cast(float)current.camera.getScene().fogEnabled); 
+				
+				
 
-				// Try to light and fog variables?
-				try {	// bad for performance?
-					layer.setUniform("light_number", lights.length);
-				} catch{}
-				try {
-					layer.setUniform("fog_enabled", cast(float)current.camera.getScene().fogEnabled);
-				} catch{}
-
-				// Enable
+				// Bind Textures to UniformSampler2D
+				// TODO: Use glGetActiveUniform to get user defined uniforms that are sampler2D and automatically bind textures in order
+				// keep in mind 1d, 3d, cupe, and shadow textures
 				for (int i=0; i<layer.textures.length; i++)
-				{	if (layer.textures[i].name.length)
+				{	
+					if (layer.textures[i].name.length)
 					{	char[256] cname = 0;
 						cname[0..layer.textures[i].name.length]= layer.textures[i].name;
 						int location = glGetUniformLocationARB(layer.program, cname.ptr);
@@ -233,6 +209,9 @@ class OpenGL : GraphicsAPI
 						else
 							glUniform1iARB(location, i);
 				}	}
+				
+				
+				bindShader(layer.shader, layer, uniforms);
 			}
 		} else // unbind
 		{
@@ -284,7 +263,6 @@ class OpenGL : GraphicsAPI
 			glDisable(GL_TEXTURE_2D);
 			
 			bindShader(null, null);
-			//current.layer.current_program = 0;
 		}
 		current.layer = layer;
 	}
@@ -445,25 +423,42 @@ class OpenGL : GraphicsAPI
 	}
 	
 	/// TODO: Allow specifying uniform variable assignments.
-	void bindShader(Shader shader, Layer layer)
+	void bindShader(Shader shader, Layer layer, ShaderUniform[] variables=null)
 	{	
-		// Causes null pointer exception
+		if (!Probe.feature(Probe.Feature.SHADER))
+			throw new GraphicsException("OpenGL.bindShader() is only supported on hardware that supports shaders.");
+		
+		// Causes null pointer exception, but why?
 		//if (shader==current.shader)
 		//	return;
 		
 		if (shader)
 		{	assert(shader.getVertexSource().length);
 			assert(shader.getFragmentSource().length);
-			
-			// temporary
+						
 			ResourceInfo info = ResourceInfo.getOrCreate(shader, shaders);
 			
-			info.id = layer.program;
-		
-			if (!layer.program)
-			{	
-				char[] log; // accumulates all log entries
+			// Compile shader if not already compiled
+			if (shader.status == Shader.Status.NONE)
+			{	assert(!info.id);
 				
+				// Fail unless marked otherwise
+				shader.status = Shader.Status.FAIL;				
+				shader.compileLog = "";
+				uint vertexObj, fragmentObj;
+				
+				// Cleanup on exit
+				scope(exit)
+				{	if (vertexObj) // Mark shader objects for deletion 
+						glDeleteObjectARB(vertexObj); // so they'll be deleted when the shader program is deleted.
+					if (fragmentObj)
+						glDeleteObjectARB(fragmentObj);
+				}
+				scope(failure)
+					if (info.id)
+						glDeleteObjectARB(info.id);
+				
+				// Get OpenGL's log for a shader object.
 				char[] getLog(uint id)
 				{	int len;  char *log;
 					glGetObjectParameterivARB(id, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
@@ -474,37 +469,30 @@ class OpenGL : GraphicsAPI
 					return log[0..len];
 				}
 				
+				// Compile a shader into object code.
 				uint compile(char[] source, uint type)
 				{
-					// Compile this shader into a binary object
-					uint shaderObj;
-					{	scope char** sourceZ = (new char*[1]).ptr;
-						shaderObj = glCreateShaderObjectARB(type);
-						sourceZ[0] = (source ~ "\0").ptr;
-						glShaderSourceARB(shaderObj, 1, sourceZ, null);
-						glCompileShaderARB(shaderObj);
-						delete sourceZ[0];
-					}
+					// Compile this shader into a binary object					
+					char* sourceZ = source.ptr;
+					uint shaderObj = glCreateShaderObjectARB(type);
+					glShaderSourceARB(shaderObj, 1, &sourceZ, null);
+					glCompileShaderARB(shaderObj);
 					
 					// Get the compile log and check for errors
-					char[] objLog = getLog(shaderObj);
-					log ~= objLog;
+					char[] compileLog = getLog(shaderObj);
+					shader.compileLog ~= compileLog;
 					int status;
 					glGetObjectParameterivARB(shaderObj, GL_OBJECT_COMPILE_STATUS_ARB, &status);
 					if (!status)
-					{	try {
-							glDeleteObjectARB(shaderObj);
-						} finally {
-							throw new GraphicsException("Could not compile %s shader.\nReason:  %s\nSource:  %s", 
-								type==GL_VERTEX_SHADER_ARB ? "vertex" : "fragment", objLog, source);
-					}	}
+						throw new GraphicsException("Could not compile %s shader.\nReason:  %s\nSource:  %s", 
+							type==GL_VERTEX_SHADER_ARB ? "vertex" : "fragment", compileLog, source);
 					
 					return shaderObj;
 				}
 				
 				// Compile
-				uint vertexObj = compile(shader.getVertexSource(), GL_VERTEX_SHADER_ARB);
-				uint fragmentObj = compile(shader.getFragmentSource(), GL_FRAGMENT_SHADER_ARB);
+				vertexObj = compile(shader.getVertexSource(true), GL_VERTEX_SHADER_ARB);
+				fragmentObj = compile(shader.getFragmentSource(true), GL_FRAGMENT_SHADER_ARB);
 				assert(vertexObj);
 				assert(fragmentObj);
 				
@@ -514,24 +502,59 @@ class OpenGL : GraphicsAPI
 				glAttachObjectARB(info.id, fragmentObj);
 				glLinkProgramARB(info.id); // common failure point
 				
-				char[] linkLog = getLog(info.id);
-				log ~= linkLog;
-			
 				// Check for errors
+				char[] linkLog = getLog(info.id);
+				shader.compileLog ~= linkLog;
 				int status;
 				glGetObjectParameterivARB(info.id, GL_OBJECT_LINK_STATUS_ARB, &status);
-				if (!status)
+				if (!status)					
 					throw new GraphicsException("Could not link the shaders.\nReason:  %s", linkLog);
+				
+				// Validate
 				glValidateProgramARB(info.id);
-				log ~= getLog(info.id);
+				char[] validateLog = getLog(info.id);
+				shader.compileLog ~= validateLog;
+				int isValid;				
+				glGetObjectParameterivARB(info.id, GL_VALIDATE_STATUS, &isValid);
+				if (!isValid)
+					throw new GraphicsException("Shader failed validation.\nReason:  %s", validateLog);
 					
+				shader.status = Shader.Status.SUCCESS;
+				
 				// Temporary
-				layer.program = info.id;
-				Log.info(log);
+				Log.info(shader.compileLog);
 			}
 			
 			assert(info.id);
 			glUseProgramObjectARB(info.id);
+			
+			// Bind uniform variables
+			foreach (uniform; variables)
+			{
+				// Get the location of name
+				char[256] cname = 0; // TODO: Fix potential buffer overflow
+				cname[0..uniform.name.length] = uniform.name;
+				int location = glGetUniformLocationARB(info.id, cname.ptr);
+				if (location == -1)
+					throw new GraphicsException("Unable to set OpenGL shader uniform variable: %s", uniform.name);
+
+				// Send the uniform data
+				switch (uniform.type)
+				{	case ShaderUniform.Type.F1:  glUniform1fvARB(location, 1, cast(float*)uniform.values);  break;
+					case ShaderUniform.Type.F2:  glUniform2fvARB(location, 2, cast(float*)uniform.values);  break;
+					case ShaderUniform.Type.F3:  glUniform3fvARB(location, 3, cast(float*)uniform.values);  break;
+					case ShaderUniform.Type.F4:  glUniform4fvARB(location, 4, cast(float*)uniform.values);  break;
+					case ShaderUniform.Type.I1:  glUniform1ivARB(location, 1, cast(int*)uniform.values);  break;
+					case ShaderUniform.Type.I2:  glUniform2ivARB(location, 2, cast(int*)uniform.values);  break;
+					case ShaderUniform.Type.I3:  glUniform3ivARB(location, 3, cast(int*)uniform.values);  break;
+					case ShaderUniform.Type.I4:  glUniform4ivARB(location, 4, cast(int*)uniform.values);  break;
+					// TODO Other Matrix types
+					case ShaderUniform.Type.M2x2: glUniformMatrix2fvARB(location, 4, false, cast(float*)uniform.values);  break;
+					case ShaderUniform.Type.M3x3: glUniformMatrix3fvARB(location, 9, false, cast(float*)uniform.values);  break;
+					case ShaderUniform.Type.M4x4: glUniformMatrix4fvARB(location, 16, false, cast(float*)uniform.values);  break;
+					default: break;
+				}				
+			}
 		} else
 			glUseProgramObjectARB(0); // no shader
 		
@@ -777,6 +800,38 @@ class OpenGL : GraphicsAPI
 			glBindBufferARB(vbo_type, 0);
 	}
 	
+	
+	/**
+	 * Free any resources from graphics memory are either:
+	 * - haven't been used for longer than age,
+	 * - are no longer referenced.
+	 * If removed from graphics memory, they will be re-uploaded when needed again.
+	 * Params:
+	 *     age = maximum age (in seconds) of objects to keep.  Set to 0 to remove all items.  Defaults to 3600.
+	 */
+	void cleanup(uint age=3600)
+	{
+		foreach (key, info; textures)
+		{	if (info.resource is null || info.time <= time(null)-age)
+			{	glDeleteTextures(1, &info.id);
+				textures.removeKey(key);
+				delete info; // nothing else references it at this point.
+		}	}
+		foreach (key, info; vbos)
+		{	if (info.resource is null || info.time <= time(null)-age)
+			{	glDeleteBuffersARB(1, &info.id);
+				vbos.removeKey(key);
+				delete info; // nothing else references it at this point.
+		}	}
+		foreach (key, info; shaders)
+		{	if (info.resource is null || info.time <= time(null)-age)
+			{	glDeleteBuffersARB(1, &info.id);
+				assert((cast(Shader)info.resource.ptr) !is null);
+				(cast(Shader)info.resource.ptr).status = Shader.Status.NONE;
+				shaders.removeKey(key);
+				delete info; // nothing else references it at this point.
+		}	}
+	}
 	
 	
 	///

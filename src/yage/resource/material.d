@@ -13,7 +13,6 @@ import std.file;
 import std.path;
 import std.stream;
 import std.string;
-import std.stdio;
 import yage.core.all;
 import yage.core.object2;
 import yage.resource.texture;
@@ -258,16 +257,6 @@ class Material : Resource
 	{	yage.core.array.remove(layers, index, true);
 	}
 
-	/// Return a string of xml for this material along with all layers.
-	char[] toString()
-	{	char[] result;
-		result = Format.convert("<material maxlights={}>\n", max_lights);
-		// Loop through layers
-		foreach (Layer layer; layers)
-			result ~= layer.toString();
-		result~= "</material>\n";
-		return result;
-	}
 }
 
 
