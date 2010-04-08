@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<material>
-  <layer ambient="FFFFFF" specular="404040" specularity="8">
-  	<texture src="rocky2.jpg" name="tex_diffuse"/>
-  	<texture src="rocky2-normal.png" name="tex_normal"/>
-  	<shader src="normal.vert" type="vertex" />
-	<shader src="normal.frag" type="fragment" />
-  </layer>
-</material>

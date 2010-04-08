@@ -28,9 +28,9 @@ class SpriteNode : VisibleNode
 	{	this();
 		setMaterial(material);
 	}	
-	this(char[] filename) /// ditto
+	this(char[] filename, char[] id) /// ditto
 	{	this();
-		setMaterial(filename);
+		setMaterial(filename, id);
 	}
 	
 	/**
@@ -62,7 +62,7 @@ class SpriteNode : VisibleNode
 	/** Set the Material of the SpriteNode, using the ResourceManager Manager
 	 *  to ensure that no Material is loaded twice.
 	 *  Equivalent of setMaterial(ResourceManager.material(filename)); */
-	void setMaterial(char[] material_file)
-	{	setMaterial(ResourceManager.material(material_file));
+	void setMaterial(char[] filename, char[] id)
+	{	setMaterial(ResourceManager.material(filename, id));
 	}
 }

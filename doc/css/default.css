@@ -1,112 +1,109 @@
-
 body {
-	font-family 	: Verdana, Helvetica, sans-serif;
-	margin		 	: 0;
-	padding			: 0;
+	font-family: Verdana, Helvetica, sans-serif;
+	margin: 0;
+	padding: 0;
 }
 
 /* Set font sizes and colors */
-body, div, li, ol, p, tr, td, span, ul {
-	color 			: #333024;	
-	font-size		: 10.5pt;
+body,div,li,ol,p,tr,td,span,ul {
+	color: #333024;
+	font-size: 10.5pt;
 }
 
 /* links */
 a {
-	color			: #0000A0;
-	border			: 0px solid black;
-	text-decoration	: none;
+	color: #0000A0;
+	border: 0px solid black;
+	text-decoration: none;
 }
-a:hover	{
-	color			: #606060;
+
+a:hover {
+	color: #606060;
 }
 
 /* Main Heading */
-h1 {	
-	color			: #0000CC;
-	font-size		: 16pt;
-	font-weight		: bold;
-	font-family		: Verdana, Helvetica, sans-serif;
-	margin-top 		: 0;
-	margin-bottom	: 0;
+h1 {
+	color: #0000CC;
+	font-size: 16pt;
+	font-weight: bold;
+	font-family: Verdana, Helvetica, sans-serif;
+	margin-top: 0;
+	margin-bottom: 0;
 }
 
 /* Secondary Heading */
-h2 {	
-	color			: #303030;
-	font-size		: 13pt;
-	font-weight		: bold;
-	font-family		: Verdana, Helvetica, sans-serif;
-	margin-top 		: 0;
-	margin-bottom	: 0;
+h2 {
+	color: #303030;
+	font-size: 13pt;
+	font-weight: bold;
+	font-family: Verdana, Helvetica, sans-serif;
+	margin-top: 0;
+	margin-bottom: 0;
 }
 
 img {
-	border-width	: 0;
+	border-width: 0;
 }
 
 /* Remove margin above and below paragraphs */
 p {
-	margin-top		: 0;
-	margin-bottom	: .5em;
+	margin-top: 0;
+	margin-bottom: .5em;
 }
-
 
 /* Change margins of list items */
 li {
-	margin-bottom	: .33em;
-	margin-left		: -1.5em;
+	margin-bottom: .33em;
+	margin-left: -1.5em;
 }
 
-ol, ul {
-	margin-top 		: 0;
-	margin-bottom 	: 0.5em;
+ol,ul {
+	margin-top: 0;
+	margin-bottom: 0.5em;
 }
-
 
 /* Decrease border above and below forms */
 form {
-	margin-top		: 0;	/* needed for IE */
-	margin-bottom	: 0;
-	vertical-align	: text-bottom;
+	margin-top: 0; /* needed for IE */
+	margin-bottom: 0;
+	vertical-align: text-bottom;
 }
 
 label {
-	font-size		: 8pt;
-	font-weight		: bold;
+	font-size: 8pt;
+	font-weight: bold;
 }
 
-input, select, textarea {
-	vertical-align	: middle;
-	padding-left	: 2px;
-	color			: #404040;
+input,select,textarea {
+	vertical-align: middle;
+	padding-left: 2px;
+	color: #404040;
 }
 
 /* The same as the default for input boxes? */
 textarea {
-	font-family		: verdana, arial, sans-serif; 
-	font-size		: 10pt; 
-	width			: 100%
+	font-family: verdana, arial, sans-serif;
+	font-size: 10pt;
+	width: 100%
 }
 
 /* Highlighted areas / headings */
-.accent, a.accent, .accent2, a.accent2 {
-	color			: #FFFFFF;
-	text-decoration	: none;
+.accent,a.accent,.accent2,a.accent2 {
+	color: #FFFFFF;
+	text-decoration: none;
 }
 
-a.accent {	
-	font-weight		: bold;
+a.accent {
+	font-weight: bold;
 }
 
 a:hover.accent {
-	color			: #221100;
+	color: #221100;
 }
 
 a:hover.accent2 {
-	color			: #0000FF;
+	color: #0000FF;
 }
-
 
 /* Common containing boxes */
 .panel {
@@ -115,20 +112,20 @@ a:hover.accent2 {
 
 /* Smaller Text */
 .small {
-	font-family 	: Verdana, Helvetica, sans-serif;
-	font-size		: 8pt;
+	font-family: Verdana, Helvetica, sans-serif;
+	font-size: 8pt;
 }
 
 .error {
-	color			: #880000;
-	border			: 2px solid red;
+	color: #880000;
+	border: 2px solid red;
 	background-color: #FFE0E0;
-	padding			: 2px;
+	padding: 2px;
 }
 
 .success {
-	color			: #004400;
-	border			: 1px solid green;
+	color: #004400;
+	border: 1px solid green;
 	background-color: #E0FFE0;
-	padding			: 2px;
+	padding: 2px;
 }

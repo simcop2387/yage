@@ -2,9 +2,6 @@
  * Copyright:  Public Domain
  * Authors:    Eric Poggel
  * Warranty:   none
- *
- * This module is not part of the engine, but merely uses it.
- * This is minimal code to launch yage and draw something.
  */
 
 module unittests.demo.ui;

@@ -10,6 +10,7 @@ import yage.core.timer;
 import yage.core.math.vector;
 import yage.system.system;
 import yage.system.log;
+import yage.resource.geometry;
 import yage.resource.manager;
 import yage.resource.model;
 import yage.resource.material;
@@ -20,7 +21,7 @@ import yage.scene.node;
 /// A node used for rendering a 3D model.
 class ModelNode : VisibleNode
 {
-	protected Model model;	// The 3D model used by this node
+	protected Geometry model;	// The 3D model used by this node
 	protected float radius=0;	// cached radius
 	
 	protected Timer animation_timer;
@@ -33,7 +34,7 @@ class ModelNode : VisibleNode
 	this()
 	{	super();
 	}
-	this(Model model) /// ditto
+	this(Geometry model) /// ditto
 	{	this();
 		setModel(model);
 	}	
@@ -62,6 +63,7 @@ class ModelNode : VisibleNode
 		return result;
 	}
 
+	/+
 	/**
 	 * Get the timer used for the skeletal animation of this model.
 	 * If the model has no joints and keyframes for skeletal animation, modifying this timer will do nothing.
@@ -112,16 +114,17 @@ class ModelNode : VisibleNode
 		t1.seek(start);
 		t1.play();
 	}	
+	+/
 	
 	/**
 	 * Get / set the 3D model used by this Node.
 	 * If a filename is passed, the ResourceManager Manager will ensure that no Model is loaded twice.
 	 * If no argument is passed to setModel(), the model will be cleared.
 	 * Equivalent of setModel(ResourceManager.model(filename)); */
-	Model getModel()
+	Geometry getModel()
 	{	return model;
 	}
-	void setModel(Model model=null) /// ditto
+	void setModel(Geometry model=null) /// ditto
 	{	this.model = model;
 		if (model)
 			radius = model.getRadius()*size.max();

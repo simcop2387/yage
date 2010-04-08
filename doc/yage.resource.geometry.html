@@ -8,14 +8,14 @@
 	<link rel="stylesheet" type="text/css" href="css/default.css" />
 	<link rel="stylesheet" type="text/css" href="css/candydoc.css" />
 	<link rel="stylesheet" type="text/css" href="css/menu.css" />
-	<script type="text/javascript" src="js/util.js" type="text/javascript"></script>
-	<script type="text/javascript" src="js/tree.js" type="text/javascript"></script>
-	<script ltype="text/javascript" src="js/explorer.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/util.js"></script>
+	<script type="text/javascript" src="js/tree.js"></script>
+	<script type="text/javascript" src="js/explorer.js"></script>
   </head>
   <body>
 	<!-- Title Image -->	
 	<div style="position: absolute; z-index: 2;">
-		<a href="index.php"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
+		<a href="http://yage3d.net"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
 	</div>
 	
 	<!-- Menu -->
@@ -93,252 +93,6 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">abstract class 
-<span class="currsymbol">IVertexBuffer</span>
-<script type="text/javascript">explorer.outline.addDecl('IVertexBuffer');</script>
-: yage.resource.resource.ExternalResource;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>This is a common abstract class inherited by all templated types of VertexBuffer.
- It allows them to be passed around interchangeably and to exist as siblings in arrays. 
-<br><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void[] 
-<span class="currsymbol">getData</span>
-<script type="text/javascript">explorer.outline.addDecl('getData');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">setData</span>
-<script type="text/javascript">explorer.outline.addDecl('setData');</script>
-(void[]);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">uint 
-<span class="currsymbol">id</span>
-<script type="text/javascript">explorer.outline.addDecl('id');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>The OpenGL 
-<span class="currsymbol">id</span>
-<script type="text/javascript">explorer.outline.addDecl('id');</script>
- of the vertex buffer, or 0 if it hasn't yet been allocated.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">bool 
-<span class="currsymbol">dirty</span>
-<script type="text/javascript">explorer.outline.addDecl('dirty');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>If VBO's are used and the 
-<span class="currsymbol">dirty</span>
-<script type="text/javascript">explorer.outline.addDecl('dirty');</script>
- flag is set, the VBO will be updated with the vertex data.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">getSizeInBytes</span>
-<script type="text/javascript">explorer.outline.addDecl('getSizeInBytes');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">byte 
-<span class="currsymbol">getComponents</span>
-<script type="text/javascript">explorer.outline.addDecl('getComponents');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">length</span>
-<script type="text/javascript">explorer.outline.addDecl('length');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void* 
-<span class="currsymbol">ptr</span>
-<script type="text/javascript">explorer.outline.addDecl('ptr');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static uint[] 
-<span class="currsymbol">getGarbageIds</span>
-<script type="text/javascript">explorer.outline.addDecl('getGarbageIds');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><b>Returns:</b><br>
-Hardware vertex buffer id's from garbage collected VertexBuffer's. 
-<br><br>
-
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
-<span class="currsymbol">VertexBuffer</span>
-<script type="text/javascript">explorer.outline.addDecl('VertexBuffer');</script>
-(T): IVertexBuffer;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>A 
-<span class="currsymbol">VertexBuffer</span>
-<script type="text/javascript">explorer.outline.addDecl('VertexBuffer');</script>
- stores the parameters of an OpenGL Vertex Buffer Object
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">T</td>
-
-               
-<td>Type of vertex data to store (float, Vec2f, etc.)</td></tr>
-</table><br>
-
-
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">dispose</span>
-<script type="text/javascript">explorer.outline.addDecl('dispose');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>ditto
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void[] 
-<span class="currsymbol">getData</span>
-<script type="text/javascript">explorer.outline.addDecl('getData');</script>
-();
-<br>void 
-<span class="currsymbol">setData</span>
-<script type="text/javascript">explorer.outline.addDecl('setData');</script>
-(void[] <span class="funcparam">data</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get/set the vertex data of this buffer.
- It must be cast to an array of type T[] 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">getSizeInBytes</span>
-<script type="text/javascript">explorer.outline.addDecl('getSizeInBytes');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the size of the vertex data in bytes. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">byte 
-<span class="currsymbol">getComponents</span>
-<script type="text/javascript">explorer.outline.addDecl('getComponents');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><b>Returns:</b><br>
-The number of components in each array element. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">length</span>
-<script type="text/javascript">explorer.outline.addDecl('length');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Implement array operations
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void* 
-<span class="currsymbol">ptr</span>
-<script type="text/javascript">explorer.outline.addDecl('ptr');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><b>Returns:</b><br>
-A c-style pointer to the vertex data array. 
-<br><br>
-
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
-
-
-</dd>
-
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">class 
 <span class="currsymbol">Geometry</span>
@@ -434,40 +188,96 @@ Currently unused.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">IVertexBuffer[char[]] 
-<span class="currsymbol">getAttributes</span>
-<script type="text/javascript">explorer.outline.addDecl('getAttributes');</script>
-();
-<br>IVertexBuffer 
+<dt><span class="decl">void[] 
 <span class="currsymbol">getAttribute</span>
 <script type="text/javascript">explorer.outline.addDecl('getAttribute');</script>
 (char[] <span class="funcparam">name</span>);
+<br>void[] 
+<span class="currsymbol">getAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('getAttribute');</script>
+(char[] <span class="funcparam">name</span>, out int <span class="funcparam">components</span>);
 <br>void 
 <span class="currsymbol">setAttribute</span>
 <script type="text/javascript">explorer.outline.addDecl('setAttribute');</script>
-(char[] <span class="funcparam">name</span>, IVertexBuffer <span class="funcparam">vb</span>);
-<br>void 
-<span class="currsymbol">setAttributeData</span>
-<script type="text/javascript">explorer.outline.addDecl('setAttributeData');</script>
-(T)(char[] <span class="funcparam">name</span>, T[] <span class="funcparam">data</span>);
-<br>bool 
-<span class="currsymbol">hasAttribute</span>
-<script type="text/javascript">explorer.outline.addDecl('hasAttribute');</script>
-(char[] <span class="funcparam">name</span>);
-<br>void 
-<span class="currsymbol">clearAttribute</span>
-<script type="text/javascript">explorer.outline.addDecl('clearAttribute');</script>
-(char[] <span class="funcparam">name</span>);
+(T)(char[] <span class="funcparam">name</span>, T[] <span class="funcparam">values</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>These functions allow modifying the vertex attributes of the geometry.
+ Vertex attributes are arrays that specify data for each vertex, such as a position, texture coodinate, or custom value.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">name</span></td>
+
+               
+<td>Specifies the vertex attribute to get/set.  It can be one of the named constants defined above or a custom <span class="funcparam">name</span>.
+         Custom attributes are passed to the vertex shader into an attribute variable of the same <span class="funcparam">name</span>.
+         Custom names must not use the "gl_" prefix; it is reserved.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">values</td>
+
+               
+<td>Vertex data values to set.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">components</td>
+
+               
+<td>on 
+<span class="currsymbol">getAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('getAttribute');</script>
+, this out parameter specifies how many values per vertex.</td></tr>
+</table><br>
+<b>Notes:</b><br>
+
+<span class="currsymbol">getAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('getAttribute');</script>
+ will return an empty array if the attribute doesn't exist.
 <br><br>
 <b>Example:</b><br>
-<pre class="d_code"> <span style="color: blue">if</span> (!geom.hasAttribute(Geometry.VERTICES))
-     geom.setAttribute(Geometry.VERTICES, <span style="color: blue">new</span> VertexBuffer!(Vec3f)());
+<pre class="d_code"> Vec3f[] vertices;
+ ...
+ <span style="color: blue">if</span> (!geom.<b>getAttribute</b>(Geometry.VERTICES))
+     geom.setAttribute(Geometry.VERTICES, vertices);
 </pre>
 	 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">removeAttribute</span>
+<script type="text/javascript">explorer.outline.addDecl('removeAttribute');</script>
+(char[] <span class="funcparam">name</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">VertexBuffer[char[]] 
+<span class="currsymbol">getVertexBuffers</span>
+<script type="text/javascript">explorer.outline.addDecl('getVertexBuffers');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the vertex buffers used for rendering.  Vertex buffers wrap attributes. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">VertexBuffer 
+<span class="currsymbol">getVertexBuffer</span>
+<script type="text/javascript">explorer.outline.addDecl('getVertexBuffer');</script>
+(char[] <span class="funcparam">name</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get a single VertexBuffer by <span class="funcparam">name</span> rendering. 
 <br><br>
 
 </dd>
@@ -485,7 +295,10 @@ Currently unused.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get / set the array of meshes for this Geometry.
- Meshes define a material and an array of triangles to connect vertices. 
+ Meshes define a material and an array of triangles to connect vertices.
+<br><br>
+<b>TODO:</b><br>
+are these accessors needed? 
 <br><br>
 
 </dd>
@@ -498,7 +311,37 @@ Currently unused.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get radius of a sphere, in modelspace coordinates, centered at the model's origin, that can contain this Model.
+<dd>Calculate the radius of a sphere, centered at the model's origin, that can contain this Model.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Geometry 
+<span class="currsymbol">merge</span>
+<script type="text/javascript">explorer.outline.addDecl('merge');</script>
+(Geometry[] <span class="funcparam">geometries</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Merge all <span class="funcparam">geometries</span> into a single Geometry.
+<br><br>
+<b>Returns:</b><br>
+The new Geometry will have copies of all vertex attributes and triangles, but share
+ the same material references as the input <span class="funcparam">geometries</span>. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Geometry 
+<span class="currsymbol">getPlane</span>
+<script type="text/javascript">explorer.outline.addDecl('getPlane');</script>
+(int <span class="funcparam">widthSegments</span> = 1, int <span class="funcparam">heightSegments</span> = 1);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get a plane to play with.
 <br><br>
 
 </dd>
@@ -516,7 +359,14 @@ Currently unused.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A mesh consists of a material and an array of triangle indices that index into vertex buffers. 
+<dd>A 
+<span class="currsymbol">Mesh</span>
+<script type="text/javascript">explorer.outline.addDecl('Mesh');</script>
+ groups a Material with a set of triangle indices.
+ The Geometry class groups a 
+<span class="currsymbol">Mesh</span>
+<script type="text/javascript">explorer.outline.addDecl('Mesh');</script>
+ with vertex buffers referenced by the traingle indices 
 <br><br>
 
 
@@ -567,7 +417,7 @@ Currently unused.
 <br>void 
 <span class="currsymbol">setMaterial</span>
 <script type="text/javascript">explorer.outline.addDecl('setMaterial');</script>
-(char[] <span class="funcparam">filename</span>);
+(char[] <span class="funcparam">filename</span>, char[] <span class="funcparam">id</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -577,14 +427,10 @@ Currently unused.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VertexBuffer 
+<dt><span class="decl">Vec!(3,int)[] 
 <span class="currsymbol">getTriangles</span>
 <script type="text/javascript">explorer.outline.addDecl('getTriangles');</script>
 ();
-<br>void 
-<span class="currsymbol">setTriangles</span>
-<script type="text/javascript">explorer.outline.addDecl('setTriangles');</script>
-(VertexBuffer <span class="funcparam">triangles</span>);
 <br>void 
 <span class="currsymbol">setTriangles</span>
 <script type="text/javascript">explorer.outline.addDecl('setTriangles');</script>
@@ -593,6 +439,19 @@ Currently unused.
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get/set the triangles 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">VertexBuffer 
+<span class="currsymbol">getTrianglesVertexBuffer</span>
+<script type="text/javascript">explorer.outline.addDecl('getTrianglesVertexBuffer');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the trangles vertex buffer used for rendering. 
 <br><br>
 
 </dd>
@@ -615,12 +474,18 @@ Currently unused.
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Sep 20 01:37:10 2009
+		on Thu Apr  8 00:06:44 2010
 
 	</div>
 	
 	<script type="text/javascript">
-	explorer.packageExplorer.addModule("demo2.main");
+	explorer.packageExplorer.addModule("demo1.gameobj");
+
+	explorer.packageExplorer.addModule("demo1.main");
+
+	explorer.packageExplorer.addModule("demo1.ship");
+
+	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
 
@@ -628,17 +493,13 @@ Currently unused.
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
-	explorer.packageExplorer.addModule("yage.core.async");
-
 	explorer.packageExplorer.addModule("yage.core.cache");
-
-	explorer.packageExplorer.addModule("yage.core.closure");
 
 	explorer.packageExplorer.addModule("yage.core.color");
 
-	explorer.packageExplorer.addModule("yage.core.fastmap");
+	explorer.packageExplorer.addModule("yage.core.format");
 
-	explorer.packageExplorer.addModule("yage.core.freelist");
+	explorer.packageExplorer.addModule("yage.core.json");
 
 	explorer.packageExplorer.addModule("yage.core.math.all");
 
@@ -652,6 +513,8 @@ Currently unused.
 
 	explorer.packageExplorer.addModule("yage.core.math.vector");
 
+	explorer.packageExplorer.addModule("yage.core.memory");
+
 	explorer.packageExplorer.addModule("yage.core.misc");
 
 	explorer.packageExplorer.addModule("yage.core.object2");
@@ -660,15 +523,11 @@ Currently unused.
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tangotrace3");
-
 	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.tree");
 
 	explorer.packageExplorer.addModule("yage.core.types");
-
-	explorer.packageExplorer.addModule("yage.core.xml");
 
 	explorer.packageExplorer.addModule("yage.gui.all");
 
@@ -684,7 +543,9 @@ Currently unused.
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
-	explorer.packageExplorer.addModule("yage.resource.colladaloader");
+	explorer.packageExplorer.addModule("yage.resource.collada");
+
+	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -692,17 +553,11 @@ Currently unused.
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
-	explorer.packageExplorer.addModule("yage.resource.layer");
-
 	explorer.packageExplorer.addModule("yage.resource.manager");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
-
-	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 
@@ -740,7 +595,9 @@ Currently unused.
 
 	explorer.packageExplorer.addModule("yage.system.graphics.all");
 
-	explorer.packageExplorer.addModule("yage.system.graphics.graphics");
+	explorer.packageExplorer.addModule("yage.system.graphics.api.api");
+
+	explorer.packageExplorer.addModule("yage.system.graphics.api.opengl");
 
 	explorer.packageExplorer.addModule("yage.system.graphics.probe");
 
@@ -759,12 +616,6 @@ Currently unused.
 	explorer.packageExplorer.addModule("yage.system.system");
 
 	explorer.packageExplorer.addModule("yage.system.window");
-
-	explorer.packageExplorer.addModule("yage.util.all");
-
-	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.spring");
 </script>
   </body>
 </html>

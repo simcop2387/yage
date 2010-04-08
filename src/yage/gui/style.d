@@ -60,7 +60,10 @@ struct CSSValue
 			unit = Unit.PERCENT;
 		}
 		else // to!(float) still works when v has trailing characters
-		{	value = to!(float)(v[0..length]);
+		{	if (v.length > 2 && v[length-2..length]=="px")
+				value = to!(float)(v[0..length-2]);
+			else
+				value = to!(float)(v[0..length]);
 			unit = Unit.PX;
 		}
 		return *this;
@@ -299,8 +302,9 @@ struct Style
 
 	/**
 	 * Constructor, returns a new Style with all properties set to their defaults. */
-	static Style opCall()
+	static Style opCall(char[] style="")
 	{	Style result;
+		result.set(style);
 		return result;
 	}
 	
@@ -331,7 +335,7 @@ struct Style
 				case "color":				color = Color(tokens[0]); break;
 			
 				case "background-color":	backgroundColor = Color(tokens[0]); break;
-				case "background-image":	backgroundImage = ResourceManager.texture(removeUrl(tokens[0])).texture; break;				
+				case "background-image":	backgroundImage = ResourceManager.texture(removeUrl(tokens[0])); break;				
 			
 				case "font":  // font-style, font-weight, font-size/line-height, font-family
 					foreach (i, token; tokens)
@@ -368,7 +372,7 @@ struct Style
 				case "border-color":		setEdge(borderColor, tokens);  break;
 				case "border-width":		setEdge(borderWidth, tokens);  break;
 				case "border-image":		borderImage[0..4] = borderCornerImage[0..4] = borderCenterImage = 
-												ResourceManager.texture(removeUrl(tokens[0])).texture;  break;
+												ResourceManager.texture(removeUrl(tokens[0]));  break;
 										
 				case "border-top":			borderWidth[0] = tokens[0];  borderColor[0] = Color(tokens[$-1]);  break;
 				case "border-top-color":	borderColor[0] = Color(tokens[0]);  break;
@@ -489,7 +493,7 @@ struct Style
 		}
 	}
 	
-	static T stringToEnum(T)(char[] string)
+	private static T stringToEnum(T)(char[] string)
 	{	static if (is (T==Style.TextAlign))
 			switch (string)
 			{	case "left": return TextAlign.LEFT; 

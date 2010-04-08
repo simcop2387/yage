@@ -10,6 +10,7 @@ import tango.time.Clock;
 import yage.core.all;
 import yage.system.system;
 import yage.system.sound.soundsystem;
+import yage.system.log;
 import yage.scene.camera;
 import yage.scene.light;
 import yage.scene.node;
@@ -84,7 +85,7 @@ class Scene : Node//, ITemporal
 		
 		update_thread = new Repeater();
 		update_thread.setFunction(&update);		
-		//update_thread.setErrorFunction(&System.abortException);
+		update_thread.setErrorFunction(&defaultErrorFunction);
 	
 		cameras_mutex = new Object();
 		lights_mutex = new Object();
@@ -196,6 +197,10 @@ class Scene : Node//, ITemporal
 	}
 	void setErrorFunction(void function(Exception e) on_error) /// ditto
 	{	update_thread.setErrorFunction(on_error);
+	}
+	void defaultErrorFunction(Exception e)
+	{	Log.error("The scene thread threw an uncaught exception:  %s", e.msg);
+		System.abort("Yage is aborting due to scene exception.");
 	}
 
 	/*

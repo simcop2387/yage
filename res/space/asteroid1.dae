@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+    <asset>
+        <contributor>
+            <authoring_tool>MilkShape 3D 1.8.4</authoring_tool>
+            <source_data>file://C:/home/eric/current/yage/res/space/asteroid1.ms3d</source_data>
+        </contributor>
+        <created>2007-05-21T20:10:16Z</created>
+        <modified>2007-05-21T20:10:16Z</modified>
+        <unit meter="1.000000" name="meter" />
+        <up_axis>Y_UP</up_axis>
+    </asset>
+    <library_images>
+        <image id="asteroid1.xml-image" name="asteroid1.xml-image">
+            <init_from>./rocky1.jpg</init_from>
+        </image>
+    </library_images>
+    <library_materials>
+        <material id="asteroid1.xml" name="asteroid1.xml">
+            <instance_effect url="#asteroid1.xml-effect" />
+        </material>
+    </library_materials>
+    <library_effects>
+        <effect id="asteroid1.xml-effect" name="asteroid1.xml-effect">
+            <profile_COMMON>
+                <newparam sid="asteroid1.xml-image-surface">
+                    <surface type="2D">
+                        <init_from>asteroid1.xml-image</init_from>
+                        <format>A8R8G8B8</format>
+                    </surface>
+                </newparam>
+                <newparam sid="asteroid1.xml-image-sampler">
+                    <sampler2D>
+                        <source>asteroid1.xml-image-surface</source>
+                        <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                        <magfilter>LINEAR</magfilter>
+                    </sampler2D>
+                </newparam>
+                <technique sid="common">
+                    <phong>
+                        <emission>
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </emission>
+                        <ambient>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </ambient>
+                        <diffuse>
+                            <texture texture="asteroid1.xml-image-sampler" texcoord="" />
+                        </diffuse>
+                        <specular>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </specular>
+                        <shininess>
+                            <float>109.000000</float>
+                        </shininess>
+                        <reflective>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </reflective>
+                        <reflectivity>
+                            <float>1.000000</float>
+                        </reflectivity>
+                        <transparent opaque="A_ONE">
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </transparent>
+                        <transparency>
+                            <float>1.000000</float>
+                        </transparency>
+                        <index_of_refraction>
+                            <float>0.000000</float>
+                        </index_of_refraction>
+                    </phong>
+                </technique>
+            </profile_COMMON>
+        </effect>
+    </library_effects>
+    <library_geometries>
+        <geometry id="default-geometry" name="default-geometry">
+            <mesh>
+                <source id="default-positions" name="position">
+                    <float_array id="default-positions-array" count="126">-2.40766 5.87284 -11.9364 -9.52333 5.35268 -7.25494 -3.27934 11.7835 -7.8172 -8.06207 -2.89963 -11.0521 -0.793301 -3.25939 -13.3545 -12.8992 -0.830064 -5.39004 -7.31698 12.3436 -3.91012 -12.9714 5.18835 -0.541093 -9.1455 9.59377 4.52783 -3.17892 -10.7559 -9.43813 -10.2946 -8.7948 -4.75669 -4.81061 -13.7536 -2.50331 -11.5811 -11.0217 3.55433 -16.4642 -3.16553 1.94034 -13.1081 -4.61865 8.64872 -17.3612 2.96148 7.76998 1.16235 15.2156 -3.81962 -2.28572 15.0512 4.21009 5.28031 14.61 2.6931 5.6578 0.961176 -12.7972 4.19653 9.2136 -10.3159 10.4423 4.19543 -8.35881 2.44297 -15.3546 -3.81944 5.30045 -11.7145 -10.5167 9.93505 -8.77783 -4.13718 -6.86233 -8.72992 10.3516 -0.692641 -15.4055 2.84047 3.43659 -8.79553 7.4464 -4.83075 7.87648 8.62915 -8.32359 -0.477514 12.6853 0.950549 2.69676 10.4989 9.22776 9.968 0.924187 15.4756 -3.38471 -7.37932 4.65119 -10.5984 3.13184 2.56491 -3.81493 11.5656 3.64863 9.70211 9.62792 17.6819 2.74231 -1.54968 10.7643 7.74105 4.94648 15.036 0.406826 5.78069 17.0121 -4.11054 0.931737 13.4011 -4.27487 6.70835 8.21932 2.47641 11.4427</float_array>
+                    <technique_common>
+                        <accessor source="#default-positions-array" count="42" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="default-normals" name="normal">
+                    <float_array id="default-normals-array" count="126">-0.239662 0.317526 -0.917463 -0.681492 0.369925 -0.631446 -0.299693 0.651768 -0.696694 -0.573972 -0.108427 -0.811665 -0.119114 -0.149989 -0.981486 -0.849998 0.0387611 -0.525358 -0.60803 0.750192 -0.25983 -0.8384 0.460898 -0.29096 -0.604235 0.742626 0.288801 -0.343496 -0.653542 -0.674458 -0.694897 -0.545374 -0.468707 -0.399893 -0.877596 -0.264406 -0.63213 -0.759713 0.152473 -0.959029 -0.230839 -0.164244 -0.671303 -0.420448 0.61039 -0.801907 0.36192 0.475351 0.148023 0.92619 -0.346786 -0.253881 0.878785 0.40408 0.497006 0.842189 0.209052 0.307263 0.121889 -0.943786 0.338271 0.607011 -0.719104 0.60876 0.498722 -0.616999 0.249289 -0.960399 -0.124456 0.321823 -0.624454 -0.711679 0.62258 -0.782541 -0.00492164 -0.154622 -0.587904 0.794015 0.10007 -0.9275 0.36018 0.351646 -0.675271 0.648348 -0.223885 0.508111 0.831684 -0.178248 0.0609982 0.982093 -0.0334216 0.220405 0.974836 0.669323 0.71346 -0.20732 0.78473 -0.24366 -0.569938 0.54252 -0.777731 0.3175 0.171527 -0.256682 0.951153 0.144493 0.523959 0.839398 0.897296 0.437309 -0.0601743 0.682841 0.594253 0.42496 0.806954 0.15254 0.570575 0.829699 -0.530897 0.172477 0.551941 -0.505167 0.663451 0.369958 0.165237 0.914236</float_array>
+                    <technique_common>
+                        <accessor source="#default-normals-array" count="42" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="default-texcoords" name="texcoord">
+                    <float_array id="default-texcoords-array" count="104">0.677202 0.211185 0.643132 0.43392 0.859104 0.330671 0.436149 0.345534 0.409574 0.150045 0.491993 0.510121 0.84055 0.484593 0.632702 0.613789 0.784831 0.748417 0.189089 0.296989 0.296663 0.50377 0.075438 0.508189 0.262833 0.697891 0.453899 0.673429 0.408879 0.829765 0.545873 0.758562 1.11794 0.348813 1.11522 0.710704 0.934279 0.443817 1.11799 0.349368 1.11529 0.710745 0.528935 -0.0843329 0.928488 0.044519 0.624089 0.123201 0.528658 -0.08455 0.928474 0.044569 -0.167526 0.313819 0.09996 0.021759 0.254626 0.266026 -0.168335 0.315982 0.099886 0.021825 0.185013 1.02336 -0.10236 0.670563 0.251297 0.632862 0.183069 1.02187 -0.102655 0.669963 0.891603 0.935373 0.515237 1.12776 0.633445 0.780572 0.891889 0.935492 0.515167 1.12779 0.77584 0.364686 0.446496 0.22836 0.161752 0.505028 0.422773 0.727449 0.794787 0.641302 0.542967 0.31804 0.69617 0.448373 0.52479 0.440971 0.453307 0.351295 0.436059 0.472222 0.583448 0.608665</float_array>
+                    <technique_common>
+                        <accessor source="#default-texcoords-array" count="52" stride="2">
+                            <param name="S" type="float" />
+                            <param name="T" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <vertices id="default-geometry-vertices">
+                    <input semantic="POSITION" source="#default-positions" />
+                </vertices>
+                <triangles material="asteroid1.xml" count="80">
+                    <input semantic="VERTEX" source="#default-geometry-vertices" offset="0" />
+                    <input semantic="NORMAL" source="#default-normals" offset="1" />
+                    <input semantic="TEXCOORD" source="#default-texcoords" offset="2" />
+                    <p>0 0 0 1 1 1 2 2 2 1 1 1 0 0 0 3 3 3 4 4 4 3 3 3 0 0 0 3 3 3 5 5 5 1 1 1 6 6 6 2 2 2 1 1 1 1 1 1 7 7 7 6 6 6 8 8 8 6 6 6 7 7 7 1 1 1 5 5 5 7 7 7 9 9 9 3 3 3 4 4 4 3 3 3 9 9 9 10 10 10 11 11 11 10 10 10 9 9 9 10 10 10 5 5 5 3 3 3 12 12 12 10 10 10 11 11 11 10 10 10 12 12 12 13 13 13 14 14 14 13 13 13 12 12 12 13 13 13 5 5 5 10 10 10 15 15 15 13 13 13 14 14 14 13 13 13 15 15 15 7 7 7 8 8 8 7 7 7 15 15 15 7 7 7 5 5 5 13 13 13 16 16 16 2 2 2 6 6 6 6 6 6 17 17 17 16 16 16 18 18 18 16 16 19 17 17 20 17 17 17 6 6 6 8 8 8 19 19 21 4 4 4 0 0 0 0 0 0 20 20 22 19 19 21 21 21 23 19 19 24 20 20 25 20 20 22 0 0 0 2 2 2 22 22 26 11 11 11 9 9 9 9 9 9 23 23 27 22 22 26 24 24 28 22 22 29 23 23 30 23 23 27 9 9 9 4 4 4 25 25 31 14 14 14 12 12 12 12 12 12 26 26 32 25 25 31 27 27 33 25 25 34 26 26 35 26 26 32 12 12 12 11 11 11 28 28 36 8 8 8 15 15 15 15 15 15 29 29 37 28 28 36 30 30 38 28 28 39 29 29 40 29 29 37 15 15 15 14 14 14 31 31 41 16 16 19 18 18 18 16 16 19 31 31 41 20 20 25 21 21 23 20 20 25 31 31 41 20 20 22 2 2 2 16 16 16 32 32 42 19 19 24 21 21 23 19 19 24 32 32 42 23 23 30 24 24 28 23 23 30 32 32 42 23 23 27 4 4 4 19 19 21 33 33 43 22 22 29 24 24 28 22 22 29 33 33 43 26 26 35 27 27 33 26 26 35 33 33 43 26 26 32 11 11 11 22 22 26 34 34 44 25 25 34 27 27 33 25 25 34 34 34 44 29 29 40 30 30 38 29 29 40 34 34 44 29 29 37 14 14 14 25 25 31 35 35 45 28 28 39 30 30 38 28 28 39 35 35 45 17 17 20 18 18 18 17 17 20 35 35 45 17 17 17 8 8 8 28 28 36 36 36 46 21 21 23 31 31 41 31 31 41 37 37 47 36 36 46 38 38 48 36 36 46 37 37 47 37 37 47 31 31 41 18 18 18 39 39 49 24 24 28 32 32 42 32 32 42 36 36 46 39 39 49 38 38 48 39 39 49 36 36 46 36 36 46 32 32 42 21 21 23 40 40 50 27 27 33 33 33 43 33 33 43 39 39 49 40 40 50 38 38 48 40 40 50 39 39 49 39 39 49 33 33 43 24 24 28 41 41 51 30 30 38 34 34 44 34 34 44 40 40 50 41 41 51 38 38 48 41 41 51 40 40 50 40 40 50 34 34 44 27 27 33 37 37 47 18 18 18 35 35 45 35 35 45 41 41 51 37 37 47 38 38 48 37 37 47 41 41 51 41 41 51 35 35 45 30 30 38</p>
+                </triangles>
+            </mesh>
+        </geometry>
+    </library_geometries>
+    <library_visual_scenes>
+        <visual_scene id="SceneRoot" name="SceneRoot">
+            <node id="default" name="default" type="NODE">
+                <instance_geometry url="#default-geometry">
+                    <bind_material>
+                        <technique_common>
+                            <instance_material symbol="asteroid1.xml" target="#asteroid1.xml" />
+                        </technique_common>
+                    </bind_material>
+                </instance_geometry>
+            </node>
+        </visual_scene>
+    </library_visual_scenes>
+    <scene>
+        <instance_visual_scene url="#SceneRoot" />
+    </scene>
+</COLLADA>

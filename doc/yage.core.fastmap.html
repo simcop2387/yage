@@ -1,230 +1,236 @@
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-  <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<meta content="text/javascript" http-equiv="content-script-type" />
-	<title>yage.core.fastmap</title>
-	<link rel="stylesheet" type="text/css" href="css/default.css" />
-	<link rel="stylesheet" type="text/css" href="css/candydoc.css" />
-	<link rel="stylesheet" type="text/css" href="css/menu.css" />
-	<script type="text/javascript" src="js/util.js" type="text/javascript"></script>
-	<script type="text/javascript" src="js/tree.js" type="text/javascript"></script>
-	<script ltype="text/javascript" src="js/explorer.js" type="text/javascript"></script>
-  </head>
-  <body>
-	<!-- Title Image -->	
-	<div style="position: absolute; z-index: 2;">
-		<a href="index.php"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
-	</div>
-	
-	<!-- Menu -->
-	<div style="position: absolute;	height: 87px; width: 100%">
-		<div style="margin-top: 63px">
-		<div id="slidetabsmenu">
-			<ul>
-			<li><a href="http://yage3d.net" title="Yage Home"><span>Home</span></a></li>
-			<li><a href="http://yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
-			<li><a href="http://dsource.org/forums/viewforum.php?f=110" title="Yage Forum"><span>Forum</span></a></li>
-			<li><a href="index.html" title="Yage API Documentation"><span>API</span></a></li>
-			</ul>
-		</div>
-		</div>
-	</div>
-	
-	 <!-- Images at top of page -->
-	<table cellpadding="0" cellspacing="0" width="100%">
-		<!-- Upper part -->
-		<tr>
-			<td width="75%" style="background: url('img/title-stretch.png') repeat-x">&nbsp;</td>
-			<td style="background: url('img/title-right-stretch.png') repeat-x">
-				<img src="img/title-right.png" alt="" height="102" style="vertical-align: top;"></td>
-			<td width="25%" valign="top" style="background: url('img/title-right-stretch.png') repeat-x">
-				<img src="img/title-right-gear.png" style="float: right;" alt="">
-			</td>
-		</tr>
-		
-		<tr> <!-- Bar Beneath Main title -->
-			<td width="100%" colspan="4">
-			
-			
-	
-				<table cellpadding="0" cellspacing="0" width="100%">
-					<tr>
-						<td width="100%" style="background: url('img/bar-stretch.png') repeat-x; height: 9px;"></td>
-						<td valign="top"><img src="img/search.png" alt="" style="vertical-align: top"></td>
-						<td style="background: url('img/search-stretch.png') repeat-x;">
-							<!-- Use Google search for now -->				
-							<form method="GET" action="http://www.google.com/search" style="padding: 2px">
-								<input type="hidden" name="ie" value="UTF-8">
-								<input type="hidden" name="oe" value="UTF-8">
-								<input type="hidden" name="domains" value="www.yage3d.net">
-								<input type="hidden" name="sitesearch" value="svn.dsource.org/projects/yage/trunk/doc/">
-								<input type="text" name="q" value="" style="height: 1.1em; width: 200px"><span>
-								<input type="submit" name="btnG" value="API Search" style="width: 90px"></span>
-							</form>
-							<div style="width: 320px; height: 1px;"></div>
-						</td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-	</table>
-	
-	<!-- Content -->
-	<table cellpadding="6">
-	  <tr>
-		<td valign="top">
-		  <div id="tabarea"></div>
-		  <div id="explorerclient"></div>  
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta content="text/javascript" http-equiv="content-script-type" />
+<title>yage.core.fastmap</title>
+<link rel="stylesheet" type="text/css" href="css/default.css" />
+<link rel="stylesheet" type="text/css" href="css/candydoc.css" />
+<link rel="stylesheet" type="text/css" href="css/menu.css" />
+<script type="text/javascript" src="js/util.js" type="text/javascript"></script>
+<script type="text/javascript" src="js/tree.js" type="text/javascript"></script>
+<script ltype="text/javascript" src="js/explorer.js"
+	type="text/javascript"></script>
+</head>
+<body>
+<!-- Title Image -->
+<div style="position: absolute; z-index: 2;"><a href="index.php"><img
+	src="img/title.png" alt="Yage3D.net" border="0"></a></div>
+
+<!-- Menu -->
+<div style="position: absolute; height: 87px; width: 100%">
+<div style="margin-top: 63px">
+<div id="slidetabsmenu">
+<ul>
+	<li><a href="http://yage3d.net" title="Yage Home"><span>Home</span></a></li>
+	<li><a href="http://yage3d.net/wiki" title="Yage Wiki"><span>Wiki</span></a></li>
+	<li><a href="http://dsource.org/forums/viewforum.php?f=110"
+		title="Yage Forum"><span>Forum</span></a></li>
+	<li><a href="index.html" title="Yage API Documentation"><span>API</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Images at top of page -->
+<table cellpadding="0" cellspacing="0" width="100%">
+	<!-- Upper part -->
+	<tr>
+		<td width="75%"
+			style="background: url('img/title-stretch.png') repeat-x">&nbsp;</td>
+		<td style="background: url('img/title-right-stretch.png') repeat-x">
+		<img src="img/title-right.png" alt="" height="102"
+			style="vertical-align: top;"></td>
+		<td width="25%" valign="top"
+			style="background: url('img/title-right-stretch.png') repeat-x">
+		<img src="img/title-right-gear.png" style="float: right;" alt="">
 		</td>
-		<td valign="top" width="100%">	  
-			<div id="content"><script type="text/javascript">explorer.initialize("yage.core.fastmap");</script>
-				<table class="content" width="100%">
-					<tr><td id="docbody"><h1>yage.core.fastmap</h1><!-- Generated by Ddoc from yage\core\fastmap.d -->
-<br><br>
+	</tr>
 
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">struct 
-<span class="currsymbol">FastMap</span>
-<script type="text/javascript">explorer.outline.addDecl('FastMap');</script>
-(K,V);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+	<tr>
+		<!-- Bar Beneath Main title -->
+		<td width="100%" colspan="4">
 
-<dd>Behaves the same as a built-in associative array except for the following space-for-time tradeoffs:
- <ul>
-     <li>The .keys and .values properties execute in O(1) and perform no allocation.</li>
-     <li>Iterating over the array is about 80% faster.</li>
- </ul>
- A .dup property has also been added.
-<br><br>
-<b>Example:</b><br>
-<pre class="d_code"> <b>FastMap</b>!(<span style="color: blue">char</span>[], Foo) fooMap;
- fooMap[<span style="color: purple">"key"</span>] = <span style="color: blue">new</span> Foo();
+
+
+		<table cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td width="100%"
+					style="background: url('img/bar-stretch.png') repeat-x; height: 9px;"></td>
+				<td valign="top"><img src="img/search.png" alt=""
+					style="vertical-align: top"></td>
+				<td style="background: url('img/search-stretch.png') repeat-x;">
+				<!-- Use Google search for now -->
+				<form method="GET" action="http://www.google.com/search"
+					style="padding: 2px"><input type="hidden" name="ie"
+					value="UTF-8"> <input type="hidden" name="oe" value="UTF-8">
+				<input type="hidden" name="domains" value="www.yage3d.net">
+				<input type="hidden" name="sitesearch"
+					value="svn.dsource.org/projects/yage/trunk/doc/"> <input
+					type="text" name="q" value="" style="height: 1.1em; width: 200px"><span>
+				<input type="submit" name="btnG" value="API Search"
+					style="width: 90px"></span></form>
+				<div style="width: 320px; height: 1px;"></div>
+				</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+</table>
+
+<!-- Content -->
+<table cellpadding="6">
+	<tr>
+		<td valign="top">
+		<div id="tabarea"></div>
+		<div id="explorerclient"></div>
+		</td>
+		<td valign="top" width="100%">
+		<div id="content"><script type="text/javascript">explorer.initialize("yage.core.fastmap");</script>
+		<table class="content" width="100%">
+			<tr>
+				<td id="docbody">
+				<h1>yage.core.fastmap</h1>
+				<!-- Generated by Ddoc from yage\core\fastmap.d --> <br>
+				<br>
+
+				<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+				<dl>
+					<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+					<dt><span class="decl">struct <span class="currsymbol">FastMap</span>
+					<script type="text/javascript">explorer.outline.addDecl('FastMap');</script>
+					(K,V); </span></dt>
+					<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+					<dd>Behaves the same as a built-in associative array except
+					for the following space-for-time tradeoffs:
+					<ul>
+						<li>The .keys and .values properties execute in O(1) and
+						perform no allocation.</li>
+						<li>Iterating over the array is about 80% faster.</li>
+					</ul>
+					A .dup property has also been added. <br>
+					<br>
+					<b>Example:</b><br>
+					<pre class="d_code"> <b>FastMap</b>!(<span
+						style="color: blue">char</span>[], Foo) fooMap;
+ fooMap[<span style="color: purple">"key"</span>] = <span
+						style="color: blue">new</span> Foo();
  <span style="color: blue">foreach</span>(key, value; fooMap) {}
-</pre>
- 
-<br><br>
+</pre> <br>
+					<br>
 
 
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">FastMap!(K,V) 
-<span class="currsymbol">dup</span>
-<script type="text/javascript">explorer.outline.addDecl('dup');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+					<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+					<dl>
+						<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+						<dt><span class="decl">FastMap!(K,V) <span
+							class="currsymbol">dup</span> <script type="text/javascript">explorer.outline.addDecl('dup');</script>
+						(); </span></dt>
+						<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Perform a deep copy of the chain and its key value arrays. 
-<br><br>
+						<dd>Perform a deep copy of the chain and its key value
+						arrays. <br>
+						<br>
 
-</dd>
+						</dd>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">K[] 
-<span class="currsymbol">keys</span>
-<script type="text/javascript">explorer.outline.addDecl('keys');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+						<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+						<dt><span class="decl">K[] <span class="currsymbol">keys</span>
+						<script type="text/javascript">explorer.outline.addDecl('keys');</script>
+						(); </span></dt>
+						<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
+						<dd><br>
+						<br>
+						</dd>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">size_t 
-<span class="currsymbol">length</span>
-<script type="text/javascript">explorer.outline.addDecl('length');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+						<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+						<dt><span class="decl">size_t <span class="currsymbol">length</span>
+						<script type="text/javascript">explorer.outline.addDecl('length');</script>
+						(); </span></dt>
+						<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
+						<dd><br>
+						<br>
+						</dd>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">int 
-<span class="currsymbol">opApply</span>
-<script type="text/javascript">explorer.outline.addDecl('opApply');</script>
-(int delegate(ref V) <span class="funcparam">dg</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+						<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+						<dt><span class="decl">int <span class="currsymbol">opApply</span>
+						<script type="text/javascript">explorer.outline.addDecl('opApply');</script>
+						(int delegate(ref V) <span class="funcparam">dg</span>); </span></dt>
+						<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
+						<dd><br>
+						<br>
+						</dd>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">V 
-<span class="currsymbol">opIndex</span>
-<script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
-(K <span class="funcparam">key</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+						<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+						<dt><span class="decl">V <span class="currsymbol">opIndex</span>
+						<script type="text/javascript">explorer.outline.addDecl('opIndex');</script>
+						(K <span class="funcparam">key</span>); </span></dt>
+						<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
+						<dd><br>
+						<br>
+						</dd>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">V 
-<span class="currsymbol">opIndexAssign</span>
-<script type="text/javascript">explorer.outline.addDecl('opIndexAssign');</script>
-(V <span class="funcparam">value</span>, K <span class="funcparam">key</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+						<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+						<dt><span class="decl">V <span class="currsymbol">opIndexAssign</span>
+						<script type="text/javascript">explorer.outline.addDecl('opIndexAssign');</script>
+						(V <span class="funcparam">value</span>, K <span class="funcparam">key</span>);
+						</span></dt>
+						<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
+						<dd><br>
+						<br>
+						</dd>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">rehash</span>
-<script type="text/javascript">explorer.outline.addDecl('rehash');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+						<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+						<dt><span class="decl">void <span class="currsymbol">rehash</span>
+						<script type="text/javascript">explorer.outline.addDecl('rehash');</script>
+						(); </span></dt>
+						<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
+						<dd><br>
+						<br>
+						</dd>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">V[] 
-<span class="currsymbol">values</span>
-<script type="text/javascript">explorer.outline.addDecl('values');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+						<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+						<dt><span class="decl">V[] <span class="currsymbol">values</span>
+						<script type="text/javascript">explorer.outline.addDecl('values');</script>
+						(); </span></dt>
+						<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+						<dd><br>
+						<br>
+						</dd>
+					</dl>
+					<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
 
-</dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+					</dd>
+				</dl>
+				<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
 
-</td></tr>
-				</table>
-			</div>
-		</td>  
-	  </tr>
-	</table>
-	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
-		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
-		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Sep 20 01:37:09 2009
+				</td>
+			</tr>
+		</table>
+		</div>
+		</td>
+	</tr>
+</table>
+<div id="docfooter">Yage and all source files &copy; 2005-2009
+Eric Poggel<br>
+Documentation generated with <a
+	href="http://www.dsource.org/projects/helix/wiki/CandyDoc"> <img
+	src="img/candydoc.gif" alt="CandyDoc"
+	style="vertical-align: middle; top: -1px"></a> on Sun Sep 20 01:37:09
+2009</div>
 
-	</div>
-	
-	<script type="text/javascript">
+<script type="text/javascript">
 	explorer.packageExplorer.addModule("demo2.main");
 
 	explorer.packageExplorer.addModule("yage.all");
@@ -371,6 +377,6 @@
 
 	explorer.packageExplorer.addModule("yage.util.spring");
 </script>
-  </body>
+</body>
 </html>
 

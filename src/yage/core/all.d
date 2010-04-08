@@ -26,5 +26,4 @@ public
 	import yage.core.timer;
 	import yage.core.tree;
 	import yage.core.types;
-	import yage.core.xml;
 }

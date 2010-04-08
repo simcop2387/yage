@@ -28,11 +28,11 @@ abstract class Probe
 		MAX_TEXTURE_SIZE,	/// Maximum allowed size for a texture
 		MAX_TEXTURE_UNITS,	/// Maximum number of textures that can be used in multitexturing
 		
-		FBO,				/// Hardware support for rendering directly to a texture (Frame Buffer Object)
-		MULTITEXTURE,		/// Hardware support for using multiple textures in a single rendering pass
-		NON_2_TEXTURE,		/// Hardware support for textures of arbitrary size
-		SHADER,				/// Hardware support for openGl vertex and fragment shaders
-		VBO,				/// Hardware support for caching vertex data in video memory (Vertex Buffer Object)
+		FBO,				/// Hardware support for rendering directly to a texture (Frame Buffer Object); first available in GeForce FX and Radeon 9x00
+		MULTITEXTURE,		/// Hardware support for using multiple textures in a single rendering pass; first available on Voodoo2?
+		NON_2_TEXTURE,		/// Hardware support for textures of arbitrary size; first available in GeForce FX and Radeon 9500
+		SHADER,				/// Hardware support for openGl vertex and fragment shaders; first available in GeForce FX and Radeon 9x00
+		VBO,				/// Hardware support for caching vertex data in video memory (Vertex Buffer Object), first available in Riva TNT and Rage 128?
 		BLEND_COLOR,
 		BLEND_FUNC_SEPARATE
 	}	

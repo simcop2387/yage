@@ -117,6 +117,7 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 	{	Node result = cast(Node)this.classinfo.create();		
 		
 		// Since "this" may have its properties changed by other calls during this process.
+		// TODO: Nothing else syncrhonizes, so this doesn't really provide any protection!
 		synchronized(this) 
 		{	result.lifetime = lifetime;
 			result.transform = transform;
@@ -222,6 +223,7 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 		
 		// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.
+		// TODO: synchronize?
 		if (scene)
 		{	cache[scene.transform_write].transform = transform;
 			if (transform_dirty)

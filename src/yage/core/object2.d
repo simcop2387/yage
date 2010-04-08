@@ -9,6 +9,8 @@ import tango.math.random.Kiss;
 import tango.util.Convert;
 import yage.core.format;
 
+import tango.core.tools.TraceExceptions; // provide stack trace on error when compiled in debug mode.
+
 /*
  * Unused. */
 class YageObject

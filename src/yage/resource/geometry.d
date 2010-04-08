@@ -6,85 +6,39 @@
 
 module yage.resource.geometry;
 
-import tango.io.Stdout;
 import tango.math.Math;
-import tango.util.container.HashSet;
-import yage.core.object2;
 import yage.core.math.vector;
 import yage.resource.manager;
 import yage.resource.material;
 import yage.resource.resource;
 import yage.system.system;
+import yage.system.log;
 
-/**
- * This is a common abstract class inherited by all templated types of VertexBuffer.  
- * It allows them to be passed around interchangeably and to exist as siblings in arrays. */
-abstract class IVertexBuffer
+/*
+ * A VertexBuffer wraps around a Geometry attribute, adding a dirty flag and other info. 
+ * This is only needed inside the engine. */
+class VertexBuffer
 {
-	void[] getData(); ///
-	void setData(void[]); ///
-	
-	bool dirty = true; /// If VBO's are used and the dirty flag is set, the VBO will be updated with the vertex data.
+	bool dirty = true;
+	void[] data;
+	TypeInfo type;
+	ubyte components;
 
-	int getSizeInBytes(); ///
-	
-	byte getComponents(); ///
-	
-	int length(); ///
-
-	void* ptr(); ///
-
-	float itemLength2(int); // used internally
-
-}
-
-
-
-/**
- * A VertexBuffer stores the parameters of an OpenGL Vertex Buffer Object
- * Params:
- *     T = Type of vertex data to store (float, Vec2f, etc.)*/
-class VertexBuffer(T) : IVertexBuffer
-{
-	protected T[] data;
-
-	/**
-	 * Get/set the vertex data of this buffer.
-	 * It must be cast to an array of type T[] */
-	void[] getData()
-	{	return data;
-	}
-	void setData(void[] data) /// ditto
+	void setData(T)(T[] data)
 	{	dirty = true;
-		this.data = cast(T[])data;
+		this.data = data;
+		type = typeid(T);
+		if (data.length)
+			components = data[0].components;
+	}
+
+	// Get the number of vertices for this data.
+	int length()
+	{	return data.length/type.tsize();		
 	}	
 	
-	/**
-	 * Get the size of the vertex data in bytes. */
-	int getSizeInBytes()
-	{	return length * T.sizeof;
-	}
-	
-	/**
-	 * Returns: The number of components in each array element. */
-	byte getComponents()
-	{	return T.components;
-	}
-
-	/// Implement array operations
-	int length()
-	{	return data.length;
-	}
-
-	/**
-	 * Returns: A c-style pointer to the vertex data array. */
 	void* ptr()
 	{	return data.ptr;
-	}
-
-	// Hackish, used by Geometry for radius calculation
-	float itemLength2(int index)
-	{	return data[index].length2();
 	}
 }
 
@@ -115,74 +69,80 @@ class Geometry : Resource
 	static const char[] COLORS1    = "gl_SecondaryColor"; /// ditto
 	static const char[] FOGCOORDS  = "gl_FogCood"; /// ditto
 	
-	protected IVertexBuffer[char[]] attributes;
-	protected Mesh[] meshes;
-	
-	/// Get / set the Vertex positions with an array of floats, Vec2f or Vec3f.
-	public IVertexBuffer getVertices()
-	{	return attributes[VERTICES];
-	}
-	public void setVertices(T)(T[] vertices) /// ditto
-	{	setAttributeData(VERTICES, vertices);
-	}
-	
-	/// Get / set the normals array
-	public VertexBuffer!(Vec3f) getNormals()
-	{	return cast(VertexBuffer!(Vec3f))attributes[NORMALS];
-	}
-	public void setNormals(Vec3f[] normals)
-	{	setAttributeData(NORMALS, normals);
-	}
-	
-	/// Get / set the texture coordinates array with 2D or 3D texture coodinates
-	public IVertexBuffer getTexCoords0()
-	{	return attributes[TEXCOORDS0];
-	}
-	public void setTexCoords0(Vec2f[] tex_coords0) /// ditto
-	{	setAttributeData(TEXCOORDS0, tex_coords0);
-	}
-	public void setTexCoords0(Vec3f[] tex_coords0) /// ditto
-	{	setAttributeData(TEXCOORDS0, tex_coords0);
-	}
 
+	/*protected*/ VertexBuffer[char[]] attributes;
+	/*protected*/ Mesh[] meshes;
+	
+	
 	/**
 	 * These functions allow modifying the vertex attributes of the geometry. 
+	 * Vertex attributes are arrays that specify data for each vertex, such as a position, texture coodinate, or custom value.
+	 * Params:
+	 *     name = Specifies the vertex attribute to get/set.  It can be one of the named constants defined above or a custom name.
+	 *         Custom attributes are passed to the vertex shader into an attribute variable of the same name.
+	 *         Custom names must not use the "gl_" prefix; it is reserved.
+	 *     values = Vertex data values to set.
+	 *     components = on getAttribute, this out parameter specifies how many values per vertex.
+	 * Notes:
+	 *     getAttribute will return an empty array if the attribute doesn't exist.
 	 * Example:
 	 * --------
-	 * if (!geom.hasAttribute(Geometry.VERTICES))
-	 *     geom.setAttribute(Geometry.VERTICES, new VertexBuffer!(Vec3f)());
+	 * Vec3f[] vertices;
+	 * ... 
+	 * if (!geom.getAttribute(Geometry.VERTICES))
+	 *     geom.setAttribute(Geometry.VERTICES, vertices);
 	 * --------
 	 */
-	public IVertexBuffer[char[]] getAttributes()
-	{	return attributes;
+	public void[] getAttribute(char[] name)
+	{	int components;
+		return getAttribute(name, components);
 	}
-	public IVertexBuffer getAttribute(char[] name) /// ditto
-	{	return attributes[name];
+	public void[] getAttribute(char[] name, out int components) /// ditto
+	{	auto result = name in attributes;
+		if (result)
+		{	components = (*result).components;
+			return (*result).data;
+		}
+		return null;
 	}
-	public void setAttribute(char[] name, IVertexBuffer vb) /// ditto
-	{	attributes[name] = vb;
-	}
-	public void setAttributeData(T)(char[] name, T[] data) /// ditto
+	public void setAttribute(T)(char[] name, T[] values) /// ditto
 	{	
-		// Prevent creation of a new VBO
-		if (hasAttribute(name) && attributes[name].getComponents() == T.components)
-		{	attributes[name].setData(data);
+		// Prevent creation of a new VBO if one exists
+		VertexBuffer vb = getVertexBuffer(name);
+		if (vb && vb.components == T.components)
+		{	vb.setData(values);
 		} else
-		{	VertexBuffer!(T) vb = new VertexBuffer!(T);
-			vb.setData(data);
-			setAttribute(name, vb);
+		{	vb = new VertexBuffer();
+			vb.setData(values);
+			attributes[name] = vb;
+			assert(attributes[name].data.length > 0);
 		}
 	}
-	public bool hasAttribute(char[] name) /// ditto
-	{	return cast(bool)(name in attributes);		
-	}
-	public void clearAttribute(char[] name) /// ditto
+	
+	///
+	public void removeAttribute(char[] name)
 	{	attributes.remove(name);		
 	}
 	
 	/**
+	 * Get the vertex buffers used for rendering.  Vertex buffers wrap attributes. */
+	public VertexBuffer[char[]] getVertexBuffers()
+	{	return attributes;
+	}
+	
+	/**
+	 * Get a single VertexBuffer by name rendering. */
+	public VertexBuffer getVertexBuffer(char[] name) 
+	{	auto result = name in attributes;
+		if (result)
+			return *result;
+		return null;
+	}
+	
+	/**
 	 * Get / set the array of meshes for this Geometry.
-	 * Meshes define a material and an array of triangles to connect vertices. */
+	 * Meshes define a material and an array of triangles to connect vertices. 
+	 * TODO: are these accessors needed? */
 	public Mesh[] getMeshes()
 	{	return meshes;		
 	}
@@ -190,43 +150,96 @@ class Geometry : Resource
 	{	this.meshes = meshes;		
 	}
 	
-	/// Get radius of a sphere, in modelspace coordinates, centered at the model's origin, that can contain this Model.
+	/// Calculate the radius of a sphere, centered at the model's origin, that can contain this Model.
 	float getRadius()
-	{	float result=12;
+	{	float result=0;
 		if (VERTICES in attributes)
-		{	auto vertices = attributes[VERTICES];
-			if (vertices.length())
-			{	for (int i=0; i<vertices.length(); i++)
-				{	float length2 = vertices.itemLength2(i);
-					if (length2 > result)
-						result = length2;
-				}
-		}	}
+		{	foreach(vertex; cast(Vec3f[])getAttribute(VERTICES))
+			{	float length2 = vertex.length2();
+				if (length2 > result)
+					result = length2;
+		}	}	
 		return sqrt(result);
 	}
 
-	/*
-	char[] toString()
-	{	char[] result = "Geometry {\nattributes={\n";
-		foreach (name, attrib; attributes)
-			result ~= "\n" ~ name ~ "=" ~ attrib.toString();
-		return result ~ "}\n}\n";
-	}*/
+	/**
+	 * Merge all geometries into a single Geometry.
+	 * Returns: The new Geometry will have copies of all vertex attributes and triangles, but share
+	 * the same material references as the input geometries. */
+	static Geometry merge(Geometry[] geometries)
+	{
+		// Get a maping of all types to their vertex buffer info.
+		VertexBuffer[char[]] types;
+		foreach (geometry; geometries)
+			foreach(char[] type, vb; geometry.getVertexBuffers())
+				types[type] = vb;
+		
+		Geometry result = new Geometry();
+		
+		foreach (geometry; geometries)
+		{	auto vb = result.getVertexBuffer(Geometry.VERTICES);
+			int offset = vb ? vb.length() : 0;
+			int length = geometry.getVertexBuffer(Geometry.VERTICES).length();
+			
+			// Loop through each vertex attribute type
+			foreach(type, vbInfo; types)
+			{
+				auto newValue = geometry.getAttribute(type);
+				if (!newValue.length) // if this attribute doesn't have the value, we just add zeros
+					newValue = new float[length*vbInfo.components]; 
+							
+				// Make a new vertex buffer and get info from vbinfo.
+				VertexBuffer vb = new VertexBuffer();
+				vb.type = vbInfo.type;
+				vb.components = vbInfo.components;
+				vb.data = result.getAttribute(type) ~ newValue;
+				result.attributes[type] = vb;
+			}
+			
+			// Meshes
+			foreach (mesh; geometry.meshes)
+			{	// vertices are now all merged into the same aray, so we need to upate the triangle indices.
+				Vec3i[] triangles = new Vec3i[mesh.getTriangles().length];
+				foreach (i, triangle; mesh.getTriangles()) 
+					triangles[i] = triangle + Vec3i(offset); 
+				result.meshes ~= new Mesh(mesh.material, triangles);
+			}
+		}
+		return result;		
+	}
+
+	/// Get a plane to play with.
+	static Geometry getPlane(int widthSegments=1, int heightSegments=1)
+	{		
+		auto result = new Geometry();
+		result.setAttribute(Geometry.VERTICES, [Vec3f(-1,-1, 0), Vec3f( 1,-1, 0), Vec3f( 1, 1, 0), Vec3f(-1, 1, 0)]);
+		result.setAttribute(Geometry.NORMALS, [Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
+		result.setAttribute(Geometry.TEXCOORDS0, [Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
+		
+		Material material = new Material();
+		auto pass = new MaterialPass();
+		pass.emissive = "gray"; // So it always shows up at least some
+		material.setPass(pass);
+		
+		result.setMeshes([new Mesh(material, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)])]);
+		return result;
+	}
 }
 
 
 /**
- * A mesh consists of a material and an array of triangle indices that index into vertex buffers. */
+ * A Mesh groups a Material with a set of triangle indices.
+ * The Geometry class groups a Mesh with vertex buffers referenced by the traingle indices */
 class Mesh : Resource
 {
 	static const char[] TRIANGLES = "gl_Triangles"; /// Constants used to specify various built-in polgyon attribute type names.
 	
-	protected VertexBuffer!(Vec3i) triangles;
-	protected Material material;
+	protected VertexBuffer triangles;
+	public Material material;
 
 	/// Construct an empty mesh.
 	this()
-	{	triangles = new VertexBuffer!(Vec3i);
+	{	triangles = new VertexBuffer();
 	}
 
 	/// Create with a material and triangles.
@@ -244,20 +257,22 @@ class Mesh : Resource
 	void setMaterial(Material material) /// ditto
 	{	this.material = material;
 	}
-	void setMaterial(char[] filename) /// ditto
-	{	this.material = ResourceManager.material(filename);
+	void setMaterial(char[] filename, char[] id) /// ditto
+	{	this.material = ResourceManager.material(filename, id);
 	}
 
 	/**
 	 * Get/set the triangles */
-	VertexBuffer!(Vec3i) getTriangles()
-	{	return triangles;
-	}
-	void setTriangles(VertexBuffer!(Vec3i) triangles) /// ditto
-	{	this.triangles = triangles;
-	}
+	Vec3i[] getTriangles()
+	{	return cast(Vec3i[])triangles.data;
+	}	
 	void setTriangles(Vec3i[] triangles) /// ditto
 	{	this.triangles.setData(triangles);
 	}
-
+	
+	/**
+	 * Get the trangles vertex buffer used for rendering. */
+	VertexBuffer getTrianglesVertexBuffer()
+	{	return triangles;
+	}
 }

@@ -1,6 +1,6 @@
 module yage.resource.embed.juras_medium_ascii_ttf;
 
-import tango.io.encode.Base64;
+import tango.util.encode.Base64;
 
 ubyte[] jurasMediumAscii_ttf; // binary contents of Juras Medium Ascii.ttf
 

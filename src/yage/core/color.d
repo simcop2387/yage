@@ -51,10 +51,10 @@ struct Color
 	 * Integer types rante from 0 to 255 and floating point types range from 0 to 1. */
 	static Color opCall(int r, int g,int b, int a=255)
 	{	Color res;
-		res.r=r;
-		res.b=b;
-		res.g=g;
-		res.a=a;
+		res.r=cast(ubyte)r;
+		res.b=cast(ubyte)b;
+		res.g=cast(ubyte)g;
+		res.a=cast(ubyte)a;
 		return res;
 	}
 	unittest
@@ -150,8 +150,10 @@ struct Color
 		else if (string.length==6)
 		{	color[0..6] = string[0..6];
 			color[6..8] = 'F';		
-		} else
+		} else if (string.length>=8)
 			color[0..8] = string[0..8];
+		else
+			throw new YageException("Could not parse color %s", string);
 		
 		// Convert string one char at a time.
 		Color result;
@@ -168,7 +170,7 @@ struct Color
 			else if (96 < h && h < 103) // a-f
 				digit = (h-87);
 			else
-				throw new YageException("Invalid character '{}' in '{}' for Color()", h, string);
+				throw new YageException("Invalid character '%s' in '%s' for Color()", h, string);
 			result.ub[i/2] += digit * (15*((i+1)%2)+1); // gets low or high nibble
 		}
 		return result;

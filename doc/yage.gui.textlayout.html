@@ -8,14 +8,14 @@
 	<link rel="stylesheet" type="text/css" href="css/default.css" />
 	<link rel="stylesheet" type="text/css" href="css/candydoc.css" />
 	<link rel="stylesheet" type="text/css" href="css/menu.css" />
-	<script type="text/javascript" src="js/util.js" type="text/javascript"></script>
-	<script type="text/javascript" src="js/tree.js" type="text/javascript"></script>
-	<script ltype="text/javascript" src="js/explorer.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/util.js"></script>
+	<script type="text/javascript" src="js/tree.js"></script>
+	<script type="text/javascript" src="js/explorer.js"></script>
   </head>
   <body>
 	<!-- Title Image -->	
 	<div style="position: absolute; z-index: 2;">
-		<a href="index.php"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
+		<a href="http://yage3d.net"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
 	</div>
 	
 	<!-- Menu -->
@@ -97,7 +97,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
+<dt><span class="decl">struct 
 <span class="currsymbol">TextLayout</span>
 <script type="text/javascript">explorer.outline.addDecl('TextLayout');</script>
 ;
@@ -111,29 +111,66 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Image 
-<span class="currsymbol">render</span>
-<script type="text/javascript">explorer.outline.addDecl('render');</script>
-(char[] <span class="funcparam">text</span>, Style <span class="funcparam">style</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span>, bool <span class="funcparam">pow2</span> = false);
+<dt><span class="decl">char[] 
+<span class="currsymbol">input</span>
+<script type="text/javascript">explorer.outline.addDecl('input');</script>
+(int <span class="funcparam">key</span>, int <span class="funcparam">mod</span>, dchar <span class="funcparam">unicode</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Convert a string of primitive html <span class="funcparam">text</span> and 
+<dd>Update lines and letters data structures from keyboard 
+<span class="currsymbol">input</span>
+<script type="text/javascript">explorer.outline.addDecl('input');</script>
+
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">key</span></td>
+
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">mod</span></td>
+
+               
+<td>modifier <span class="funcparam">key</span>.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">dchar <span class="funcparam">unicode</span></td>
+
+               
+<td></td></tr>
+</table><br>
+<b>Returns:</b><br>
+new html text.
+	 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Image 
+<span class="currsymbol">render</span>
+<script type="text/javascript">explorer.outline.addDecl('render');</script>
+(Style <span class="funcparam">style</span>, bool <span class="funcparam">pow2</span> = false);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Convert a string of primitive html text and 
 <span class="currsymbol">render</span>
 <script type="text/javascript">explorer.outline.addDecl('render');</script>
  it to an image.
  Note that this is currently not thread-safe, since the reusable buffers above make it non-re-entrant
  and also due to the non thread-safety of using Font.
- Characters with a bold font-weight are rendered at 1.5x normal <span class="funcparam">width</span>.
+ Characters with a bold font-weight are rendered at 1.5x normal width.
  Characters with a italic/oblique font-<span class="funcparam">style</span> are rendered skewed.
  For ideal rendering, instead use a font-family that has a bold or italic <span class="funcparam">style</span>.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
-<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">text</span></td>
+<td nowrap valign="top" style="padding-right: 8px">text</td>
 
                
-<td>String of utf-8 encoded html <span class="funcparam">text</span> to 
+<td>String of utf-8 encoded html text to 
 <span class="currsymbol">render</span>
 <script type="text/javascript">explorer.outline.addDecl('render');</script>
 .
@@ -141,27 +178,90 @@ Eric Poggel
        	a, b, br, del, i, span, sub, sup, u <br>
        The following css is supported via inline <span class="funcparam">style</span> attributes: <br>
          color, font-family, font-size[%|px], font-<span class="funcparam">style</span>[normal|italic|oblique], font-weight[normal|bold],
-         letter-spacing[%|px], line-<span class="funcparam">height</span>[%|px],
-         <span class="funcparam">text</span>-align[left|center|right] <span class="funcparam">text</span>-decoration[none|underline|overline|line-through]</td></tr>
+         letter-spacing[%|px], line-height[%|px],
+         text-align[left|center|right] text-decoration[none|underline|overline|line-through]</td></tr>
 <tr>
 <td nowrap valign="top" style="padding-right: 8px">Style <span class="funcparam">style</span></td>
 
                
 <td>A <span class="funcparam">style</span> with fontSize and lineHeight in terms of pixels</td></tr>
 <tr>
+<td nowrap valign="top" style="padding-right: 8px">width</td>
+
+               
+<td>Available width for rendering text</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">height</td>
+
+               
+<td>Available height for rendering text.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+An RGBA image of width pixels wide and is shorter or equal to height.
+     Note that the same buffer is used for each return, so one call to this function will overwrite a previous result.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Reverse the normal function of TextLayout and convert letters[] back to a string of html text.
+ The text may use different tags (since some information is lost)
+ but will be functionally the same.
+<br><br>
+<b>TODO:</b><br>
+Move this to lettersToHtml(), since it's the opposite of htmlToLetters()
+	 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">update</span>
+<script type="text/javascript">explorer.outline.addDecl('update');</script>
+(char[] <span class="funcparam">text</span>, Style <span class="funcparam">style</span>, int <span class="funcparam">width</span>, int <span class="funcparam">height</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Replace the <span class="funcparam">text</span> with new <span class="funcparam">text</span>, rebuilding the internal lines and letters data structures.
+ This is unlike input(), which modifies the <span class="funcparam">text</span> based on a single keystroke.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">text</span></td>
+
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">Style <span class="funcparam">style</span></td>
+
+               
+<td>Root <span class="funcparam">style</span> of the <span class="funcparam">text</span>.  Inline styles override this.</td></tr>
+<tr>
 <td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">width</span></td>
 
                
-<td>Available <span class="funcparam">width</span> for rendering <span class="funcparam">text</span></td></tr>
+<td></td></tr>
 <tr>
 <td nowrap valign="top" style="padding-right: 8px">int <span class="funcparam">height</span></td>
 
                
-<td>Available <span class="funcparam">height</span> for rendering <span class="funcparam">text</span>.</td></tr>
+<td></td></tr>
 </table><br>
 <b>Returns:</b><br>
-An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter or equal to <span class="funcparam">height</span>.
-     Note that the same buffer is used for each return, so one call to this function will overwrite a previous result.
+True if the <span class="funcparam">text</span> will need to be re-rendered, false
+ otherwise.
+<br><br>
+<b>TODO:</b><br>
+Should this be a constructor to maintain RAII?  Doing so will cause more allocations of letters and lines!
+	 
 <br><br>
 
 </dd>
@@ -184,12 +284,18 @@ An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Sep 20 01:37:10 2009
+		on Thu Apr  8 00:06:44 2010
 
 	</div>
 	
 	<script type="text/javascript">
-	explorer.packageExplorer.addModule("demo2.main");
+	explorer.packageExplorer.addModule("demo1.gameobj");
+
+	explorer.packageExplorer.addModule("demo1.main");
+
+	explorer.packageExplorer.addModule("demo1.ship");
+
+	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
 
@@ -197,17 +303,13 @@ An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
-	explorer.packageExplorer.addModule("yage.core.async");
-
 	explorer.packageExplorer.addModule("yage.core.cache");
-
-	explorer.packageExplorer.addModule("yage.core.closure");
 
 	explorer.packageExplorer.addModule("yage.core.color");
 
-	explorer.packageExplorer.addModule("yage.core.fastmap");
+	explorer.packageExplorer.addModule("yage.core.format");
 
-	explorer.packageExplorer.addModule("yage.core.freelist");
+	explorer.packageExplorer.addModule("yage.core.json");
 
 	explorer.packageExplorer.addModule("yage.core.math.all");
 
@@ -221,6 +323,8 @@ An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter
 
 	explorer.packageExplorer.addModule("yage.core.math.vector");
 
+	explorer.packageExplorer.addModule("yage.core.memory");
+
 	explorer.packageExplorer.addModule("yage.core.misc");
 
 	explorer.packageExplorer.addModule("yage.core.object2");
@@ -229,15 +333,11 @@ An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tangotrace3");
-
 	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.tree");
 
 	explorer.packageExplorer.addModule("yage.core.types");
-
-	explorer.packageExplorer.addModule("yage.core.xml");
 
 	explorer.packageExplorer.addModule("yage.gui.all");
 
@@ -253,7 +353,9 @@ An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
-	explorer.packageExplorer.addModule("yage.resource.colladaloader");
+	explorer.packageExplorer.addModule("yage.resource.collada");
+
+	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -261,17 +363,11 @@ An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
-	explorer.packageExplorer.addModule("yage.resource.layer");
-
 	explorer.packageExplorer.addModule("yage.resource.manager");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
-
-	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 
@@ -309,7 +405,9 @@ An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter
 
 	explorer.packageExplorer.addModule("yage.system.graphics.all");
 
-	explorer.packageExplorer.addModule("yage.system.graphics.graphics");
+	explorer.packageExplorer.addModule("yage.system.graphics.api.api");
+
+	explorer.packageExplorer.addModule("yage.system.graphics.api.opengl");
 
 	explorer.packageExplorer.addModule("yage.system.graphics.probe");
 
@@ -328,12 +426,6 @@ An RGBA image of <span class="funcparam">width</span> pixels wide and is shorter
 	explorer.packageExplorer.addModule("yage.system.system");
 
 	explorer.packageExplorer.addModule("yage.system.window");
-
-	explorer.packageExplorer.addModule("yage.util.all");
-
-	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.spring");
 </script>
   </body>
 </html>

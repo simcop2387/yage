@@ -9,7 +9,7 @@ module yage.system.graphics.api.api;
 import yage.core.format;
 import yage.core.object2;
 import yage.resource.texture;
-import yage.resource.layer;
+import yage.resource.material;
 import yage.resource.shader;
 import yage.system.graphics.api.opengl;
 
@@ -24,7 +24,8 @@ class GraphicsAPI
 		static IRenderTarget renderTarget; ///
 		static Shader shader; ///
 		static Texture texture; ///
-		static Layer layer; ///
+		
+		static MaterialPass pass; ///
 	}
 	Current current; /// ditto
 

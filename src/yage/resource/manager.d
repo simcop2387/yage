@@ -7,6 +7,9 @@
 module yage.resource.manager;
 
 import tango.text.Unicode;
+import tango.text.Util;
+import tango.io.device.File;
+import tango.io.FilePath;
 import tango.io.Path;
 import tango.io.model.IFile : FileConst;
 
@@ -15,6 +18,7 @@ import yage.core.misc;
 import yage.core.object2;
 import yage.core.timer;
 
+import yage.resource.collada;
 import yage.resource.embed.juras_medium_ascii_ttf;
 import yage.resource.font;
 import yage.resource.model;
@@ -29,29 +33,34 @@ import yage.system.log;
  * The ResourceManager Manager is a static class that keeps track of which filesystem resources are in memory.
  * All functions that load resources insert the source path of what was loaded
  * as a key in the associative array while the value returns the class itself.
- * When a manual request is made to load a resource, such as a Texture or a Material,
- * a check should first be made with the resource manager.*/
+ * In order to prevent duplicates of resources loaded into memory, this class should be used
+ * to acquire resources.*/
 struct ResourceManager
 {
-	static char[][] paths = [""];		// paths to look for resources
 
+	private struct TextureKey
+	{	char[] source;
+		GPUTexture.Format format;
+		bool mipmap;
+	}
+	
+	private static char[][] paths = [""];		// paths to look for resources
+	private static Collada[char[]]	colladas;
 	private static Font[char[]]		fonts;
 	private static Material[char[]] materials;
 	private static Model[char[]]	models;	
 	private static Shader[char[]]	shaders;
 	private static Sound[char[]]	sounds;
-	private static GPUTexture[char[]][2][2] textures; // [source][clamped][compressed][mipmapped][filter]
-
+	private static GPUTexture[TextureKey] textures;
+	
+	
+	private static Font defaultFont;
 	
 	/**
 	 * Load embedded resources.  This is called from System.init() and shouldn't be called manually.
-	 * Embedded resources includes:
-	 * A font named "auto" that 
 	 */
 	static void init()
-	{
-		//  Load default font (embedded in source)
-		fonts["auto"] = new Font(jurasMediumAscii_ttf, "auto"); // warning, this triggered derelict.loadFT;
+	{		
 	}
 	
 	/// Get the array of path strings
@@ -72,8 +81,8 @@ struct ResourceManager
 		paths ~= path;
 		return paths.length;
 	}
-	/// ditto
-	static int addPath(char[][] paths)
+
+	static int addPath(char[][] paths)	// ditto
 	{	foreach (p; paths)
 			addPath(p);
 		return paths.length;		
@@ -86,21 +95,23 @@ struct ResourceManager
 	 *     path = Path to a file, relative to a path defined by addPath().
 	 *     current_dir = Optional.  A directory relative to the working directory to search for the file pointed to by path.
 	 * Returns: The resolved path.
-	 * Throws: A Log.info if the path could not be resolved. */
+	 * Throws: A ResourceException if the path could not be resolved. */
 	static char[] resolvePath(char[] path, char[] current_dir="")
-	{	version (Windows)
+	{	
+		// TODO: Quick return if it starts with / or _:/
+		version (Windows)
 		{	path = toLower(path);
 			current_dir = toLower(current_dir);
 		}
 		char[] result = cleanPath(FS.join(current_dir, path));
-		if (std.file.exists(result))
+		if (FilePath(result).exists)
 			return result;
 		foreach(char[] p; paths)
 		{	result = cleanPath(FS.join(p, path));
-			if (std.file.exists(result))
+			if (FilePath(result).exists)
 				return result;
 		}
-		throw new ResourceException("The path '{}' could not be resolved.", path);
+		throw new ResourceException("The path '%s' could not be resolved.", path);
 	}
 
 	/// Remove a path from the array of resource search paths.
@@ -115,15 +126,15 @@ struct ResourceManager
 		return false;
 	}
 
-	/// Return an associative array (indexed by filename) of a resource type.
-	static GPUTexture[char[]][][] getTextures()
-	{	return cast(GPUTexture[char[]][][])textures;
+	/// Simply load a file, using ResourceManager's paths to resolve relative paths.
+	static ubyte[] loadFile(char[] filename)
+	{	char[] absPath = ResourceManager.resolvePath(filename);
+		return cast(ubyte[])File.get(absPath);
 	}
+	
+	/// Return an associative array (indexed by filename) of a resource type.
 	static Shader[char[]] getShaders() /// ditto
 	{	return shaders;
-	}
-	static Material[char[]] getMaterials() /// ditto
-	{	return materials;
 	}
 	static Model[char[]] getModels() /// ditto
 	{	return models;
@@ -131,19 +142,41 @@ struct ResourceManager
 	static Sound[char[]] getSounds() /// ditto
 	{	return sounds;
 	}
+	
+	static Font getDefaultFont()
+	{	if (!defaultFont)
+			defaultFont = new Font(jurasMediumAscii_ttf, "auto");
+		return defaultFont;
+	}
+	
+	///
+	static Collada collada(char[] filename)
+	{	char[] absPath = resolvePath(filename);		
+		auto result = absPath in colladas;
+		if (result)
+			return *result;
+		
+		Timer t = new Timer();	
+		Collada c = new Collada(absPath);
+		colladas[absPath] = c;
+		Log.info("Collada file '%s' parsed in %s seconds.", absPath, t);
+		return c;
+	}
 
 	/** 
 	 * Acquire and return a requested Font.
 	 * If it has already been loaded, the in-memory copy will be returned.
 	 * If not, it will be loaded and then returned.
-	 * Params: source = The Font file that will be loaded. */
-	static Font font(char[] source)
-	{	if (source in fonts)
-			return fonts[source];
+	 * Params: filename = The Font file that will be loaded. */
+	static Font font(char[] filename)
+	{
+		filename = resolvePath(filename);
+		if (filename in fonts)
+			return fonts[filename];
 		Timer t = new Timer();
-		fonts[source] = new Font(source);
-		Log.info("Font ", source ~ " loaded in ", t, " seconds.");
-		return fonts[source];
+		fonts[filename] = new Font(filename);
+		Log.info("Font ", filename ~ " loaded in ", t, " seconds.");
+		return fonts[filename];
 	}
 	
 	/** 
@@ -152,32 +185,40 @@ struct ResourceManager
 	 * If not, it will be loaded and uploaded to video memory.
 	 * All associated Materials, Textures, and Shaders will be loaded into
 	 * the resource pool as well.
-	 * Params: source = The 3D Model file that will be loaded. */
-	static Model model(char[] source)
-	{	if (source in models)
-			return models[source];
+	 * Params: filename = The 3D Model file that will be loaded. */
+	static Model model(char[] filename)
+	{	char[] absPath = resolvePath(filename);		
+		if (absPath in models)
+			return models[absPath];
+		
 		Timer t = new Timer();
-		models[source] = new Model(source);
-		Log.info("Model ", source ~ " loaded in ", t, " seconds.");
-		return models[source];
+		models[absPath] = new Model(absPath);
+		Log.info("Model ", absPath ~ " loaded in ", t, " seconds.");
+		return models[absPath];
 	}
-
-	/** Acquire and return a requested Material.
-	 *  If the material has already been loaded, the in-memory copy will be returned.
-	 *  If not, it will be loaded and stored in the resource pool.  This function
-	 *  is called automatically for each of a Model's Materials when loading a Model.
-	 *  Params: source = The xml Material file that will be loaded. */
-	static Material material(char[] source)
-	{	if (source in materials)
-			return materials[source];
-		Timer t = new Timer();
-		materials[source] = new Material(source);
-		Log.info("Material ", source ~ " loaded in ", t, " seconds.");
-		return materials[source];
+	
+	/**
+	 * 
+	 * Params:
+	 *     filename = Path and id to collada file.  e.g. foo/bar.dae#IdForMaterial3 */
+	static Material material(char[] filename, char[] id)
+	{	
+		filename = resolvePath(filename);
+		char[] path = filename~"#"~id;
+		auto result = path in materials;
+		if (result)
+			return *result;
+		
+		Timer t = new Timer();		
+	
+		Collada c = collada(filename);
+		Material m = c.getMaterialById(id);
+		materials[path] = m;
+		Log.info("Material '%s' loaded in %s seconds.", path, t);
+		return m;
 	}
 
 	/*
-	 * @deprecated
 	 * TODO: Update this to store a hash of the source code for future lookups.
 	 * Acquire and return a requested Shader.
 	 *  If the Shader has already been loaded, the in-memory copy will be returned.
@@ -197,14 +238,16 @@ struct ResourceManager
 	/** Acquire and return a requested Sound.
 	 *  If the Sound has already been loaded, the in-memory copy will be returned.
 	 *  If not, it will be loaded and stored in the resource pool.
-	 *  Params: source = The path to the sound file that will be loaded. */
-	static Sound sound(char[] source)
-	{	if (source in sounds)
-			return sounds[source];
+	 *  Params: filename = The path to the sound file that will be loaded. */
+	static Sound sound(char[] filename)
+	{	filename = resolvePath(filename);
+		if (filename in sounds)
+			return sounds[filename];
+		
 		Timer t = new Timer();
-		sounds[source] = new Sound(source);
-		Log.info("Sound ", source ~ " loaded in ", t, " seconds.");
-		return sounds[source];
+		sounds[filename] = new Sound(filename);
+		Log.info("Sound ", filename ~ " loaded in ", t, " seconds.");
+		return sounds[filename];
 	}
 	
 	/** 
@@ -213,16 +256,32 @@ struct ResourceManager
 	 * If not, it will be loaded, uploaded to video memory, and stored in the resource pool.  
 	 * This function is called automatically for each of a material's textures when loading a material.
 	 * Keep in mind that multiple requested textures may use the same GPUTexture.
-	 * Params: source = The Texture image file that will be loaded. */
-	static Texture texture(char[] source, bool compress=true, bool mipmap=true, bool clamp=false, int filter=Texture.Filter.DEFAULT)
-	{	// Remember that multidimensional arrays must be accessed in reverse.
-		if (source in textures[mipmap][compress])
-			return Texture(textures[mipmap][compress][source]);
+	 * Params: filename = The Texture image file that will be loaded. */	
+	static GPUTexture texture(char[] filename, GPUTexture.Format format=GPUTexture.Format.AUTO, bool mipmap=true)
+	{	filename = resolvePath(filename);
+		TextureKey key;
+		key.source = filename;		
+		key.mipmap = mipmap;
+		
+		// Search for matching format
+		int minFormat = GPUTexture.Format.AUTO ? 0 : format;
+		int maxFormat = GPUTexture.Format.AUTO ? GPUTexture.Format.max : format;
+		for (int i=minFormat; i<maxFormat+1; i++)
+		{	key.format = cast(GPUTexture.Format)i;
+			auto result = key in textures;
+			if (result)
+				return *result;
+		}
+		
+		// Create new texture
 		Timer t = new Timer();
-		textures[mipmap][compress][source] = new GPUTexture(source, compress, mipmap);
-		Log.info("ResourceManager ", source ~ " loaded in ", t, " seconds.");
-		return Texture(textures[mipmap][compress][source], clamp, filter);
+		GPUTexture result = new GPUTexture(filename, format, mipmap);
+		Log.info("Texture '%s' loaded in %s seconds.", filename, t);
+		textures[key] = result;
+		return result;		
 	}
+	
+	//static void cleanup(uint age=3600) {} // TODO We'd need a way to store an age for each resource type, render would update it.
 	
 	/**
 	 * Clear all references to loaded resources. */
@@ -237,34 +296,8 @@ struct ResourceManager
 		models = null;
 		shaders = null;
 		sounds = null;
-		foreach (k; textures)
-			foreach (j; k)
-				j = null;
+		textures = null;
+		
+		defaultFont = null;
 	}
 }
-/*
-struct Cleanup
-{
-	private static Array!(Resource) resources;
-	private static Object mutex;
-	
-	static this()
-	{//	mutex = new Object();		
-	}
-	
-	private static void add(Resource resource)
-	{	synchronized(mutex)
-			resources ~= resources;
-	}
-	
-	private static void dispose(Resource resource)
-	{
-		
-	}
-	
-	private static void disposeAll()
-	{
-		
-	}
-}
-*/

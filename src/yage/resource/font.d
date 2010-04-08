@@ -32,7 +32,7 @@ struct Letter
 {	dchar letter;	/// unicode letter
 	short top;		/// image top offset
 	short left;		/// image left offset
-	short advanceX;	/// x and y distance required to move to the next letter after this one
+	short advanceX;	/// x and y distance in pixels required to move to the next letter after this one
 	short advanceY;	/// ditto
 	Image image; 	/// rendered image of this letter
 	
@@ -115,25 +115,28 @@ class Font : Resource
 			throw new ResourceException("Freetype2 could not open font file '%s'.", resourceName);
 	}
 	
-	this(ubyte[] data, char[] resourceName)
+	/**
+	 * Contstruct and load font file data directly from memory.
+	 * Params:
+	 *     data = 
+	 *     resourceName = */
+	this(ubyte[] data, char[] resourceName="")
 	{
 		// Initialize Freetype library if not initialized
 		uint error;
 		if (!library)
-		{	error = FT_Init_FreeType(&library);
+		{	error = FT_Init_FreeType(&library); // TODO: Call FT_Done_FreeType at some point.
 			if (error)
 				throw new ResourceException("Freetype2 Failed to load.  Error code %s", error);
 		}
 		
 		// HACK: write a temporary file and then read it.
-		TempFile.Style style;
-		style.transience = TempFile.Transience.Permanent; // some os's won't actually create the file unless it's marked perm.
-		auto file = new TempFile(style);
-		char[] tempFile = file.path();
-		file.close();
-		File.set(tempFile, data);
+		scope tempFile = new TempFile(TempFile.Permanent);
+		char[] tempFilePath = tempFile.toString();
+		tempFile.close();
+		File.set(tempFilePath, data);
 		
-		this(tempFile);
+		this(tempFilePath);
 		//FilePath(tempFile).remove(); // freetype maintains lock, can't delete.
 		this.resourceName = resourceName;
 		
@@ -166,7 +169,8 @@ class Font : Resource
 	}
 	
 	/**
-	 * Render an image of a single letter.
+	 * 
+	 Get a Letter struct containing info and an image for a single letter.
 	 * Params:
 	 *     text = A string of text to render, must be unencoded unicode (dchar[]).
 	 *     width = The horizontal pixel size of the font to render.
@@ -207,7 +211,7 @@ class Font : Resource
 				result.advanceX += boldness;
 				
 				result.image = new Image(1, bitmap.width+boldness, bitmap.rows);
-				if (boldness > 0)
+				if (boldness > 0) // add artificial boldness by drawing the letter on top of itself at a horizontal offset.
 				{	scope embolden = new Image(data, 1, bitmap.width, bitmap.rows);
 					for (int i=0; i<=boldness; i++)
 						result.image.add(embolden, i, 0);

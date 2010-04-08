@@ -33,10 +33,11 @@ int main()
 	scene.play();
 	scene.backgroundColor = "green";
 	
-	// Ship
+	// Ship	
 	auto ship = scene.addChild(new ModelNode());
-	ship.setModel("scifi/fighter.ms3d");
+	ship.setModel("scifi/fighter.dae");
 	ship.setAngularVelocity(Vec3f(0, 1, 0));
+	ship.setScale(Vec3f(1));
 
 	// Camera
 	auto camera = scene.addChild(new CameraNode());
@@ -63,7 +64,7 @@ int main()
 	
 	// Lights
 	auto l1 = scene.addChild(new LightNode());
-	l1.setPosition(Vec3f(0, 300, -300));	
+	l1.setPosition(Vec3f(0, 30, -30));	
 
 	// For Testing
 	auto info = view.addChild(new Surface());

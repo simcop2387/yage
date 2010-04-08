@@ -1,5 +1,0 @@
-<material>
-  <layer emissive="FFFFFF" clamp="true">
-    <map src="universe_right.jpg" mipmap="false" compress="false"/>
-  </layer>
-</material>

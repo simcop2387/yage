@@ -34,6 +34,7 @@ module derelict.sdl.endian;
 private import derelict.sdl.types;
 private import derelict.sdl.rwops;
 private import std.intrinsic;
+uint bswap( uint v );
 
 //==============================================================================
 // MACROS

@@ -20,7 +20,6 @@ import yage.gui.surface;
 import yage.gui.style;
 import yage.resource.geometry;
 import yage.resource.image;
-import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
 import yage.resource.shader;
@@ -38,9 +37,9 @@ import yage.system.graphics.api.api;
 import yage.system.log;
 
 private class ResourceInfo
-{	uint id;
+{	uint id;	// OpenGL's handle
 	uint time; // seconds from 1970, watch out for 2038!
-	WeakRef!(Object) resource;
+	WeakRef!(Object) resource; // A weak reference, so when the resource is deleted, we know to delete this item also
 	
 	// Create ResourceInfo for a resource in map if it doesn't exist, or return it if it does
 	static ResourceInfo getOrCreate(Object resource, HashMap!(uint, ResourceInfo) map)
@@ -72,7 +71,6 @@ class OpenGL : GraphicsAPI
 	protected HashMap!(uint, ResourceInfo) textures; // aa's fail, so we have to use Tango's Hashmap
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
-	
 
 	///
 	this()
@@ -83,9 +81,9 @@ class OpenGL : GraphicsAPI
 		
 		// Sprite
 		msprite = new Model();
-		msprite.setVertices([Vec3f(-1,-1, 0), Vec3f( 1,-1, 0), Vec3f( 1, 1, 0), Vec3f(-1, 1, 0)]);
-		msprite.setNormals([Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
-		msprite.setTexCoords0([Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
+		msprite.setAttribute(Geometry.VERTICES, [Vec3f(-1,-1, 0), Vec3f( 1,-1, 0), Vec3f( 1, 1, 0), Vec3f(-1, 1, 0)]);
+		msprite.setAttribute(Geometry.NORMALS, [Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
+		msprite.setAttribute(Geometry.TEXCOORDS0, [Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
 		msprite.setMeshes([new Mesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)])]);
 	}
 	
@@ -100,6 +98,134 @@ class OpenGL : GraphicsAPI
 		glMatrixMode(GL_MODELVIEW);
 	}
 	
+	void bindPass(MaterialPass pass, Geometry geometry=null, int lights=0)
+	{
+		if (pass)
+		{	
+			if (pass.lighting)
+			{	glMaterialfv(GL_FRONT, GL_AMBIENT, pass.ambient.vec4f.ptr);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, pass.diffuse.vec4f.ptr);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, pass.specular.vec4f.ptr);
+				glMaterialfv(GL_FRONT, GL_EMISSION, pass.emissive.vec4f.ptr);
+				glMaterialfv(GL_FRONT, GL_SHININESS, &pass.shininess);
+			} else
+				glColor4fv(pass.diffuse.vec4f.ptr);
+			
+			// Blend
+			if (pass.blend != MaterialPass.Blend.NONE)
+			{	glEnable(GL_BLEND);
+				glDepthMask(false);
+				switch (pass.blend)
+				{	case MaterialPass.Blend.ADD:
+						glBlendFunc(GL_ONE, GL_ONE);
+						break;
+					case MaterialPass.Blend.AVERAGE:						
+						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+						break;
+					case MaterialPass.Blend.MULTIPLY:
+						glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+						break;
+					default: break;
+			}	}
+			else
+			{	glEnable(GL_ALPHA_TEST);
+				glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
+			}
+			
+			// Textures
+			if (pass.textures.length>1 && Probe.feature(Probe.Feature.MULTITEXTURE))
+			{	
+				// Loop through all of Layer's textures up to the maximum allowed.
+				foreach (i, texture; pass.textures)
+				{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
+
+					// Activate texture unit and enable texturing
+					glActiveTextureARB(GL_TEXTUREI_ARB);
+					glEnable(GL_TEXTURE_2D);
+					glClientActiveTextureARB(GL_TEXTUREI_ARB);
+					
+					// TODO: Bind these when the geometry is bound instead of here.  Sometimes we'll have more tex coords than textures.
+					bindVertexBuffer(geometry.getVertexBuffer(Geometry.TEXCOORDS0), Geometry.TEXCOORDS0);
+					bindTexture(pass.textures[i]);
+			}	}
+			else if(pass.textures.length == 1)
+			{	glEnable(GL_TEXTURE_2D);
+				bindTexture(pass.textures[0]);
+			} else
+				glDisable(GL_TEXTURE_2D);
+			
+			// Shader
+			Shader shader = pass.shader;
+			ShaderUniform[] uniforms = pass.shaderUniforms;
+			if (!pass.shader)
+			{	shader = ShaderGenerator.generate(pass, null);
+				//uniforms = ?;
+			}
+			
+			if (shader)
+			{	
+				//ShaderUniform[2] uniforms;
+				//uniforms[0] = ShaderUniform("light_number", ShaderUniform.Type.F1, cast(float)lights.length); 
+				//uniforms[1] = ShaderUniform("fog_enabled", ShaderUniform.Type.F1, cast(float)current.camera.getScene().fogEnabled); 
+				//Log.dump(uniforms);
+				try {
+					bindShader(shader, uniforms);					
+				} catch (GraphicsException e)
+				{	Log.error(e);
+				}
+			}			
+		} else // unbind
+		{
+			if (current.pass.lighting)
+			{	float s=0;
+				glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, Vec4f().v.ptr);
+				glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
+				glMaterialfv(GL_FRONT, GL_SHININESS, &s);
+			} else
+				glColor4f(1, 1, 1, 1);
+			
+			// Blend
+			if (current.pass.blend != MaterialPass.Blend.NONE)
+			{	glDisable(GL_BLEND);
+				glDepthMask(true);
+			}else
+			{	glDisable(GL_ALPHA_TEST);
+				glAlphaFunc(GL_ALWAYS, 0);
+			}
+			
+			// Textures
+			if (current.pass.textures.length>1 && Probe.feature(Probe.Feature.VBO))
+			{	
+				foreach (i, texture; pass.textures)
+				{	glActiveTextureARB(GL_TEXTURE0_ARB+i);
+					glDisable(GL_TEXTURE_2D);
+
+					if (pass.textures[i].reflective)
+					{	glDisable(GL_TEXTURE_GEN_S);
+						glDisable(GL_TEXTURE_GEN_T);
+					}
+					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+					textureUnbind(pass.textures[i]);
+				}
+				glClientActiveTextureARB(GL_TEXTURE0_ARB);
+			}
+			else if(current.pass.textures.length == 1){	
+				textureUnbind(current.pass.textures[0]);			
+				//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+				glDisable(GL_TEXTURE_2D);
+			}
+			
+			// Shader
+			if (current.shader)
+				bindShader(null);
+				
+		}
+		
+		current.pass = pass;		
+	}
+	
 	/**
 	 * Set all of the OpenGL states to the values of this material layer.
 	 * Params:
@@ -107,7 +233,7 @@ class OpenGL : GraphicsAPI
 	 *     passed to the shader through uniform variables (unfinished).
 	 *     This function is used internally by the engine and doesn't normally need to be called.
 	 * color = Used to set color on a per-instance basis, combined with existing material colors.
-	 * Model = Used to retrieve texture coordinates for multitexturing. */
+	 * Model = Used to retrieve texture coordinates for multitexturing. 
 	void bindLayer(Layer layer, LightNode[] lights = null, Color color = Color("white"), Geometry model=null)
 	{
 		if (layer)
@@ -176,7 +302,7 @@ class OpenGL : GraphicsAPI
 					glClientActiveTextureARB(GL_TEXTUREI_ARB);
 					
 					// TODO: bind closest level of texture coordinates available instead of always using 0.
-					bindVertexBuffer(model.getTexCoords0, Geometry.TEXCOORDS0);
+					bindVertexBuffer(model.getVertexBuffer(Geometry.TEXCOORDS0), Geometry.TEXCOORDS0);
 					bindTexture(layer.textures[i]);
 				}
 			}
@@ -194,6 +320,7 @@ class OpenGL : GraphicsAPI
 				uniforms[1] = ShaderUniform("fog_enabled", ShaderUniform.Type.F1, cast(float)current.camera.getScene().fogEnabled); 
 				
 				
+				// int uniforms = glGetObjectParameterivARB(GL_ACTIVE_UNIFORMS);
 
 				// Bind Textures to UniformSampler2D
 				// TODO: Use glGetActiveUniform to get user defined uniforms that are sampler2D and automatically bind textures in order
@@ -266,6 +393,7 @@ class OpenGL : GraphicsAPI
 		}
 		current.layer = layer;
 	}
+	*/
 	
 	/**
 	 * Enable this light as the given light number and apply its properties.
@@ -301,7 +429,7 @@ class OpenGL : GraphicsAPI
 		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.diffuse.vec4f.ptr);
 		glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.specular.vec4f.ptr);
 		
-		// Attenuation properties
+		// Attenuation properties TODO: only need to do this once per light
 		glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
 		glLightf(GL_LIGHT0+num, GL_LINEAR_ATTENUATION, 0);
 		glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, light.getQuadraticAttenuation());
@@ -383,9 +511,9 @@ class OpenGL : GraphicsAPI
 					// TODO: textures[texture].id will fail if Texture isn't created.
 					glBindTexture(GL_TEXTURE_2D, textures[texture.toHash()].id);
 					glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, texture.width, texture.height, 0);
-					texture.format = 3;	// RGB
+					texture.format = GPUTexture.Format.RGB8;
 					texture.flipped = true;
-				}					
+				}
 			}
 		}
 		
@@ -423,18 +551,22 @@ class OpenGL : GraphicsAPI
 	}
 	
 	/// TODO: Allow specifying uniform variable assignments.
-	void bindShader(Shader shader, Layer layer, ShaderUniform[] variables=null)
+	void bindShader(Shader shader, ShaderUniform[] variables=null)
 	{	
 		if (!Probe.feature(Probe.Feature.SHADER))
 			throw new GraphicsException("OpenGL.bindShader() is only supported on hardware that supports shaders.");
 		
-		// Causes null pointer exception, but why?
+		// TODO
 		//if (shader==current.shader)
 		//	return;
+		
 		
 		if (shader)
 		{	assert(shader.getVertexSource().length);
 			assert(shader.getFragmentSource().length);
+			
+			if (shader.status == Shader.Status.FAIL)
+				return;			
 						
 			ResourceInfo info = ResourceInfo.getOrCreate(shader, shaders);
 			
@@ -484,8 +616,8 @@ class OpenGL : GraphicsAPI
 					int status;
 					glGetObjectParameterivARB(shaderObj, GL_OBJECT_COMPILE_STATUS_ARB, &status);
 					if (!status)
-						throw new GraphicsException("Could not compile %s shader.\nReason:  %s\nSource:  %s", 
-							type==GL_VERTEX_SHADER_ARB ? "vertex" : "fragment", compileLog, source);
+						throw new GraphicsException("Could not compile %s shader.\nReason:  %s", 
+							type==GL_VERTEX_SHADER_ARB ? "vertex" : "fragment", compileLog);
 					
 					return shaderObj;
 				}
@@ -521,7 +653,7 @@ class OpenGL : GraphicsAPI
 					
 				shader.status = Shader.Status.SUCCESS;
 				
-				// Temporary
+				// Temporary?
 				Log.info(shader.compileLog);
 			}
 			
@@ -540,18 +672,18 @@ class OpenGL : GraphicsAPI
 
 				// Send the uniform data
 				switch (uniform.type)
-				{	case ShaderUniform.Type.F1:  glUniform1fvARB(location, 1, cast(float*)uniform.values);  break;
-					case ShaderUniform.Type.F2:  glUniform2fvARB(location, 2, cast(float*)uniform.values);  break;
-					case ShaderUniform.Type.F3:  glUniform3fvARB(location, 3, cast(float*)uniform.values);  break;
-					case ShaderUniform.Type.F4:  glUniform4fvARB(location, 4, cast(float*)uniform.values);  break;
-					case ShaderUniform.Type.I1:  glUniform1ivARB(location, 1, cast(int*)uniform.values);  break;
-					case ShaderUniform.Type.I2:  glUniform2ivARB(location, 2, cast(int*)uniform.values);  break;
-					case ShaderUniform.Type.I3:  glUniform3ivARB(location, 3, cast(int*)uniform.values);  break;
-					case ShaderUniform.Type.I4:  glUniform4ivARB(location, 4, cast(int*)uniform.values);  break;
+				{	case ShaderUniform.Type.F1:  glUniform1fARB(location, uniform.floatValues[0]);  break;
+					case ShaderUniform.Type.F2:  glUniform2fvARB(location, 2, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.F3:  glUniform3fvARB(location, 3, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.F4:  glUniform4fvARB(location, 4, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.I1:  glUniform1ivARB(location, 1, uniform.intValues.ptr);  break;
+					case ShaderUniform.Type.I2:  glUniform2ivARB(location, 2, uniform.intValues.ptr);  break;
+					case ShaderUniform.Type.I3:  glUniform3ivARB(location, 3, uniform.intValues.ptr);  break;
+					case ShaderUniform.Type.I4:  glUniform4ivARB(location, 4, uniform.intValues.ptr);  break;
 					// TODO Other Matrix types
-					case ShaderUniform.Type.M2x2: glUniformMatrix2fvARB(location, 4, false, cast(float*)uniform.values);  break;
-					case ShaderUniform.Type.M3x3: glUniformMatrix3fvARB(location, 9, false, cast(float*)uniform.values);  break;
-					case ShaderUniform.Type.M4x4: glUniformMatrix4fvARB(location, 16, false, cast(float*)uniform.values);  break;
+					case ShaderUniform.Type.M2x2: glUniformMatrix2fvARB(location, 4, false, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.M3x3: glUniformMatrix3fvARB(location, 9, false, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.M4x4: glUniformMatrix4fvARB(location, 16, false, uniform.floatValues.ptr);  break;
 					default: break;
 				}				
 			}
@@ -590,27 +722,51 @@ class OpenGL : GraphicsAPI
 			// Upload new image to graphics card memory
 			Image image = gpuTexture.getImage();
 			assert(image);
-				
-			// Calculate formats
-			uint glformat, glinternalformat;
-			gpuTexture.format = image.getChannels();
-			switch(gpuTexture.format)
-			{	case Image.Format.GRAYSCALE:
-					glformat = GL_LUMINANCE;
-					glinternalformat = gpuTexture.compress ? GL_COMPRESSED_LUMINANCE : GL_LUMINANCE;
-					break;
-				case Image.Format.RGB:
-					glformat = GL_RGB;
-					glinternalformat = gpuTexture.compress ? GL_COMPRESSED_RGB : GL_RGB;
-					break;
-				case Image.Format.RGBA:
-					glformat = GL_RGBA;
-					glinternalformat = gpuTexture.compress ? GL_COMPRESSED_RGBA : GL_RGBA;
-					break;
-				default:
-					throw new ResourceException("Unknown texture format {}", gpuTexture.format);
-			}
+						
+			// Convert auto format to a real format based on the image given.
+			GPUTexture.Format format;
+			if (gpuTexture.getFormat() == GPUTexture.Format.AUTO)
+				switch(image.getChannels()) // This will support float formats when we switch to using Image2.
+				{	case 1: format = GPUTexture.Format.COMPRESSED_LUMINANCE; break;
+					case 2: format = GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA; break;
+					case 3: format = GPUTexture.Format.COMPRESSED_RGB; break;					
+					case 4: format = GPUTexture.Format.COMPRESSED_RGBA; break;					
+					default: throw new ResourceException("Images with more than 4 channels are not supported.");
+				}
+			else if (gpuTexture.getFormat() == GPUTexture.Format.AUTO_UNCOMPRESSED)
+				switch(image.getChannels()) // This will support float formats when we switch to using Image2.
+				{	case 1: format = GPUTexture.Format.LUMINANCE8; break;
+					case 2: format = GPUTexture.Format.LUMINANCE8_ALPHA8; break;
+					case 3: format = GPUTexture.Format.RGB8; break;					
+					case 4: format = GPUTexture.Format.RGBA8; break;					
+					default: throw new ResourceException("Images with more than 4 channels are not supported.");
+				}
 			
+			// Convert from GPUTexture.Format to OpenGL format constants.
+			uint[GPUTexture.Format] glFormatMap = [
+				GPUTexture.Format.COMPRESSED_LUMINANCE : GL_LUMINANCE,
+				GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_LUMINANCE_ALPHA,
+				GPUTexture.Format.COMPRESSED_RGB : GL_RGB,
+				GPUTexture.Format.COMPRESSED_RGBA : GL_RGBA,
+				GPUTexture.Format.LUMINANCE8 : GL_LUMINANCE,
+				GPUTexture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
+				GPUTexture.Format.RGB8 : GL_RGB,
+				GPUTexture.Format.RGBA8 : GL_RGBA,				
+			];
+			uint[GPUTexture.Format] glInternalFormatMap = [
+				GPUTexture.Format.COMPRESSED_LUMINANCE : GL_COMPRESSED_LUMINANCE,
+				GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_COMPRESSED_LUMINANCE_ALPHA,
+				GPUTexture.Format.COMPRESSED_RGB : GL_COMPRESSED_RGB,
+				GPUTexture.Format.COMPRESSED_RGBA : GL_COMPRESSED_RGBA,
+				GPUTexture.Format.LUMINANCE8 : GL_LUMINANCE,
+				GPUTexture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
+				GPUTexture.Format.RGB8 : GL_RGB,
+				GPUTexture.Format.RGBA8 : GL_RGBA,				
+			];			
+			uint glFormat = glFormatMap[format];
+			uint glInternalFormat = glInternalFormatMap[format];
+			
+
 			gpuTexture.width = image.getWidth();
 			gpuTexture.height = image.getHeight();
 			
@@ -620,7 +776,7 @@ class OpenGL : GraphicsAPI
 			
 			// Ensure power of two sized if required
 			if (!Probe.feature(Probe.Feature.NON_2_TEXTURE))
-			{	Log.info("resizing texture");
+			{
 				if (log2(new_height) != floor(log2(new_height)))
 					new_height = nextPow2(new_height);
 				if (log2(new_width) != floor(log2(new_width)))
@@ -634,7 +790,7 @@ class OpenGL : GraphicsAPI
 			// Build mipmaps (doing it ourself is about 20% faster than gluBuild2DMipmaps,
 			int level = 0; //  but image.resize can be optimized further.
 			do {
-				glTexImage2D(GL_TEXTURE_2D, level, glinternalformat, image.getWidth(), image.getHeight(), 0, glformat, GL_UNSIGNED_BYTE, image.getData().ptr);
+				glTexImage2D(GL_TEXTURE_2D, level, glInternalFormat, image.getWidth(), image.getHeight(), 0, glFormat, GL_UNSIGNED_BYTE, image.getData().ptr);
 				image = image.resize(image.getWidth()/2, image.getHeight()/2);
 				level ++;							
 			} while (gpuTexture.mipmap && image.getWidth() >= 4 && image.getHeight() >= 4)
@@ -678,7 +834,7 @@ class OpenGL : GraphicsAPI
 		{	glMatrixMode(GL_TEXTURE);
 			glPushMatrix();
 			
-			Vec2f padding = gpuTexture.getPadding();			
+			Vec2f padding = Vec2f(gpuTexture.getPadding().x, gpuTexture.getPadding().y) ;			
 			
 			// Apply special texture scaling/flipping
 			if (texture.texture.flipped || padding.length2())
@@ -746,7 +902,7 @@ class OpenGL : GraphicsAPI
 	 * Bind (and if necessary upload to video memory) a vertex buffer
 	 * Params:
 	 *   type = A vertex buffer type constant defined in Geometry or Mesh. */
-	void bindVertexBuffer(IVertexBuffer vb, char[] type="")
+	void bindVertexBuffer(VertexBuffer vb, char[] type="")
 	{	if (vb)
 			assert(type.length);
 		
@@ -771,7 +927,7 @@ class OpenGL : GraphicsAPI
 				// Bind buffer and update with new data if necessary.
 				glBindBufferARB(vbo_type, info.id);
 				if (vb.dirty)
-				{	glBufferDataARB(vbo_type, vb.getData().length, vb.getData().ptr, GL_STATIC_DRAW_ARB);
+				{	glBufferDataARB(vbo_type, vb.data.length, vb.ptr, GL_STATIC_DRAW_ARB);
 					vb.dirty = false;
 				}
 			}
@@ -780,14 +936,14 @@ class OpenGL : GraphicsAPI
 			switch (type)
 			{
 				case Geometry.VERTICES:
-					glVertexPointer(vb.getComponents(), GL_FLOAT, 0, featureVbo ? null : vb.ptr);
+					glVertexPointer(vb.components, GL_FLOAT, 0, featureVbo ? null : vb.ptr);
 					break;
 				case Geometry.NORMALS:
-					assert(vb.getComponents() == 3); // normals are always Vec3
+					assert(vb.components == 3); // normals are always Vec3
 					glNormalPointer(GL_FLOAT, 0, featureVbo ? null : vb.ptr);
 					break;
 				case Geometry.TEXCOORDS0:
-					glTexCoordPointer(vb.getComponents(), GL_FLOAT, 0, featureVbo ? null : vb.ptr);
+					glTexCoordPointer(vb.components, GL_FLOAT, 0, featureVbo ? null : vb.ptr);
 					break;
 				case Mesh.TRIANGLES: // no binding necessary
 				default:
@@ -838,45 +994,77 @@ class OpenGL : GraphicsAPI
 	RenderStatistics drawGeometry(Geometry geometry)
 	{	RenderStatistics result;
 		
-		if (!geometry.hasAttribute(Geometry.VERTICES))
+		if (!geometry.getAttribute(Geometry.VERTICES))
 			return result;
 		
 		// Bind each vertx buffer
-		foreach (name, attrib; geometry.getAttributes())
-		{	bindVertexBuffer(attrib, name);
+		foreach (name, vb; geometry.getVertexBuffers())
+		{	bindVertexBuffer(vb, name);
 			if (name==Geometry.VERTICES)
-				result.vertexCount += attrib.length;
+				result.vertexCount += vb.length;
 		}
 		// Loop through the meshes		
 		foreach (mesh; geometry.getMeshes())
-		{	if (mesh.getMaterial() !is null) // Must have a material to render
+		{	/*
+			// Deprecated (still used by surfaces)
+			if (mesh.getMaterial()) // Must have a material to render
 			{	foreach (Layer l; mesh.getMaterial().getLayers()) // Loop through each layer (rendering pass)
 				{	bindLayer(l);
-					drawVertexBuffer(mesh.getTriangles(), Mesh.TRIANGLES);
+					drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 					bindLayer(null); // can this be moved outside this loop?
 			}	}
+			*/
+			if (mesh.material)
+			{
+				if (mesh.material.techniques.length)
+				{
+					foreach (pass; mesh.material.techniques[0].passes)
+					{	bindPass(pass);
+						drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
+						
+					}
+					bindPass(null);
+				}
+				
+			}
+			
 		
-			result.triangleCount += mesh.getTriangles().length;
+			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
 		}
+		
+		// TODO: Unbind vertex buffers?
 		
 		return result;
 	}
 	
+	RenderStatistics drawModel(Geometry geometry, float animationTime=0) // TODO: animationTime won't support blending animations.
+	{	return drawGeometry(geometry);
+	}
+	
 	// Render a sprite
-	RenderStatistics drawSprite(Material material, VisibleNode node)
-	{	msprite.getMeshes()[0].setMaterial(material);
-		return Render.model(msprite, node, Current.camera.getAbsoluteTransform(true).toAxis());
+	RenderStatistics drawSprite(Material material)
+	{	msprite.getMeshes()[0].material = material;
+	
+		Vec3f rotation = Current.camera.getAbsoluteTransform(true).toAxis();
+		
+		// Rotate if rotation is nonzero.
+		if (rotation.length2())			
+		{	// TODO: zero the rotation along the axis from the node to the camera.			
+			glRotatef(rotation.length()*_180_PI, rotation.x, rotation.y, rotation.z);
+		}
+		
+		return drawGeometry(msprite);
 	}
 	
 	/**
 	 * Draw the contents of a vertex buffer, such as a buffer of triangle indices. 
 	 * @param triangles If not null, this array of triangle indices will be used for drawing the mesh*/
-	void drawVertexBuffer(IVertexBuffer polygons, char[] type)
+	void drawVertexBuffer(VertexBuffer polygons, char[] type)
 	{	int vbo = Probe.feature(Probe.Feature.VBO);
 		if (polygons)
 		{	bindVertexBuffer(polygons, type);
 			if (type==Mesh.TRIANGLES)
-				glDrawElements(GL_TRIANGLES, polygons.length*3, GL_UNSIGNED_INT, vbo ? null : polygons.ptr);
+				glDrawElements(GL_TRIANGLES, polygons.length()*3, GL_UNSIGNED_INT, vbo ? null : polygons.ptr);
 			else
 				throw new YageException("Unsupported polygon type %s", type);
 		}

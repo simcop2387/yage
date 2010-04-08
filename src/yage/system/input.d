@@ -9,14 +9,16 @@ module yage.system.input;
 public import derelict.sdl.sdl;
 
 import yage.core.math.vector;
+import yage.system.log;
 import yage.system.system;
 import yage.system.window;
 import yage.gui.surface;
 
-
 /**
  * A class to handle keyboard, mouse, and eventually joystick input.
  * This polls SDL for input and passes it to the current surface.
+ * 
+ * TODO: Ditch SDL!  SDL requires input processing to be in the same thread as the renderer.
  */ 
 class Input
 {
@@ -35,7 +37,7 @@ class Input
 				
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
-		{
+		{	
 			switch(event.type)
 			{
 				// Keyboard

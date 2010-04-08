@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+    <asset>
+        <contributor></contributor>
+        <created>2007-05-21T20:10:16Z</created>
+        <modified>2007-05-21T20:10:16Z</modified>
+        <unit meter="1.000000" name="meter" />
+        <up_axis>Y_UP</up_axis>
+    </asset>
+    <library_images>
+        <image id="smoke-image" name="smoke-image">
+            <init_from>./smoke.png</init_from>
+        </image>
+    </library_images>
+    <library_materials>
+        <material id="smoke-material" name="smoke-material">
+            <instance_effect url="#smoke-effect" />
+        </material>
+    </library_materials>
+    <library_effects>
+        <effect id="smoke-effect" name="smoke-effect">
+            <profile_COMMON>
+                <newparam sid="smoke-image-surface">
+                    <surface type="2D">
+                        <init_from>smoke-image</init_from>
+                        <format>A8R8G8B8</format>
+                    </surface>
+                </newparam>
+                <newparam sid="smoke-image-sampler">
+                    <sampler2D>
+                        <source>smoke-image-surface</source>
+                        <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                        <magfilter>LINEAR</magfilter>
+                    </sampler2D>
+                </newparam>
+                <technique sid="common">
+                    <phong>
+                        <emission>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </emission>
+                        <ambient>
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </ambient>
+                        <diffuse>
+                            <texture texture="smoke-image-sampler" texcoord="" />
+                        </diffuse>
+                        <specular>
+                            <color>0.000000 0.000000 0.000000 0.000000</color>
+                        </specular>
+                        <shininess>
+                            <float>109.000000</float>
+                        </shininess>
+                        <reflective>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </reflective>
+                        <reflectivity>
+                            <float>1.000000</float>
+                        </reflectivity>
+                        <transparent opaque="A_ONE">
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </transparent>
+                        <transparency>
+                            <float>1.000000</float>
+                        </transparency>
+                        <index_of_refraction>
+                            <float>0.000000</float>
+                        </index_of_refraction>
+                    </phong>
+                </technique>
+            </profile_COMMON>
+        </effect>
+    </library_effects>
+    <library_geometries>
+    </library_geometries>
+    <library_visual_scenes>
+    </library_visual_scenes>
+    <scene>
+    </scene>
+</COLLADA>

@@ -44,7 +44,7 @@ class Ship : GameObject
 		pitch = addChild(new MovableNode());
 
 		ship = pitch.addChild(new ModelNode());
-		ship.setModel("scifi/fighter.ms3d");
+		ship.setModel("scifi/fighter.dae");
 		ship.setSize(Vec3f(.25));
 
 		spring = new Spring(ship, new MovableNode());
@@ -112,7 +112,7 @@ class Ship : GameObject
 
 			// Engine smoke
 			SpriteNode puff = getScene().addChild(new SpriteNode());
-			puff.setMaterial("fx/smoke.xml");
+			puff.setMaterial("fx/smoke.dae", "smoke-material");
 			puff.setLifetime(5);
 			puff.setSize(Vec3f(.4));
 			//puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));

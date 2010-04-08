@@ -8,36 +8,16 @@ module yage.resource.model;
 
 import tango.stdc.math : fmod;
 import tango.math.Math;
-import tango.io.Stdout;
-import tango.text.Unicode;
 
-import tango.text.xml.Document;
-import tango.io.Stdout;
-import tango.io.device.File;
-
-// These are used by ms3d loader
-import std.string;
-import std.file;
-import std.path;
-
-import yage.core.math.matrix;
-import yage.core.misc;
-import tango.text.convert.Format;
 import yage.core.math.quatrn;
+import yage.core.math.matrix;
 import yage.core.math.vector;
 import yage.core.object2;
+import yage.resource.collada;
 import yage.resource.geometry;
 import yage.resource.material;
 import yage.resource.manager;
-import yage.resource.resource;
-import yage.resource.colladaloader;
-import yage.resource.ms3dloader;
-import yage.resource.objloader;
 import yage.system.log;
-import yage.system.graphics.probe;
-import yage.system.system;
-
-import yage.scene.visible;
 
 ///
 struct KeyFrame
@@ -57,21 +37,6 @@ class Joint
 	Matrix	transformAbs;		// absolute in accordance to animation	
 	KeyFrame[] positions;	
 	KeyFrame[] rotations;
-	
-	char[] toString()
-	{
-		char[] result = Format.convert(
-			"Name: {}\n" ~
-			"Parent: {}\n" ~
-			"Start Position: {}\n" ~
-			"Start Rotation: {}\n",
-			name, parentName, startPosition, startRotation);		
-		//foreach (i, k; positions)		
-		//	result ~= Format.convert("Position {}: {}\n", i, k.toString());
-		//foreach (i, k; rotations)		
-		//	result ~= Format.convert("Rotation {}: {}\n", i, k.toString());
-		return result;
-	}
 };
 
 
@@ -83,7 +48,7 @@ class Joint
  * ModelNodes can be used to create 3D models in a scene.*/
 class Model : Geometry
 {	
-	public char[] source;
+	private char[] source;
 
 	protected float fps=24;
 	protected bool animated = false;
@@ -91,10 +56,6 @@ class Model : Geometry
 	protected double animation_max_time=0;
 	protected Joint[] joints; // used for skeletal animation
 	protected int[] joint_indices;
-	
-	mixin Ms3dLoader;
-	mixin ObjLoader;
-	mixin ColladaLoader;
 
 	/// Instantiate an empty model.
 	this()
@@ -103,8 +64,14 @@ class Model : Geometry
 
 	/// Instantiate and and load the given model file.
 	this (char[] filename)
-	{	this();
-		load(filename);
+	{	this();		
+		source = ResourceManager.resolvePath(filename);
+		auto c = ResourceManager.collada(filename);
+		auto geometry = c.getMergedGeometry();
+		
+		this.attributes = geometry.attributes;
+		this.meshes = geometry.meshes;
+		delete geometry;
 	}
 
 	/**
@@ -118,7 +85,7 @@ class Model : Geometry
 		// If nothing to do.
 		if (animation_time == time)
 			return;
-		if (!hasAttribute(Geometry.VERTICES))
+		if (!getAttribute(Geometry.VERTICES))
 			return;
 		
 		time = fmod(time, animation_max_time);		
@@ -166,8 +133,8 @@ class Model : Geometry
 				assert(fraction > 0 && fraction <= 1);
 								
 				Quatrn prev, next;
-				prev.setEuler(joint.rotations[i-1].value);
-				next.setEuler(joint.rotations[i].value);
+				prev = joint.rotations[i-1].value.toQuatrnEuler();
+				next = joint.rotations[i].value.toQuatrnEuler();
 				Quatrn finl = prev.slerp(next, fraction);
 												
 				m_frame.setRotation(finl);
@@ -187,14 +154,14 @@ class Model : Geometry
 		}
 		
 		// Update vertex positions based on joints.
-		Vec3f[] vertices = cast(Vec3f[])getVertices().getData();
-		Vec3f[] vertices_original =  cast(Vec3f[])getAttribute("gl_VertexOriginal").getData();
+		Vec3f[] vertices = cast(Vec3f[])getAttribute(Geometry.VERTICES);
+		Vec3f[] vertices_original =  cast(Vec3f[])getAttribute("gl_VertexOriginal");
 		
 		Vec3f[] normals;
 		Vec3f[] normals_original;
-		if (hasAttribute("gl_Normal"))
-		{	normals =  cast(Vec3f[])getNormals().getData();
-			normals_original =  cast(Vec3f[])getAttribute("gl_NormalOriginal").getData();		
+		if (getAttribute("gl_Normal"))
+		{	normals =  cast(Vec3f[])getAttribute(Geometry.NORMALS);
+			normals_original =  cast(Vec3f[])getAttribute("gl_NormalOriginal");		
 		}
 		for (int v=0; v<vertices.length; v++)
 		{	if (joint_indices[v] != -1)
@@ -207,9 +174,9 @@ class Model : Geometry
 				// TODO: only reassign cmatx if joint_indices[v] has changed.
 		}	}
 				
-		setVertices(vertices);
+		setAttribute(Geometry.VERTICES, vertices);
 		if (normals.length)
-			setNormals(normals);
+			setAttribute(Geometry.NORMALS, normals);
 	}	
 
 	/**
@@ -236,20 +203,5 @@ class Model : Geometry
 	{	return source;
 	}
 
-	/// Load vertex, mesh, and material data from a 3D model file.
-	void load(char[] filename)
-	{	char[] ext = getExt(filename);
-		switch (toLower(ext))
-		{	case "ms3d":
-				loadMs3d(filename);
-				//std.gc.genCollect();
-				break;
-			case "obj":
-				loadObj(filename);
-				//std.gc.genCollect();
-				break;
-			default:
-				throw new ResourceException("Unrecognized model file format '"~ext~"'.");
-		}
-	}
 }
+

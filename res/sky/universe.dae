@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+    <asset>
+        <contributor>
+            <authoring_tool>MilkShape 3D 1.8.4</authoring_tool>
+            <source_data>file://C:/home/eric/current/yage/res/sky/universe.ms3d</source_data>
+        </contributor>
+        <created>2007-05-21T20:10:16Z</created>
+        <modified>2007-05-21T20:10:16Z</modified>
+        <unit meter="1.000000" name="meter" />
+        <up_axis>Y_UP</up_axis>
+    </asset>
+    <library_images>
+        <image id="universe_top.xml-image" name="universe_top.xml-image">
+            <init_from>./universe_top.jpg</init_from>
+        </image>
+        <image id="universe_bottom.xml-image" name="universe_bottom.xml-image">
+            <init_from>./universe_bottom.jpg</init_from>
+        </image>
+        <image id="universe_left.xml-image" name="universe_left.xml-image">
+            <init_from>./universe_left.jpg</init_from>
+        </image>
+        <image id="universe_right.xml-image" name="universe_right.xml-image">
+            <init_from>./universe_right.jpg</init_from>
+        </image>
+        <image id="universe_front.xml-image" name="universe_front.xml-image">
+            <init_from>./universe_front.jpg</init_from>
+        </image>
+        <image id="universe_back.xml-image" name="universe_back.xml-image">
+            <init_from>./universe_back.jpg</init_from>
+        </image>
+    </library_images>
+    <library_materials>
+        <material id="universe_top.xml" name="universe_top.xml">
+            <instance_effect url="#universe_top.xml-effect" />
+        </material>
+        <material id="universe_bottom.xml" name="universe_bottom.xml">
+            <instance_effect url="#universe_bottom.xml-effect" />
+        </material>
+        <material id="universe_left.xml" name="universe_left.xml">
+            <instance_effect url="#universe_left.xml-effect" />
+        </material>
+        <material id="universe_right.xml" name="universe_right.xml">
+            <instance_effect url="#universe_right.xml-effect" />
+        </material>
+        <material id="universe_front.xml" name="universe_front.xml">
+            <instance_effect url="#universe_front.xml-effect" />
+        </material>
+        <material id="universe_back.xml" name="universe_back.xml">
+            <instance_effect url="#universe_back.xml-effect" />
+        </material>
+    </library_materials>
+    <library_effects>
+        <effect id="universe_top.xml-effect" name="universe_top.xml-effect">
+            <profile_COMMON>
+                <newparam sid="universe_top.xml-image-surface">
+                    <surface type="2D">
+                        <init_from>universe_top.xml-image</init_from>
+                        <format>A8R8G8B8</format>
+                    </surface>
+                </newparam>
+                <newparam sid="universe_top.xml-image-sampler">
+                    <sampler2D>
+                        <source>universe_top.xml-image-surface</source>
+                        <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                        <magfilter>LINEAR</magfilter>
+                    </sampler2D>
+                </newparam>
+                <technique sid="common">
+                    <phong>
+                        <emission>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </emission>
+                        <ambient>
+                            <color>0.200000 0.200000 0.200000 1.000000</color>
+                        </ambient>
+                        <diffuse>
+                            <texture texture="universe_top.xml-image-sampler" texcoord="" />
+                        </diffuse>
+                        <specular>
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </specular>
+                        <shininess>
+                            <float>0.000000</float>
+                        </shininess>
+                        <reflective>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </reflective>
+                        <reflectivity>
+                            <float>1.000000</float>
+                        </reflectivity>
+                        <transparent opaque="A_ONE">
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </transparent>
+                        <transparency>
+                            <float>1.000000</float>
+                        </transparency>
+                        <index_of_refraction>
+                            <float>0.000000</float>
+                        </index_of_refraction>
+                    </phong>
+                </technique>
+            </profile_COMMON>
+        </effect>
+        <effect id="universe_bottom.xml-effect" name="universe_bottom.xml-effect">
+            <profile_COMMON>
+                <newparam sid="universe_bottom.xml-image-surface">
+                    <surface type="2D">
+                        <init_from>universe_bottom.xml-image</init_from>
+                        <format>A8R8G8B8</format>
+                    </surface>
+                </newparam>
+                <newparam sid="universe_bottom.xml-image-sampler">
+                    <sampler2D>
+                        <source>universe_bottom.xml-image-surface</source>
+                        <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                        <magfilter>LINEAR</magfilter>
+                    </sampler2D>
+                </newparam>
+                <technique sid="common">
+                    <phong>
+                        <emission>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </emission>
+                        <ambient>
+                            <color>0.200000 0.200000 0.200000 1.000000</color>
+                        </ambient>
+                        <diffuse>
+                            <texture texture="universe_bottom.xml-image-sampler" texcoord="" />
+                        </diffuse>
+                        <specular>
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </specular>
+                        <shininess>
+                            <float>0.000000</float>
+                        </shininess>
+                        <reflective>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </reflective>
+                        <reflectivity>
+                            <float>1.000000</float>
+                        </reflectivity>
+                        <transparent opaque="A_ONE">
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </transparent>
+                        <transparency>
+                            <float>1.000000</float>
+                        </transparency>
+                        <index_of_refraction>
+                            <float>0.000000</float>
+                        </index_of_refraction>
+                    </phong>
+                </technique>
+            </profile_COMMON>
+        </effect>
+        <effect id="universe_left.xml-effect" name="universe_left.xml-effect">
+            <profile_COMMON>
+                <newparam sid="universe_left.xml-image-surface">
+                    <surface type="2D">
+                        <init_from>universe_left.xml-image</init_from>
+                        <format>A8R8G8B8</format>
+                    </surface>
+                </newparam>
+                <newparam sid="universe_left.xml-image-sampler">
+                    <sampler2D>
+                        <source>universe_left.xml-image-surface</source>
+                        <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                        <magfilter>LINEAR</magfilter>
+                    </sampler2D>
+                </newparam>
+                <technique sid="common">
+                    <phong>
+                        <emission>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </emission>
+                        <ambient>
+                            <color>0.200000 0.200000 0.200000 1.000000</color>
+                        </ambient>
+                        <diffuse>
+                            <texture texture="universe_left.xml-image-sampler" texcoord="" />
+                        </diffuse>
+                        <specular>
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </specular>
+                        <shininess>
+                            <float>0.000000</float>
+                        </shininess>
+                        <reflective>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </reflective>
+                        <reflectivity>
+                            <float>1.000000</float>
+                        </reflectivity>
+                        <transparent opaque="A_ONE">
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </transparent>
+                        <transparency>
+                            <float>1.000000</float>
+                        </transparency>
+                        <index_of_refraction>
+                            <float>0.000000</float>
+                        </index_of_refraction>
+                    </phong>
+                </technique>
+            </profile_COMMON>
+        </effect>
+        <effect id="universe_right.xml-effect" name="universe_right.xml-effect">
+            <profile_COMMON>
+                <newparam sid="universe_right.xml-image-surface">
+                    <surface type="2D">
+                        <init_from>universe_right.xml-image</init_from>
+                        <format>A8R8G8B8</format>
+                    </surface>
+                </newparam>
+                <newparam sid="universe_right.xml-image-sampler">
+                    <sampler2D>
+                        <source>universe_right.xml-image-surface</source>
+                        <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                        <magfilter>LINEAR</magfilter>
+                    </sampler2D>
+                </newparam>
+                <technique sid="common">
+                    <phong>
+                        <emission>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </emission>
+                        <ambient>
+                            <color>0.200000 0.200000 0.200000 1.000000</color>
+                        </ambient>
+                        <diffuse>
+                            <texture texture="universe_right.xml-image-sampler" texcoord="" />
+                        </diffuse>
+                        <specular>
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </specular>
+                        <shininess>
+                            <float>0.000000</float>
+                        </shininess>
+                        <reflective>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </reflective>
+                        <reflectivity>
+                            <float>1.000000</float>
+                        </reflectivity>
+                        <transparent opaque="A_ONE">
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </transparent>
+                        <transparency>
+                            <float>1.000000</float>
+                        </transparency>
+                        <index_of_refraction>
+                            <float>0.000000</float>
+                        </index_of_refraction>
+                    </phong>
+                </technique>
+            </profile_COMMON>
+        </effect>
+        <effect id="universe_front.xml-effect" name="universe_front.xml-effect">
+            <profile_COMMON>
+                <newparam sid="universe_front.xml-image-surface">
+                    <surface type="2D">
+                        <init_from>universe_front.xml-image</init_from>
+                        <format>A8R8G8B8</format>
+                    </surface>
+                </newparam>
+                <newparam sid="universe_front.xml-image-sampler">
+                    <sampler2D>
+                        <source>universe_front.xml-image-surface</source>
+                        <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                        <magfilter>LINEAR</magfilter>
+                    </sampler2D>
+                </newparam>
+                <technique sid="common">
+                    <phong>
+                        <emission>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </emission>
+                        <ambient>
+                            <color>0.200000 0.200000 0.200000 1.000000</color>
+                        </ambient>
+                        <diffuse>
+                            <texture texture="universe_front.xml-image-sampler" texcoord="" />
+                        </diffuse>
+                        <specular>
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </specular>
+                        <shininess>
+                            <float>0.000000</float>
+                        </shininess>
+                        <reflective>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </reflective>
+                        <reflectivity>
+                            <float>1.000000</float>
+                        </reflectivity>
+                        <transparent opaque="A_ONE">
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </transparent>
+                        <transparency>
+                            <float>1.000000</float>
+                        </transparency>
+                        <index_of_refraction>
+                            <float>0.000000</float>
+                        </index_of_refraction>
+                    </phong>
+                </technique>
+            </profile_COMMON>
+        </effect>
+        <effect id="universe_back.xml-effect" name="universe_back.xml-effect">
+            <profile_COMMON>
+                <newparam sid="universe_back.xml-image-surface">
+                    <surface type="2D">
+                        <init_from>universe_back.xml-image</init_from>
+                        <format>A8R8G8B8</format>
+                    </surface>
+                </newparam>
+                <newparam sid="universe_back.xml-image-sampler">
+                    <sampler2D>
+                        <source>universe_back.xml-image-surface</source>
+                        <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
+                        <magfilter>LINEAR</magfilter>
+                    </sampler2D>
+                </newparam>
+                <technique sid="common">
+                    <phong>
+                        <emission>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </emission>
+                        <ambient>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </ambient>
+                        <diffuse>
+                            <texture texture="universe_back.xml-image-sampler" texcoord="" />
+                        </diffuse>
+                        <specular>
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </specular>
+                        <shininess>
+                            <float>0.000000</float>
+                        </shininess>
+                        <reflective>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                        </reflective>
+                        <reflectivity>
+                            <float>1.000000</float>
+                        </reflectivity>
+                        <transparent opaque="A_ONE">
+                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                        </transparent>
+                        <transparency>
+                            <float>1.000000</float>
+                        </transparency>
+                        <index_of_refraction>
+                            <float>0.000000</float>
+                        </index_of_refraction>
+                    </phong>
+                </technique>
+            </profile_COMMON>
+        </effect>
+    </library_effects>
+    <library_geometries>
+        <geometry id="top-geometry" name="top-geometry">
+            <mesh>
+                <source id="top-positions" name="position">
+                    <float_array id="top-positions-array" count="12">-10 10 10 -10 10 -10 10 10 10 10 10 -10</float_array>
+                    <technique_common>
+                        <accessor source="#top-positions-array" count="4" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="top-normals" name="normal">
+                    <float_array id="top-normals-array" count="3">0 -1 0</float_array>
+                    <technique_common>
+                        <accessor source="#top-normals-array" count="1" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="top-texcoords" name="texcoord">
+                    <float_array id="top-texcoords-array" count="8">0 1 0 0 1 1 1 0</float_array>
+                    <technique_common>
+                        <accessor source="#top-texcoords-array" count="4" stride="2">
+                            <param name="S" type="float" />
+                            <param name="T" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <vertices id="top-geometry-vertices">
+                    <input semantic="POSITION" source="#top-positions" />
+                </vertices>
+                <triangles material="universe_top.xml" count="2">
+                    <input semantic="VERTEX" source="#top-geometry-vertices" offset="0" />
+                    <input semantic="NORMAL" source="#top-normals" offset="1" />
+                    <input semantic="TEXCOORD" source="#top-texcoords" offset="2" />
+                    <p>0 0 0 1 0 1 2 0 2 1 0 1 3 0 3 2 0 2</p>
+                </triangles>
+            </mesh>
+        </geometry>
+        <geometry id="bottom-geometry" name="bottom-geometry">
+            <mesh>
+                <source id="bottom-positions" name="position">
+                    <float_array id="bottom-positions-array" count="12">-10 -10 -10 -10 -10 10 10 -10 -10 10 -10 10</float_array>
+                    <technique_common>
+                        <accessor source="#bottom-positions-array" count="4" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="bottom-normals" name="normal">
+                    <float_array id="bottom-normals-array" count="3">0 1 0</float_array>
+                    <technique_common>
+                        <accessor source="#bottom-normals-array" count="1" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="bottom-texcoords" name="texcoord">
+                    <float_array id="bottom-texcoords-array" count="8">0 1 0 0 1 1 1 0</float_array>
+                    <technique_common>
+                        <accessor source="#bottom-texcoords-array" count="4" stride="2">
+                            <param name="S" type="float" />
+                            <param name="T" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <vertices id="bottom-geometry-vertices">
+                    <input semantic="POSITION" source="#bottom-positions" />
+                </vertices>
+                <triangles material="universe_bottom.xml" count="2">
+                    <input semantic="VERTEX" source="#bottom-geometry-vertices" offset="0" />
+                    <input semantic="NORMAL" source="#bottom-normals" offset="1" />
+                    <input semantic="TEXCOORD" source="#bottom-texcoords" offset="2" />
+                    <p>0 0 0 1 0 1 2 0 2 1 0 1 3 0 3 2 0 2</p>
+                </triangles>
+            </mesh>
+        </geometry>
+        <geometry id="left-geometry" name="left-geometry">
+            <mesh>
+                <source id="left-positions" name="position">
+                    <float_array id="left-positions-array" count="12">-10 10 10 -10 -10 10 -10 10 -10 -10 -10 -10</float_array>
+                    <technique_common>
+                        <accessor source="#left-positions-array" count="4" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="left-normals" name="normal">
+                    <float_array id="left-normals-array" count="3">1 0 0</float_array>
+                    <technique_common>
+                        <accessor source="#left-normals-array" count="1" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="left-texcoords" name="texcoord">
+                    <float_array id="left-texcoords-array" count="8">0 1 0 0 1 1 1 0</float_array>
+                    <technique_common>
+                        <accessor source="#left-texcoords-array" count="4" stride="2">
+                            <param name="S" type="float" />
+                            <param name="T" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <vertices id="left-geometry-vertices">
+                    <input semantic="POSITION" source="#left-positions" />
+                </vertices>
+                <triangles material="universe_left.xml" count="2">
+                    <input semantic="VERTEX" source="#left-geometry-vertices" offset="0" />
+                    <input semantic="NORMAL" source="#left-normals" offset="1" />
+                    <input semantic="TEXCOORD" source="#left-texcoords" offset="2" />
+                    <p>0 0 0 1 0 1 2 0 2 1 0 1 3 0 3 2 0 2</p>
+                </triangles>
+            </mesh>
+        </geometry>
+        <geometry id="right-geometry" name="right-geometry">
+            <mesh>
+                <source id="right-positions" name="position">
+                    <float_array id="right-positions-array" count="12">10 10 -10 10 -10 -10 10 10 10 10 -10 10</float_array>
+                    <technique_common>
+                        <accessor source="#right-positions-array" count="4" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="right-normals" name="normal">
+                    <float_array id="right-normals-array" count="3">-1 0 0</float_array>
+                    <technique_common>
+                        <accessor source="#right-normals-array" count="1" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="right-texcoords" name="texcoord">
+                    <float_array id="right-texcoords-array" count="8">0 1 0 0 1 1 1 0</float_array>
+                    <technique_common>
+                        <accessor source="#right-texcoords-array" count="4" stride="2">
+                            <param name="S" type="float" />
+                            <param name="T" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <vertices id="right-geometry-vertices">
+                    <input semantic="POSITION" source="#right-positions" />
+                </vertices>
+                <triangles material="universe_right.xml" count="2">
+                    <input semantic="VERTEX" source="#right-geometry-vertices" offset="0" />
+                    <input semantic="NORMAL" source="#right-normals" offset="1" />
+                    <input semantic="TEXCOORD" source="#right-texcoords" offset="2" />
+                    <p>0 0 0 1 0 1 2 0 2 1 0 1 3 0 3 2 0 2</p>
+                </triangles>
+            </mesh>
+        </geometry>
+        <geometry id="front-geometry" name="front-geometry">
+            <mesh>
+                <source id="front-positions" name="position">
+                    <float_array id="front-positions-array" count="12">-10 10 -10 -10 -10 -10 10 10 -10 10 -10 -10</float_array>
+                    <technique_common>
+                        <accessor source="#front-positions-array" count="4" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="front-normals" name="normal">
+                    <float_array id="front-normals-array" count="3">0 0 1</float_array>
+                    <technique_common>
+                        <accessor source="#front-normals-array" count="1" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="front-texcoords" name="texcoord">
+                    <float_array id="front-texcoords-array" count="8">0 1 0 0 1 1 1 0</float_array>
+                    <technique_common>
+                        <accessor source="#front-texcoords-array" count="4" stride="2">
+                            <param name="S" type="float" />
+                            <param name="T" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <vertices id="front-geometry-vertices">
+                    <input semantic="POSITION" source="#front-positions" />
+                </vertices>
+                <triangles material="universe_front.xml" count="2">
+                    <input semantic="VERTEX" source="#front-geometry-vertices" offset="0" />
+                    <input semantic="NORMAL" source="#front-normals" offset="1" />
+                    <input semantic="TEXCOORD" source="#front-texcoords" offset="2" />
+                    <p>0 0 0 1 0 1 2 0 2 1 0 1 3 0 3 2 0 2</p>
+                </triangles>
+            </mesh>
+        </geometry>
+        <geometry id="back-geometry" name="back-geometry">
+            <mesh>
+                <source id="back-positions" name="position">
+                    <float_array id="back-positions-array" count="12">10 10 10 10 -10 10 -10 10 10 -10 -10 10</float_array>
+                    <technique_common>
+                        <accessor source="#back-positions-array" count="4" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="back-normals" name="normal">
+                    <float_array id="back-normals-array" count="3">0 0 -1</float_array>
+                    <technique_common>
+                        <accessor source="#back-normals-array" count="1" stride="3">
+                            <param name="X" type="float" />
+                            <param name="Y" type="float" />
+                            <param name="Z" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <source id="back-texcoords" name="texcoord">
+                    <float_array id="back-texcoords-array" count="8">0 1 0 0 1 1 1 0</float_array>
+                    <technique_common>
+                        <accessor source="#back-texcoords-array" count="4" stride="2">
+                            <param name="S" type="float" />
+                            <param name="T" type="float" />
+                        </accessor>
+                    </technique_common>
+                </source>
+                <vertices id="back-geometry-vertices">
+                    <input semantic="POSITION" source="#back-positions" />
+                </vertices>
+                <triangles material="universe_back.xml" count="2">
+                    <input semantic="VERTEX" source="#back-geometry-vertices" offset="0" />
+                    <input semantic="NORMAL" source="#back-normals" offset="1" />
+                    <input semantic="TEXCOORD" source="#back-texcoords" offset="2" />
+                    <p>0 0 0 1 0 1 2 0 2 1 0 1 3 0 3 2 0 2</p>
+                </triangles>
+            </mesh>
+        </geometry>
+    </library_geometries>
+    <library_visual_scenes>
+        <visual_scene id="SceneRoot" name="SceneRoot">
+            <node id="top" name="top" type="NODE">
+                <instance_geometry url="#top-geometry">
+                    <bind_material>
+                        <technique_common>
+                            <instance_material symbol="universe_top.xml" target="#universe_top.xml" />
+                        </technique_common>
+                    </bind_material>
+                </instance_geometry>
+            </node>
+            <node id="bottom" name="bottom" type="NODE">
+                <instance_geometry url="#bottom-geometry">
+                    <bind_material>
+                        <technique_common>
+                            <instance_material symbol="universe_bottom.xml" target="#universe_bottom.xml" />
+                        </technique_common>
+                    </bind_material>
+                </instance_geometry>
+            </node>
+            <node id="left" name="left" type="NODE">
+                <instance_geometry url="#left-geometry">
+                    <bind_material>
+                        <technique_common>
+                            <instance_material symbol="universe_left.xml" target="#universe_left.xml" />
+                        </technique_common>
+                    </bind_material>
+                </instance_geometry>
+            </node>
+            <node id="right" name="right" type="NODE">
+                <instance_geometry url="#right-geometry">
+                    <bind_material>
+                        <technique_common>
+                            <instance_material symbol="universe_right.xml" target="#universe_right.xml" />
+                        </technique_common>
+                    </bind_material>
+                </instance_geometry>
+            </node>
+            <node id="front" name="front" type="NODE">
+                <instance_geometry url="#front-geometry">
+                    <bind_material>
+                        <technique_common>
+                            <instance_material symbol="universe_front.xml" target="#universe_front.xml" />
+                        </technique_common>
+                    </bind_material>
+                </instance_geometry>
+            </node>
+            <node id="back" name="back" type="NODE">
+                <instance_geometry url="#back-geometry">
+                    <bind_material>
+                        <technique_common>
+                            <instance_material symbol="universe_back.xml" target="#universe_back.xml" />
+                        </technique_common>
+                    </bind_material>
+                </instance_geometry>
+            </node>
+        </visual_scene>
+    </library_visual_scenes>
+    <scene>
+        <instance_visual_scene url="#SceneRoot" />
+    </scene>
+</COLLADA>

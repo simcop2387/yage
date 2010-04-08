@@ -7,6 +7,7 @@
 module yage.resource.texture;
 
 import tango.math.Math;
+import yage.core.format;
 import yage.core.math.math;
 import yage.core.math.matrix;
 import yage.core.math.vector;
@@ -24,7 +25,7 @@ import yage.system.log;
  * just to change filtering, clamping, or relative scale. */
 struct Texture
 {
-	public enum Filter ///
+	enum Filter ///
 	{
 		DEFAULT,	///
 		NONE,		///
@@ -32,17 +33,28 @@ struct Texture
 		TRILINEAR	///
 	}
 	
-	public enum Blend
+	// TODO: Use these intead of Filter?
+	//int minFilter;
+	//int magFilter;
+	
+	enum Blend
 	{
 		NONE,
 		ADD,
 		AVERAGE,
 		MULTIPLY
 	}
-
-
-	/// Set how this texture is blended with others in the same layer.
-	int blend = Blend.NONE;
+	
+	// TODO: Use this, it will replace clamp
+	enum Wrap
+	{	WRAP, // GL_REPEAT (default)
+		MIRROR, // GL_MIRRORED_REPEAT
+		CLAMP // GL_CLAMP_TO_EDGE
+		// GL_CLAMP_TO_BORDER not supported.
+	}
+	Wrap wrap;
+	
+	int blend = Blend.NONE;		/// Set how this texture is blended with others in the same pass via multi-texturing.
 
 	/// Property enable or disable clamping of the textures of this layer.
 	/// See_Also: <a href="http://en.wikipedia.org/wiki/Texel_%28graphics%29">The Wikipedia entry for texel</a>
@@ -53,9 +65,6 @@ struct Texture
 
 	/// Property to set the type of filtering used for the textures of this layer.
 	int filter = Texture.Filter.DEFAULT;
-
-	/// Optional, the name of the sampler variable that uses this texture in the shader program.
-	char[] name;
 	
 	///
 	Matrix transform;
@@ -67,12 +76,17 @@ struct Texture
 
 	/// Create a new TextureInstance with the parameters specified.
 	static Texture opCall(GPUTexture texture, bool clamp=false, int filter=Texture.Filter.DEFAULT)
+
 	{
 		Texture result;
 		result.texture = texture;
 		result.clamp = clamp;
 		result.filter = filter;
 		return result;
+	}
+	
+	char[] toString()
+	{	return swritef(`Texture {source: "%s"}`, texture ? texture.source : "null");
 	}
 }
 
@@ -83,21 +97,45 @@ struct Texture
  * Also, there's no need to be concerned about making
  * texture dimensions a power of two, as they're automatically resized up to
  * the next highest supported size if the non_power_of_two OpenGL extension
- * isn't supported in hardware.
- * 
- * TODO: Should GPUTextue inherit Image? */
+ * isn't supported in hardware. */
 class GPUTexture : IRenderTarget
 {
-	public bool compress;
-	public bool mipmap;
-	public uint format;
-
-	public int width = 0;
-	public int height = 0;
-	public char[] source;
 	
+	
+	// See: http://developer.nvidia.com/object/nv_ogl_texture_formats.html
+	enum Format
+	{	AUTO,                 /// Determine the format from the source image.
+		AUTO_UNCOMPRESSED,    /// Pick the best format for the image, but don't lossfully compress it.
+		COMPRESSED_LUMINANCE,
+		COMPRESSED_LUMINANCE_ALPHA,
+		COMPRESSED_RGB,
+		COMPRESSED_RGBA,
+		LUMINANCE8,
+		LUMINANCE8_ALPHA8,
+		RGB8,
+		RGBA8,
+	//	LUMINANCE16_ALPHA16,  // Pre Geforce6 emulates as L8A8
+	//	RGB16,
+	//	RGBA16,               // Pre Geforce 8 emulates as RGBA8
+	//	DEPTH16,              // GL1.4 or ARB_DEPTH_TEXTURE
+	//	DEPTH24,              // GL1.4 or ARB_DEPTH_TEXTURE
+	//	R16F,                 // Floats require at least GeforceFX
+	//	RG16F,
+	//	RGB16F,
+	//	RGBA16F,
+	//	R32F,
+	//	RG32F,
+	//	RGB32F,
+	//	RGBA32F
+	}
+	
+	Format format;
+	bool mipmap;	
+	int width = 0;
+	int height = 0;	
+	
+	protected char[] source;	
 	protected Image image; // if not null, the texture will be updated with this image the next time it is used.
-	
 	Vec2i padding;	// padding stores how many pixels of the original texture are unused.
 					// e.g. getWidth() returns the used texture + the padding.  
 					// Padding is applied to the top and the right, and can be negative.
@@ -109,29 +147,37 @@ class GPUTexture : IRenderTarget
 	this()
 	{
 	}
-
+	
 	/**
 	 * Create a GPUTexture from an image.
 	 * The image will be uploaded to memory when the GPUTexture is first bound. */
-	this(char[] filename, bool compress=true, bool mipmap=true)
-	{	source = ResourceManager.resolvePath(filename);		
-		setImage(new Image(source), compress, mipmap, source);
+	this(char[] filename, Format format=GPUTexture.Format.AUTO, bool mipmap=true)
+	{	source = ResourceManager.resolvePath(filename);
+		this.format = format;
+		this.mipmap = mipmap;
+		setImage(new Image(source), format, mipmap, source);
 	}
-
-	/// ditto
-	this(Image image, bool compress=true, bool mipmap=true, char[] source="", bool pad=false)
-	{	setImage(image, compress, mipmap, source, pad);
+	
+	this(Image image, Format format=GPUTexture.Format.AUTO, bool mipmap=true, char[] source="", bool padding=false)
+	{	this.format = format;
+		this.mipmap = mipmap;
+		setImage(image, format, mipmap, source, padding);
 	}
 
 	/// Get / set the Image used by this texture.
 	Image getImage()
 	{	return image;		
 	}
-	void setImage(Image image, bool compress=true, bool mipmap=true, char[] source="", bool pad=false) /// ditto
+	
+	void setImage(Image image)
+	{	setImage(image, format, mipmap, source, padding.length2() != 0);
+	}
+	
+	void setImage(Image image, Format format, bool mipmap=true, char[] source="", bool pad=false) /// ditto
 	{	assert(image !is null);
 		assert(image.getData() !is null);		
 		this.image = image;
-		this.compress=  compress;
+		this.format = format;
 		this.mipmap = mipmap;
 		this.source = source;
 		
@@ -149,11 +195,6 @@ class GPUTexture : IRenderTarget
 		dirty = true;
 	}
 
-	/// Is texture compression used in video memory?
-	bool getCompressed() 
-	{	return compress; 
-	}
-
 	/// Are mipmaps used?
 	bool getMipmapped() 
 	{	return mipmap; 
@@ -161,7 +202,7 @@ class GPUTexture : IRenderTarget
 
 	/**
 	 * Get the format of the Texture. */
-	uint getFormat()
+	Format getFormat()
 	{	return format;
 	}
 

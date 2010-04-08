@@ -15,7 +15,6 @@ module yage.resource.all;
 public
 {	import yage.resource.font;
 	import yage.resource.image;
-	import yage.resource.layer;
 	import yage.resource.manager;
 	import yage.resource.material;
 	import yage.resource.geometry;

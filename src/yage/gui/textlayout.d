@@ -206,8 +206,7 @@ struct TextLayout
 				if (y>height)
 					break;
 			}
-		}
-		
+		}		
 		return result;
 	}
 	
@@ -215,7 +214,9 @@ struct TextLayout
 	/**
 	 * Reverse the normal function of TextLayout and convert letters[] back to a string of html text.
 	 * The text may use different tags (since some information is lost) 
-	 * but will be functionally the same. */
+	 * but will be functionally the same. 
+	 * TODO: Move this to lettersToHtml(), since it's the opposite of htmlToLetters()	 
+	 */
 	char[] toString()
 	{
 		char[] result = "<span>";
@@ -229,6 +230,12 @@ struct TextLayout
 			{	
 				char[][] styleString;			
 				
+				// TODO: Would it be better to create arrays to group sequential letters of the same style?
+				// then we could make a single xml node to contain those that have similar styles.
+				// If nothing else, the first version of this function could just return unformatted text.
+				// Should text be stored lazily so we don't have to recreate this all on every keypress?
+				
+				// Only print styles that don't match the Surface's style
 				if (style.fontFamily && style.fontFamily != newStyle.fontFamily)
 					styleString ~= swritef(`font-family: url('%s')`, newStyle.fontFamily);
 				if (dword(style.fontSize) != dword(newStyle.fontSize)) // BUG: converts % font size to px.
@@ -264,14 +271,15 @@ struct TextLayout
 	 *     width = 
 	 *     height = 
 	 * Returns: True if the text will need to be re-rendered, false otherwise.
-	 * TODO: Should this be a constructor to maintain RAII?
+	 * TODO: Should this be a constructor to maintain RAII?  Doing so will cause more allocations of letters and lines!
 	 */
 	bool update(char[] text, Style style, int width, int height)
 	{
 		InlineStyle istyle = InlineStyle(style);
 		
 		// If text has changed
-		bool newLetters = text!=(*this).text || istyle != (*this).style;
+		//bool newLetters = text != (*this).text || istyle != (*this).style;
+		bool newLetters = text != this.text || istyle != this.style;
 		if (newLetters)
 		{	
 			// Update the arrays of letters and styles
@@ -284,13 +292,14 @@ struct TextLayout
 		}
 		
 		// If text or dimensions have changed
-		if (newLetters || width!=this.width || height != this.height)
+		if (newLetters || width != this.width || height != this.height)
 		{				
 			this.width = width;
 			this.height = height;			
 			lines.length = 0;
 			
 			// Build lines from letters
+			// TODO: Instead of having this here, create lettersToLines function (to Match HtmlParse.htmlToLetters())
 			int i;
 			while (i<letters.length)
 			{	int start=i;
@@ -308,7 +317,7 @@ struct TextLayout
 
 					x+= letters[i].advanceX;
 					
-					// Convert letter to utf-8
+					// Convert letter to utf-8 for comparison. TODO: This won't be necessary if we store breaks as utf-32.
 					char[4] lookaside;
 					char[] utf8 = letters[i].toString(lookaside);
 					
@@ -348,12 +357,10 @@ struct TextLayout
 				line.height = lineHeight;
 				lines ~= line;
 			}
-			
 			return true;
 		}
 		return false;
-	}
-	
+	}	
 }
 
 /*
@@ -377,7 +384,7 @@ private struct InlineStyle
 	static InlineStyle opCall(Style style)
 	{	
 		InlineStyle result;
-		result.fontFamily = style.fontFamily ? style.fontFamily : ResourceManager.font("auto");
+		result.fontFamily = style.fontFamily ? style.fontFamily : ResourceManager.getDefaultFont();
 		
 		float fontSizePx = style.fontSize.toPx(0); // incorrect, should inherit from parent font size
 		result.fontSize = isNaN(fontSizePx) ? cast(int)Style().fontSize.toPx(0): cast(int)fontSizePx;
@@ -425,18 +432,6 @@ private struct HtmlParser
 	{
 		char[] lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
 		htmlText = condenseWhitespace(htmlText, lookaside);
-		
-		// This will be fixed in Tango 0.99.9: http://dsource.org/projects/tango/ticket/1619#comment:1
-		debug
-		{	// Tango 0.99.8 Regex's throw exceptions in debug mode.
-		}
-		else
-		{	int i=0; // [below] ensure every plain text child is wrapped in <span></span> to fix tango's xml parsing.
-			htmlText = Cache.getRegex(`\>[^\<]+\<`).replaceAll(htmlText, (RegExpT!(char) input) {
-				return "><span"~input[i]~"/span><";
-				i++;
-			});
-		}
 		
 		// Convert xml document to an array of zero-deth nodes.
 		scope doc = new Document!(char);

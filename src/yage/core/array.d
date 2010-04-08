@@ -16,6 +16,7 @@
  */
 module yage.core.array;
 
+import yage.core.format;
 import yage.core.math.math;
 import yage.core.types;
 import yage.core.timer;
@@ -61,22 +62,6 @@ void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem
 
 	array[length-1] = value;
 }
-unittest
-{	float[] array;
-	array.addSorted(random(-1000, 1000));
-	array.addSorted(random(-1000, 1000));
-	array.addSorted(random(-1000, 1000));
-	array.addSorted(random(-1000, 1000));
-	assert(array.sorted());	
-	array.length = 0;
-	array.addSorted(random(-1000, 1000), false);
-	array.addSorted(random(-1000, 1000), false);
-	array.addSorted(random(-1000, 1000), false);
-	array.addSorted(random(-1000, 1000), false);
-	assert(array.sorted(false));
-}
-
-
 
 /// Return the element with the minimum or maximum value from an unsorted array.
 T amax(T)(T[] array, )
@@ -537,15 +522,9 @@ struct Array(T)
 		return *this;
 	}
 	
+	///
 	char[] toString()
-	{	Array!(char) result = "[";
-		for (int i=0; i<data.length-1; i++)
-			result ~= Format.convert("{}, ", data[i]);
-		if (data.length)
-			result ~= Format.convert("{}", data[$-1]);
-		result ~= "]";
-		
-		return result.array;
+	{	return swritef(data);
 	}
 	
 	private void grow()

@@ -8,14 +8,14 @@
 	<link rel="stylesheet" type="text/css" href="css/default.css" />
 	<link rel="stylesheet" type="text/css" href="css/candydoc.css" />
 	<link rel="stylesheet" type="text/css" href="css/menu.css" />
-	<script type="text/javascript" src="js/util.js" type="text/javascript"></script>
-	<script type="text/javascript" src="js/tree.js" type="text/javascript"></script>
-	<script ltype="text/javascript" src="js/explorer.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/util.js"></script>
+	<script type="text/javascript" src="js/tree.js"></script>
+	<script type="text/javascript" src="js/explorer.js"></script>
   </head>
   <body>
 	<!-- Title Image -->	
 	<div style="position: absolute; z-index: 2;">
-		<a href="index.php"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
+		<a href="http://yage3d.net"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
 	</div>
 	
 	<!-- Menu -->
@@ -160,58 +160,14 @@ The cloned Node.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Timer 
-<span class="currsymbol">getAnimationTimer</span>
-<script type="text/javascript">explorer.outline.addDecl('getAnimationTimer');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the timer used for the skeletal animation of this model.
- If the model has no joints and keyframes for skeletal animation, modifying this timer will do nothing.
-<br><br>
-<b>TODO:</b><br>
-Implement a similar interface for SoundNode?
-
-<br><br>
-<b>See:</b><br>
-yage.core.timer
-
-<br><br>
-<b>Example:</b><br>
-<pre class="d_code"> <span style="color: green">// Continuously play the model's skeletal animation from 5 to 12 seconds.
-</span> Timer t1 = myModel.<b>getAnimationTimer</b>();
- t1.setRange(5, 12);
- t1.set(5);
- t1.play();
-
- <span style="color: green">// Play the animation from 3 to 5 once and then loop the animation from 5 to 12.
-</span> Timer t1 = myModel.<b>getAnimationTimer</b>();
- t1.setRange(3, 5);
- t1.setPauseAfter(5);
- t1.set(3);
- t1.play();
- myModel.onAnimationComplete = (ModelNode self) {
- 	Timer t1 = self.<b>getAnimationTimer</b>();
-  t1.setRange(5, 12);
- 	t1.set(5);
- 	t1.setPauseAfter(); <span style="color: green">// clear pauseAfter
-</span> };
-</pre>
-	 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Model 
+<dt><span class="decl">Geometry 
 <span class="currsymbol">getModel</span>
 <script type="text/javascript">explorer.outline.addDecl('getModel');</script>
 ();
 <br>void 
 <span class="currsymbol">setModel</span>
 <script type="text/javascript">explorer.outline.addDecl('setModel');</script>
-(Model <span class="funcparam">model</span> = cast(Model)null);
+(Geometry <span class="funcparam">model</span> = cast(Geometry)null);
 <br>void 
 <span class="currsymbol">setModel</span>
 <script type="text/javascript">explorer.outline.addDecl('setModel');</script>
@@ -274,12 +230,18 @@ yage.core.timer
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Sep 20 01:37:10 2009
+		on Thu Apr  8 00:06:44 2010
 
 	</div>
 	
 	<script type="text/javascript">
-	explorer.packageExplorer.addModule("demo2.main");
+	explorer.packageExplorer.addModule("demo1.gameobj");
+
+	explorer.packageExplorer.addModule("demo1.main");
+
+	explorer.packageExplorer.addModule("demo1.ship");
+
+	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
 
@@ -287,17 +249,13 @@ yage.core.timer
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
-	explorer.packageExplorer.addModule("yage.core.async");
-
 	explorer.packageExplorer.addModule("yage.core.cache");
-
-	explorer.packageExplorer.addModule("yage.core.closure");
 
 	explorer.packageExplorer.addModule("yage.core.color");
 
-	explorer.packageExplorer.addModule("yage.core.fastmap");
+	explorer.packageExplorer.addModule("yage.core.format");
 
-	explorer.packageExplorer.addModule("yage.core.freelist");
+	explorer.packageExplorer.addModule("yage.core.json");
 
 	explorer.packageExplorer.addModule("yage.core.math.all");
 
@@ -311,6 +269,8 @@ yage.core.timer
 
 	explorer.packageExplorer.addModule("yage.core.math.vector");
 
+	explorer.packageExplorer.addModule("yage.core.memory");
+
 	explorer.packageExplorer.addModule("yage.core.misc");
 
 	explorer.packageExplorer.addModule("yage.core.object2");
@@ -319,15 +279,11 @@ yage.core.timer
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tangotrace3");
-
 	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.tree");
 
 	explorer.packageExplorer.addModule("yage.core.types");
-
-	explorer.packageExplorer.addModule("yage.core.xml");
 
 	explorer.packageExplorer.addModule("yage.gui.all");
 
@@ -343,7 +299,9 @@ yage.core.timer
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
-	explorer.packageExplorer.addModule("yage.resource.colladaloader");
+	explorer.packageExplorer.addModule("yage.resource.collada");
+
+	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -351,17 +309,11 @@ yage.core.timer
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
-	explorer.packageExplorer.addModule("yage.resource.layer");
-
 	explorer.packageExplorer.addModule("yage.resource.manager");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
-
-	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 
@@ -399,7 +351,9 @@ yage.core.timer
 
 	explorer.packageExplorer.addModule("yage.system.graphics.all");
 
-	explorer.packageExplorer.addModule("yage.system.graphics.graphics");
+	explorer.packageExplorer.addModule("yage.system.graphics.api.api");
+
+	explorer.packageExplorer.addModule("yage.system.graphics.api.opengl");
 
 	explorer.packageExplorer.addModule("yage.system.graphics.probe");
 
@@ -418,12 +372,6 @@ yage.core.timer
 	explorer.packageExplorer.addModule("yage.system.system");
 
 	explorer.packageExplorer.addModule("yage.system.window");
-
-	explorer.packageExplorer.addModule("yage.util.all");
-
-	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.spring");
 </script>
   </body>
 </html>

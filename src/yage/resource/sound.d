@@ -6,7 +6,8 @@
 
 module yage.resource.sound;
 
-import std.mmfile;
+import tango.io.device.FileMap;
+import tango.io.device.File;
 import tango.stdc.stdio : FILE, fopen;
 import tango.text.convert.Format;
 import tango.stdc.stringz;
@@ -49,12 +50,12 @@ class Sound : Resource
 
 		// Get first four bytes of sound file to determine type
 		// And then load the file.  sound_file will have all of our important info
-		MmFile file = new MmFile(source);
-		if (file[0..4]=="RIFF")
+		MappedFile file = new MappedFile(source, File.ReadShared); // TODO it's surely faster to just get the first 4 bytes w/o a mapped file.
+		if (cast(char[])file.map()[0..4]=="RIFF")
 			sound_file = new WaveFile(source);
-		else if (file[0..4]=="OggS")
+		else if (cast(char[])file.map[0..4]=="OggS")
 			sound_file = new VorbisFile(source);
-		else throw new ResourceException("Unrecognized sound format '"~cast(char[])file[0..4]~"' for file '"~source~"'.");
+		else throw new ResourceException("Unrecognized sound format '"~cast(char[])file.map[0..4]~"' for file '"~source~"'.");
 		delete file;
 
 		// Determine OpenAL format
@@ -243,26 +244,26 @@ private abstract class SoundFile
 /// A Wave implementation of SoundFile
 private class WaveFile : SoundFile
 {
-	MmFile file;
+	MappedFile file;
 
 	/// Open a wave file and store attributes from its headers
 	this(char[] filename)
 	{	super(filename);
-		file = new MmFile(filename);
+		file = new MappedFile(filename, File.ReadShared);
 
 		// First 4 bytes of Wave file should be "RIFF"
-		if (file[0..4] != "RIFF")
+		if (cast(char[])file.map[0..4] != "RIFF")
 			throw new ResourceException("'"~filename~"' is not a RIFF file.");
 		// Skip size value (4 bytes)
-		if (file[8..12] != "WAVE")
+		if (cast(char[])file.map[8..12] != "WAVE")
 			throw new ResourceException("'"~filename~"' is not a WAVE file.");
 		// Skip "fmt ", format length, format tag (10 bytes)
-		channels 	= (cast(ushort[])file[22..24])[0];
-		frequency	= (cast(uint[])file[24..28])[0];
+		channels 	= (cast(ushort[])file.map[22..24])[0];
+		frequency	= (cast(uint[])file.map[24..28])[0];
 		// Skip average bytes per second, block align, bytes by capture (6 bytes)
-		bits		= (cast(ushort[])file[34..36])[0];
+		bits		= (cast(ushort[])file.map[34..36])[0];
 		// Skip 'data' (4 bytes)
-		size		= (cast(uint[])file[40..44])[0];
+		size		= (cast(uint[])file.map[40..44])[0];
 	}
 
 	/// Free the file we loaded
@@ -275,7 +276,7 @@ private class WaveFile : SoundFile
 	override ubyte[] getBuffer(int offset, int _size)
 	{	if (offset+_size > size)
 			return null;
-		return cast(ubyte[])file[(44+offset)..(44+offset+_size)];
+		return cast(ubyte[])file.map[(44+offset)..(44+offset+_size)];
 	}
 
 }

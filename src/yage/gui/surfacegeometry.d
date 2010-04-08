@@ -7,10 +7,11 @@
 module yage.gui.surfacegeometry;
 
 import yage.core.all;
-
 import yage.resource.texture;
 import yage.resource.geometry;
 import yage.resource.material;
+import yage.system.log;
+
 /**
  * SurfaceGeometry defines vertices and meshes for drawing a surface, including borders/border textures.
  * The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
@@ -46,8 +47,8 @@ import yage.resource.material;
  */
 package class SurfaceGeometry : Geometry
 {
-	VertexBuffer!(Vec2f) vertices;
-	VertexBuffer!(Vec2f) texcoords;
+	Vec2f[] vertices;
+	Vec2f[] texcoords;
 	
 	private Geometry clipGeometry;
 	
@@ -93,15 +94,15 @@ package class SurfaceGeometry : Geometry
 	this()
 	{	
 		// Create Vertex Arrays
-		setVertices(new Vec2f[24]);
-		setTexCoords0(new Vec2f[24]);
-		vertices = cast(VertexBuffer!(Vec2f))getAttribute(Geometry.VERTICES);
-		texcoords = cast(VertexBuffer!(Vec2f))getAttribute(Geometry.TEXCOORDS0);
+		vertices = new Vec2f[24];
+		texcoords = new Vec2f[24];
+		setAttribute(Geometry.VERTICES, vertices);
+		setAttribute(Geometry.TEXCOORDS0,texcoords);
 		
 		// Make a new material with a single layer with a diffuse color of white.
 		Material createMaterial()
 		{	auto result = new Material();
-			result.addLayer(new Layer());
+			result.setPass(new MaterialPass());
 			return result;
 		}
 		
@@ -154,13 +155,19 @@ package class SurfaceGeometry : Geometry
 	void setColors(Color center, Color[4] borderColor, float opacity)
 	{	center.a *= opacity;
 	
-		backgroundColor.getMaterial().getLayers()[0].color = center; // changing the color seems to have no effect.	
-		backgroundColor.getMaterial().getLayers()[0].blend = opacity < 1 ? BLEND_AVERAGE : BLEND_NONE;
+		bool hasAlpha =  opacity < 1 || center.a < 255;
+		foreach (color; borderColor)
+			hasAlpha = hasAlpha || color.a < 255;
+	
+		backgroundColor.getMaterial().getPass().diffuse = center; // changing the color seems to have no effect.	
+		backgroundColor.getMaterial().getPass().blend = hasAlpha ? MaterialPass.Blend.AVERAGE : MaterialPass.Blend.NONE;
+		backgroundColor.getMaterial().getPass().lighting = false;
 		for (int i=0; i<4; i++) // top, right, bottom, left
 		{	Color c = borderColor[i];
 			c.a*= opacity;
-			this.borderColor[i].getMaterial().getLayers()[0].color = c;
-			this.borderColor[i].getMaterial().getLayers()[0].blend = opacity < 1 ? BLEND_AVERAGE : BLEND_NONE;
+			this.borderColor[i].getMaterial().getPass().diffuse = c;
+			this.borderColor[i].getMaterial().getPass().lighting = false;
+			this.borderColor[i].getMaterial().getPass().blend = opacity < 1 ? MaterialPass.Blend.AVERAGE : MaterialPass.Blend.NONE;
 		}
 	}
 	
@@ -171,7 +178,7 @@ package class SurfaceGeometry : Geometry
 	 *     borders = Used to set the size of each border in pixels (top, right, bottom, left) 
 	 *     padding = Used to se the size of teh padding in pixels (top, right, bottom, left)*/
 	void setDimensions(Vec2f dimensions, Vec4f borders, Vec4f padding /*, Vec2f backgroundPosition, ubyte backgroundRepeatX, ubyte backgroundRepeatY*/)
-	{	Vec2f[] vertices = cast(Vec2f[])(getVertices().getData());
+	{	Vec2f[] vertices = cast(Vec2f[])(getAttribute(Geometry.VERTICES));
 		
 		// This also positions the quad for mesh backgroundColor.
 	
@@ -195,10 +202,10 @@ package class SurfaceGeometry : Geometry
 		vertices[20].y = vertices[22].y = borders.top + padding.top;
 		vertices[21].y = vertices[23].y = borders.top + padding.top + dimensions.height;
 		
-		setVertices(vertices);
+		setAttribute(Geometry.VERTICES, vertices);
 		
 		// Set Texture Coordinates for Border Image
-		Vec2f[] texcoords = cast(Vec2f[])getTexCoords0().getData();
+		Vec2f[] texcoords = cast(Vec2f[])getAttribute(Geometry.TEXCOORDS0);
 		texcoords[4].x = texcoords[5].x = texcoords[6].x = texcoords[7].x = 1/3.0f;
 		texcoords[8].x = texcoords[9].x = texcoords[10].x= texcoords[11].x= 2/3.0f;
 		texcoords[12].x= texcoords[13].x= texcoords[14].x= texcoords[15].x= 1;
@@ -212,7 +219,7 @@ package class SurfaceGeometry : Geometry
 		texcoords[16].y = texcoords[18].y = texcoords[20].y = texcoords[22].y = 0;
 		texcoords[17].y = texcoords[19].y = texcoords[21].y = texcoords[23].y = 1;
 		
-		setTexCoords0(texcoords);
+		setAttribute(Geometry.TEXCOORDS0, texcoords);
 	}
 
 	// TODO: Convert this to accept materials as well as textures, 
@@ -220,11 +227,12 @@ package class SurfaceGeometry : Geometry
 	void setMaterials(GPUTexture backgroundImage, GPUTexture centerImage, 
 	                  GPUTexture[] borderImage, GPUTexture[] borderCornerImage, GPUTexture text, float opacity)
 	{	
-		Layer createLayer(GPUTexture texture, bool clamp=false)
-		{	auto result = new Layer();
-			result.addTexture(Texture(texture, clamp, Texture.Filter.BILINEAR));
-			result.color = Color(1f, 1f, 1f, opacity);
-			result.blend = BLEND_AVERAGE;
+		MaterialPass createLayer(GPUTexture texture, bool clamp=false)
+		{	auto result = new MaterialPass();
+			result.textures  ~= Texture(texture, clamp, Texture.Filter.BILINEAR);
+			result.diffuse = Color(1f, 1f, 1f, opacity);
+			result.blend = MaterialPass.Blend.AVERAGE;
+			result.lighting = false;
 			result.emissive = Color(0xffffffff); // even with this, we still have to turn off lighting to render
 			return result;
 		}
@@ -232,7 +240,7 @@ package class SurfaceGeometry : Geometry
 		// Background Image
 		if (backgroundImage)
 		{	this.backgroundImage.setMaterial(new Material());
-			this.backgroundImage.getMaterial().addLayer(createLayer(backgroundImage));
+			this.backgroundImage.getMaterial().setPass(createLayer(backgroundImage));
 		} else
 			this.backgroundImage.setMaterial(cast(Material)null);
 		
@@ -240,39 +248,39 @@ package class SurfaceGeometry : Geometry
 		foreach(mesh; this.borderImage)
 		{	if (borderImage[0])
 			{	mesh.setMaterial(new Material());
-				mesh.getMaterial().addLayer(createLayer(borderImage[0]));
+				mesh.getMaterial().setPass(createLayer(borderImage[0]));
 			} else
 				mesh.setMaterial(cast(Material)null);
 		}
 		foreach(mesh; this.borderCornerImage)
 		{	if (borderCornerImage[0])
 			{	mesh.setMaterial(new Material());
-				mesh.getMaterial().addLayer(createLayer(borderCornerImage[0]));
+				mesh.getMaterial().setPass(createLayer(borderCornerImage[0]));
 			} else
 				mesh.setMaterial(cast(Material)null);
 		}
 
 		if (centerImage)
 		{	this.centerImage.setMaterial(new Material());
-			this.centerImage.getMaterial().addLayer(createLayer(centerImage));
+			this.centerImage.getMaterial().setPass(createLayer(centerImage));
 		} else
 			this.centerImage.setMaterial(cast(Material)null);
 		
 		if (text)
 		{	this.text.setMaterial(new Material());
-			this.text.getMaterial().addLayer(createLayer(text, true));
-			this.text.getMaterial().getLayers()[0].getTextures()[0].filter = Texture.Filter.NONE;
+			this.text.getMaterial().setPass(createLayer(text, true));
+			this.text.getMaterial().getPass().textures[0].filter = Texture.Filter.NONE;
 			
 			// Text bottom vertices depend on text texture size.
 			float height = text.getHeight();
 			
-			Vec2f[] vertices = cast(Vec2f[])(getVertices().getData());			
+			Vec2f[] vertices = cast(Vec2f[])(getAttribute(Geometry.VERTICES));			
 			vertices[21].y = vertices[23].y = vertices[20].y + height;			
-			setVertices(vertices);
+			setAttribute(Geometry.VERTICES, vertices);
 			
-			Vec2f[] texcoords = cast(Vec2f[])(getTexCoords0().getData());			
+			Vec2f[] texcoords = cast(Vec2f[])(getAttribute(Geometry.TEXCOORDS0));			
 			texcoords[21].y = texcoords[23].y = height / (height-text.padding.y);	// why is padding.y negative?		
-			setTexCoords0(texcoords);
+			setAttribute(Geometry.TEXCOORDS0, texcoords);
 			
 		} else
 			this.text.setMaterial(cast(Material)null);

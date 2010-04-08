@@ -8,14 +8,14 @@
 	<link rel="stylesheet" type="text/css" href="css/default.css" />
 	<link rel="stylesheet" type="text/css" href="css/candydoc.css" />
 	<link rel="stylesheet" type="text/css" href="css/menu.css" />
-	<script type="text/javascript" src="js/util.js" type="text/javascript"></script>
-	<script type="text/javascript" src="js/tree.js" type="text/javascript"></script>
-	<script ltype="text/javascript" src="js/explorer.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/util.js"></script>
+	<script type="text/javascript" src="js/tree.js"></script>
+	<script type="text/javascript" src="js/explorer.js"></script>
   </head>
   <body>
 	<!-- Title Image -->	
 	<div style="position: absolute; z-index: 2;">
-		<a href="index.php"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
+		<a href="http://yage3d.net"><img src="img/title.png" alt="Yage3D.net" border="0"></a>
 	</div>
 	
 	<!-- Menu -->
@@ -106,7 +106,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.addDecl('SurfaceGeometry');</script>
  defines vertices and meshes for drawing a surface, including borders/border textures.
  The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
- Nine 11 are defined, one for each border region and 3 for the center.
+ Eleven are defined, one for each border region and 3 for the center.
  <pre>
  0_4__8__12
  |\ |\ |\ |
@@ -123,7 +123,7 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
  17\19</pre>
 <br><br>
 
- Vertices used for text Mesh, which renders any text
+ Vertices used for text Mesh, which renders any text.
  <pre>
  2022
  |\ |
@@ -156,10 +156,23 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Geometry 
+<span class="currsymbol">getClipGeometry</span>
+<script type="text/javascript">explorer.outline.addDecl('getClipGeometry');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the geometry used for clipping (usually rendered to a stencil buffer). 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
 <span class="currsymbol">setColors</span>
 <script type="text/javascript">explorer.outline.addDecl('setColors');</script>
-(Color <span class="funcparam">center</span>, Color[4u] <span class="funcparam">borderColor</span>);
+(Color <span class="funcparam">center</span>, Color[4u] <span class="funcparam">borderColor</span>, float <span class="funcparam">opacity</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -218,12 +231,18 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sun Sep 20 01:37:10 2009
+		on Thu Apr  8 00:06:44 2010
 
 	</div>
 	
 	<script type="text/javascript">
-	explorer.packageExplorer.addModule("demo2.main");
+	explorer.packageExplorer.addModule("demo1.gameobj");
+
+	explorer.packageExplorer.addModule("demo1.main");
+
+	explorer.packageExplorer.addModule("demo1.ship");
+
+	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
 
@@ -231,17 +250,13 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 
 	explorer.packageExplorer.addModule("yage.core.array");
 
-	explorer.packageExplorer.addModule("yage.core.async");
-
 	explorer.packageExplorer.addModule("yage.core.cache");
-
-	explorer.packageExplorer.addModule("yage.core.closure");
 
 	explorer.packageExplorer.addModule("yage.core.color");
 
-	explorer.packageExplorer.addModule("yage.core.fastmap");
+	explorer.packageExplorer.addModule("yage.core.format");
 
-	explorer.packageExplorer.addModule("yage.core.freelist");
+	explorer.packageExplorer.addModule("yage.core.json");
 
 	explorer.packageExplorer.addModule("yage.core.math.all");
 
@@ -255,6 +270,8 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 
 	explorer.packageExplorer.addModule("yage.core.math.vector");
 
+	explorer.packageExplorer.addModule("yage.core.memory");
+
 	explorer.packageExplorer.addModule("yage.core.misc");
 
 	explorer.packageExplorer.addModule("yage.core.object2");
@@ -263,15 +280,11 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
 
-	explorer.packageExplorer.addModule("yage.core.tangotrace3");
-
 	explorer.packageExplorer.addModule("yage.core.timer");
 
 	explorer.packageExplorer.addModule("yage.core.tree");
 
 	explorer.packageExplorer.addModule("yage.core.types");
-
-	explorer.packageExplorer.addModule("yage.core.xml");
 
 	explorer.packageExplorer.addModule("yage.gui.all");
 
@@ -287,7 +300,9 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
-	explorer.packageExplorer.addModule("yage.resource.colladaloader");
+	explorer.packageExplorer.addModule("yage.resource.collada");
+
+	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -295,17 +310,11 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 
 	explorer.packageExplorer.addModule("yage.resource.image");
 
-	explorer.packageExplorer.addModule("yage.resource.layer");
-
 	explorer.packageExplorer.addModule("yage.resource.manager");
 
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.ms3dloader");
-
-	explorer.packageExplorer.addModule("yage.resource.objloader");
 
 	explorer.packageExplorer.addModule("yage.resource.resource");
 
@@ -343,7 +352,9 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 
 	explorer.packageExplorer.addModule("yage.system.graphics.all");
 
-	explorer.packageExplorer.addModule("yage.system.graphics.graphics");
+	explorer.packageExplorer.addModule("yage.system.graphics.api.api");
+
+	explorer.packageExplorer.addModule("yage.system.graphics.api.opengl");
 
 	explorer.packageExplorer.addModule("yage.system.graphics.probe");
 
@@ -362,12 +373,6 @@ Vertices used for center2 Mesh, which is used for background-color and the borde
 	explorer.packageExplorer.addModule("yage.system.system");
 
 	explorer.packageExplorer.addModule("yage.system.window");
-
-	explorer.packageExplorer.addModule("yage.util.all");
-
-	explorer.packageExplorer.addModule("yage.util.flyer");
-
-	explorer.packageExplorer.addModule("yage.util.spring");
 </script>
   </body>
 </html>

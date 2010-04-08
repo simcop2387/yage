@@ -11,6 +11,7 @@ import tango.io.device.File;
 import tango.io.Console;
 
 import yage.core.format;
+import yage.core.json;
 
 /**
  * Log to a file or the console. */
@@ -77,5 +78,10 @@ struct Log
 			return true;
 		}		
 		return false;
+	}
+	
+	/// Recursively print a data structure.
+	static void dump(T)(T t)
+	{	trace(Json.encode(t));
 	}
 }

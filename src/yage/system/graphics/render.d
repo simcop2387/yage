@@ -18,7 +18,6 @@ import yage.gui.surface;
 import yage.gui.style;
 import yage.resource.geometry;
 import yage.resource.image;
-import yage.resource.layer;
 import yage.resource.material;
 import yage.resource.model;
 import yage.resource.texture;
@@ -30,6 +29,7 @@ import yage.scene.visible;
 import yage.system.window;
 import yage.system.system;
 import yage.system.graphics.probe;
+import yage.system.graphics.api.api;
 import yage.system.graphics.api.opengl;
 import yage.system.log;
 
@@ -69,8 +69,6 @@ struct RenderStatistics
 		return *this;
 	}
 }
-
-Timer q;
 
 /**
  * As the nodes of the scene graph are traversed, those to be rendered in
@@ -131,21 +129,26 @@ struct Render
 	}
 
 	/*
+	 * deprecated
 	 * Render the meshes with opaque materials and pass any meshes with materials
 	 * that require blending to the queue of translucent meshes.
-	 * Rotation can optionally be supplied to rotate sprites so they face the camera. 
-	 * TODO: Make all vbo's optional.
-	 * TODO: Rewrite this around the simpler Render.geometry */
-	static RenderStatistics model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)
+	 * Rotation can optionally be supplied to rotate sprites so they face the camera. */
+	deprecated static RenderStatistics model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)
 	{	
 		RenderStatistics result;
-		
-		if (!model.hasAttribute(Geometry.VERTICES))
+		/*
+		if (!model.getAttribute(Geometry.VERTICES))
 			return result;
 		
-		Vec3f[] v = cast(Vec3f[])model.getVertices().getData();
-		Vec3f[] n = cast(Vec3f[])model.getNormals().getData();
-		Vec2f[] t = cast(Vec2f[])model.getTexCoords0().getData();
+		Vec3f[] v = cast(Vec3f[])model.getAttribute(Geometry.VERTICES);
+		Vec3f[] n;
+		if (model.getAttribute(Geometry.NORMALS))
+			n = cast(Vec3f[])model.getAttribute(Geometry.NORMALS);
+		Vec2f[] t;
+		if (model.getAttribute(Geometry.TEXCOORDS0))
+			t = cast(Vec2f[])model.getAttribute(Geometry.TEXCOORDS0);
+		
+
 		Matrix abs_transform = node.getAbsoluteTransform(true);
 		result.vertexCount += v.length;
 		
@@ -169,13 +172,13 @@ struct Render
 			glRotatef(rotation.length()*PI_180, rotation.x, rotation.y, rotation.z);
 		}
 		
-		foreach (type, attrib; model.getAttributes())
+		foreach (type, attrib; model.getVertexBuffers())
 			graphics.bindVertexBuffer(attrib, type);
 
 		// Loop through the meshes		
 		foreach (Mesh mesh; model.getMeshes())
 		{
-			result.triangleCount += mesh.getTriangles().length;
+			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
 			Material matl = mesh.getMaterial();
 			if (matl !is null)
 			{
@@ -193,23 +196,25 @@ struct Render
 					// If not translucent					
 					if (!sort)
 					{	graphics.bindLayer(l, node.getLights(), node.getColor(), model);
-						graphics.drawVertexBuffer(mesh.getTriangles(), Mesh.TRIANGLES);
+						graphics.drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 						graphics.bindLayer(null); // can this be moved outside the loop?
 					} else
 					{						
 						// Add to translucent.  This may need to be rewritten at some point.
-						foreach (int index, Vec3i tri; cast(Vec3i[])mesh.getTriangles().getData())						
+						foreach (int index, Vec3i tri; mesh.getTriangles())						
 						{	AlphaTriangle at;
 							for (int i=0; i<3; i++)
 							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getSize());
-								at.texcoords[i] = &t[tri.v[i]];
-								at.normals[i] = &n[tri.v[i]];
+								if (t.length)
+									at.texcoords[i] = &t[tri.v[i]];
+								if (n.length)
+									at.normals[i] = &n[tri.v[i]];
 							}
 							at.node 	= node;
 							at.model	= model;
 							at.mesh		= mesh;
 							at.matl	 = matl;
-							at.triangle = index;						
+							at.triangle = index;		
 							
 							alpha ~= at;
 						}	
@@ -218,14 +223,14 @@ struct Render
 				}
 			}
 			else // render with no material
-				graphics.drawVertexBuffer(mesh.getTriangles(), Mesh.TRIANGLES);
+				graphics.drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 				
 			
 			if (_debug)
 			{	// Draw normals
 				glColor3f(0, 1, 1);
 				glDisable(GL_LIGHTING);
-				foreach (Vec3i tri; cast(Vec3i[])mesh.getTriangles().getData())
+				foreach (Vec3i tri; mesh.getTriangles())
 				{	for (int i=0; i<3; i++)
 					{	Vec3f vertex = v[tri.v[i]];
 						Vec3f normal = n[tri.v[i]];						
@@ -274,11 +279,10 @@ struct Render
 			glEnable(GL_LIGHTING);
 			glEnable(GL_DEPTH_TEST);
 		}
-		
+		*/
 		return result;
 	}
 
-	
 	/**
 	 * Render a camera's view to target.
 	 * The previous contents of target are first cleared.
@@ -316,18 +320,19 @@ struct Render
 					Vec3f size = n.getSize();
 					glScalef(size.x, size.y, size.z);
 					
-					// Enable the appropriate lights
+					// Enable the lights that affect this node
+					// TODO: This seems inefficient
 					auto lights = n.getLights(all_lights, num_lights);
-					for (int i=0; i<num_lights; i++)
+					for (int i=lights.length; i<num_lights; i++)
 						glDisable(GL_LIGHT0+i);
 					for (int i=0; i<min(num_lights, lights.length); i++)
 						graphics.bindLight(lights[i], i);
 					
 					// Render
 					if (cast(ModelNode)n)
-						result += model((cast(ModelNode)n).getModel(), n);			
+						result += graphics.drawModel((cast(ModelNode)n).getModel());			
 					else if (cast(SpriteNode)n)
-						result += graphics.drawSprite((cast(SpriteNode)n).getMaterial(), n);
+						result += graphics.drawSprite((cast(SpriteNode)n).getMaterial());
 					
 					glPopMatrix();
 				}
@@ -339,14 +344,14 @@ struct Render
 			{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(1/3);
 				return -camera.distance2(center); // distance squared is faster and values still compare the same
 			});
-			
+			/*
 			// Render alpha triangles
 			foreach (AlphaTriangle at; alpha)
 			{	foreach (layer; at.matl.getLayers())
 				{	graphics.bindLayer(layer, at.node.getLights(), at.node.getColor());
 					glBegin(GL_TRIANGLES);
 					
-					Vec3i triangle = (cast(Vec3i[])(at.mesh.getTriangles().getData()))[at.triangle];
+					Vec3i triangle = at.mesh.getTriangles()[at.triangle];
 					
 					for (int i=0; i<3; i++)
 					{	
@@ -358,6 +363,7 @@ struct Render
 					glEnd();
 					graphics.bindLayer(null); // can this be moved outside the loop?
 			}	}
+			*/
 
 			// Unbind current VBO
 			graphics.bindVertexBuffer(null);
@@ -371,6 +377,8 @@ struct Render
 			RenderStatistics result;			
 			if (!scene)
 				scene = camera.getScene();
+			if (!scene)
+				throw new GraphicsException("Camera must be added to a scene before rendering.");
 			
 			// start reading from the most recently updated set of buffers.
 			scene.swapTransformRead();
@@ -423,11 +431,10 @@ struct Render
 		return result;
 	}
 	
-
 	
 	/// Render a surface
 	static void surface(Surface surface, IRenderTarget target=null)
-	{
+	{	
 		graphics.bindRenderTarget(target);
 		
 		glDisableClientState(GL_NORMAL_ARRAY);
@@ -437,10 +444,9 @@ struct Render
 		// Setup the viewport in orthogonal mode,
 		// with dimensions 0..width, 0..height
 		// with 0,0 being at the top left.
-		glViewport(0, 0, target.getWidth(), target.getHeight()); // [below] ortho perspective, near and far are arbitrary.
-		
+		glViewport(0, 0, target.getWidth(), target.getHeight()); 
 		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
+		glLoadIdentity();  // [below] ortho perspective, near and far are arbitrary.
 		glOrtho(0, target.getWidth(), target.getHeight(), 0, -32768, 32768);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();	
@@ -460,14 +466,14 @@ struct Render
 		
 		// Function to draw surface and recurse through children.
 		void draw(Surface surface) {
-						
+			
 			// Bind surface properties	
 			glPushMatrix();
 			glMultMatrixf(surface.style.transform.ptr);
 			glTranslatef(surface.left(), surface.top(), 0);
 			surface.style.backfaceVisibility ? glDisable(GL_CULL_FACE) : glEnable(GL_CULL_FACE);
 			
-			graphics.drawGeometry(surface.getGeometry());
+			graphics.drawGeometry(surface.getGeometry()); // TODO: This completely obscures everything below it in white!!!!!!!!
 			
 			// Apply or remove a layer in the stencil mask
 			void doStencil(bool on)
@@ -510,21 +516,24 @@ struct Render
 				}
 			}
 			
-			doStencil(true);
+			// We only need to do clipping if the surface has children
+			if (surface.getChildren().length)
+				doStencil(true);
 			
 			// Recurse through and draw children.
 			foreach(child; surface.getChildren())
 				draw(child);
 			
 			doStencil(false);
-			
 			glPopMatrix();
+			
 		}
 		
-		// Draw th surface with and its chilren the stencil applied.
+		// Draw the surface with and its chilren the stencil applied.
 		glEnable(GL_STENCIL_TEST);
 		draw(surface);
 		glDisable(GL_STENCIL_TEST);
+		
 		glStencilFunc(GL_ALWAYS, 0, 0xff); // reset to default value
 		
 		
@@ -534,7 +543,9 @@ struct Render
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnable(GL_CULL_FACE);
 		
-		graphics.bindRenderTarget(null);		
+		
+		graphics.bindRenderTarget(null);	
+			
 		
 	}
 

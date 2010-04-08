@@ -50,7 +50,7 @@ class Shader
 		return fragmentSource[0..$-1];
 	}
 	
-	
+	/// TODO, this should get the uniform variable names and types
 	ShaderUniform[] getUniforms()
 	{
 		ShaderUniform[] result;
@@ -64,29 +64,32 @@ class Shader
  * Used to pass variables to a shader */
 struct ShaderUniform
 {
-	
+	///
 	enum Type
 	{	I1, I2, I3, I4,
 		F1, F2, F3, F4,
 		M2x2, M3x3, M4x4,
 		M2x3, M3x2, M2x4, M4x2, M4x3, M3x4
 	}
-	Type type;
-	char[] name;
-	void* values;
+	Type type;		///
+	char[] name;	///
+	union { ///
+		int[] intValues;	///
+		float[] floatValues; ///
+	}
 	
-	///
+	/// Constructors
 	static ShaderUniform opCall(char[] name, Type type, float[] values...)
 	{	ShaderUniform result;
 		result.name = name;
-		result.values = values.ptr;
+		result.floatValues = values.dup;
 		result.type = type;
 		return result;
 	}	
 	static ShaderUniform opCall(char[] name, Type type, int[] values...) /// ditto
 	{	ShaderUniform result;
 		result.name = name;
-		result.values = values.ptr;
+		result.intValues = values.dup;
 		result.type = type;
 		return result;
 	}

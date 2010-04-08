@@ -21,12 +21,13 @@ import tango.text.Regex;
 import derelict.sdl.sdl;
 
 import yage.all;
+import yage.core.json;
 import demo1.ship;
 import demo1.gameobj;
-
-import derelict.opengl.gl;
 import yage.system.graphics.all;
-import std.stdio;
+import yage.resource.material;
+
+import yage.system.graphics.api.api : GraphicsException;
 
 class DemoScene : Scene
 {
@@ -46,8 +47,7 @@ class DemoScene : Scene
 		
 		// Skybox
 		skyBox = new Scene();
-		skyBox.addChild(new ModelNode("sky/sanctuary.ms3d"));
-		backgroundColor = "#444444";
+		skyBox.addChild(new ModelNode("sky/sanctuary.dae"));
 		
 		// Ship
 		ship = addChild(new Ship());	
@@ -62,7 +62,7 @@ class DemoScene : Scene
 		// Music
 		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
 		music.setLooping(true);
-		//music.play();
+		music.play();
 
 		// Lights
 		light = scene.addChild(new LightNode());
@@ -72,14 +72,23 @@ class DemoScene : Scene
 
 		// Star
 		star = light.addChild(new SpriteNode());
-		star.setMaterial("space/star.xml");
+		star.setMaterial("space/star.dae", "star-material");
 		star.setSize(Vec3f(2500));
 
 		// Planet
-		planet = scene.addChild(new ModelNode("space/planet.ms3d"));
+		planet = scene.addChild(new ModelNode("space/planet.dae"));
 		planet.setSize(Vec3f(60));
 		planet.setAngularVelocity(Vec3f(0, -0.01, 0));
 		
+		/* // playing with shaders:
+		planet.getModel().getMeshes()[0].getMaterial().getPass().shader = new Shader(
+			cast(char[])ResourceManager.loadFile("diffuse.vert"),
+			cast(char[])ResourceManager.loadFile("diffuse.frag")
+		);		
+		planet.getModel().getMeshes()[0].getMaterial().getPass().shaderUniforms ~= 
+			ShaderUniform("lightInput[0].quadraticAttenuation", ShaderUniform.Type.F1, 1f/(7000*7000));
+		*/
+
 		// Asteroids
 		asteroidBelt(1200, 1400, planet);
 	}
@@ -104,7 +113,7 @@ int main()
 	auto scene = new DemoScene();
 	scene.play(); // update 60 times per second
 	
-	// Main surface where camera output is rendered.
+	// Main surface that receives input.
 	Surface view = new Surface();
 	view.style.set("width: 100%; height: 100%");
 	
@@ -128,6 +137,19 @@ int main()
 			scene = new DemoScene();
 			scene.camera.setListener();
 			scene.play();
+		}
+		
+		if (key == SDLK_x)
+		{	
+			try {
+				scene.planet.getModel().getMeshes()[0].getMaterial().getPass().shader =
+					new Shader(
+						cast(char[])ResourceManager.loadFile("diffuse.vert"),
+						cast(char[])ResourceManager.loadFile("diffuse.frag"));
+			} catch (GraphicsException e)
+			{	Log.error(e);
+				scene.planet.getModel().getMeshes()[0].getMaterial().getPass().shader = null;
+			}
 		}
 		
 		scene.ship.keyDown(key);

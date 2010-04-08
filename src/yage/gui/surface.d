@@ -337,7 +337,7 @@ class Surface : Tree!(Surface)
 			assert(textImage !is null);
 			
 			if (!textTexture) // create texture on first go
-				textTexture = new GPUTexture(textImage, false, false, "Surface Text", true);
+				textTexture = new GPUTexture(textImage, GPUTexture.Format.AUTO, false, "Surface Text", true);
 			else
 			//	textTexture.commit(textImage, false, false, text, true);
 				textTexture.setImage(textImage);

@@ -373,7 +373,6 @@ struct DerelictGL
     {
         loadFunc(glLib);
         loadedVersion = glv;
-        return true;
     }
 }
 

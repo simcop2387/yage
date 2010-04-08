@@ -530,7 +530,10 @@ interface IImage
 	Image2!(T2, C2) convert(T2: real, int C2)();
 }
 
-// Experimental, supporting templated arguments for component type and number of channels
+/*
+ * Experimental, supporting templated arguments for component type and number of channels
+ * @param T Type of each pixel component
+ * @param C number of channels. */
 class Image2(T : real, int C) : IImage
 {
 	alias Image2!(T, C) ImageTC;
@@ -584,6 +587,9 @@ class Image2(T : real, int C) : IImage
 	ubyte[] getBytes()
 	{	return cast(ubyte[])data;		
 	}
+	
+	//T[1][] getChannel(int channel);
+	//T[C][] getData();
 	
 	static if (is(T : ubyte)) // if T can be implicitly cast to ubyte
 	{

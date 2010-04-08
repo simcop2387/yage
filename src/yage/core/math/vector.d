@@ -773,30 +773,27 @@ struct Vec3f
 	}
 
 	/**
-	 * Interpret the values of this vector as a rotation axis and convert to a Quatrn.*/
+	 * Interpret the values of this vector as a rotation axis/angle and convert to a Quatrn.*/
 	Quatrn toQuatrn()
 	{	Quatrn res;
 		float angle = length();
 		if (angle==0) // no rotation for zero-vector
 			return res;
 		Vec3f axis = normalize();
-		float s = sin(angle * .5);
+		float s = sin(angle * .5); // / sqrt(angle);
 		res.w = cos(angle * .5);
-		res.x = axis.x * s;
+		res.x = axis.x * s; /// TODO: multiplying by s can be combined with the normalization step
 		res.y = axis.y * s;
 		res.z = axis.z * s;		
 		return res;
-		
-		/*
-		void Quatrn.set(Vec3f axis)
-		{	double l = axis.length();
-			double s = sin(l*0.5f)/l;
-			w = cos(l*0.5f);
-			x = axis.v[0] * s;
-			y = axis.v[1] * s;
-			z = axis.v[2] * s;
-		}
-		 */
+	}
+	
+	/// Interpret the values of this vector as Euler angles and convert to a Quatrn.
+	Quatrn toQuatrnEuler()
+	{	return
+		   (Quatrn(sin(x*0.5), 0, 0, cos(x*0.5)) // x
+		  * Quatrn(0, sin(y*0.5), 0, cos(y*0.5))) // y
+		  * Quatrn(0, 0, sin(z*0.5), cos(z*0.5)); // z
 	}
 
 	/**

@@ -28,6 +28,8 @@ char[] swritef(...)
 	return swritef(_arguments, _argptr); // recurse to take first path.
 }
 
+alias swritef format;
+
 
 /*
  * This is a modified version of std.format.
@@ -57,6 +59,7 @@ char[] swritef(...)
 
 private import tango.stdc.stdlib;
 private import tango.stdc.string;
+private import  Utf = tango.text.convert.Utf;
 private alias char[] string;
 private alias wchar[] wstring;
 private alias dchar[] dstring;
@@ -670,7 +673,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			default:
 			    TypeInfo ti2 = primitiveTypeInfo(m2);
 			    if (!ti2)
-			      goto Lerror;
+			    	throw new FormatError("Can't get type info for type " ~ cast(char)m2);
 			    void[] va = va_arg2!(void[])(argptr);
 			    putArray(va.ptr, va.length, ti2);
 		    }
@@ -690,43 +693,49 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 
 	    case Mangle.Tstruct:
 	    {	TypeInfo_Struct tis = cast(TypeInfo_Struct)ti;
-		if (tis.xtoString is null)
-		    throw new FormatError("Can't convert " ~ tis.toString() ~ " to string: \"string toString()\" not defined");
-        version(DigitalMars){
-            s = tis.xtoString(argptr);
-		    argptr += (tis.tsize() + 3) & ~3;
-        }
-		version (GNU){
-		static if
-		    (
-		     is( typeof(argptr): void[] ) ||
-		     is( typeof(argptr) == struct ))
-		{
-		    version(PPC)
-		    {
-			// Structs are pass-by-reference in V4 ABI
-			s = tis.xtoString(va_arg2!(void*)(argptr));
-		    }
-		    else version(X86_64)
-		    {
-			throw new FormatError("cannot portably format a struct on this target");
-		    }
-		    else
-		    {
-			static assert(0, "unimplemented");
-		    }
-		}
-		else
-		{
-		    s = tis.xtoString(argptr);
-		    argptr += (tis.tsize() + 3) & ~3; // this looks like it should call aligntsize
-		}
+			if (tis.xtoString is null)
+			    throw new FormatError("Can't convert " ~ tis.toString() ~ " to string: \"string toString()\" not defined");
+	        version(DigitalMars){
+	        	
+	        	char[] delegate() toString;
+                toString.ptr = argptr;
+                toString.funcptr = cast(char[] function())tis.xtoString; 
+	            s = Utf.fromString8 (toString(), s);	            
+	            // s = tis.xtoString(argptr);
+	            
+			    argptr += (tis.tsize() + 3) & ~3;
+	        }
+			version (GNU){
+			static if (is( typeof(argptr): void[] ) ||  is( typeof(argptr) == struct ))
+			{
+			    version(PPC)
+			    {
+			    	// Structs are pass-by-reference in V4 ABI
+			    	s = tis.xtoString(va_arg2!(void*)(argptr));
+			    }
+			    else version(X86_64)
+			    {
+			    	throw new FormatError("cannot portably format a struct on this target");
+			    }
+			    else
+			    {
+			    	static assert(0, "unimplemented");
+			    }
+			}
+			else
+			{
+			    s = tis.xtoString(argptr);
+			    argptr += (tis.tsize() + 3) & ~3; // this looks like it should call aligntsize
+			}
         }
 		goto Lputstr;
 	    }
 
 	    default:
-		goto Lerror;
+	    	if (m2=='v')
+	    		throw new FormatError("Can't get type info for type void");
+	    	else
+	    		throw new FormatError("Can't get type info for mangled type " ~ cast(char)m2);
 	}}
 	else
 	{
@@ -934,7 +943,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			    default:
 				TypeInfo ti2 = primitiveTypeInfo(m2);
 				if (!ti2)
-				  goto Lerror;
+					throw new FormatError("Can't get type info for type " ~ cast(char)m2);
 				void[] va = *cast(void[]*)p_args; p_args += array_t.sizeof;
 				putArray(va.ptr, va.length, ti2);
 			}
@@ -957,140 +966,149 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 		{   TypeInfo_Struct tis = cast(TypeInfo_Struct)ti;
 		    if (tis.xtoString is null)
 			throw new FormatError("Can't convert " ~ tis.toString() ~ " to string: \"string toString()\" not defined");
-		    s = tis.xtoString(p_args);
+		    
+		    
+		    char[] delegate() toString;
+            toString.ptr = argptr;
+            toString.funcptr = cast(char[] function())tis.xtoString; 
+            s = Utf.fromString8 (toString(), s);
+		    // s = tis.xtoString(p_args);
+		    
+		    
+		    
 		    p_args += tis.tsize();
 		    goto Lputstr;
 		}
 
 		default:
-		    goto Lerror;
+			throw new FormatError("Could not format mangled type " ~ cast(char)m);
 	    }
 	}
 
     Lnumber:
-	switch (fc)
-	{
-	    case 's':
-	    case 'd':
-		if (signed)
-		{   if (cast(long)vnumber < 0)
-		    {	prefix = "-";
-			vnumber = -vnumber;
-		    }
-		    else if (flags & FLplus)
-			prefix = "+";
-		    else if (flags & FLspace)
-			prefix = " ";
+		switch (fc)
+		{
+		    case 's':
+		    case 'd':
+			if (signed)
+			{   if (cast(long)vnumber < 0)
+			    {	prefix = "-";
+				vnumber = -vnumber;
+			    }
+			    else if (flags & FLplus)
+				prefix = "+";
+			    else if (flags & FLspace)
+				prefix = " ";
+			}
+			break;
+	
+		    case 'b':
+			signed = 0;
+			base = 2;
+			break;
+	
+		    case 'o':
+			signed = 0;
+			base = 8;
+			break;
+	
+		    case 'X':
+			uc = 1;
+			if (flags & FLhash && vnumber)
+			    prefix = "0X";
+			signed = 0;
+			base = 16;
+			break;
+	
+		    case 'x':
+			if (flags & FLhash && vnumber)
+			    prefix = "0x";
+			signed = 0;
+			base = 16;
+			break;
+	
+		    default:
+		    	throw new FormatError("Could not format number of mangled type " ~ fc);
 		}
-		break;
-
-	    case 'b':
-		signed = 0;
-		base = 2;
-		break;
-
-	    case 'o':
-		signed = 0;
-		base = 8;
-		break;
-
-	    case 'X':
-		uc = 1;
-		if (flags & FLhash && vnumber)
-		    prefix = "0X";
-		signed = 0;
-		base = 16;
-		break;
-
-	    case 'x':
-		if (flags & FLhash && vnumber)
-		    prefix = "0x";
-		signed = 0;
-		base = 16;
-		break;
-
-	    default:
-		goto Lerror;
-	}
-
-	if (!signed)
-	{
-	    switch (m)
-	    {
-		case Mangle.Tbyte:
-		    vnumber &= 0xFF;
-		    break;
-
-		case Mangle.Tshort:
-		    vnumber &= 0xFFFF;
-		    break;
-
-		case Mangle.Tint:
-		    vnumber &= 0xFFFFFFFF;
-		    break;
-
-		default:
-		    break;
-	    }
-	}
-
-	if (flags & FLprecision && fc != 'p')
-	    flags &= ~FL0pad;
-
-	if (vnumber < base)
-	{
-	    if (vnumber == 0 && precision == 0 && flags & FLprecision &&
-		!(fc == 'o' && flags & FLhash))
-	    {
-		putstr(null);
+	
+		if (!signed)
+		{
+		    switch (m)
+		    {
+			case Mangle.Tbyte:
+			    vnumber &= 0xFF;
+			    break;
+	
+			case Mangle.Tshort:
+			    vnumber &= 0xFFFF;
+			    break;
+	
+			case Mangle.Tint:
+			    vnumber &= 0xFFFFFFFF;
+			    break;
+	
+			default:
+			    break;
+		    }
+		}
+	
+		if (flags & FLprecision && fc != 'p')
+		    flags &= ~FL0pad;
+	
+		if (vnumber < base)
+		{
+		    if (vnumber == 0 && precision == 0 && flags & FLprecision &&
+			!(fc == 'o' && flags & FLhash))
+		    {
+			putstr(null);
+			return;
+		    }
+		    if (precision == 0 || !(flags & FLprecision))
+		    {	vchar = cast(char)('0' + vnumber);
+			if (vnumber < 10)
+			    vchar = cast(char)('0' + vnumber);
+			else
+			    vchar = cast(char)((uc ? 'A' - 10 : 'a' - 10) + vnumber);
+			goto L2;
+		    }
+		}
+	
+		int n = tmpbuf.length;
+		char c;
+		int hexoffset = uc ? ('A' - ('9' + 1)) : ('a' - ('9' + 1));
+	
+		while (vnumber)
+		{
+		    c = cast(char)((vnumber % base) + '0');
+		    if (c > '9')
+			c += hexoffset;
+		    vnumber /= base;
+		    tmpbuf[--n] = c;
+		}
+		if (tmpbuf.length - n < precision && precision < tmpbuf.length)
+		{
+		    int m = tmpbuf.length - precision;
+		    tmpbuf[m .. n] = '0';
+		    n = m;
+		}
+		else if (flags & FLhash && fc == 'o')
+		    prefix = "0";
+		putstr(tmpbuf[n .. tmpbuf.length]);
 		return;
-	    }
-	    if (precision == 0 || !(flags & FLprecision))
-	    {	vchar = cast(char)('0' + vnumber);
-		if (vnumber < 10)
-		    vchar = cast(char)('0' + vnumber);
-		else
-		    vchar = cast(char)((uc ? 'A' - 10 : 'a' - 10) + vnumber);
-		goto L2;
-	    }
-	}
-
-	int n = tmpbuf.length;
-	char c;
-	int hexoffset = uc ? ('A' - ('9' + 1)) : ('a' - ('9' + 1));
-
-	while (vnumber)
-	{
-	    c = cast(char)((vnumber % base) + '0');
-	    if (c > '9')
-		c += hexoffset;
-	    vnumber /= base;
-	    tmpbuf[--n] = c;
-	}
-	if (tmpbuf.length - n < precision && precision < tmpbuf.length)
-	{
-	    int m = tmpbuf.length - precision;
-	    tmpbuf[m .. n] = '0';
-	    n = m;
-	}
-	else if (flags & FLhash && fc == 'o')
-	    prefix = "0";
-	putstr(tmpbuf[n .. tmpbuf.length]);
-	return;
 
     Lreal:
-	putreal(vreal);
-	return;
+		putreal(vreal);
+		return;
 
     Lcomplex:
-	putreal(vcreal.re);
-	putc('+');
-	putreal(vcreal.im);
-	putc('i');
-	return;
+		putreal(vcreal.re);
+		putc('+');
+		putreal(vcreal.im);
+		putc('i');
+		return;
 
     Lerror:
-	throw new FormatError("formatArg");
+    	throw new FormatError("formatArg");
     }
 
     for (j = 0; j < arguments.length; )
@@ -1104,7 +1122,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 	do
 	{
 	    if (ti.classinfo.name.length <= mi)
-		goto Lerror;
+	    	throw new FormatError("Error parsing classinfo name: " ~ ti.classinfo.name);
 	    m = cast(Mangle)ti.classinfo.name[mi++];
 	} while (m == Mangle.Tconst || m == Mangle.Tinvariant);
 
@@ -1311,7 +1329,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			}
 	
 			if (j == arguments.length)
-			    goto Lerror;
+				throw new FormatError("Formatting Error");
 			ti = arguments[j++];
 			mi = 9;
 			do
@@ -1320,7 +1338,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			} while (m == Mangle.Tconst || m == Mangle.Tinvariant);
 	
 			if (c > 0x7F)		// if UTF sequence
-			    goto Lerror;	// format specifiers can't be UTF
+				throw new FormatError("Formatting specifiers can't be UTF");	// format specifiers can't be UTF
 			formatArg(cast(char)c);
 		    }
 		}
