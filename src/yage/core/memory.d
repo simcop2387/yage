@@ -21,7 +21,7 @@ import yage.core.misc;
  */
 class Memory
 {
-	private Array!(ubyte) _memory;
+	private ArrayBuilder!(ubyte) _memory;
 	
 	private mixin Singleton!(Memory);
 	
@@ -30,7 +30,7 @@ class Memory
 	 * Get a new array of type T. */
 	static T[] allocate(T)(int length)
 	{	length *= T.sizeof;
-		Array!(ubyte)* memory = &getInstance()._memory; // get TLS version of _memory.
+	ArrayBuilder!(ubyte)* memory = &getInstance()._memory; // get TLS version of _memory.
 		int l = memory.length;
 		memory.length = l += length;
 		if (memory.reserve < l)
@@ -42,14 +42,14 @@ class Memory
 	/**
 	 * Free a previously allocated array. */
 	static void free(T)(T[] data)
-	{	Array!(ubyte)* memory = &getInstance()._memory;
+	{	ArrayBuilder!(ubyte)* memory = &getInstance()._memory;
 		memory.length = memory.length - data.length*T.sizeof;
 	}
 	
 	/**
 	 * Free all memory for the current thread. */
 	static void freeAll()
-	{	Array!(ubyte)* memory = &getInstance()._memory;
+	{	ArrayBuilder!(ubyte)* memory = &getInstance()._memory;
 		memory.length = 0;
 	}
 	

@@ -64,6 +64,8 @@ private alias char[] string;
 private alias wchar[] wstring;
 private alias dchar[] dstring;
 
+import tango.core.Exception;
+
 //Had to add this for tangobos.
 private T va_arg2(T)(inout void* _argptr)
 {
@@ -259,9 +261,14 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 		while (*prefix)
 		    putc(*prefix++);
 	    }
-
-	    foreach (dchar c; s)
-		putc(c);
+	    
+	    try {
+		    foreach (dchar c; s)
+				putc(c);
+	    } catch (UnicodeException e)
+	    {	foreach (char c; s)
+	    		putc(c);
+	    }
 
 	    while (postpad--)
 		putc(' ');
@@ -1259,9 +1266,14 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			}
 	
 			if (c != '%')
-			{    if (c > 0x7F)	// if UTF sequence
+			{   if (c > 0x7F)	// if UTF sequence
 			    {	i--;		// back up and decode UTF sequence
-					c = fromString8([fmt[i]], [c])[0];
+					try {
+			    		c = fromString8([fmt[i]], [c])[0];
+					} catch (UnicodeException e) // invalid utf
+					{	
+						i++;
+					}
 			    }
 			Lputc:
 			    putc(c);

@@ -63,7 +63,7 @@ struct Json
 			
 			static if (isArrayType!(T))
 			{	// Show arrays inline?
-				bool inl = is(ElementTypeOfArray!(T) : real); 
+				bool inl = is(ElementTypeOfArrayBuilder!(T) : real); 
 				
 				// dynamic array from object
 				T array = (object.length > options.maxArrayLength) ? object[0..options.maxArrayLength] : object;
@@ -72,7 +72,7 @@ struct Json
 				if (!inl)
 					result ~= options.lineReturn;
 					
-				foreach (int index, ElementTypeOfArray!(T) value; array) 
+				foreach (int index, ElementTypeOfArrayBuilder!(T) value; array) 
 				{	char[] newPath = Format("%s [{}]", path, index);
 					char[] comma = index<object.length-1 ? "," : "";
 					result ~= (inl ? " " : tab) ~ internalEncode(value, options, newPath) ~ comma ~ (inl ? "" : options.lineReturn);		
@@ -134,7 +134,7 @@ struct Json
 
 	private static bool isStringType(T)()
 	{	static if (isArrayType!(T))
-			return isCharType!(ElementTypeOfArray!(T));
+			return isCharType!(ElementTypeOfArrayBuilder!(T));
 		return false;
 	}
 

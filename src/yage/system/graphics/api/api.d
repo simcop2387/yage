@@ -11,6 +11,7 @@ import yage.core.object2;
 import yage.resource.texture;
 import yage.resource.material;
 import yage.resource.shader;
+import yage.scene.scene;
 import yage.system.graphics.api.opengl;
 
 /**
@@ -22,12 +23,15 @@ class GraphicsAPI
 	protected struct Current
 	{	static CameraNode camera; ///
 		static IRenderTarget renderTarget; ///
+		static Scene scene; ///
 		static Shader shader; ///
 		static Texture texture; ///
 		
 		static MaterialPass pass; ///
 	}
 	Current current; /// ditto
+	
+	static MaterialPass defaultPass;
 
 }
 
@@ -36,6 +40,6 @@ class GraphicsAPI
 class GraphicsException : YageException
 {	///
 	this(...)
-	{	super(swritef(_arguments, _argptr));
+	{	super(format(_arguments, _argptr));
 	}	
 }

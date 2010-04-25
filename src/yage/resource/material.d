@@ -83,9 +83,8 @@ class MaterialPass
 	/// Type of shader to generate, if the shader property is null
 	enum AutoShader
 	{	NONE,	/// Used fixed-function rendering or the Pass's Shader property if set.
-		PHONG,	/// Per pixel lighting, but no normal map.
-		NORMAL,	/// Use the second texture as a normal map.
-		DETAIL_MAP /// Use the second texture as a detail map.
+		PHONG,	/// Per pixel lighting, and if there's a second texture, use it as a normal map
+		DETAIL,	/// Per pixel lighting, and if there's a second texture, use it as a detail texture
 		// CELL_SHADED
 	}
 	
@@ -96,6 +95,7 @@ class MaterialPass
 	float shininess = 0;
 	bool reflective;		/// Use environment mapping for the texture
 	bool lighting = true; 	/// If false, diffuse is used as the color.
+	bool flat = false;		/// If true, use flat shading
 	float lineWidth = 1;	/// Thickness in pixels of lines and points. 
 	Texture[] textures;
 	
@@ -119,55 +119,3 @@ class MaterialPass
 		textures[1] = texture;
 	}
 }
-
-class ShaderGenerator
-{
-
-	
-	/// TODO: Create a cache to always return the same obect instance for the same shader.
-	static Shader generate(MaterialPass pass, LightNode[] lights, bool fog=false)
-	{
-		// Use fixed function rendering, return null.
-		if (pass.autoShader == MaterialPass.AutoShader.NONE)
-			return null;
-		
-		
-		bool hasDirectionalLight, hasSpotlight;
-		foreach (light; lights)
-		{	hasDirectionalLight = hasDirectionalLight ||  (light.type == LightNode.Type.DIRECTIONAL);
-			hasSpotlight = hasSpotlight || (light.type == LightNode.Type.SPOT);
-		}
-		bool hasSpecular = pass.specular != Color("black"); // TODO need a way to ignore alpha in comparrison
-		
-		
-		char[] vertex, fragment;
-		
-		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{
-			// Create vertex shader
-			vertex =
-				"varying vec3 normal, eye_direction, eye_position;\n";
-			if (fog)
-				vertex ~= "varying float fog;\n";
-			vertex ~=
-				"void main()\n" ~
-				"{	normal = (gl_NormalMatrix * gl_Normal) * gl_NormalScale;\n" ~
-				"	eye_position = (gl_ModelViewMatrix * gl_Vertex).xyz;\n" ~
-				"	eye_direction = -normalize(eye_position);\n";
-			if (fog)
-				vertex ~= "fog = clamp(exp(-gl_Fog.density * abs(eye_position.z)), 0.0, 1.0);\n";
-			vertex ~=
-				"	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n" ~
-				"	gl_Position = ftransform();\n" ~
-				"}";
-			
-			// Fragment shader
-			
-		}
-		
-		
-		return new Shader(vertex, fragment);
-	}
-	
-}
-

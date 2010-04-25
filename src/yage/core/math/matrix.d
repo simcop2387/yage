@@ -171,7 +171,7 @@ struct Matrix
 	}
 	unittest
 	{	// Decompose and recompose a random matrix to make sure we get back what we started with.
-		Matrix test = Matrix.random();
+		Matrix test = Matrix.random(); // I guess it doesn't have to be affine to work
 		test.v03 = test.v13 = test.v23 = 0;
 		test.v33 = 1; // the last row isn't used in decompose, so we set it to identity.
 		
@@ -375,7 +375,7 @@ struct Matrix
 	}
 	
 	/**
-	 * Rotation and scale are intimately related in the Matrix.
+	 * In a Matrix, rotation and scale are intimately related.
 	 * This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. */
 	Matrix rotatePreservingScale(T)(T rot) /// ditto
 	{	if (isUniformScale()) // no need for special steps
@@ -469,7 +469,7 @@ struct Matrix
 		return res;
 	}
 
-	///
+	/// Return a copy of this Matrix scaled by s
 	Matrix scale(Vec3f s)
 	{	Matrix result = *this;
 		result.v00 = s.x;

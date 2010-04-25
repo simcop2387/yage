@@ -6,6 +6,8 @@
 
 module yage.resource.shader;
 
+import yage.system.log;
+
 
 /**
  * Shader stores vertex and fragment shader source code 
@@ -25,7 +27,6 @@ class Shader
 	
 	protected char[] vertexSource;
 	protected char[] fragmentSource;
-	protected ShaderUniform[] uniforms;
 	
 	/**
 	 * Params:
@@ -72,24 +73,24 @@ struct ShaderUniform
 		M2x3, M3x2, M2x4, M4x2, M4x3, M3x4
 	}
 	Type type;		///
-	char[] name;	///
+	char[64] name = 0;	///
 	union { ///
-		int[] intValues;	///
-		float[] floatValues; ///
+		int[16] intValues;	///
+		float[16] floatValues; ///
 	}
 	
 	/// Constructors
 	static ShaderUniform opCall(char[] name, Type type, float[] values...)
 	{	ShaderUniform result;
-		result.name = name;
-		result.floatValues = values.dup;
+		result.name[0..name.length] = name[0..$];		
+		result.floatValues[0..values.length] = values[0..$];
 		result.type = type;
 		return result;
 	}	
 	static ShaderUniform opCall(char[] name, Type type, int[] values...) /// ditto
 	{	ShaderUniform result;
-		result.name = name;
-		result.intValues = values.dup;
+		result.name[0..name.length] = name[0..$];
+		result.intValues[0..values.length] = values[0..$];
 		result.type = type;
 		return result;
 	}

@@ -89,7 +89,7 @@ DDOC =
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
 		on $(DATETIME)

@@ -1,7 +1,7 @@
 #!dmd -run
 /**
  * License: MIT
- * Copyright (c) 2009 Eric Poggel
+ * Copyright (c) 2009-2010 Eric Poggel
  * 
  * This is a customized version of CDC for running Yage tests. 
  * See the customBuild() function for yage-specific customizations
@@ -17,9 +17,6 @@ module cdc;
  * to use this file as a generic build script like bud or rebuild. */
 int main(char[][] args)
 {	
-	// Operate cdc as a generic build script
-	//return defaultBuild(args);
-	
 	// Get platform
 	version (Win32)
 		char[] platform = "win32";
@@ -77,7 +74,11 @@ int main(char[][] args)
 	{	if (String.find(test, __FILE__) != -1)
 			continue; // skip this file		
 		System.trace("\nRunning test {}", test);
-		CDC.compile(["unittests/"~test, derelict_lib, yage_lib], ["-run"] ~ options1 ~ options2, null, src_path, verbose);
+		try {
+			CDC.compile(["tests/"~test, derelict_lib, yage_lib], ["-run"] ~ options1 ~ options2, null, src_path, verbose);
+		} catch (Exception e)
+		{	System.trace("Failed to compile!\n", e);
+		}
 	}
 	System.trace("");
 	FS.remove(yage_lib);
@@ -102,13 +103,15 @@ version(Tango)
 	import tango.io.FileScan;
 	import tango.io.FileSystem;
 	import tango.io.Stdout;
-	import tango.sys.Process;
+	import tango.sys.Environment;
 	import tango.text.convert.Format;
 	import tango.text.Regex;
 	import tango.text.Util;
 	import tango.text.Ascii;
 	import tango.time.Clock;
 	import tango.util.Convert;
+	extern (C) int system(char *);  // Tango's process hangs sometimes
+	//import tango.core.tools.TraceExceptions; // enable to get stack trace in buildyage.d on internal failure
 } else
 {	import std.date;
 	import std.string : join, find, replace, tolower;
@@ -127,8 +130,8 @@ version (DigitalMars)
 	char[] compiler = "dmd";
 version (GNU)
 	char[] compiler = "gdc"; /// ditto
-version (LDC) // should it be ldmd?
-	char[] compiler = "ldc";  /// ditto
+version (LDC)
+	char[] compiler = "ldmd";  /// ditto
 
 version (Windows)
 {	const char[][] obj_ext = [".obj", ".o"]; /// An array of valid object file extensions for the current.
@@ -538,17 +541,24 @@ struct System
 				command = command[2..$];
 
 		version (Tango)
-		{	scope p = new Process();
-			p.copyEnv(true);
-			p.args(command, args);
-			p.execute();
+		{	/+ // hangs in Tango 0.99.9
+			scope p = new Process(true);
+			scope(exit)
+				p.close();
+			p.execute(command, args);
 
 			Stdout.copy(p.stdout).flush; // adds extra line returns?
 			Stdout.copy(p.stderr).flush;
 			scope result = p.wait();
-			if (result.status > 0)
+			if (result.status != Process.Result.Exit)
 				throw new ProcessException(result.toString());
-		} else
+			+/
+
+			char[] execute = command ~ " " ~ String.join(args, " ") ~ "\0";
+			int status = system(execute.ptr);
+			if (status != 0)
+				throw new ProcessException(String.format("Process '%s' exited with status %s", command, status));
+		} else		
 		{
 			command = command ~ " " ~ String.join(args, " ");
 			bool success =  !system((command ~ "\0").ptr);
@@ -598,7 +608,7 @@ struct FS
 	/// Convert a relative path to an absolute path.
 	static char[] abs(char[] rel_path)
 	{	version (Tango)
-			return FileSystem.toAbsolute(rel_path);
+			return (new FilePath).absolute(rel_path).toString();
 		else
 		{	// Remove filename
 			char[] filename;
@@ -622,7 +632,7 @@ struct FS
 	static void chDir(char[] path)
 	{	Log.add(`cd "`~path~`"`);
 		version (Tango)
-			FileSystem.setDirectory(path);
+			Environment.cwd(path);
 		else .chdir(path);
 	}
 
@@ -650,7 +660,7 @@ struct FS
 	/// Get the current working directory.
 	static char[] getDir()
 	{	version (Tango)
-			return FileSystem.getDirectory();
+			return Environment.cwd();
 		else return getcwd();
 	}
 
@@ -700,7 +710,7 @@ struct FS
 	}
 
 	/**
-	 * Recursively get all files or folders in directory and subdirectories that have an extension in exts.
+	 * Recursively get all files in directory and subdirectories that have an extension in exts.
 	 * This may return files in a different order depending on whether Tango or Phobos is used.
 	 * Params:
 	 *     directory = Absolute or relative path to the current directory

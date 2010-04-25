@@ -12,6 +12,7 @@ import tango.io.Console;
 
 import yage.core.format;
 import yage.core.json;
+import yage.core.timer;
 
 /**
  * Log to a file or the console. */
@@ -84,4 +85,38 @@ struct Log
 	static void dump(T)(T t)
 	{	trace(Json.encode(t));
 	}
+}
+
+struct Profile
+{
+	static Timer[char[]] timers;
+	
+	static void start(char[] timerName)
+	{
+		auto timer = timerName in timers;
+		if (timer)
+			timer.play();
+		else
+		{	Timer t = new Timer(true);			
+			timers[timerName] = t;
+			t.play();
+		}		
+	}
+	
+	static double stop(char[] timerName)
+	{	auto timer = timerName in timers;
+		assert(timer);
+		timer.pause();
+		return timer.tell();		
+	}
+	
+	static char[] getTimesAndClear()
+	{	char[] result;
+		foreach (name, timer; timers)
+			result ~= format("%ss %s\n", timer.tell(), name);
+		timers = null;
+		return result;
+	}
+	
+	
 }

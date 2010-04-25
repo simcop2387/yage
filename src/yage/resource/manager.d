@@ -127,7 +127,7 @@ struct ResourceManager
 	}
 
 	/// Simply load a file, using ResourceManager's paths to resolve relative paths.
-	static ubyte[] loadFile(char[] filename)
+	static ubyte[] getFile(char[] filename)
 	{	char[] absPath = ResourceManager.resolvePath(filename);
 		return cast(ubyte[])File.get(absPath);
 	}
@@ -156,7 +156,7 @@ struct ResourceManager
 		if (result)
 			return *result;
 		
-		Timer t = new Timer();	
+		Timer t = new Timer(true);	
 		Collada c = new Collada(absPath);
 		colladas[absPath] = c;
 		Log.info("Collada file '%s' parsed in %s seconds.", absPath, t);
@@ -173,7 +173,7 @@ struct ResourceManager
 		filename = resolvePath(filename);
 		if (filename in fonts)
 			return fonts[filename];
-		Timer t = new Timer();
+		Timer t = new Timer(true);
 		fonts[filename] = new Font(filename);
 		Log.info("Font ", filename ~ " loaded in ", t, " seconds.");
 		return fonts[filename];
@@ -191,7 +191,7 @@ struct ResourceManager
 		if (absPath in models)
 			return models[absPath];
 		
-		Timer t = new Timer();
+		Timer t = new Timer(true);
 		models[absPath] = new Model(absPath);
 		Log.info("Model ", absPath ~ " loaded in ", t, " seconds.");
 		return models[absPath];
@@ -209,7 +209,7 @@ struct ResourceManager
 		if (result)
 			return *result;
 		
-		Timer t = new Timer();		
+		Timer t = new Timer(true);		
 	
 		Collada c = collada(filename);
 		Material m = c.getMaterialById(id);
@@ -228,7 +228,7 @@ struct ResourceManager
 	static Shader shader(char[] source, bool type)
 	{	if (source in shaders)
 			return shaders[source];
-		Timer t = new Timer();
+		Timer t = new Timer(true);
 		shaders[source] = new Shader(source, type);
 		Log.info("Shader ", source ~ " loaded in ", t, " seconds.");
 		return shaders[source];
@@ -244,7 +244,7 @@ struct ResourceManager
 		if (filename in sounds)
 			return sounds[filename];
 		
-		Timer t = new Timer();
+		Timer t = new Timer(true);
 		sounds[filename] = new Sound(filename);
 		Log.info("Sound ", filename ~ " loaded in ", t, " seconds.");
 		return sounds[filename];
@@ -274,7 +274,7 @@ struct ResourceManager
 		}
 		
 		// Create new texture
-		Timer t = new Timer();
+		Timer t = new Timer(true);
 		GPUTexture result = new GPUTexture(filename, format, mipmap);
 		Log.info("Texture '%s' loaded in %s seconds.", filename, t);
 		textures[key] = result;

@@ -144,8 +144,8 @@ private class SoundSource : IDisposable
 			
 			Vec3f velocity = soundNode.getAbsoluteVelocity();
 			if (this.velocity != velocity)
-			{	//Stdout.format("Changing velocity from %s to %s", this.velocity, velocity);
-				this.velocity = velocity;
+			{	this.velocity = velocity;
+				
 				OpenAL.sourcefv(al_source, AL_VELOCITY, velocity.ptr);
 			}
 			

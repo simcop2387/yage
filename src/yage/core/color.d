@@ -52,8 +52,8 @@ struct Color
 	static Color opCall(int r, int g,int b, int a=255)
 	{	Color res;
 		res.r=cast(ubyte)r;
-		res.b=cast(ubyte)b;
 		res.g=cast(ubyte)g;
+		res.b=cast(ubyte)b;
 		res.a=cast(ubyte)a;
 		return res;
 	}
@@ -64,8 +64,8 @@ struct Color
 	static Color opCall(float r, float g, float b, float a=1) /// ditto
 	{	Color res;
 		res.r=cast(ubyte)clamp(r*255, 0.0f, 255.0f);
-		res.b=cast(ubyte)clamp(b*255, 0.0f, 255.0f);
 		res.g=cast(ubyte)clamp(g*255, 0.0f, 255.0f);
+		res.b=cast(ubyte)clamp(b*255, 0.0f, 255.0f);
 		res.a=cast(ubyte)clamp(a*255, 0.0f, 255.0f);
 		return res;
 	}
@@ -143,10 +143,11 @@ struct Color
 		{	color[0..2] = string[0];
 			color[2..4] = string[1];
 			color[4..6] = string[2];
-			color[6..8] = 'F';
-		}
-		if (string.length==4)
-			color[6..8] = string[3];
+			if (string.length==4)
+				color[6..8] = string[3];
+			else
+				color[6..8] = 'F';
+		}		
 		else if (string.length==6)
 		{	color[0..6] = string[0..6];
 			color[6..8] = 'F';		

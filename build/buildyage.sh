@@ -3,6 +3,6 @@
 #Linux only!
 
 cd ../src
-rebuild -g -clean demo2/main.d
+rebuild -g -clean demo1/main.d
 mv main ../bin/yage3d
 cd ../build

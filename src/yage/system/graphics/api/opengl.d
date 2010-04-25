@@ -36,8 +36,10 @@ import yage.system.graphics.probe;
 import yage.system.graphics.api.api;
 import yage.system.log;
 
+import yage.resource.manager; // temporary for generateShader
+
 private class ResourceInfo
-{	uint id;	// OpenGL's handle
+{	uint id;   // OpenGL's handle
 	uint time; // seconds from 1970, watch out for 2038!
 	WeakRef!(Object) resource; // A weak reference, so when the resource is deleted, we know to delete this item also
 	
@@ -67,7 +69,8 @@ private class ResourceInfo
 class OpenGL : GraphicsAPI 
 {
 	protected Model msprite;
-		
+	
+	// A map from a resource's hash to it's resource info
 	protected HashMap!(uint, ResourceInfo) textures; // aa's fail, so we have to use Tango's Hashmap
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
@@ -98,23 +101,60 @@ class OpenGL : GraphicsAPI
 		glMatrixMode(GL_MODELVIEW);
 	}
 	
-	void bindPass(MaterialPass pass, Geometry geometry=null, int lights=0)
+	/**
+	 * Profiling has shown that changing shaders, textures, and blending operations are the slowest parts of this funciton.
+	 * TODO: This can be made faster by only changing the shader and blending when different from a previous pass.
+	 * Params:
+	 *     pass = 
+	 *     lights = Array of LightNodes that affect this material.  Required if the pass's autoShader is not AutoShader.NONE.
+	 */
+	void bindPass(MaterialPass pass, LightNode[] lights=null)
 	{
-		if (pass)
-		{	
+		
+		
+			
+	
+		// convert nulls to defaults;
+		if (!defaultPass)
+			defaultPass = new MaterialPass();		
+		MaterialPass currentPass = current.pass;
+		if (!currentPass)
+			currentPass = defaultPass;
+		if (!pass)
+			pass = defaultPass;
+		
+		if (pass !is current.pass)
+		{
+			// Materials
+			Profile.start("_passMaterials");
 			if (pass.lighting)
 			{	glMaterialfv(GL_FRONT, GL_AMBIENT, pass.ambient.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, pass.diffuse.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_SPECULAR, pass.specular.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_EMISSION, pass.emissive.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_SHININESS, &pass.shininess);
+				glColor4f(1, 1, 1, 1);
 			} else
+			{	glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, Vec4f().v.ptr);
+				glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
+				float s=0;
+				glMaterialfv(GL_FRONT, GL_SHININESS, &s);
 				glColor4fv(pass.diffuse.vec4f.ptr);
+			}
+			Profile.stop("_passMaterials");
 			
 			// Blend
+			Profile.start("_passBlending");		
 			if (pass.blend != MaterialPass.Blend.NONE)
-			{	glEnable(GL_BLEND);
+			{	
+				glEnable(GL_BLEND);
 				glDepthMask(false);
+				
+				glDisable(GL_ALPHA_TEST);
+				glAlphaFunc(GL_ALWAYS, 0);
+				
 				switch (pass.blend)
 				{	case MaterialPass.Blend.ADD:
 						glBlendFunc(GL_ONE, GL_ONE);
@@ -128,10 +168,51 @@ class OpenGL : GraphicsAPI
 					default: break;
 			}	}
 			else
-			{	glEnable(GL_ALPHA_TEST);
+			{	glDisable(GL_BLEND);
+				glDepthMask(true);
+				
+				glEnable(GL_ALPHA_TEST);
 				glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
 			}
+			Profile.stop("_passBlending");
 			
+			// Textures
+			Profile.start("_passTextures");
+			if(pass.textures.length == 1)
+			{	glEnable(GL_TEXTURE_2D);
+				bindTexture(pass.textures[0]);
+			} else
+			{	glDisable(GL_TEXTURE_2D);
+				textureUnbind();
+			}
+			Profile.stop("_passTextures");
+		}
+		
+		// Shader
+		Profile.start("_passShader");
+		Shader shader;
+		ShaderUniform[] uniforms;
+		if (pass.shader)
+		{	shader = pass.shader;
+			uniforms = pass.shaderUniforms;
+		} 
+		else	
+			shader = generateShader(pass, lights, current.scene.fogEnabled, uniforms);	
+		
+		if (shader)
+		{	try {
+				bindShader(shader, uniforms);
+			} catch (GraphicsException e)
+			{	Log.error(e);
+			}
+		} else
+			bindShader(null);
+		Profile.stop("_passShader");
+
+		
+		/*
+		if (pass != defaultPass)
+		{
 			// Textures
 			if (pass.textures.length>1 && Probe.feature(Probe.Feature.MULTITEXTURE))
 			{	
@@ -145,7 +226,7 @@ class OpenGL : GraphicsAPI
 					glClientActiveTextureARB(GL_TEXTUREI_ARB);
 					
 					// TODO: Bind these when the geometry is bound instead of here.  Sometimes we'll have more tex coords than textures.
-					bindVertexBuffer(geometry.getVertexBuffer(Geometry.TEXCOORDS0), Geometry.TEXCOORDS0);
+					//bindVertexBuffer(geometry.getVertexBuffer(Geometry.TEXCOORDS0), Geometry.TEXCOORDS0);
 					bindTexture(pass.textures[i]);
 			}	}
 			else if(pass.textures.length == 1)
@@ -154,247 +235,19 @@ class OpenGL : GraphicsAPI
 			} else
 				glDisable(GL_TEXTURE_2D);
 			
-			// Shader
-			Shader shader = pass.shader;
-			ShaderUniform[] uniforms = pass.shaderUniforms;
-			if (!pass.shader)
-			{	shader = ShaderGenerator.generate(pass, null);
-				//uniforms = ?;
-			}
 			
-			if (shader)
-			{	
-				//ShaderUniform[2] uniforms;
-				//uniforms[0] = ShaderUniform("light_number", ShaderUniform.Type.F1, cast(float)lights.length); 
-				//uniforms[1] = ShaderUniform("fog_enabled", ShaderUniform.Type.F1, cast(float)current.camera.getScene().fogEnabled); 
-				//Log.dump(uniforms);
-				try {
-					bindShader(shader, uniforms);					
-				} catch (GraphicsException e)
-				{	Log.error(e);
-				}
-			}			
 		} else // unbind
-		{
-			if (current.pass.lighting)
-			{	float s=0;
-				glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, Vec4f().v.ptr);
-				glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
-				glMaterialfv(GL_FRONT, GL_SHININESS, &s);
-			} else
-				glColor4f(1, 1, 1, 1);
-			
-			// Blend
-			if (current.pass.blend != MaterialPass.Blend.NONE)
-			{	glDisable(GL_BLEND);
-				glDepthMask(true);
-			}else
-			{	glDisable(GL_ALPHA_TEST);
-				glAlphaFunc(GL_ALWAYS, 0);
-			}
-			
-			// Textures
-			if (current.pass.textures.length>1 && Probe.feature(Probe.Feature.VBO))
+		{				
+			if(current.pass.textures.length == 1)			
 			{	
-				foreach (i, texture; pass.textures)
-				{	glActiveTextureARB(GL_TEXTURE0_ARB+i);
-					glDisable(GL_TEXTURE_2D);
-
-					if (pass.textures[i].reflective)
-					{	glDisable(GL_TEXTURE_GEN_S);
-						glDisable(GL_TEXTURE_GEN_T);
-					}
-					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-					textureUnbind(pass.textures[i]);
-				}
-				glClientActiveTextureARB(GL_TEXTURE0_ARB);
-			}
-			else if(current.pass.textures.length == 1){	
-				textureUnbind(current.pass.textures[0]);			
-				//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+				textureUnbind();			
 				glDisable(GL_TEXTURE_2D);
 			}
-			
-			// Shader
-			if (current.shader)
-				bindShader(null);
-				
 		}
+		*/
 		
 		current.pass = pass;		
 	}
-	
-	/**
-	 * Set all of the OpenGL states to the values of this material layer.
-	 * Params:
-	 * lights = An array containing the LightNodes that affect this material,
-	 *     passed to the shader through uniform variables (unfinished).
-	 *     This function is used internally by the engine and doesn't normally need to be called.
-	 * color = Used to set color on a per-instance basis, combined with existing material colors.
-	 * Model = Used to retrieve texture coordinates for multitexturing. 
-	void bindLayer(Layer layer, LightNode[] lights = null, Color color = Color("white"), Geometry model=null)
-	{
-		if (layer)
-		{	// Material
-			glMaterialfv(GL_FRONT, GL_AMBIENT, layer.ambient.vec4f.scale(color.vec4f).v.ptr);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, layer.diffuse.vec4f.scale(color.vec4f).v.ptr);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, layer.specular.vec4f.scale(color.vec4f).v.ptr);
-			glMaterialfv(GL_FRONT, GL_EMISSION, layer.emissive.vec4f.scale(color.vec4f).v.ptr);
-			glMaterialfv(GL_FRONT, GL_SHININESS, &layer.specularity);	
-			
-			glColor4fv(layer.color.vec4f.ptr);
-
-			// Blend
-			if (layer.blend != BLEND_NONE)
-			{	glEnable(GL_BLEND);
-				glDepthMask(false);
-				switch (layer.blend)
-				{	case BLEND_ADD:
-						glBlendFunc(GL_ONE, GL_ONE);
-						break;
-					case BLEND_AVERAGE:
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						break;
-					case BLEND_MULTIPLY:
-						glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-						break;
-					default: break;
-			}	}
-			else
-			{	glEnable(GL_ALPHA_TEST);
-				glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
-			}
-
-			// Cull
-			if (layer.cull == LAYER_CULL_FRONT)
-				glCullFace(GL_FRONT);
-
-			// Polygon
-			switch (layer.draw)
-			{	default:
-				case LAYER_DRAW_FILL:
-					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					break;
-				case LAYER_DRAW_LINES:
-					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-					glLineWidth(layer.width);
-					break;
-				case LAYER_DRAW_POINTS:
-					glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-					glPointSize(layer.width);
-					break;
-			}
-			
-			// Textures
-			if (layer.textures.length>1 && Probe.feature(Probe.Feature.MULTITEXTURE))
-			{	int length = min(layer.textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
-
-				// Loop through all of Layer's textures up to the maximum allowed.
-				// TODO: there's currently no coverage for this block
-				for (int i=0; i<length; i++)
-				{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
-
-					// Activate texture unit and enable texturing
-					glActiveTextureARB(GL_TEXTUREI_ARB);
-					glEnable(GL_TEXTURE_2D);
-					glClientActiveTextureARB(GL_TEXTUREI_ARB);
-					
-					// TODO: bind closest level of texture coordinates available instead of always using 0.
-					bindVertexBuffer(model.getVertexBuffer(Geometry.TEXCOORDS0), Geometry.TEXCOORDS0);
-					bindTexture(layer.textures[i]);
-				}
-			}
-			else if(layer.textures.length == 1){
-				glEnable(GL_TEXTURE_2D);
-				bindTexture(layer.textures[0]);
-			} else
-				glDisable(GL_TEXTURE_2D);
-			
-			
-			if (layer.shader)
-			{	
-				ShaderUniform[3] uniforms;
-				uniforms[0] = ShaderUniform("light_number", ShaderUniform.Type.F1, cast(float)lights.length); 
-				uniforms[1] = ShaderUniform("fog_enabled", ShaderUniform.Type.F1, cast(float)current.camera.getScene().fogEnabled); 
-				
-				
-				// int uniforms = glGetObjectParameterivARB(GL_ACTIVE_UNIFORMS);
-
-				// Bind Textures to UniformSampler2D
-				// TODO: Use glGetActiveUniform to get user defined uniforms that are sampler2D and automatically bind textures in order
-				// keep in mind 1d, 3d, cupe, and shadow textures
-				for (int i=0; i<layer.textures.length; i++)
-				{	
-					if (layer.textures[i].name.length)
-					{	char[256] cname = 0;
-						cname[0..layer.textures[i].name.length]= layer.textures[i].name;
-						int location = glGetUniformLocationARB(layer.program, cname.ptr);
-						if (location == -1)
-						{}//	throw new Exception("Warning:  Unable to set texture sampler: " ~ textures[i].name);
-						else
-							glUniform1iARB(location, i);
-				}	}
-				
-				
-				bindShader(layer.shader, layer, uniforms);
-			}
-		} else // unbind
-		{
-			glColor4f(1, 1, 1, 1);
-			
-			// Material
-			float s=0;
-			glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, Vec4f().v.ptr);
-			glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
-			glMaterialfv(GL_FRONT, GL_SHININESS, &s);
-
-			// Blend
-			if (current.layer.blend != BLEND_NONE)
-			{	glDisable(GL_BLEND);
-				glDepthMask(true);
-			}else
-			{	glDisable(GL_ALPHA_TEST);
-				glAlphaFunc(GL_ALWAYS, 0);
-			}
-
-			// Cull, polygon
-			glCullFace(GL_BACK);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			
-			
-			// Textures
-			if (current.layer.textures.length>1 && Probe.feature(Probe.Feature.VBO))
-			{	int length = min(layer.textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
-
-				for (int i=length-1; i>=0; i--)
-				{	glActiveTextureARB(GL_TEXTURE0_ARB+i);
-					glDisable(GL_TEXTURE_2D);
-
-					if (layer.textures[i].reflective)
-					{	glDisable(GL_TEXTURE_GEN_S);
-						glDisable(GL_TEXTURE_GEN_T);
-					}
-					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-					textureUnbind(layer.textures[i]);
-				}
-				glClientActiveTextureARB(GL_TEXTURE0_ARB);
-			}
-			else if(current.layer.textures.length == 1){	
-				textureUnbind(current.layer.textures[0]);			
-				//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-			}
-			glDisable(GL_TEXTURE_2D);
-			
-			bindShader(null, null);
-		}
-		current.layer = layer;
-	}
-	*/
-	
 	/**
 	 * Enable this light as the given light number and apply its properties.
 	 * This function is used internally by the engine and should not be called manually or exported. */
@@ -415,8 +268,8 @@ class OpenGL : GraphicsAPI
 		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
 
 		// Spotlight settings
-		float angle = type == LightNode.Type.SPOT ? light.spotAngle : 180;
-		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angle);
+		float angleDegrees = type == LightNode.Type.SPOT ? light.spotAngle*180/PI : 180;
+		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angleDegrees);
 		if (type==LightNode.Type.SPOT)
 		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.spotExponent);
 			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
@@ -548,6 +401,7 @@ class OpenGL : GraphicsAPI
 			glClearColor(0, 0, 0, 0);
 			glLightModelfv(GL_LIGHT_MODEL_AMBIENT, Vec4f(.2, .2, .2, 1).ptr);
 		}
+		current.scene = scene;
 	}
 	
 	/// TODO: Allow specifying uniform variable assignments.
@@ -555,10 +409,9 @@ class OpenGL : GraphicsAPI
 	{	
 		if (!Probe.feature(Probe.Feature.SHADER))
 			throw new GraphicsException("OpenGL.bindShader() is only supported on hardware that supports shaders.");
-		
-		// TODO
-		//if (shader==current.shader)
-		//	return;
+
+		if (shader is current.shader)
+			return;
 		
 		
 		if (shader)
@@ -663,10 +516,10 @@ class OpenGL : GraphicsAPI
 			// Bind uniform variables
 			foreach (uniform; variables)
 			{
-				// Get the location of name
-				char[256] cname = 0; // TODO: Fix potential buffer overflow
-				cname[0..uniform.name.length] = uniform.name;
-				int location = glGetUniformLocationARB(info.id, cname.ptr);
+				// Get the location of name.  TODO: Cache locations for names
+				int location = glGetUniformLocationARB(info.id, uniform.name.ptr);				
+				
+				//int location = glGetUniformLocationARB(info.id, uniform.name.ptr);
 				if (location == -1)
 					throw new GraphicsException("Unable to set OpenGL shader uniform variable: %s", uniform.name);
 
@@ -832,7 +685,7 @@ class OpenGL : GraphicsAPI
 		// Texture Matrix operations
 		//if (position.length2() || scale.length2() || rotation!=0)
 		{	glMatrixMode(GL_TEXTURE);
-			glPushMatrix();
+			glLoadIdentity();
 			
 			Vec2f padding = Vec2f(gpuTexture.getPadding().x, gpuTexture.getPadding().y) ;			
 			
@@ -873,26 +726,50 @@ class OpenGL : GraphicsAPI
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blendTranslated);
 	}
 	
-	/// TODO: merge into bindTexture
+	/// TODO: Create a bindTextures(Texture[]) function instead.
 	void textureUnbind(Texture texture)
 	{
 		// Texture Matrix
 		//if (position.length2() || scale.length2() || rotation!=0)
 		{	glMatrixMode(GL_TEXTURE);
-			glPopMatrix();
+			glLoadIdentity();
 			glMatrixMode(GL_MODELVIEW);
 		}
 
 		// Environment Map
-		if (texture.reflective)
-		{	glEnable(GL_TEXTURE_GEN_S);
-			glEnable(GL_TEXTURE_GEN_T);
+		//if (texture.reflective)
+		{	glDisable(GL_TEXTURE_GEN_S);
+			glDisable(GL_TEXTURE_GEN_T);
 			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 		}
 
 		// Blend
-		if (texture.blend != Texture.Blend.MULTIPLY)
+		//if (texture.blend != Texture.Blend.MULTIPLY)
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	
+	void textureUnbind()
+	{
+		// Texture Matrix
+		//if (position.length2() || scale.length2() || rotation!=0)
+		{	glMatrixMode(GL_TEXTURE);
+			glLoadIdentity();
+			glMatrixMode(GL_MODELVIEW);
+		}
+
+		// Environment Map
+		//if (texture.reflective)
+		{	glDisable(GL_TEXTURE_GEN_S);
+			glDisable(GL_TEXTURE_GEN_T);
+			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+		}
+
+		// Blend
+		//if (texture.blend != Texture.Blend.MULTIPLY)
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -991,7 +868,7 @@ class OpenGL : GraphicsAPI
 	
 	
 	///
-	RenderStatistics drawGeometry(Geometry geometry)
+	RenderStatistics drawGeometry(Geometry geometry, LightNode[] lights=null)
 	{	RenderStatistics result;
 		
 		if (!geometry.getAttribute(Geometry.VERTICES))
@@ -1005,55 +882,53 @@ class OpenGL : GraphicsAPI
 		}
 		// Loop through the meshes		
 		foreach (mesh; geometry.getMeshes())
-		{	/*
-			// Deprecated (still used by surfaces)
-			if (mesh.getMaterial()) // Must have a material to render
-			{	foreach (Layer l; mesh.getMaterial().getLayers()) // Loop through each layer (rendering pass)
-				{	bindLayer(l);
-					drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
-					bindLayer(null); // can this be moved outside this loop?
-			}	}
-			*/
+		{	
 			if (mesh.material)
 			{
 				if (mesh.material.techniques.length)
 				{
 					foreach (pass; mesh.material.techniques[0].passes)
-					{	bindPass(pass);
-						drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
+					{	Profile.start("bindPass");
+						bindPass(pass, lights);
+						Profile.stop("bindPass");
 						
-					}
-					bindPass(null);
-				}
-				
-			}
-			
-		
+						Profile.start("drawVertexBuffer");
+						drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
+						Profile.stop("drawVertexBuffer");
+					}		
+				}				
+			}			
 			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
 		}
 		
-		// TODO: Unbind vertex buffers?
+		// Temporary:  something is rendering somewhere that needs this set
+		// back to true after a call to bindPass sets it to false.
+		Profile.start("bindPass");
+		glDepthMask(true);
+		Profile.stop("bindPass");
 		
 		return result;
 	}
 	
-	RenderStatistics drawModel(Geometry geometry, float animationTime=0) // TODO: animationTime won't support blending animations.
-	{	return drawGeometry(geometry);
+	///
+	RenderStatistics drawModel(Geometry geometry, LightNode[] lights=null, float animationTime=0) // TODO: animationTime won't support blending animations.
+	{	auto result = drawGeometry(geometry, lights);
+		
+		return result;
 	}
 	
 	// Render a sprite
-	RenderStatistics drawSprite(Material material)
-	{	msprite.getMeshes()[0].material = material;
-	
-		Vec3f rotation = Current.camera.getAbsoluteTransform(true).toAxis();
-		
+	RenderStatistics drawSprite(Material material, LightNode[] lights=null)
+	{	
 		// Rotate if rotation is nonzero.
+		Vec3f rotation = Current.camera.getAbsoluteTransform(true).toAxis();
 		if (rotation.length2())			
-		{	// TODO: zero the rotation along the axis from the node to the camera.			
+		{	// TODO: zero the rotation along the axis from the node to the camera.
 			glRotatef(rotation.length()*_180_PI, rotation.x, rotation.y, rotation.z);
 		}
 		
-		return drawGeometry(msprite);
+		msprite.getMeshes()[0].material = material;
+		return drawGeometry(msprite, lights);
 	}
 	
 	/**
@@ -1072,31 +947,104 @@ class OpenGL : GraphicsAPI
 		//	glDrawArrays();
 	}
 	
-	/*
-	 * Create a wrapper around any OpenGL function, but check for errors when finished
-	 * The simplified signature is: ReturnType execute(FunctionName)(Arguments ...);
-	 * 
-	 * Example:
-	 * OpenGL.execute!(glColor3f)(0f, 1f, 1f, 1f);
-	 */
-	private static R executeAndCheck(alias T, R=ReturnTypeOf!(baseTypedef!(typeof(T))))(ParameterTupleOf!(baseTypedef!(typeof(T))) args)
-	{	static if (is (R==void))
-		{	T();
-			check();
-		} else
-		{
-			R result = T();
-			check();
-			return result;
-		}
-		void check()
-		{	int err = glGetError();
-			if (err != GL_NO_ERROR)
-				throw new GraphicsException("Error %s, %s", err, fromStringz(cast(char*)gluErrorString(err)));
-		}
+	
+	struct ShaderParams
+	{	ushort numLights;
+		bool hasFog;
+		bool hasSpecular;
+		bool hasDirectional;
+		bool hasSpotlight;
 	}
 	
+	// TODO: use Cache instead
+	Shader[ShaderParams] generatedShaders; // TODO: how will these ever get deleted, do they need to be?
+
 	
+	Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, inout ShaderUniform[] uniforms)
+	{
+		// Use fixed function rendering, return null.
+		if (pass.autoShader == MaterialPass.AutoShader.NONE)
+			return null;
+		
+		// Set parameters for shader generation
+		ShaderParams params;		
+		params.numLights = lights.length;
+		params.hasFog = fog;
+		params.hasSpecular = (pass.specular.ui & 0xffffff) != 0; // ignore alpha in comparrison
+		foreach (light; lights)
+		{	params.hasDirectional = params.hasDirectional  ||  (light.type == LightNode.Type.DIRECTIONAL);
+			params.hasSpotlight  = params.hasSpotlight || (light.type == LightNode.Type.SPOT);
+		}
+		Shader result;
+		
+		// Get shader, either a cached version or create a new one.
+		auto existingPtr = params in generatedShaders;
+		if (existingPtr)
+			result =  *existingPtr;		
+		else
+		{
+			if (pass.autoShader == MaterialPass.AutoShader.PHONG)
+			{
+				char[] defines = format("#version 110\n#define NUM_LIGHTS %s\n", params.numLights);
+				if (params.hasFog)
+					defines ~= "#define HAS_FOG\n";
+				if (params.hasSpecular)
+					defines ~= "#define HAS_SPECULAR\n";
+				if (params.hasDirectional)
+					defines ~= "#define HAS_DIRECTIONAL\n";
+				if (params.hasSpotlight)
+					defines ~= "#define HAS_SPOTLIGHT\n";
+		
+				char[] vertex   = defines ~ cast(char[])ResourceManager.getFile("phong.vert");
+				char[] fragment = defines ~ cast(char[])ResourceManager.getFile("phong.frag");
+				result = new Shader(vertex, fragment);
+		
+			} else
+				assert(0); // todo
+			
+			generatedShaders[params] = result;
+		}
+		
+		// Set uniform values
+		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
+		{
+			Matrix camInverse = current.camera.getInverseAbsoluteMatrix();
+			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);
+			
+			int idx=0;
+			foreach (i, light; lights)
+			{	
+				char[] makeName(char[] name, int i)
+				{	name[7] = i + 48;
+					return name;
+				}
+				
+				
+				Vec3f p = light.getAbsolutePosition().transform(camInverse);
+				
+				float type = light.type == LightNode.Type.DIRECTIONAL ? 0.0 : 1.0;
+				uniforms[idx++] =
+					ShaderUniform(makeName("lights[_].position", i), ShaderUniform.Type.F4, Vec4f(p.x, p.y, p.z, type).v);				
+				uniforms[idx++] =
+					ShaderUniform(makeName("lights[_].quadraticAttenuation", i), ShaderUniform.Type.F1, light.getQuadraticAttenuation());
+				
+				if (params.hasSpotlight)
+				{	Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); // TODO: This could be calculated per-light instead of per node * light
+					uniforms[idx++] = 
+						ShaderUniform(makeName("lights[_].spotDirection", i), ShaderUniform.Type.F3, lightDirection.v);
+					
+					float angle = light.type == LightNode.Type.SPOT ? light.spotAngle : 2*PI;
+					uniforms[idx++] =
+						ShaderUniform(makeName("lights[_].spotCutoff", i), ShaderUniform.Type.F1, angle);
+											
+					uniforms[idx++] = 
+						ShaderUniform(makeName("lights[_].spotExponent", i), ShaderUniform.Type.F1, light.spotExponent);
+				}
+			}
+		}
+		
+		return result;
+	}
 }
 
 

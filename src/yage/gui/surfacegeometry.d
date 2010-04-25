@@ -233,7 +233,7 @@ package class SurfaceGeometry : Geometry
 			result.diffuse = Color(1f, 1f, 1f, opacity);
 			result.blend = MaterialPass.Blend.AVERAGE;
 			result.lighting = false;
-			result.emissive = Color(0xffffffff); // even with this, we still have to turn off lighting to render
+			result.emissive = Color(0xffffffff); // even with this, we still have to turn off lighting to render, but why?
 			return result;
 		}
 		

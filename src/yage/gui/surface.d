@@ -212,17 +212,22 @@ class Surface : Tree!(Surface)
 	 * This also mouse movement so the mouse can move infinitely without encountering any boundaries.
 	 * For example, this is ideal for attaching the mouse to the look direction of a first or third-person camera. 
 	 * releaseMouse() undoes the effect. */
-	void grabMouse() {
-		focus();
-		SDL_WM_GrabInput(SDL_GRAB_ON);
-		SDL_ShowCursor(false);
-		grabbedSurface = this;
+	void grabMouse(bool grab) {
+		SDL_ShowCursor(!grab);
+		if (grab)
+		{	focus();
+			SDL_WM_GrabInput(SDL_GRAB_ON);
+			grabbedSurface = this;
+		}
+		else
+		{	SDL_WM_GrabInput(SDL_GRAB_OFF);			
+			grabbedSurface = null;
+		}		
 	}
-	void releaseMouse() /// ditto
-	{	SDL_WM_GrabInput(SDL_GRAB_OFF);
-		SDL_ShowCursor(true);
-		grabbedSurface = null;
+	bool getGrabbedMouse() /// ditto
+	{	return (grabbedSurface is this);
 	}
+	
 	
 	/**
 	 * Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. */

@@ -354,7 +354,6 @@ unittest
 	float[] test4;
 	for (int i=0; i<10000; i++)
 		test4 ~= random(-1000, 1000);
-	Timer a = new Timer();
 	test4.radixSort();
 	assert(test4.sorted());
 }
@@ -368,9 +367,9 @@ unittest
  * being 4 system words instead of two (16 instead of 8 bytes on a 32-bit system).
  * Internally, it's implemented similarly to java's StringBuffer.
  * Use .data to access the underlying array. */
-struct Array(T)
+struct ArrayBuilder(T)
 {
-	alias Array!(T) AT;
+	alias ArrayBuilder!(T) AT;
 	
 	private T[] array;
 	private size_t size;

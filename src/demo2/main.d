@@ -111,7 +111,7 @@ int main()
 	
 	// Rendering / Input Loop
 	int fps = 0;
-	Timer frame = new Timer();
+	Timer frame = new Timer(true);
 	while(!System.isAborted())
 	{		
 		Input.processAndSendTo(view);

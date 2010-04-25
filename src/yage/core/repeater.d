@@ -35,7 +35,7 @@ class Repeater : Timer, IDisposable
 		}
 		
 		void run()
-		{	Timer a = new Timer(); // time it takes to call func
+		{	Timer a = new Timer(true); // time it takes to call func
 			while (active)
 			{	a.seek(0);
 				if (!paused())

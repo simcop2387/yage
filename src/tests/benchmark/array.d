@@ -7,7 +7,7 @@ import yage.core.array;
 import yage.core.timer;
 
 /**
- * On a P4 2.8ghz Windows XP Laptop, this shows that Array!(int) is 3-6x faster with ~= as int[]. */
+ * On a P4 2.8ghz Windows XP Laptop, this shows that ArrayBuilder!(int) is 3-6x faster with ~= as int[]. */
 void main()
 {
 	{
@@ -24,7 +24,7 @@ void main()
 		Timer a = new Timer(true);
 		for (int i=0; i<1000; i++)
 		{	
-			Array!(int) array;
+			ArrayBuilder!(int) array;
 			for (int j=0; j<1000; j++)
 				array ~= j;
 		}

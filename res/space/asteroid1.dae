@@ -48,10 +48,10 @@
                             <texture texture="asteroid1.xml-image-sampler" texcoord="" />
                         </diffuse>
                         <specular>
-                            <color>1.000000 1.000000 1.000000 1.000000</color>
+                            <color>0.300000 0.280000 0.260000 1.000000</color>
                         </specular>
                         <shininess>
-                            <float>109.000000</float>
+                            <float>50.000000</float>
                         </shininess>
                         <reflective>
                             <color>1.000000 1.000000 1.000000 1.000000</color>

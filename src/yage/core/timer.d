@@ -16,7 +16,7 @@ import tango.time.StopWatch;
  * A cross-platform, high-performance (microsecond) timing class.
  * Example:
  * --------------------------------
- * Timer a = new Timer();
+ * Timer a = new Timer(true);
  * double b = a.get();		// b stores the current time.
  * --------------------------------
  */
@@ -33,7 +33,7 @@ class Timer
 	protected Timer source; // TODO:	 allow using one timer as the souce of another, so pausing a scene could pause all timers in that scene.
 
 	/// Initialize and start the Timer.
-	this(bool start=true)
+	this(bool start=false)
 	{	_paused = !start;
 		us = 0;
 		if (start)

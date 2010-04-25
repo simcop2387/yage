@@ -13,8 +13,7 @@ import yage.scene.scene;
 import yage.scene.light;
 import yage.scene.node;
 import yage.scene.movable;
-import yage.system.graphics.probe;
-import yage.system.input;
+import yage.system.log;
 
 
 /**
@@ -28,7 +27,7 @@ class VisibleNode : MovableNode
 	protected Vec3f	size;
 	protected Color color;				// RGBA, used for glColor4f()
 	
-	protected bool 	onscreen = true;	// used internally by cameras to mark if they can see this node.
+	bool onscreen = true;	// used internally by cameras to mark if they can see this node.
 	protected LightNode[] lights;		// Lights that affect this VisibleNode
 
 	/**
@@ -64,27 +63,15 @@ class VisibleNode : MovableNode
 	{	this.color = color; 
 	}
 	
-	/// Get an array of lights that were enabled in the last call to enableLights().	
+	/// Get an array of lights that were enabled in the last call to getLights(lights...).	
 	LightNode[] getLights()
 	{	return lights;
 	}
 
-	/**
-	 * Get whether this node is inside the view frustum and large enough to be drawn by
-	 * the last camera that rendered it. */
-	bool getOnscreen()
-	{	return onscreen;
-	}
-	/*
-	 * Set whether this node is inside the current camera's view frustum.
-	 * This function is used internally by the engine and doesn't normally need to be called manually. */
-	void setOnscreen(bool onscreen)
-	{	this.onscreen = onscreen;
-	}
-
-	/// Get the radius of this VisibleNode's culling sphere.
+	/// Get the radius of this VisibleNode's culling sphere.  Does not include scale
 	float getRadius()
-	{	return 1.732050807*size.max();	// a value of zero would not be rendered since it's always smaller than the pixel threshold.
+	{	// TODO: maybe we should just return 0?
+		return 1.732050807*size.max();	// a value of zero would not be rendered since it's always smaller than the pixel threshold.
 	}									// This is the radius of a 1x1x1 cube
 
 	/**
@@ -142,8 +129,8 @@ class VisibleNode : MovableNode
 		*/
 		
 		foreach (l; all_lights)
-		{	l.intensity = l.getBrightness(position, getRadius()).vec3f.average();
-			if (l.intensity > 1/256) // smallest noticeable brightness for 8-bit per channel color (1/256).
+		{	l.intensity = l.getBrightness(position, getRadius()*getScale().max()).vec3f.average();
+			if (l.intensity >= 1/256f) // smallest noticeable brightness for 8-bit per channel color (1/256f).
 				addSorted!(LightNode, float)(lights, l, false, (LightNode a){return a.intensity;}, number );
 		}
 		return lights;

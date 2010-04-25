@@ -19,18 +19,13 @@ fx/flare*.xml				Eric Poggel, public domain
 fx/smoke.xml				Eric Poggel, public domain
 gui/skins/*					Deformative, license unknown
 gui/font/*					Bitstream, Inc, see Vera-Copyright.txt
-medieval/house.ms3d			Eric Poggel, public domain, textures by Nvidia
 music/celery - pages.ogg	Paul Sweeny and Jeff Stevens
-							http://www.myspace.com/celerycelery
-nature/cow.ms3d				Eric Poggel, public domain
-nature/turtle.ms3d			Eric Poggel, public domain
-sky/sanctuary.ms3d			Eric Poggel, public domain
-sky/universe.ms3d			Eric Poggel, public domain
-space/asteroid.ms3d			Eric Poggel, public domain
+sky/sanctuary.dae			Eric Poggel, public domain
+sky/universe.dae			Eric Poggel, public domain
+space/asteroid.dae			Eric Poggel, public domain
 space/star.xml				Eric Poggel, public domain
-scifi/fighter.ms3d			http://www.psionic3d.co.uk -- model and textures
+scifi/fighter.dae			http://www.psionic3d.co.uk -- model and textures
 							can be used for freeware, shareware, or commercial
 							games etc.
-terrain/islands.xml			Eric Poggel, public domain
 terrain/dirt.jpg			Eric Poggel, public domain
 terrain/water.jpg			Eric Poggel, public domain

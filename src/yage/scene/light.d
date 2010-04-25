@@ -14,19 +14,21 @@ import yage.scene.node;
 import yage.scene.movable;
 import yage.scene.scene;
 import yage.system.graphics.probe;
-import yage.system.graphics.probe;
 import yage.scene.camera;
+import yage.system.log;
 
 /**
  * LightNodes are Nodes that emit light.
  * Opengl hardware lights are used by default, but shaders can be used to go
- * beyond their capabilities.  Each material has an optional max-lights property
- * and this is used to only enable the lights that most affect the polygons
- * when rendering that instance of the material.
+ * beyond their capabilities.
  *
  * All color values are floating point in the range from 0 to 1 and in the order
  * of red, green, blue and alpha.  For example,
- * (1, .5, 0, 0) is orange, since it is 100% red and 50% green.*/
+ * (1, .5, 0, 0) is orange, since it is 100% red and 50% green.
+ * 
+ * Spotlights default to shining in the -z direction (the same as the default looking direction of the camera).
+ * They can be rotated by rotating the Node itself.
+ * */
 class LightNode : MovableNode
 {
 	/// Values that can be assigned to type.
@@ -36,22 +38,23 @@ class LightNode : MovableNode
 		SPOT			/// A light that emits light outward from a point in a single direction
 	}
 		
- 	public Type type = Type.POINT; /// The type of light (directional, point, or spot)
+ 	Type type = Type.POINT; /// The type of light (directional, point, or spot)
 
-	public Color ambient = {r:0,   g:0,   b:0,   a:255}; /// Ambient color of the light.  Defaults to black
-	public Color diffuse = {r:255, g:255, b:255, a:255}; /// Diffuse color of the light.  Defaults to 100% white.
-	public Color specular= {r:255, g:255, b:255, a:255}; /// Specular color of the light, defaults to 100% white.
+	Color ambient = {r:0,   g:0,   b:0,   a:255}; /// Ambient color of the light.  Defaults to black
+	Color diffuse = {r:255, g:255, b:255, a:255}; /// Diffuse color of the light.  Defaults to 100% white.
+	Color specular= {r:255, g:255, b:255, a:255}; /// Specular color of the light, defaults to 100% white.
 	
 	/**
 	 * Spotlight angle of the light, in radians.  
 	 * If the light type is a spotlight, this is the angle of the light cone. */
-	public float spotAngle = 45.0;	/// 
+	float spotAngle = 45.0 * PI/180;
 	
 	/**
 	 * Spotlight exponent of the light.  
 	 * If the light type is a spotlight, this is how focussed the light is.  
-	 * Larger values produce more focussed spotlights. */
-	public float spotExponent = 0;	/// 
+	 * Larger values produce brighter concentrations of light in the center of the circle
+	 * A value of 0 provides an even distribution of light across the entire spot circle. */
+	float spotExponent = 0;
 
 	package float intensity; // Used internally as a temp variable to sort lights by intensity for each node.
 	protected float	quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
@@ -64,7 +67,6 @@ class LightNode : MovableNode
 	override LightNode clone(bool children=false)
 	{	auto result = cast(LightNode)super.clone(children);
 		
-		// All of these assignments are atomic.
 		result.quadAttenuation = quadAttenuation;
 		result.type = type;
 		result.ambient = ambient;
@@ -75,7 +77,6 @@ class LightNode : MovableNode
 		
 		return result;
 	}
-
 	
 	/** Get / set the radius of the light.  Default value is 256.
 	 *  Quadratic attenuation is used, so the brightness of an object is Radius^2/distance^2,
@@ -87,7 +88,8 @@ class LightNode : MovableNode
 	{	quadAttenuation = 1.0/(radius*radius);
 	}
 
-	///
+	/**
+	 * Get the quadratic attenuation calculated from the light's radius. */ 
 	float getQuadraticAttenuation()
 	{	return quadAttenuation;
 	}
@@ -121,15 +123,27 @@ class LightNode : MovableNode
 		if (type==Type.SPOT)
 		{
 			float d = sqrt(d2);	// distance
-			if (d==0) d=1;
+			if (d==0) 
+				d=.000000001; // arbitrarily small
+			
 			// dot product of vector from spotlight pointing to node and node pointing to spotlight.
-			float spotDot = Vec3f(transform_abs.v[8..11]).normalize().dot(light_direction/d); // point/d is normalized point
-
+			//Vec3f spotDirection = Vec3f(0, 0, -1).rotate(transform_abs);
+			//float spotDot = spotDirection.dot(-light_direction/d); // point/d is normalized point
+			
+			// Somehow this is always the same as the spotDot calculated above, but how does using 8..11 work?
+			float spotDot = Vec3f(transform_abs.v[8..11]).normalize().dot(light_direction/d);
+	
 			// Extra spotlight angle (in radians) to satisfy margin distance
-			float m2 = margin>0 ? atan2(margin, d) : 0;
+			float extraAngle = margin>0 ? atan2(margin, d) : 0;			
 
-			if (spotDot > cos(spotAngle*0.017453292 + m2)) // 0.017453292 = pi/180
-				intensity *= pow(spotDot, spotExponent);
+			//Log.trace("%s, %s, %s, %s, %s", spotDot, spotAngle, extraAngle, margin, d);
+			float cutoff = cos(spotAngle + extraAngle);
+			if (spotDot > cutoff) // TODO some surfaces that should receive light don't.
+			{	// Normally this would work except it doesn't take into account the margin.
+				//intensity *= pow(spotDot, spotExponent);
+				// So instead we just ignore the spotExponent.  This gives an incorrect result for spotlights with
+				// a spot exponent other than 1, but it still works well enough for VisibleNode.getLights.
+			}
 			else
 			{	intensity = 0;	// if the spotlight isn't shining on this point.
 				add_ambient = false;
@@ -149,7 +163,7 @@ class LightNode : MovableNode
 
 	/*
 	 * This should be protected, but making it anything but public causes it not to be called.
-	 * Most likely a D bug. */
+	 * Perhaps it's a dmd bug? */
 	override public void ancestorChange(Node old_ancestor)
 	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		

@@ -79,7 +79,7 @@ struct Render
 {
 	protected static OpenGL graphics; // TODO: Replace with GraphicsAPI when interface is more finalized.
 	
-	protected static Array!(VisibleNode) visibleNodes;
+	protected static ArrayBuilder!(VisibleNode) visibleNodes;
 	protected static AlphaTriangle[] alpha;
 
 	protected static bool cleared; // if false, the color buffer need to be cleared before drawing?
@@ -322,21 +322,27 @@ struct Render
 					
 					// Enable the lights that affect this node
 					// TODO: This seems inefficient
-					auto lights = n.getLights(all_lights, num_lights);
+					Profile.start("getLights");
+					scope lights = n.getLights(all_lights, num_lights);
+					Profile.stop("getLights");
+					Profile.start("bindLights");
 					for (int i=lights.length; i<num_lights; i++)
 						glDisable(GL_LIGHT0+i);
 					for (int i=0; i<min(num_lights, lights.length); i++)
 						graphics.bindLight(lights[i], i);
+					Profile.stop("bindLights");
 					
 					// Render
 					if (cast(ModelNode)n)
-						result += graphics.drawModel((cast(ModelNode)n).getModel());			
+						result += graphics.drawModel((cast(ModelNode)n).getModel(), lights);
+						
 					else if (cast(SpriteNode)n)
-						result += graphics.drawSprite((cast(SpriteNode)n).getMaterial());
+						result += graphics.drawSprite((cast(SpriteNode)n).getMaterial(), lights);
 					
 					glPopMatrix();
 				}
 			}
+			
 			
 			// Sort alpha (translucent) triangles
 			Vec3f camera = Vec3f(currentCamera.getAbsoluteTransform(true).v[12..15]);
@@ -432,7 +438,7 @@ struct Render
 	}
 	
 	
-	/// Render a surface
+	/// Render a surface.  TODO: Move parts of this to OpenGL.d
 	static void surface(Surface surface, IRenderTarget target=null)
 	{	
 		graphics.bindRenderTarget(target);

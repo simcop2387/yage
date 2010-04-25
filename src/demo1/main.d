@@ -44,6 +44,7 @@ class DemoScene : Scene
 	this()
 	{
 		super();
+		ambient = "#444"; // global ambient
 		
 		// Skybox
 		skyBox = new Scene();
@@ -80,14 +81,6 @@ class DemoScene : Scene
 		planet.setSize(Vec3f(60));
 		planet.setAngularVelocity(Vec3f(0, -0.01, 0));
 		
-		/* // playing with shaders:
-		planet.getModel().getMeshes()[0].getMaterial().getPass().shader = new Shader(
-			cast(char[])ResourceManager.loadFile("diffuse.vert"),
-			cast(char[])ResourceManager.loadFile("diffuse.frag")
-		);		
-		planet.getModel().getMeshes()[0].getMaterial().getPass().shaderUniforms ~= 
-			ShaderUniform("lightInput[0].quadraticAttenuation", ShaderUniform.Type.F1, 1f/(7000*7000));
-		*/
 
 		// Asteroids
 		asteroidBelt(1200, 1400, planet);
@@ -118,7 +111,7 @@ int main()
 	view.style.set("width: 100%; height: 100%");
 	
 	// Events for main surface.
-	view.onKeyDown = delegate bool (Surface self, int key, int modifier){
+	view.onKeyDown = (Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
 		
@@ -137,39 +130,23 @@ int main()
 			scene = new DemoScene();
 			scene.camera.setListener();
 			scene.play();
-		}
-		
-		if (key == SDLK_x)
-		{	
-			try {
-				scene.planet.getModel().getMeshes()[0].getMaterial().getPass().shader =
-					new Shader(
-						cast(char[])ResourceManager.loadFile("diffuse.vert"),
-						cast(char[])ResourceManager.loadFile("diffuse.frag"));
-			} catch (GraphicsException e)
-			{	Log.error(e);
-				scene.planet.getModel().getMeshes()[0].getMaterial().getPass().shader = null;
-			}
-		}
+		}		
 		
 		scene.ship.keyDown(key);
 		return true;
 	};
 	
-	view.onKeyUp = delegate bool (Surface self, int key, int modifier){
+	view.onKeyUp = (Surface self, int key, int modifier){
 		scene.ship.keyUp(key);
 		return true;
 	};
 	
-	view.onMouseDown = delegate bool (Surface self, byte buttons, Vec2i coordinates, char[] href){
+	view.onMouseDown = (Surface self, byte buttons, Vec2i coordinates, char[] href){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
-		if (scene.ship.acceptInput)
-			self.grabMouse();
-		else
-			self.releaseMouse();
+		self.grabMouse(scene.ship.acceptInput);
 		return true;
 	};
-	view.onMouseMove = delegate bool (Surface self, byte buttons, Vec2i rel, char[] href){
+	view.onMouseMove = (Surface self, byte buttons, Vec2i rel, char[] href){
 		if(scene.ship.acceptInput)
 			scene.ship.input.mouseDelta += rel;
 		return true;
@@ -206,8 +183,8 @@ int main()
 	};
 
 	int fps = 0;
-	Timer frame = new Timer();
-	Timer delta = new Timer();
+	Timer frame = new Timer(true);
+	Timer delta = new Timer(true);
 	Log.info("Starting rendering loop.");
 	GC.collect();
 	

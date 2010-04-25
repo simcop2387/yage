@@ -120,6 +120,7 @@ class MovableNode : Node
 	/// Get / set the velocity of this Node relative to its parent's linear and angular velocity.
 	void setVelocity(Vec3f velocity)
 	{	linear_velocity = velocity; 
+		setTransformDirty(); // otherwise relative velocity won't be calculated
 	} 
 	Vec3f getVelocity() /// ditto
 	{	return linear_velocity;

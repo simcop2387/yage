@@ -212,16 +212,39 @@ class Geometry : Resource
 	static Geometry getPlane(int widthSegments=1, int heightSegments=1)
 	{		
 		auto result = new Geometry();
-		result.setAttribute(Geometry.VERTICES, [Vec3f(-1,-1, 0), Vec3f( 1,-1, 0), Vec3f( 1, 1, 0), Vec3f(-1, 1, 0)]);
-		result.setAttribute(Geometry.NORMALS, [Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
-		result.setAttribute(Geometry.TEXCOORDS0, [Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
+		float w = cast(float)widthSegments;
+		float h = cast(float)heightSegments;
+		Vec3f[] vertices;
+		Vec3f[] normals;
+		Vec3f[] texCoords;
+		Vec3i[] triangles;
+		
+		// Build vertices
+		for (int y=-heightSegments; y<=heightSegments; y+=2)
+			for (int x=-widthSegments; x<=widthSegments; x+=2)			
+			{	vertices ~= Vec3f(x/w, y/h, 0);
+				normals ~= Vec3f(0, 0, 1);
+				texCoords ~= Vec3f(x/w, y/h, 0);
+			}
+		result.setAttribute(Geometry.VERTICES, vertices);
+		result.setAttribute(Geometry.NORMALS, normals);
+		result.setAttribute(Geometry.TEXCOORDS0, texCoords);
+		
+		// Build triangles and material
+		for (int y=0; y<heightSegments; y++)
+			for (int x=0; x<widthSegments; x++)			
+			{	int thisX =  y*(widthSegments+1)+x;
+				int aboveX = (y+1)*(widthSegments+1)+x;
+				triangles ~= Vec3i(thisX, thisX+1, aboveX);
+				triangles ~= Vec3i(aboveX, thisX+1, aboveX+1);
+			}
 		
 		Material material = new Material();
 		auto pass = new MaterialPass();
 		pass.emissive = "gray"; // So it always shows up at least some
-		material.setPass(pass);
+		material.setPass(pass);				
+		result.setMeshes([new Mesh(material, triangles)]);
 		
-		result.setMeshes([new Mesh(material, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)])]);
 		return result;
 	}
 }

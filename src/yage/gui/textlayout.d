@@ -15,7 +15,6 @@ import tango.text.convert.Float;
 import tango.text.xml.Document;
 import tango.text.convert.Format;
 import tango.text.convert.Utf;
-import tango.text.Regex;
 import tango.text.Unicode;
 import tango.text.Util;
 
@@ -82,8 +81,8 @@ struct TextLayout
 	}
 	
 	private Line[] lines;
-	private Array!(Letter) letters;
-	private Array!(InlineStyle) styles;	
+	private ArrayBuilder!(Letter) letters;
+	private ArrayBuilder!(InlineStyle) styles;	
 	
 	/**
 	 * Update lines and letters data structures from keyboard input
@@ -428,7 +427,7 @@ private struct HtmlParser
 	 *     styles = Style results will be appended to this array.
 	 * Returns:
 	 */
-	static void htmlToLetters(char[] htmlText, Style style, inout Array!(Letter) letters, inout Array!(InlineStyle) styles)
+	static void htmlToLetters(char[] htmlText, Style style, inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
 	{
 		char[] lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
 		htmlText = condenseWhitespace(htmlText, lookaside);
@@ -454,7 +453,7 @@ private struct HtmlParser
 	 *     letters = 
 	 *     style s= */
 	private static void htmlNodeToLetters(T)(T input, InlineStyle parentStyle, 
-		inout Array!(Letter) letters, inout Array!(InlineStyle) styles)
+		inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
 	{	
 		// Apply additional styles based on a tag name.
 		void styleByTagName(inout InlineStyle style, char[] tagName)

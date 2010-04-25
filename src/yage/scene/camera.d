@@ -16,6 +16,7 @@ import yage.scene.visible;
 import yage.scene.node;
 import yage.scene.scene;
 import yage.scene.movable;
+import yage.system.log;
 import yage.system.system;
 import yage.system.graphics.render;
 import yage.system.window;
@@ -62,7 +63,7 @@ class CameraNode : MovableNode
 	{	return frustum;
 	}
 
-	/// Get the inverse of the camera's absolute matrix.  This is pre-calculated per call to .toTexture().
+	/// Get the inverse of the camera's absolute matrix.
 	public Matrix getInverseAbsoluteMatrix() {
 		return inverse_absolute; 
 	}
@@ -129,7 +130,7 @@ class CameraNode : MovableNode
 	 * Params:
 	 *     node = Root of the scenegraph to scan.  Defaults to the camera's scene.
 	 *     lookaside = Optional buffer to use for result to avoid memory allocation. */
-	Array!(VisibleNode) getVisibleNodes(Node root=null, inout Array!(VisibleNode) lookaside=Array!(VisibleNode)())
+	ArrayBuilder!(VisibleNode) getVisibleNodes(Node root=null, inout ArrayBuilder!(VisibleNode) lookaside=ArrayBuilder!(VisibleNode)())
 	{
 		if (!root)
 			root=scene;
@@ -137,22 +138,23 @@ class CameraNode : MovableNode
 		VisibleNode vnode = cast(VisibleNode)root;
 		if (root.getVisible() && vnode)
 		{	
-			vnode.setOnscreen(true);
+			vnode.onscreen = true;
 
-			float r = -vnode.getRadius();
+			float r = -vnode.getRadius() * vnode.getScale().max();			
 			Matrix cam_abs  = getAbsoluteTransform(true);
 			Matrix node_abs = vnode.getAbsoluteTransform(true);
 			// Cull nodes that are not inside the frustum
 			for (int i=0; i<frustum.length; i++)
-			{	// formula for the plane distance-to-point function, expanded in-line.
+			{	// formula for the plane distance-to-point function, expanded in-line.				
+				//float[4] result = frustum[i].v * node_abs.v[12..16];				
 				if (frustum[i].x*node_abs.v[12] + frustum[i].y*node_abs.v[13] + frustum[i].z*node_abs.v[14] + frustum[i].d < r)
-				{	vnode.setOnscreen(false);
+				{	vnode.onscreen = false;
 					break;
 				}
 			}
 
 			// cull nodes that are too small to see.
-			if (vnode.getOnscreen())
+			if (vnode.onscreen)
 			{	float x = cam_abs.v[12]-node_abs.v[12];
 				float y = cam_abs.v[13]-node_abs.v[13];
 				float z = cam_abs.v[14]-node_abs.v[14];
@@ -161,7 +163,7 @@ class CameraNode : MovableNode
 				if (height==0)
 					height = Window.getInstance().getHeight();
 				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
-					vnode.setOnscreen(false);
+					vnode.onscreen = false;
 				else // Onscreen and big enough to draw
 					lookaside ~= vnode;
 			}

@@ -11,6 +11,7 @@ import yage.core.all;
 import yage.core.tree;
 import yage.scene.scene;
 import yage.scene.all;
+import yage.system.log;
 
 /**
  * Nodes are used for building scene graphs in Yage.
@@ -265,15 +266,23 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 	 * Remember that rotating a Node's parent will change the Node's velocity. */
 	protected void calcTransform()
 	{
-		if (transform_dirty)
+		// TODO: IF I syncrhonize on the multiply by a copied result 
+		// of parent.getAbsoluteTransform(), that should be threadsafe.
+		if (transform_dirty) 
+			
 		{	//synchronized(this) // still causes deadlock
 			{	if (parent)
 				{	//synchronized(this.parent) // still causes deadlock.
 					{	parent.calcTransform();
-						transform_abs = transform * parent.transform_abs;						
+						transform_abs = transform * parent.transform_abs;
+						linear_velocity_abs = linear_velocity + parent.linear_velocity_abs;
+//						 TODO: linear_velocity_abs doesn't account for angular velocity
+						
 				}	}
 				else
-					transform_abs = transform;
+				{	transform_abs = transform;
+					linear_velocity_abs = linear_velocity;
+				}
 				transform_dirty = false;
 		}	}
 	}

@@ -77,9 +77,9 @@ class Scene : Node//, ITemporal
 	/// Construct an empty Scene.
 	this()
 	{	super();
-		delta = new Timer();
+		delta = new Timer(true);
 		scene = this;
-		ambient	= Color("#333333"); // OpenGL default global ambient light.
+		ambient	= Color("#333"); // OpenGL default global ambient light.
 		backgroundColor = Color("black");	// OpenGL default clear color
 		fogColor = Color("gray");
 		

@@ -373,10 +373,15 @@ class Collada
 	 * This uses ResourceManager.material internally, so subsequent calls will return an already loaded Material.
 	 * 
 	 * These are Yage-specific notes for loading Collada materials:
+	 * <ul>
 	 * <li>profile_COMMON is read, any other profiles are ignored.</li>
 	 * <li>Trancparency opaque attributes of RGB_ONE are mapped to  MaterialPass.Blend.ADD, RGB_ZERO is mapped
 	 *     to MaterialPass.Blend.MULTIPLY.  Otherwise, AVERAGE or NONE are used depending on whether any 
-	 *     transparency is specified or if the material has an alpha channel.</li> */
+	 *     transparency is specified or if the material has an alpha channel.</li>
+	 * <li>If the first child of profile_COMMON is &lt;phong&gt;, then A shader will be created to enable phong shading.
+	 *     If it's &lt;lambert&gt;, then flat shading from the fixed function pipeline will be used.  Otherwise
+	 *     fixed-function gourard shading will be used.</li> 
+	 * <ul>*/
 	Material getMaterialById(char[] id)
 	{	id = Xml.makeId(id);
 		if (id in materials)
@@ -392,8 +397,13 @@ class Collada
 		Node profileCommon = effectNode.getChild("profile_COMMON"); // TODO: profile_GLSL
 		Node technique = profileCommon.getChild("technique");
 		
-		Node shadingType = technique.getChild(); // in profile_COMMON, it can be newparam, image, blinn, constant, lambert, phong, or exra.
+		Node shadingType = technique.getChild(); // in profile_COMMON, it can be newparam, image, blinn, constant, lambert, phong, or extra.
 												// blinn, lambert, and phong all have the same parameters.
+		if (shadingType.name() == "phong")
+			pass.autoShader = MaterialPass.AutoShader.PHONG;
+		else if (shadingType.name == "lambert")
+			pass.flat = true;
+		// else use blinn (gourard) shading from the fixed function pipeline
 		
 		// Loop through and get each material property
 		scope Node[] params = shadingType.getChildren();
@@ -407,7 +417,7 @@ class Collada
 						// deliberate fall-through
 					case "color":
 						Color temp = Color(Xml.parseNumberList!(float)(n.value));
-						color = Color(cast(int)temp.r, cast(int)temp.b, cast(int)temp.g, ((color.a*cast(int)temp.a)/255));
+						color = Color(cast(int)temp.r, cast(int)temp.g, cast(int)temp.b, ((color.a*cast(int)temp.a)/255));
 						break;
 					case "texture":
 						texture = getTextureById(n.getAttribute("texture")); // TODO getImageByTexture

@@ -63,9 +63,9 @@ class Flare : GameObject
 		flare.setSize(Vec3f(2));
 
 		if (timer is null)
-		{	timer = new Timer();
+		{	timer = new Timer(true);
 			timer.seek(1);
-			timer2 = new Timer();
+			timer2 = new Timer(true);
 			timer2.seek(1);
 		}
 
