@@ -34,7 +34,7 @@
                     </sampler2D>
                 </newparam>
                 <technique sid="common">
-                    <phong>
+                    <blinn>
                         <emission>
                             <color>1.000000 1.000000 1.000000 1.000000</color>
                         </emission>
@@ -65,7 +65,7 @@
                         <index_of_refraction>
                             <float>0.000000</float>
                         </index_of_refraction>
-                    </phong>
+                    </blinn>
                 </technique>
             </profile_COMMON>
         </effect>

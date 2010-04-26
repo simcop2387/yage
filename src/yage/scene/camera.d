@@ -140,7 +140,7 @@ class CameraNode : MovableNode
 		{	
 			vnode.onscreen = true;
 
-			float r = -vnode.getRadius() * vnode.getScale().max();			
+			float r = -vnode.getRadius();			
 			Matrix cam_abs  = getAbsoluteTransform(true);
 			Matrix node_abs = vnode.getAbsoluteTransform(true);
 			// Cull nodes that are not inside the frustum

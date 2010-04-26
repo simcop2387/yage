@@ -74,6 +74,8 @@ class OpenGL : GraphicsAPI
 	protected HashMap!(uint, ResourceInfo) textures; // aa's fail, so we have to use Tango's Hashmap
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
+	
+	protected ArrayBuilder!(ShaderUniform) uniformsLookaside;
 
 	///
 	this()
@@ -110,10 +112,6 @@ class OpenGL : GraphicsAPI
 	 */
 	void bindPass(MaterialPass pass, LightNode[] lights=null)
 	{
-		
-		
-			
-	
 		// convert nulls to defaults;
 		if (!defaultPass)
 			defaultPass = new MaterialPass();		
@@ -126,7 +124,6 @@ class OpenGL : GraphicsAPI
 		if (pass !is current.pass)
 		{
 			// Materials
-			Profile.start("_passMaterials");
 			if (pass.lighting)
 			{	glMaterialfv(GL_FRONT, GL_AMBIENT, pass.ambient.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, pass.diffuse.vec4f.ptr);
@@ -143,10 +140,9 @@ class OpenGL : GraphicsAPI
 				glMaterialfv(GL_FRONT, GL_SHININESS, &s);
 				glColor4fv(pass.diffuse.vec4f.ptr);
 			}
-			Profile.stop("_passMaterials");
 			
 			// Blend
-			Profile.start("_passBlending");		
+			// TODO: If different than current blend
 			if (pass.blend != MaterialPass.Blend.NONE)
 			{	
 				glEnable(GL_BLEND);
@@ -174,10 +170,8 @@ class OpenGL : GraphicsAPI
 				glEnable(GL_ALPHA_TEST);
 				glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
 			}
-			Profile.stop("_passBlending");
 			
 			// Textures
-			Profile.start("_passTextures");
 			if(pass.textures.length == 1)
 			{	glEnable(GL_TEXTURE_2D);
 				bindTexture(pass.textures[0]);
@@ -185,11 +179,10 @@ class OpenGL : GraphicsAPI
 			{	glDisable(GL_TEXTURE_2D);
 				textureUnbind();
 			}
-			Profile.stop("_passTextures");
 		}
 		
 		// Shader
-		Profile.start("_passShader");
+		Profile.start("passShader");
 		Shader shader;
 		ShaderUniform[] uniforms;
 		if (pass.shader)
@@ -197,7 +190,11 @@ class OpenGL : GraphicsAPI
 			uniforms = pass.shaderUniforms;
 		} 
 		else	
-			shader = generateShader(pass, lights, current.scene.fogEnabled, uniforms);	
+		{	Profile.start("generateShader");
+			shader = generateShader(pass, lights, current.scene.fogEnabled, uniformsLookaside);	
+			uniforms = uniformsLookaside.data;
+			Profile.stop("generateShader");
+		}
 		
 		if (shader)
 		{	try {
@@ -207,7 +204,7 @@ class OpenGL : GraphicsAPI
 			}
 		} else
 			bindShader(null);
-		Profile.stop("_passShader");
+		Profile.stop("passShader");
 
 		
 		/*
@@ -410,8 +407,6 @@ class OpenGL : GraphicsAPI
 		if (!Probe.feature(Probe.Feature.SHADER))
 			throw new GraphicsException("OpenGL.bindShader() is only supported on hardware that supports shaders.");
 
-		if (shader is current.shader)
-			return;
 		
 		
 		if (shader)
@@ -511,12 +506,14 @@ class OpenGL : GraphicsAPI
 			}
 			
 			assert(info.id);
-			glUseProgramObjectARB(info.id);
+			
+			if (shader !is current.shader)
+				glUseProgramObjectARB(info.id);
 			
 			// Bind uniform variables
 			foreach (uniform; variables)
 			{
-				// Get the location of name.  TODO: Cache locations for names
+				// Get the location of name.  TODO: Cache locations for names?  Profiling shows this is already fast?
 				int location = glGetUniformLocationARB(info.id, uniform.name.ptr);				
 				
 				//int location = glGetUniformLocationARB(info.id, uniform.name.ptr);
@@ -540,7 +537,7 @@ class OpenGL : GraphicsAPI
 					default: break;
 				}				
 			}
-		} else
+		} else if (shader !is current.shader)
 			glUseProgramObjectARB(0); // no shader
 		
 		current.shader = shader;		
@@ -901,12 +898,6 @@ class OpenGL : GraphicsAPI
 			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
 		}
 		
-		// Temporary:  something is rendering somewhere that needs this set
-		// back to true after a call to bindPass sets it to false.
-		Profile.start("bindPass");
-		glDepthMask(true);
-		Profile.stop("bindPass");
-		
 		return result;
 	}
 	
@@ -960,13 +951,14 @@ class OpenGL : GraphicsAPI
 	Shader[ShaderParams] generatedShaders; // TODO: how will these ever get deleted, do they need to be?
 
 	
-	Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, inout ShaderUniform[] uniforms)
-	{
+	Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, inout ArrayBuilder!(ShaderUniform) uniforms)
+	{	Profile.start("generateShader1");
 		// Use fixed function rendering, return null.
 		if (pass.autoShader == MaterialPass.AutoShader.NONE)
 			return null;
 		
 		// Set parameters for shader generation
+		
 		ShaderParams params;		
 		params.numLights = lights.length;
 		params.hasFog = fog;
@@ -975,9 +967,11 @@ class OpenGL : GraphicsAPI
 		{	params.hasDirectional = params.hasDirectional  ||  (light.type == LightNode.Type.DIRECTIONAL);
 			params.hasSpotlight  = params.hasSpotlight || (light.type == LightNode.Type.SPOT);
 		}
+	
 		Shader result;
 		
 		// Get shader, either a cached version or create a new one.
+		
 		auto existingPtr = params in generatedShaders;
 		if (existingPtr)
 			result =  *existingPtr;		
@@ -1004,12 +998,14 @@ class OpenGL : GraphicsAPI
 			
 			generatedShaders[params] = result;
 		}
+		Profile.stop("generateShader1");
 		
 		// Set uniform values
+		Profile.start("generateShader2");
 		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{
+		{			
 			Matrix camInverse = current.camera.getInverseAbsoluteMatrix();
-			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);
+			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
 			
 			int idx=0;
 			foreach (i, light; lights)
@@ -1019,8 +1015,8 @@ class OpenGL : GraphicsAPI
 					return name;
 				}
 				
-				
-				Vec3f p = light.getAbsolutePosition().transform(camInverse);
+				Vec3f p = light.getAbsolutePosition().transform(camInverse); // TODO: This could be calculated per-light instead of per node * light
+
 				
 				float type = light.type == LightNode.Type.DIRECTIONAL ? 0.0 : 1.0;
 				uniforms[idx++] =
@@ -1029,7 +1025,7 @@ class OpenGL : GraphicsAPI
 					ShaderUniform(makeName("lights[_].quadraticAttenuation", i), ShaderUniform.Type.F1, light.getQuadraticAttenuation());
 				
 				if (params.hasSpotlight)
-				{	Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); // TODO: This could be calculated per-light instead of per node * light
+				{	Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); 
 					uniforms[idx++] = 
 						ShaderUniform(makeName("lights[_].spotDirection", i), ShaderUniform.Type.F3, lightDirection.v);
 					
@@ -1040,8 +1036,9 @@ class OpenGL : GraphicsAPI
 					uniforms[idx++] = 
 						ShaderUniform(makeName("lights[_].spotExponent", i), ShaderUniform.Type.F1, light.spotExponent);
 				}
-			}
+			}			
 		}
+		Profile.stop("generateShader2");
 		
 		return result;
 	}

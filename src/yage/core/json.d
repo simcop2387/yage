@@ -63,7 +63,7 @@ struct Json
 			
 			static if (isArrayType!(T))
 			{	// Show arrays inline?
-				bool inl = is(ElementTypeOfArrayBuilder!(T) : real); 
+				bool inl = is(ElementTypeOfArray!(T) : real); 
 				
 				// dynamic array from object
 				T array = (object.length > options.maxArrayLength) ? object[0..options.maxArrayLength] : object;
@@ -71,12 +71,14 @@ struct Json
 				char[] result = "[";
 				if (!inl)
 					result ~= options.lineReturn;
-					
-				foreach (int index, ElementTypeOfArrayBuilder!(T) value; array) 
-				{	char[] newPath = Format("%s [{}]", path, index);
-					char[] comma = index<object.length-1 ? "," : "";
-					result ~= (inl ? " " : tab) ~ internalEncode(value, options, newPath) ~ comma ~ (inl ? "" : options.lineReturn);		
-				}
+				
+				//static if (!is(ElementTypeOfArray!(T) : void))				
+					foreach (int index, ElementTypeOfArray!(T) value; array) 
+					{	char[] newPath = Format("%s [{}]", path, index);
+						char[] comma = index<object.length-1 ? "," : "";
+						result ~= (inl ? " " : tab) ~ internalEncode(value, options, newPath) ~ comma ~ (inl ? "" : options.lineReturn);		
+					}
+				
 				return result ~ (inl ? " " : tab2) ~ "]";		
 			}
 			else static if (isAssocArrayType!(T))
@@ -134,7 +136,7 @@ struct Json
 
 	private static bool isStringType(T)()
 	{	static if (isArrayType!(T))
-			return isCharType!(ElementTypeOfArrayBuilder!(T));
+			return isCharType!(ElementTypeOfArray!(T));
 		return false;
 	}
 
@@ -143,5 +145,72 @@ struct Json
 			if (fullyQualifiedName[i] == '.')
 				return fullyQualifiedName[i+1..$];
 		return "enum_"~fullyQualifiedName;
+	}
+	
+	unittest
+	{
+		class A
+		{
+			bool Bool = true;
+			byte Byte = -1;
+			ubyte UByte = 1;
+			short Short = -2;
+			ushort UShort = 2;
+			protected int Int = -3;
+			private uint UInt = 3;
+			long Long = -4;
+			ulong ULong = 4;
+			float Float = 5.0;
+			double Double = 6.0;
+			real Real = 7.0;
+			
+			float* floatPtr;
+			float[4] staticArray;
+			
+			void* v;
+			//void[] v2; // TODO
+			
+			enum EnumType
+			{	A,
+				B
+			}	
+			EnumType enum1 = EnumType.A;
+			EnumType enum2 = EnumType.B;
+			
+			struct StructType
+			{	B b;
+				float c;
+			}
+			StructType Struct;
+			
+			char[] String = "Hello World";
+			char[] wString = "Hello World";
+			char[] dString = "Hello World";
+			float[] floatArray;
+			int[int] aa;
+			
+			class B
+			{	int i2 = 1234;
+				int[int] aa2;	
+			}	
+			B b;
+			B bRef;
+			B nullRef;
+			A selfRef;
+			
+			this()
+			{	
+				floatPtr = new float;
+				*floatPtr = 5.0f;
+			
+				floatArray = [11f, 12f, 12f, 15.51234f];
+				aa = [3:2, 1:4];
+				b = new B();
+				bRef = b;
+				selfRef = this;
+			}
+		}
+		
+		Json.encode(new A());
 	}
 }

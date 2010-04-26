@@ -406,6 +406,7 @@ struct Render
 			{	
 				glPushMatrix();
 				skyboxRecurse(camera, target, scene.skyBox);
+				glDepthMask(true);
 				glClear(GL_DEPTH_BUFFER_BIT);
 				glPopMatrix();
 			}
@@ -413,7 +414,8 @@ struct Render
 			// Apply scene state and clear background if necessary.
 			graphics.bindScene(scene);
 			if (!scene.skyBox)
-			{	if (!cleared) // reset everyting the first time.
+			{	glDepthMask(true);
+				if (!cleared) // reset everyting the first time.
 				{	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 					cleared = true;
 				}
@@ -433,6 +435,7 @@ struct Render
 		graphics.bindRenderTarget(target);
 		auto result = skyboxRecurse(camera, target);
 		graphics.bindRenderTarget(null);
+		graphics.bindPass(null);
 		cleanup();		
 		return result;
 	}
@@ -532,7 +535,7 @@ struct Render
 			
 			doStencil(false);
 			glPopMatrix();
-			
+			graphics.bindPass(null);
 		}
 		
 		// Draw the surface with and its chilren the stencil applied.

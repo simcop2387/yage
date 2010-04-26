@@ -1121,237 +1121,238 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
     for (j = 0; j < arguments.length; )
     {	ti = arguments[j++];
 
-	flags = 0;
-	precision = 0;
-	field_width = 0;
-
-	int mi = 9;
-	do
-	{
-	    if (ti.classinfo.name.length <= mi)
-	    	throw new FormatError("Error parsing classinfo name: " ~ ti.classinfo.name);
-	    m = cast(Mangle)ti.classinfo.name[mi++];
-	} while (m == Mangle.Tconst || m == Mangle.Tinvariant);
-
-	if (m == Mangle.Tarray)
-	{
-	    if (ti.classinfo.name.length == 14 &&
-		ti.classinfo.name[9..14] == "Array") 
-	    {
-	      TypeInfo tn = (cast(TypeInfo_Array)ti).next;
-	      switch (cast(Mangle)tn.classinfo.name[9])
-	      {
-		case Mangle.Tchar:
-		case Mangle.Twchar:
-		case Mangle.Tdchar:
-		    ti = tn;
-		    mi = 9;
-		    break;
-		default:
-		    break;
-	      }
-	    }
-	L1:
-	    Mangle m2 = cast(Mangle)ti.classinfo.name[mi];
-	    string  fmt;			// format string
-	    wstring wfmt;
-	    dstring dfmt;
-
-	    /* For performance reasons, this code takes advantage of the
-	     * fact that most format strings will be ASCII, and that the
-	     * format specifiers are always ASCII. This means we only need
-	     * to deal with UTF in a couple of isolated spots.
-	     */
-
-	    if (! p_args)
-	    switch (m2)
-	    {
-		case Mangle.Tchar:
-		    fmt = va_arg2!(char[])(argptr);
-		    break;
-
-		case Mangle.Twchar:
-		    wfmt = va_arg2!(wchar[])(argptr);
-		    fmt = .toString(wfmt);
-		    break;
-
-		case Mangle.Tdchar:
-		    dfmt = va_arg2!(dchar[])(argptr);
-		    fmt = .toString(dfmt);
-		    break;
-
-		case Mangle.Tconst:
-		case Mangle.Tinvariant:
-		    mi++;
-		    goto L1;
-
-		default:
-		    formatArg('s');
-		    continue;
-	    }
-	    else
-	    {
-    	version (DigitalMars) assert(0);
-		alias void[] array_t;
-		switch (m2)
+		flags = 0;
+		precision = 0;
+		field_width = 0;
+	
+		int mi = 9;
+		do
 		{
-		    case Mangle.Tchar:
-			fmt = *cast(char[]*)p_args; p_args += array_t.sizeof;
-			break;
-
-		    case Mangle.Twchar:
-			wfmt = *cast(wchar[]*)p_args; p_args += array_t.sizeof;
-			fmt = .toString(wfmt);
-			break;
-
-		    case Mangle.Tdchar:
-			dfmt = *cast(dchar[]*)p_args; p_args += array_t.sizeof;
-			fmt = .toString(dfmt);
-			break;
-
-		    case Mangle.Tconst:
-		    case Mangle.Tinvariant:
-			mi++;
-			goto L1;
-
-		    default:
-			formatArg('s');
-			continue;
-		}
-	    }
-
-	    for (size_t i = 0; i < fmt.length; )
-	    {	dchar c = fmt[i++];
-
-			dchar getFmtChar()
-			{   // Valid format specifier characters will never be UTF
-			    if (i == fmt.length)
-				throw new FormatError("invalid specifier");
-			    return fmt[i++];
-			}
+		    if (ti.classinfo.name.length <= mi)
+		    	throw new FormatError("Error parsing classinfo name: " ~ ti.classinfo.name);
+		    m = cast(Mangle)ti.classinfo.name[mi++];
+		} while (m == Mangle.Tconst || m == Mangle.Tinvariant);
 	
-			int getFmtInt()
-			{   int n;
-	
-			    while (1)
-			    {
-				n = n * 10 + (c - '0');
-				if (n < 0)	// overflow
-				    throw new FormatError("int overflow");
-				c = getFmtChar();
-				if (c < '0' || c > '9')
-				    break;
-			    }
-			    return n;
-			}
-	
-			int getFmtStar()
-			{   Mangle m;
-			    TypeInfo ti;
-	
-			    if (j == arguments.length)
-				throw new FormatError("too few arguments");
-			    ti = arguments[j++];
-			    m = cast(Mangle)ti.classinfo.name[9];
-			    if (m != Mangle.Tint)
-				throw new FormatError("int argument expected");
-			    if (! p_args)
-			    return va_arg2!(int)(argptr);
-			    else
-			    {
-	        	    version (DigitalMars) assert(0);
-				int result = *cast(int*)(p_args); p_args += int.sizeof;
-				return result;
-			    }
-			}
-	
-			if (c != '%')
-			{   if (c > 0x7F)	// if UTF sequence
-			    {	i--;		// back up and decode UTF sequence
-					try {
-			    		c = fromString8([fmt[i]], [c])[0];
-					} catch (UnicodeException e) // invalid utf
-					{	
-						i++;
-					}
-			    }
-			Lputc:
-			    putc(c);
-			    continue;
-			}
-	
-			// Get flags {-+ #}
-			flags = 0;
-			while (1)
-			{
-			    c = getFmtChar();
-			    switch (c)
-			    {
-				case '-':	flags |= FLdash;	continue;
-				case '+':	flags |= FLplus;	continue;
-				case ' ':	flags |= FLspace;	continue;
-				case '#':	flags |= FLhash;	continue;
-				case '0':	flags |= FL0pad;	continue;
-	
-				case '%':	if (flags == 0)
-						    goto Lputc;
-				default:	break;
-			    }
+		if (m == Mangle.Tarray)
+		{
+		    if (ti.classinfo.name.length == 14 &&
+			ti.classinfo.name[9..14] == "Array") 
+		    {
+		      TypeInfo tn = (cast(TypeInfo_Array)ti).next;
+		      switch (cast(Mangle)tn.classinfo.name[9])
+		      {
+			case Mangle.Tchar:
+			case Mangle.Twchar:
+			case Mangle.Tdchar:
+			    ti = tn;
+			    mi = 9;
 			    break;
-			}
+			default:
+			    break;
+		      }
+		    }
+		L1:
+		    Mangle m2 = cast(Mangle)ti.classinfo.name[mi];
+		    string  fmt;			// format string
+		    wstring wfmt;
+		    dstring dfmt;
 	
-			// Get field width
-			field_width = 0;
-			if (c == '*')
-			{
-			    field_width = getFmtStar();
-			    if (field_width < 0)
-			    {   flags |= FLdash;
-				field_width = -field_width;
-			    }
+		    /* For performance reasons, this code takes advantage of the
+		     * fact that most format strings will be ASCII, and that the
+		     * format specifiers are always ASCII. This means we only need
+		     * to deal with UTF in a couple of isolated spots.
+		     */
 	
-			    c = getFmtChar();
-			}
-			else if (c >= '0' && c <= '9')
-			    field_width = getFmtInt();
+		    if (! p_args)
+		    switch (m2)
+		    {
+			case Mangle.Tchar:
+			    fmt = va_arg2!(char[])(argptr);
+			    break;
 	
-			if (flags & FLplus)
-			    flags &= ~FLspace;
-			if (flags & FLdash)
-			    flags &= ~FL0pad;
+			case Mangle.Twchar:
+			    wfmt = va_arg2!(wchar[])(argptr);
+			    fmt = .toString(wfmt);
+			    break;
 	
-			// Get precision
-			precision = 0;
-			if (c == '.')
-			{   flags |= FLprecision;
+			case Mangle.Tdchar:
+			    dfmt = va_arg2!(dchar[])(argptr);
+			    fmt = .toString(dfmt);
+			    break;
 	
-			    c = getFmtChar();
-			    if (c == '*')
-			    {
-				precision = getFmtStar();
-				if (precision < 0)
-				{   precision = 0;
-				    flags &= ~FLprecision;
+			case Mangle.Tconst:
+			case Mangle.Tinvariant:
+			    mi++;
+			    goto L1;
+	
+			default:
+			    formatArg('s');
+			    continue;
+		    }
+		    else
+		    {
+		    	version (DigitalMars) assert(0);
+				alias void[] array_t;
+				switch (m2)
+				{
+				    case Mangle.Tchar:
+					fmt = *cast(char[]*)p_args; p_args += array_t.sizeof;
+					break;
+		
+				    case Mangle.Twchar:
+					wfmt = *cast(wchar[]*)p_args; p_args += array_t.sizeof;
+					fmt = .toString(wfmt);
+					break;
+		
+				    case Mangle.Tdchar:
+					dfmt = *cast(dchar[]*)p_args; p_args += array_t.sizeof;
+					fmt = .toString(dfmt);
+					break;
+		
+				    case Mangle.Tconst:
+				    case Mangle.Tinvariant:
+					mi++;
+					goto L1;
+		
+				    default:
+					formatArg('s');
+					continue;
 				}
+		    }
 	
-				c = getFmtChar();
-			    }
-			    else if (c >= '0' && c <= '9')
-				precision = getFmtInt();
-			}
+		    for (size_t i = 0; i < fmt.length; )
+		    {	dchar c = fmt[i++];
 	
-			if (j == arguments.length)
-				throw new FormatError("Formatting Error");
-			ti = arguments[j++];
-			mi = 9;
-			do
-			{
-			    m = cast(Mangle)ti.classinfo.name[mi++];
-			} while (m == Mangle.Tconst || m == Mangle.Tinvariant);
-	
-			if (c > 0x7F)		// if UTF sequence
-				throw new FormatError("Formatting specifiers can't be UTF");	// format specifiers can't be UTF
-			formatArg(cast(char)c);
+				dchar getFmtChar()
+				{   // Valid format specifier characters will never be UTF
+				    if (i == fmt.length)
+					throw new FormatError("invalid specifier");
+				    return fmt[i++];
+				}
+		
+				int getFmtInt()
+				{   int n;
+		
+				    while (1)
+				    {
+					n = n * 10 + (c - '0');
+					if (n < 0)	// overflow
+					    throw new FormatError("int overflow");
+					c = getFmtChar();
+					if (c < '0' || c > '9')
+					    break;
+				    }
+				    return n;
+				}
+		
+				int getFmtStar()
+				{   Mangle m;
+				    TypeInfo ti;
+		
+				    if (j == arguments.length)
+				    	throw new FormatError("too few arguments");
+				    ti = arguments[j++];
+				    m = cast(Mangle)ti.classinfo.name[9];
+				    if (m != Mangle.Tint)
+				    	throw new FormatError("int argument expected");
+				    if (! p_args)
+				    	return va_arg2!(int)(argptr);
+				    else
+				    {
+		        	    version (DigitalMars) assert(0);
+					int result = *cast(int*)(p_args); p_args += int.sizeof;
+					return result;
+				    }
+				}
+		
+				if (c != '%')
+				{   if (c > 0x7F)	// if UTF sequence
+				    {	i--;		// back up and decode UTF sequence
+						try {
+				    		c = fromString8([fmt[i]], [c])[0];
+						} catch (UnicodeException e) // invalid utf
+						{	
+							i++;
+						}
+				    }
+					Lputc:
+				    putc(c);
+				    continue;
+				}
+		
+				// Get flags {-+ #}
+				flags = 0;
+				while (1)
+				{
+				    c = getFmtChar();
+				    switch (c)
+				    {
+					case '-':	flags |= FLdash;	continue;
+					case '+':	flags |= FLplus;	continue;
+					case ' ':	flags |= FLspace;	continue;
+					case '#':	flags |= FLhash;	continue;
+					case '0':	flags |= FL0pad;	continue;
+		
+					case '%':	if (flags == 0)
+							    goto Lputc;
+					default:	break;
+				    }
+				    break;
+				}
+		
+				// Get field width
+				field_width = 0;
+				if (c == '*')
+				{
+				    field_width = getFmtStar();
+				    if (field_width < 0)
+				    {   flags |= FLdash;
+					field_width = -field_width;
+				    }
+		
+				    c = getFmtChar();
+				}
+				else if (c >= '0' && c <= '9')
+				    field_width = getFmtInt();
+		
+				if (flags & FLplus)
+				    flags &= ~FLspace;
+				if (flags & FLdash)
+				    flags &= ~FL0pad;
+		
+				// Get precision
+				precision = 0;
+				if (c == '.')
+				{   flags |= FLprecision;
+		
+				    c = getFmtChar();
+				    if (c == '*')
+				    {
+					precision = getFmtStar();
+					if (precision < 0)
+					{   precision = 0;
+					    flags &= ~FLprecision;
+					}
+		
+					c = getFmtChar();
+				    }
+				    else if (c >= '0' && c <= '9')
+					precision = getFmtInt();
+				}
+		
+				if (j == arguments.length)
+					throw new FormatError("Formatting Error");
+				
+				ti = arguments[j++];
+				mi = 9;
+				do
+				{
+				    m = cast(Mangle)ti.classinfo.name[mi++];
+				} while (m == Mangle.Tconst || m == Mangle.Tinvariant);
+		
+				if (c > 0x7F)		// if UTF sequence
+					throw new FormatError("Formatting specifiers can't be UTF");	// format specifiers can't be UTF
+				formatArg(cast(char)c);
 		    }
 		}
 		else
@@ -1361,7 +1362,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
     }
     return;
 
-Lerror:
+    Lerror:
     throw new FormatError();
 }
  

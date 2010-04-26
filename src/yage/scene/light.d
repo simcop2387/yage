@@ -126,11 +126,8 @@ class LightNode : MovableNode
 			if (d==0) 
 				d=.000000001; // arbitrarily small
 			
-			// dot product of vector from spotlight pointing to node and node pointing to spotlight.
-			//Vec3f spotDirection = Vec3f(0, 0, -1).rotate(transform_abs);
-			//float spotDot = spotDirection.dot(-light_direction/d); // point/d is normalized point
-			
-			// Somehow this is always the same as the spotDot calculated above, but how does using 8..11 work?
+			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
+			// rotated by the node's rotation.  This is opposite the default direction of cameras
 			float spotDot = Vec3f(transform_abs.v[8..11]).normalize().dot(light_direction/d);
 	
 			// Extra spotlight angle (in radians) to satisfy margin distance
@@ -150,14 +147,16 @@ class LightNode : MovableNode
 		}	}
 
 		// color will store the RGB color values of the intensity.
-		Vec3f color = Vec3f(diffuse.r/255.0f*intensity, diffuse.g/255.0f*intensity, diffuse.b/255.0f*intensity);
+		float scale = (1f/255f) * intensity;
+		Vec3f color = Vec3f(diffuse.r*scale, diffuse.g*scale, diffuse.b*scale);
 		if (add_ambient)
 			color.add(ambient.vec3f);	// diffuse scaled by intensity plus ambient.
 
+		/*
 		if (color.x>=1) color.x=1;
 		if (color.y>=1) color.y=1;
 		if (color.z>=1) color.z=1;
-
+		*/
 		return Color(color);
 	}
 

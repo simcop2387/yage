@@ -222,7 +222,7 @@ class UI : Surface
 	this(TestScene scene) 
 	{	this.scene = scene;
 		info = addChild(new Surface());
-		info.style.set("width: 240px; height: 240px; color: white; " ~ 
+		info.style.set("width: 240px; height: 100%; color: white; border-right: 1px solid white; " ~ 
 			"background-color: #000000cf; font-size: 16px");		
 	}
 	
