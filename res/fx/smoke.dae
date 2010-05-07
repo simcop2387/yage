@@ -39,7 +39,7 @@
                             <color>1.000000 1.000000 1.000000 1.000000</color>
                         </emission>
                         <ambient>
-                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
                         </ambient>
                         <diffuse>
                             <texture texture="smoke-image-sampler" texcoord="" />

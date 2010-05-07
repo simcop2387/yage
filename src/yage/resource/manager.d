@@ -24,7 +24,6 @@ import yage.resource.font;
 import yage.resource.model;
 import yage.resource.material;
 import yage.resource.texture;
-import yage.resource.resource;
 import yage.resource.shader;
 import yage.resource.sound;
 import yage.system.log;

@@ -13,7 +13,6 @@ import yage.core.all;
 import yage.core.object2;
 import yage.resource.texture;
 import yage.resource.manager;
-import yage.resource.resource;
 import yage.resource.shader;
 import yage.scene.light;
 import yage.system.system;
@@ -48,11 +47,21 @@ class Material
 				return techniques[0].passes[0];
 		return null;
 	}	
+
 }
 
 ///
 class MaterialTechnique
 {	MaterialPass[] passes; ///
+
+	/**
+	 * Returns true if the Technique has regions that can be partially seen through.
+	 * This is true if the first pass has blending enabled. */
+	bool hasTranslucency()
+	{	if (passes.length)
+			return passes[0].blend != MaterialPass.Blend.NONE;
+		return false;
+	}
 }
 
 ///

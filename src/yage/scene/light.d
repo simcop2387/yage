@@ -57,7 +57,9 @@ class LightNode : MovableNode
 	float spotExponent = 0;
 
 	package float intensity; // Used internally as a temp variable to sort lights by intensity for each node.
-	protected float	quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
+	float	quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
+	
+	Vec3f inverseCameraPosition; // Used internally to store the position in camera-space.
 	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.

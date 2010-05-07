@@ -18,7 +18,6 @@ import yage.core.timer;
 import yage.core.parse;
 import yage.core.object2;;
 import yage.resource.manager;
-import yage.resource.resource;
 import yage.system.log;
 import yage.system.sound.all;
 
@@ -27,7 +26,7 @@ import yage.system.sound.all;
  *  Sounds use a SoundFile as a member variable, which abstracts away the differences between different sound formats.
  *  During initialization, a Sound loads the sound data from a file and
  *  passes it on to OpenAL for playback, as it's needed. */
-class Sound : Resource
+class Sound
 {	
 	protected ubyte		format;  		// wav, ogg, etc.
 	protected SoundFile	sound_file;		// see doc for SoundFile

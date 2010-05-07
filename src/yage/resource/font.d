@@ -22,7 +22,6 @@ import yage.core.parse;
 import yage.core.object2;
 import yage.resource.image;
 import yage.resource.manager;
-import yage.resource.resource;
 import yage.resource.texture;
 import yage.system.log;
 
@@ -52,7 +51,7 @@ struct Letter
 /**
  * An instance of a loaded Font.
  * Fonts are typically used to render strings of text to an image. */
-class Font : Resource
+class Font
 {
 	// Used as a key to lookup cached letters.
 	protected struct Key

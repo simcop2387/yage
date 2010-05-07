@@ -12,6 +12,7 @@ import yage.core.array;
 import yage.core.math.matrix;
 import yage.core.math.plane;
 import yage.core.math.vector;
+import yage.core.parallel;
 import yage.scene.visible;
 import yage.scene.node;
 import yage.scene.scene;
@@ -38,7 +39,7 @@ class CameraNode : MovableNode
 	public float threshold = 2.25;	// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
 	protected Plane[6] frustum;
-	public Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
+	Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
 	
 	protected static CameraNode listener; // Camera that plays audio.
 
@@ -136,41 +137,55 @@ class CameraNode : MovableNode
 			root=scene;
 		
 		VisibleNode vnode = cast(VisibleNode)root;
-		if (root.getVisible() && vnode)
+		if (vnode && root.getVisible())
 		{	
-			vnode.onscreen = true;
-
-			float r = -vnode.getRadius();			
-			Matrix cam_abs  = getAbsoluteTransform(true);
-			Matrix node_abs = vnode.getAbsoluteTransform(true);
 			// Cull nodes that are not inside the frustum
-			for (int i=0; i<frustum.length; i++)
-			{	// formula for the plane distance-to-point function, expanded in-line.				
-				//float[4] result = frustum[i].v * node_abs.v[12..16];				
-				if (frustum[i].x*node_abs.v[12] + frustum[i].y*node_abs.v[13] + frustum[i].z*node_abs.v[14] + frustum[i].d < r)
+			float[3] position;
+			//synchronized (vnode) // req'd if parallel foreach is used, and that gives only a small speed up.
+				position[] = vnode.cache[scene.transform_read].transform_abs.v[12..15];			
+			
+			float r = -vnode.getRadius();
+			
+			vnode.onscreen = true;			
+			foreach (f; frustum)
+			{	
+				// formula for the plane distance-to-point function, expanded in-line.			
+				if (f.x*position[0] +f.y*position[1] + f.z*position[2] + f.d < r)
 				{	vnode.onscreen = false;
 					break;
 				}
+				
+				// Why is the vector op version slower?
+				//float[3] result = f.v[0..3][] * node_abs.v[12..15][];
+				//if (result[0] + result[1] + result[2] + f.d < r)
 			}
 
 			// cull nodes that are too small to see.
 			if (vnode.onscreen)
-			{	float x = cam_abs.v[12]-node_abs.v[12];
-				float y = cam_abs.v[13]-node_abs.v[13];
-				float z = cam_abs.v[14]-node_abs.v[14];
+			{	
+				Matrix* cam_abs = &cache[scene.transform_read].transform_abs;
+				float x = cam_abs.v[12]-position[0];
+				float y = cam_abs.v[13]-position[1];
+				float z = cam_abs.v[14]-position[2];
 
-				float height = 500; //yres;
-				if (height==0)
-					height = Window.getInstance().getHeight();
+				float height = Window.getInstance().getHeight();
 				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
 					vnode.onscreen = false;
 				else // Onscreen and big enough to draw
-					lookaside ~= vnode;
+					// synchronized(this)
+						lookaside ~= vnode;
 			}
 		}
+		
 		// Recurse through and render children.
-		foreach (Node c; root.getChildren())
-			getVisibleNodes(c, lookaside);
+		auto children = root.getChildren();
+		//if (children.length > 100) // this makes things so much faster but crashes randomly with an access violation and weird stack trace, or an odd exit status code.
+		//	foreach (Node c; parallel(children)) // and objects also flicker in and out of existence.
+		//		getVisibleNodes(c, lookaside);
+		//else
+			foreach (Node c; children)
+				getVisibleNodes(c, lookaside);
+
 		
 		return lookaside;
 	}

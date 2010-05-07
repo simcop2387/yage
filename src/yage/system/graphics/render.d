@@ -33,18 +33,20 @@ import yage.system.graphics.api.api;
 import yage.system.graphics.api.opengl;
 import yage.system.log;
 
-// Used for translucent polygon rendering
 private struct AlphaTriangle
-{	VisibleNode node;
-	Model model;
+{	
+	Geometry geometry;
 	Mesh mesh;
-	Material matl;
-	int triangle;
-	Matrix transform;
+	Material material; // Sprites all share the same Mesh, but the material changes
+	Matrix matrix;
+	LightNode[] lights;	
+	int triangle;	
+	Vec3f[3] vertices;	
 	
-	Vec3f[3] vertices;	// in worldspace coordinates
-	Vec3f*[3] normals;	// store pointers to these since the values aren't transformed
-	Vec2f*[3] texcoords;// by the world coordinates, helps reduce size. (this is incorrect for normals)
+	static AlphaTriangle opCall( Geometry geometry, Mesh mesh, Material material, Matrix matrix, LightNode[] lights, int triangle, Vec3f[3] vertices)
+	{	AlphaTriangle result = {geometry, mesh, material, matrix, lights, triangle, vertices};
+		return result;		
+	}
 }
 
 /**
@@ -80,39 +82,17 @@ struct Render
 	protected static OpenGL graphics; // TODO: Replace with GraphicsAPI when interface is more finalized.
 	
 	protected static ArrayBuilder!(VisibleNode) visibleNodes;
-	protected static AlphaTriangle[] alpha;
+	protected static ArrayBuilder!(AlphaTriangle) alphaTriangles;		
 
 	protected static bool cleared; // if false, the color buffer need to be cleared before drawing?
+	protected static Geometry spriteQuad;
 
 
 	/**
 	 * Generate build-in models (such as the sprite quad). */
 	static this()
-	{
-		graphics = new OpenGL();
-			
-		/*
-		// Cube (in as little code as possible :)
-		mcube = new Model();
-		Vec3f[] vertices, normals;
-		Vec2f[] texcoords;
-		for (int x=-1; x<=1; x+=2)
-		{	for (int y=-1; y<=1; y+=2)
-			{	for (int z=-1; z<=1; z+=2)
-				{	vertices ~= [Vec3f(x, y, z), Vec3f(x, y, z), Vec3f(x, y, z)];
-					normals  ~= [Vec3f(x, 0, 0), Vec3f(0, y, 0), Vec3f(0, 0, z)];
-					texcoords~= [Vec2f(y*.5+.5, z*.5+.5), Vec2f(x*.5+.5, z*.5+.5), Vec2f(x*.5+.5, y*.5+.5)];
-		}	}	}
-		mcube.setVertices(vertices);
-		mcube.setNormals(normals);
-		mcube.setTexCoords0(texcoords);
-
-		Vec3i[] triangles = [
-			Vec3i(0,  6,  9), Vec3i( 9,  3, 0), Vec3i( 1,  4, 16), Vec3i(16, 13, 1),
-			Vec3i(2, 14, 20), Vec3i(20,  8, 2), Vec3i(12, 15, 21), Vec3i(21, 18, 12),
-			Vec3i(7, 19, 22), Vec3i(22, 10, 7), Vec3i( 5, 11, 23), Vec3i(23, 17, 5)];
-		mcube.setMeshes([new Mesh(null, triangles)]);
-		*/
+	{	graphics = new OpenGL();
+		spriteQuad = Geometry.createPlane();
 	}
 	
 	/**
@@ -128,167 +108,138 @@ struct Render
 		cleared = false;
 	}
 
-	/*
-	 * deprecated
-	 * Render the meshes with opaque materials and pass any meshes with materials
-	 * that require blending to the queue of translucent meshes.
-	 * Rotation can optionally be supplied to rotate sprites so they face the camera. */
-	deprecated static RenderStatistics model(Model model, VisibleNode node, Vec3f rotation = Vec3f(0), bool _debug=false)
-	{	
-		RenderStatistics result;
-		/*
-		if (!model.getAttribute(Geometry.VERTICES))
+	///
+	static RenderStatistics geometry(Geometry geometry, LightNode[] lights=null)
+	{	RenderStatistics result;
+		
+		if (!geometry.getAttribute(Geometry.VERTICES))
 			return result;
 		
-		Vec3f[] v = cast(Vec3f[])model.getAttribute(Geometry.VERTICES);
-		Vec3f[] n;
-		if (model.getAttribute(Geometry.NORMALS))
-			n = cast(Vec3f[])model.getAttribute(Geometry.NORMALS);
-		Vec2f[] t;
-		if (model.getAttribute(Geometry.TEXCOORDS0))
-			t = cast(Vec2f[])model.getAttribute(Geometry.TEXCOORDS0);
-		
-
-		Matrix abs_transform = node.getAbsoluteTransform(true);
-		result.vertexCount += v.length;
-		
-		// Apply skeletal animation.
-		if (cast(ModelNode)node)
-		{
-			if (model.getAnimated())
-			{	auto mnode = cast(ModelNode)node;
-				model.animateTo(mnode.getAnimationTimer().tell());
-			
-				// Forces an update of the node's culling radius.
-				// This isn't perfect, since this is after CameraNode's culling, but a model's radius is
-				// usually temporaly coherent so this takes advantage of that for the next render.
-				mnode.setModel(model); 
+		// Bind each vertex buffer
+		VertexBuffer[char[]] vertexBuffers = geometry.getVertexBuffers();
+		if (geometry !is graphics.current.geometry) // TODO: Make current check per vb; this prevents vertices from being counted
+		{	
+			foreach (name, vb; vertexBuffers)
+			{	graphics.bindVertexBuffer(vb, name);
+				if (name==Geometry.VERTICES)
+					result.vertexCount += vb.length;
 			}
-		}
-
-		// Rotate if rotation is nonzero.
-		if (rotation.length2())
-		{	abs_transform = abs_transform.rotate(rotation);
-			glRotatef(rotation.length()*PI_180, rotation.x, rotation.y, rotation.z);
+			graphics.current.geometry = geometry;
 		}
 		
-		foreach (type, attrib; model.getVertexBuffers())
-			graphics.bindVertexBuffer(attrib, type);
-
+		
 		// Loop through the meshes		
-		foreach (Mesh mesh; model.getMeshes())
-		{
-			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
-			Material matl = mesh.getMaterial();
-			if (matl !is null)
-			{
-				// Loop through each layer
-				int num=0;
-				bool sort = false;
-				foreach (Layer l; matl.getLayers())
+		foreach (mesh; geometry.getMeshes())
+		{	
+			if (mesh.material)
+				if (mesh.material.techniques.length) // TODO: Honor techniques
 				{
-					// Sorting rules:
-					// If the first layer has blending, sort it and every layer
-					// otherwise, sort none of them
-					if ((l.blend != BLEND_NONE) && num==0)
-						sort = true;
-
-					// If not translucent					
-					if (!sort)
-					{	graphics.bindLayer(l, node.getLights(), node.getColor(), model);
-						graphics.drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
-						graphics.bindLayer(null); // can this be moved outside the loop?
+					if (!mesh.material.techniques[0].hasTranslucency() ||
+					    geometry.getVertexBuffer(Geometry.VERTICES).components != 3)
+					{	foreach (pass; mesh.material.techniques[0].passes)
+						{	graphics.bindPass(pass, lights);
+							graphics.drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
+						}
 					} else
-					{						
-						// Add to translucent.  This may need to be rewritten at some point.
-						foreach (int index, Vec3i tri; mesh.getTriangles())						
-						{	AlphaTriangle at;
-							for (int i=0; i<3; i++)
-							{	at.vertices[i] = abs_transform*v[tri.v[i]].scale(node.getSize());
-								if (t.length)
-									at.texcoords[i] = &t[tri.v[i]];
-								if (n.length)
-									at.normals[i] = &n[tri.v[i]];
-							}
-							at.node 	= node;
-							at.model	= model;
-							at.mesh		= mesh;
-							at.matl	 = matl;
-							at.triangle = index;		
-							
-							alpha ~= at;
-						}	
+					{	Profile.start("Add Alpha");
+						foreach (i, tri; mesh.getTriangles())
+						{							
+							// Find center
+							Vec3f[] vertices = (cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES));	
+							Vec3f[3] v;
+							v[0] = vertices[tri.x];
+							v[1] = vertices[tri.y];
+							v[2] = vertices[tri.z];
+
+							alphaTriangles ~= AlphaTriangle(geometry, mesh, mesh.material, graphics.current.matrix, lights, i, v);;
+						}
+						Profile.stop("Add Alpha");	
 					}
-					num++;
 				}
-			}
-			else // render with no material
-				graphics.drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
-				
-			
-			if (_debug)
-			{	// Draw normals
-				glColor3f(0, 1, 1);
-				glDisable(GL_LIGHTING);
-				foreach (Vec3i tri; mesh.getTriangles())
-				{	for (int i=0; i<3; i++)
-					{	Vec3f vertex = v[tri.v[i]];
-						Vec3f normal = n[tri.v[i]];						
-						glBegin(GL_LINES);
-							glVertex3fv(vertex.ptr);
-							glVertex3fv((vertex+normal.scale(.5)).ptr);
-						glEnd();
-				}	}	
-				
-				glEnable(GL_LIGHTING);
-				glColor3f(1, 1, 1);
-			}			
+					
+			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
 		}
 		
-		// Draw joints
-		if (_debug)
-		{	glDisable(GL_DEPTH_TEST);
-			glDisable(GL_LIGHTING);
-			foreach (cb; model.getJoints())
-			{
-				Vec3f vec, parentvec;
-				vec = vec.transform(cb.transformAbs);
-			
-				// Joint connections.
-				if (cb.parent)
-				{	parentvec = parentvec.transform(cb.parent.transformAbs);	
-					glLineWidth(2.0);
-					glColor3f(0.0, 1.0, 0.0);
-					glBegin(GL_LINES);
-					glVertex3fv(vec.ptr);
-					glVertex3fv(parentvec.ptr);
-					glEnd();
-				}
-	
-				// Joints
-				glPointSize(8.0);
-				glColor3f(1.0, 0, 1.0);
-				glBegin(GL_POINTS);
-					glVertex3fv(vec.ptr);
-				glEnd();
-				
-				glLineWidth(1.0);
-				glPointSize(1.0);
-				glColor3f(1.0, 1.0, 1.0);
-			}
-			glEnable(GL_LIGHTING);
-			glEnable(GL_DEPTH_TEST);
-		}
-		*/
 		return result;
 	}
-
+	
+	///
+	static RenderStatistics model(Geometry geometry, LightNode[] lights=null, float animationTime=0) 
+	{	auto result = Render.geometry(geometry, lights);  // TODO: animationTime won't support blending animations.
+		return result;
+	}
+	
+	/// Why does this draw the same material on different sprites?
+	/// It has something to do with them all sharing the same Geometry?
+	protected static void postRender()
+	{	
+		scope mesh = new Mesh();
+		int num_lights = Probe.feature(Probe.Feature.MAX_LIGHTS);
+		
+		Profile.start("Sort Alpha");		
+		
+		// Sort alpha (translucent) triangles
+		Vec3f cameraPosition = Vec3f(graphics.current.camera.getAbsoluteTransform(true).v[12..15]);
+		radixSort(alphaTriangles.data, true, (AlphaTriangle a)
+		{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(1/3f);
+			center = center.transform(a.matrix);
+			return -cameraPosition.distance2(center); // distance squared is faster and values still compare the same
+		});
+		
+		Profile.stop("Sort Alpha");
+	
+		Profile.start("Render Alpha");
+		
+		// Render alpha triangles
+		foreach (at; alphaTriangles.data)
+		{	
+			Vec3i[1] triangle = at.mesh.getTriangles()[at.triangle];			
+			mesh.setMaterial(at.material);
+			mesh.setTriangles(triangle);
+						
+			// ATI Fails to draw when vertices have VBO's and triangles don't.
+			// It's a shame because this makes it about 60% faster to render.
+			//mesh.getTrianglesVertexBuffer().cache = false;
+			
+			graphics.bindMatrix(&at.matrix);
+			
+			if (graphics.current.geometry != at.geometry)
+			{	foreach (name, vb; at.geometry.getVertexBuffers())				
+					graphics.bindVertexBuffer(vb, name);				
+				graphics.current.geometry = at.geometry;
+			}
+			
+			if (mesh.material)
+				if (mesh.material.techniques.length) // TODO: Honor techniques
+				{	
+					for (int i=at.lights.length; i<num_lights; i++)
+						glDisable(GL_LIGHT0+i);					
+					for (int i=0; i<min(num_lights, at.lights.length); i++)
+						graphics.bindLight(at.lights[i], i);
+					
+					foreach (pass; mesh.material.techniques[0].passes)
+					{	
+						graphics.bindPass(pass, at.lights);
+						graphics.drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
+					}
+				}
+			
+			graphics.bindMatrix(null);
+		}
+		Profile.stop("Render Alpha");
+		
+		
+		if (alphaTriangles.reserve < alphaTriangles.length)
+			alphaTriangles.reserve = alphaTriangles.length;
+		alphaTriangles.length = 0;		
+	}
+	
 	/**
 	 * Render a camera's view to target.
 	 * The previous contents of target are first cleared.
 	 * Params:
 	 *	 camera = Render what the camera sees.
-	 *	 target = Render to this target.  TODO: Convert to IRenderTarget.
+	 *	 target = Render to this target.
 	 * Returns:
 	 *	 A struct containing rendering statistics */
 	static RenderStatistics scene(CameraNode camera, IRenderTarget target)
@@ -303,10 +254,12 @@ struct Render
 		{
 			RenderStatistics result;
 			result.nodeCount = nodes.length;
-			CameraNode currentCamera = graphics.Current.camera;
 
 			int num_lights = Probe.feature(Probe.Feature.MAX_LIGHTS);
-			LightNode[] all_lights = currentCamera.getScene().getLights().values; // creates garbage, but this copy also prevents threading issues.
+			LightNode[] all_lights = camera.getScene().getLights().values; // creates garbage, but this copy also prevents threading issues.
+			
+			foreach (light; all_lights)
+				light.inverseCameraPosition = light.getAbsolutePosition().transform(camera.getInverseAbsoluteMatrix());
 			
 			// Loop through all nodes in the queue and render them
 			foreach (VisibleNode n; nodes)
@@ -315,65 +268,34 @@ struct Render
 						continue;
 				
 					// Transform
-					glPushMatrix();
-					glMultMatrixf(n.getAbsoluteTransform(true).v.ptr);
 					Vec3f size = n.getSize();
-					glScalef(size.x, size.y, size.z);
+					Matrix transform = n.getAbsoluteTransform(true).transformAffine(Matrix().scale(size));			
+					
+					graphics.bindMatrix(&transform);
 					
 					// Enable the lights that affect this node
 					// TODO: This seems inefficient
-					Profile.start("getLights");
-					scope lights = n.getLights(all_lights, num_lights);
-					Profile.stop("getLights");
-					Profile.start("bindLights");
+					scope lights = n.getLights(all_lights, num_lights);					
 					for (int i=lights.length; i<num_lights; i++)
-						glDisable(GL_LIGHT0+i);
+						glDisable(GL_LIGHT0+i);					
 					for (int i=0; i<min(num_lights, lights.length); i++)
 						graphics.bindLight(lights[i], i);
-					Profile.stop("bindLights");
 					
 					// Render
 					if (cast(ModelNode)n)
-						result += graphics.drawModel((cast(ModelNode)n).getModel(), lights);
-						
+						result +=model((cast(ModelNode)n).getModel(), lights);						
 					else if (cast(SpriteNode)n)
-						result += graphics.drawSprite((cast(SpriteNode)n).getMaterial(), lights);
+						result += sprite((cast(SpriteNode)n).getMaterial(), lights);
 					
-					glPopMatrix();
+					graphics.bindMatrix(null);
 				}
 			}
 			
 			
-			// Sort alpha (translucent) triangles
-			Vec3f camera = Vec3f(currentCamera.getAbsoluteTransform(true).v[12..15]);
-			radixSort(alpha, true, (AlphaTriangle a)
-			{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(1/3);
-				return -camera.distance2(center); // distance squared is faster and values still compare the same
-			});
-			/*
-			// Render alpha triangles
-			foreach (AlphaTriangle at; alpha)
-			{	foreach (layer; at.matl.getLayers())
-				{	graphics.bindLayer(layer, at.node.getLights(), at.node.getColor());
-					glBegin(GL_TRIANGLES);
-					
-					Vec3i triangle = at.mesh.getTriangles()[at.triangle];
-					
-					for (int i=0; i<3; i++)
-					{	
-						glTexCoord2fv(at.texcoords[i].v.ptr);
-						//glTexCoord2fv(at.model.getAttribute("gl_Vertex").vec3f[triangle.v[i]].ptr);
-						glNormal3fv(at.normals[i].ptr);
-						glVertex3fv(at.vertices[i].ptr);
-					}
-					glEnd();
-					graphics.bindLayer(null); // can this be moved outside the loop?
-			}	}
-			*/
-
-			// Unbind current VBO
+			
+			postRender();
+			
 			graphics.bindVertexBuffer(null);
-			alpha.length = 0;
 			return result;
 		}
 		
@@ -424,7 +346,9 @@ struct Render
 			}
 				
 			camera.buildFrustum(scene);
+			Profile.start("getVisibleNodes");
 			visibleNodes = camera.getVisibleNodes(scene, visibleNodes);
+			Profile.stop("getVisibleNodes");
 			result += drawNodes(visibleNodes.data);
 			visibleNodes.reserve = visibleNodes.length;
 			visibleNodes.length = 0;
@@ -440,6 +364,27 @@ struct Render
 		return result;
 	}
 	
+	// Render a sprite
+	static RenderStatistics sprite(Material material, LightNode[] lights=null)
+	{			
+		// Rotate if rotation is nonzero.
+		Vec3f rotation = graphics.current.camera.getAbsoluteTransform(true).toAxis();
+		if (rotation.length2())			
+		{	// TODO: zero the rotation along the axis from the node to the camera.						
+			Matrix transform;
+			transform.setRotation(rotation);
+			graphics.bindMatrix(&transform);			
+		}
+		
+		spriteQuad.getMeshes()[0].material = material;
+		auto result = geometry(spriteQuad, lights);
+		
+		// Pop the matrix stack
+		if (rotation.length2())
+			graphics.bindMatrix(null);
+			
+		return result;
+	}
 	
 	/// Render a surface.  TODO: Move parts of this to OpenGL.d
 	static void surface(Surface surface, IRenderTarget target=null)
@@ -482,7 +427,7 @@ struct Render
 			glTranslatef(surface.left(), surface.top(), 0);
 			surface.style.backfaceVisibility ? glDisable(GL_CULL_FACE) : glEnable(GL_CULL_FACE);
 			
-			graphics.drawGeometry(surface.getGeometry()); // TODO: This completely obscures everything below it in white!!!!!!!!
+			geometry(surface.getGeometry());
 			
 			// Apply or remove a layer in the stencil mask
 			void doStencil(bool on)
@@ -513,7 +458,7 @@ struct Render
 						glScalef(1, Window.getInstance().getHeight() / surface.outerHeight(), 1);						
 					}										
 					
-					graphics.drawGeometry(surface.getGeometry().getClipGeometry());
+					geometry(surface.getGeometry().getClipGeometry());
 					
 					if (surface.style.overflowX != Style.Overflow.HIDDEN || surface.style.overflowY != Style.Overflow.HIDDEN)
 						glPopMatrix();
@@ -541,21 +486,15 @@ struct Render
 		// Draw the surface with and its chilren the stencil applied.
 		glEnable(GL_STENCIL_TEST);
 		draw(surface);
-		glDisable(GL_STENCIL_TEST);
-		
-		glStencilFunc(GL_ALWAYS, 0, 0xff); // reset to default value
-		
+		glDisable(GL_STENCIL_TEST);		
+		glStencilFunc(GL_ALWAYS, 0, 0xff); // reset to default value		
 		
 		// Reset state
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LIGHTING);
 		glEnableClientState(GL_NORMAL_ARRAY);
-		glEnable(GL_CULL_FACE);
-		
+		glEnable(GL_CULL_FACE);		
 		
 		graphics.bindRenderTarget(null);	
-			
-		
 	}
-
 }

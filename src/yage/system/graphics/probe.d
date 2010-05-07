@@ -19,7 +19,7 @@ import yage.system.system;
 abstract class Probe
 {
 	private static char[] extensions; // return value from glGetString(GL_EXTENSIONS)
-	private static int fbo=-1, shader=-1, vbo=-1, mt=-1, np2=-1, bc=-1, bfs=-1;	// so lookup only has to occur once.
+	private static int fbo=-1, shader=-1, vbo=-1, mt=-1, np2=-1;	// so lookup only has to occur once.
 	
 	/**
 	 * Options for Probe.feature() */
@@ -32,9 +32,7 @@ abstract class Probe
 		MULTITEXTURE,		/// Hardware support for using multiple textures in a single rendering pass; first available on Voodoo2?
 		NON_2_TEXTURE,		/// Hardware support for textures of arbitrary size; first available in GeForce FX and Radeon 9500
 		SHADER,				/// Hardware support for openGl vertex and fragment shaders; first available in GeForce FX and Radeon 9x00
-		VBO,				/// Hardware support for caching vertex data in video memory (Vertex Buffer Object), first available in Riva TNT and Rage 128?
-		BLEND_COLOR,
-		BLEND_FUNC_SEPARATE
+		VBO				/// Hardware support for caching vertex data in video memory (Vertex Buffer Object), first available in Riva TNT and Rage 128?
 	}	
 	
 	/**
@@ -74,7 +72,8 @@ abstract class Probe
 				if (shader==-1)
 					shader = cast(int)checkExtension("GL_ARB_shader_objects") && checkExtension("GL_ARB_vertex_shader");
 				return shader;				
-			case Feature.VBO: //return false; // true breaks custom vertex attributes
+			case Feature.VBO: // true breaks custom vertex attributes, or did at one time?
+				//return false;
 				if (vbo==-1)
 					vbo = cast(int)checkExtension("GL_ARB_vertex_buffer_object");
 				return cast(bool)vbo;
@@ -86,14 +85,6 @@ abstract class Probe
 				if (np2==-1)
 					np2 = cast(int)checkExtension("GL_ARB_texture_non_power_of_two");
 				return np2;
-			case Feature.BLEND_COLOR:
-				if (bc==-1)
-					bc = cast(int)checkExtension("GL_EXT_blend_color");
-				return bc;
-			case Feature.BLEND_FUNC_SEPARATE: // unused.
-				if (bfs==-1)
-					bfs = cast(int)checkExtension("GL_EXT_blend_func_separate");
-				return bfs;
 			default:
 				return 0;
 		}

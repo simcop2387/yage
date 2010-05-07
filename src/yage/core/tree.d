@@ -29,7 +29,7 @@ class Tree(T) : YageObject
 	 * Params:
 	 *     child = Node to add as a child of this element.
 	 * Returns: A reference to the child. */
-	S addChild(S /*: T*/)(S child)
+	S addChild(S : T)(S child)
 	in {
 		assert(child);
 		assert(child != this);		
@@ -56,7 +56,7 @@ class Tree(T) : YageObject
 	 *     child = An element of type T or that inherits from type T.
 	 * Returns: The child element.  For convenience, the return type is templated to match the input type.
 	 */
-	S removeChild(S /*: T*/)(S child)
+	S removeChild(S : T)(S child)
 	in {
 		assert(child);
 		assert(isChild(child));

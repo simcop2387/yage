@@ -218,15 +218,15 @@ void remove(T)(inout T[] array, int index, bool ordered=true)
  * --------------------------------
  * Timer[] array;
  * // ... fill array with new Timer() ...
- * array.radixSort((Timer a) { return a.get(); });
+ * array.radixSort((Timer a) { return a.tell(); }); // sort timers by thier time
  * -------------------------------- 
  */
-void radixSort(T)(inout T[] array, bool increasing=true)
+void radixSort(T)(T[] array, bool increasing=true)
 {	radixSort(array, increasing, (T a) { return a; });
 }
 
 /// ditto
-void radixSort(T, K)(inout T[] array, bool increasing, K delegate(T elem) getKey, bool signed=true)
+void radixSort(T, K)(T[] array, bool increasing, K delegate(T elem) getKey, bool signed=true)
 {	// Are we sorting floats?
 	bool isfloat = false;
 	static if (is(K == float) || is(K == double) || is(K == real) || 
@@ -472,7 +472,7 @@ struct ArrayBuilder(T)
 		array[old_size..size] = elem.array[0..$];
 	}
 	
-	///
+	/// TODO: This returns a copy, so a[i].b = 3; doesn't work!!
 	T opIndex(size_t i)
 	{	assert(i<size);
 		return array[i];

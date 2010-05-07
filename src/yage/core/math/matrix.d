@@ -160,9 +160,9 @@ struct Matrix
 		float rz_length = rz.length();
 		
 		// Divide the basis vectors by their lengths to normalize them.
-		rotation.v[0..3] = rx.scale(1/rx_length).v[0..3];
-		rotation.v[4..7] = ry.scale(1/ry_length).v[0..3];
-		rotation.v[8..11]= rz.scale(1/rz_length).v[0..3];
+		rotation.v[0..3] = rx.scale(1/rx_length).v[];
+		rotation.v[4..7] = ry.scale(1/ry_length).v[];
+		rotation.v[8..11]= rz.scale(1/rz_length).v[];
 		
 		// Take the lengths of the basis vectors to find the scale factors.
 		scale.v00 = rx_length;
@@ -472,9 +472,9 @@ struct Matrix
 	/// Return a copy of this Matrix scaled by s
 	Matrix scale(Vec3f s)
 	{	Matrix result = *this;
-		result.v00 = s.x;
-		result.v11 = s.y;
-		result.v22 = s.z;
+		result.v00 *= s.x;
+		result.v11 *= s.y;
+		result.v22 *= s.z;
 		return result;
 	}
 	
@@ -559,6 +559,28 @@ struct Matrix
 		decompose(position, rotation, mscale);
 		mscale = mscale.scale(scale);
 		setRotation(rotation.rotate(mscale));
+		
+		// TODO: This may be faster
+		/*Matrix result = *this;
+		Vec3f rx = Vec3f(v[0..3]);
+		Vec3f ry = Vec3f(v[4..7]);
+		Vec3f rz = Vec3f(v[8..11]);
+		float rx_length = rx.length();
+		float ry_length = ry.length();
+		float rz_length = rz.length();
+		
+		// Divide the basis vectors by their lengths to normalize them.
+		result.v[0..3] = rx.scale(1/rx_length).v[];
+		result.v[4..7] = ry.scale(1/ry_length).v[];
+		result.v[8..11]= rz.scale(1/rz_length).v[];
+		
+		Matrix mscale = Matrix();
+		mscale.v00 = rx_length*scale.x;
+		mscale.v11 = ry_length*scale.y;
+		mscale.v22 = rz_length*scale.z;
+		
+		return result.transformAffine(mscale);
+		 */
 	}
 
 	/**
@@ -618,6 +640,40 @@ struct Matrix
 	}
 	unittest
 	{	assert(Matrix().toScale() == Vec3f(1, 1, 1));		
+	}
+	
+	/**
+	 * Multiply two matrices and return a third Matrix result, ignoring values that aren't needed 
+	 * in affine transformations.  This makes it almost half the operations of a Matrix multiplication. */ 
+	Matrix transformAffine(Matrix b)
+	{	
+		Matrix result=void;
+		
+		result.v[ 0] = b.v[ 0]*v[ 0] + b.v[ 1]*v[ 4] + b.v[ 2]*v[ 8]/* + b.v[ 3]*v[12]*/;
+		result.v[ 1] = b.v[ 0]*v[ 1] + b.v[ 1]*v[ 5] + b.v[ 2]*v[ 9]/* + b.v[ 3]*v[13]*/;
+		result.v[ 2] = b.v[ 0]*v[ 2] + b.v[ 1]*v[ 6] + b.v[ 2]*v[10]/* + b.v[ 3]*v[14]*/;
+		//result.v[ 3] = b.v[ 0]*v[ 3] + b.v[ 1]*v[ 7] + b.v[ 2]*v[11] + b.v[ 3]*v[15];
+		result.v[3] = 0;
+
+		result.v[ 4] = b.v[ 4]*v[ 0] + b.v[ 5]*v[ 4] + b.v[ 6]*v[ 8]/* + b.v[ 7]*v[12]*/;
+		result.v[ 5] = b.v[ 4]*v[ 1] + b.v[ 5]*v[ 5] + b.v[ 6]*v[ 9]/* + b.v[ 7]*v[13]*/;
+		result.v[ 6] = b.v[ 4]*v[ 2] + b.v[ 5]*v[ 6] + b.v[ 6]*v[10]/* + b.v[ 7]*v[14]*/;
+		//result.v[ 7] = b.v[ 4]*v[ 3] + b.v[ 5]*v[ 7] + b.v[ 6]*v[11] + b.v[ 7]*v[15];
+		result.v[7] = 0;
+
+		result.v[ 8] = b.v[ 8]*v[ 0] + b.v[ 9]*v[ 4] + b.v[10]*v[ 8]/* + b.v[11]*v[12]*/;
+		result.v[ 9] = b.v[ 8]*v[ 1] + b.v[ 9]*v[ 5] + b.v[10]*v[ 9]/* + b.v[11]*v[13]*/;
+		result.v[10] = b.v[ 8]*v[ 2] + b.v[ 9]*v[ 6] + b.v[10]*v[10]/* + b.v[11]*v[14]*/;
+		//result.v[11] = b.v[ 8]*v[ 3] + b.v[ 9]*v[ 7] + b.v[10]*v[11] + b.v[11]*v[15];
+		result.v[11] = 0;
+
+		result.v[12] = b.v[12]*v[ 0] + b.v[13]*v[ 4] + b.v[14]*v[ 8] + /*b.v[15]**/v[12];
+		result.v[13] = b.v[12]*v[ 1] + b.v[13]*v[ 5] + b.v[14]*v[ 9] + /*b.v[15]**/v[13];
+		result.v[14] = b.v[12]*v[ 2] + b.v[13]*v[ 6] + b.v[14]*v[10] + /*b.v[15]**/v[14];
+		//result.v[15] = b.v[12]*v[ 3] + b.v[13]*v[ 7] + b.v[14]*v[11] + b.v[15]*v[15];
+		result.v[15] = 1;
+		
+		return result;
 	}
 
 	/** Return the transpose of the Matrix.  This is equivalent to

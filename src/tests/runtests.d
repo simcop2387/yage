@@ -1,6 +1,6 @@
 #!dmd -run
 /**
- * License: MIT
+ * License: Boost 1.0
  * Copyright (c) 2009-2010 Eric Poggel
  * 
  * This is a customized version of CDC for running Yage tests. 

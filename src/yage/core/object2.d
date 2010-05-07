@@ -9,7 +9,9 @@ import tango.math.random.Kiss;
 import tango.util.Convert;
 import yage.core.format;
 
-import tango.core.tools.TraceExceptions; // provide stack trace on error when compiled in debug mode.
+debug {
+	import tango.core.tools.TraceExceptions; // provide stack trace on error when compiled in debug mode.
+}
 
 /*
  * Unused. */
@@ -52,15 +54,6 @@ class ResourceException : YageException
 }
 
 
-
-
-///
-interface IBindable
-{	void bind(); ///
-	void unbind(); ///
-}
-
-
 /**
  * An interface for anything that can be cloned via a clone() method. */
 interface ICloneable
@@ -76,24 +69,6 @@ interface IDisposable
 	 * Finalize must be able to accept multiple calls, in case it is called manually and by a destroctor.
 	 * After dispose is called, it's object should be considered to be in a non-usable state and ready for destruction.*/
 	void dispose();
-}
-
-/**
- * Interface for any resource that has an external component outside of D memory, such as an OpenGL Texture. */
-interface IExternalResource : IDisposable
-{
-	/// Initializes the external part of the resource.  This function must support multiple calls.
-	void commit();
-	
-	/// Destroyes the external part of the resource.  This function must support multiple calls.
-	void dispose();
-	
-	/// Get an id that is used to reference the external part of the resource.  This will be 0 if the external part doesn't exist.
-	uint getId();
-	
-	/// Get a self-indexed associative array of all of this external resource type.  This is useful for cleanup.
-	static IExternalResource[IExternalResource] getAll(); // note that static interface members aren't enforced!
-	
 }
 
 

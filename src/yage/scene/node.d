@@ -68,7 +68,7 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 	{	Matrix transform;
 		Matrix transform_abs;
 	}
-	protected Cache cache[3];
+	/* protected*/ Cache cache[3];
 
 	/// Constructor
 	this()
@@ -274,9 +274,10 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 			{	if (parent)
 				{	//synchronized(this.parent) // still causes deadlock.
 					{	parent.calcTransform();
-						transform_abs = transform * parent.transform_abs;
+						//transform_abs = transform * parent.transform_abs;
+						transform_abs = parent.transform_abs.transformAffine(transform);
 						linear_velocity_abs = linear_velocity + parent.linear_velocity_abs;
-//						 TODO: linear_velocity_abs doesn't account for angular velocity
+						// TODO: linear_velocity_abs doesn't account for angular velocity
 						
 				}	}
 				else

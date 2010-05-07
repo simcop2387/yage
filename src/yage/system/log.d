@@ -73,7 +73,8 @@ struct Log
 		{	
 			char[] msg = swritef(_arguments, _argptr);
 			if (output & Output.CONSOLE)
-				Cout.append(msg~"\n").flush;
+				synchronized(Log.typeinfo)
+					Cout.append(msg~"\n").flush;
 			if (output & Output.FILE)
 				File.append(file, msg~"\r\n");
 			return true;
@@ -87,35 +88,50 @@ struct Log
 	}
 }
 
+import tango.util.container.HashMap;
+
 struct Profile
 {
 	static Timer[char[]] timers;
+	static bool enabled = true;
 	
+	// TODO: Each call to these adds a few microseconds of time and makes the timings off.
 	static void start(char[] timerName)
-	{
+	{	if (!enabled)
+			return;
+		
 		auto timer = timerName in timers;
 		if (timer)
+		{	assert(timer.paused());
 			timer.play();
+		}
 		else
 		{	Timer t = new Timer(true);			
 			timers[timerName] = t;
+			timers.rehash;
 			t.play();
-		}		
+		}
 	}
 	
-	static double stop(char[] timerName)
-	{	auto timer = timerName in timers;
+	static void stop(char[] timerName)
+	{	if (!enabled)
+			return;
+		
+		auto timer = timerName in timers;
 		assert(timer);
 		timer.pause();
-		return timer.tell();		
 	}
 	
 	static char[] getTimesAndClear()
 	{	char[] result;
 		foreach (name, timer; timers)
 			result ~= format("%ss %s\n", timer.tell(), name);
-		timers = null;
+		clear();
 		return result;
+	}
+	
+	static void clear()
+	{	timers = null;
 	}
 	
 	

@@ -1,3 +1,9 @@
+/**
+ * Copyright:  (c) 2005-2010 Eric Poggel
+ * Authors:    Eric Poggel
+ * License:    Boost 1.0
+ */
+
 module unittests.benchmark.array;
 
 import tango.io.Stdout;

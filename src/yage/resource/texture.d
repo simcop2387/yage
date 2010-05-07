@@ -14,7 +14,6 @@ import yage.core.math.vector;
 import yage.core.object2;
 import yage.resource.image;
 import yage.resource.manager;
-import yage.resource.resource;
 import yage.system.system;
 import yage.system.log;
 

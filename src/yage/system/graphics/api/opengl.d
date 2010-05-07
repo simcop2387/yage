@@ -8,6 +8,7 @@ module yage.system.graphics.api.opengl;
 
 import tango.stdc.time : time;
 import tango.core.Traits;
+import tango.core.WeakRef;
 import tango.math.Math;
 import tango.stdc.stringz;
 import tango.util.container.HashMap;
@@ -41,7 +42,7 @@ import yage.resource.manager; // temporary for generateShader
 private class ResourceInfo
 {	uint id;   // OpenGL's handle
 	uint time; // seconds from 1970, watch out for 2038!
-	WeakRef!(Object) resource; // A weak reference, so when the resource is deleted, we know to delete this item also
+	WeakReference!(Object) resource; // A weak reference, so when the resource is deleted, we know to delete this item also
 	
 	// Create ResourceInfo for a resource in map if it doesn't exist, or return it if it does
 	static ResourceInfo getOrCreate(Object resource, HashMap!(uint, ResourceInfo) map)
@@ -51,13 +52,14 @@ private class ResourceInfo
 		if (!temp)
 		{	info = new ResourceInfo();
 			map[hash] = info;
-			info.resource = new WeakRef!(Object)(resource);
+			info.resource = new WeakReference!(Object)(resource);
 		} else
 			info = *temp;	
 		info.time = tango.stdc.time.time(null);
 		return info;
 	}
 }
+
 
 
 /**
@@ -68,10 +70,11 @@ private class ResourceInfo
  */
 class OpenGL : GraphicsAPI 
 {
-	protected Model msprite;
+	
 	
 	// A map from a resource's hash to it's resource info
-	protected HashMap!(uint, ResourceInfo) textures; // aa's fail, so we have to use Tango's Hashmap
+	// Benchmarking shows this is slower than D's aa's, but using aa's here crashes for unknown reasons.
+	protected HashMap!(uint, ResourceInfo) textures;
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
 	
@@ -79,17 +82,9 @@ class OpenGL : GraphicsAPI
 
 	///
 	this()
-	{	
-		textures = new HashMap!(uint, ResourceInfo);
+	{	textures = new HashMap!(uint, ResourceInfo);
 		vbos = new HashMap!(uint, ResourceInfo);
 		shaders = new HashMap!(uint, ResourceInfo);
-		
-		// Sprite
-		msprite = new Model();
-		msprite.setAttribute(Geometry.VERTICES, [Vec3f(-1,-1, 0), Vec3f( 1,-1, 0), Vec3f( 1, 1, 0), Vec3f(-1, 1, 0)]);
-		msprite.setAttribute(Geometry.NORMALS, [Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1), Vec3f( 0, 0, 1)]);
-		msprite.setAttribute(Geometry.TEXCOORDS0, [Vec2f(0, 1), Vec2f(1, 1), Vec2f(1, 0), Vec2f(0, 0)]);
-		msprite.setMeshes([new Mesh(null, [Vec3i(0, 1, 2), Vec3i(2, 3, 0)])]);
 	}
 	
 	///
@@ -104,6 +99,74 @@ class OpenGL : GraphicsAPI
 	}
 	
 	/**
+	 * Enable this light as the given light number and apply its properties.
+	 * This function is used internally by the engine and should not be called manually or exported. */
+	void bindLight(LightNode light, int num)
+	{	assert (num<=Probe.feature(Probe.Feature.MAX_LIGHTS));
+		
+			LightNode currentLight = current.lights[num];
+	
+		glPushMatrix();
+		glLoadMatrixf(current.camera.inverse_absolute.v.ptr); // required for spotlights.
+
+		// Set position and direction
+		glEnable(GL_LIGHT0+num);
+		auto type = light.type;
+		Matrix transform_abs = light.getAbsoluteTransform(true);
+		
+		Vec4f pos;
+		pos.v[0..3] = transform_abs.v[12..15];
+		pos.v[3] = type==LightNode.Type.DIRECTIONAL ? 0 : 1;
+		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
+
+		// Spotlight settings
+		float angleDegrees = type == LightNode.Type.SPOT ? light.spotAngle*180/PI : 180;
+		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angleDegrees);
+		if (type==LightNode.Type.SPOT)
+		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.spotExponent);
+			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
+			// rotated by the node's rotation.  This is opposite the default direction of cameras
+			glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
+		}
+		glPopMatrix();
+
+		// Light material properties
+		if (currentLight.ambient != light.ambient)
+			glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.ambient.vec4f.ptr);
+		if (currentLight.diffuse != light.diffuse)
+			glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.diffuse.vec4f.ptr);
+		if (currentLight.specular != light.specular)
+			glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.specular.vec4f.ptr);
+		
+		// Attenuation properties TODO: only need to do this once per light
+		if (currentLight.quadAttenuation != light.quadAttenuation)
+		{	glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
+			glLightf(GL_LIGHT0+num, GL_LINEAR_ATTENUATION, 0);
+			glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, light.quadAttenuation);
+		}
+		
+		current.lights[num] = light;
+	}
+	
+	void bindMatrix(Matrix* matrix)
+	{	alias current.matrixStack s;
+		if (matrix)
+		{	glPushMatrix();
+			glMultMatrixf(matrix.v.ptr);
+			
+			if (s.length)
+				s ~= (*matrix) * s[s.length-1];
+			else
+				s ~= *matrix;
+			if (s.reserve < s.length)
+				s.reserve = s.length;
+		} else
+		{	glPopMatrix();
+			s.length = s.length-1;
+		}
+	}
+	
+	/**
 	 * Profiling has shown that changing shaders, textures, and blending operations are the slowest parts of this funciton.
 	 * TODO: This can be made faster by only changing the shader and blending when different from a previous pass.
 	 * Params:
@@ -112,9 +175,7 @@ class OpenGL : GraphicsAPI
 	 */
 	void bindPass(MaterialPass pass, LightNode[] lights=null)
 	{
-		// convert nulls to defaults;
-		if (!defaultPass)
-			defaultPass = new MaterialPass();		
+		// convert nulls to defaults;					
 		MaterialPass currentPass = current.pass;
 		if (!currentPass)
 			currentPass = defaultPass;
@@ -143,46 +204,50 @@ class OpenGL : GraphicsAPI
 			
 			// Blend
 			// TODO: If different than current blend
-			if (pass.blend != MaterialPass.Blend.NONE)
-			{	
-				glEnable(GL_BLEND);
-				glDepthMask(false);
-				
-				glDisable(GL_ALPHA_TEST);
-				glAlphaFunc(GL_ALWAYS, 0);
-				
-				switch (pass.blend)
-				{	case MaterialPass.Blend.ADD:
-						glBlendFunc(GL_ONE, GL_ONE);
-						break;
-					case MaterialPass.Blend.AVERAGE:						
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						break;
-					case MaterialPass.Blend.MULTIPLY:
-						glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-						break;
-					default: break;
-			}	}
-			else
-			{	glDisable(GL_BLEND);
-				glDepthMask(true);
-				
-				glEnable(GL_ALPHA_TEST);
-				glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
+			if (pass.blend != currentPass.blend)
+			{	if (pass.blend != MaterialPass.Blend.NONE)
+				{	
+					glEnable(GL_BLEND);
+					glDepthMask(false);
+					
+					glDisable(GL_ALPHA_TEST);
+					glAlphaFunc(GL_ALWAYS, 0);
+					
+					switch (pass.blend)
+					{	case MaterialPass.Blend.ADD:
+							glBlendFunc(GL_ONE, GL_ONE);
+							break;
+						case MaterialPass.Blend.AVERAGE:						
+							glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+							break;
+						case MaterialPass.Blend.MULTIPLY:
+							glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+							break;
+						default: break;
+				}	}
+				else
+				{	glDisable(GL_BLEND);
+					glDepthMask(true);
+					
+					glEnable(GL_ALPHA_TEST);
+					glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
+				}
 			}
-			
-			// Textures
-			if(pass.textures.length == 1)
-			{	glEnable(GL_TEXTURE_2D);
-				bindTexture(pass.textures[0]);
-			} else
-			{	glDisable(GL_TEXTURE_2D);
-				textureUnbind();
+			if (pass.textures != currentPass.textures)
+			{
+				// Textures
+				if(pass.textures.length == 1)
+				{	glEnable(GL_TEXTURE_2D);
+					bindTexture(pass.textures[0]);
+				} else
+				{	glDisable(GL_TEXTURE_2D);
+					textureUnbind();
+				}
 			}
 		}
 		
 		// Shader
-		Profile.start("passShader");
+		//Profile.start("passShader");
 		Shader shader;
 		ShaderUniform[] uniforms;
 		if (pass.shader)
@@ -190,10 +255,10 @@ class OpenGL : GraphicsAPI
 			uniforms = pass.shaderUniforms;
 		} 
 		else	
-		{	Profile.start("generateShader");
+		{	//Profile.start("generateShader");
 			shader = generateShader(pass, lights, current.scene.fogEnabled, uniformsLookaside);	
 			uniforms = uniformsLookaside.data;
-			Profile.stop("generateShader");
+			//Profile.stop("generateShader");
 		}
 		
 		if (shader)
@@ -204,7 +269,7 @@ class OpenGL : GraphicsAPI
 			}
 		} else
 			bindShader(null);
-		Profile.stop("passShader");
+		//Profile.stop("passShader");
 
 		
 		/*
@@ -244,47 +309,6 @@ class OpenGL : GraphicsAPI
 		*/
 		
 		current.pass = pass;		
-	}
-	/**
-	 * Enable this light as the given light number and apply its properties.
-	 * This function is used internally by the engine and should not be called manually or exported. */
-	void bindLight(LightNode light, int num)
-	{	assert (num<=Probe.feature(Probe.Feature.MAX_LIGHTS));
-		
-		glPushMatrix();
-		glLoadMatrixf(current.camera.getInverseAbsoluteMatrix().v.ptr); // required for spotlights.
-
-		// Set position and direction
-		glEnable(GL_LIGHT0+num);
-		auto type = light.type;
-		Matrix transform_abs = light.getAbsoluteTransform(true);
-		
-		Vec4f pos;
-		pos.v[0..3] = transform_abs.v[12..15];
-		pos.v[3] = type==LightNode.Type.DIRECTIONAL ? 0 : 1;
-		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
-
-		// Spotlight settings
-		float angleDegrees = type == LightNode.Type.SPOT ? light.spotAngle*180/PI : 180;
-		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angleDegrees);
-		if (type==LightNode.Type.SPOT)
-		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.spotExponent);
-			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
-			// rotated by the node's rotation.  This is opposite the default direction of cameras
-			glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
-		}
-
-		// Light material properties
-		glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.ambient.vec4f.ptr);
-		glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.diffuse.vec4f.ptr);
-		glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.specular.vec4f.ptr);
-		
-		// Attenuation properties TODO: only need to do this once per light
-		glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
-		glLightf(GL_LIGHT0+num, GL_LINEAR_ATTENUATION, 0);
-		glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, light.getQuadraticAttenuation());
-
-		glPopMatrix();
 	}
 
 	// Part of a test to gt renderTargt to work with fbo's.
@@ -375,29 +399,27 @@ class OpenGL : GraphicsAPI
 	 * Params:
 	 *     scene = If non null, bind the properties of this scene, otherwise set them back to the defalts. */
 	void bindScene(Scene scene)
-	{	if (scene)
-		{	with (scene)
-			{
-				
-				if (fogEnabled)
-				{	glFogfv(GL_FOG_COLOR, fogColor.vec4f.ptr);
-					glFogf(GL_FOG_DENSITY, fogDensity);
+	{	if (scene !is current.scene)
+		{	if (scene)
+			{	if (scene.fogEnabled)
+				{	glFogfv(GL_FOG_COLOR, scene.fogColor.vec4f.ptr);
+					glFogf(GL_FOG_DENSITY, scene.fogDensity);
 					glEnable(GL_FOG);
 				} else
 					glDisable(GL_FOG);
 				
-				Vec4f color = backgroundColor.vec4f;
+				Vec4f color = scene.backgroundColor.vec4f;
 				glClearColor(color.x, color.y, color.z, color.w);
-				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient.vec4f.ptr);
-			}
-		} else // TODO: track these values so they're only changed if necessary?
-		{	glFogfv(GL_FOG_COLOR, Vec4f(0).ptr);
-			glFogf(GL_FOG_DENSITY, 1);
-			glDisable(GL_FOG);				
-			
-			glClearColor(0, 0, 0, 0);
-			glLightModelfv(GL_LIGHT_MODEL_AMBIENT, Vec4f(.2, .2, .2, 1).ptr);
-		}
+				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, scene.ambient.vec4f.ptr);
+				
+			} else
+			{	glFogfv(GL_FOG_COLOR, Vec4f(0).ptr);
+				glFogf(GL_FOG_DENSITY, 1);
+				glDisable(GL_FOG);				
+				
+				glClearColor(0, 0, 0, 0);
+				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, Vec4f(.2, .2, .2, 1).ptr);
+		}	}
 		current.scene = scene;
 	}
 	
@@ -406,8 +428,6 @@ class OpenGL : GraphicsAPI
 	{	
 		if (!Probe.feature(Probe.Feature.SHADER))
 			throw new GraphicsException("OpenGL.bindShader() is only supported on hardware that supports shaders.");
-
-		
 		
 		if (shader)
 		{	assert(shader.getVertexSource().length);
@@ -415,7 +435,7 @@ class OpenGL : GraphicsAPI
 			
 			if (shader.status == Shader.Status.FAIL)
 				return;			
-						
+					
 			ResourceInfo info = ResourceInfo.getOrCreate(shader, shaders);
 			
 			// Compile shader if not already compiled
@@ -514,6 +534,7 @@ class OpenGL : GraphicsAPI
 			foreach (uniform; variables)
 			{
 				// Get the location of name.  TODO: Cache locations for names?  Profiling shows this is already fast?
+				// Wrapping it in cache!() didn't improve performance.
 				int location = glGetUniformLocationARB(info.id, uniform.name.ptr);				
 				
 				//int location = glGetUniformLocationARB(info.id, uniform.name.ptr);
@@ -724,30 +745,6 @@ class OpenGL : GraphicsAPI
 	}
 	
 	/// TODO: Create a bindTextures(Texture[]) function instead.
-	void textureUnbind(Texture texture)
-	{
-		// Texture Matrix
-		//if (position.length2() || scale.length2() || rotation!=0)
-		{	glMatrixMode(GL_TEXTURE);
-			glLoadIdentity();
-			glMatrixMode(GL_MODELVIEW);
-		}
-
-		// Environment Map
-		//if (texture.reflective)
-		{	glDisable(GL_TEXTURE_GEN_S);
-			glDisable(GL_TEXTURE_GEN_T);
-			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-		}
-
-		// Blend
-		//if (texture.blend != Texture.Blend.MULTIPLY)
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-	
 	void textureUnbind()
 	{
 		// Texture Matrix
@@ -784,12 +781,14 @@ class OpenGL : GraphicsAPI
 				GL_ELEMENT_ARRAY_BUFFER_ARB :
 				GL_ARRAY_BUFFER_ARB;
 		
+		int useVbo = Probe.feature(Probe.Feature.VBO);
+		
 		if (vb)
 		{
-			int featureVbo = Probe.feature(Probe.Feature.VBO);
+			useVbo = useVbo && vb.cache;
 			
 			// Bind vbo and update data if necessary.
-			if (featureVbo)
+			if (useVbo)
 			{	
 				// Get a new OpenGL buffer if there isn't one assigned yet.
 				ResourceInfo info = ResourceInfo.getOrCreate(vb, vbos);
@@ -810,14 +809,14 @@ class OpenGL : GraphicsAPI
 			switch (type)
 			{
 				case Geometry.VERTICES:
-					glVertexPointer(vb.components, GL_FLOAT, 0, featureVbo ? null : vb.ptr);
+					glVertexPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);
 					break;
 				case Geometry.NORMALS:
 					assert(vb.components == 3); // normals are always Vec3
-					glNormalPointer(GL_FLOAT, 0, featureVbo ? null : vb.ptr);
+					glNormalPointer(GL_FLOAT, 0, useVbo ? null : vb.ptr);
 					break;
 				case Geometry.TEXCOORDS0:
-					glTexCoordPointer(vb.components, GL_FLOAT, 0, featureVbo ? null : vb.ptr);
+					glTexCoordPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);
 					break;
 				case Mesh.TRIANGLES: // no binding necessary
 				default:
@@ -827,7 +826,11 @@ class OpenGL : GraphicsAPI
 					break;
 			}		
 		} else // unbind
-			glBindBufferARB(vbo_type, 0);
+		{	if (useVbo)
+				glBindBufferARB(vbo_type, 0);
+			
+		}
+			
 	}
 	
 	
@@ -840,97 +843,44 @@ class OpenGL : GraphicsAPI
 	 *     age = maximum age (in seconds) of objects to keep.  Set to 0 to remove all items.  Defaults to 3600.
 	 */
 	void cleanup(uint age=3600)
-	{
+	{	
 		foreach (key, info; textures)
-		{	if (info.resource is null || info.time <= time(null)-age)
+		{	if (info.resource.get() is null || info.time <= time(null)-age)
 			{	glDeleteTextures(1, &info.id);
 				textures.removeKey(key);
 				delete info; // nothing else references it at this point.
 		}	}
 		foreach (key, info; vbos)
-		{	if (info.resource is null || info.time <= time(null)-age)
+		{	if (info.resource.get() is null || info.time <= time(null)-age)
 			{	glDeleteBuffersARB(1, &info.id);
 				vbos.removeKey(key);
 				delete info; // nothing else references it at this point.
 		}	}
 		foreach (key, info; shaders)
-		{	if (info.resource is null || info.time <= time(null)-age)
+		{	if (info.resource.get() is null || info.time <= time(null)-age)
 			{	glDeleteBuffersARB(1, &info.id);
-				assert((cast(Shader)info.resource.ptr) !is null);
-				(cast(Shader)info.resource.ptr).status = Shader.Status.NONE;
+				assert((cast(Shader)info.resource.get()) !is null);
+				(cast(Shader)info.resource.get()).status = Shader.Status.NONE;
 				shaders.removeKey(key);
 				delete info; // nothing else references it at this point.
 		}	}
+		
+		// Reset structure of currently bound objects
+		Current newCurrent;
+		current = newCurrent;
 	}
 	
-	
-	///
-	RenderStatistics drawGeometry(Geometry geometry, LightNode[] lights=null)
-	{	RenderStatistics result;
-		
-		if (!geometry.getAttribute(Geometry.VERTICES))
-			return result;
-		
-		// Bind each vertx buffer
-		foreach (name, vb; geometry.getVertexBuffers())
-		{	bindVertexBuffer(vb, name);
-			if (name==Geometry.VERTICES)
-				result.vertexCount += vb.length;
-		}
-		// Loop through the meshes		
-		foreach (mesh; geometry.getMeshes())
-		{	
-			if (mesh.material)
-			{
-				if (mesh.material.techniques.length)
-				{
-					foreach (pass; mesh.material.techniques[0].passes)
-					{	Profile.start("bindPass");
-						bindPass(pass, lights);
-						Profile.stop("bindPass");
-						
-						Profile.start("drawVertexBuffer");
-						drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
-						Profile.stop("drawVertexBuffer");
-					}		
-				}				
-			}			
-			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
-		}
-		
-		return result;
-	}
-	
-	///
-	RenderStatistics drawModel(Geometry geometry, LightNode[] lights=null, float animationTime=0) // TODO: animationTime won't support blending animations.
-	{	auto result = drawGeometry(geometry, lights);
-		
-		return result;
-	}
-	
-	// Render a sprite
-	RenderStatistics drawSprite(Material material, LightNode[] lights=null)
-	{	
-		// Rotate if rotation is nonzero.
-		Vec3f rotation = Current.camera.getAbsoluteTransform(true).toAxis();
-		if (rotation.length2())			
-		{	// TODO: zero the rotation along the axis from the node to the camera.
-			glRotatef(rotation.length()*_180_PI, rotation.x, rotation.y, rotation.z);
-		}
-		
-		msprite.getMeshes()[0].material = material;
-		return drawGeometry(msprite, lights);
-	}
+
 	
 	/**
 	 * Draw the contents of a vertex buffer, such as a buffer of triangle indices. 
 	 * @param triangles If not null, this array of triangle indices will be used for drawing the mesh*/
 	void drawVertexBuffer(VertexBuffer polygons, char[] type)
-	{	int vbo = Probe.feature(Probe.Feature.VBO);
+	{	int useVbo = Probe.feature(Probe.Feature.VBO) && polygons.cache;
 		if (polygons)
 		{	bindVertexBuffer(polygons, type);
 			if (type==Mesh.TRIANGLES)
-				glDrawElements(GL_TRIANGLES, polygons.length()*3, GL_UNSIGNED_INT, vbo ? null : polygons.ptr);
+				glDrawElements(GL_TRIANGLES, polygons.length()*3, GL_UNSIGNED_INT, useVbo ? null : polygons.ptr);
 			else
 				throw new YageException("Unsupported polygon type %s", type);
 		}
@@ -952,13 +902,12 @@ class OpenGL : GraphicsAPI
 
 	
 	Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, inout ArrayBuilder!(ShaderUniform) uniforms)
-	{	Profile.start("generateShader1");
+	{	
 		// Use fixed function rendering, return null.
 		if (pass.autoShader == MaterialPass.AutoShader.NONE)
 			return null;
 		
 		// Set parameters for shader generation
-		
 		ShaderParams params;		
 		params.numLights = lights.length;
 		params.hasFog = fog;
@@ -970,8 +919,7 @@ class OpenGL : GraphicsAPI
 	
 		Shader result;
 		
-		// Get shader, either a cached version or create a new one.
-		
+		// Get shader, either a cached version or create a new one.		
 		auto existingPtr = params in generatedShaders;
 		if (existingPtr)
 			result =  *existingPtr;		
@@ -998,32 +946,38 @@ class OpenGL : GraphicsAPI
 			
 			generatedShaders[params] = result;
 		}
-		Profile.stop("generateShader1");
 		
 		// Set uniform values
-		Profile.start("generateShader2");
 		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
 		{			
 			Matrix camInverse = current.camera.getInverseAbsoluteMatrix();
 			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
 			
 			int idx=0;
+			assert(lights.length < 10);
 			foreach (i, light; lights)
 			{	
 				char[] makeName(char[] name, int i)
-				{	name[7] = i + 48;
+				{	name[7] = i + 48; // convert int to single digit ascii.
 					return name;
 				}
 				
-				Vec3f p = light.getAbsolutePosition().transform(camInverse); // TODO: This could be calculated per-light instead of per node * light
-
+				// Doing it inline seems to make things slightly faster
+				ShaderUniform* su = &uniforms.data[idx];
+				char[] name = makeName("lights[_].position\0", i);
+				su.name[0..name.length] = name[0..$];
+				su.type = ShaderUniform.Type.F4;
+				su.floatValues[0..3] = light.inverseCameraPosition.v[0..3];
+				su.floatValues[4] = light.type == LightNode.Type.DIRECTIONAL ? 0.0 : 1.0;
+				idx++;
 				
-				float type = light.type == LightNode.Type.DIRECTIONAL ? 0.0 : 1.0;
-				uniforms[idx++] =
-					ShaderUniform(makeName("lights[_].position", i), ShaderUniform.Type.F4, Vec4f(p.x, p.y, p.z, type).v);				
-				uniforms[idx++] =
-					ShaderUniform(makeName("lights[_].quadraticAttenuation", i), ShaderUniform.Type.F1, light.getQuadraticAttenuation());
-				
+				su = &uniforms.data[idx];
+				name = makeName("lights[_].quadraticAttenuation\0", i);
+				su.name[0..name.length] = name[0..$];
+				su.type = ShaderUniform.Type.F1;
+				su.floatValues[0] =light.getQuadraticAttenuation();
+				idx++;
+							
 				if (params.hasSpotlight)
 				{	Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); 
 					uniforms[idx++] = 
@@ -1038,10 +992,7 @@ class OpenGL : GraphicsAPI
 				}
 			}			
 		}
-		Profile.stop("generateShader2");
 		
 		return result;
 	}
 }
-
-

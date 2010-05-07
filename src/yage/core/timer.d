@@ -120,7 +120,7 @@ class Timer
 	 * Get the Timer's time in seconds.	 */
 	double tell()
 	{	
-		synchronized(this)
+		//synchronized(this)
 		{	double relative = rawTime();
 			
 			// Only use pause_after if it's between min and max.
@@ -129,7 +129,7 @@ class Timer
 					return pause_after;
 			
 			// employ floating point modulus division to keep between min and max.
-			real range = max-min;
+			double range = max-min;
 			if (relative > max)
 				relative = min + fmod(relative-min, range);
 			if (relative < min)

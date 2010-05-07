@@ -13,13 +13,13 @@
 module yage.resource.all;
 
 public
-{	import yage.resource.font;
+{	import yage.resource.collada;
+	import yage.resource.font;
+	import yage.resource.geometry;
 	import yage.resource.image;
 	import yage.resource.manager;
 	import yage.resource.material;
-	import yage.resource.geometry;
 	import yage.resource.model;
-	import yage.resource.resource;
 	import yage.resource.shader;
 	import yage.resource.sound;
 	import yage.resource.texture;

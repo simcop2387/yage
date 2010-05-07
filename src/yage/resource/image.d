@@ -14,7 +14,6 @@ import derelict.sdl.sdl;
 import derelict.sdl.image;
 import yage.core.object2;
 import yage.core.color;
-import yage.resource.resource;
 
 /**
  * A class for loading and manipulating images.
@@ -25,7 +24,7 @@ import yage.resource.resource;
  * 
  * TODO: Add convolution support: http://www.php.net/manual/en/function.imageconvolution.php#77818
  * TODO: Convert to struct? */
-class Image : Resource
+class Image
 {
 	// Types
 	struct Pixel(int C)

@@ -10,7 +10,6 @@ import tango.math.Math;
 import yage.core.math.vector;
 import yage.resource.manager;
 import yage.resource.material;
-import yage.resource.resource;
 import yage.system.system;
 import yage.system.log;
 
@@ -23,7 +22,9 @@ class VertexBuffer
 	void[] data;
 	TypeInfo type;
 	ubyte components;
+	bool cache = true; /// If true the Vertex Buffer will be cached in video memory.  // TODO: Setting this back to false keeps it in video memory but unused.
 
+	/// 
 	void setData(T)(T[] data)
 	{	dirty = true;
 		this.data = data;
@@ -32,7 +33,7 @@ class VertexBuffer
 			components = data[0].components;
 	}
 
-	// Get the number of vertices for this data.
+	/// Get the number of vertices for this data.
 	int length()
 	{	return data.length/type.tsize();		
 	}	
@@ -44,7 +45,7 @@ class VertexBuffer
 
 /**
  * Stores vertex data and meshes for any 3D geometry. */
-class Geometry : Resource
+class Geometry
 {	
 	/**
 	 * Constants representing fixed-function VertexBuffer types, for use with get/set attributes.
@@ -209,7 +210,7 @@ class Geometry : Resource
 	}
 
 	/// Get a plane to play with.
-	static Geometry getPlane(int widthSegments=1, int heightSegments=1)
+	static Geometry createPlane(int widthSegments=1, int heightSegments=1)
 	{		
 		auto result = new Geometry();
 		float w = cast(float)widthSegments;
@@ -224,7 +225,7 @@ class Geometry : Resource
 			for (int x=-widthSegments; x<=widthSegments; x+=2)			
 			{	vertices ~= Vec3f(x/w, y/h, 0);
 				normals ~= Vec3f(0, 0, 1);
-				texCoords ~= Vec3f(x/w, y/h, 0);
+				texCoords ~= Vec3f(x/(w*2)+.5, 1-y/(h*2)-.5, 0);
 			}
 		result.setAttribute(Geometry.VERTICES, vertices);
 		result.setAttribute(Geometry.NORMALS, normals);
@@ -253,7 +254,7 @@ class Geometry : Resource
 /**
  * A Mesh groups a Material with a set of triangle indices.
  * The Geometry class groups a Mesh with vertex buffers referenced by the traingle indices */
-class Mesh : Resource
+class Mesh
 {
 	static const char[] TRIANGLES = "gl_Triangles"; /// Constants used to specify various built-in polgyon attribute type names.
 	
@@ -270,6 +271,10 @@ class Mesh : Resource
 	{	this();
 		this.material = matl;
 		this.triangles.setData(triangles);
+	}
+	
+	~this()
+	{	delete triangles;
 	}
 	
 	/**

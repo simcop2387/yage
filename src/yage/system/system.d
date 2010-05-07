@@ -27,7 +27,6 @@ import yage.core.object2;
 import yage.core.math.vector;
 import yage.scene.scene;
 import yage.resource.manager;
-import yage.resource.resource;
 import yage.system.window;
 
 // OpenGL constants to enable specular highlights with textures.
