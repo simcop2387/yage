@@ -225,7 +225,7 @@ class Geometry
 			for (int x=-widthSegments; x<=widthSegments; x+=2)			
 			{	vertices ~= Vec3f(x/w, y/h, 0);
 				normals ~= Vec3f(0, 0, 1);
-				texCoords ~= Vec3f(x/(w*2)+.5, 1-y/(h*2)-.5, 0);
+				texCoords ~= Vec3f(x/(w*2)+.5, 1-y/(h*2)-.5, 0); // TODO: Why 3 texture coordinates?
 			}
 		result.setAttribute(Geometry.VERTICES, vertices);
 		result.setAttribute(Geometry.NORMALS, normals);
@@ -247,6 +247,16 @@ class Geometry
 		result.setMeshes([new Mesh(material, triangles)]);
 		
 		return result;
+	}
+
+	Vec2f[] createTangentVectors()
+	{
+		Vec2f[] texCoords = cast(Vec2f[])getAttribute(Geometry.TEXCOORDS0);
+		assert(texCoords.length);
+		
+		Vec2f[] result;
+		// TODO
+		return result;		
 	}
 }
 

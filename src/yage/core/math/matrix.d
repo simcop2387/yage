@@ -12,6 +12,7 @@ import yage.core.math.vector;
 import yage.core.math.quatrn;
 import yage.core.math.math;
 import yage.core.misc;
+import yage.system.log;
 
 /**
  * A 4x4 matrix class for 3D transformations.
@@ -339,8 +340,30 @@ struct Matrix
 
 	/**
 	 * Get the position component of the Matrix as a Vector. */
-	Vec3f position()
+	Vec3f getPosition()
 	{	return Vec3f(v[12..15]);		
+	}
+	
+	/**
+	 * Extract the scale Vector from the rotation component of the Matrix.
+	 * Scale components will always be positive. */
+	Vec3f getScale()
+	{			
+		// Matrix position, rotation, scale;
+		//decompose(position, rotation, scale);
+		//return Vec3f(scale[0], scale[5], scale[10]);
+		
+		return Vec3f(
+			Vec3f(v[0..3]).length(),
+			Vec3f(v[4..7]).length(),
+			Vec3f(v[8..11]).length()
+		);
+	}
+	unittest
+	{	Matrix m;
+		Vec3f s = Vec3f(1, 2, 4);
+		m.setScalePreservingRotation(s);
+		assert(m.getScale() == s);
 	}
 	
 	///
@@ -383,9 +406,23 @@ struct Matrix
 		
 		Matrix position, rotation, scale;
 		decompose(position, rotation, scale);
+		/*
 		rotation = rotation.rotate(rot).rotate(scale);
 		position.setRotation(rotation); // faster version of return scale * (rotation * position)
 		return position;
+		*/
+		
+		return scale.transformAffine(position.transformAffine(rotation));
+	}
+	unittest
+	{	scope m = new Matrix();
+		Vec3f scale = Vec3f(2, 1, 5);
+		m.setScalePreservingRotation(scale);
+		assert(m.getScale() == scale);
+		m.rotatePreservingScale(scale);
+		assert(m.getScale() == scale);
+		m.setScalePreservingRotation(scale);
+		assert(m.getScale() == scale);
 	}
 
 	/**
@@ -472,10 +509,20 @@ struct Matrix
 	/// Return a copy of this Matrix scaled by s
 	Matrix scale(Vec3f s)
 	{	Matrix result = *this;
-		result.v00 *= s.x;
-		result.v11 *= s.y;
-		result.v22 *= s.z;
+		Matrix position, rotation, mscale;
+		result.decompose(position, rotation, mscale);
+		mscale.v[0] *= s.x;
+		mscale.v[5] *= s.y;
+		mscale.v[10] *= s.z;
+		result.setRotation(rotation.rotate(mscale));
 		return result;
+	}
+	unittest {
+		Matrix m;
+		Vec3f s = Vec3f(1, 2, 4);
+		m = m.rotate(Vec3f(0, 1, 0));
+		m = m.scale(s);
+		assert(m.getScale() == s);
 	}
 	
 	///
@@ -502,13 +549,13 @@ struct Matrix
 		v[9] =   2*(rot.y*rot.z - rot.x*rot.w);
 		v[10] = 1-2*(rot.x*rot.x + rot.y*rot.y);
 	}
-	void setRotation(Vec3f rot) /// ditto
+	void setRotation(Vec3f axis) /// ditto
 	{	// this is untested.
 		
-		float phi = rot.length();
+		float phi = axis.length();
 		if (phi==0) // no rotation for zero-vector
 			return;
-		Vec3f n = rot.scale(1/phi);
+		Vec3f n = axis.scale(1/phi);
 		float rcos = cos(phi);
 		float rcos1 = 1-rcos;
 		float rsin = sin(phi);
@@ -525,7 +572,7 @@ struct Matrix
 	/**
 	 * Set the rotation while taking extra steps to preserve the Matrices scaling values. */
 	void setRotationPreservingScale(T)(T rot)
-	{	Vec3f scale = toScale();
+	{	Vec3f scale = getScale();
 		setRotation(rot);
 		setScalePreservingRotation(scale); // slow
 	}
@@ -557,7 +604,9 @@ struct Matrix
 	void setScalePreservingRotation(Vec3f scale)
 	{	Matrix position, rotation, mscale;
 		decompose(position, rotation, mscale);
-		mscale = mscale.scale(scale);
+		mscale[0] = scale.x;
+		mscale[5] = scale.y;
+		mscale[10] = scale.z;
 		setRotation(rotation.rotate(mscale));
 		
 		// TODO: This may be faster
@@ -626,20 +675,6 @@ struct Matrix
 		if (abs(c) > 0.00005)  // If Gimball Lock?
 			return Vec3f(-atan2(-v[6]/c, v[10]/c), -y, -atan2(-v[1]/c, v[0]/c));
 		return Vec3f(0, -y, -atan2(v[4], v[5]));
-	}
-	
-	/**
-	 * Extract the scale Vector from the rotation component of the Matrix.
-	 * Scale components will always be positive. */
-	Vec3f toScale()
-	{	return Vec3f(
-			Vec3f(v[0..3]).length(),
-			Vec3f(v[4..7]).length(),
-			Vec3f(v[8..11]).length()
-		);
-	}
-	unittest
-	{	assert(Matrix().toScale() == Vec3f(1, 1, 1));		
 	}
 	
 	/**

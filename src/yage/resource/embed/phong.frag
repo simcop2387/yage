@@ -24,9 +24,11 @@ struct LightInput
 #if NUM_LIGHTS > 0
 	uniform LightInput lights[NUM_LIGHTS];
 #endif
-uniform sampler2D tex;
+uniform sampler2D tex, tex2;
 varying vec3 normal, eye_direction, eye_position;
 vec3 n, eye_direction_normalized; // renormalized varyings
+
+vec4 normalTexture;
 
 struct LightResult
 {	vec4 ambient;
@@ -78,19 +80,25 @@ LightResult applyLight(gl_LightSourceParameters light, LightInput lightExtra)
 	result.diffuse = light.diffuse * attenuation * ndotl;
 
 #ifdef HAS_SPECULAR	
-	vec3 half_vector = normalize(light_direction + eye_direction_normalized); 
+	vec3 half_vector = normalize(light_direction + eye_direction_normalized); // light_direction is already normalized
 	float ndothv = max(0.0, dot(n, half_vector));
-	result.specular = vec4(attenuation * pow(ndothv, gl_FrontMaterial.shininess));
+	result.specular = vec4(attenuation * pow(ndothv, gl_FrontMaterial.shininess)); // TODO: Specularity is wrong          
+	
+	
 #endif
 	return result;
 }
+
+
 
 void main()
 {	
 	LightResult lighting;
 
+	normalTexture = texture2D(tex2, gl_TexCoord[0].st);
+
 #if NUM_LIGHTS>0
-	n = normalize(normal);
+	n = normalize(normal + normalTexture.xyz); // this is wrong, needs to use a tangent vector as well.
 #ifdef HAS_SPECULAR	
 	eye_direction_normalized = normalize(eye_direction);
 #endif	
@@ -107,16 +115,13 @@ void main()
 	// Combine lighting and material components
 	vec4 ambient  = lighting.ambient * gl_FrontMaterial.ambient;
 	vec4 diffuse = lighting.diffuse * gl_FrontMaterial.diffuse;
-	vec4 specular = lighting.specular* gl_FrontMaterial.specular;
+	vec4 specular = lighting.specular * gl_FrontMaterial.specular;
 	
 	// gl_FrontLightModelProduct.sceneColor is material.emission + material.ambient * global.ambient
 	vec4 color = gl_FrontLightModelProduct.sceneColor + ambient + diffuse;
 	
-	// 
-	//color = texture2D(tex, gl_TexCoord[0].st) * color + specular;
-	
-	// Testing multi-texturing
-	color = (texture2D(tex, gl_TexCoord[0].st) + texture2D(tex2, gl_TexCoord[0].st)) * color + specular;
+	// Default
+	color = texture2D(tex, gl_TexCoord[0].st) * color + specular;
 	
 	color.a = gl_FrontMaterial.diffuse.a;
 

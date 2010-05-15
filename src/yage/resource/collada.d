@@ -85,11 +85,20 @@ class Collada
 	
 	/**
 	 * Get all geometry from the file merged into a single Yage Geometry instance.
-	 * This is usually the desired behavior when loading a collada file as a model. */
+	 * This is usually the desired behavior when loading a collada file as a model. 
+	 * 
+	 * Unlike getGeometryById, this takes into account the file's asset/up_axis. */
 	Geometry getMergedGeometry()
 	{
 		Geometry[] geometries;
 		Matrix[] geometryTransforms;
+		
+		// Get the up direction (unfinished)
+		Matrix upTransform;
+		char[] upAxis = Node(doc.elements).getChild("asset").getChild("up_axis").value();
+		if (upAxis == "Z_UP")
+			upTransform = Vec3f(-3.1415/2, 0, 0).toMatrix();
+		
 		
 		// Loop through the scenes and load all the geometry nodes they reference.
 		scope Node[] visual_scenes = Node(doc.elements).getChild("library_visual_scenes").getChildren("visual_scene");
@@ -99,12 +108,10 @@ class Collada
 			scope Node[] nodes = visual_scene.getChildren("node");
 			foreach (node; nodes) // loop through nodes in a scene
 			{
-				Node instance_geometry;
-				try {
-					instance_geometry = node.getChild("instance_geometry");
-				} catch (XmlException e) {
-					continue; // skip nodes that don't have geometry (lights, cameras, etc.)
-				}
+				if (!node.hasChild("instance_geometry"))
+				    continue;
+				
+				Node instance_geometry = node.getChild("instance_geometry");
 				
 				char[] geometryId = instance_geometry.getAttribute("url"); // TODO: Multiple instance geometry?
 				Geometry geometry = getGeometryById(geometryId);
@@ -122,9 +129,10 @@ class Collada
 					else if (transform.name=="scale")						
 						matrix.setScalePreservingRotation(Vec3f(Xml.parseNumberList!(float)(transform.value)));
 				}
-				geometryTransforms ~= matrix;
+				geometryTransforms ~= matrix * upTransform;
 				
 				// TODO: Sometimes intance_geometry has xml children specifying a material (or other things as well?)
+				
 				geometries~= geometry;
 		}	}
 		
@@ -286,7 +294,11 @@ class Collada
 				}
 				
 				// Material
-				Material material = getMaterialById(polyList.getAttribute("material"));
+				Material material;
+				if (polyList.hasAttribute("material"))
+					material = getMaterialById(polyList.getAttribute("material"));
+				else
+					material = Material.getDefaultMaterial();
 			
 				
 				Mesh mesh = new Mesh(null, triangles);

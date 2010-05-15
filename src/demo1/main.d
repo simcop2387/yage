@@ -48,7 +48,10 @@ class DemoScene : Scene
 		
 		// Skybox
 		skyBox = new Scene();
-		skyBox.addChild(new ModelNode("sky/sanctuary.dae"));
+		auto sky = new ModelNode("sky/sanctuary.dae");
+		sky.setScale(Vec3f(1000));
+		skyBox.addChild(sky);
+		
 		
 		// Ship
 		ship = addChild(new Ship());	

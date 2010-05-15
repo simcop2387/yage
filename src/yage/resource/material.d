@@ -24,6 +24,8 @@ class Material
 {
 	MaterialTechnique[] techniques; ///
 	
+	protected static Material defaultMaterial;
+	
 	///
 	this() {};
 	
@@ -48,6 +50,16 @@ class Material
 		return null;
 	}	
 
+	///
+	static Material getDefaultMaterial()
+	{	if (!defaultMaterial)
+		{	defaultMaterial = new Material();
+			defaultMaterial.techniques ~= new MaterialTechnique();
+			defaultMaterial.techniques[0].passes ~= new MaterialPass();
+			defaultMaterial.techniques[0].passes[0].autoShader = MaterialPass.AutoShader.PHONG;
+		}
+		return defaultMaterial;
+	}
 }
 
 ///

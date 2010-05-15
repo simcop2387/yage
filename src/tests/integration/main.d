@@ -88,7 +88,7 @@ class LotsOfObjects : TestScene
 {
 	this()
 	{
-		int length = 46;
+		int length = 20;
 		int spacing = 10;
 		
 		// Add asteroids
@@ -190,6 +190,19 @@ class LightsAndFog : TestScene
 		plane.setPosition(Vec3f(50, 0, 0));
 		plane.setRotation(Vec3f(0, -PI/2, 0));
 		plane.setScale(Vec3f(50));
+		
+		
+		auto ubot = new ModelNode("ubot/ubot.dae");
+		scene.addChild(ubot);
+		
+		// temporary, add normal map to model
+		MaterialPass ubotPass = ubot.getModel().getMeshes()[0].getMaterial().getPass();
+		ubotPass.ambient = "white";
+		ubotPass.specular = "gray";
+		ubotPass.textures = [
+		    Texture(ResourceManager.texture("ubot/diffuse.jpg")),
+			Texture(ResourceManager.texture("ubot/normal-specular.png"))
+		];
 		
 		
 		// Lights
@@ -352,6 +365,7 @@ class UI : Surface
 	};
 }
 
+// Entry point
 void main()
 {	
 	// Initialize and create window
@@ -361,7 +375,7 @@ void main()
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
-	auto scene = new Transparency();
+	auto scene = new LightsAndFog(); // set which scene to test
 	scene.play(); // start scene thread
 	
 	// User interface

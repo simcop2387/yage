@@ -68,11 +68,12 @@ class VisibleNode : MovableNode
 	{	return lights;
 	}
 
-	/// Get the radius of this VisibleNode's culling sphere.  Does not include scale
+	/**
+	 * Get the radius of this VisibleNode's culling sphere.  Includes size but not scale.
+	 * Classes that inherit VisibleNode must provide this function to specify their radius, or they will not be rendered. */ 
 	float getRadius()
-	{	// TODO: maybe we should just return 0?
-		return 1.732050807*size.max();	// a value of zero would not be rendered since it's always smaller than the pixel threshold.
-	}									// This is the radius of a 1x1x1 cube
+	{	return 0;
+	}
 
 	/**
 	 * Get / set the scale of this VisibleNode in the x, y, and z directions.

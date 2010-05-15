@@ -70,15 +70,18 @@ private class ResourceInfo
  */
 class OpenGL : GraphicsAPI 
 {
-	
+	///
+	enum MatrixType
+	{	PROJECTION, ///
+		TEXTURE, ///
+		TRANSFORM ///
+	}
 	
 	// A map from a resource's hash to it's resource info
 	// Benchmarking shows this is slower than D's aa's, but using aa's here crashes for unknown reasons.
 	protected HashMap!(uint, ResourceInfo) textures;
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
-	
-	protected ArrayBuilder!(ShaderUniform) uniformsLookaside;
 
 	///
 	this()
@@ -148,22 +151,43 @@ class OpenGL : GraphicsAPI
 		current.lights[num] = light;
 	}
 	
-	void bindMatrix(Matrix* matrix)
-	{	alias current.matrixStack s;
+	/**
+	 * Push or Pop Matrices on an OpenGL matrix stack.
+	 * Params:
+	 *     matrix = Multiply the current Matrix at the top of the stack by this Matrix and push the result onto the stack,
+	 *     or if matrix is null, pop it off the stack.
+	 *     type = Determines which OpenGL matrix stack to modify. */
+	void bindMatrix(Matrix* matrix, MatrixType type=MatrixType.TRANSFORM)
+	{	
+		ArrayBuilder!(Matrix)* s;
+		if (type==MatrixType.TRANSFORM)
+			s=&current.transformMatrixStack;
+		else if (type==MatrixType.TEXTURE)
+		{	s=&current.textureMatrixStack;
+			glMatrixMode(GL_TEXTURE);
+		}
+		else
+		{	s=&current.projectionMatrixStack;
+			glMatrixMode(GL_PROJECTION);
+		}
+			
 		if (matrix)
 		{	glPushMatrix();
 			glMultMatrixf(matrix.v.ptr);
 			
 			if (s.length)
-				s ~= (*matrix) * s[s.length-1];
+				*s ~= (*matrix) * (*s)[s.length-1];
 			else
-				s ~= *matrix;
+				*s ~= *matrix;
 			if (s.reserve < s.length)
 				s.reserve = s.length;
 		} else
 		{	glPopMatrix();
 			s.length = s.length-1;
 		}
+		
+		if (type!=MatrixType.TRANSFORM)
+			glMatrixMode(GL_MODELVIEW);
 	}
 	
 	/**
@@ -173,7 +197,7 @@ class OpenGL : GraphicsAPI
 	 *     pass = 
 	 *     lights = Array of LightNodes that affect this material.  Required if the pass's autoShader is not AutoShader.NONE.
 	 */
-	void bindPass(MaterialPass pass, LightNode[] lights=null)
+	void bindPass(MaterialPass pass)
 	{
 		// convert nulls to defaults;					
 		MaterialPass currentPass = current.pass;
@@ -233,87 +257,26 @@ class OpenGL : GraphicsAPI
 					glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
 				}
 			}
-			if (pass.textures != currentPass.textures)
-			{
-				// Textures
-				if(pass.textures.length == 1)
-				{	glEnable(GL_TEXTURE_2D);
-					bindTexture(pass.textures[0]);
-				} else
-				{	glDisable(GL_TEXTURE_2D);
-					textureUnbind();
-				}
-			}
+			
+			bindTextures(pass.textures);
 		}
 		
-		// Shader
-		//Profile.start("passShader");
-		Shader shader;
-		ShaderUniform[] uniforms;
 		if (pass.shader)
-		{	shader = pass.shader;
-			uniforms = pass.shaderUniforms;
-		} 
-		else	
-		{	//Profile.start("generateShader");
-			shader = generateShader(pass, lights, current.scene.fogEnabled, uniformsLookaside);	
-			uniforms = uniformsLookaside.data;
-			//Profile.stop("generateShader");
-		}
-		
-		if (shader)
 		{	try {
-				bindShader(shader, uniforms);
+				bindShader(pass.shader, pass.shaderUniforms);
 			} catch (GraphicsException e)
 			{	Log.error(e);
 			}
 		} else
 			bindShader(null);
 		//Profile.stop("passShader");
-
-		
-		/*
-		if (pass != defaultPass)
-		{
-			// Textures
-			if (pass.textures.length>1 && Probe.feature(Probe.Feature.MULTITEXTURE))
-			{	
-				// Loop through all of Layer's textures up to the maximum allowed.
-				foreach (i, texture; pass.textures)
-				{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
-
-					// Activate texture unit and enable texturing
-					glActiveTextureARB(GL_TEXTUREI_ARB);
-					glEnable(GL_TEXTURE_2D);
-					glClientActiveTextureARB(GL_TEXTUREI_ARB);
-					
-					// TODO: Bind these when the geometry is bound instead of here.  Sometimes we'll have more tex coords than textures.
-					//bindVertexBuffer(geometry.getVertexBuffer(Geometry.TEXCOORDS0), Geometry.TEXCOORDS0);
-					bindTexture(pass.textures[i]);
-			}	}
-			else if(pass.textures.length == 1)
-			{	glEnable(GL_TEXTURE_2D);
-				bindTexture(pass.textures[0]);
-			} else
-				glDisable(GL_TEXTURE_2D);
-			
-			
-		} else // unbind
-		{				
-			if(current.pass.textures.length == 1)			
-			{	
-				textureUnbind();			
-				glDisable(GL_TEXTURE_2D);
-			}
-		}
-		*/
 		
 		current.pass = pass;		
 	}
 
 	// Part of a test to gt renderTargt to work with fbo's.
-	static uint fbo;
-	static uint renderBuffer;
+	uint fbo;
+	uint renderBuffer;
 	
 	/**
 	 * Call this function twice, the first time with a render target, and then again with null to complete.
@@ -324,7 +287,6 @@ class OpenGL : GraphicsAPI
 	{	
 		assert((target && !current.renderTarget) || (!target && current.renderTarget));
 		
-		
 		if (target)
 		{			
 			// If target is a texture to render to
@@ -333,7 +295,7 @@ class OpenGL : GraphicsAPI
 			{
 				// If FBO is supported, use it for texture rendering, otherwise render to framebuffer and copy the image.
 				// FBO is currently disabled due to a bug.
-				if (false && Probe.Feature.FBO)
+				if (false && Probe.feature(Probe.Feature.FBO))
 				{
 					glGenFramebuffersEXT(1, &fbo);
 					glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); // why does this line fail?
@@ -360,7 +322,7 @@ class OpenGL : GraphicsAPI
 			if (texture)
 			{	
 				// Framebufferobject currently disabled due to a bug
-				if (false && Probe.Feature.FBO)
+				if (false && Probe.feature(Probe.Feature.FBO))
 				{	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 					glDeleteFramebuffersEXT(1, &fbo);
@@ -423,27 +385,28 @@ class OpenGL : GraphicsAPI
 		current.scene = scene;
 	}
 	
-	/// TODO: Allow specifying uniform variable assignments.
+	///
 	void bindShader(Shader shader, ShaderUniform[] variables=null)
 	{	
 		if (!Probe.feature(Probe.Feature.SHADER))
 			throw new GraphicsException("OpenGL.bindShader() is only supported on hardware that supports shaders.");
 		
 		if (shader)
-		{	assert(shader.getVertexSource().length);
-			assert(shader.getFragmentSource().length);
+		{				
+			if (shader.failed)
+				return;
 			
-			if (shader.status == Shader.Status.FAIL)
-				return;			
+			assert(shader.getVertexSource().length);
+			assert(shader.getFragmentSource().length);
 					
 			ResourceInfo info = ResourceInfo.getOrCreate(shader, shaders);
 			
 			// Compile shader if not already compiled
-			if (shader.status == Shader.Status.NONE)
-			{	assert(!info.id);
+			if (!info.id)
+			{	//assert(!info.id);
 				
 				// Fail unless marked otherwise
-				shader.status = Shader.Status.FAIL;				
+				shader.failed = true;				
 				shader.compileLog = "";
 				uint vertexObj, fragmentObj;
 				
@@ -519,7 +482,7 @@ class OpenGL : GraphicsAPI
 				if (!isValid)
 					throw new GraphicsException("Shader failed validation.\nReason:  %s", validateLog);
 					
-				shader.status = Shader.Status.SUCCESS;
+				shader.failed = false;
 				
 				// Temporary?
 				Log.info(shader.compileLog);
@@ -528,7 +491,21 @@ class OpenGL : GraphicsAPI
 			assert(info.id);
 			
 			if (shader !is current.shader)
-				glUseProgramObjectARB(info.id);
+			{	glUseProgramObjectARB(info.id);
+			
+				// Bind texture uniforms
+				int uniforms;
+				glGetObjectParameterivARB(info.id, GL_ACTIVE_UNIFORMS, &uniforms);			
+				
+				uint glType;
+				int length, size, textureIndex;
+				for (int i=0; i<uniforms; i++)
+				{	glGetActiveUniformARB(info.id, i, 0, &length, &size, &glType, null);
+					if (glType==GL_SAMPLER_1D || glType==GL_SAMPLER_2D || glType==GL_SAMPLER_3D ||
+					    glType==GL_SAMPLER_CUBE || glType==GL_SAMPLER_1D_SHADOW || glType==GL_SAMPLER_2D_SHADOW)
+						glUniform1iARB(i, textureIndex++);				
+				}
+			}
 			
 			// Bind uniform variables
 			foreach (uniform; variables)
@@ -564,151 +541,183 @@ class OpenGL : GraphicsAPI
 		current.shader = shader;		
 	}
 	
-	///
-	void bindTexture(ref Texture texture)
-	{	GPUTexture gpuTexture = texture.texture;
-		assert(gpuTexture);
-		
-		ResourceInfo info = ResourceInfo.getOrCreate(gpuTexture, textures);
-		
-		// If it doesn't have an OpenGL id
-		if (!info.id)
-		{				
-			glGenTextures(1, &info.id);
-			glBindTexture(GL_TEXTURE_2D, info.id);
-			assert(glIsTexture(info.id)); // why does this fail if before bindTexture (because we need glFlush?)
-			
-			// For some reason these need to be called or everything runs slowly.			
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			
-			gpuTexture.dirty = true;
+	/**
+	 * Bind Textures for rendering.
+	 * Params:
+	 *     textures = Textures to be bound.  Texture units beyond the array length will be disabled.
+	 *     asManyAsPossible = If true, no error will be thrown if there are more textures than texture units available.
+	 *         Instead, as many as possible will be bound.
+	 * Throws:  GraphicsException if more textures are given than texture units available and asManyAsPossible is false. */
+	void bindTextures(Texture[] textures, bool asManyAsPossible=false)
+	{		
+		int maxLength = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
+		if (textures.length > maxLength)
+		{	if (asManyAsPossible)
+				textures.length = maxLength;
+			else
+				throw new GraphicsException("Cannot bind %s textures when only %s texture units are supported", 
+					textures.length, maxLength);
 		}
-		else
-			glBindTexture(GL_TEXTURE_2D, info.id);
 		
-		// If texture needs to be uploaded
-		if (gpuTexture.dirty)
-		{	
-			// Upload new image to graphics card memory
-			Image image = gpuTexture.getImage();
-			assert(image);
-						
-			// Convert auto format to a real format based on the image given.
-			GPUTexture.Format format;
-			if (gpuTexture.getFormat() == GPUTexture.Format.AUTO)
-				switch(image.getChannels()) // This will support float formats when we switch to using Image2.
-				{	case 1: format = GPUTexture.Format.COMPRESSED_LUMINANCE; break;
-					case 2: format = GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA; break;
-					case 3: format = GPUTexture.Format.COMPRESSED_RGB; break;					
-					case 4: format = GPUTexture.Format.COMPRESSED_RGBA; break;					
-					default: throw new ResourceException("Images with more than 4 channels are not supported.");
-				}
-			else if (gpuTexture.getFormat() == GPUTexture.Format.AUTO_UNCOMPRESSED)
-				switch(image.getChannels()) // This will support float formats when we switch to using Image2.
-				{	case 1: format = GPUTexture.Format.LUMINANCE8; break;
-					case 2: format = GPUTexture.Format.LUMINANCE8_ALPHA8; break;
-					case 3: format = GPUTexture.Format.RGB8; break;					
-					case 4: format = GPUTexture.Format.RGBA8; break;					
-					default: throw new ResourceException("Images with more than 4 channels are not supported.");
-				}
+		// Set states used by all textures
+		glMatrixMode(GL_TEXTURE);
+		
+		foreach (i, texture; textures)
+		{
+			// Skip if this texture is already bound
+			if (current.textures.length > i && current.textures[i] == texture)
+				continue;
 			
-			// Convert from GPUTexture.Format to OpenGL format constants.
-			uint[GPUTexture.Format] glFormatMap = [
-				GPUTexture.Format.COMPRESSED_LUMINANCE : GL_LUMINANCE,
-				GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_LUMINANCE_ALPHA,
-				GPUTexture.Format.COMPRESSED_RGB : GL_RGB,
-				GPUTexture.Format.COMPRESSED_RGBA : GL_RGBA,
-				GPUTexture.Format.LUMINANCE8 : GL_LUMINANCE,
-				GPUTexture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
-				GPUTexture.Format.RGB8 : GL_RGB,
-				GPUTexture.Format.RGBA8 : GL_RGBA,				
-			];
-			uint[GPUTexture.Format] glInternalFormatMap = [
-				GPUTexture.Format.COMPRESSED_LUMINANCE : GL_COMPRESSED_LUMINANCE,
-				GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_COMPRESSED_LUMINANCE_ALPHA,
-				GPUTexture.Format.COMPRESSED_RGB : GL_COMPRESSED_RGB,
-				GPUTexture.Format.COMPRESSED_RGBA : GL_COMPRESSED_RGBA,
-				GPUTexture.Format.LUMINANCE8 : GL_LUMINANCE,
-				GPUTexture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
-				GPUTexture.Format.RGB8 : GL_RGB,
-				GPUTexture.Format.RGBA8 : GL_RGBA,				
-			];			
-			uint glFormat = glFormatMap[format];
-			uint glInternalFormat = glInternalFormatMap[format];
-			
-
-			gpuTexture.width = image.getWidth();
-			gpuTexture.height = image.getHeight();
-			
-			uint max = Probe.feature(Probe.Feature.MAX_TEXTURE_SIZE);
-			uint new_width = image.getWidth();
-			uint new_height= image.getHeight();
-			
-			// Ensure power of two sized if required
-			if (!Probe.feature(Probe.Feature.NON_2_TEXTURE))
-			{
-				if (log2(new_height) != floor(log2(new_height)))
-					new_height = nextPow2(new_height);
-				if (log2(new_width) != floor(log2(new_width)))
-					new_width = nextPow2(new_width);
-
-				// Resize if necessary
-				if (new_width != gpuTexture.width || new_height != gpuTexture.height)
-					image = image.resize(min(new_width, max), min(new_height, max));
+			// if Multitexturing supported, switch which texture we work with
+			if (maxLength > 1)
+			{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
+	
+				// Activate texture unit and enable texturing
+				glActiveTextureARB(GL_TEXTUREI_ARB);		
 			}
-				
-			// Build mipmaps (doing it ourself is about 20% faster than gluBuild2DMipmaps,
-			int level = 0; //  but image.resize can be optimized further.
-			do {
-				glTexImage2D(GL_TEXTURE_2D, level, glInternalFormat, image.getWidth(), image.getHeight(), 0, glFormat, GL_UNSIGNED_BYTE, image.getData().ptr);
-				image = image.resize(image.getWidth()/2, image.getHeight()/2);
-				level ++;							
-			} while (gpuTexture.mipmap && image.getWidth() >= 4 && image.getHeight() >= 4)
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level-1);
 			
-			gpuTexture.dirty = false;
-			gpuTexture.flipped = false;	
-		}
-		
-		// Filtering
-		if (texture.filter == Texture.Filter.DEFAULT)
-			texture.filter = Texture.Filter.TRILINEAR;	// Create option to set this later
-		switch(texture.filter)
-		{	case Texture.Filter.NONE:
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ?  GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				break;
-			case Texture.Filter.BILINEAR:
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				break;
-			default:
-			case Texture.Filter.TRILINEAR:
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				break;
-		}
-
-		// Clamping
-		if (texture.clamp)
-		{	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}else // OpenGL Default
-		{	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
-
-
-		// Texture Matrix operations
-		//if (position.length2() || scale.length2() || rotation!=0)
-		{	glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
+			glEnable(GL_TEXTURE_2D); // does this need to be done for all textures or just once?			
 			
+			GPUTexture gpuTexture = texture.texture;
+			assert(gpuTexture);
+			ResourceInfo info = ResourceInfo.getOrCreate(gpuTexture, this.textures);
+			
+			// If it doesn't have an OpenGL id
+			if (!info.id)
+			{				
+				glGenTextures(1, &info.id);
+				glBindTexture(GL_TEXTURE_2D, info.id);
+				assert(glIsTexture(info.id)); // why does this fail if before bindTexture (because we need glFlush?)
+				
+				// For some reason these need to be called or everything runs slowly.			
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				
+				gpuTexture.dirty = true;
+			}
+			else
+				glBindTexture(GL_TEXTURE_2D, info.id);
+			
+			// If texture needs to be uploaded
+			if (gpuTexture.dirty)
+			{	
+				// Upload new image to graphics card memory
+				Image image = gpuTexture.getImage();
+				assert(image);
+							
+				// Convert auto format to a real format based on the image given.
+				GPUTexture.Format format;
+				if (gpuTexture.getFormat() == GPUTexture.Format.AUTO)
+					switch(image.getChannels()) // This will support float formats when we switch to using Image2.
+					{	case 1: format = GPUTexture.Format.COMPRESSED_LUMINANCE; break;
+						case 2: format = GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA; break;
+						case 3: format = GPUTexture.Format.COMPRESSED_RGB; break;					
+						case 4: format = GPUTexture.Format.COMPRESSED_RGBA; break;					
+						default: throw new ResourceException("Images with more than 4 channels are not supported.");
+					}
+				else if (gpuTexture.getFormat() == GPUTexture.Format.AUTO_UNCOMPRESSED)
+					switch(image.getChannels()) // This will support float formats when we switch to using Image2.
+					{	case 1: format = GPUTexture.Format.LUMINANCE8; break;
+						case 2: format = GPUTexture.Format.LUMINANCE8_ALPHA8; break;
+						case 3: format = GPUTexture.Format.RGB8; break;					
+						case 4: format = GPUTexture.Format.RGBA8; break;					
+						default: throw new ResourceException("Images with more than 4 channels are not supported.");
+					}
+				
+				// Convert from GPUTexture.Format to OpenGL format constants.
+				uint[GPUTexture.Format] glFormatMap = [
+					GPUTexture.Format.COMPRESSED_LUMINANCE : GL_LUMINANCE,
+					GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_LUMINANCE_ALPHA,
+					GPUTexture.Format.COMPRESSED_RGB : GL_RGB,
+					GPUTexture.Format.COMPRESSED_RGBA : GL_RGBA,
+					GPUTexture.Format.LUMINANCE8 : GL_LUMINANCE,
+					GPUTexture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
+					GPUTexture.Format.RGB8 : GL_RGB,
+					GPUTexture.Format.RGBA8 : GL_RGBA,				
+				];
+				uint[GPUTexture.Format] glInternalFormatMap = [
+					GPUTexture.Format.COMPRESSED_LUMINANCE : GL_COMPRESSED_LUMINANCE,
+					GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_COMPRESSED_LUMINANCE_ALPHA,
+					GPUTexture.Format.COMPRESSED_RGB : GL_COMPRESSED_RGB,
+					GPUTexture.Format.COMPRESSED_RGBA : GL_COMPRESSED_RGBA,
+					GPUTexture.Format.LUMINANCE8 : GL_LUMINANCE,
+					GPUTexture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
+					GPUTexture.Format.RGB8 : GL_RGB,
+					GPUTexture.Format.RGBA8 : GL_RGBA,				
+				];			
+				uint glFormat = glFormatMap[format];
+				uint glInternalFormat = glInternalFormatMap[format];
+				
+
+				gpuTexture.width = image.getWidth();
+				gpuTexture.height = image.getHeight();
+				
+				uint max = Probe.feature(Probe.Feature.MAX_TEXTURE_SIZE);
+				uint new_width = image.getWidth();
+				uint new_height= image.getHeight();
+				
+				// Ensure power of two sized if required
+				if (!Probe.feature(Probe.Feature.NON_2_TEXTURE))
+				{
+					if (log2(new_height) != floor(log2(new_height)))
+						new_height = nextPow2(new_height);
+					if (log2(new_width) != floor(log2(new_width)))
+						new_width = nextPow2(new_width);
+
+					// Resize if necessary
+					if (new_width != gpuTexture.width || new_height != gpuTexture.height)
+						image = image.resize(min(new_width, max), min(new_height, max));
+				}
+					
+				// Build mipmaps (doing it ourself is about 20% faster than gluBuild2DMipmaps,
+				int level = 0; //  but image.resize can be optimized further.
+				do {
+					glTexImage2D(GL_TEXTURE_2D, level, glInternalFormat, image.getWidth(), image.getHeight(), 0, glFormat, GL_UNSIGNED_BYTE, image.getData().ptr);
+					image = image.resize(image.getWidth()/2, image.getHeight()/2);
+					level ++;							
+				} while (gpuTexture.mipmap && image.getWidth() >= 4 && image.getHeight() >= 4)
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level-1);
+				
+				gpuTexture.dirty = false;
+				gpuTexture.flipped = false;	
+			}
+			
+			// Filtering
+			if (texture.filter == Texture.Filter.DEFAULT)
+				texture.filter = Texture.Filter.TRILINEAR;	// Create option to set this later
+			switch(texture.filter)
+			{	case Texture.Filter.NONE:
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ?  GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+					break;
+				case Texture.Filter.BILINEAR:
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					break;
+				default:
+				case Texture.Filter.TRILINEAR:
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					break;
+			}
+			
+			// Clamping
+			if (texture.clamp)
+			{	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}else // OpenGL Default
+			{	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			}
+			
+
+
+			// Texture Matrix operations		
 			Vec2f padding = Vec2f(gpuTexture.getPadding().x, gpuTexture.getPadding().y) ;			
 			
 			// Apply special texture scaling/flipping
-			if (texture.texture.flipped || padding.length2())
+			if (texture.texture.flipped || padding.x>0 || padding.y > 0)
 			{	Vec2f size = Vec2f(gpuTexture.getWidth(), gpuTexture.getHeight());
 				Vec2f scale = (size-padding)/size;
 				
@@ -719,54 +728,53 @@ class OpenGL : GraphicsAPI
 				else
 					glScalef(scale.x, scale.y, 1);
 			}			
+			glMultMatrixf(texture.transform.v.ptr);
 			
-			glMultMatrixf(texture.transform.v.ptr);			
-			glMatrixMode(GL_MODELVIEW);
-		}
 
-		// Environment Mapping
-		if (texture.reflective)
-		{	glEnable(GL_TEXTURE_GEN_S);
-			glEnable(GL_TEXTURE_GEN_T);
-			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-		}
+			// Environment Mapping
+			if (texture.reflective)
+			{	glEnable(GL_TEXTURE_GEN_S);
+				glEnable(GL_TEXTURE_GEN_T);
+				glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+				glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+			}
 
-		// Blend Mode
-		uint blendTranslated;
-		switch (texture.blend)
-		{	case Texture.Blend.ADD: blendTranslated = GL_ADD; break;
-			case Texture.Blend.AVERAGE: blendTranslated = GL_DECAL; break;
-			case Texture.Blend.NONE:
-			case Texture.Blend.MULTIPLY:
-			default: blendTranslated = GL_MODULATE; break;				
-		}
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blendTranslated);
-	}
-	
-	/// TODO: Create a bindTextures(Texture[]) function instead.
-	void textureUnbind()
-	{
-		// Texture Matrix
-		//if (position.length2() || scale.length2() || rotation!=0)
-		{	glMatrixMode(GL_TEXTURE);
-			glLoadIdentity();
-			glMatrixMode(GL_MODELVIEW);
-		}
+			// Blend Mode
+			uint blendTranslated;
+			switch (texture.blend)
+			{	case Texture.Blend.ADD: blendTranslated = GL_ADD; break;
+				case Texture.Blend.AVERAGE: blendTranslated = GL_DECAL; break;
+				case Texture.Blend.NONE:
+				case Texture.Blend.MULTIPLY:
+				default: blendTranslated = GL_MODULATE; break;				
+			}
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blendTranslated);
 
-		// Environment Map
-		//if (texture.reflective)
-		{	glDisable(GL_TEXTURE_GEN_S);
+		}
+		
+		// Reset higher texture units
+		for (int i=textures.length; i<maxLength; i++)
+		{
+			int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
+			glActiveTextureARB(GL_TEXTUREI_ARB);				
+			glClientActiveTextureARB(GL_TEXTUREI_ARB); // TODO: This probably isn't needed.
+			
+			glDisable(GL_TEXTURE_GEN_S);
 			glDisable(GL_TEXTURE_GEN_T);
 			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-		}
-
-		// Blend
-		//if (texture.blend != Texture.Blend.MULTIPLY)
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			
+			glLoadIdentity();
+			glDisable(GL_TEXTURE_2D); // is this for just this state?	
+		}
 		
-		glBindTexture(GL_TEXTURE_2D, 0);
+		// Undo state changes
+		glMatrixMode(GL_MODELVIEW);
+		if (textures.length > 1)
+			glActiveTextureARB(GL_TEXTURE0_ARB);		
+		
+		current.textures = textures;
 	}
 
 	/**
@@ -776,16 +784,22 @@ class OpenGL : GraphicsAPI
 	void bindVertexBuffer(VertexBuffer vb, char[] type="")
 	{	if (vb)
 			assert(type.length);
+	
+		// Skip binding if already bound and not dirty
+		if (!vb || !vb.dirty)
+		{	auto currentVb = type in current.vertexBuffers;
+			if (currentVb && (vb is *currentVb))
+				return;
+		}
 		
 		uint vbo_type = type==Mesh.TRIANGLES ? 
-				GL_ELEMENT_ARRAY_BUFFER_ARB :
-				GL_ARRAY_BUFFER_ARB;
+			GL_ELEMENT_ARRAY_BUFFER_ARB :
+			GL_ARRAY_BUFFER_ARB;
 		
 		int useVbo = Probe.feature(Probe.Feature.VBO);
 		
 		if (vb)
-		{
-			useVbo = useVbo && vb.cache;
+		{	useVbo = useVbo && vb.cache;
 			
 			// Bind vbo and update data if necessary.
 			if (useVbo)
@@ -802,40 +816,40 @@ class OpenGL : GraphicsAPI
 				if (vb.dirty)
 				{	glBufferDataARB(vbo_type, vb.data.length, vb.ptr, GL_STATIC_DRAW_ARB);
 					vb.dirty = false;
-				}
+			}	}
+			
+			// Bind the data			
+			if (type==Geometry.VERTICES)
+				glVertexPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);					
+			else if (type==Geometry.NORMALS)
+			{	assert(vb.components == 3); // normals are always Vec3
+				glNormalPointer(GL_FLOAT, 0, useVbo ? null : vb.ptr);
 			}
-			
-			// Bind the data
-			switch (type)
-			{
-				case Geometry.VERTICES:
-					glVertexPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);
-					break;
-				case Geometry.NORMALS:
-					assert(vb.components == 3); // normals are always Vec3
-					glNormalPointer(GL_FLOAT, 0, useVbo ? null : vb.ptr);
-					break;
-				case Geometry.TEXCOORDS0:
-					glTexCoordPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);
-					break;
-				case Mesh.TRIANGLES: // no binding necessary
-				default:
-					// TODO: Support custom types.
-					//if (vb.length())
-					//	throw new GraphicsException("Unsupported vertex buffer type %s", type);
-					break;
-			}		
+			else if (type[0..$-1]=="gl_MultiTexCoord")
+			{	int i = type[$-1] - 48; // convert ascii to ints
+				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
+				if (i+1 > maxTextures)
+					throw new GraphicsException("Cannot set texture coordinates for texture unit %s when only % texture units are supported", i, maxTextures);
+				glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
+				glTexCoordPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);
+				glClientActiveTextureARB(0);
+			} 
+			else if (type==Mesh.TRIANGLES)
+			{	// glBindBuffer was called above, no other action necessary
+			}
+			else
+			{	// TODO: Pass to shader as vertex attribute
+			}
 		} else // unbind
-		{	if (useVbo)
+			if (useVbo)
 				glBindBufferARB(vbo_type, 0);
-			
-		}
-			
+		
+		current.vertexBuffers[type] = vb;
 	}
 	
 	
 	/**
-	 * Free any resources from graphics memory are either:
+	 * Reset OpenGL state and free any resources from graphics memory are either:
 	 * - haven't been used for longer than age,
 	 * - are no longer referenced.
 	 * If removed from graphics memory, they will be re-uploaded when needed again.
@@ -860,7 +874,7 @@ class OpenGL : GraphicsAPI
 		{	if (info.resource.get() is null || info.time <= time(null)-age)
 			{	glDeleteBuffersARB(1, &info.id);
 				assert((cast(Shader)info.resource.get()) !is null);
-				(cast(Shader)info.resource.get()).status = Shader.Status.NONE;
+				(cast(Shader)info.resource.get()).failed = false;
 				shaders.removeKey(key);
 				delete info; // nothing else references it at this point.
 		}	}
@@ -871,128 +885,23 @@ class OpenGL : GraphicsAPI
 	}
 	
 
+	protected Shader lastDrawnShader;
 	
 	/**
-	 * Draw the contents of a vertex buffer, such as a buffer of triangle indices. 
+	 * Draw the contents of a vertex buffer, such as a buffer of triangle indices.
 	 * @param triangles If not null, this array of triangle indices will be used for drawing the mesh*/
-	void drawVertexBuffer(VertexBuffer polygons, char[] type)
-	{	int useVbo = Probe.feature(Probe.Feature.VBO) && polygons.cache;
+	void drawPolygons(VertexBuffer polygons, char[] type)
+	{			
+		// Draw the polygons
+		int useVbo = Probe.feature(Probe.Feature.VBO) && polygons.cache;
 		if (polygons)
 		{	bindVertexBuffer(polygons, type);
 			if (type==Mesh.TRIANGLES)
 				glDrawElements(GL_TRIANGLES, polygons.length()*3, GL_UNSIGNED_INT, useVbo ? null : polygons.ptr);
 			else
-				throw new YageException("Unsupported polygon type %s", type);
+				throw new GraphicsException("Unsupported polygon type %s", type);
 		}
 		// else TODO
 		//	glDrawArrays();
-	}
-	
-	
-	struct ShaderParams
-	{	ushort numLights;
-		bool hasFog;
-		bool hasSpecular;
-		bool hasDirectional;
-		bool hasSpotlight;
-	}
-	
-	// TODO: use Cache instead
-	Shader[ShaderParams] generatedShaders; // TODO: how will these ever get deleted, do they need to be?
-
-	
-	Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, inout ArrayBuilder!(ShaderUniform) uniforms)
-	{	
-		// Use fixed function rendering, return null.
-		if (pass.autoShader == MaterialPass.AutoShader.NONE)
-			return null;
-		
-		// Set parameters for shader generation
-		ShaderParams params;		
-		params.numLights = lights.length;
-		params.hasFog = fog;
-		params.hasSpecular = (pass.specular.ui & 0xffffff) != 0; // ignore alpha in comparrison
-		foreach (light; lights)
-		{	params.hasDirectional = params.hasDirectional  ||  (light.type == LightNode.Type.DIRECTIONAL);
-			params.hasSpotlight  = params.hasSpotlight || (light.type == LightNode.Type.SPOT);
-		}
-	
-		Shader result;
-		
-		// Get shader, either a cached version or create a new one.		
-		auto existingPtr = params in generatedShaders;
-		if (existingPtr)
-			result =  *existingPtr;		
-		else
-		{
-			if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-			{
-				char[] defines = format("#version 110\n#define NUM_LIGHTS %s\n", params.numLights);
-				if (params.hasFog)
-					defines ~= "#define HAS_FOG\n";
-				if (params.hasSpecular)
-					defines ~= "#define HAS_SPECULAR\n";
-				if (params.hasDirectional)
-					defines ~= "#define HAS_DIRECTIONAL\n";
-				if (params.hasSpotlight)
-					defines ~= "#define HAS_SPOTLIGHT\n";
-		
-				char[] vertex   = defines ~ cast(char[])ResourceManager.getFile("phong.vert");
-				char[] fragment = defines ~ cast(char[])ResourceManager.getFile("phong.frag");
-				result = new Shader(vertex, fragment);
-		
-			} else
-				assert(0); // todo
-			
-			generatedShaders[params] = result;
-		}
-		
-		// Set uniform values
-		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{			
-			Matrix camInverse = current.camera.getInverseAbsoluteMatrix();
-			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
-			
-			int idx=0;
-			assert(lights.length < 10);
-			foreach (i, light; lights)
-			{	
-				char[] makeName(char[] name, int i)
-				{	name[7] = i + 48; // convert int to single digit ascii.
-					return name;
-				}
-				
-				// Doing it inline seems to make things slightly faster
-				ShaderUniform* su = &uniforms.data[idx];
-				char[] name = makeName("lights[_].position\0", i);
-				su.name[0..name.length] = name[0..$];
-				su.type = ShaderUniform.Type.F4;
-				su.floatValues[0..3] = light.inverseCameraPosition.v[0..3];
-				su.floatValues[4] = light.type == LightNode.Type.DIRECTIONAL ? 0.0 : 1.0;
-				idx++;
-				
-				su = &uniforms.data[idx];
-				name = makeName("lights[_].quadraticAttenuation\0", i);
-				su.name[0..name.length] = name[0..$];
-				su.type = ShaderUniform.Type.F1;
-				su.floatValues[0] =light.getQuadraticAttenuation();
-				idx++;
-							
-				if (params.hasSpotlight)
-				{	Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); 
-					uniforms[idx++] = 
-						ShaderUniform(makeName("lights[_].spotDirection", i), ShaderUniform.Type.F3, lightDirection.v);
-					
-					float angle = light.type == LightNode.Type.SPOT ? light.spotAngle : 2*PI;
-					uniforms[idx++] =
-						ShaderUniform(makeName("lights[_].spotCutoff", i), ShaderUniform.Type.F1, angle);
-											
-					uniforms[idx++] = 
-						ShaderUniform(makeName("lights[_].spotExponent", i), ShaderUniform.Type.F1, light.spotExponent);
-				}
-			}			
-		}
-		
-		return result;
 	}
 }

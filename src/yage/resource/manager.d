@@ -19,7 +19,7 @@ import yage.core.object2;
 import yage.core.timer;
 
 import yage.resource.collada;
-import yage.resource.embed.juras_medium_ascii_ttf;
+import yage.resource.embed.embed;
 import yage.resource.font;
 import yage.resource.model;
 import yage.resource.material;
@@ -144,7 +144,7 @@ struct ResourceManager
 	
 	static Font getDefaultFont()
 	{	if (!defaultFont)
-			defaultFont = new Font(jurasMediumAscii_ttf, "auto");
+			defaultFont = new Font(cast(ubyte[])Embed.vera_ttf, "auto");
 		return defaultFont;
 	}
 	

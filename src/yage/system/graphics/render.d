@@ -17,10 +17,11 @@ import yage.core.all;
 import yage.gui.surface;
 import yage.gui.style;
 import yage.resource.geometry;
-import yage.resource.image;
 import yage.resource.material;
 import yage.resource.model;
-import yage.resource.texture;
+import yage.resource.manager;
+import yage.resource.shader;
+import yage.resource.embed.embed;
 import yage.scene.all;
 import yage.scene.light;
 import yage.scene.model;
@@ -82,11 +83,22 @@ struct Render
 	protected static OpenGL graphics; // TODO: Replace with GraphicsAPI when interface is more finalized.
 	
 	protected static ArrayBuilder!(VisibleNode) visibleNodes;
-	protected static ArrayBuilder!(AlphaTriangle) alphaTriangles;		
+	protected static ArrayBuilder!(AlphaTriangle) alphaTriangles;
+	
+	protected static Geometry currentGeometry;
 
 	protected static bool cleared; // if false, the color buffer need to be cleared before drawing?
 	protected static Geometry spriteQuad;
-
+	
+	protected struct ShaderParams
+	{	ushort numLights;
+		bool hasFog;
+		bool hasSpecular;
+		bool hasDirectional;
+		bool hasSpotlight;
+	}
+	protected static Shader[ShaderParams] generatedShaders; // TODO: how will these ever get deleted, do they need to be?
+	protected static ArrayBuilder!(ShaderUniform) uniformsLookaside;
 
 	/**
 	 * Generate build-in models (such as the sprite quad). */
@@ -108,24 +120,139 @@ struct Render
 		cleared = false;
 	}
 
+	// TODO: Move this to Render since it's higher level
+	static Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, inout ArrayBuilder!(ShaderUniform) uniforms)
+	{	
+		// Use fixed function rendering, return null.
+		if (pass.autoShader == MaterialPass.AutoShader.NONE)
+			return null;
+		
+		// Set parameters for shader generation
+		ShaderParams params;		
+		params.numLights = lights.length;
+		params.hasFog = fog;
+		params.hasSpecular = (pass.specular.ui & 0xffffff) != 0; // ignore alpha in comparrison
+		foreach (light; lights)
+		{	params.hasDirectional = params.hasDirectional  ||  (light.type == LightNode.Type.DIRECTIONAL);
+			params.hasSpotlight  = params.hasSpotlight || (light.type == LightNode.Type.SPOT);
+		}
+	
+		Shader result;
+		
+		// Get shader, either a cached version or create a new one.		
+		auto existingPtr = params in generatedShaders;
+		if (existingPtr)
+			result =  *existingPtr;		
+		else
+		{
+			if (pass.autoShader == MaterialPass.AutoShader.PHONG)
+			{
+				char[] defines = format("#version 110\n#define NUM_LIGHTS %s\n", params.numLights);
+				if (params.hasFog)
+					defines ~= "#define HAS_FOG\n";
+				if (params.hasSpecular)
+					defines ~= "#define HAS_SPECULAR\n";
+				if (params.hasDirectional)
+					defines ~= "#define HAS_DIRECTIONAL\n";
+				if (params.hasSpotlight)
+					defines ~= "#define HAS_SPOTLIGHT\n";
+		
+				// TODO: embed these
+				char[] vertex   = defines ~ cast(char[])Embed.phong_vert;
+				char[] fragment = defines ~ cast(char[])Embed.phong_frag;
+				result = new Shader(vertex, fragment);
+		
+			} else
+				assert(0); // TODO
+			
+			generatedShaders[params] = result;
+		}
+		
+		// Set uniform values
+		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
+		{			
+			Matrix camInverse = graphics.current.camera.getInverseAbsoluteMatrix();
+			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
+			
+			int idx=0;
+			assert(lights.length < 10);
+			foreach (i, light; lights)
+			{	
+				char[] makeName(char[] name, int i)
+				{	name[7] = i + 48; // convert int to single digit ascii.
+					return name;
+				}
+				
+				// Doing it inline seems to make things slightly faster
+				ShaderUniform* su = &uniforms.data[idx];
+				char[] name = makeName("lights[_].position\0", i);
+				su.name[0..name.length] = name[0..$];
+				su.type = ShaderUniform.Type.F4;
+				su.floatValues[0..3] = light.inverseCameraPosition.v[0..3];
+				su.floatValues[4] = light.type == LightNode.Type.DIRECTIONAL ? 0.0 : 1.0;
+				idx++;
+				
+				su = &uniforms.data[idx];
+				name = makeName("lights[_].quadraticAttenuation\0", i);
+				su.name[0..name.length] = name[0..$];
+				su.type = ShaderUniform.Type.F1;
+				su.floatValues[0] =light.getQuadraticAttenuation();
+				idx++;
+							
+				if (params.hasSpotlight)
+				{	Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); 
+					uniforms[idx++] = 
+						ShaderUniform(makeName("lights[_].spotDirection", i), ShaderUniform.Type.F3, lightDirection.v);
+					
+					float angle = light.type == LightNode.Type.SPOT ? light.spotAngle : 2*PI;
+					uniforms[idx++] =
+						ShaderUniform(makeName("lights[_].spotCutoff", i), ShaderUniform.Type.F1, angle);
+											
+					uniforms[idx++] = 
+						ShaderUniform(makeName("lights[_].spotExponent", i), ShaderUniform.Type.F1, light.spotExponent);
+				}
+			}			
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Bind a MaterialPass, generating a shader based on the number of lights. */
+	static void bindPass(MaterialPass pass, LightNode[] lights)
+	{	
+		if (pass.autoShader != MaterialPass.AutoShader.NONE)
+		{	Shader oldShader = pass.shader;
+			ShaderUniform[] oldUniforms = pass.shaderUniforms;
+		
+			pass.shader = generateShader(pass, lights, graphics.current.scene.fogEnabled, uniformsLookaside);
+			pass.shaderUniforms = Render.uniformsLookaside.data;
+			graphics.bindPass(pass);
+			
+			pass.shader = oldShader;
+			pass.shaderUniforms = oldUniforms;
+		} else
+			graphics.bindPass(pass);
+	}
+	
 	///
 	static RenderStatistics geometry(Geometry geometry, LightNode[] lights=null)
 	{	RenderStatistics result;
 		
-		if (!geometry.getAttribute(Geometry.VERTICES))
-			return result;
+		assert(geometry.getAttribute(Geometry.VERTICES));
 		
 		// Bind each vertex buffer
 		VertexBuffer[char[]] vertexBuffers = geometry.getVertexBuffers();
-		if (geometry !is graphics.current.geometry) // TODO: Make current check per vb; this prevents vertices from being counted
+		if (geometry !is currentGeometry) // benchmarks show this makes things a little faster
 		{	
 			foreach (name, vb; vertexBuffers)
 			{	graphics.bindVertexBuffer(vb, name);
 				if (name==Geometry.VERTICES)
 					result.vertexCount += vb.length;
 			}
-			graphics.current.geometry = geometry;
-		}
+			currentGeometry = geometry;
+		} else
+			result.vertexCount += vertexBuffers[Geometry.VERTICES].length;
 		
 		
 		// Loop through the meshes		
@@ -137,8 +264,8 @@ struct Render
 					if (!mesh.material.techniques[0].hasTranslucency() ||
 					    geometry.getVertexBuffer(Geometry.VERTICES).components != 3)
 					{	foreach (pass; mesh.material.techniques[0].passes)
-						{	graphics.bindPass(pass, lights);
-							graphics.drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
+						{	bindPass(pass, lights);
+							graphics.drawPolygons(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 						}
 					} else
 					{	Profile.start("Add Alpha");
@@ -151,7 +278,7 @@ struct Render
 							v[1] = vertices[tri.y];
 							v[2] = vertices[tri.z];
 
-							alphaTriangles ~= AlphaTriangle(geometry, mesh, mesh.material, graphics.current.matrix, lights, i, v);;
+							alphaTriangles ~= AlphaTriangle(geometry, mesh, mesh.material, graphics.current.transformMatrix, lights, i, v);;
 						}
 						Profile.stop("Add Alpha");	
 					}
@@ -203,10 +330,10 @@ struct Render
 			
 			graphics.bindMatrix(&at.matrix);
 			
-			if (graphics.current.geometry != at.geometry)
+			if (currentGeometry != at.geometry)
 			{	foreach (name, vb; at.geometry.getVertexBuffers())				
 					graphics.bindVertexBuffer(vb, name);				
-				graphics.current.geometry = at.geometry;
+				currentGeometry = at.geometry;
 			}
 			
 			if (mesh.material)
@@ -218,9 +345,8 @@ struct Render
 						graphics.bindLight(at.lights[i], i);
 					
 					foreach (pass; mesh.material.techniques[0].passes)
-					{	
-						graphics.bindPass(pass, at.lights);
-						graphics.drawVertexBuffer(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
+					{	bindPass(pass, at.lights);
+						graphics.drawPolygons(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 					}
 				}
 			
@@ -274,7 +400,9 @@ struct Render
 					graphics.bindMatrix(&transform);
 					
 					// Enable the lights that affect this node
-					// TODO: This seems inefficient
+					// TODO: Two things that can speed this up:
+					// Only test light spheres that overlap the view frustum
+					// Do a distance test for an early rejection of get light brightness.
 					scope lights = n.getLights(all_lights, num_lights);					
 					for (int i=lights.length; i<num_lights; i++)
 						glDisable(GL_LIGHT0+i);					
@@ -290,8 +418,6 @@ struct Render
 					graphics.bindMatrix(null);
 				}
 			}
-			
-			
 			
 			postRender();
 			
@@ -360,7 +486,16 @@ struct Render
 		auto result = skyboxRecurse(camera, target);
 		graphics.bindRenderTarget(null);
 		graphics.bindPass(null);
-		cleanup();		
+		cleanup();
+		
+		/*
+		float* image = new float[1920*1080*3];
+		Timer a = new Timer(true);
+		glReadPixels(0, 0, 1920, 1080, GL_RGB, GL_BYTE, image);
+		Log.trace(a.tell());	
+		delete image;
+		*/
+		
 		return result;
 	}
 	

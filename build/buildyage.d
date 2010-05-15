@@ -73,6 +73,8 @@ int main(char[][] args)
 	char[] derelict = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;
 	if (!FS.exists(derelict))
 		CDC.compile(["derelict"], ["-of"~derelict, "-lib"] ~ options1, null, "../src", verbose);
+	
+	createEmbeddedResources();
 
 	// Build yage
 	CDC.compile(["yage", app, derelict], ["-of../bin/yage3d"] ~ options1 ~ options2, null, "../src", verbose);
@@ -94,10 +96,54 @@ int main(char[][] args)
 		else
 			System.execute("yage3d");
 	}
-
 	return 0; // success
 }
 
+// Yage-specific function for creating yage/resource/embed/embed.d from other files in the same folder.
+void createEmbeddedResources()
+{
+	// TODO: Only re-embed files if the date changes?
+	char[] path = "../src/yage/resource/embed";
+	
+	char[] source = 
+		"module yage.resource.embed.embed;\r\n\r\n"
+		"/// Yage's build script generates this struct automatically from the other files in the resource/embed folder."
+		"\r\nstruct Embed {\r\n";
+	
+	foreach (file; FS.listDir(path))
+	{
+		// Skip the output file
+		if (file=="embed.d")
+			continue;
+		
+		char[] contents = cast(char[])FS.read(path~"/"~file);
+		char[] encodedContents = "";
+		foreach (c; contents)
+		{	// Encode as a binary-safe D string
+			if (c =='\t')
+				encodedContents ~= "\\t";
+			else if (c =='\r')
+				encodedContents ~= "\\r";
+			else if (c =='\n')
+				encodedContents ~= "\\n";			
+			else if (c=='"' || c=='\\')
+				encodedContents ~= "\\"~c;
+			else if (c < 32 || 126 < c) // embed invalid utf-8 characters as hex
+			{	char[] encode = "0123456789ABCDEF";
+				encodedContents ~= "\\x"~encode[c/16]~encode[c%16];
+			}
+			else
+				encodedContents ~= c;			
+		}
+		
+		// Add to the struct as a static member.p
+		source ~= "\tstatic char[] " ~ String.replace(file, ".", "_") ~ " = \"" ~
+			encodedContents ~ "\"; /// embedded version of "~file~"\r\n";		
+	}
+	source ~= "}";
+	
+	FS.write(path ~ "/embed.d", source);
+}
 
 /*
  * ----------------------------------------------------------------------------
@@ -766,6 +812,13 @@ struct FS
 	unittest {
 		assert (!remove("foo/bar/ding/dong/do.txt")); // a non-existant file
 		Log.operations = null;
+	}
+	
+	static ubyte[] read(char[] filename)
+	{	version (Tango)
+			return cast(ubyte[])File.get(filename);
+		else
+			return .read(filename); // wonder if this works
 	}
 
 	/// Write a file to disk

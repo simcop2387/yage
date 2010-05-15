@@ -15,10 +15,12 @@ import yage.scene.scene;
 import yage.scene.light;
 import yage.scene.node;
 import yage.scene.movable;
+import yage.system.log;
 
 
 /**
  * This class adds numerous methods for getting and setting position, rotation, velocity, and angular velocity.
+ * All Nodes are movable, this just adds methods to make it easy.
  * See_Also:
  * yage.scene.visible
  * yage.scene.node */
@@ -115,7 +117,6 @@ class MovableNode : Node
 	void setScale(Vec3f scale) /// ditto;
 	{	transform.setScalePreservingRotation(scale);
 	}
-	
 	
 	/// Get / set the velocity of this Node relative to its parent's linear and angular velocity.
 	void setVelocity(Vec3f velocity)

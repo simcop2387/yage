@@ -84,11 +84,15 @@ class CameraNode : MovableNode
 	}
 	
 	/**
-	 * Unfinished!
-	 * Return the closest Node to the Camera in the Camera's Scene at the x, y
-	 * coordinates in the Camera's Texture.  This will not return any Nodes from
-	 * the Scene's skybox.  Returns null if no Node is at the position.*/
-	VisibleNode getNodeAtCoordinate(int x, int y)
+	 * This function casts a ray from the Camera's view into the scene
+	 * and returns all Nodes that it collides with.
+	 * This will not return any Nodes from the Scene's skybox.
+	 * Params:
+	 *     position = Coordinates between 0 and 1 in the camera's near view frustum.
+	 *     includeBoundingSphere = If true, collision tests will only be performed against Object's bounding
+	 *     sphere and not on a per-polygon basis.  The bounding sphere is determined by VisibleNode.getRadius().
+	 * Returns:  An unsorted array of matching Nodes. */
+	VisibleNode[] getNodesAtCoordinate(Vec2f position, bool includeBoundingSphere=false)
 	{	return null;
 	}
 
@@ -135,6 +139,7 @@ class CameraNode : MovableNode
 	{
 		if (!root)
 			root=scene;
+		float height = Window.getInstance().getHeight();
 		
 		VisibleNode vnode = cast(VisibleNode)root;
 		if (vnode && root.getVisible())
@@ -144,7 +149,7 @@ class CameraNode : MovableNode
 			//synchronized (vnode) // req'd if parallel foreach is used, and that gives only a small speed up.
 				position[] = vnode.cache[scene.transform_read].transform_abs.v[12..15];			
 			
-			float r = -vnode.getRadius();
+			float r = -(vnode.getRadius() * vnode.getScale().max());
 			
 			vnode.onscreen = true;			
 			foreach (f; frustum)
@@ -168,8 +173,11 @@ class CameraNode : MovableNode
 				float y = cam_abs.v[13]-position[1];
 				float z = cam_abs.v[14]-position[2];
 
-				float height = Window.getInstance().getHeight();
-				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
+				float dist = sqrt(x*x + y*y+z*z);
+				float pixelHeight = 2*height * -r/dist;
+				//if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
+				
+				if (pixelHeight < .6667)
 					vnode.onscreen = false;
 				else // Onscreen and big enough to draw
 					// synchronized(this)
