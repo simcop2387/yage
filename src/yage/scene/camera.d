@@ -149,7 +149,8 @@ class CameraNode : MovableNode
 			//synchronized (vnode) // req'd if parallel foreach is used, and that gives only a small speed up.
 				position[] = vnode.cache[scene.transform_read].transform_abs.v[12..15];			
 			
-			float r = -(vnode.getRadius() * vnode.getScale().max());
+			float r = -vnode.getRadius();
+			
 			
 			vnode.onscreen = true;			
 			foreach (f; frustum)
@@ -175,9 +176,7 @@ class CameraNode : MovableNode
 
 				float dist = sqrt(x*x + y*y+z*z);
 				float pixelHeight = 2*height * -r/dist;
-				//if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
-				
-				if (pixelHeight < .6667)
+				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
 					vnode.onscreen = false;
 				else // Onscreen and big enough to draw
 					// synchronized(this)

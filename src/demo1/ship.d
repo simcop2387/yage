@@ -44,7 +44,7 @@ class Ship : GameObject
 		pitch = addChild(new MovableNode());
 
 		ship = pitch.addChild(new ModelNode());
-		ship.setModel("scifi/fighter.dae");
+		ship.setModel("space/fighter.dae");
 		ship.setSize(Vec3f(.25));
 
 		spring = new Spring(ship, new MovableNode());

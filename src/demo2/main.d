@@ -35,7 +35,7 @@ int main()
 	
 	// Ship	
 	auto ship = scene.addChild(new ModelNode());
-	ship.setModel("scifi/fighter.dae");
+	ship.setModel("space/fighter.dae");
 	ship.setAngularVelocity(Vec3f(0, 1, 0));
 	ship.setScale(Vec3f(1));
 
@@ -47,24 +47,19 @@ int main()
 	auto view = new Surface();
 	
 	// Events for main surface.
-	bool grabbed = true;
 	view.onKeyDown = delegate bool(Surface self, int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
 		return true;
 	};
 	view.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href) {
-		grabbed = !grabbed;
-		if (grabbed)
-			self.grabMouse();
-		else
-			self.releaseMouse();
+		self.grabMouse(!self.getGrabbedMouse());
 		return true;
 	};
 	
 	// Lights
 	auto l1 = scene.addChild(new LightNode());
-	l1.setPosition(Vec3f(0, 30, -30));	
+	l1.setPosition(Vec3f(0, 200, -30));	
 
 	// For Testing
 	auto info = view.addChild(new Surface());

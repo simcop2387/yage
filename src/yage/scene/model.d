@@ -137,9 +137,10 @@ class ModelNode : VisibleNode
 
 	/// Overridden to cache the radius if changed by the scale.
 	override void setSize(Vec3f s) /// Ditto
-	{	super.setSize(s);
+	{	
 		if (model)
-			radius = model.getRadius()*size.max();
+			radius = radius / size.max() * s.max();
+		super.setSize(s);
 	}	
 	
 	/**
@@ -147,7 +148,7 @@ class ModelNode : VisibleNode
 	 * This is usually the distance from the center of its coordinate plane to
 	 * the most distant vertex.  There is no setRadius() */
 	float getRadius()
-	{	return radius;
+	{	return radius * getScale().max();
 	}
 
 	/*

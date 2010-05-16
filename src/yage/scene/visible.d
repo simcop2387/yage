@@ -69,7 +69,7 @@ class VisibleNode : MovableNode
 	}
 
 	/**
-	 * Get the radius of this VisibleNode's culling sphere.  Includes size but not scale.
+	 * Get the radius of this VisibleNode's culling sphere.  Includes both size and scale.
 	 * Classes that inherit VisibleNode must provide this function to specify their radius, or they will not be rendered. */ 
 	float getRadius()
 	{	return 0;
@@ -130,7 +130,7 @@ class VisibleNode : MovableNode
 		*/
 		
 		foreach (l; all_lights)
-		{	l.intensity = l.getBrightness(position, getRadius()*getScale().max()).vec3f.average();
+		{	l.intensity = l.getBrightness(position, getRadius()).vec3f.average();
 			if (l.intensity >= 1/256f) // smallest noticeable brightness for 8-bit per channel color (1/256f).
 				addSorted!(LightNode, float)(lights, l, false, (LightNode a){return a.intensity;}, number );
 		}

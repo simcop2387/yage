@@ -79,25 +79,6 @@ struct Matrix
 			test("Inverse 1", c, c.inverse().inverse());
 			test("Inverse 2", Matrix(), c*c.inverse(), c);
 			test("Identity", c, c*Matrix()); // [Below] compared this way because non-rotation values are lost.
-			// These fail on all dmd after 0.177
-			//test("toQuatrn & toAxis", c.toAxis().toMatrix(), c.toQuatrn().toMatrix(), c);
-			//Matrix res = c;
-			//res.set(c.toQuatrn());
-			//test("Set Rotation", res, c);
-
-			foreach (Matrix d; m)
-			{	test("Multiply & Inverse", c, c*d*d.inverse(), d);
-				// These fail on all dmd after 0.177
-				//test("MoveRelative", c, c.moveRelative(d.toAxis()).moveRelative(d.toAxis().negate()), d);
-				//test("Rotate Matrix", c, c.rotate(d).rotate(d.inverse()), d);
-				//test("Rotate Quatrn", c, c.rotate(d.toQuatrn()).rotate(d.toQuatrn().inverse()), d);
-				//test("Rotate Axis", c, c.rotate(d.toAxis()).rotate(d.toAxis().negate()), d);
-
-				// These don't pass for Matrices 7, 8, and 9
-				//test("Rotate Absolute Matrix", c, c.rotateAbsolute(d).rotateAbsolute(d.inverse()), d);
-				//test("Rotate Absolute Quatrn", c, c.rotateAbsolute(d.toQuatrn()).rotateAbsolute(d.toQuatrn().inverse()), d);
-				//test("Rotate Absolute Axis", c, c.rotateAbsolute(d.toAxis()).rotateAbsolute(d.toAxis().inverse()), d);
-			}
 		}
 	}
 
@@ -168,7 +149,7 @@ struct Matrix
 		// Take the lengths of the basis vectors to find the scale factors.
 		scale.v00 = rx_length;
 		scale.v11 = ry_length;
-		scale.v22 = rz_length;		
+		scale.v22 = rz_length;
 	}
 	unittest
 	{	// Decompose and recompose a random matrix to make sure we get back what we started with.
@@ -198,6 +179,29 @@ struct Matrix
 				v[ 4]*v[ 1]*v[10]*v[15] + v[ 0]*v[ 5]*v[10]*v[15];
 	}
 
+	/**
+	 * Get the position component of the Matrix as a Vector. */
+	Vec3f getPosition()
+	{	return Vec3f(v[12..15]);		
+	}
+	
+	/**
+	 * Extract the scale Vector from the rotation component of the Matrix.
+	 * Scale components will always be positive. */
+	Vec3f getScale()
+	{	return Vec3f(
+			Vec3f(v[0..3]).length(),
+			Vec3f(v[4..7]).length(),
+			Vec3f(v[8..11]).length());
+	}
+	unittest
+	{	Matrix m;
+		Vec3f s = Vec3f(1, 2, 4);
+		m.setScalePreservingRotation(s);
+		assert(m.getScale() == s);
+	}
+	
+	
 	/**
 	 * Return a copy of this Matrix that has been inverted.
 	 * Throws an exception if this Matrix has no _inverse.  This occurs when the determinant is zero. */
@@ -338,34 +342,6 @@ struct Matrix
 		assert (a*b == c);
 	}
 
-	/**
-	 * Get the position component of the Matrix as a Vector. */
-	Vec3f getPosition()
-	{	return Vec3f(v[12..15]);		
-	}
-	
-	/**
-	 * Extract the scale Vector from the rotation component of the Matrix.
-	 * Scale components will always be positive. */
-	Vec3f getScale()
-	{			
-		// Matrix position, rotation, scale;
-		//decompose(position, rotation, scale);
-		//return Vec3f(scale[0], scale[5], scale[10]);
-		
-		return Vec3f(
-			Vec3f(v[0..3]).length(),
-			Vec3f(v[4..7]).length(),
-			Vec3f(v[8..11]).length()
-		);
-	}
-	unittest
-	{	Matrix m;
-		Vec3f s = Vec3f(1, 2, 4);
-		m.setScalePreservingRotation(s);
-		assert(m.getScale() == s);
-	}
-	
 	///
 	float* ptr()
 	{	return v.ptr;
@@ -406,13 +382,7 @@ struct Matrix
 		
 		Matrix position, rotation, scale;
 		decompose(position, rotation, scale);
-		/*
-		rotation = rotation.rotate(rot).rotate(scale);
-		position.setRotation(rotation); // faster version of return scale * (rotation * position)
-		return position;
-		*/
-		
-		return scale.transformAffine(position.transformAffine(rotation));
+		return scale.transformAffine(position.transformAffine(rotation.rotate(rot)));
 	}
 	unittest
 	{	scope m = new Matrix();
@@ -602,34 +572,24 @@ struct Matrix
 	 * Set the scale component of the Matrix, taking extra steps to preserve any 
 	 * rotation values already present in the scale part of the Matrix. */
 	void setScalePreservingRotation(Vec3f scale)
-	{	Matrix position, rotation, mscale;
-		decompose(position, rotation, mscale);
-		mscale[0] = scale.x;
-		mscale[5] = scale.y;
-		mscale[10] = scale.z;
-		setRotation(rotation.rotate(mscale));
+	{	// Perform a partial decomposition and reset the scale		
+		Matrix rotation, mscale;
 		
-		// TODO: This may be faster
-		/*Matrix result = *this;
+		// Extract the orientation basis vectors
 		Vec3f rx = Vec3f(v[0..3]);
 		Vec3f ry = Vec3f(v[4..7]);
 		Vec3f rz = Vec3f(v[8..11]);
-		float rx_length = rx.length();
-		float ry_length = ry.length();
-		float rz_length = rz.length();
 		
 		// Divide the basis vectors by their lengths to normalize them.
-		result.v[0..3] = rx.scale(1/rx_length).v[];
-		result.v[4..7] = ry.scale(1/ry_length).v[];
-		result.v[8..11]= rz.scale(1/rz_length).v[];
+		rotation.v[0..3] = rx.scale(1/rx.length()).v[];
+		rotation.v[4..7] = ry.scale(1/ry.length()).v[];
+		rotation.v[8..11]= rz.scale(1/rz.length()).v[];
 		
-		Matrix mscale = Matrix();
-		mscale.v00 = rx_length*scale.x;
-		mscale.v11 = ry_length*scale.y;
-		mscale.v22 = rz_length*scale.z;
-		
-		return result.transformAffine(mscale);
-		 */
+		// Take the lengths of the basis vectors to find the scale factors.
+		mscale.v[0] = scale.x;
+		mscale.v[5] = scale.y;
+		mscale.v[10] = scale.z;
+		setRotation(rotation.rotate(mscale));
 	}
 
 	/**

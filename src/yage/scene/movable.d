@@ -112,7 +112,8 @@ class MovableNode : Node
 	 * Get / set the scale of this Node relative to its parent's scale.
 	 * Note that scale is inherited by children.  Use get/setSize() of VisibleNode for a similar effect that'snot inherited.*/
 	Vec3f getScale()
-	{	return Vec3f(transform.v[0], transform.v[5], transform.v[10]);		
+	{	//return Vec3f(transform.v[0], transform.v[5], transform.v[10]);
+		return transform.getScale();
 	}
 	void setScale(Vec3f scale) /// ditto;
 	{	transform.setScalePreservingRotation(scale);

@@ -5,21 +5,65 @@
  */
 
 module yage.scene.terrain;
+
+
+import yage.core.math.vector;
+import yage.resource.geometry;
+import yage.resource.image;
+import yage.resource.material;
+import yage.scene.camera;
+import yage.scene.node;
+import yage.scene.visible;
+
+class TerrainNode : VisibleNode
+{
+	
+	protected Geometry[][] mipmaps;
+	
+	this()
+	{
+	}
+	
+	void setGeometry(T)(Image2!(T, 1) image=null, Vec3f delegate(float r, float s) func=null, Vec2f resolution=Vec2f(256))
+	{
+		mipmaps.length = 3; // determined by resolution
+		mipmaps[0].length = 1;
+		mipmaps[1].length = 4;
+		mipmaps[2].length = 16;
+		
+		assert(image || func);
+	}
+	
+	
+	void setMaterials(Material[] materials, float[][][] amounts)
+	{
+	}
+	
+	/**
+	 * 
+	 * Params:
+	 *     camera = 
+	 *     lod = Size of a block of terrain in pixels
+	 * Returns:
+	 */
+	Geometry[] getVisibleMipmaps(CameraNode camera, float lod=10)
+	{
+		return null;
+	}
+	
+}
+
+
 /+
 This module needs to be brought up to date with the rest of the Yage API before it
 will work.
-
-import tango.util.Convert;
 
 import yage.resource.manager;
 import yage.resource.material;
 import yage.resource.model;
 import yage.resource.mesh;
-import yage.resource.image;
-import yage.scene.node;
-import yage.scene.visible;
+
 import yage.core.math.matrix;
-import yage.core.math.vector;
 import yage.system.system;
 import yage.system.log;
 

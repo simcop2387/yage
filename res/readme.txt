@@ -24,7 +24,7 @@ sky/sanctuary.dae			Eric Poggel, public domain
 sky/universe.dae			Eric Poggel, public domain
 space/asteroid.dae			Eric Poggel, public domain
 space/star.xml				Eric Poggel, public domain
-scifi/fighter.dae			http://www.psionic3d.co.uk -- model and textures
+space/fighter.dae			http://www.psionic3d.co.uk -- model and textures
 							can be used for freeware, shareware, or commercial
 							games etc.
 terrain/dirt.jpg			Eric Poggel, public domain

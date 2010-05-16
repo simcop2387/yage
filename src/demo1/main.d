@@ -82,6 +82,9 @@ class DemoScene : Scene
 		// Planet
 		planet = scene.addChild(new ModelNode("space/planet.dae"));
 		planet.setSize(Vec3f(60));
+		//planet.setSize(Vec3f(.5));
+		//planet.setScale(Vec3f(.5));
+		//planet.setId("planet");
 		planet.setAngularVelocity(Vec3f(0, -0.01, 0));
 		
 
