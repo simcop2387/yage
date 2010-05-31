@@ -103,8 +103,10 @@ class Collada
 			Node polyList;
 			if (mesh.hasChild("polylist"))
 				polyList = mesh.getChild("polylist");
-			else
+			else if (mesh.hasChild("triangles"))
 				polyList = mesh.getChild("triangles");
+			else
+				polyList = mesh.getChild("polygons"); // collada 1.3?
 			
 			// Inputs are the cordinates that the triangles index into.
 			struct Input
@@ -120,12 +122,13 @@ class Collada
 			foreach (i, inputNode; inputNodes)
 			{					
 				inputs[i].name = inputNode.getAttribute("semantic");
+				char[] offset = inputNode.hasAttribute("offset") ? inputNode.getAttribute("offset") : inputNode.getAttribute("idx");				
 				try {
-					inputs[i].offset = Xml.parseNumber!(int)(inputNode.getAttribute("offset"));
+					inputs[i].offset = Xml.parseNumber!(int)(offset);
 				} catch (ConversionException e)
 				{	throw new XmlException(e.toString());
 				}
-				
+					
 				if (inputs[i].name=="VERTEX") // VERTEX type requires another level of indirection to get to proper node.
 				{	char[] verticesId = inputNode.getAttribute("source");				
 					Node verticesNode = Xml.getNodeById(doc, verticesId);
@@ -134,9 +137,11 @@ class Collada
 				
 				// Get values
 				char[] sourceId = inputNode.getAttribute("source"); 
-				inputs[i].data = getDataFromSourceId(sourceId, inputs[i].components);					
-			}				
-			int[] indices = Xml.parseNumberList!(int)(polyList.getChild("p").value);
+				inputs[i].data = getDataFromSourceId(sourceId, inputs[i].components);
+			}
+			int[] indices;
+			foreach (p; polyList.getChildren("p"))
+				indices ~= Xml.parseNumberList!(int)(p.value);
 			int[] vcounts;
 			if (polyList.hasChild("vcount"))
 				vcounts = Xml.parseNumberList!(int)(polyList.getChild("vcount").value);
@@ -171,7 +176,7 @@ class Collada
 					int c = input.components;
 					float[] data = new float[indices.length*c/indicesPerVertex];
 					for (int i=0; i<indices.length; i+=indicesPerVertex)
-					{	int index = indices[i + input.offset]*c; // TODO: This creates duplicate vertices on shared triangle edges
+					{	int index = indices[i + input.offset]*c; // This creates duplicate vertices on shared triangle edges, Geometry.optimize takes care of it later
 						int j = i/indicesPerVertex*c;
 						data[j..j+c] = input.data[index..index+c];
 					}
@@ -185,11 +190,13 @@ class Collada
 						result.setAttribute(name, cast(Vec4f[])data);
 					else
 						assert(0);
-					
+				
 					// Flip the y texture coordinate for OpenGL.
 					foreach (inout texCoord; cast(Vec2f[])result.getAttribute(Geometry.TEXCOORDS0))
 						texCoord.y = -texCoord.y;
+					
 				}
+				
 				
 				// Build triangles
 				Vec3i[] triangles;
@@ -228,27 +235,29 @@ class Collada
 				mesh.material = material;
 				result.meshes = [mesh];
 				
-				if (!calledByGetMerged)
-				{	result.optimize();
-				
-					//If phong shading is used, generate binormals.
-					if (material.getPass().autoShader == MaterialPass.AutoShader.PHONG)
-						result.setAttribute(Geometry.TEXCOORDS1, result.createTangentVectors());
-				}
-			
-				
 				return result;
 			}				
 			meshes ~= getPolygons(inputs, indices, vcounts); // garbage
 		}
 		
 		// Merge meshes into a single geometry
-		Geometry result = meshes[0];
+		Geometry result = meshes.length ? meshes[0] : null;
 		if (meshes.length > 1)
-			result = Geometry.merge(meshes); 			
+			result = Geometry.merge(meshes);
+		
+		if (!calledByGetMerged)
+		{	result.optimize();
+		
+			//If phong shading is used, generate binormals.
+			foreach (mesh; result.meshes)
+				if (mesh.material.getPass().autoShader == MaterialPass.AutoShader.PHONG)
+				{	result.setAttribute(Geometry.TEXCOORDS1, result.createTangentVectors());
+					break;
+				}
+		}
 		
 		delete meshes;  // garbage from old mesh sub-data
-		geometries[id] = result; // cache for next request			
+		geometries[id] = result; // cache for next request
 		return result;
 	}
 	
@@ -279,10 +288,16 @@ class Collada
 		result.techniques[0].passes ~= new MaterialPass();
 		MaterialPass pass = result.techniques[0].passes[0];
 		
-		Node instanceEffect = Xml.getNodeById(doc, id).getChild("instance_effect"); // TODO: instance_effect can have child nodes that specify parameters
-		Node effectNode = Xml.getNodeById(doc, instanceEffect.getAttribute("url"));
-		Node profileCommon = effectNode.getChild("profile_COMMON"); // TODO: profile_GLSL
-		Node technique = profileCommon.getChild("technique");
+		Node technique;
+		Node materialNode = Xml.getNodeById(doc, id);
+		if (materialNode.hasChild("instance_effect"))
+		{	Node instanceEffect = Xml.getNodeById(doc, id).getChild("instance_effect"); // TODO: instance_effect can have child nodes that specify parameters
+			Node effectNode = Xml.getNodeById(doc, instanceEffect.getAttribute("url"));
+			Node profileCommon = effectNode.getChild("profile_COMMON"); // TODO: profile_GLSL
+			technique = profileCommon.getChild("technique");
+		} else // Collada 1.3
+		{		technique = materialNode.getChild("shader").getChild("technique");
+		}
 		
 		Node shadingType = technique.getChild(); // in profile_COMMON, it can be newparam, image, blinn, constant, lambert, phong, or extra.
 												// blinn, lambert, and phong all have the same parameters.
@@ -311,6 +326,9 @@ class Collada
 						break;
 			}	}
 			
+			if (!param.getChildren().length)
+				continue;
+			
 			Node child = param.getChild();				
 			GPUTexture texture;
 			switch(param.name())
@@ -322,7 +340,7 @@ class Collada
 					getColorOrTexture(child, pass.diffuse, texture);
 					pass.setDiffuseTexture(Texture(texture)); // may be null
 					break;
-				case "bump":
+				case "bump": // Bump map extension used by Okino, http://www.okino.com/conv/exp_collada_extensions.htm
 					getColorOrTexture(child, pass.diffuse, texture);
 					pass.setNormalSpecularTexture(Texture(texture)); // may be null
 					break;
@@ -349,7 +367,6 @@ class Collada
 					break;
 				default:
 					break;
-				// TODO: Get normal from extra tag, see: http://www.okino.com/conv/exp_collada_extensions.htm
 			}
 			
 			// Enable blending if there's alpha.
@@ -380,7 +397,7 @@ class Collada
 	Geometry getMergedGeometry()
 	{
 		Geometry[] geometries;
-		Matrix[] geometryTransforms;
+		Matrix[] geometryTransforms; // A transformation matrix for each geometry found.
 		
 		// Get the up direction (unfinished)
 		Matrix upTransform;
@@ -390,40 +407,60 @@ class Collada
 		
 		
 		// Loop through the scenes and load all the geometry nodes they reference.
-		scope Node[] visual_scenes = Node(doc.elements).getChild("library_visual_scenes").getChildren("visual_scene");
+		Node[] scenes;
+		Node root = Node(doc.elements);
+		if (root.hasChild("library_visual_scenes"))
+		    scenes = root.getChild("library_visual_scenes").getChildren("visual_scene");
+		else // collada 1.3
+			scenes = root.getChildren("scene");
 		
-		foreach (visual_scene; visual_scenes) // loop through scenes
+		foreach (visual_scene; scenes) // loop through scenes
 		{
-			scope Node[] nodes = visual_scene.getChildren("node");
-			foreach (node; nodes) // loop through nodes in a scene
+			void traverseSceneNodes(Node node)
 			{
-				if (!node.hasChild("instance_geometry"))
-				    continue;
+				Node instance_geometry;
+				if (node.hasChild("instance_geometry"))
+					instance_geometry = node.getChild("instance_geometry");
+				else if (node.hasChild("instance")) // Collada 1.3
+					instance_geometry = node.getChild("instance");
 				
-				Node instance_geometry = node.getChild("instance_geometry");
-				
-				char[] geometryId = instance_geometry.getAttribute("url"); // TODO: Multiple instance geometry?
-				Geometry geometry = getGeometryById(geometryId, true);
-				
-				// Get transformation matrix for this instance of the geometry.
-				Matrix matrix;
-				foreach (transform; node.getChildren())
-				{	if (transform.name=="translate")
-						matrix.setPosition(Vec3f(Xml.parseNumberList!(float)(transform.value)));
-					else if (transform.name=="rotate")
-					{	float[] values = Xml.parseNumberList!(float)(transform.value);
-						assert(values.length==4);
-						Vec3f(values[3]*tango.math.Math.PI/180, values[0], values[1], values[2]); // load from axis-angle							
-					} 
-					else if (transform.name=="scale")						
-						matrix.setScalePreservingRotation(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+				if (instance_geometry.node)
+				{   					
+					char[] geometryId = instance_geometry.getAttribute("url"); // TODO: Multiple instance geometry?
+					Geometry geometry = getGeometryById(geometryId, true);
+					if (geometry)
+					{
+						// Get transformation matrix for this instance of the geometry.
+						Matrix matrix;
+						foreach (transform; node.getChildren())
+						{	if (transform.name=="translate")
+								matrix.move(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+							else if (transform.name=="rotate")
+							{	float[] values = Xml.parseNumberList!(float)(transform.value);
+								assert(values.length==4);
+								matrix = matrix.rotate(Vec3f(values[3]*tango.math.Math.PI/180, values[0], values[1], values[2])); // load from axis-angle							
+							} 
+							else if (transform.name=="scale")						
+								matrix.setScalePreservingRotation(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+							else if (transform.name=="matrix") // collada 1.3
+							{	matrix = Matrix(Xml.parseNumberList!(float)(transform.value));
+								
+							}
+						}
+						geometryTransforms ~= matrix * upTransform;
+						
+						// TODO: Sometimes intance_geometry has xml children specifying a material (or other things as well?)
+						
+						geometries~= geometry;
+					}
 				}
-				geometryTransforms ~= matrix * upTransform;
 				
-				// TODO: Sometimes intance_geometry has xml children specifying a material (or other things as well?)
-				
-				geometries~= geometry;
-		}	}
+				foreach (child; node.getChildren("node")) // loop through nodes in a scene
+					traverseSceneNodes(child);
+			}
+			
+			traverseSceneNodes(visual_scene);
+		}
 		
 		// Transform geometry instances by their transformation matrix
 		foreach (i, geometry; geometries)
@@ -445,9 +482,9 @@ class Collada
 			result = Geometry.merge(geometries);			
 		delete geometries;
 		
-		
-		//Timer a = new Timer(true);
-		
+		//foreach (mesh; result.meshes)
+		//	Log.trace(mesh.getTriangles().length);		
+		//Log.trace(result.getAttribute(Geometry.VERTICES).length);
 		result.optimize();
 		
 		//If phong shading is used, generate binormals.
@@ -509,12 +546,20 @@ class Collada
 
 	// See: https://collada.org/mediawiki/index.php/Using_accessors
 	private float[] getDataFromSourceId(char[] id, out ushort components)
-	{	Node sourceAccesor = Xml.getNodeById(doc, id).getChild("technique_common").getChild("accessor"); // TODO: Read stride, offset, etc.
-		scope Node[] params = sourceAccesor.getChildren("param");
+	{	
+		
+		
+		Node source = Xml.getNodeById(doc, id);		
+		Node sourceAccessor;
+		if (source.hasChild("technique_common"))
+			sourceAccessor = source.getChild("technique_common").getChild("accessor"); // TODO: Read stride, offset, etc.
+		else // collada 1.3
+			sourceAccessor = source.getChild("technique").getChild("accessor"); // TODO: Read stride, offset, etc.
+		scope Node[] params = sourceAccessor.getChildren("param");
 		components = params.length;
-		char[] sourceFloatArrayId = sourceAccesor.getAttribute("source");
-		char[] sourceFloatArray = Xml.getNodeById(doc, sourceFloatArrayId).value;
-		return Xml.parseNumberList!(float)(sourceFloatArray);
+		char[] sourceFloatArrayId = sourceAccessor.getAttribute("source");
+		Node sourceFloatArray = Xml.getNodeById(doc, sourceFloatArrayId);
+		return Xml.parseNumberList!(float)(sourceFloatArray.value);
 	}
 	
 	// Wraps Tagno's Node to make it easier and with Exception checks

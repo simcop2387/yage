@@ -153,7 +153,7 @@ class LightsAndFog : TestScene
 	{	backgroundColor = "gray";
 		
 		// Create a textured plane
-		Geometry geometry = Geometry.createPlane(16, 16);
+		Geometry geometry = Geometry.createPlane(4, 4);
 		Texture texture = Texture(ResourceManager.texture("space/rocky2.jpg"));
 		Texture normal = Texture(ResourceManager.texture("space/rocky2-normal.jpg"));
 		texture.transform = Matrix().scale(Vec3f(8));
@@ -212,21 +212,14 @@ class LightsAndFog : TestScene
 		beast.setPosition(Vec3f(0, -40, -20));
 		//beast.setAngularVelocity(Vec3f(0, .5, 0));
 		
-		// For testing sprites
-		plane = scene.addChild(new ModelNode(geometry));
-		plane.setPosition(Vec3f(0, -10, 0));
-		plane.setRotation(Vec3f(-PI/2, 0, 0));
-		plane.setScale(Vec3f(10));
-
-		
 		// Lights
 		auto rotater = addChild(new ModelNode());
 		//rotater.setAngularVelocity(Vec3f(0, 0.5, 0));
 		auto light1 = rotater.addChild(new LightNode());
 		light1.setPosition(Vec3f(10, 0, 0));
-		//light1.setAngularVelocity(Vec3f(0, 10, 0)); // TODO: This seems to make it gradually move?
+		//light1.setAngularVelocity(Vec3f(0, 10, 0));
 		light1.diffuse = "white";
-		light1.setLightRadius(30);		
+		light1.setLightRadius(80);		
 		//light1.spotExponent = 3;
 		//light1.spotAngle = 80 * 3.1415/180;
 		//light1.type = LightNode.Type.SPOT;

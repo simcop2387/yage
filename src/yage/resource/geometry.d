@@ -7,6 +7,7 @@
 module yage.resource.geometry;
 
 import tango.math.Math;
+import yage.core.format;
 import yage.core.math.vector;
 import yage.resource.manager;
 import yage.resource.material;
@@ -254,6 +255,14 @@ class Geometry
 	 * This should be done before creating binormals in order to work well. */
 	void optimize()
 	{
+		debug {
+			int length =  getVertexBuffer(Geometry.VERTICES).length;
+			foreach (name, attribute; attributes)
+			{	assert(attribute.length == length, format("%s is only of length %s, but vertices are of length %s", name, attribute.length, length));
+			}
+			
+		}
+		
 		// Merge duplicate vertices
 		VertexBuffer vb = attributes[Geometry.VERTICES];
 		float[] vertices = cast(float[])vb.data;
@@ -311,14 +320,15 @@ class Geometry
 		}
 		
 		// Move data
-		foreach (inout attribute; attributes)
+		foreach (name, inout attribute; attributes)
 		{
 			int c2 = attribute.components;
 			float[] oldData = cast(float[])attribute.data;
-			float[] data = new float[remap.length];			
-			
+			float[] data = new float[remapReverse.length*c2];			
 			foreach (to, from; remapReverse) // Too bad doing this in-place fails for some models			
+			{	//Log.trace("%s %s %s %s", data.length, to*c2+c2, oldData.length, from*c2+c2);
 				data[to*c2..to*c2+c2] = oldData[from*c2..from*c2+c2];	
+			}
 			
 			attribute.data = data;
 			delete oldData;
