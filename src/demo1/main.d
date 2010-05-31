@@ -12,11 +12,6 @@ module demo1.main;
 
 import tango.core.Memory;
 import tango.core.Thread;
-import tango.io.Stdout;
-import tango.util.Convert;
-import tango.text.convert.Format;
-import tango.text.xml.Document;
-import tango.text.Regex;
 
 import derelict.sdl.sdl;
 
@@ -42,20 +37,20 @@ class DemoScene : Scene
 	
 	// Create the scene and all elements in it
 	this()
-	{
+	{		
 		super();
-		ambient = "#444"; // global ambient
+		ambient = "#123"; // global ambient
 		
 		// Skybox
 		skyBox = new Scene();
-		auto sky = new ModelNode("sky/sanctuary.dae");
+		auto sky = new ModelNode("sky/blue-nebula.dae");
 		sky.setScale(Vec3f(1000));
 		skyBox.addChild(sky);
 		
 		
 		// Ship
 		ship = addChild(new Ship());	
-		ship.setPosition(Vec3f(1200, 150, 0));
+		ship.setPosition(Vec3f(5000, 150, 0));
 		ship.getCameraSpot().setPosition(Vec3f(1000, 4000, 10000));
 
 		// Camera
@@ -70,26 +65,46 @@ class DemoScene : Scene
 
 		// Lights
 		light = scene.addChild(new LightNode());
-		light.diffuse = "#FFD9B3";
-		light.setLightRadius(7000);
-		light.setPosition(Vec3f(0, 0, -6000));
+		light.diffuse = "#fed";
+		light.setLightRadius(100000);
+		light.setPosition(Vec3f(0, 0, -60000));
 
 		// Star
 		star = light.addChild(new SpriteNode());
 		star.setMaterial("space/star.dae", "star-material");
-		star.setSize(Vec3f(2500));
+		star.setSize(Vec3f(10000));
 
 		// Planet
 		planet = scene.addChild(new ModelNode("space/planet.dae"));
-		planet.setSize(Vec3f(60));
-		//planet.setSize(Vec3f(.5));
-		//planet.setScale(Vec3f(.5));
-		//planet.setId("planet");
-		planet.setAngularVelocity(Vec3f(0, -0.01, 0));
+		planet.setSize(Vec3f(200));
+		planet.setAngularVelocity(Vec3f(0, -0.005, 0));
+		
+		// Atmosphere
+		/*
+		auto atmosphere = planet.addChild(new SpriteNode());
+		atmosphere.setMaterial("space/star2.dae", "star-material");
+		atmosphere.getMaterial().getPass().blend = MaterialPass.Blend.AVERAGE;
+		atmosphere.setSize(Vec3f(3000));
+		*/
+		
+		// Moon
+		auto moon = scene.addChild(new ModelNode("space/planet.dae"));
+		auto moonMaterial = new Material(true);
+		auto pass = moonMaterial.getPass();
+		pass.ambient = "#fff";
+		pass.textures = [
+			Texture(ResourceManager.texture("space/rocky2.jpg")),
+			Texture(ResourceManager.texture("space/rocky2-normal.jpg", GPUTexture.Format.AUTO_UNCOMPRESSED))
+		];
+		pass.autoShader = MaterialPass.AutoShader.PHONG;
+		moon.materialOverrides ~= moonMaterial;
+		moon.setPosition(Vec3f(8000, 0, -1000));
+		moon.setSize(Vec3f(50));		
+		moon.setAngularVelocity(Vec3f(0, 0.01, 0));
 		
 
 		// Asteroids
-		asteroidBelt(1200, 1400, planet);
+		asteroidBelt(4000, 5000, planet);
 	}
 	
 	override void update(float delta)
@@ -136,7 +151,10 @@ int main()
 			scene = new DemoScene();
 			scene.camera.setListener();
 			scene.play();
-		}		
+		}	
+		if (key == SDLK_x)
+		{	Render.reset();
+		}
 		
 		scene.ship.keyDown(key);
 		return true;
@@ -160,9 +178,8 @@ int main()
 		
 	// Make a draggable window to show some useful info.
 	auto info = view.addChild(new Surface());
-	info.style.set("top: 5px; right: 5px; width: 130px; height: 70px; color: black; padding: 3px; " ~
-		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font-family: url('Vera.ttf'); font-size: 14px");
+	info.style.set("top: 5px; right: 5px; width: 130px; height: 100px; color: black; padding: 3px; " ~
+		"border-width: 5px; border-image: url('gui/skin/clear2.png'); font-size: 12px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
 	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href) {
@@ -209,13 +226,13 @@ int main()
 		fps++;
 		if (frame.tell()>=1f)
 		{	float framerate = fps/frame.tell();
-			window.setCaption(Format.convert("Yage Demo | {} fps\0", framerate));
-			info.text = Format.convert(
-				`{} <b>fps</span><br/>`
-				`{} <b>objects</b><br/>`
-				`{} <b>polygons</b><br/>`
-				`{} <b>vertices</b>`,
-				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount);
+			window.setCaption(format("Yage Demo | %.2f fps\0", framerate));
+			info.text = format(
+				`%.2f <b>fps</span><br/>`
+				`%d <b>objects</b><br/>`
+				`%d <b>polygons</b><br/>`
+				`%d <b>vertices</b><br/><br/> wasd to move<br/> +q for hyperdrive<br/>space to shoot`,
+				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount) ~ Profile.getTimesAndClear();
 			frame.seek(0);
 			fps = 0;
 		}

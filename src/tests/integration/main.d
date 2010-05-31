@@ -11,6 +11,7 @@ import tango.math.Math;
 import tango.text.Util;
 import yage.all;
 import yage.core.math.vector;
+import yage.resource.embed.embed;
 
 /*
  * A floating camera that can be moved and rotated. */
@@ -81,18 +82,28 @@ class TestScene : Scene
 			camera.down = state;
 		if (key == SDLK_d)
 			camera.right = state;
+		
+		if (key == SDLK_x)
+		{
+			Embed.phong_vert = cast(char[])ResourceManager.getFile("../src/yage/resource/embed/phong.vert");
+			Embed.phong_frag = cast(char[])ResourceManager.getFile("../src/yage/resource/embed/phong.frag");
+			
+			Render.reset();
+		}
 	}
 }
 
 class LotsOfObjects : TestScene
 {
+	Model asteroid;
+	
 	this()
 	{
-		int length = 20;
+		int length = 24;
 		int spacing = 10;
 		
 		// Add asteroids
-		Model asteroid = new Model("space/asteroid1.dae");
+		asteroid = new Model("space/asteroid1.dae");
 		for (int x=-length/2; x<length/2; x++)
 			for (int y=-length/2; y<length/2; y++)
 				for (int z=-length/2; z<length/2; z++)
@@ -126,8 +137,8 @@ class LotsOfObjects : TestScene
 		l4.diffuse = "blue";
 		
 		
-		camera.setPosition(Vec3f(0, 0, -500));
-	}	
+		//camera.setPosition(Vec3f(0, 0, -500));
+	}
 }
 
 /*
@@ -136,28 +147,30 @@ class LotsOfObjects : TestScene
 class LightsAndFog : TestScene
 {	
 	MaterialPass pass;
-	LightNode light1, light2, light3, light4;
+	LightNode /*light1, */light2, light3, light4;
 	
 	this()
-	{	backgroundColor = "white";
+	{	backgroundColor = "gray";
 		
 		// Create a textured plane
 		Geometry geometry = Geometry.createPlane(16, 16);
 		Texture texture = Texture(ResourceManager.texture("space/rocky2.jpg"));
-		texture.transform = Matrix().scale(Vec3f(4));
+		Texture normal = Texture(ResourceManager.texture("space/rocky2-normal.jpg"));
+		texture.transform = Matrix().scale(Vec3f(8));
 		
-		pass = geometry.getMeshes()[0].getMaterial().getPass();			
+		pass = geometry.getMeshes()[0].getMaterial().getPass();	
+		pass.lighting = true;
 		pass.emissive = Color(0x222222);
 		pass.diffuse = "white";
 		pass.specular = "gray";
 		pass.shininess = 128;
-		pass.textures ~= texture;
+		pass.textures = [texture, normal];
 		pass.autoShader = MaterialPass.AutoShader.PHONG;
 	
 		// Make a box out of six planes
 		ModelNode plane;
 		float PI = 3.1415927f;
-	
+		
 		// Bottom/Top
 		plane = scene.addChild(new ModelNode(geometry));
 		plane.setPosition(Vec3f(0, -50, 0));
@@ -192,44 +205,49 @@ class LightsAndFog : TestScene
 		plane.setScale(Vec3f(50));
 		
 		
-		auto ubot = new ModelNode("ubot/ubot.dae");
-		scene.addChild(ubot);
+		// A critter
+		auto beast = new ModelNode("character/beast.dae");
+		scene.addChild(beast);
+		beast.setScale(Vec3f(.3));
+		beast.setPosition(Vec3f(0, -40, -20));
+		//beast.setAngularVelocity(Vec3f(0, .5, 0));
 		
-		// temporary, add normal map to model
-		MaterialPass ubotPass = ubot.getModel().getMeshes()[0].getMaterial().getPass();
-		ubotPass.ambient = "white";
-		ubotPass.specular = "gray";
-		ubotPass.textures = [
-		    Texture(ResourceManager.texture("ubot/diffuse.jpg")),
-			Texture(ResourceManager.texture("ubot/normal-specular.png"))
-		];
-		
+		// For testing sprites
+		plane = scene.addChild(new ModelNode(geometry));
+		plane.setPosition(Vec3f(0, -10, 0));
+		plane.setRotation(Vec3f(-PI/2, 0, 0));
+		plane.setScale(Vec3f(10));
+
 		
 		// Lights
-		light1 = addChild(new LightNode());
-		light1.setAngularVelocity(Vec3f(0, 0.3, 0));
+		auto rotater = addChild(new ModelNode());
+		//rotater.setAngularVelocity(Vec3f(0, 0.5, 0));
+		auto light1 = rotater.addChild(new LightNode());
+		light1.setPosition(Vec3f(10, 0, 0));
+		//light1.setAngularVelocity(Vec3f(0, 10, 0)); // TODO: This seems to make it gradually move?
 		light1.diffuse = "white";
-		light1.setLightRadius(120);		
-		light1.spotExponent = 32;
-		light1.spotAngle = 45 * 3.1415/180;
-		light1.type = LightNode.Type.SPOT;
+		light1.setLightRadius(30);		
+		//light1.spotExponent = 3;
+		//light1.spotAngle = 80 * 3.1415/180;
+		//light1.type = LightNode.Type.SPOT;
+		
 		
 		light2 = addChild(new LightNode());
-		light2.setAngularVelocity(Vec3f(1, 1, 0));
+		light2.setAngularVelocity(Vec3f(.1, .1, 0));
 		light2.diffuse = "red";
 		light2.setLightRadius(100);
 		light2.spotExponent = 1;
 		light2.spotAngle = 20 * 3.1415/180;
 		light2.type = LightNode.Type.SPOT;
-		
-		light3 = light2.addChild(new LightNode());
+
+		light3 = light1.addChild(new LightNode());
 		light3.setPosition(Vec3f(0, 0, -49));
 		light3.setAngularVelocity(Vec3f(1, 1, 0));
 		light3.diffuse = "blue";
-		light3.setLightRadius(20);	
+		light3.setLightRadius(20);
 
 		// Enable fog
-		this.fogEnabled = true;
+		//this.fogEnabled = true;
 		this.fogDensity = 0.01;	
 	}
 	
@@ -300,7 +318,6 @@ class Transparency : TestScene
 			plane2.setRotation(Vec3f(0, -angle, 0)); // back side
 			plane2.setSize(Vec3f(10));
 			
-				
 		}
 		
 		// Lights
@@ -324,7 +341,6 @@ class Transparency : TestScene
 		}
 	}
 }
-
 
 /*
  * UI Provides a surface for the main rendering area and a small window to show info. */
@@ -367,7 +383,7 @@ class UI : Surface
 
 // Entry point
 void main()
-{	
+{		
 	// Initialize and create window
 	System.init(); 
 	auto window = Window.getInstance();
@@ -376,6 +392,7 @@ void main()
 
 	// Create and start a Scene
 	auto scene = new LightsAndFog(); // set which scene to test
+	scene.getUpdateThread().setFrequency(60);
 	scene.play(); // start scene thread
 	
 	// User interface

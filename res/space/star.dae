@@ -9,7 +9,7 @@
     </asset>
     <library_images>
         <image id="star-image" name="star-image">
-            <init_from>./star.png</init_from>
+            <init_from>star.png</init_from>
         </image>
     </library_images>
     <library_materials>

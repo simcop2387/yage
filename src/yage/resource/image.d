@@ -248,33 +248,28 @@ class Image
 
 	/// Get or set the ith pixel in the image.
 	ubyte[] opIndex(int i)
-	in { assert(0<=i && i<width*height); }
-	body
-	{	return data[i..(i+channels)];
+	{	assert(0<=i && i<width*height);
+		return data[i..(i+channels)];
 	}
 	ubyte[] opIndexAssign(ubyte[] val, int i) /// ditto
-	in { assert(0<=i && i<width*height); }
-	body
-	{	return data[i..(i+channels)] = val[0..channels];
+	{	assert(0<=i && i<width*height);
+		return data[i..(i+channels)] = val[0..channels];
 	}
 
 	/// Get or set the pixel at the given coordinates.
 	ubyte[] opIndex(int x, int y)
-	in { 
+	{	
 		assert(0 <= x && x<width); 
 		assert(0 <= y && y<height);
-	}
-	body
-	{	int i = (y*width+x)*channels;
+		
+		int i = (y*width+x)*channels;
 		return data[i..(i+channels)];
 	}
 	ubyte[] opIndexAssign(ubyte[] val, int x, int y) /// ditto
-	in { 
-		assert(0 <= x && x<width); 
-		assert(0 <= y && y<height); 
-	}
-	body
-	{	int i = (y*width+x)*channels;
+	{	assert(0 <= x && x<width); 
+		assert(0 <= y && y<height);
+		
+		int i = (y*width+x)*channels;
 		return data[i..(i+channels)] = val[0..channels];
 	}
 
@@ -395,7 +390,6 @@ class Image
 
 	/**
 	 * Resize this image using bilinear interpolation.
-	 * This is 5.5x faster than gluScaleImage (which also uses a bilinear filter when enlarging) in resizing from 32x32 to 512x512.  
 	 * Params:
 	 *     width = The new width.
 	 *     height = The new height.  If 0, height will be calculated automatically with aspect ratio maintained.
@@ -418,15 +412,31 @@ class Image
 		}
 		
 		result.data.length = width*height*channels;
-		float width1 = 1/(width-1.0f);
-		float height1= 1/(height-1.0f);		
 
-		for (int y=0; y<height; y++)
-			for (int x=0; x<width; x++)
-			{	//int i = (y*this.width+x)*channels;
-				result[x, y][0..channels] = bilinearFilter(x*width1, y*height1).v[0..channels];	
-			}
+		// TODO: This is an excellent candidate for parallelization
+		// Special case of a 1/2 size resize, this is 4x faster than the general case.
+		if (width==this.width/2 && height==this.height/2)
+		{	for (int y=0; y<height; y++)
+				for (int x=0; x<width; x++)
+				{	int x2 = x*2;
+					int y2 = y*2;
+					int a = (y2*this.width+x2)*channels;
+					int b = a + channels;
+					int c = ((y2+1)*this.width+x2)*channels;
+					int d = c + channels;					
+					int dest = (y*width+x)*channels;					
+					for (int i=0; i<channels; i++)
+						result.data[dest+i] = (data[a+i] + data[b+i] + data[c+i] + data[d+i]+2) / 4; // +2 to correct rounding.		
+				}
+		}
+		else // general resize case
+		{	float width1 = 1/(width-1.0f);
+			float height1= 1/(height-1.0f);		
 		
+			for (int y=0; y<height; y++)
+				for (int x=0; x<width; x++)
+					result[x, y][0..channels] = bilinearFilter(x*width1, y*height1).v[0..channels];				
+		}
 		return result;
 	}
 	
@@ -529,8 +539,9 @@ interface IImage
 	Image2!(T2, C2) convert(T2: real, int C2)();
 }
 
-/*
- * Experimental, supporting templated arguments for component type and number of channels
+/**
+ * Successor to the Image class.
+ * TODO: The rest of Image's functionality should be migrated to Image2, Image deleted, and Image2 renamed as Image.
  * @param T Type of each pixel component
  * @param C number of channels. */
 class Image2(T : real, int C) : IImage

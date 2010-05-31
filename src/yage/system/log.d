@@ -25,66 +25,76 @@ struct Log
 		ERROR, /// ditto
 		TRACE /// ditto
 	}
-	static Level level = Level.INFO; /// Only logs of this level or greater will be written.
-	
-	/// Use these options to specify logging types.
-	enum Type
-	{	GUI = 1, ///
-		RESOURCE = 2, /// ditto
-		SCENE = 4, /// ditto
-		SYSTEM = 8, /// ditto
-	}
-	static uint type = Type.SYSTEM | Type.SCENE | Type.RESOURCE | Type.GUI; /// Only logs of these types will be written, defaults to all types.
 	
 	/// Use these options to specify where the log should be written.
 	enum Output
 	{	CONSOLE = 1, ///
 		FILE = 2 /// ditto
 	}
-	static uint output = Output.CONSOLE; /// Specify where to log.
-		
-
+	
+	static Level level = Level.INFO; /// Only logs of this level or greater will be written.
+	static uint output = Output.CONSOLE | Output.FILE; /// Specify where to log.
 	static char[] file = "log.txt"; /// If output includes File, write to this file.
+	private static bool firstRun = true;
 
-	/// Write to the log.  Arguments are the same as std.stdio.writefln in Phobos.
+	/**
+	 * Write to the log.  Arguments are the same as std.stdio.writefln in Phobos.
+	 * Returns true if the output settings allowed anything to be written. */
 	static bool info(...)
-	{	return write(Level.INFO, Type.SYSTEM, swritef(_arguments, _argptr));
+	{	return write(Level.INFO, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
 	static bool warn(...)
-	{	return write(Level.WARN, Type.SYSTEM, swritef(_arguments, _argptr));
+	{	return write(Level.WARN, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
 	static bool error(...)
-	{	return write(Level.ERROR, Type.SYSTEM, swritef(_arguments, _argptr));
+	{	return write(Level.ERROR, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
 	static bool trace(...)
-	{	return write(Level.TRACE, Type.SYSTEM, swritef(_arguments, _argptr));
-	}
-	
-	/// ditto
-	static bool write(Level level, Type type, ...)
-	{
-		if ((level >= this.level) && (type & this.type) && output)
-		{	
-			char[] msg = swritef(_arguments, _argptr);
-			if (output & Output.CONSOLE)
-				synchronized(Log.typeinfo)
-					Cout.append(msg~"\n").flush;
-			if (output & Output.FILE)
-				File.append(file, msg~"\r\n");
-			return true;
-		}		
-		return false;
+	{	return write(Level.TRACE, swritef(_arguments, _argptr));
 	}
 	
 	/// Recursively print a data structure.
 	static void dump(T)(T t)
 	{	trace(Json.encode(t));
+	}
+	
+
+	private static bool write(Level level, ...)
+	{
+		if ((level >= this.level) && output)
+		{	
+			char[] msg = swritef(_arguments, _argptr);
+			synchronized(Log.typeinfo)
+			{	
+				if (output & Output.CONSOLE)				
+				{	try {
+						Cout.append(msg ~ "\n").flush;
+					} catch (Exception e) {}
+				}
+				if (output & Output.FILE)
+				{	try {
+						if (firstRun)
+						{	File.set(file, msg ~ "\r\n");
+							firstRun = false;
+						}
+						else
+							File.append(file, msg ~ "\r\n");	
+					} catch (Exception e) { // If can't write to file, notify on the console
+						if (output & Output.CONSOLE)
+							Cout.append(e.toString() ~ "\r\n").flush;
+						output ^= Output.FILE;
+					}
+				}
+				return cast(bool)output;
+			}
+		}
+		return false;
 	}
 }
 
@@ -125,7 +135,7 @@ struct Profile
 	static char[] getTimesAndClear()
 	{	char[] result;
 		foreach (name, timer; timers)
-			result ~= format("%ss %s\n", timer.tell(), name);
+			result ~= format("%.5fs %s\n", timer.tell(), name);
 		clear();
 		return result;
 	}

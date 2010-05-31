@@ -459,6 +459,13 @@ struct ArrayBuilder(T)
 		array[size-1] = elem;
 	}
 	
+	/// temporary until opCatAssign always works
+	void append(T elem)
+	{	size++;
+		grow();
+		array[size-1] = elem;
+	}
+	
 	void opCatAssign(T[] elem) /// ditto
 	{	size_t old_size = size; // same as push
 		size+= elem.length;
@@ -473,9 +480,9 @@ struct ArrayBuilder(T)
 	}
 	
 	/// TODO: This returns a copy, so a[i].b = 3; doesn't work!!
-	T opIndex(size_t i)
+	T* opIndex(size_t i)
 	{	assert(i<size);
-		return array[i];
+		return &array[i];
 	}
 	T opIndexAssign(T val, size_t i) /// ditto
 	{	assert(i<size);
@@ -534,4 +541,15 @@ struct ArrayBuilder(T)
 			array.length = new_size;
 		}
 	}
+}
+unittest
+{
+struct A { int x, y; }
+
+A a;
+ArrayBuilder!(A) array;
+array ~= a;
+array[0].x = 3;
+assert(array[0].x == 3); // false!
+	
 }

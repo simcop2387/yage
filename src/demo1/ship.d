@@ -120,7 +120,7 @@ class Ship : GameObject
 			
 			void fade(Node self)
 			{	SpriteNode node = cast(SpriteNode)self;
-				node.setColor(Color(1, 1, 1, node.getLifetime()/5));
+				//node.setColor(Color(1, 1, 1, node.getLifetime()/5)); // TODO: Node material overrides
 				float scale = tango.math.Math.sqrt(20.0f)-tango.math.Math.sqrt(node.getLifetime()*4) + .4;
 				node.setSize(scale);
 			}
@@ -177,6 +177,8 @@ class Ship : GameObject
 			Flare flare = ship.getScene().addChild(new Flare());
 			flare.setPosition(ship.getAbsolutePosition());
 			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getAbsoluteTransform())+getVelocity());
+			
+			//input.shoot = false;
 		}
 	}
 }

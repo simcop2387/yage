@@ -82,6 +82,8 @@ class OpenGL : GraphicsAPI
 	protected HashMap!(uint, ResourceInfo) textures;
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
+	
+	bool[Shader] failedShaders;
 
 	///
 	this()
@@ -103,6 +105,7 @@ class OpenGL : GraphicsAPI
 	
 	/**
 	 * Enable this light as the given light number and apply its properties.
+	 * TODO: Perhaps this should be bindLights(LightNode[]) instead.
 	 * This function is used internally by the engine and should not be called manually or exported. */
 	void bindLight(LightNode light, int num)
 	{	assert (num<=Probe.feature(Probe.Feature.MAX_LIGHTS));
@@ -156,6 +159,7 @@ class OpenGL : GraphicsAPI
 	 * Params:
 	 *     matrix = Multiply the current Matrix at the top of the stack by this Matrix and push the result onto the stack,
 	 *     or if matrix is null, pop it off the stack.
+	 *     This is a pointer to allow null's, a copy is made for internal use.
 	 *     type = Determines which OpenGL matrix stack to modify. */
 	void bindMatrix(Matrix* matrix, MatrixType type=MatrixType.TRANSFORM)
 	{	
@@ -176,13 +180,14 @@ class OpenGL : GraphicsAPI
 			glMultMatrixf(matrix.v.ptr);
 			
 			if (s.length)
-				*s ~= (*matrix) * (*s)[s.length-1];
+				*s ~= (*matrix) * *(*s)[s.length-1];
 			else
 				*s ~= *matrix;
 			if (s.reserve < s.length)
 				s.reserve = s.length;
 		} else
-		{	glPopMatrix();
+		{	assert(s.length);
+			glPopMatrix();
 			s.length = s.length-1;
 		}
 		
@@ -196,8 +201,10 @@ class OpenGL : GraphicsAPI
 	 * Params:
 	 *     pass = 
 	 *     lights = Array of LightNodes that affect this material.  Required if the pass's autoShader is not AutoShader.NONE.
+	 * Returns: false if Not all of the textures or the shader couldn't be bound.  Even if this happens, as much of the
+	 *     pass will be bound as possible, including as many textures as possible.
 	 */
-	void bindPass(MaterialPass pass)
+	bool bindPass(MaterialPass pass)
 	{
 		// convert nulls to defaults;					
 		MaterialPass currentPass = current.pass;
@@ -206,18 +213,21 @@ class OpenGL : GraphicsAPI
 		if (!pass)
 			pass = defaultPass;
 		
+		bool result = true;
 		if (pass !is current.pass)
 		{
 			// Materials
 			if (pass.lighting)
-			{	glMaterialfv(GL_FRONT, GL_AMBIENT, pass.ambient.vec4f.ptr);
+			{	glEnable(GL_LIGHTING);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, pass.ambient.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, pass.diffuse.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_SPECULAR, pass.specular.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_EMISSION, pass.emissive.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_SHININESS, &pass.shininess);
 				glColor4f(1, 1, 1, 1);
 			} else
-			{	glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
+			{	glDisable(GL_LIGHTING);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
 				glMaterialfv(GL_FRONT, GL_SPECULAR, Vec4f().v.ptr);
 				glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
@@ -258,20 +268,44 @@ class OpenGL : GraphicsAPI
 				}
 			}
 			
-			bindTextures(pass.textures);
+			// Polygon Mode
+			if (pass.draw != currentPass.draw)
+			{
+				short cullMode = GL_FRONT; // TODO Use cull
+				switch (pass.draw)
+				{	case MaterialPass.Draw.POLYGONS:
+						glPolygonMode(cullMode, GL_FILL);
+						break;
+					case MaterialPass.Draw.LINES:
+						glPolygonMode(cullMode, GL_LINE);
+						break;
+					case MaterialPass.Draw.POINTS:
+						glPolygonMode(cullMode, GL_POINT);
+						break;
+				}
+			}
+			
+			// Textures			
+			result = result && bindTextures(pass.textures);
 		}
 		
+		// Shader - uniforms may change so this must be called even if the pass is still the current pass.
 		if (pass.shader)
-		{	try {
-				bindShader(pass.shader, pass.shaderUniforms);
-			} catch (GraphicsException e)
-			{	Log.error(e);
-			}
+		{	if (Probe.feature(Probe.Feature.SHADER))
+			{	result = result && !(pass.shader in failedShaders);
+				try {
+					bindShader(pass.shader, pass.shaderUniforms);
+				} catch (GraphicsException e)
+				{	Log.info(e);
+					result = false;
+				}
+			} else
+				result = false;
 		} else
 			bindShader(null);
-		//Profile.stop("passShader");
 		
-		current.pass = pass;		
+		current.pass = pass;
+		return result;
 	}
 
 	// Part of a test to gt renderTargt to work with fbo's.
@@ -385,15 +419,25 @@ class OpenGL : GraphicsAPI
 		current.scene = scene;
 	}
 	
-	///
+	/**
+	 * Make this shader program the currently active shader.
+	 * It will be compiled if necessary.
+	 * Params:
+	 *     shader = 
+	 *     variables = Unless specified otherwise, the currently bound textures specified by bindTextures will be bound
+	 *         to uniform variables texture0, texture1, etc. */
 	void bindShader(Shader shader, ShaderUniform[] variables=null)
 	{	
 		if (!Probe.feature(Probe.Feature.SHADER))
-			throw new GraphicsException("OpenGL.bindShader() is only supported on hardware that supports shaders.");
+		{	if (shader) // allow at least binding null.
+				throw new GraphicsException("OpenGL.bindShader() is only supported on hardware that supports shaders.");
+			else
+				return;
+		}
 		
 		if (shader)
 		{				
-			if (shader.failed)
+			if (shader in failedShaders)
 				return;
 			
 			assert(shader.getVertexSource().length);
@@ -403,10 +447,13 @@ class OpenGL : GraphicsAPI
 			
 			// Compile shader if not already compiled
 			if (!info.id)
-			{	//assert(!info.id);
-				
-				// Fail unless marked otherwise
-				shader.failed = true;				
+			{	
+				// Mark as failed on exit, unless something sets failed to false.
+				bool failed = true;
+				scope(exit)
+					if (failed)
+						failedShaders[shader] = true;
+					
 				shader.compileLog = "";
 				uint vertexObj, fragmentObj;
 				
@@ -467,7 +514,7 @@ class OpenGL : GraphicsAPI
 				
 				// Check for errors
 				char[] linkLog = getLog(info.id);
-				shader.compileLog ~= linkLog;
+				shader.compileLog ~= "\n"~linkLog;
 				int status;
 				glGetObjectParameterivARB(info.id, GL_OBJECT_LINK_STATUS_ARB, &status);
 				if (!status)					
@@ -482,7 +529,7 @@ class OpenGL : GraphicsAPI
 				if (!isValid)
 					throw new GraphicsException("Shader failed validation.\nReason:  %s", validateLog);
 					
-				shader.failed = false;
+				failed = false;
 				
 				// Temporary?
 				Log.info(shader.compileLog);
@@ -493,17 +540,14 @@ class OpenGL : GraphicsAPI
 			if (shader !is current.shader)
 			{	glUseProgramObjectARB(info.id);
 			
-				// Bind texture uniforms
-				int uniforms;
-				glGetObjectParameterivARB(info.id, GL_ACTIVE_UNIFORMS, &uniforms);			
-				
-				uint glType;
-				int length, size, textureIndex;
-				for (int i=0; i<uniforms; i++)
-				{	glGetActiveUniformARB(info.id, i, 0, &length, &size, &glType, null);
-					if (glType==GL_SAMPLER_1D || glType==GL_SAMPLER_2D || glType==GL_SAMPLER_3D ||
-					    glType==GL_SAMPLER_CUBE || glType==GL_SAMPLER_1D_SHADOW || glType==GL_SAMPLER_2D_SHADOW)
-						glUniform1iARB(i, textureIndex++);				
+				// Bind textures to "texture0", "texture1", etc. in the shader.
+				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
+				for (int i=0; i<maxTextures; i++)
+				{	char* name = "texture0\0";
+					name[7] = i + '0';
+					int location = glGetUniformLocationARB(info.id, name);	
+					if (location != -1)
+						glUniform1iARB(location, i);
 				}
 			}
 			
@@ -545,18 +589,14 @@ class OpenGL : GraphicsAPI
 	 * Bind Textures for rendering.
 	 * Params:
 	 *     textures = Textures to be bound.  Texture units beyond the array length will be disabled.
-	 *     asManyAsPossible = If true, no error will be thrown if there are more textures than texture units available.
-	 *         Instead, as many as possible will be bound.
-	 * Throws:  GraphicsException if more textures are given than texture units available and asManyAsPossible is false. */
-	void bindTextures(Texture[] textures, bool asManyAsPossible=false)
+	 * Returns:  True if all of the textures were bound.  Otherwise as many as possible will be bound. */
+	bool bindTextures(Texture[] textures)
 	{		
+		bool result = true;
 		int maxLength = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 		if (textures.length > maxLength)
-		{	if (asManyAsPossible)
-				textures.length = maxLength;
-			else
-				throw new GraphicsException("Cannot bind %s textures when only %s texture units are supported", 
-					textures.length, maxLength);
+		{	textures.length = maxLength;
+			result = false;			
 		}
 		
 		// Set states used by all textures
@@ -564,8 +604,8 @@ class OpenGL : GraphicsAPI
 		
 		foreach (i, texture; textures)
 		{
-			// Skip if this texture is already bound
-			if (current.textures.length > i && current.textures[i] == texture)
+			// Skip if this texture if it's already bound
+			if (current.textures.length > i && *current.textures[i] == texture)
 				continue;
 			
 			// if Multitexturing supported, switch which texture we work with
@@ -602,6 +642,8 @@ class OpenGL : GraphicsAPI
 			// If texture needs to be uploaded
 			if (gpuTexture.dirty)
 			{	
+				Timer timer = new Timer(true);
+				
 				// Upload new image to graphics card memory
 				Image image = gpuTexture.getImage();
 				assert(image);
@@ -670,17 +712,28 @@ class OpenGL : GraphicsAPI
 						image = image.resize(min(new_width, max), min(new_height, max));
 				}
 					
-				// Build mipmaps (doing it ourself is about 20% faster than gluBuild2DMipmaps,
-				int level = 0; //  but image.resize can be optimized further.
-				do {
+				// Build mipmaps (doing it ourself is several times faster than gluBuild2DMipmaps,
+				int level = 0;
+				while(true) {
 					glTexImage2D(GL_TEXTURE_2D, level, glInternalFormat, image.getWidth(), image.getHeight(), 0, glFormat, GL_UNSIGNED_BYTE, image.getData().ptr);
+					level++;
+					
+					if (!gpuTexture.mipmap || image.getWidth() <= 4 || image.getHeight() <= 4)
+						break;
+					
 					image = image.resize(image.getWidth()/2, image.getHeight()/2);
-					level ++;							
-				} while (gpuTexture.mipmap && image.getWidth() >= 4 && image.getHeight() >= 4)
+												
+				}
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level-1);
 				
 				gpuTexture.dirty = false;
-				gpuTexture.flipped = false;	
+				gpuTexture.flipped = false;
+				
+				float time = timer.tell();
+				float min = 0.05f;
+				if (time > min)
+					Log.info("Texture %s uploaded to video memory in %s seconds (times less than %fs are not logged)", 
+						texture.texture.getSource(), time, min);
 			}
 			
 			// Filtering
@@ -754,10 +807,11 @@ class OpenGL : GraphicsAPI
 		
 		// Reset higher texture units
 		for (int i=textures.length; i<maxLength; i++)
-		{
-			int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
-			glActiveTextureARB(GL_TEXTUREI_ARB);				
-			glClientActiveTextureARB(GL_TEXTUREI_ARB); // TODO: This probably isn't needed.
+		{	
+			if (maxLength > 1) // if multitexturing is supported.
+			{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
+				glActiveTextureARB(GL_TEXTUREI_ARB);
+			}
 			
 			glDisable(GL_TEXTURE_GEN_S);
 			glDisable(GL_TEXTURE_GEN_T);
@@ -766,6 +820,7 @@ class OpenGL : GraphicsAPI
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			
 			glLoadIdentity();
+			glBindTexture(GL_TEXTURE_2D, 0); // Shaders ignore glDisable(GL_TEXTURE_2D)
 			glDisable(GL_TEXTURE_2D); // is this for just this state?	
 		}
 		
@@ -775,21 +830,22 @@ class OpenGL : GraphicsAPI
 			glActiveTextureARB(GL_TEXTURE0_ARB);		
 		
 		current.textures = textures;
+		return result;
 	}
 
 	/**
 	 * Bind (and if necessary upload to video memory) a vertex buffer
 	 * Params:
 	 *   type = A vertex buffer type constant defined in Geometry or Mesh. */
-	void bindVertexBuffer(VertexBuffer vb, char[] type="")
+	bool bindVertexBuffer(VertexBuffer vb, char[] type)
 	{	if (vb)
 			assert(type.length);
 	
-		// Skip binding if already bound and not dirty
+		// Skip binding if already bound and not dirty	
 		if (!vb || !vb.dirty)
 		{	auto currentVb = type in current.vertexBuffers;
 			if (currentVb && (vb is *currentVb))
-				return;
+				return true;
 		}
 		
 		uint vbo_type = type==Mesh.TRIANGLES ? 
@@ -797,10 +853,9 @@ class OpenGL : GraphicsAPI
 			GL_ARRAY_BUFFER_ARB;
 		
 		int useVbo = Probe.feature(Probe.Feature.VBO);
-		
 		if (vb)
 		{	useVbo = useVbo && vb.cache;
-			
+
 			// Bind vbo and update data if necessary.
 			if (useVbo)
 			{	
@@ -810,41 +865,64 @@ class OpenGL : GraphicsAPI
 				{	glGenBuffersARB(1, &info.id);
 					vb.dirty = true;
 				}
-			
 				// Bind buffer and update with new data if necessary.
 				glBindBufferARB(vbo_type, info.id);
 				if (vb.dirty)
 				{	glBufferDataARB(vbo_type, vb.data.length, vb.ptr, GL_STATIC_DRAW_ARB);
 					vb.dirty = false;
 			}	}
-			
 			// Bind the data			
 			if (type==Geometry.VERTICES)
-				glVertexPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);					
+			{	glEnableClientState(GL_VERTEX_ARRAY);				
+				glVertexPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);
+			}
 			else if (type==Geometry.NORMALS)
 			{	assert(vb.components == 3); // normals are always Vec3
+				glEnableClientState(GL_NORMAL_ARRAY);
 				glNormalPointer(GL_FLOAT, 0, useVbo ? null : vb.ptr);
 			}
 			else if (type[0..$-1]=="gl_MultiTexCoord")
-			{	int i = type[$-1] - 48; // convert ascii to ints
+			{	int i = type[$-1] - '0'; // convert ascii to ints
 				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
-				if (i+1 > maxTextures)
-					throw new GraphicsException("Cannot set texture coordinates for texture unit %s when only % texture units are supported", i, maxTextures);
-				glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
+				if (i > maxTextures)
+					return false;
+				//	throw new GraphicsException("Cannot set texture coordinates for texture unit %s when only %s texture units are supported", i, maxTextures);
+				if (maxTextures > 1)
+				{	glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
+					
+				}
+				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				glTexCoordPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);
-				glClientActiveTextureARB(0);
+				if (maxTextures > 1)
+					glClientActiveTextureARB(GL_TEXTURE0_ARB);
 			} 
-			else if (type==Mesh.TRIANGLES)
+			else if (type==Mesh.TRIANGLES || type==Mesh.LINES)
 			{	// glBindBuffer was called above, no other action necessary
 			}
 			else
 			{	// TODO: Pass to shader as vertex attribute
 			}
 		} else // unbind
-			if (useVbo)
+		{	if (useVbo)
 				glBindBufferARB(vbo_type, 0);
 		
+
+			if (type==Geometry.VERTICES)						
+				glDisableClientState(GL_VERTEX_ARRAY);
+			else if (type==Geometry.NORMALS)
+				glDisableClientState(GL_NORMAL_ARRAY);			
+			else if (type[0..$-1]=="gl_MultiTexCoord")
+			{	int i = type[$-1] - 48; // convert ascii to ints
+				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
+				if (i > maxTextures)
+					return false;
+				glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
+				glDisable(GL_TEXTURE_COORD_ARRAY);
+				glClientActiveTextureARB(GL_TEXTURE0_ARB);
+			}
+		}
 		current.vertexBuffers[type] = vb;
+		return true;
 	}
 	
 	
@@ -870,11 +948,13 @@ class OpenGL : GraphicsAPI
 				vbos.removeKey(key);
 				delete info; // nothing else references it at this point.
 		}	}
+		
 		foreach (key, info; shaders)
 		{	if (info.resource.get() is null || info.time <= time(null)-age)
 			{	glDeleteBuffersARB(1, &info.id);
 				assert((cast(Shader)info.resource.get()) !is null);
-				(cast(Shader)info.resource.get()).failed = false;
+				//(cast(Shader)info.resource.get()).failed = false;
+				failedShaders.remove(cast(Shader)info.resource.get());
 				shaders.removeKey(key);
 				delete info; // nothing else references it at this point.
 		}	}
@@ -890,18 +970,38 @@ class OpenGL : GraphicsAPI
 	/**
 	 * Draw the contents of a vertex buffer, such as a buffer of triangle indices.
 	 * @param triangles If not null, this array of triangle indices will be used for drawing the mesh*/
-	void drawPolygons(VertexBuffer polygons, char[] type)
-	{			
+	void drawPolygons(VertexBuffer polygons, char[] type, bool indexed=true)
+	{	
 		// Draw the polygons
 		int useVbo = Probe.feature(Probe.Feature.VBO) && polygons.cache;
-		if (polygons)
+		if (indexed)
 		{	bindVertexBuffer(polygons, type);
 			if (type==Mesh.TRIANGLES)
 				glDrawElements(GL_TRIANGLES, polygons.length()*3, GL_UNSIGNED_INT, useVbo ? null : polygons.ptr);
 			else
 				throw new GraphicsException("Unsupported polygon type %s", type);
+		}		
+		else
+		{	bindVertexBuffer(polygons, type);
+			if (type==Mesh.TRIANGLES)
+				glDrawArrays(GL_TRIANGLES, 0, polygons.length()*3);
+			else if (type==Mesh.LINES)
+				glDrawArrays(GL_LINES, 0, polygons.length());
+			else
+				throw new GraphicsException("Unsupported polygon type %s", type);
 		}
-		// else TODO
-		//	glDrawArrays();
+	}
+	
+	/// TODO
+	void reset()
+	{
+		bindVertexBuffer(null, Geometry.VERTICES);
+		bindVertexBuffer(null, Geometry.NORMALS);
+		bindVertexBuffer(null, Geometry.TEXCOORDS0); // ...
+		
+		bindShader(null);
+		bindPass(null);
+		//bindLights(null);
+		bindTextures(null);
 	}
 }

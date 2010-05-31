@@ -39,13 +39,16 @@ struct Matrix
 		}
 	}
 	
-	protected static const float close_enough = 0.0001;
+	protected static const float close_enough = 0.00005; // smaller values cause isUniformScale() to fail, which in turn causes Matrix drift
 	
 	
 	invariant()
 	{	foreach (float t; v)
 			assert(t != float.nan);
 	}
+	
+	///
+	static const Matrix IDENTITY;
 
 	unittest
 	{
@@ -134,9 +137,9 @@ struct Matrix
 		position.v32 = v32;
 		
 		// Extract the orientation basis vectors
-		Vec3f rx = Vec3f(v[0..3]);
-		Vec3f ry = Vec3f(v[4..7]);
-		Vec3f rz = Vec3f(v[8..11]);
+		Vec3f* rx = cast(Vec3f*)v[0..3];
+		Vec3f* ry = cast(Vec3f*)v[4..7];
+		Vec3f* rz = cast(Vec3f*)v[8..11];
 		float rx_length = rx.length();
 		float ry_length = ry.length();
 		float rz_length = rz.length();
@@ -375,7 +378,8 @@ struct Matrix
 	
 	/**
 	 * In a Matrix, rotation and scale are intimately related.
-	 * This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. */
+	 * This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. 
+	 * TODO: This is the leading cause of Matrix drift when the scale isn't uniform! */
 	Matrix rotatePreservingScale(T)(T rot) /// ditto
 	{	if (isUniformScale()) // no need for special steps
 			return rotate(rot);
@@ -393,48 +397,6 @@ struct Matrix
 		assert(m.getScale() == scale);
 		m.setScalePreservingRotation(scale);
 		assert(m.getScale() == scale);
-	}
-
-	/**
-	 * Return a copy of this Matrix with its rotation values incremented by an
-	 * axis angle Vector, a Quaternion or another Matrix, relative to the absolute worldspace axis.
-	 * This function hasn't been verified to be correct in all circumstances. */
-	Matrix rotateAbsolute(Vec3f axis)
-	{	Matrix res = *this;
-		res.setRotation(axis.toQuatrn()*toQuatrn());
-		return res;
-		//return axis.toMatrix()*(*this);
-	}
-	Matrix rotateAbsolute(Quatrn rotation) /// ditto
-	{	Matrix res = *this;
-		res.setRotation(rotation*toQuatrn());
-		return res;
-		//return rotation.toMatrix()*(*this);
-	}
-	Matrix rotateAbsolute(Matrix m) /// ditto
-	{	Matrix res = *this;
-		res.setRotation(m.toQuatrn()*toQuatrn());
-		return res;
-		//return m*(*this);
-	}
-	
-	/**
-	 * This is mostly untested. */
-	Matrix rotateAbsolutePreservingScale(Vec3f axis)
-	{	return rotateAbsolutePreservingScale(axis.toMatrix());
-	}
-	Matrix rotateAbsolutePreservingScale(Quatrn rotation) /// ditto
-	{	return rotateAbsolutePreservingScale(rotation.toMatrix());
-	}
-	Matrix rotateAbsolutePreservingScale(Matrix b) /// ditto
-	{	if (isUniformScale()) // is this right?
-			return rotateAbsolute(b);
-		
-		Matrix position, rotation, scale;
-		decompose(position, rotation, scale);
-		rotation = b.rotate(rotation); // this is the reverse of the non-absolute version.
-		position.setRotation(rotation.rotate(scale)); // faster version of return scale * (rotation * position)
-		return position;
 	}
 
 	/**
@@ -576,9 +538,9 @@ struct Matrix
 		Matrix rotation, mscale;
 		
 		// Extract the orientation basis vectors
-		Vec3f rx = Vec3f(v[0..3]);
-		Vec3f ry = Vec3f(v[4..7]);
-		Vec3f rz = Vec3f(v[8..11]);
+		Vec3f* rx = cast(Vec3f*)v[0..3];
+		Vec3f* ry = cast(Vec3f*)v[4..7];
+		Vec3f* rz = cast(Vec3f*)v[8..11];
 		
 		// Divide the basis vectors by their lengths to normalize them.
 		rotation.v[0..3] = rx.scale(1/rx.length()).v[];

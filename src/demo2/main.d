@@ -122,7 +122,7 @@ int main()
 		//info.style.transform = info.style.transform.move(Vec3f(40, 40, 0));
 		
 		
-		if (frame.tell()>=1f)
+		if (frame.tell()>=.25f)
 		{	
 			info.text = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
 			`<u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) `~

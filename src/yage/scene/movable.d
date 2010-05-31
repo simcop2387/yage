@@ -69,7 +69,7 @@ class MovableNode : Node
 	 * instead of the current version.  This can be used to avoid working with a half-updated scenegraph.*/
 	Matrix getAbsoluteTransform(bool cached=false)
 	{	if (cached && scene) // the transform_abs cache is never dirty
-			return cache[scene.transform_read].transform_abs;
+			return cache[scene.transform_read].transform_abs; // TODO: Very rare access violation!
 		if (transform_dirty)
 			calcTransform();
 		
@@ -189,13 +189,7 @@ class MovableNode : Node
 	{	transform = transform.rotatePreservingScale(axis);
 		setTransformDirty();
 	}
-
-	/// Rotate this Node around the absolute worldspace axis, using an axis angle.
-	void rotateAbsolute(Vec3f axis) 
-	{	transform = transform.rotateAbsolutePreservingScale(axis);
-		setTransformDirty();
-	}
-
+	
 	/// Accelerate the Node in the direction specified
 	void accelerate(Vec3f v)
 	{	linear_velocity += v; 
@@ -211,13 +205,6 @@ class MovableNode : Node
 	{	angular_velocity += axis; 
 	}
 
-	/**
-	 * Accelerate the rotation of this Node, interpreting the acceleration axis
-	 * in terms of absolute worldspace coordinates. */
-	void angularAccelerateAbsolute(Vec3f axis) // [below] transpose is the same as inverse for rotation matrices.
-	{	angular_velocity += axis.rotate(getAbsoluteTransform().transpose()); 
-	}
-	
 	/*
 	 * Update the position and rotation of this node based on its velocity and angular velocity.
 	 * This function is called automatically as a Scene's update() function recurses through Nodes.

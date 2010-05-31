@@ -51,7 +51,7 @@ class SpriteNode : VisibleNode
 
 	/// Return the distance to the furthest point of the SpriteNode, including size but not scale.
 	float getRadius()
-	{	return 1.414213562*size.max();
+	{	return 1.414213562*size.max()*getScale().max();
 	}
 
 	/// Set the Material of the SpriteNode.

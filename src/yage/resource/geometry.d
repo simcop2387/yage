@@ -21,7 +21,7 @@ class VertexBuffer
 	bool dirty = true;
 	void[] data;
 	TypeInfo type;
-	ubyte components;
+	ubyte components; /// Number of floats for each vertex
 	bool cache = true; /// If true the Vertex Buffer will be cached in video memory.  // TODO: Setting this back to false keeps it in video memory but unused.
 
 	/// 
@@ -72,7 +72,90 @@ class Geometry
 	
 
 	/*protected*/ VertexBuffer[char[]] attributes;
-	/*protected*/ Mesh[] meshes;
+	/*protected*/ Mesh[] meshes;	
+	
+	bool drawNormals = false;
+	bool drawTangents = false;
+	
+	/**
+	 * Create tangent vectors required for MaterialPass.AutoShader.PHONG when a normal map is used.
+	 * From: Lengyel, Eric. "Computing Tangent Space Basis Vectors for an Arbitrary Mesh". 
+	 * Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html */
+	public Vec3f[] createTangentVectors()
+	{
+		
+		// TODO: Make sure we have vertices, texcoords, and normals in the right format
+		// TODO: Multiple meshes
+		
+		Vec3f[] vertices = cast(Vec3f[])getAttribute(Geometry.VERTICES);
+		Vec3f[] normals = cast(Vec3f[])getAttribute(Geometry.NORMALS);
+		Vec2f[] texCoords = cast(Vec2f[])getAttribute(Geometry.TEXCOORDS0);
+		
+		//return texCoords; // TODO: Temporary
+		
+		Vec3f[] tan1 = new Vec3f[vertices.length];
+		Vec3f[] tan2 = new Vec3f[vertices.length];
+		
+		Vec3f[] tangents = new Vec3f[vertices.length];
+		
+		foreach (mesh; meshes)
+			foreach (tri; mesh.getTriangles())
+			{
+				
+				Vec3f v1 = vertices[tri.x];
+				Vec3f v2 = vertices[tri.y];
+				Vec3f v3 = vertices[tri.z];
+				
+				Vec2f w1 = texCoords[tri.x];
+				Vec2f w2 = texCoords[tri.y];
+				Vec2f w3 = texCoords[tri.z];
+				
+				float x1 = v2.x - v1.x;
+				float x2 = v3.x - v1.x;
+				float y1 = v2.y - v1.y;
+				float y2 = v3.y - v1.y;
+				float z1 = v2.z - v1.z;
+				float z2 = v3.z - v1.z;
+				
+				float s1 = w2.x - w1.x;
+				float s2 = w3.x - w1.x;
+				float t1 = w2.y - w1.y;
+				float t2 = w3.y - w1.y;
+						
+				float r = 1f / (s1 * t2 - s2 * t1);
+				Vec3f sdir = Vec3f(
+					(t2 * x1 - t1 * x2) * r, 
+					(t2 * y1 - t1 * y2) * r,
+					(t2 * z1 - t1 * z2) * r);
+				Vec3f tdir = Vec3f(
+					(s1 * x2 - s2 * x1) * r, 
+					(s1 * y2 - s2 * y1) * r,
+					(s1 * z2 - s2 * z1) * r);
+				
+				tan1[tri.x] += sdir;
+				tan1[tri.y] += sdir;
+				tan1[tri.z] += sdir;
+				
+				tan2[tri.x] += tdir;
+				tan2[tri.y] += tdir;
+				tan2[tri.z] += tdir;			
+			}
+		
+		foreach (i, vert; vertices)
+		{
+			Vec3f n = normals[i];
+			Vec3f t = tan1[i];
+			
+			tangents[i] = (t-n * n.dot(t)).normalize();
+			
+			//tangents[i].w = n.cross(t).dot(tan2[i]) < 0 ? -1 : 1;
+			
+		}
+		delete tan1;
+		delete tan2;
+		
+		return tangents;
+	}
 	
 	
 	/**
@@ -163,6 +246,96 @@ class Geometry
 		return sqrt(result);
 	}
 
+	import yage.core.array;
+	import yage.core.timer;
+	
+	/**
+	 * Merge duplicate vertices and Meshes.
+	 * This should be done before creating binormals in order to work well. */
+	void optimize()
+	{
+		// Merge duplicate vertices
+		VertexBuffer vb = attributes[Geometry.VERTICES];
+		float[] vertices = cast(float[])vb.data;
+		int c = vb.components;
+		ArrayBuilder!(int) duplicates;
+		duplicates.reserve = 256;
+		
+		// Make a map of vertices x component to their index for fast lookups
+		int[][Vec2f] vertexMap;
+		for (int i=0; i<vb.length; i++)
+		{	Vec2f vertex = Vec2f(vertices[i*c..i*c+2]);
+			vertexMap[vertex] ~= i;
+		}
+				
+		scope attributes2 = attributes.values; // makes looping over attributes much faster!
+		
+		// Get the indices of vertices that are the same as index.
+		int[] getDuplicateVertices(int index)
+		{	
+			Vec2f* vertex = cast(Vec2f*)&vertices[index*c];
+				
+			duplicates.length = 0;
+			foreach (i; vertexMap[*vertex])
+			{	bool match = true;
+				foreach (attribute; attributes2)
+				{	float[] data = cast(float[])attribute.data;	
+					int c2 = attribute.components;
+					float[] original = data[index*c2..index*c2+c2]; // data to compare against.
+					if (data[i*c2..i*c2+c2] != original)
+					{	match = false;
+						break;											
+					}
+				}
+				if (match)
+					duplicates ~= i;
+			}
+			return duplicates.data;
+		}	
+		
+		// This is the slow part
+		// Build a map of how to merge vertices
+		scope int[int] remap;
+		scope int[int] remapReverse;
+		int offset = 0;
+		for (int i=0; i<vertices.length/c; i++)
+		{	bool remapped = false;
+			foreach (d; getDuplicateVertices(i))
+				if (!(d in remap))
+				{	remap[d] = offset;
+					remapReverse[offset] = d;
+					remapped = true;					
+				}
+			if (remapped)
+				offset++;
+		}
+		
+		// Move data
+		foreach (inout attribute; attributes)
+		{
+			int c2 = attribute.components;
+			float[] oldData = cast(float[])attribute.data;
+			float[] data = new float[remap.length];			
+			
+			foreach (to, from; remapReverse) // Too bad doing this in-place fails for some models			
+				data[to*c2..to*c2+c2] = oldData[from*c2..from*c2+c2];	
+			
+			attribute.data = data;
+			delete oldData;
+		}
+		
+		// Update triangle indices
+		foreach (mesh; meshes)
+		{	Vec3i[] triangles = mesh.getTriangles();
+			foreach (i, inout tri; triangles) // Shouldn't doing this in-place fail?
+			{	triangles[i].x = remap[tri.x];
+				triangles[i].y = remap[tri.y];
+				triangles[i].z = remap[tri.z];
+			}			
+			mesh.setTriangles(triangles);
+		}
+	}
+	
 	/**
 	 * Merge all geometries into a single Geometry.
 	 * Returns: The new Geometry will have copies of all vertex attributes and triangles, but share
@@ -217,7 +390,7 @@ class Geometry
 		float h = cast(float)heightSegments;
 		Vec3f[] vertices;
 		Vec3f[] normals;
-		Vec3f[] texCoords;
+		Vec2f[] texCoords;
 		Vec3i[] triangles;
 		
 		// Build vertices
@@ -225,7 +398,7 @@ class Geometry
 			for (int x=-widthSegments; x<=widthSegments; x+=2)			
 			{	vertices ~= Vec3f(x/w, y/h, 0);
 				normals ~= Vec3f(0, 0, 1);
-				texCoords ~= Vec3f(x/(w*2)+.5, 1-y/(h*2)-.5, 0); // TODO: Why 3 texture coordinates?
+				texCoords ~= Vec2f(x/(w*2)+.5, 1-y/(h*2)-.5);
 			}
 		result.setAttribute(Geometry.VERTICES, vertices);
 		result.setAttribute(Geometry.NORMALS, normals);
@@ -246,18 +419,12 @@ class Geometry
 		material.setPass(pass);				
 		result.setMeshes([new Mesh(material, triangles)]);
 		
+
+		result.setAttribute(Geometry.TEXCOORDS1, result.createTangentVectors());
+		
 		return result;
 	}
 
-	Vec2f[] createTangentVectors()
-	{
-		Vec2f[] texCoords = cast(Vec2f[])getAttribute(Geometry.TEXCOORDS0);
-		assert(texCoords.length);
-		
-		Vec2f[] result;
-		// TODO
-		return result;		
-	}
 }
 
 
@@ -266,7 +433,8 @@ class Geometry
  * The Geometry class groups a Mesh with vertex buffers referenced by the traingle indices */
 class Mesh
 {
-	static const char[] TRIANGLES = "gl_Triangles"; /// Constants used to specify various built-in polgyon attribute type names.
+	static const char[] TRIANGLES = "GL_TRIANGLES"; /// Constants used to specify various built-in polgyon attribute type names.
+	static const char[] LINES = "GL_LINES"; /// Constants used to specify various built-in polgyon attribute type names.
 	
 	protected VertexBuffer triangles;
 	public Material material;
@@ -281,10 +449,6 @@ class Mesh
 	{	this();
 		this.material = matl;
 		this.triangles.setData(triangles);
-	}
-	
-	~this()
-	{	delete triangles;
 	}
 	
 	/**

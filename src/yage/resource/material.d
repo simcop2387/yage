@@ -27,7 +27,13 @@ class Material
 	protected static Material defaultMaterial;
 	
 	///
-	this() {};
+	this(bool createAPass=false) {
+		if (createAPass)
+		{	techniques ~= new MaterialTechnique();
+			techniques[0].passes ~= new MaterialPass();			
+		}
+		
+	};
 	
 	/**
 	 * This is a convenience function to set the value for the first pass of the first technique.
@@ -64,7 +70,8 @@ class Material
 
 ///
 class MaterialTechnique
-{	MaterialPass[] passes; ///
+{	
+	MaterialPass[] passes; ///
 
 	/**
 	 * Returns true if the Technique has regions that can be partially seen through.
@@ -96,7 +103,7 @@ class MaterialPass
 	
 	/// How to draw polygons
 	enum Draw {
-		FILL,		/// Draw a layer as complete filled-in polygons.
+		POLYGONS,		/// Draw a layer as complete filled-in polygons.
 		LINES,		/// Draw a layer as Lines (a wireframe).
 		POINTS		/// Draw a layer as a series of points.
 	}
@@ -120,13 +127,34 @@ class MaterialPass
 	float lineWidth = 1;	/// Thickness in pixels of lines and points. 
 	Texture[] textures;
 	
-	Blend blend; /// Loaded from Collada's transparent property.
-	Cull cull;
-	Draw draw;
+	Blend blend = Blend.NONE; /// Loaded from Collada's transparent property.
+	Cull cull = Cull.BACK;
+	Draw draw = Draw.POLYGONS;
 		
 	Shader shader;
 	ShaderUniform[] shaderUniforms;
 	AutoShader autoShader = AutoShader.NONE;
+	
+	/// TODO: make a generic clone function using traits.
+	MaterialPass clone()
+	{	auto result = new MaterialPass();
+		result.diffuse = diffuse;
+		result.ambient = ambient;
+		result.specular = specular;
+		result.emissive = emissive;
+		result.shininess = shininess;
+		result.reflective = reflective;
+		result.lighting = lighting;
+		result.flat = flat;
+		result.lineWidth = lineWidth;
+		result.textures = textures;
+		result.blend = blend;
+		result.draw = draw;
+		result.shader = shader;
+		result.shaderUniforms = shaderUniforms;
+		result.autoShader = autoShader;
+		return result;	
+	}
 	
 	void setDiffuseTexture(Texture texture)
 	{	if (textures.length < 1)

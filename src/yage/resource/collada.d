@@ -13,11 +13,13 @@ import tango.text.Util;
 import tango.text.xml.Document;
 import tango.text.xml.DocTester;
 import tango.util.Convert;
+import yage.core.array;
 import yage.core.color;
 import yage.core.format;
 import yage.core.math.matrix;
 import yage.core.math.vector;
 import yage.core.object2;
+import yage.core.timer;
 import yage.resource.geometry;
 import yage.resource.image;
 import yage.resource.material;
@@ -83,85 +85,8 @@ class Collada
 		}
 	}
 	
-	/**
-	 * Get all geometry from the file merged into a single Yage Geometry instance.
-	 * This is usually the desired behavior when loading a collada file as a model. 
-	 * 
-	 * Unlike getGeometryById, this takes into account the file's asset/up_axis. */
-	Geometry getMergedGeometry()
-	{
-		Geometry[] geometries;
-		Matrix[] geometryTransforms;
-		
-		// Get the up direction (unfinished)
-		Matrix upTransform;
-		char[] upAxis = Node(doc.elements).getChild("asset").getChild("up_axis").value();
-		if (upAxis == "Z_UP")
-			upTransform = Vec3f(-3.1415/2, 0, 0).toMatrix();
-		
-		
-		// Loop through the scenes and load all the geometry nodes they reference.
-		scope Node[] visual_scenes = Node(doc.elements).getChild("library_visual_scenes").getChildren("visual_scene");
-		
-		foreach (visual_scene; visual_scenes) // loop through scenes
-		{
-			scope Node[] nodes = visual_scene.getChildren("node");
-			foreach (node; nodes) // loop through nodes in a scene
-			{
-				if (!node.hasChild("instance_geometry"))
-				    continue;
-				
-				Node instance_geometry = node.getChild("instance_geometry");
-				
-				char[] geometryId = instance_geometry.getAttribute("url"); // TODO: Multiple instance geometry?
-				Geometry geometry = getGeometryById(geometryId);
-				
-				// Get transformation matrix for this instance of the geometry.
-				Matrix matrix;
-				foreach (transform; node.getChildren())
-				{	if (transform.name=="translate")
-						matrix.setPosition(Vec3f(Xml.parseNumberList!(float)(transform.value)));
-					else if (transform.name=="rotate")
-					{	float[] values = Xml.parseNumberList!(float)(transform.value);
-						assert(values.length==4);
-						Vec3f(values[3]*tango.math.Math.PI/180, values[0], values[1], values[2]); // load from axis-angle							
-					} 
-					else if (transform.name=="scale")						
-						matrix.setScalePreservingRotation(Vec3f(Xml.parseNumberList!(float)(transform.value)));
-				}
-				geometryTransforms ~= matrix * upTransform;
-				
-				// TODO: Sometimes intance_geometry has xml children specifying a material (or other things as well?)
-				
-				geometries~= geometry;
-		}	}
-		
-		// Transform geometry instances by their transformation matrix
-		foreach (i, geometry; geometries)
-		{	Matrix m = geometryTransforms[i];
-			foreach(inout Vec3f vertex; cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES))
-				vertex = vertex.transform(m); 
-				// TODO: Transform normals by position only
-		}
-		
-		
-		// Get a maping of all types to their vertex buffer info.
-		VertexBuffer[char[]] types;
-		foreach (geometry; geometries)
-			foreach(char[] type, vb; geometry.getVertexBuffers())
-				types[type] = vb;
-		
-		// Perform the merge (if there's more than one)
-		Geometry result = geometries[0];
-		if (geometries.length > 1)
-			result = Geometry.merge(geometries);			
-		delete geometries;
-		
-		return result;
-	}
-	
 	///
-	Geometry getGeometryById(char[] id)
+	Geometry getGeometryById(char[] id, bool calledByGetMerged=false)
 	{	id = Xml.makeId(id);
 		
 		// Check cache
@@ -261,10 +186,9 @@ class Collada
 					else
 						assert(0);
 					
-					// Flip the y texture coordinate:  TODO: is this only needed for models from milkshape?
+					// Flip the y texture coordinate for OpenGL.
 					foreach (inout texCoord; cast(Vec2f[])result.getAttribute(Geometry.TEXCOORDS0))
 						texCoord.y = -texCoord.y;
-						
 				}
 				
 				// Build triangles
@@ -299,11 +223,19 @@ class Collada
 					material = getMaterialById(polyList.getAttribute("material"));
 				else
 					material = Material.getDefaultMaterial();
-			
 				
 				Mesh mesh = new Mesh(null, triangles);
 				mesh.material = material;
 				result.meshes = [mesh];
+				
+				if (!calledByGetMerged)
+				{	result.optimize();
+				
+					//If phong shading is used, generate binormals.
+					if (material.getPass().autoShader == MaterialPass.AutoShader.PHONG)
+						result.setAttribute(Geometry.TEXCOORDS1, result.createTangentVectors());
+				}
+			
 				
 				return result;
 			}				
@@ -320,66 +252,6 @@ class Collada
 		return result;
 	}
 	
-	/// TODO: This isn't used
-	Image getImageById(char[] id)
-	{	id = Xml.makeId(id);		
-		if (id in images)
-			return images[id];
-		
-		Node imageNode = Xml.getNodeById(doc, id);
-		if (imageNode.hasChild("create_2d")) // change from Collada 1.4 to 1.5
-			imageNode = imageNode.getChild("create_2d");
-		char[] imagePath = imageNode.getChild("init_from").value;
-		auto result = new Image(ResourceManager.resolvePath(imagePath, resourcePath));
-		images[id] = result;
-		return result;
-	}
-	
-	/**
-	 * Get a yage GPUTexture from the Collada file by its id.
-	 * This uses ResourceManager.texture internally, so subsequent calls will return an already loaded GPUTexture.
-	 * 
-	 * These are Yage-specific notes for loading Collada textures:
-	 * <li>TODO: An image's <hint precision="_"> value determines whether texture compression is used.
-	 *     LOW (or not specified at all): 8 byte channels, texture compression
-	 *     MID: 8 byte channels, no compression
-	 *     HIGH: 16 bit float (not supported yet)
-	 *     MAX: 32 bit float (not supported yet)</li> */
-	GPUTexture getTextureById(char[] id)
-	{	id = Xml.makeId(id);		
-		if (id in textures)
-			return textures[id];
-		
-		char[] imageNewParamSid = Xml.getNodeById(doc, id, "sid").getChild("sampler2D").getChild("source").value;			
-		char[] imageNodeId = Xml.getNodeById(doc, imageNewParamSid, "sid").getChild("surface").getChild("init_from").value;
-		Node imageNode = Xml.getNodeById(doc, imageNodeId);
-		
-		char[] precision = "LOW";
-		if (imageNode.hasChild("create_2d")) // change from Collada 1.4 to 1.5, one level deeper
-		{	imageNode = imageNode.getChild("create_2d");
-			if (imageNode.hasChild("hint"))
-			{	Node hint = imageNode.getChild("hint");
-				if (hint.hasAttribute("precision"))
-					precision = hint.getAttribute("precision");
-		}	}
-	
-		Node initFrom = imageNode.getChild("init_from");
-		if (initFrom.hasChild("ref")) // new in Collada 1.5
-			initFrom = initFrom.getChild("ref");
-		
-		char[] imagePath = initFrom.value;
-		imagePath = ResourceManager.resolvePath(imagePath, resourcePath);		
-		
-		// Load texture
-		GPUTexture.Format format = GPUTexture.Format.AUTO;
-		if (precision=="MID")
-			format = GPUTexture.Format.AUTO_UNCOMPRESSED;
-		GPUTexture result = ResourceManager.texture(imagePath, format);
-		
-		textures[id] = result;
-		return result;			
-	}
-	
 	/**
 	 * Get a yage material from the Collada file by its id.
 	 * This uses ResourceManager.material internally, so subsequent calls will return an already loaded Material.
@@ -392,7 +264,10 @@ class Collada
 	 *     transparency is specified or if the material has an alpha channel.</li>
 	 * <li>If the first child of profile_COMMON is &lt;phong&gt;, then A shader will be created to enable phong shading.
 	 *     If it's &lt;lambert&gt;, then flat shading from the fixed function pipeline will be used.  Otherwise
-	 *     fixed-function gourard shading will be used.</li> 
+	 *     fixed-function gourard shading will be used.</li>
+	 * <li>The unofficial &lt;phong&gt;&lt;bump&gt; texture is used for a normal texture, if present.  
+	 *     A specular map will be used from the alpha channel, if present.  
+	 *     See http://www.feelingsoftware.com/uploads/documents/ColladaMax.pdf, section 6.</li>
 	 * <ul>*/
 	Material getMaterialById(char[] id)
 	{	id = Xml.makeId(id);
@@ -445,8 +320,11 @@ class Collada
 					break;
 				case "diffuse":
 					getColorOrTexture(child, pass.diffuse, texture);
-					Texture texture2 = Texture(texture);
-					pass.setDiffuseTexture(texture2); // may be null
+					pass.setDiffuseTexture(Texture(texture)); // may be null
+					break;
+				case "bump":
+					getColorOrTexture(child, pass.diffuse, texture);
+					pass.setNormalSpecularTexture(Texture(texture)); // may be null
 					break;
 				case "specular":
 					getColorOrTexture(child, pass.specular, texture);
@@ -480,9 +358,155 @@ class Collada
 					pass.blend = MaterialPass.Blend.AVERAGE;
 		}
 		
+		// Create a tecnique that uses no shaders.
+		if (result.getPass().autoShader == MaterialPass.AutoShader.PHONG)
+		{
+			MaterialTechnique t = new MaterialTechnique();
+			MaterialPass p = result.getPass().clone();
+			p.autoShader = MaterialPass.AutoShader.NONE;
+			p.textures.length = 1;
+			t.passes ~= p;
+			result.techniques ~= t;
+		}
+		
 		return result;
 	}
+		
+	/**
+	 * Get all geometry from the file merged into a single Yage Geometry instance.
+	 * This is usually the desired behavior when loading a collada file as a model. 
+	 * 
+	 * Unlike getGeometryById, this takes into account the file's asset/up_axis. */
+	Geometry getMergedGeometry()
+	{
+		Geometry[] geometries;
+		Matrix[] geometryTransforms;
+		
+		// Get the up direction (unfinished)
+		Matrix upTransform;
+		char[] upAxis = Node(doc.elements).getChild("asset").getChild("up_axis").value();
+		if (upAxis == "Z_UP")
+			upTransform = Vec3f(-3.1415/2, 0, 0).toMatrix();
+		
+		
+		// Loop through the scenes and load all the geometry nodes they reference.
+		scope Node[] visual_scenes = Node(doc.elements).getChild("library_visual_scenes").getChildren("visual_scene");
+		
+		foreach (visual_scene; visual_scenes) // loop through scenes
+		{
+			scope Node[] nodes = visual_scene.getChildren("node");
+			foreach (node; nodes) // loop through nodes in a scene
+			{
+				if (!node.hasChild("instance_geometry"))
+				    continue;
+				
+				Node instance_geometry = node.getChild("instance_geometry");
+				
+				char[] geometryId = instance_geometry.getAttribute("url"); // TODO: Multiple instance geometry?
+				Geometry geometry = getGeometryById(geometryId, true);
+				
+				// Get transformation matrix for this instance of the geometry.
+				Matrix matrix;
+				foreach (transform; node.getChildren())
+				{	if (transform.name=="translate")
+						matrix.setPosition(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+					else if (transform.name=="rotate")
+					{	float[] values = Xml.parseNumberList!(float)(transform.value);
+						assert(values.length==4);
+						Vec3f(values[3]*tango.math.Math.PI/180, values[0], values[1], values[2]); // load from axis-angle							
+					} 
+					else if (transform.name=="scale")						
+						matrix.setScalePreservingRotation(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+				}
+				geometryTransforms ~= matrix * upTransform;
+				
+				// TODO: Sometimes intance_geometry has xml children specifying a material (or other things as well?)
+				
+				geometries~= geometry;
+		}	}
+		
+		// Transform geometry instances by their transformation matrix
+		foreach (i, geometry; geometries)
+		{	Matrix m = geometryTransforms[i];
+			if (m.isIdentity())
+				continue;
+		
+			foreach(inout Vec3f vertex; cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES))
+				vertex = vertex.transform(m); 
+			
+			// Transform normals and tangents by rotation only
+			foreach(inout Vec3f normal; cast(Vec3f[])geometry.getAttribute(Geometry.NORMALS))
+				normal = normal.rotate(m);
+		}
+		
+		// Perform the merge (if there's more than one to Merge)
+		Geometry result = geometries[0];
+		if (geometries.length > 1)
+			result = Geometry.merge(geometries);			
+		delete geometries;
+		
+		
+		//Timer a = new Timer(true);
+		
+		result.optimize();
+		
+		//If phong shading is used, generate binormals.
+		bool needsTangents = false;
+		foreach (mesh; result.getMeshes())
+			if (mesh.material.getPass().autoShader == MaterialPass.AutoShader.PHONG)
+			{	needsTangents = true;
+				break;
+			}
+		if (needsTangents)
+			result.setAttribute(Geometry.TEXCOORDS1, result.createTangentVectors());	
+		return result;
+	}
+
+	/**
+	 * Get a yage GPUTexture from the Collada file by its id.
+	 * This uses ResourceManager.texture internally, so subsequent calls will return an already loaded GPUTexture.
+	 * 
+	 * These are Yage-specific notes for loading Collada textures:
+	 * <li>TODO: An image's <hint precision="_"> value determines whether texture compression is used.
+	 *     LOW (or not specified at all): 8 byte channels, texture compression
+	 *     MID: 8 byte channels, no compression
+	 *     HIGH: 16 bit float (not supported yet)
+	 *     MAX: 32 bit float (not supported yet)</li> */
+	GPUTexture getTextureById(char[] id)
+	{	id = Xml.makeId(id);		
+		if (id in textures)
+			return textures[id];
+		
+		char[] imageNewParamSid = Xml.getNodeById(doc, id, "sid").getChild("sampler2D").getChild("source").value;			
+		char[] imageNodeId = Xml.getNodeById(doc, imageNewParamSid, "sid").getChild("surface").getChild("init_from").value;
+		Node imageNode = Xml.getNodeById(doc, imageNodeId);
+		
+		char[] precision = "LOW";
+		if (imageNode.hasChild("create_2d")) // change from Collada 1.4 to 1.5, one level deeper
+		{	imageNode = imageNode.getChild("create_2d");
+			if (imageNode.hasChild("hint"))
+			{	Node hint = imageNode.getChild("hint");
+				if (hint.hasAttribute("precision"))
+					precision = hint.getAttribute("precision");
+		}	}
 	
+		Node initFrom = imageNode.getChild("init_from");
+		if (initFrom.hasChild("ref")) // new in Collada 1.5
+			initFrom = initFrom.getChild("ref");
+		
+		char[] imagePath = initFrom.value;
+		imagePath = ResourceManager.resolvePath(imagePath, resourcePath);		
+		
+		// Load texture
+		GPUTexture.Format format = GPUTexture.Format.AUTO;
+		if (precision=="MID")
+			format = GPUTexture.Format.AUTO_UNCOMPRESSED;
+		GPUTexture result = ResourceManager.texture(imagePath, format);
+		
+		textures[id] = result;
+		return result;			
+	}
+
 	// See: https://collada.org/mediawiki/index.php/Using_accessors
 	private float[] getDataFromSourceId(char[] id, out ushort components)
 	{	Node sourceAccesor = Xml.getNodeById(doc, id).getChild("technique_common").getChild("accessor"); // TODO: Read stride, offset, etc.

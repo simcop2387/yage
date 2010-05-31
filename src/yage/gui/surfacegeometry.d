@@ -227,7 +227,7 @@ package class SurfaceGeometry : Geometry
 	void setMaterials(GPUTexture backgroundImage, GPUTexture centerImage, 
 	                  GPUTexture[] borderImage, GPUTexture[] borderCornerImage, GPUTexture text, float opacity)
 	{	
-		MaterialPass createLayer(GPUTexture texture, bool clamp=false)
+		MaterialPass createPass(GPUTexture texture, bool clamp=false)
 		{	auto result = new MaterialPass();
 			result.textures  ~= Texture(texture, clamp, Texture.Filter.BILINEAR);
 			result.diffuse = Color(1f, 1f, 1f, opacity);
@@ -240,7 +240,7 @@ package class SurfaceGeometry : Geometry
 		// Background Image
 		if (backgroundImage)
 		{	this.backgroundImage.setMaterial(new Material());
-			this.backgroundImage.getMaterial().setPass(createLayer(backgroundImage));
+			this.backgroundImage.getMaterial().setPass(createPass(backgroundImage));
 		} else
 			this.backgroundImage.setMaterial(cast(Material)null);
 		
@@ -248,27 +248,27 @@ package class SurfaceGeometry : Geometry
 		foreach(mesh; this.borderImage)
 		{	if (borderImage[0])
 			{	mesh.setMaterial(new Material());
-				mesh.getMaterial().setPass(createLayer(borderImage[0]));
+				mesh.getMaterial().setPass(createPass(borderImage[0]));
 			} else
 				mesh.setMaterial(cast(Material)null);
 		}
 		foreach(mesh; this.borderCornerImage)
 		{	if (borderCornerImage[0])
 			{	mesh.setMaterial(new Material());
-				mesh.getMaterial().setPass(createLayer(borderCornerImage[0]));
+				mesh.getMaterial().setPass(createPass(borderCornerImage[0]));
 			} else
 				mesh.setMaterial(cast(Material)null);
 		}
 
 		if (centerImage)
 		{	this.centerImage.setMaterial(new Material());
-			this.centerImage.getMaterial().setPass(createLayer(centerImage));
+			this.centerImage.getMaterial().setPass(createPass(centerImage));
 		} else
 			this.centerImage.setMaterial(cast(Material)null);
 		
 		if (text)
 		{	this.text.setMaterial(new Material());
-			this.text.getMaterial().setPass(createLayer(text, true));
+			this.text.getMaterial().setPass(createPass(text, true));
 			this.text.getMaterial().getPass().textures[0].filter = Texture.Filter.NONE;
 			
 			// Text bottom vertices depend on text texture size.

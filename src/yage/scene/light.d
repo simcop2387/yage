@@ -135,7 +135,6 @@ class LightNode : MovableNode
 			// Extra spotlight angle (in radians) to satisfy margin distance
 			float extraAngle = margin>0 ? atan2(margin, d) : 0;			
 
-			//Log.trace("%s, %s, %s, %s, %s", spotDot, spotAngle, extraAngle, margin, d);
 			float cutoff = cos(spotAngle + extraAngle);
 			if (spotDot > cutoff) // TODO some surfaces that should receive light don't.
 			{	// Normally this would work except it doesn't take into account the margin.

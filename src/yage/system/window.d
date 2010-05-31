@@ -191,7 +191,7 @@ class Window : IRenderTarget
 				
 		// OpenGL options
 		// These are the engine defaults.  Any function that modifies these should reset them when done.
-		// TODO: add these to the base of the Graphics stack instead.
+		// TODO: Move these to OpenGL.reset()
 		glShadeModel(GL_SMOOTH);
 		glClearDepth(1);
 		glEnable(GL_DEPTH_TEST);
@@ -210,11 +210,6 @@ class Window : IRenderTarget
 		// Environment Mapping (disabled by default)
 		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-
-		// Enable support for vertex arrays
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		
 		setViewport();
 	}

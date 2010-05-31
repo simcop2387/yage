@@ -15,7 +15,7 @@
 			<create_2d>
 				<hint precision="MID"></hint> <!-- Prevent Texture Compression -->
 				<init_from>
-					<ref>./sanctuary.jpg</ref>
+					<ref>./blue-nebula.jpg</ref>
 				</init_from>
             </create_2d>
         </image>

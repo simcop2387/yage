@@ -36,7 +36,7 @@ class CameraNode : MovableNode
 	public float far = 100000;		// camera's far plane
 	public float fov = 45;			// field of view angle of the camera.
 	public float aspect	= 0;		// aspect ratio of the view
-	public float threshold = 2.25;	// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
+	public float threshold = 1;	// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
 	protected Plane[6] frustum;
 	Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.

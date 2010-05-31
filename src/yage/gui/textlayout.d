@@ -111,8 +111,7 @@ struct TextLayout
 			// ctrl+a, z, x, c, v
 		}
 		if (unicode)
-		{	Log.trace(style.fontFamily);
-			Letter l = style.fontFamily.getLetter(unicode, 10, 10);
+		{	Letter l = style.fontFamily.getLetter(unicode, 10, 10);
 			letters ~= l;
 		}		
 		// TODO: rebuild lines from letters.

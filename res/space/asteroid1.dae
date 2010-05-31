@@ -11,27 +11,27 @@
         <up_axis>Y_UP</up_axis>
     </asset>
     <library_images>
-        <image id="asteroid1.xml-image" name="asteroid1.xml-image">
-            <init_from>./rocky1.jpg</init_from>
+        <image id="asteroid1-image" name="asteroid1-image">
+            <init_from>rocky1.jpg</init_from>
         </image>
     </library_images>
     <library_materials>
-        <material id="asteroid1.xml" name="asteroid1.xml">
-            <instance_effect url="#asteroid1.xml-effect" />
+        <material id="asteroid1" name="asteroid1">
+            <instance_effect url="#asteroid1-effect" />
         </material>
     </library_materials>
     <library_effects>
-        <effect id="asteroid1.xml-effect" name="asteroid1.xml-effect">
+        <effect id="asteroid1-effect" name="asteroid1-effect">
             <profile_COMMON>
-                <newparam sid="asteroid1.xml-image-surface">
+                <newparam sid="asteroid1-image-surface">
                     <surface type="2D">
-                        <init_from>asteroid1.xml-image</init_from>
+                        <init_from>asteroid1-image</init_from>
                         <format>A8R8G8B8</format>
                     </surface>
                 </newparam>
-                <newparam sid="asteroid1.xml-image-sampler">
+                <newparam sid="asteroid1-image-sampler">
                     <sampler2D>
-                        <source>asteroid1.xml-image-surface</source>
+                        <source>asteroid1-image-surface</source>
                         <minfilter>LINEAR_MIPMAP_LINEAR</minfilter>
                         <magfilter>LINEAR</magfilter>
                     </sampler2D>
@@ -45,13 +45,13 @@
                             <color>1.000000 1.000000 1.000000 1.000000</color>
                         </ambient>
                         <diffuse>
-                            <texture texture="asteroid1.xml-image-sampler" texcoord="" />
+                            <texture texture="asteroid1-image-sampler" texcoord="" />
                         </diffuse>
                         <specular>
-                            <color>0.300000 0.280000 0.260000 1.000000</color>
+                            <color>0.300000 0.28000 0.260000 1.000000</color>
                         </specular>
                         <shininess>
-                            <float>50.000000</float>
+                            <float>10.000000</float>
                         </shininess>
                         <reflective>
                             <color>1.000000 1.000000 1.000000 1.000000</color>
@@ -108,7 +108,7 @@
                 <vertices id="default-geometry-vertices">
                     <input semantic="POSITION" source="#default-positions" />
                 </vertices>
-                <triangles material="asteroid1.xml" count="80">
+                <triangles material="asteroid1" count="80">
                     <input semantic="VERTEX" source="#default-geometry-vertices" offset="0" />
                     <input semantic="NORMAL" source="#default-normals" offset="1" />
                     <input semantic="TEXCOORD" source="#default-texcoords" offset="2" />
@@ -123,7 +123,7 @@
                 <instance_geometry url="#default-geometry">
                     <bind_material>
                         <technique_common>
-                            <instance_material symbol="asteroid1.xml" target="#asteroid1.xml" />
+                            <instance_material symbol="asteroid1" target="#asteroid1" />
                         </technique_common>
                     </bind_material>
                 </instance_geometry>

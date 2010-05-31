@@ -168,6 +168,11 @@ class GPUTexture : IRenderTarget
 	{	return image;		
 	}
 	
+	/// Returns true if the Texture Format includes an alpha channel.
+	bool hasAlpha()
+	{	return format == Format.COMPRESSED_LUMINANCE_ALPHA || format == Format.LUMINANCE8_ALPHA8 || format == Format.COMPRESSED_RGBA || format == Format.RGBA8;
+	}
+	
 	void setImage(Image image)
 	{	setImage(image, format, mipmap, source, padding.length2() != 0);
 	}

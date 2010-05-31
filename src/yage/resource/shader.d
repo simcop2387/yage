@@ -15,7 +15,7 @@ import yage.system.log;
  * GraphicsApi.bindShader(Shader) binds the shader program, creating it if it doesn't exist.*/
 class Shader
 {
-	bool failed = false;
+	//bool failed = false;
 	
 	char[] compileLog;		///
 	

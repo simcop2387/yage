@@ -96,9 +96,12 @@ struct Render
 		bool hasSpecular;
 		bool hasDirectional;
 		bool hasSpotlight;
+		bool hasBump;
 	}
-	protected static Shader[ShaderParams] generatedShaders; // TODO: how will these ever get deleted, do they need to be?
-	protected static ArrayBuilder!(ShaderUniform) uniformsLookaside;
+	protected static Shader[ShaderParams] generatedShaders;
+	protected static ArrayBuilder!(ShaderUniform) uniformsLookaside; // TODO: Can we use Memory.allocate instead?
+	protected static bool[MaterialTechnique] failedTechniques;
+	
 
 	/**
 	 * Generate build-in models (such as the sprite quad). */
@@ -120,9 +123,19 @@ struct Render
 		cleared = false;
 	}
 
-	// TODO: Move this to Render since it's higher level
+	/**
+	 * Generate a phong/normal map shader for the pass.
+	 * Params:
+	 *     pass = 
+	 *     lights = 
+	 *     fog = 
+	 *     uniforms = Uniform variables to pass to the shader when binding.
+	 * Returns: */
 	static Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, inout ArrayBuilder!(ShaderUniform) uniforms)
 	{	
+		//if (lights.length  >2)
+		//	lights.length = 2;
+		
 		// Use fixed function rendering, return null.
 		if (pass.autoShader == MaterialPass.AutoShader.NONE)
 			return null;
@@ -132,8 +145,12 @@ struct Render
 		params.numLights = lights.length;
 		params.hasFog = fog;
 		params.hasSpecular = (pass.specular.ui & 0xffffff) != 0; // ignore alpha in comparrison
+		params.hasBump = pass.textures.length > 1;
+		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
+		{	//params.hasSpecular = params.hasSpecular && (pass.textures.length > 1 && pass.textures[1].texture.hasAlpha()); 
+		}
 		foreach (light; lights)
-		{	params.hasDirectional = params.hasDirectional  ||  (light.type == LightNode.Type.DIRECTIONAL);
+		{	params.hasDirectional = params.hasDirectional || (light.type == LightNode.Type.DIRECTIONAL);
 			params.hasSpotlight  = params.hasSpotlight || (light.type == LightNode.Type.SPOT);
 		}
 	
@@ -142,11 +159,11 @@ struct Render
 		// Get shader, either a cached version or create a new one.		
 		auto existingPtr = params in generatedShaders;
 		if (existingPtr)
-			result =  *existingPtr;		
+			result = *existingPtr;		
 		else
 		{
 			if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-			{
+			{				
 				char[] defines = format("#version 110\n#define NUM_LIGHTS %s\n", params.numLights);
 				if (params.hasFog)
 					defines ~= "#define HAS_FOG\n";
@@ -156,16 +173,36 @@ struct Render
 					defines ~= "#define HAS_DIRECTIONAL\n";
 				if (params.hasSpotlight)
 					defines ~= "#define HAS_SPOTLIGHT\n";
+				if (params.hasBump)
+					defines ~= "#define HAS_BUMP\n";
 		
-				// TODO: embed these
+				// Shader source code.
 				char[] vertex   = defines ~ cast(char[])Embed.phong_vert;
 				char[] fragment = defines ~ cast(char[])Embed.phong_frag;
 				result = new Shader(vertex, fragment);
-		
+				try {					
+					graphics.bindShader(result);
+				} catch (GraphicsException e)
+				{	//result.failed = true;
+					Log.info(e.toString());
+					if (lights.length > 1)
+						Log.info("Could not generate phong shader for %s lights, %s lights will be attempted instead.", lights.length, lights.length-1);
+					else
+						Log.info("Could not use phong auto-shader.");
+					graphics.bindShader(null);
+				}
 			} else
 				assert(0); // TODO
 			
 			generatedShaders[params] = result;
+		}
+		
+		// Recursively try fewer lights until we have a shader that works or reach 1 light.
+		if (result in graphics.failedShaders)
+		{	if (lights.length > 1)
+				return generateShader(pass, lights[0..$-1], fog, uniforms);
+			else
+				return result; // return it anyway so it can fail higherup the chain
 		}
 		
 		// Set uniform values
@@ -219,26 +256,44 @@ struct Render
 	
 	/**
 	 * Bind a MaterialPass, generating a shader based on the number of lights. */
-	static void bindPass(MaterialPass pass, LightNode[] lights)
-	{	
-		if (pass.autoShader != MaterialPass.AutoShader.NONE)
+	static bool bindPass(MaterialPass pass, LightNode[] lights)
+	{	bool result;
+		if (pass && pass.autoShader != MaterialPass.AutoShader.NONE)
 		{	Shader oldShader = pass.shader;
 			ShaderUniform[] oldUniforms = pass.shaderUniforms;
 		
 			pass.shader = generateShader(pass, lights, graphics.current.scene.fogEnabled, uniformsLookaside);
 			pass.shaderUniforms = Render.uniformsLookaside.data;
-			graphics.bindPass(pass);
+			result = graphics.bindPass(pass);
 			
 			pass.shader = oldShader;
 			pass.shaderUniforms = oldUniforms;
 		} else
-			graphics.bindPass(pass);
+			result = graphics.bindPass(pass);
+		
+		return result;
+	}
+	
+	/**
+	 * Get the first technique that can be used without issue, or the last technique if all have issues. */ 
+	static MaterialTechnique getTechnique(Material material, LightNode[] lights=null)
+	{	foreach (technique; material.techniques)
+		{	if (technique in failedTechniques)
+				continue;
+			foreach (pass; technique.passes)
+				if (!bindPass(pass, lights))
+				{	failedTechniques[technique] = true; // so we don't have to bind the pass next time.
+					break; // skip to next technique				
+				}			
+			return technique;
+		}
+		return material.techniques[$-1]; // return the last one even if it doesn't work.
 	}
 	
 	///
-	static RenderStatistics geometry(Geometry geometry, LightNode[] lights=null)
+	static RenderStatistics geometry(Geometry geometry, LightNode[] lights=null, Material[] materialOverrides=null)
 	{	RenderStatistics result;
-		
+	
 		assert(geometry.getAttribute(Geometry.VERTICES));
 		
 		// Bind each vertex buffer
@@ -252,24 +307,27 @@ struct Render
 			}
 			currentGeometry = geometry;
 		} else
-			result.vertexCount += vertexBuffers[Geometry.VERTICES].length;
-		
+			result.vertexCount += vertexBuffers[Geometry.VERTICES].length;		
 		
 		// Loop through the meshes		
-		foreach (mesh; geometry.getMeshes())
+		foreach (i, mesh; geometry.getMeshes())
 		{	
-			if (mesh.material)
-				if (mesh.material.techniques.length) // TODO: Honor techniques
+			auto material = materialOverrides.length > i ? materialOverrides[i] : mesh.material;			
+			if (material)
+			{	
+				auto technique = getTechnique(material, lights);
+				
+				if (technique) // TODO: Honor techniques
 				{
-					if (!mesh.material.techniques[0].hasTranslucency() ||
+					if (!technique.hasTranslucency() ||
 					    geometry.getVertexBuffer(Geometry.VERTICES).components != 3)
-					{	foreach (pass; mesh.material.techniques[0].passes)
+					{	foreach (pass; technique.passes)
 						{	bindPass(pass, lights);
 							graphics.drawPolygons(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 						}
 					} else
-					{	Profile.start("Add Alpha");
-						foreach (i, tri; mesh.getTriangles())
+					{	
+						foreach (j, tri; mesh.getTriangles())
 						{							
 							// Find center
 							Vec3f[] vertices = (cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES));	
@@ -278,33 +336,78 @@ struct Render
 							v[1] = vertices[tri.y];
 							v[2] = vertices[tri.z];
 
-							alphaTriangles ~= AlphaTriangle(geometry, mesh, mesh.material, graphics.current.transformMatrix, lights, i, v);;
-						}
-						Profile.stop("Add Alpha");	
-					}
+							alphaTriangles ~= AlphaTriangle(geometry, mesh, material, *graphics.current.transformMatrix, lights, j, v);;
+						}						
+					}					
 				}
+			}
 					
 			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
+		}
+		
+		// Geometry debugging properties
+		if (geometry.drawNormals || geometry.drawTangents)
+		{
+			MaterialPass pass = new MaterialPass();
+			pass.lighting = false;
+			
+			
+			Vec3f[] vertices = cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES);
+			Vec3f[] normals = cast(Vec3f[])geometry.getAttribute(Geometry.NORMALS);
+			Vec3f[] tangents = cast(Vec3f[])geometry.getAttribute(Geometry.TEXCOORDS1);
+			
+			Vec3f[] lines = Memory.allocate!(Vec3f)(vertices.length * 2);
+			scope VertexBuffer vb = new VertexBuffer();
+			
+			if (tangents.length && geometry.drawTangents)
+			{	for (int i=0; i<vertices.length; i++)
+				{	lines[i*2] = vertices[i];
+					lines[i*2+1] = vertices[i] + tangents[i];
+				}
+				vb.setData(lines);
+				graphics.bindVertexBuffer(vb, Geometry.VERTICES);
+				
+				pass.diffuse = "green";
+				graphics.bindPass(pass);
+				graphics.drawPolygons(vb, Mesh.LINES, false);
+			}
+			
+			if (normals.length && geometry.drawNormals)
+			{	for (int i=0; i<vertices.length; i++)
+				{	lines[i*2] = vertices[i];
+					lines[i*2+1] = vertices[i] + normals[i];
+				}
+				vb.setData(lines);
+				graphics.bindVertexBuffer(vb, Geometry.VERTICES);
+				
+				graphics.current.pass = null;
+				pass.diffuse = "magenta";
+				graphics.bindPass(pass);
+				graphics.drawPolygons(vb, Mesh.LINES, false);
+			}
+			
+			Memory.free(lines);
 		}
 		
 		return result;
 	}
 	
 	///
-	static RenderStatistics model(Geometry geometry, LightNode[] lights=null, float animationTime=0) 
-	{	auto result = Render.geometry(geometry, lights);  // TODO: animationTime won't support blending animations.
+	static RenderStatistics model(Geometry geometry, LightNode[] lights=null, Material[] materialOverrides=null, float animationTime=0) 
+	{	auto result = Render.geometry(geometry, lights, materialOverrides);  // TODO: animationTime won't support blending animations.
 		return result;
 	}
-	
-	/// Why does this draw the same material on different sprites?
-	/// It has something to do with them all sharing the same Geometry?
+			
+	///
 	protected static void postRender()
 	{	
-		scope mesh = new Mesh();
+		// Declaring it this way instead of scope allows the same vbo to be reused each time. 
+		static Mesh mesh;
+		if (!mesh)
+			mesh = new Mesh();
+		
 		int num_lights = Probe.feature(Probe.Feature.MAX_LIGHTS);
-		
-		Profile.start("Sort Alpha");		
-		
+				
 		// Sort alpha (translucent) triangles
 		Vec3f cameraPosition = Vec3f(graphics.current.camera.getAbsoluteTransform(true).v[12..15]);
 		radixSort(alphaTriangles.data, true, (AlphaTriangle a)
@@ -312,10 +415,6 @@ struct Render
 			center = center.transform(a.matrix);
 			return -cameraPosition.distance2(center); // distance squared is faster and values still compare the same
 		});
-		
-		Profile.stop("Sort Alpha");
-	
-		Profile.start("Render Alpha");
 		
 		// Render alpha triangles
 		foreach (at; alphaTriangles.data)
@@ -351,13 +450,26 @@ struct Render
 				}
 			
 			graphics.bindMatrix(null);
-		}
-		Profile.stop("Render Alpha");
-		
+		}		
 		
 		if (alphaTriangles.reserve < alphaTriangles.length)
 			alphaTriangles.reserve = alphaTriangles.length;
-		alphaTriangles.length = 0;		
+		alphaTriangles.length = 0;
+	}
+	
+	
+	/**
+	 * Completely reset the Rendering engine.
+	 * All shaders will be regenerated. 
+	 * TODO: As of now, only a few things are actually reset. */
+	static void reset()
+	{	graphics.reset();
+		generatedShaders = null;
+		failedTechniques = null;		
+		currentGeometry = null;
+		uniformsLookaside.length = 0;
+		visibleNodes.length = 0;
+		alphaTriangles.length = 0;
 	}
 	
 	/**
@@ -411,9 +523,9 @@ struct Render
 					
 					// Render
 					if (cast(ModelNode)n)
-						result +=model((cast(ModelNode)n).getModel(), lights);						
+						result +=model((cast(ModelNode)n).getModel(), lights, n.materialOverrides);						
 					else if (cast(SpriteNode)n)
-						result += sprite((cast(SpriteNode)n).getMaterial(), lights);
+						result += sprite((cast(SpriteNode)n).getMaterial(), lights, n.materialOverrides);
 					
 					graphics.bindMatrix(null);
 				}
@@ -421,7 +533,7 @@ struct Render
 			
 			postRender();
 			
-			graphics.bindVertexBuffer(null);
+			//graphics.bindVertexBuffer(null);
 			return result;
 		}
 		
@@ -472,9 +584,7 @@ struct Render
 			}
 				
 			camera.buildFrustum(scene);
-			Profile.start("getVisibleNodes");
 			visibleNodes = camera.getVisibleNodes(scene, visibleNodes);
-			Profile.stop("getVisibleNodes");
 			result += drawNodes(visibleNodes.data);
 			visibleNodes.reserve = visibleNodes.length;
 			visibleNodes.length = 0;
@@ -488,46 +598,42 @@ struct Render
 		graphics.bindPass(null);
 		cleanup();
 		
-		/*
-		float* image = new float[1920*1080*3];
-		Timer a = new Timer(true);
-		glReadPixels(0, 0, 1920, 1080, GL_RGB, GL_BYTE, image);
-		Log.trace(a.tell());	
-		delete image;
-		*/
-		
 		return result;
 	}
 	
 	// Render a sprite
-	static RenderStatistics sprite(Material material, LightNode[] lights=null)
-	{			
-		// Rotate if rotation is nonzero.
-		Vec3f rotation = graphics.current.camera.getAbsoluteTransform(true).toAxis();
-		if (rotation.length2())			
-		{	// TODO: zero the rotation along the axis from the node to the camera.						
-			Matrix transform;
-			transform.setRotation(rotation);
-			graphics.bindMatrix(&transform);			
-		}
+	static RenderStatistics sprite(Material material, LightNode[] lights=null, Material[] materialOverrides=null)
+	{	
+		Matrix matrix = *graphics.current.transformMatrix();
+		
+		Vec3f sprite = matrix.getPosition();
+		Vec3f camera = graphics.current.camera.getAbsolutePosition();	
+		Vec3f spriteNormal = Vec3f(0, 0, -1);		
+		Vec3f spriteToCamera = (camera - sprite).normalize();
+		
+
+		Vec3f rotation = spriteNormal.lookAt(camera - sprite, Vec3f(0, 1, 0));
+		
+		/*
+		matrix = matrix.move(-sprite);
+		matrix = matrix.rotate(rotation); //.setRotation(rotation);
+		matrix = matrix.move(sprite);
+		*/
+		
+		graphics.bindMatrix(&rotation.toMatrix());		
 		
 		spriteQuad.getMeshes()[0].material = material;
-		auto result = geometry(spriteQuad, lights);
+		auto result = geometry(spriteQuad, lights, materialOverrides);
 		
-		// Pop the matrix stack
-		if (rotation.length2())
-			graphics.bindMatrix(null);
-			
+		graphics.bindMatrix(null);
+		
 		return result;
 	}
 	
 	/// Render a surface.  TODO: Move parts of this to OpenGL.d
 	static void surface(Surface surface, IRenderTarget target=null)
 	{	
-		graphics.bindRenderTarget(target);
-		
-		glDisableClientState(GL_NORMAL_ARRAY);
-		glDisable(GL_LIGHTING); // TODO: Have surface materials be 100% emissive instead.
+		graphics.bindRenderTarget(target);		
 		glDisable(GL_DEPTH_TEST);
 		
 		// Setup the viewport in orthogonal mode,
@@ -626,8 +732,6 @@ struct Render
 		
 		// Reset state
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LIGHTING);
-		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnable(GL_CULL_FACE);		
 		
 		graphics.bindRenderTarget(null);	

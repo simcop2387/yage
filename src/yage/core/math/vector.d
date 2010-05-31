@@ -7,7 +7,7 @@
 module yage.core.math.vector;
 
 import tango.math.Math;
-import tango.text.convert.Format;
+import yage.core.format;
 //import yage.core.math.line;
 import yage.core.math.matrix;
 import yage.core.math.math;
@@ -372,7 +372,7 @@ struct Vec(int S, T : real, int D=0)
 	char[] toString()
 	{	char[] result = "<";
 		for (int i=0; i<S; i++)
-			result ~= Format.convert("{} ", v[i]);
+			result ~= format("%f ", v[i]);
 		result ~= ">";
 		return result;
 	}
@@ -525,8 +525,34 @@ struct Vec3f
 		return true;
 	}
 
-	float angle(Vec3f s)
-	{	return acos(dot(s)/(length()*s.length())); // sqrt(length2*s.length2) would be faster, but untested
+	/// This fails when this vector and s almost point at one another.
+	
+	import yage.system.log;
+	
+	Vec3f angleBetween(Vec3f s)
+	{	
+		// TODO: This can be optimized?
+		Vec3f axis = cross(s);
+		float d = dot(s) / (length()*s.length());		
+		float angle = atan2(axis.length(), dot(s));
+
+		return axis.length(angle);
+	}
+	
+	///
+	Vec3f lookAt(Vec3f direction, Vec3f up)
+	{	
+		Vec3f z = direction.normalize();
+		Vec3f x = up.cross(z).normalize();
+		Vec3f y = z.cross(x);
+		
+		Matrix result;		
+		result.v[0..3] = x.v[0..3];
+		result.v[4..7] = y.v[0..3];
+		result.v[8..11] = z.v[0..3];
+		
+		/// TODO: This is very inefficient and possibly incorrect
+		return result/*.transformAffine(toMatrix())*/.toAxis();		
 	}
 	
 	/// Return the average of the x, y, and z components.
@@ -820,7 +846,7 @@ struct Vec3f
 
 	/// Return a string representation of this vector for human reading.
 	char[] toString()
-	{	return Format.convert("<{} {} {}>", x, y, z);
+	{	return format("<%.6f, %.6f, %.6f>", x, y, z);
 	}
 
 	/// Return a copy of this Vecotr translated by the translation component of Matrix m.

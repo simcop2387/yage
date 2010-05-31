@@ -8,6 +8,7 @@ module yage.scene.visible;
 
 import tango.math.Math;
 import yage.core.all;
+import yage.resource.material;
 import yage.scene.all;
 import yage.scene.scene;
 import yage.scene.light;
@@ -30,6 +31,8 @@ class VisibleNode : MovableNode
 	bool onscreen = true;	// used internally by cameras to mark if they can see this node.
 	protected LightNode[] lights;		// Lights that affect this VisibleNode
 
+	Material[] materialOverrides;  /// Use thes materials instead of the model's meshes' or sprite's materials.
+	
 	/**
 	 * Construct */
 	this()

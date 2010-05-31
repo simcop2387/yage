@@ -137,7 +137,7 @@ void createEmbeddedResources()
 		}
 		
 		// Add to the struct as a static member.p
-		source ~= "\tstatic char[] " ~ String.replace(file, ".", "_") ~ " = \"" ~
+		source ~= "\tstatic char[] " ~ String.replace(String.replace(file, " ", "_"), ".", "_") ~ " = \"" ~
 			encodedContents ~ "\"; /// embedded version of "~file~"\r\n";		
 	}
 	source ~= "}";

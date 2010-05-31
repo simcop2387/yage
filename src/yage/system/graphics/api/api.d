@@ -47,20 +47,20 @@ abstract class GraphicsAPI
 			return result;
 		}
 		
-		static Matrix projectionMatrix()
+		static Matrix* projectionMatrix()
 		{	if (projectionMatrixStack.length)
 				return projectionMatrixStack[projectionMatrixStack.length-1];
-			return Matrix();
+			return &Matrix.IDENTITY;
 		}
-		static Matrix textureMatrix()
+		static Matrix* textureMatrix()
 		{	if (textureMatrixStack.length)
 				return textureMatrixStack[textureMatrixStack.length-1];
-			return Matrix();
+			return &Matrix.IDENTITY;
 		}
-		static Matrix transformMatrix()
+		static Matrix* transformMatrix()
 		{	if (transformMatrixStack.length)
 				return transformMatrixStack[transformMatrixStack.length-1];
-			return Matrix();
+			return &Matrix.IDENTITY;
 		}
 	}
 	Current current; /// ditto
