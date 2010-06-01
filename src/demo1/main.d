@@ -93,8 +93,8 @@ class DemoScene : Scene
 		auto pass = moonMaterial.getPass();
 		pass.ambient = "#fff";
 		pass.textures = [
-			Texture(ResourceManager.texture("space/rocky2.jpg")),
-			Texture(ResourceManager.texture("space/rocky2-normal.jpg", GPUTexture.Format.AUTO_UNCOMPRESSED))
+			TextureInstance(ResourceManager.texture("space/rocky2.jpg")),
+			TextureInstance(ResourceManager.texture("space/rocky2-normal.jpg", Texture.Format.AUTO_UNCOMPRESSED))
 		];
 		pass.autoShader = MaterialPass.AutoShader.PHONG;
 		moon.materialOverrides ~= moonMaterial;

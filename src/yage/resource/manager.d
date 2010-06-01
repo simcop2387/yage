@@ -39,7 +39,7 @@ struct ResourceManager
 
 	private struct TextureKey
 	{	char[] source;
-		GPUTexture.Format format;
+		Texture.Format format;
 		bool mipmap;
 	}
 	
@@ -50,7 +50,7 @@ struct ResourceManager
 	private static Model[char[]]	models;	
 	private static Shader[char[]]	shaders;
 	private static Sound[char[]]	sounds;
-	private static GPUTexture[TextureKey] textures;
+	private static Texture[TextureKey] textures;
 	
 	
 	private static Font defaultFont;
@@ -254,19 +254,19 @@ struct ResourceManager
 	 * If a texture with the given properties already been loaded, the in-memory copy will be returned.  
 	 * If not, it will be loaded, uploaded to video memory, and stored in the resource pool.  
 	 * This function is called automatically for each of a material's textures when loading a material.
-	 * Keep in mind that multiple requested textures may use the same GPUTexture.
+	 * Keep in mind that multiple requested textures may use the same Texture.
 	 * Params: filename = The Texture image file that will be loaded. */	
-	static GPUTexture texture(char[] filename, GPUTexture.Format format=GPUTexture.Format.AUTO, bool mipmap=true)
+	static Texture texture(char[] filename, Texture.Format format=Texture.Format.AUTO, bool mipmap=true)
 	{	filename = resolvePath(filename);
 		TextureKey key;
 		key.source = filename;		
 		key.mipmap = mipmap;
 		
 		// Search for matching format
-		int minFormat = GPUTexture.Format.AUTO ? 0 : format;
-		int maxFormat = GPUTexture.Format.AUTO ? GPUTexture.Format.max : format;
+		int minFormat = Texture.Format.AUTO ? 0 : format;
+		int maxFormat = Texture.Format.AUTO ? Texture.Format.max : format;
 		for (int i=minFormat; i<maxFormat+1; i++)
-		{	key.format = cast(GPUTexture.Format)i;
+		{	key.format = cast(Texture.Format)i;
 			auto result = key in textures;
 			if (result)
 				return *result;
@@ -274,7 +274,7 @@ struct ResourceManager
 		
 		// Create new texture
 		Timer t = new Timer(true);
-		GPUTexture result = new GPUTexture(filename, format, mipmap);
+		Texture result = new Texture(filename, format, mipmap);
 		Log.info("Texture '%s' loaded in %s seconds.", filename, t);
 		textures[key] = result;
 		return result;		

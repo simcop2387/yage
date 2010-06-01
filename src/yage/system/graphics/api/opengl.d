@@ -324,7 +324,7 @@ class OpenGL : GraphicsAPI
 		if (target)
 		{			
 			// If target is a texture to render to
-			GPUTexture texture = cast(GPUTexture)target;
+			Texture texture = cast(Texture)target;
 			if (texture)
 			{
 				// If FBO is supported, use it for texture rendering, otherwise render to framebuffer and copy the image.
@@ -352,7 +352,7 @@ class OpenGL : GraphicsAPI
 		else if (current.renderTarget) // release
 		{
 			
-			GPUTexture texture = cast(GPUTexture)current.renderTarget;
+			Texture texture = cast(Texture)current.renderTarget;
 			if (texture)
 			{	
 				// Framebufferobject currently disabled due to a bug
@@ -381,7 +381,7 @@ class OpenGL : GraphicsAPI
 					// TODO: textures[texture].id will fail if Texture isn't created.
 					glBindTexture(GL_TEXTURE_2D, textures[texture.toHash()].id);
 					glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, texture.width, texture.height, 0);
-					texture.format = GPUTexture.Format.RGB8;
+					texture.format = Texture.Format.RGB8;
 					texture.flipped = true;
 				}
 			}
@@ -590,7 +590,7 @@ class OpenGL : GraphicsAPI
 	 * Params:
 	 *     textures = Textures to be bound.  Texture units beyond the array length will be disabled.
 	 * Returns:  True if all of the textures were bound.  Otherwise as many as possible will be bound. */
-	bool bindTextures(Texture[] textures)
+	bool bindTextures(TextureInstance[] textures)
 	{		
 		bool result = true;
 		int maxLength = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
@@ -619,7 +619,7 @@ class OpenGL : GraphicsAPI
 			glLoadIdentity();
 			glEnable(GL_TEXTURE_2D); // does this need to be done for all textures or just once?			
 			
-			GPUTexture gpuTexture = texture.texture;
+			Texture gpuTexture = texture.texture;
 			assert(gpuTexture);
 			ResourceInfo info = ResourceInfo.getOrCreate(gpuTexture, this.textures);
 			
@@ -649,44 +649,44 @@ class OpenGL : GraphicsAPI
 				assert(image);
 							
 				// Convert auto format to a real format based on the image given.
-				GPUTexture.Format format;
-				if (gpuTexture.getFormat() == GPUTexture.Format.AUTO)
+				Texture.Format format;
+				if (gpuTexture.getFormat() == Texture.Format.AUTO)
 					switch(image.getChannels()) // This will support float formats when we switch to using Image2.
-					{	case 1: format = GPUTexture.Format.COMPRESSED_LUMINANCE; break;
-						case 2: format = GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA; break;
-						case 3: format = GPUTexture.Format.COMPRESSED_RGB; break;					
-						case 4: format = GPUTexture.Format.COMPRESSED_RGBA; break;					
+					{	case 1: format = Texture.Format.COMPRESSED_LUMINANCE; break;
+						case 2: format = Texture.Format.COMPRESSED_LUMINANCE_ALPHA; break;
+						case 3: format = Texture.Format.COMPRESSED_RGB; break;					
+						case 4: format = Texture.Format.COMPRESSED_RGBA; break;					
 						default: throw new ResourceException("Images with more than 4 channels are not supported.");
 					}
-				else if (gpuTexture.getFormat() == GPUTexture.Format.AUTO_UNCOMPRESSED)
+				else if (gpuTexture.getFormat() == Texture.Format.AUTO_UNCOMPRESSED)
 					switch(image.getChannels()) // This will support float formats when we switch to using Image2.
-					{	case 1: format = GPUTexture.Format.LUMINANCE8; break;
-						case 2: format = GPUTexture.Format.LUMINANCE8_ALPHA8; break;
-						case 3: format = GPUTexture.Format.RGB8; break;					
-						case 4: format = GPUTexture.Format.RGBA8; break;					
+					{	case 1: format = Texture.Format.LUMINANCE8; break;
+						case 2: format = Texture.Format.LUMINANCE8_ALPHA8; break;
+						case 3: format = Texture.Format.RGB8; break;					
+						case 4: format = Texture.Format.RGBA8; break;					
 						default: throw new ResourceException("Images with more than 4 channels are not supported.");
 					}
 				
-				// Convert from GPUTexture.Format to OpenGL format constants.
-				uint[GPUTexture.Format] glFormatMap = [
-					GPUTexture.Format.COMPRESSED_LUMINANCE : GL_LUMINANCE,
-					GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_LUMINANCE_ALPHA,
-					GPUTexture.Format.COMPRESSED_RGB : GL_RGB,
-					GPUTexture.Format.COMPRESSED_RGBA : GL_RGBA,
-					GPUTexture.Format.LUMINANCE8 : GL_LUMINANCE,
-					GPUTexture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
-					GPUTexture.Format.RGB8 : GL_RGB,
-					GPUTexture.Format.RGBA8 : GL_RGBA,				
+				// Convert from Texture.Format to OpenGL format constants.
+				uint[Texture.Format] glFormatMap = [
+					Texture.Format.COMPRESSED_LUMINANCE : GL_LUMINANCE,
+					Texture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_LUMINANCE_ALPHA,
+					Texture.Format.COMPRESSED_RGB : GL_RGB,
+					Texture.Format.COMPRESSED_RGBA : GL_RGBA,
+					Texture.Format.LUMINANCE8 : GL_LUMINANCE,
+					Texture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
+					Texture.Format.RGB8 : GL_RGB,
+					Texture.Format.RGBA8 : GL_RGBA,				
 				];
-				uint[GPUTexture.Format] glInternalFormatMap = [
-					GPUTexture.Format.COMPRESSED_LUMINANCE : GL_COMPRESSED_LUMINANCE,
-					GPUTexture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_COMPRESSED_LUMINANCE_ALPHA,
-					GPUTexture.Format.COMPRESSED_RGB : GL_COMPRESSED_RGB,
-					GPUTexture.Format.COMPRESSED_RGBA : GL_COMPRESSED_RGBA,
-					GPUTexture.Format.LUMINANCE8 : GL_LUMINANCE,
-					GPUTexture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
-					GPUTexture.Format.RGB8 : GL_RGB,
-					GPUTexture.Format.RGBA8 : GL_RGBA,				
+				uint[Texture.Format] glInternalFormatMap = [
+					Texture.Format.COMPRESSED_LUMINANCE : GL_COMPRESSED_LUMINANCE,
+					Texture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_COMPRESSED_LUMINANCE_ALPHA,
+					Texture.Format.COMPRESSED_RGB : GL_COMPRESSED_RGB,
+					Texture.Format.COMPRESSED_RGBA : GL_COMPRESSED_RGBA,
+					Texture.Format.LUMINANCE8 : GL_LUMINANCE,
+					Texture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
+					Texture.Format.RGB8 : GL_RGB,
+					Texture.Format.RGBA8 : GL_RGBA,				
 				];			
 				uint glFormat = glFormatMap[format];
 				uint glInternalFormat = glInternalFormatMap[format];
@@ -737,19 +737,19 @@ class OpenGL : GraphicsAPI
 			}
 			
 			// Filtering
-			if (texture.filter == Texture.Filter.DEFAULT)
-				texture.filter = Texture.Filter.TRILINEAR;	// Create option to set this later
+			if (texture.filter == TextureInstance.Filter.DEFAULT)
+				texture.filter = TextureInstance.Filter.TRILINEAR;	// Create option to set this later
 			switch(texture.filter)
-			{	case Texture.Filter.NONE:
+			{	case TextureInstance.Filter.NONE:
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ?  GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 					break;
-				case Texture.Filter.BILINEAR:
+				case TextureInstance.Filter.BILINEAR:
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					break;
 				default:
-				case Texture.Filter.TRILINEAR:
+				case TextureInstance.Filter.TRILINEAR:
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gpuTexture.mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					break;
@@ -795,10 +795,10 @@ class OpenGL : GraphicsAPI
 			// Blend Mode
 			uint blendTranslated;
 			switch (texture.blend)
-			{	case Texture.Blend.ADD: blendTranslated = GL_ADD; break;
-				case Texture.Blend.AVERAGE: blendTranslated = GL_DECAL; break;
-				case Texture.Blend.NONE:
-				case Texture.Blend.MULTIPLY:
+			{	case TextureInstance.Blend.ADD: blendTranslated = GL_ADD; break;
+				case TextureInstance.Blend.AVERAGE: blendTranslated = GL_DECAL; break;
+				case TextureInstance.Blend.NONE:
+				case TextureInstance.Blend.MULTIPLY:
 				default: blendTranslated = GL_MODULATE; break;				
 			}
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blendTranslated);

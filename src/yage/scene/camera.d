@@ -24,12 +24,7 @@ import yage.system.window;
 
 
 /**
- * A CameraNode renders everything it sees to a Texture.
- * Currently, several constraints are used that allow for render-to-texture
- * on hardware that only supports power-of-two sized textures.  In the future,
- * this will be dropped for a more robust but less backward-compatible solution.
- * Node that two Cameras cannot render concurrently since OpenGL itself
- * isn't threadsafe.*/
+ * TODO: Document me. */
 class CameraNode : MovableNode
 {
 	public float near = 1;			// the distance of the camera's near plane.

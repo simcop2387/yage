@@ -34,7 +34,7 @@ class TerrainNode : VisibleNode
 	 *     max = The maximum x and y value of the range of coordinates passed to generator's getPoint() function. 
 	 *     resolution = The number of points (grid resolution) in the x and y directions passed 
 	 *         to generator's getPoint() function. */
-	this(TerrainGenerator generator, Texture[] textures, Vec2f min=Vec2f(-128), Vec2f max=Vec2f(127), Vec2f resolution=Vec2f(256))
+	this(TerrainGenerator generator, TextureInstance[] textures, Vec2f min=Vec2f(-128), Vec2f max=Vec2f(127), Vec2f resolution=Vec2f(256))
 	{
 		/// TODO
 		// Mipmaps could be laid out something like this.
@@ -74,7 +74,7 @@ interface TerrainGenerator
 		Vec3f normal;				/// Normal vector for this point on the terrain, used for lighting
 		Vec2f textureCoordinate;	/// Texture coordinates for this point on the terrain
 		float[] textureBlend;		/// Normalized vector of arbitrary length specifying the amount of each texture to
-									/// use at this point.  TerrainNode.setTextures() specifies the textures themselves.
+									/// use at this point.
 	}
 	
 	/**
@@ -83,14 +83,14 @@ interface TerrainGenerator
 	
 	/**
 	 * Get a lightmap Texture to use across the range of coordinates.
-	 * If no lightmap is desired, this function can return a Texture without a GPUTexture.
+	 * If no lightmap is desired, this function can return a Texture without a Texture.
 	 * The same GPU Texture can be reused across multiple calls with different values, 
 	 * if the Textures' texture matrix adjusted as needed.
 	 * Params:
 	 *     min = Minumum xy coordinate of the rectangle needing a lightmap.
 	 *     max = Maximum xy coordinate of the rectangle needing a lightmap.
 	 * Returns: An RGB texture to use as a baked light-map.  It's color values will be modulated with the terrain. */
-	Texture getLightmap(Vec2f min, Vec2f max);	
+	TextureInstance getLightmap(Vec2f min, Vec2f max);	
 }
 
 /**
@@ -132,8 +132,8 @@ class HeightmapGenerator : TerrainGenerator
 		return result;
 	}
 
-	Texture getLightmap(Vec2f min, Vec2f max)
-	{	Texture texture;
+	TextureInstance getLightmap(Vec2f min, Vec2f max)
+	{	TextureInstance texture;
 		return texture; // return no lightmap for now.
 	}
 }

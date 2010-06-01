@@ -154,8 +154,8 @@ class LightsAndFog : TestScene
 		
 		// Create a textured plane
 		Geometry geometry = Geometry.createPlane(4, 4);
-		Texture texture = Texture(ResourceManager.texture("space/rocky2.jpg"));
-		Texture normal = Texture(ResourceManager.texture("space/rocky2-normal.jpg"));
+		auto texture = TextureInstance(ResourceManager.texture("space/rocky2.jpg"));
+		auto normal = TextureInstance(ResourceManager.texture("space/rocky2-normal.jpg"));
 		texture.transform = Matrix().scale(Vec3f(8));
 		
 		pass = geometry.getMeshes()[0].getMaterial().getPass();	
@@ -271,7 +271,7 @@ class Transparency : TestScene
 		
 		// Create a textured plane
 		Geometry geometry = Geometry.createPlane(1, 1);
-		Texture texture = Texture(ResourceManager.texture("misc/reference2.png"));
+		auto texture = TextureInstance(ResourceManager.texture("misc/reference2.png"));
 		
 		pass = geometry.getMeshes()[0].getMaterial().getPass();			
 		pass.emissive = Color(0x222222);
@@ -281,7 +281,7 @@ class Transparency : TestScene
 		pass.textures ~= texture;
 		
 		Geometry geometry2 = Geometry.createPlane(1, 1);
-		Texture texture2 = Texture(ResourceManager.texture("fx/smoke.png"));
+		auto texture2 = TextureInstance(ResourceManager.texture("fx/smoke.png"));
 		
 		MaterialPass pass2 = geometry2.getMeshes()[0].getMaterial().getPass();			
 		pass2.emissive = Color(0x222222);

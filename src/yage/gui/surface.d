@@ -40,7 +40,7 @@ class Surface : Tree!(Surface)
 	TextLayout textLayout;
 	
 	protected char[] oldText;
-	protected GPUTexture textTexture;	
+	protected Texture textTexture;	
 
 	/// Callback functions
 	bool delegate(Surface self) onBlur; ///
@@ -342,7 +342,7 @@ class Surface : Tree!(Surface)
 			assert(textImage !is null);
 			
 			if (!textTexture) // create texture on first go
-				textTexture = new GPUTexture(textImage, GPUTexture.Format.AUTO, false, "Surface Text", true);
+				textTexture = new Texture(textImage, Texture.Format.AUTO, false, "Surface Text", true);
 			else
 			//	textTexture.commit(textImage, false, false, text, true);
 				textTexture.setImage(textImage);

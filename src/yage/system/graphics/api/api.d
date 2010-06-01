@@ -33,7 +33,7 @@ abstract class GraphicsAPI
 		static VertexBuffer[char[]] vertexBuffers;
 		static LightNode[8] lights;		
 		static MaterialPass pass; ///
-		static ArrayBuilder!(Texture) textures;
+		static ArrayBuilder!(TextureInstance) textures;
 		
 		static ArrayBuilder!(Matrix) projectionMatrixStack;
 		static ArrayBuilder!(Matrix) textureMatrixStack;

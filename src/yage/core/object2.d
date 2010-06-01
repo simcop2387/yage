@@ -194,7 +194,7 @@ interface ITemporal
 	
 	
 	/*
-	// Itemporal will be implemented by:	
+	// Itemporal may be implemented by:	
 	Timer
 	Repeater (loop makes no sense)
 	Scene (loop makes little sense)

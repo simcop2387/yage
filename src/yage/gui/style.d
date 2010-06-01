@@ -232,23 +232,23 @@ struct Style
 	
 	union {
 		struct {
-			GPUTexture borderTopImage; /// Border Images (TODO: support border-style and border-image-widths?)
-			GPUTexture borderRightImage; /// ditto
-			GPUTexture borderBottomImage; /// ditto
-			GPUTexture borderLeftImage; /// ditto
+			Texture borderTopImage; /// Border Images (TODO: support border-style and border-image-widths?)
+			Texture borderRightImage; /// ditto
+			Texture borderBottomImage; /// ditto
+			Texture borderLeftImage; /// ditto
 		}
-		GPUTexture[4] borderImage; /// Set the four top/right/bottom/left border images in one array.
+		Texture[4] borderImage; /// Set the four top/right/bottom/left border images in one array.
 	}
-	GPUTexture borderCenterImage; /// Border center image (not a part of CSS3, this image is stretched to fit within the borders).
+	Texture borderCenterImage; /// Border center image (not a part of CSS3, this image is stretched to fit within the borders).
 	
 	union {
 		struct {
-			GPUTexture borderTopLeftImage; /// Border corner images
-			GPUTexture borderTopRightImage;	 /// ditto		
-			GPUTexture borderBottomLeftImage; /// ditto
-			GPUTexture borderBottomRightImage; /// ditto
+			Texture borderTopLeftImage; /// Border corner images
+			Texture borderTopRightImage;	 /// ditto		
+			Texture borderBottomLeftImage; /// ditto
+			Texture borderBottomRightImage; /// ditto
 		}
-		GPUTexture[4] borderCornerImage; /// Set the four border corner images images in one array.
+		Texture[4] borderCornerImage; /// Set the four border corner images images in one array.
 	}
 	
 	union { 
@@ -262,7 +262,7 @@ struct Style
 	}
 	
 	/// Background image and color.  backgroundColor is drawn first, with backgroundImage second, then borderImage on top.
-	GPUTexture backgroundImage; // just streteched for now.
+	Texture backgroundImage; // just streteched for now.
 	Color backgroundColor; /// ditto
 
 	// Cursor

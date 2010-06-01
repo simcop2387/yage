@@ -18,11 +18,11 @@ import yage.system.system;
 import yage.system.log;
 
 /**
- * An instance of a GPUTexture.
- * This allows many options to be set per instance of a GPUTexture instead of
- * creating multiple copies of the GPUTexture (and consuming valuable memory)
+ * An instance of a Texture.
+ * This allows many options to be set per instance of a Texture instead of
+ * creating multiple copies of the Texture (and consuming valuable memory)
  * just to change filtering, clamping, or relative scale. */
-struct Texture
+struct TextureInstance
 {
 	enum Filter ///
 	{
@@ -63,21 +63,21 @@ struct Texture
 	bool reflective = false;
 
 	/// Property to set the type of filtering used for the textures of this layer.
-	int filter = Texture.Filter.DEFAULT;
+	int filter = TextureInstance.Filter.DEFAULT;
 	
 	///
 	Matrix transform;
 
 	/// 
-	GPUTexture texture;
+	Texture texture;
 	
 	protected static int[int] translate;
 
 	/// Create a new TextureInstance with the parameters specified.
-	static Texture opCall(GPUTexture texture, bool clamp=false, int filter=Texture.Filter.DEFAULT)
+	static TextureInstance opCall(Texture texture, bool clamp=false, int filter=TextureInstance.Filter.DEFAULT)
 
 	{
-		Texture result;
+		TextureInstance result;
 		result.texture = texture;
 		result.clamp = clamp;
 		result.filter = filter;
@@ -85,19 +85,19 @@ struct Texture
 	}
 	
 	char[] toString()
-	{	return swritef(`Texture {source: "%s"}`, texture ? texture.source : "null");
+	{	return swritef(`TextureInstance {source: "%s"}`, texture ? texture.source : "null");
 	}
 }
 
 
 /**
- * A GPUTexture represents image data in video memory.
+ * A Texture represents image data in video memory.
  *
- * Also, there's no need to be concerned about making
+ * There's no need to be concerned about making
  * texture dimensions a power of two, as they're automatically resized up to
  * the next highest supported size if the non_power_of_two OpenGL extension
  * isn't supported in hardware. */
-class GPUTexture : IRenderTarget
+class Texture : IRenderTarget
 {
 	
 	
@@ -148,16 +148,16 @@ class GPUTexture : IRenderTarget
 	}
 	
 	/**
-	 * Create a GPUTexture from an image.
-	 * The image will be uploaded to memory when the GPUTexture is first bound. */
-	this(char[] filename, Format format=GPUTexture.Format.AUTO, bool mipmap=true)
+	 * Create a Texture from an image.
+	 * The image will be uploaded to memory when the Texture is first bound. */
+	this(char[] filename, Format format=Texture.Format.AUTO, bool mipmap=true)
 	{	source = ResourceManager.resolvePath(filename);
 		this.format = format;
 		this.mipmap = mipmap;
 		setImage(new Image(source), format, mipmap, source);
 	}
 	
-	this(Image image, Format format=GPUTexture.Format.AUTO, bool mipmap=true, char[] source="", bool padding=false)
+	this(Image image, Format format=Texture.Format.AUTO, bool mipmap=true, char[] source="", bool padding=false)
 	{	this.format = format;
 		this.mipmap = mipmap;
 		setImage(image, format, mipmap, source, padding);

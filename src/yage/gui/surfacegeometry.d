@@ -223,13 +223,13 @@ package class SurfaceGeometry : Geometry
 	}
 
 	// TODO: Convert this to accept materials as well as textures, 
-	// or maybe just allow instantiation of a Material from a GPUTexture or Texture
-	void setMaterials(GPUTexture backgroundImage, GPUTexture centerImage, 
-	                  GPUTexture[] borderImage, GPUTexture[] borderCornerImage, GPUTexture text, float opacity)
+	// or maybe just allow instantiation of a Material from a Texture or TextureInstance
+	void setMaterials(Texture backgroundImage, Texture centerImage, 
+	                  Texture[] borderImage, Texture[] borderCornerImage, Texture text, float opacity)
 	{	
-		MaterialPass createPass(GPUTexture texture, bool clamp=false)
+		MaterialPass createPass(Texture texture, bool clamp=false)
 		{	auto result = new MaterialPass();
-			result.textures  ~= Texture(texture, clamp, Texture.Filter.BILINEAR);
+			result.textures  ~= TextureInstance(texture, clamp, TextureInstance.Filter.BILINEAR);
 			result.diffuse = Color(1f, 1f, 1f, opacity);
 			result.blend = MaterialPass.Blend.AVERAGE;
 			result.lighting = false;
@@ -269,7 +269,7 @@ package class SurfaceGeometry : Geometry
 		if (text)
 		{	this.text.setMaterial(new Material());
 			this.text.getMaterial().setPass(createPass(text, true));
-			this.text.getMaterial().getPass().textures[0].filter = Texture.Filter.NONE;
+			this.text.getMaterial().getPass().textures[0].filter = TextureInstance.Filter.NONE;
 			
 			// Text bottom vertices depend on text texture size.
 			float height = text.getHeight();

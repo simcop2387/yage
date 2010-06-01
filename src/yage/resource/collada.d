@@ -53,7 +53,7 @@ class Collada
 	private Geometry[char[]] geometries; // indexed by id
 	private Material[char[]] materials;
 	private Image[char[]] images;
-	private GPUTexture[char[]] textures;
+	private Texture[char[]] textures;
 	
 	/**
 	 * Params:
@@ -319,7 +319,7 @@ class Collada
 		
 		
 		// Helper function for loading material data.
-		void getColorOrTexture(Node n, inout Color color, inout GPUTexture texture)
+		void getColorOrTexture(Node n, inout Color color, inout Texture texture)
 		{	char[] name = n.name();
 			switch (name)
 			{	case "param":
@@ -330,7 +330,7 @@ class Collada
 					color = Color(cast(int)temp.r, cast(int)temp.g, cast(int)temp.b, ((color.a*cast(int)temp.a)/255));
 					break;
 				case "texture":
-					texture = getTextureById(n.getAttribute("texture")); // TODO getImageByTexture
+					texture = getTextureById(n.getAttribute("texture"));
 					break;
 				default:
 					Log.error("Collada material parameter %s not supported", name);
@@ -344,7 +344,7 @@ class Collada
 				continue;
 			
 			Node child = param.getChild();				
-			GPUTexture texture;
+			Texture texture;
 			switch(param.name())
 			{
 				case "ambient":
@@ -352,11 +352,11 @@ class Collada
 					break;
 				case "diffuse":
 					getColorOrTexture(child, pass.diffuse, texture);
-					pass.setDiffuseTexture(Texture(texture)); // may be null
+					pass.setDiffuseTexture(TextureInstance(texture)); // may be null
 					break;
 				case "bump": // Bump map extension used by Okino, http://www.okino.com/conv/exp_collada_extensions.htm
 					getColorOrTexture(child, pass.diffuse, texture);
-					pass.setNormalSpecularTexture(Texture(texture)); // may be null
+					pass.setNormalSpecularTexture(TextureInstance(texture)); // may be null
 					break;
 				case "specular":
 					getColorOrTexture(child, pass.specular, texture);
@@ -390,9 +390,9 @@ class Collada
 			if (extra.hasChild("technique"))
 			{	Node extraTechnique = extra.getChild("technique");
 				if (extraTechnique.hasChild("bump"))
-				{	GPUTexture texture;
+				{	Texture texture;
 					getColorOrTexture(extraTechnique.getChild("bump").getChild("texture"), pass.diffuse, texture);
-					pass.setNormalSpecularTexture(Texture(texture)); // may be null
+					pass.setNormalSpecularTexture(TextureInstance(texture)); // may be null
 		}	}	}
 		
 		// Enable blending if there's alpha.
@@ -541,8 +541,8 @@ class Collada
 	}
 	
 	/**
-	 * Get a yage GPUTexture from the Collada file by its id.
-	 * This uses ResourceManager.texture internally, so subsequent calls will return an already loaded GPUTexture.
+	 * Get a yage Texture from the Collada file by its id.
+	 * This uses ResourceManager.texture internally, so subsequent calls will return an already loaded Texture.
 	 * 
 	 * These are Yage-specific notes for loading Collada textures:
 	 * <li>TODO: An image's <hint precision="_"> value determines whether texture compression is used.
@@ -550,7 +550,7 @@ class Collada
 	 *     MID: 8 byte channels, no compression
 	 *     HIGH: 16 bit float (not supported yet)
 	 *     MAX: 32 bit float (not supported yet)</li> */
-	GPUTexture getTextureById(char[] id)
+	Texture getTextureById(char[] id)
 	{	id = Xml.makeId(id);		
 		if (id in textures)
 			return textures[id];
@@ -576,10 +576,10 @@ class Collada
 		imagePath = ResourceManager.resolvePath(imagePath, resourcePath);		
 		
 		// Load texture
-		GPUTexture.Format format = GPUTexture.Format.AUTO;
+		Texture.Format format = Texture.Format.AUTO;
 		if (precision=="MID")
-			format = GPUTexture.Format.AUTO_UNCOMPRESSED;
-		GPUTexture result = ResourceManager.texture(imagePath, format);
+			format = Texture.Format.AUTO_UNCOMPRESSED;
+		Texture result = ResourceManager.texture(imagePath, format);
 		
 		textures[id] = result;
 		return result;			

@@ -125,7 +125,7 @@ class MaterialPass
 	bool lighting = true; 	/// If false, diffuse is used as the color.
 	bool flat = false;		/// If true, use flat shading
 	float lineWidth = 1;	/// Thickness in pixels of lines and points. 
-	Texture[] textures;
+	TextureInstance[] textures;
 	
 	Blend blend = Blend.NONE; /// Loaded from Collada's transparent property.
 	Cull cull = Cull.BACK;
@@ -156,13 +156,13 @@ class MaterialPass
 		return result;	
 	}
 	
-	void setDiffuseTexture(Texture texture)
+	void setDiffuseTexture(TextureInstance texture)
 	{	if (textures.length < 1)
 			textures.length = 1;
 		textures[0] = texture;
 	}
 	
-	void setNormalSpecularTexture(Texture texture)
+	void setNormalSpecularTexture(TextureInstance texture)
 	{	if (textures.length < 2)
 			textures.length = 2;
 		textures[1] = texture;
