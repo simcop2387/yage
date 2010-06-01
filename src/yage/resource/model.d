@@ -13,12 +13,14 @@ import yage.core.math.quatrn;
 import yage.core.math.matrix;
 import yage.core.math.vector;
 import yage.core.object2;
+import yage.core.tree;
 import yage.resource.collada;
 import yage.resource.geometry;
 import yage.resource.material;
 import yage.resource.manager;
 import yage.system.log;
 
+/*
 ///
 struct KeyFrame
 {	float time;
@@ -38,7 +40,13 @@ class Joint
 	KeyFrame[] positions;	
 	KeyFrame[] rotations;
 };
+*/
 
+class Joint : Tree!(Joint)
+{
+	Matrix relative;
+	Matrix absolute;
+}
 
 /**
  * A Model is a 3D object, often loaded from a file.
@@ -50,12 +58,14 @@ class Model : Geometry
 {	
 	private char[] source;
 
+	// Old:
 	protected float fps=24;
 	protected bool animated = false;
 	protected double animation_time=-1;
-	protected double animation_max_time=0;
-	protected Joint[] joints; // used for skeletal animation
-	protected int[] joint_indices;
+	protected double animation_max_time=0;	
+	//protected int[] joint_indices;
+		
+	protected Joint[] skeleton; // All of the joints that makeup the skeleton.  The first Joint is the root.
 
 	/// Instantiate an empty model.
 	this()
@@ -74,12 +84,11 @@ class Model : Geometry
 		delete geometry;
 	}
 
-	/**
+	/*
 	 * Advance this Model's animation to time.
 	 * This still has bugs somehow.
 	 * Params:
 	 *     time =
-	 */
 	void animateTo(double time)
 	{
 		// If nothing to do.
@@ -178,13 +187,7 @@ class Model : Geometry
 		if (normals.length)
 			setAttribute(Geometry.NORMALS, normals);
 	}	
-
-	/**
-	 * Get an array of all of the Model's Joints, which are used for skeletal animation.
-	 * This can be traversed as an array, or as a tree since each Joint references its parent and children. */
-	Joint[] getJoints()
-	{	return joints;		
-	}
+	 */
 	
 	/**
 	 * Get whether this model is animated. */

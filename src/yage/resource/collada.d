@@ -13,6 +13,7 @@ import tango.text.Util;
 import tango.text.xml.Document;
 import tango.text.xml.DocTester;
 import tango.util.Convert;
+
 import yage.core.array;
 import yage.core.color;
 import yage.core.format;
@@ -24,6 +25,7 @@ import yage.resource.geometry;
 import yage.resource.image;
 import yage.resource.material;
 import yage.resource.manager;
+import yage.resource.model;
 import yage.resource.texture;
 import yage.system.log;
 
@@ -83,6 +85,15 @@ class Collada
 		} catch (Exception e) // TODO: Errors often don't occur until actually using the document.
 		{	throw new XMLException("Could not parse xml document.");
 		}
+	}
+	
+	Matrix getBaseTransform()
+	{	char[] upAxis = Node(doc.elements).getChild("asset").getChild("up_axis").value();
+		if (upAxis == "X_UP") // Y is already up
+			return Vec3f(0, -3.1415/2, 0).toMatrix();
+		if (upAxis == "Z_UP")
+			return Vec3f(-3.1415/2, 0, 0).toMatrix();
+		return Matrix.IDENTITY;
 	}
 	
 	///
@@ -296,8 +307,7 @@ class Collada
 			Node profileCommon = effectNode.getChild("profile_COMMON"); // TODO: profile_GLSL
 			technique = profileCommon.getChild("technique");
 		} else // Collada 1.3
-		{		technique = materialNode.getChild("shader").getChild("technique");
-		}
+			technique = materialNode.getChild("shader").getChild("technique");		
 		
 		Node shadingType = technique.getChild(); // in profile_COMMON, it can be newparam, image, blinn, constant, lambert, phong, or extra.
 												// blinn, lambert, and phong all have the same parameters.
@@ -307,25 +317,29 @@ class Collada
 			pass.flat = true;
 		// else use blinn (gourard) shading from the fixed function pipeline
 		
+		
+		// Helper function for loading material data.
+		void getColorOrTexture(Node n, inout Color color, inout GPUTexture texture)
+		{	char[] name = n.name();
+			switch (name)
+			{	case "param":
+					n = Xml.getNodeById(doc, n.getAttribute("ref"), "sid").getChild("float3");	
+					// deliberate fall-through
+				case "color":
+					Color temp = Color(Xml.parseNumberList!(float)(n.value));
+					color = Color(cast(int)temp.r, cast(int)temp.g, cast(int)temp.b, ((color.a*cast(int)temp.a)/255));
+					break;
+				case "texture":
+					texture = getTextureById(n.getAttribute("texture")); // TODO getImageByTexture
+					break;
+				default:
+					Log.error("Collada material parameter %s not supported", name);
+		}	}
+		
 		// Loop through and get each material property
 		scope Node[] params = shadingType.getChildren();
 		foreach (Node param; params)
 		{				
-			void getColorOrTexture(Node n, inout Color color, inout GPUTexture texture)
-			{	char[] name = n.name();
-				switch (name)
-				{	case "param":
-						n = Xml.getNodeById(doc, n.getAttribute("ref"), "sid").getChild("float3");	
-						// deliberate fall-through
-					case "color":
-						Color temp = Color(Xml.parseNumberList!(float)(n.value));
-						color = Color(cast(int)temp.r, cast(int)temp.g, cast(int)temp.b, ((color.a*cast(int)temp.a)/255));
-						break;
-					case "texture":
-						texture = getTextureById(n.getAttribute("texture")); // TODO getImageByTexture
-						break;
-			}	}
-			
 			if (!param.getChildren().length)
 				continue;
 			
@@ -368,14 +382,25 @@ class Collada
 				default:
 					break;
 			}
-			
-			// Enable blending if there's alpha.
-			if (pass.blend==MaterialPass.Blend.NONE)
-				if (pass.diffuse.a < 1f || (pass.textures.length && pass.textures[0].texture.getImage().getChannels()==4))
-					pass.blend = MaterialPass.Blend.AVERAGE;
 		}
 		
-		// Create a tecnique that uses no shaders.
+		// Look to see if there's a technique/extra/technique/bump for a bump--fcollada (and maybe also Blender?) puts the bump map here.
+		if (technique.hasChild("extra"))
+		{	Node extra = technique.getChild("extra");
+			if (extra.hasChild("technique"))
+			{	Node extraTechnique = extra.getChild("technique");
+				if (extraTechnique.hasChild("bump"))
+				{	GPUTexture texture;
+					getColorOrTexture(extraTechnique.getChild("bump").getChild("texture"), pass.diffuse, texture);
+					pass.setNormalSpecularTexture(Texture(texture)); // may be null
+		}	}	}
+		
+		// Enable blending if there's alpha.
+		if (pass.blend==MaterialPass.Blend.NONE)
+			if (pass.diffuse.a < 1f || (pass.textures.length && pass.textures[0].texture.getImage().getChannels()==4))
+				pass.blend = MaterialPass.Blend.AVERAGE;
+		
+		// Create a fallback technique that uses no shaders.
 		if (result.getPass().autoShader == MaterialPass.AutoShader.PHONG)
 		{
 			MaterialTechnique t = new MaterialTechnique();
@@ -400,66 +425,55 @@ class Collada
 		Matrix[] geometryTransforms; // A transformation matrix for each geometry found.
 		
 		// Get the up direction (unfinished)
-		Matrix upTransform;
-		char[] upAxis = Node(doc.elements).getChild("asset").getChild("up_axis").value();
-		if (upAxis == "Z_UP")
-			upTransform = Vec3f(-3.1415/2, 0, 0).toMatrix();
+		Matrix upTransform = getBaseTransform();
 		
-		
-		// Loop through the scenes and load all the geometry nodes they reference.
-		Node[] scenes;
-		Node root = Node(doc.elements);
-		if (root.hasChild("library_visual_scenes"))
-		    scenes = root.getChild("library_visual_scenes").getChildren("visual_scene");
-		else // collada 1.3
-			scenes = root.getChildren("scene");
-		
-		foreach (visual_scene; scenes) // loop through scenes
+		foreach (visual_scene; getScenes()) // loop through scenes
 		{
-			void traverseSceneNodes(Node node)
+			// Go through the scene nodes and collect anything that can be used as a model.
+			void traverseSceneNodes(Node node, Matrix matrix)
 			{
-				Node instance_geometry;
-				if (node.hasChild("instance_geometry"))
-					instance_geometry = node.getChild("instance_geometry");
+				char[] geometryId;
+				if (node.hasChild("instance_geometry")) // Collada 1.4+
+					geometryId = node.getChild("instance_geometry").getAttribute("url");
 				else if (node.hasChild("instance")) // Collada 1.3
-					instance_geometry = node.getChild("instance");
+					geometryId = node.getChild("instance").getAttribute("url");
+				else if (node.hasChild("instance_controller")) // A controller for skeletal animation, which we will follow to get it's geometry
+				{	Node controller = Xml.getNodeById(doc, node.getChild("instance_controller").getAttribute("url"));
+					Node skin = controller.getChild("skin");
+					geometryId = skin.getAttribute("source");
+				}
 				
-				if (instance_geometry.node)
+				if (geometryId.length)
 				{   					
-					char[] geometryId = instance_geometry.getAttribute("url"); // TODO: Multiple instance geometry?
 					Geometry geometry = getGeometryById(geometryId, true);
-					if (geometry)
-					{
-						// Get transformation matrix for this instance of the geometry.
-						Matrix matrix;
-						foreach (transform; node.getChildren())
-						{	if (transform.name=="translate")
-								matrix.move(Vec3f(Xml.parseNumberList!(float)(transform.value)));
-							else if (transform.name=="rotate")
-							{	float[] values = Xml.parseNumberList!(float)(transform.value);
-								assert(values.length==4);
-								matrix = matrix.rotate(Vec3f(values[3]*tango.math.Math.PI/180, values[0], values[1], values[2])); // load from axis-angle							
-							} 
-							else if (transform.name=="scale")						
-								matrix.setScalePreservingRotation(Vec3f(Xml.parseNumberList!(float)(transform.value)));
-							else if (transform.name=="matrix") // collada 1.3
-							{	matrix = Matrix(Xml.parseNumberList!(float)(transform.value));
-								
-							}
-						}
+					
+					// Get transformation matrix for this instance of the geometry.
+					foreach (transform; node.getChildren())
+					{	if (transform.name=="translate")
+							matrix = matrix.move(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+						else if (transform.name=="rotate")
+						{	float[] values = Xml.parseNumberList!(float)(transform.value);
+							assert(values.length==4);
+							matrix = matrix.rotate(Vec3f(values[3]*tango.math.Math.PI/180, values[0], values[1], values[2])); // load from axis-angle							
+						} 
+						else if (transform.name=="scale")						
+							matrix.setScalePreservingRotation(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+						else if (transform.name=="matrix") // collada 1.3
+							matrix = Matrix(Xml.parseNumberList!(float)(transform.value));	
+						
+					}
+					
+					if (geometry)  // TODO: Sometimes intance_geometry has xml children specifying a material (or other things as well?)
+					{	geometries~= geometry;
 						geometryTransforms ~= matrix * upTransform;
-						
-						// TODO: Sometimes intance_geometry has xml children specifying a material (or other things as well?)
-						
-						geometries~= geometry;
 					}
 				}
 				
 				foreach (child; node.getChildren("node")) // loop through nodes in a scene
-					traverseSceneNodes(child);
+					traverseSceneNodes(child, matrix);
 			}
 			
-			traverseSceneNodes(visual_scene);
+			traverseSceneNodes(visual_scene, Matrix.IDENTITY);
 		}
 		
 		// Transform geometry instances by their transformation matrix
@@ -498,7 +512,34 @@ class Collada
 			result.setAttribute(Geometry.TEXCOORDS1, result.createTangentVectors());	
 		return result;
 	}
+	
+	Node[] getScenes()
+	{
+		Node[] scenes;
+		Node root = Node(doc.elements);
+		if (root.hasChild("library_visual_scenes"))
+		    scenes = root.getChild("library_visual_scenes").getChildren("visual_scene");
+		else // collada 1.3
+			scenes = root.getChildren("scene");
+		return scenes;
+	}
 
+	Joint[] getSkeletonById(char[] id)
+	{
+		// Get the up direction (unfinished)
+		Matrix upTransform = getBaseTransform();
+		
+		// Loop through the scenes and load all the geometry nodes they reference.
+		
+		
+		foreach (scene; getScenes()) // loop through scenes
+		{
+			
+			
+		}
+		return null;
+	}
+	
 	/**
 	 * Get a yage GPUTexture from the Collada file by its id.
 	 * This uses ResourceManager.texture internally, so subsequent calls will return an already loaded GPUTexture.
@@ -547,8 +588,6 @@ class Collada
 	// See: https://collada.org/mediawiki/index.php/Using_accessors
 	private float[] getDataFromSourceId(char[] id, out ushort components)
 	{	
-		
-		
 		Node source = Xml.getNodeById(doc, id);		
 		Node sourceAccessor;
 		if (source.hasChild("technique_common"))
@@ -660,7 +699,8 @@ class Collada
 			T[] result = new T[pieces.length];
 			try {
 				foreach(i, piece; pieces)			
-					result[i] = to!(T)(piece);
+					if (piece.length)
+						result[i] = to!(T)(piece);
 			} catch (ConversionException e)
 			{	throw new XmlException(e.toString());
 			}
