@@ -140,7 +140,7 @@ class Font
 		this.resourceName = resourceName;
 		
 		/*
-		// Use freetypes API to load the font directly from memory.  This breaks for unknown reasons.
+		// Use freetype's API to load the font directly from memory.  This breaks for unknown reasons.
 		this.resourceName = resourceName;
 		auto error = FT_New_Memory_Face(library, data.ptr, data.length, 0, &face);
 		if (error == FT_Err_Unknown_File_Format)
@@ -199,7 +199,7 @@ class Font
 			// Render the character into the glyph slot.
 			error = FT_Load_Char(face, letter, FT_LOAD_RENDER);  
 			if (error)
-				throw new ResourceException("Font '%s' cannot render the character '%s', Freetype2 error %s", resourceName, .toString([letter]), error);			
+				throw new ResourceException("Font '%s' cannot render the character '%s', Freetype2 error %s", resourceName, letter, error);			
 			
 			scope bitmap = face.glyph.bitmap;
 			ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				

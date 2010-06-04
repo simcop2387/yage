@@ -1,9 +1,10 @@
 #line 1
 /**
- * Authors:    Eric Poggel
- * License:    public domain
+ * Copyright:  (c) 2005-2010 Eric Poggel
+ * Authors:	   Eric Poggel
+ * License:	   <a href="lgpl3.txt">LGPL v3</a>
  * 
- * See documentation for diffuse.vert
+ * See documentation for phong.vert
  */
  
 // Values greater than 1 allow things to be brighter than their material color
@@ -155,7 +156,10 @@ void main()
 	#endif
 #endif
 	// gl_FrontLightModelProduct.sceneColor is material.emission + material.ambient * global.ambient
-	vec4 color = texture2D(texture0, gl_TexCoord[0].st) * (gl_FrontLightModelProduct.sceneColor + ambient + diffuse);
+	vec4 color = gl_FrontLightModelProduct.sceneColor + ambient + diffuse;
+#ifdef HAS_TEXTURE
+	color *= texture2D(texture0, gl_TexCoord[0].st);
+#endif
 #ifdef HAS_SPECULAR	
 	color += specular;
 #endif

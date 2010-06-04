@@ -215,9 +215,7 @@ class OpenGL : GraphicsAPI
 		
 		bool result = true;
 		if (pass !is current.pass)
-		{
-			// Materials
-			if (pass.lighting)
+		{	if (pass.lighting)
 			{	glEnable(GL_LIGHTING);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, pass.ambient.vec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, pass.diffuse.vec4f.ptr);

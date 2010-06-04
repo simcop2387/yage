@@ -272,7 +272,7 @@ class Window : IRenderTarget
 	 * file.close();
 	 * --------
 	 */
-	IImage toImage(Buffer buffer=Buffer.COLOR)
+	ImageBase toImage(Buffer buffer=Buffer.COLOR)
 	{
 		if (buffer==Buffer.STENCIL)		{
 			Image1ub result = new Image1ub(size.x, size.y);			
@@ -297,5 +297,55 @@ class Window : IRenderTarget
 	{	if (instance)
 			return instance;
 		return instance = new Window();
+	}
+}
+
+
+/**
+ * This class is the unimplemented successor to Window.
+ * It will use native system calls instead of SDL.
+ * All windows should share the same OpenGL context, created and destroyed in System.init/deInit
+ */
+class Window2
+{
+	protected uint handle;
+	
+	struct Mode
+	{	ushort width;
+		ushort height;
+		ubyte depth;
+		ubyte defaultFrequency;
+		ubyte[] frequencies;
+	}
+	
+	struct Screen
+	{	ushort number;
+		Mode currentMode;
+		Mode[] availableModes;		
+	}
+	
+	this(uint handle) 
+	{		
+	}
+	
+	this(short width, short height, short x, short y, byte depth, bool fullscreen=false, ushort screen=0) 
+	{ 		
+	}
+	
+	bool resize(short width, short height, short x, short y, byte depth, bool fullscreen=false, ushort screen=0)
+	{	return true;
+	}
+	
+	uint getHandle()
+	{	return handle;
+	}
+	
+	void setVisible(bool visible) 
+	{		
+	}
+	
+	static Screen[] getScreens()
+	{	Screen[] result;
+		return result;
 	}
 }

@@ -160,7 +160,7 @@ class LightsAndFog : TestScene
 		
 		pass = geometry.getMeshes()[0].getMaterial().getPass();	
 		pass.lighting = true;
-		pass.emissive = Color(0x222222);
+		pass.emissive = "#222";
 		pass.diffuse = "white";
 		pass.specular = "gray";
 		pass.shininess = 128;
@@ -207,6 +207,8 @@ class LightsAndFog : TestScene
 		
 		// A critter
 		auto beast = new ModelNode("character/beast.dae");
+		//foreach (mesh; beast.getModel().getMeshes())
+		//	mesh.setMaterial(plane.getModel().getMeshes()[0].getMaterial());
 		scene.addChild(beast);
 		beast.setScale(Vec3f(.3));
 		beast.setPosition(Vec3f(0, -40, -20));

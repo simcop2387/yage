@@ -147,20 +147,6 @@ struct ResourceManager
 			defaultFont = new Font(cast(ubyte[])Embed.vera_ttf, "auto");
 		return defaultFont;
 	}
-	
-	///
-	static Collada collada(char[] filename)
-	{	char[] absPath = resolvePath(filename);		
-		auto result = absPath in colladas;
-		if (result)
-			return *result;
-		
-		Timer t = new Timer(true);	
-		Collada c = new Collada(absPath);
-		colladas[absPath] = c;
-		Log.info("Collada file '%s' parsed in %s seconds.", absPath, t);
-		return c;
-	}
 
 	/** 
 	 * Acquire and return a requested Font.
@@ -210,7 +196,7 @@ struct ResourceManager
 		
 		Timer t = new Timer(true);		
 	
-		Collada c = collada(filename);
+		Collada c = new Collada(filename);
 		Material m = c.getMaterialById(id);
 		materials[path] = m;
 		Log.info("Material '%s' loaded in %s seconds.", path, t);

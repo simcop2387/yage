@@ -48,7 +48,7 @@ private struct AlphaTriangle
 	{	AlphaTriangle result = {geometry, mesh, material, matrix, lights, triangle, vertices};
 		return result;		
 	}
-}
+} 
 
 /**
  * Statistics about the last render operation.*/
@@ -96,6 +96,7 @@ struct Render
 		bool hasSpecular;
 		bool hasDirectional;
 		bool hasSpotlight;
+		bool hasTexture;
 		bool hasBump;
 	}
 	protected static Shader[ShaderParams] generatedShaders;
@@ -145,10 +146,8 @@ struct Render
 		params.numLights = lights.length;
 		params.hasFog = fog;
 		params.hasSpecular = (pass.specular.ui & 0xffffff) != 0; // ignore alpha in comparrison
+		params.hasTexture = pass.textures.length > 0;
 		params.hasBump = pass.textures.length > 1;
-		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{	//params.hasSpecular = params.hasSpecular && (pass.textures.length > 1 && pass.textures[1].texture.hasAlpha()); 
-		}
 		foreach (light; lights)
 		{	params.hasDirectional = params.hasDirectional || (light.type == LightNode.Type.DIRECTIONAL);
 			params.hasSpotlight  = params.hasSpotlight || (light.type == LightNode.Type.SPOT);
@@ -173,6 +172,8 @@ struct Render
 					defines ~= "#define HAS_DIRECTIONAL\n";
 				if (params.hasSpotlight)
 					defines ~= "#define HAS_SPOTLIGHT\n";
+				if (params.hasTexture)
+					defines ~= "#define HAS_TEXTURE\n";
 				if (params.hasBump)
 					defines ~= "#define HAS_BUMP\n";
 		
@@ -319,13 +320,15 @@ struct Render
 				
 				if (technique) // TODO: Honor techniques
 				{
+					assert(technique.passes.length);
+					
 					if (!technique.hasTranslucency() ||
 					    geometry.getVertexBuffer(Geometry.VERTICES).components != 3)
 					{	foreach (pass; technique.passes)
 						{	bindPass(pass, lights);
 							graphics.drawPolygons(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 						}
-					} else
+					} else if (technique.passes[0].diffuse.a > 0) // Don't render it at all if we have 0 alpha.
 					{	
 						foreach (j, tri; mesh.getTriangles())
 						{							
@@ -422,10 +425,6 @@ struct Render
 			Vec3i[1] triangle = at.mesh.getTriangles()[at.triangle];			
 			mesh.setMaterial(at.material);
 			mesh.setTriangles(triangle);
-						
-			// ATI Fails to draw when vertices have VBO's and triangles don't.
-			// It's a shame because this makes it about 60% faster to render.
-			//mesh.getTrianglesVertexBuffer().cache = false;
 			
 			graphics.bindMatrix(&at.matrix);
 			
@@ -435,20 +434,21 @@ struct Render
 				currentGeometry = at.geometry;
 			}
 			
-			if (mesh.material)
-				if (mesh.material.techniques.length) // TODO: Honor techniques
+			if (mesh.material)							
+			{	auto technique = getTechnique(mesh.material, at.lights); // slows it down a little bit			
+				if (technique)
 				{	
 					for (int i=at.lights.length; i<num_lights; i++)
 						glDisable(GL_LIGHT0+i);					
 					for (int i=0; i<min(num_lights, at.lights.length); i++)
 						graphics.bindLight(at.lights[i], i);
 					
-					foreach (pass; mesh.material.techniques[0].passes)
+					// This is the slowest part
+					foreach (pass; technique.passes)
 					{	bindPass(pass, at.lights);
 						graphics.drawPolygons(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 					}
-				}
-			
+			}	}
 			graphics.bindMatrix(null);
 		}		
 		

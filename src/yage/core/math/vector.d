@@ -372,7 +372,10 @@ struct Vec(int S, T : real, int D=0)
 	char[] toString()
 	{	char[] result = "<";
 		for (int i=0; i<S; i++)
-			result ~= format("%f ", v[i]);
+			static if (is(T : real))
+				result ~= format("%s ", v[i]);
+			else
+				result ~= format("%d ", v[i]);
 		result ~= ">";
 		return result;
 	}

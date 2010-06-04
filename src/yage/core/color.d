@@ -41,9 +41,9 @@ struct Color
 	// public static Color GREEN = Color(0xFF008000); // fails due to CTFE union bug.
 	
 	union // this union breaks CTFE with this struct
-	{	uint ui;	/// Get the Color as a uint
+	{	struct { ubyte r, g, b, a; } /// Access each color component: TODO: test to ensure order is correct.
 		ubyte[4] ub;/// Get the Color as an array of ubyte
-		struct { ubyte r, g, b, a; } /// Access each color component: TODO: test to ensure order is correct.
+		uint ui;	/// Get the Color as a uint
 	}
 
 	/**
@@ -73,18 +73,24 @@ struct Color
 	{	Color res;
 		for (int i=0; i<max(v.length, 4); i++)
 			res.ub[i] = cast(ubyte)(v[i]);
+		if (v.length < 4)
+			res.a = 255;
 		return res;
 	}
 	static Color opCall(int[] v) /// ditto
 	{	Color res;
 		for (int i=0; i<max(v.length, 4); i++)
 			res.ub[i] = cast(ubyte)(v[i]);
+		if (v.length < 4)
+			res.a = 255;
 		return res;
 	}
 	static Color opCall(float[] f) /// ditto
 	{	Color res;
 		for (int i=0; i<min(f.length, 4); i++)
 			res.ub[i] = cast(ubyte)clamp(f[i]*255, 0.0f, 255.0f);
+		if (f.length < 4)
+			res.a = 255;
 		return res;
 	}
 	static Color opCall(Vec3f v) /// ditto
@@ -243,7 +249,8 @@ struct Color
 	char[] toString()
 	{	return "#"~hex();
 	}
-	
+
+	import yage.system.log;
 	unittest
 	{	assert(Color.sizeof == 4);
 			

@@ -76,7 +76,7 @@ class Model : Geometry
 	this (char[] filename)
 	{	this();		
 		source = ResourceManager.resolvePath(filename);
-		auto c = ResourceManager.collada(filename);
+		auto c = new Collada(filename);
 		auto geometry = c.getMergedGeometry();
 		
 		this.attributes = geometry.attributes;

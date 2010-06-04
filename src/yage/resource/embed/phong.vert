@@ -1,15 +1,27 @@
 #line 1
 /**
- * Authors:    Eric Poggel
- * License:    public domain
+ * Copyright:  (c) 2005-2010 Eric Poggel
+ * Authors:	   Eric Poggel
+ * License:	   <a href="lgpl3.txt">LGPL v3</a>
  *
- * This shader re-invents the fixed-function OpenGL vertex and fragment
- * pipeline except with per-pixel lighting.  It suports fog and up to 2
- * lights of type point, spot, or directional.
+ * This shader implements phong shading, normal mapping, and fog for an
+ * arbitrary number of point, directional, and spot lights.
+ * It's used by Render.generateShader for the MaterialPass.AutoShader.PHONG AutoShader type.
+ *
+ * #define's are used to enable different paths in this shader, which allows
+ * the shader to be as short and fast as possible for every scenario.
+ * These are the #define's that are supported:
+ * NUM_LIGHTS        // The number of lights, passed in gl_LightSourceParameters and the lights uniform array.
+ * HAS_FOG           // The scene has fog enabled.
+ * HAS_SPECULAR      // The material has specularity greater than 0.
+ * HAS_DIRECTIONAL   // At least one of the lights is a directional light.
+ * HAS_SPOTLIGHT     // At least one of the lights is a spotlight
+ * HAS_TEXTURE       // a diffuse texture is assigned to texture0
+ * HAS_BUMP          // a tangent-space normal map is assigned to texture1, optionally with specular intensity in the alpha channel.
  */
  
 // temporary, testing
-#undef HAS_FOG
+//#undef HAS_FOG
 //#undef HAS_BUMP
 //#undef HAS_SPECULAR	
 //#pragma debug(on)

@@ -333,14 +333,12 @@ class Image
 	 *     xoffset = x-offset of img from this image's left side.  Out of bounds values will be cropped.
 	 *     yoffset = y-offset of img from this image's top side.  Out of bounds values will be cropped.
 	 *     skew = horizontally skew the overlayed image by this amount.  .5 will skew it by 45 degrees
-	 * TODO: Make the top go to the right instead of taking the bottom to the left
+	 * TODO: Make the top go to the right instead of taking the bottom to the left when skewing
 	 */
 	void overlaySkewAndColor(Image img, Color color, int xoffset=0, int yoffset=0, float skew=0)
 	{	assert(getChannels()==4);
 		assert(img.getChannels()==1);
 	
-		float[4] fcolor;
-		color.f(fcolor);
 		int ymax = max(min(img.height+yoffset, height), 0); 
 		for (int y=max(yoffset, 0); y < ymax; y++)
 		{	assert(0 <= y && y<height);
@@ -355,13 +353,14 @@ class Image
 				if (x2>=width)
 					continue;
 				
+				// TODO: Multiply by color's alpha?
 				uint src_alpha = img.data[(y-yoffset)*img.width + x - xoffset];
 				if (src_alpha > 0)
 				{	
 					uint dest = (y*width+x2)*channels;
 					uint dst_alpha = data[dest+3];
 					uint src_dest_ratio = (255-src_alpha) * dst_alpha;
-					uint dst_ratio = (src_dest_ratio * 257)>>16; // hack for faster divide by 255
+					uint dst_ratio = (src_dest_ratio * 257)>>16; // hack for faster divide by ~255
 					
 					// This is my own blending algorithm, can it be further optimized?
 					int reciprocal = 0x10001 / (src_alpha + dst_ratio); // calculate reciprocal for fast integer division
@@ -531,12 +530,21 @@ class Image
 	}
 }
 
-
-interface IImage
+///
+abstract class ImageBase
 {
+	///
 	ubyte[] getBytes();
 	
+	///
 	Image2!(T2, C2) convert(T2: real, int C2)();
+	
+	ImageBase load(ubyte[] data)
+	{	
+		// TODO: Implement this function.
+		
+		return new Image2!(ubyte, 4)();
+	}
 }
 
 /**
@@ -544,7 +552,7 @@ interface IImage
  * TODO: The rest of Image's functionality should be migrated to Image2, Image deleted, and Image2 renamed as Image.
  * @param T Type of each pixel component
  * @param C number of channels. */
-class Image2(T : real, int C) : IImage
+class Image2(T : real, int C) : ImageBase
 {
 	alias Image2!(T, C) ImageTC;
 	
@@ -553,20 +561,17 @@ class Image2(T : real, int C) : IImage
 	
 	protected this(){}
 	
-	this(int width, int height)
-	{	data.length = width*height;
-		this.width = width;
-		this.height = height;
-	}
-	
-	this(T[C][] data, int width, int height=0)
-	{	if (!height)
-			height = data.length / width;
-		assert(data.length == width*height);
+	///
+	this(int width, int height, T[C][] data=null)
+	{	
+		if (data.length)
+			assert(data.length == width*height);
+		else
+			data.length =  width*height;
 		
 		this.data = data;
 		this.width = width;
-		this.height = height;		
+		this.height = height;
 	}
 	
 	/*
@@ -594,14 +599,15 @@ class Image2(T : real, int C) : IImage
 		}
 	}
 	
-	ubyte[] getBytes()
+	///
+	override ubyte[] getBytes()
 	{	return cast(ubyte[])data;		
 	}
 	
 	//T[1][] getChannel(int channel);
 	//T[C][] getData();
 	
-	static if (is(T : ubyte)) // if T can be implicitly cast to ubyte
+	static if (is(T : ubyte))
 	{
 		Image toOldImage()
 		{	return new Image(cast(ubyte[])data, C, width, height);

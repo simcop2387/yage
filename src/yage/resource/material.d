@@ -116,10 +116,10 @@ class MaterialPass
 		// CELL_SHADED
 	}
 	
-	Color diffuse = {r:255, g:255, b:255, a:255};
-	Color ambient;
-	Color specular;
-	Color emissive;
+	Color diffuse  = {r:255, g:255, b:255, a:255};
+	Color ambient  = {r:0, g:0, b:0, a:255};
+	Color specular = {r:0, g:0, b:0, a:255};
+	Color emissive = {r:0, g:0, b:0, a:255};
 	float shininess = 0;
 	bool reflective;		/// Use environment mapping for the texture
 	bool lighting = true; 	/// If false, diffuse is used as the color.

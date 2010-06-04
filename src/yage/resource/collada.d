@@ -8,6 +8,7 @@ module yage.resource.collada;
 
 import tango.io.device.File;
 import tango.io.FilePath;
+import tango.math.IEEE;
 import tango.text.Unicode : toLower;
 import tango.text.Util;
 import tango.text.xml.Document;
@@ -333,7 +334,7 @@ class Collada
 					texture = getTextureById(n.getAttribute("texture"));
 					break;
 				default:
-					Log.error("Collada material parameter %s not supported", name);
+					Log.error("Collada material parameter '%s' not supported", name);
 		}	}
 		
 		// Loop through and get each material property
@@ -352,11 +353,13 @@ class Collada
 					break;
 				case "diffuse":
 					getColorOrTexture(child, pass.diffuse, texture);
-					pass.setDiffuseTexture(TextureInstance(texture)); // may be null
+					if (texture)
+						pass.setDiffuseTexture(TextureInstance(texture));
 					break;
 				case "bump": // Bump map extension used by Okino, http://www.okino.com/conv/exp_collada_extensions.htm
 					getColorOrTexture(child, pass.diffuse, texture);
-					pass.setNormalSpecularTexture(TextureInstance(texture)); // may be null
+					if (texture)
+						pass.setNormalSpecularTexture(TextureInstance(texture));
 					break;
 				case "specular":
 					getColorOrTexture(child, pass.specular, texture);
@@ -378,6 +381,8 @@ class Collada
 				case "transparency":
 					float transparency = Xml.parseNumber!(float)(child.value);
 					pass.diffuse.a = cast(ubyte)(transparency * pass.diffuse.a);
+					if (transparency==0)
+						Log.warn("Material '%s' in Collada file '%s' has transparency of 0 and won't be rendered.", id, resourcePath);
 					break;
 				default:
 					break;
@@ -392,12 +397,13 @@ class Collada
 				if (extraTechnique.hasChild("bump"))
 				{	Texture texture;
 					getColorOrTexture(extraTechnique.getChild("bump").getChild("texture"), pass.diffuse, texture);
-					pass.setNormalSpecularTexture(TextureInstance(texture)); // may be null
+					if (texture)
+						pass.setNormalSpecularTexture(TextureInstance(texture)); 
 		}	}	}
 		
 		// Enable blending if there's alpha.
 		if (pass.blend==MaterialPass.Blend.NONE)
-			if (pass.diffuse.a < 1f || (pass.textures.length && pass.textures[0].texture.getImage().getChannels()==4))
+			if (pass.diffuse.a < 255 || (pass.textures.length && pass.textures[0].texture.getImage().getChannels()==4))
 				pass.blend = MaterialPass.Blend.AVERAGE;
 		
 		// Create a fallback technique that uses no shaders.
@@ -406,7 +412,8 @@ class Collada
 			MaterialTechnique t = new MaterialTechnique();
 			MaterialPass p = result.getPass().clone();
 			p.autoShader = MaterialPass.AutoShader.NONE;
-			p.textures.length = 1;
+			if (p.textures.length > 1)
+				p.textures.length = 1;
 			t.passes ~= p;
 			result.techniques ~= t;
 		}
@@ -496,20 +503,15 @@ class Collada
 			result = Geometry.merge(geometries);			
 		delete geometries;
 		
-		//foreach (mesh; result.meshes)
-		//	Log.trace(mesh.getTriangles().length);		
-		//Log.trace(result.getAttribute(Geometry.VERTICES).length);
 		result.optimize();
 		
-		//If phong shading is used, generate binormals.
-		bool needsTangents = false;
+		//If phong shading is used, generate tangent vectors in texture coordinates 1.
 		foreach (mesh; result.getMeshes())
 			if (mesh.material.getPass().autoShader == MaterialPass.AutoShader.PHONG)
-			{	needsTangents = true;
+			{	result.setAttribute(Geometry.TEXCOORDS1, result.createTangentVectors());
 				break;
 			}
-		if (needsTangents)
-			result.setAttribute(Geometry.TEXCOORDS1, result.createTangentVectors());	
+				
 		return result;
 	}
 	
@@ -697,16 +699,19 @@ class Collada
 		static T[] parseNumberList(T)(char[] list) // TODO: lookaside buffer?
 		{	scope char[][] pieces = delimit(trim(list), " \r\n\t");
 			T[] result = new T[pieces.length];
+			int i;
 			try {
-				foreach(i, piece; pieces)			
+				foreach(piece; pieces)			
 					if (piece.length)
-						result[i] = to!(T)(piece);
+					{	result[i] = to!(T)(piece);
+						assert(!isNaN(result[i])); // can this happen, or is an exception thrown?
+						i++;
+					}
 			} catch (ConversionException e)
 			{	throw new XmlException(e.toString());
 			}
-			return result;
+			return result[0..i];
 		}
-	
 	}
 	
 	/// Any Collada loading errors will throw this exception.

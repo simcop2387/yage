@@ -93,6 +93,7 @@ abstract class Probe
 	
 	/**
 	 * Searches to see if the given extension is supported in hardware.
+	 * Use feature() for a much faster cached version.
 	 * Due to the nature of sdl, a window must first be created before calling this function. */
 	static bool checkExtension(char[] name)
 	{	if (!extensions.length)

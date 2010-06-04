@@ -429,7 +429,7 @@ private struct HtmlParser
 	static void htmlToLetters(char[] htmlText, Style style, inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
 	{
 		char[] lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
-		htmlText = condenseWhitespace(htmlText, lookaside);
+		htmlText = htmlToAscii(htmlText, lookaside);
 		
 		// Convert xml document to an array of zero-deth nodes.
 		scope doc = new Document!(char);
@@ -502,10 +502,11 @@ private struct HtmlParser
 	}
 	
 	/*
+	 * TODO: Move the <span></span> adding part outside of this function, and give it a better name.
 	 * Condense whitespace in html text.
 	 * Multiple whitespace characters are reduced to a single one.
 	 * <br/> is converted to \n. */ 
-	private static char[] condenseWhitespace(char[] input, char[] lookaside)
+	private static char[] htmlToAscii(char[] input, char[] lookaside)
 	{	lookaside.length = input.length+13;
 		lookaside[0..6] = "<span>";
 		
@@ -524,7 +525,7 @@ private struct HtmlParser
 			}
 			
 			// Replace line returns
-			if (r+5 < input.length && input[r..r+5] == "<br/>")
+			if (r+5 < input.length && input[r..r+5] == "<br/>") // TODO: What about <br /> and other forms?
 			{	lookaside[w] = '\n';
 				r+= 5;
 				w++;
