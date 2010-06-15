@@ -56,23 +56,23 @@ class DemoScene : Scene
 		// Camera
 		camera = ship.getCameraSpot().addChild(new CameraNode());
 		ship.getCameraSpot().addChild(camera);
-		camera.setView(2, 100000, 60, 0, 1);	// wide angle view
+		camera.setView(2, 2000000, 60, 0, 1);	// wide angle and distanct
 		
 		// Music
 		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
 		music.setLooping(true);
-		music.play();
+		//music.play();
 
 		// Lights
 		light = scene.addChild(new LightNode());
 		light.diffuse = "#fed";
-		light.setLightRadius(100000);
-		light.setPosition(Vec3f(0, 0, -60000));
+		light.setLightRadius(1000000);
+		light.setPosition(Vec3f(0, 0, -600000));
 
 		// Star
 		star = light.addChild(new SpriteNode());
 		star.setMaterial("space/star.dae", "star-material");
-		star.setSize(Vec3f(10000));
+		star.setSize(Vec3f(100000));
 
 		// Planet
 		planet = scene.addChild(new ModelNode("space/planet.dae"));
@@ -119,7 +119,8 @@ int main()
 	// Init and create window
 	System.init(); 
 	auto window = Window.getInstance();
-	window.setResolution(720, 445, 0, false, 1); // golden ratio
+	window.setResolution(640, 480, 0, true, 4); // golden ratio
+	//window.setResolution(1920, 1080, 0, true, 4);
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
@@ -231,8 +232,9 @@ int main()
 				`%.2f <b>fps</span><br/>`
 				`%d <b>objects</b><br/>`
 				`%d <b>polygons</b><br/>`
-				`%d <b>vertices</b><br/><br/> wasd to move<br/> +q for hyperdrive<br/>space to shoot`,
-				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount) ~ Profile.getTimesAndClear();
+				`%d <b>vertices</b><br/>`
+				`%d <b>lights</b><br/><br/> wasd to move<br/> +q for hyperdrive<br/>space to shoot`,
+				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ Profile.getTimesAndClear();
 			frame.seek(0);
 			fps = 0;
 		}

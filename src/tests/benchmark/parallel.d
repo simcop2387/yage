@@ -4,7 +4,7 @@
  * License:    Boost 1.0
  */
 
-module unittests.benchmark.parallel;
+module tests.benchmark.parallel;
 
 import tango.math.Math;
 

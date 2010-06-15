@@ -4,7 +4,7 @@
  * License:    Boost 1.0
  */
 
-module unittests.benchmark.memory;
+module tests.benchmark.memory;
 
 import yage.core.memory;
 import yage.core.timer;

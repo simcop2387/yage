@@ -17,7 +17,7 @@ import yage.resource.embed.embed;
  * A floating camera that can be moved and rotated. */
 class FPSCamera : MovableNode
 {	
-	float speed = 600; 			// units/second^2 acceleration
+	float speed = 300; 			// units/second^2 acceleration
 	float angularSpeed = .2; 	// radians of acceleration per pixel of mouse movement.
 	float dampen = 5;			// dampen linear velocity by this % every second
 	float angularDampen = 50;	// dampen angular velocity by this % every second.
@@ -161,7 +161,7 @@ class LightsAndFog : TestScene
 		pass = geometry.getMeshes()[0].getMaterial().getPass();	
 		pass.lighting = true;
 		pass.emissive = "#222";
-		pass.diffuse = "white";
+		pass.diffuse = "gray";
 		pass.specular = "gray";
 		pass.shininess = 128;
 		pass.textures = [texture, normal];
@@ -207,13 +207,17 @@ class LightsAndFog : TestScene
 		
 		// A critter
 		auto beast = new ModelNode("character/beast.dae");
-		//foreach (mesh; beast.getModel().getMeshes())
-		//	mesh.setMaterial(plane.getModel().getMeshes()[0].getMaterial());
 		scene.addChild(beast);
 		beast.setScale(Vec3f(.3));
 		beast.setPosition(Vec3f(0, -40, -20));
 		//beast.setAngularVelocity(Vec3f(0, .5, 0));
+		beast.getModel().drawJoints = true;
 		
+		/*
+		auto terrorist = scene.addChild(new ModelNode("character/terrorist/terrorist.dae"));
+		terrorist.setPosition(Vec3f(20, -40, -20));
+		terrorist.getModel().drawJoints = true;
+		*/
 		// Lights
 		auto rotater = addChild(new ModelNode());
 		//rotater.setAngularVelocity(Vec3f(0, 0.5, 0));
@@ -298,7 +302,7 @@ class Transparency : TestScene
 		auto rotator = scene.addChild(new MovableNode());
 		rotator.setAngularVelocity(Vec3f(0, .1, 0));
 		
-		int number = 50;
+		int number = 500;
 		for (int i=0; i<number; i++)
 		{
 			float angle = i/cast(float)number * PI*2;

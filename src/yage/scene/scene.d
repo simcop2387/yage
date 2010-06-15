@@ -155,11 +155,6 @@ class Scene : Node//, ITemporal
 		}
 	}
 
-	/// Get an array that contains all LightNodes that are contained within this Scene.
-	LightNode[LightNode] getLights()
-	{	return lights;
-	}
-
 	/// Return the amount of time since the last time update() was called for this Scene.
 	float getDeltaTime()
 	{	return delta_time;
@@ -174,9 +169,10 @@ class Scene : Node//, ITemporal
 	
 	/**
 	 * Get all LightNodes that are currently a part of this scene.
-	 * Returns: a self indexed array. */
-	LightNode[LightNode] getAllLights()
-	{	return lights;		
+	 * Returns:  A copy of the Lights array to avoid synchronization issues. */
+	LightNode[] getAllLights()
+	{	synchronized (lights_mutex) // crashes occur without this
+			return lights.values;
 	}
 	
 	/**

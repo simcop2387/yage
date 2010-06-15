@@ -57,6 +57,7 @@ struct RenderStatistics
 	int nodeCount; ///
 	int vertexCount; ///
 	int triangleCount; ///
+	int lightCount; ///
 	
 	///
 	RenderStatistics opAdd(RenderStatistics rhs)
@@ -68,7 +69,8 @@ struct RenderStatistics
 	RenderStatistics opAddAssign(RenderStatistics rhs)
 	{	nodeCount += rhs.nodeCount;
 		vertexCount += rhs.vertexCount;
-		triangleCount += rhs.triangleCount;		
+		triangleCount += rhs.triangleCount;
+		lightCount += rhs.lightCount;
 		return *this;
 	}
 }
@@ -351,9 +353,8 @@ struct Render
 		// Geometry debugging properties
 		if (geometry.drawNormals || geometry.drawTangents)
 		{
-			MaterialPass pass = new MaterialPass();
+			MaterialPass pass = new MaterialPass(); // TODO: static
 			pass.lighting = false;
-			
 			
 			Vec3f[] vertices = cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES);
 			Vec3f[] normals = cast(Vec3f[])geometry.getAttribute(Geometry.NORMALS);
@@ -367,11 +368,11 @@ struct Render
 				{	lines[i*2] = vertices[i];
 					lines[i*2+1] = vertices[i] + tangents[i];
 				}
-				vb.setData(lines);
-				graphics.bindVertexBuffer(vb, Geometry.VERTICES);
+				
 				
 				pass.diffuse = "green";
 				graphics.bindPass(pass);
+				vb.setData(lines);
 				graphics.drawPolygons(vb, Mesh.LINES, false);
 			}
 			
@@ -380,12 +381,11 @@ struct Render
 				{	lines[i*2] = vertices[i];
 					lines[i*2+1] = vertices[i] + normals[i];
 				}
-				vb.setData(lines);
-				graphics.bindVertexBuffer(vb, Geometry.VERTICES);
 				
 				graphics.current.pass = null;
 				pass.diffuse = "magenta";
 				graphics.bindPass(pass);
+				vb.setData(lines);
 				graphics.drawPolygons(vb, Mesh.LINES, false);
 			}
 			
@@ -396,8 +396,87 @@ struct Render
 	}
 	
 	///
-	static RenderStatistics model(Geometry geometry, LightNode[] lights=null, Material[] materialOverrides=null, float animationTime=0) 
-	{	auto result = Render.geometry(geometry, lights, materialOverrides);  // TODO: animationTime won't support blending animations.
+	static RenderStatistics model(Model model, LightNode[] lights=null, Material[] materialOverrides=null, float animationTime=0) 
+	{	auto result = Render.geometry(model, lights, materialOverrides);  // TODO: animationTime won't support blending animations.
+	
+		
+		if (model.joints.length)
+		{
+			// Calculate joint positions
+			static bool positionsWritten = false;
+			
+			foreach (i, joint; model.joints) // this works because the joints are stored in order.
+			{	if (joint.getParent())
+					joint.absolute = joint.getParent().absolute.transformAffine(joint.relative);
+				else
+					joint.absolute = joint.relative;
+			}
+			
+			/*	
+			void calculateJoints(Joint joint)
+			{	
+				if (joint.getParent())
+					joint.absolute = joint.getParent().absolute.transformAffine(joint.relative);
+					// joint.absolute = joint.relative.transformAffine(joint.getParent().absolute
+				else
+					joint.absolute = joint.relative;
+				foreach (child; joint.getChildren())
+					calculateJoints(child);				
+			}
+			if (model.joints.length)
+				calculateJoints(model.joints[0]);
+
+			if (!positionsWritten)
+				foreach (i, joint; model.joints)
+					Log.trace(joint.absolute.getPosition());
+				
+			*/
+			positionsWritten = true;
+			
+		
+			// Geometry debugging properties
+			if (model.drawJoints)
+			{
+				MaterialPass pass = new MaterialPass(); // TODO: static
+				pass.lighting = false;
+				pass.depthRead = false;
+				
+				Vec3f[] points = Memory.allocate!(Vec3f)(model.joints.length);
+				Vec3f[] lines = Memory.allocate!(Vec3f)(model.joints.length*2);
+				int lineIndex;
+				foreach (i, joint; model.joints)			
+				{	points[i] = joint.absolute.getPosition();
+					if (joint.getParent())				
+					{	lines[lineIndex] = joint.absolute.getPosition();
+						lines[lineIndex+1] = joint.getParent().absolute.getPosition();
+						lineIndex+=2;
+				}	}
+				
+				scope VertexBuffer vb = new VertexBuffer();
+				vb.cache = false; // don't cache since we're just using it once
+				
+				// A point for each joint
+				pass.diffuse = "magenta";
+				pass.linePointSize = 10;
+				pass.draw = MaterialPass.Draw.POINTS; // req'd for line width to be used.
+				graphics.bindPass(pass);
+				vb.setData(points);
+				graphics.drawPolygons(vb, Mesh.POINTS, false);
+				
+				// And a line connecting them
+				graphics.current.pass = null; // reset cache		
+				pass.diffuse = "blue";
+				pass.linePointSize = 2;
+				pass.draw = MaterialPass.Draw.LINES; // req'd for line width to be used.
+				graphics.bindPass(pass);
+				vb.setData(lines);
+				graphics.drawPolygons(vb, Mesh.LINES, false);
+
+				Memory.free(lines);
+				Memory.free(points);
+			}
+		}
+	
 		return result;
 	}
 			
@@ -408,6 +487,7 @@ struct Render
 		static Mesh mesh;
 		if (!mesh)
 			mesh = new Mesh();
+		mesh.getTrianglesVertexBuffer().cache = false; // Makes things just a little faster.
 		
 		int num_lights = Probe.feature(Probe.Feature.MAX_LIGHTS);
 				
@@ -457,7 +537,6 @@ struct Render
 		alphaTriangles.length = 0;
 	}
 	
-	
 	/**
 	 * Completely reset the Rendering engine.
 	 * All shaders will be regenerated. 
@@ -494,10 +573,11 @@ struct Render
 			result.nodeCount = nodes.length;
 
 			int num_lights = Probe.feature(Probe.Feature.MAX_LIGHTS);
-			LightNode[] all_lights = camera.getScene().getLights().values; // creates garbage, but this copy also prevents threading issues.
+			scope LightNode[] all_lights = camera.getScene().getAllLights(); // Does this copy also prevents threading issues (obviously not, see below!).
+			result.lightCount += all_lights.length;
 			
-			foreach (light; all_lights)
-				light.inverseCameraPosition = light.getAbsolutePosition().transform(camera.getInverseAbsoluteMatrix());
+			foreach (light; all_lights) // [below] TODO: An access violation that randomly occurs here!!  Surely it's due to thread misuse!  It happens when lots of lights are created and destroyed.
+				light.inverseCameraPosition = light.getAbsoluteTransform(true).getPosition().transform(camera.getInverseAbsoluteMatrix());
 			
 			// Loop through all nodes in the queue and render them
 			foreach (VisibleNode n; nodes)
@@ -522,8 +602,13 @@ struct Render
 						graphics.bindLight(lights[i], i);
 					
 					// Render
-					if (cast(ModelNode)n)
-						result +=model((cast(ModelNode)n).getModel(), lights, n.materialOverrides);						
+					auto modelNode = cast(ModelNode)n;
+					if (modelNode)
+					{	if (cast(Model)modelNode.getModel())
+							result += model(cast(Model)modelNode.getModel(), lights, n.materialOverrides);
+						else
+							result += geometry(modelNode.getModel(), lights, n.materialOverrides);
+					}
 					else if (cast(SpriteNode)n)
 						result += sprite((cast(SpriteNode)n).getMaterial(), lights, n.materialOverrides);
 					
@@ -554,7 +639,7 @@ struct Render
 			
 			// Precalculate the inverse of the Camera's absolute transformation Matrix.
 			camera.inverse_absolute = camera.getAbsoluteTransform(true).inverse();
-			if (scene == camera.scene)
+			if (scene is camera.scene)
 				glMultMatrixf(camera.inverse_absolute.v.ptr);
 			else
 			{	Vec3f axis = camera.inverse_absolute.toAxis();
@@ -607,18 +692,11 @@ struct Render
 		Matrix matrix = *graphics.current.transformMatrix();
 		
 		Vec3f sprite = matrix.getPosition();
-		Vec3f camera = graphics.current.camera.getAbsolutePosition();	
+		Vec3f camera = graphics.current.camera.getAbsoluteTransform(true).getPosition();	
 		Vec3f spriteNormal = Vec3f(0, 0, -1);		
 		Vec3f spriteToCamera = (camera - sprite).normalize();
-		
 
 		Vec3f rotation = spriteNormal.lookAt(camera - sprite, Vec3f(0, 1, 0));
-		
-		/*
-		matrix = matrix.move(-sprite);
-		matrix = matrix.rotate(rotation); //.setRotation(rotation);
-		matrix = matrix.move(sprite);
-		*/
 		
 		graphics.bindMatrix(&rotation.toMatrix());		
 		
@@ -633,8 +711,7 @@ struct Render
 	/// Render a surface.  TODO: Move parts of this to OpenGL.d
 	static void surface(Surface surface, IRenderTarget target=null)
 	{	
-		graphics.bindRenderTarget(target);		
-		glDisable(GL_DEPTH_TEST);
+		graphics.bindRenderTarget(target);
 		
 		// Setup the viewport in orthogonal mode,
 		// with dimensions 0..width, 0..height
@@ -731,7 +808,6 @@ struct Render
 		glStencilFunc(GL_ALWAYS, 0, 0xff); // reset to default value		
 		
 		// Reset state
-		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);		
 		
 		graphics.bindRenderTarget(null);	

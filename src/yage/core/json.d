@@ -8,8 +8,10 @@ module yage.core.json;
 
 import tango.core.Traits;
 import tango.text.convert.Format;
+import yage.system.log;
 
-/// TODO: enums
+
+/// TODO: This fails for base classes!
 struct Json
 {
 	///
@@ -21,7 +23,7 @@ struct Json
 		int maxArrayLength = 64;   ///
 		int floatPrecision = 6;    /// TODO
 		int uintAsHex = false;     /// TODO
-		bool useReferences = true; /// Print a reference to an object instead of adding it more than once.
+		bool useReferences = false; /// Print a reference to an object instead of adding it more than once.
 		
 		private int currentDepth = 0;
 		
@@ -113,6 +115,7 @@ struct Json
 					char[] comma = index<object.tupleof.length-1 ? "," : "";
 					result ~= tab ~ name ~ ": " ~ internalEncode(object.tupleof[index], options, path~"."~name) ~ comma ~ options.lineReturn;
 				}
+				
 				return result ~ tab2 ~ "}";
 			} 	
 			else static if (is(T : void*) && !is(T==void*)) // pointers, dereference through recursion
@@ -210,7 +213,18 @@ struct Json
 				selfRef = this;
 			}
 		}
-		
-		Json.encode(new A());
+		class C : A
+		{	int test=5;
+		}
 	}
+}
+
+
+
+// Testing
+template BaseClassOf(T) {                                                      
+    static if (is(T S == super))                                         
+        alias S[0] BaseClassOf;
+    else
+        static assert(false, "fail");
 }

@@ -53,6 +53,7 @@ class Ship : GameObject
 
 		sound = ship.addChild(new SoundNode());
 		sound.setSound("sound/ship-engine.ogg");
+		sound.setVolume(.3);
 		sound.setLooping(true);
 	}
 
@@ -96,14 +97,13 @@ class Ship : GameObject
 			input.hyper = on;
 	}
 	
-	
 	void update(float delta)
 	{	super.update(delta);
 
 		// Set the acceleration speed
 		float speed = 50*delta;
 		if (input.hyper)
-			speed *= 20; // Hyperdrive
+			speed *= 40; // Hyperdrive
 
 		// Accelerate forward
 		if (input.up)
@@ -112,17 +112,19 @@ class Ship : GameObject
 
 			// Engine smoke
 			SpriteNode puff = getScene().addChild(new SpriteNode());
-			puff.setMaterial("fx/smoke.dae", "smoke-material");
+			Material smoke = ResourceManager.material("fx/smoke.dae", "smoke-material");
+			puff.setMaterial(smoke.dup());
 			puff.setLifetime(5);
 			puff.setSize(Vec3f(.4));
-			//puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
+			puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 			
 			void fade(Node self)
 			{	SpriteNode node = cast(SpriteNode)self;
-				//node.setColor(Color(1, 1, 1, node.getLifetime()/5)); // TODO: Node material overrides
+				node.getMaterial().getPass().diffuse.a = cast(ubyte)(node.getLifetime() * 51);
 				float scale = tango.math.Math.sqrt(20.0f)-tango.math.Math.sqrt(node.getLifetime()*4) + .4;
 				node.setSize(scale);
+				node.setVelocity(node.getVelocity().scale(max(1-1/30f, 0.0f)));
 			}
 			puff.onUpdate(&fade);
 

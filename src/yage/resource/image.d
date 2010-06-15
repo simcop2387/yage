@@ -332,52 +332,44 @@ class Image
 	 *     color = img will be converted to an RGBA image of this color before pasting.
 	 *     xoffset = x-offset of img from this image's left side.  Out of bounds values will be cropped.
 	 *     yoffset = y-offset of img from this image's top side.  Out of bounds values will be cropped.
-	 *     skew = horizontally skew the overlayed image by this amount.  .5 will skew it by 45 degrees
 	 * TODO: Make the top go to the right instead of taking the bottom to the left when skewing
 	 */
-	void overlaySkewAndColor(Image img, Color color, int xoffset=0, int yoffset=0, float skew=0)
+	void overlayAndColor(Image img, Color color, int xoffset=0, int yoffset=0)
 	{	assert(getChannels()==4);
 		assert(img.getChannels()==1);
 	
-		int ymax = max(min(img.height+yoffset, height), 0); 
-		for (int y=max(yoffset, 0); y < ymax; y++)
+		uint ymax = max(min(img.height+yoffset, height), 0); 
+		for (uint y=max(yoffset, 0); y < ymax; y++)
 		{	assert(0 <= y && y<height);
 		
-			float skewScaled = (img.height - (y-yoffset)) * skew; // goes from 0 to 1
-			
-			int xmax = max(min(img.width+xoffset, width), 0);
-			for (int x=max(xoffset, 0); x<xmax; x++)
+			uint ywidth = y*width;
+			uint xmax = max(min(img.width+xoffset, width), 0);
+			for (uint x=max(xoffset, 0); x<xmax; x++)
 			{	assert(0 <= x && x<width);
-			
-				int x2 = cast(int)(x+skewScaled);
-				if (x2>=width)
-					continue;
 				
 				// TODO: Multiply by color's alpha?
-				uint src_alpha = img.data[(y-yoffset)*img.width + x - xoffset];
+				uint src_alpha = img.data[(y-yoffset)*img.width + x - xoffset] * color.a;
+				src_alpha = (src_alpha * 257)>>16; // fast divide by 255
 				if (src_alpha > 0)
 				{	
-					uint dest = (y*width+x2)*channels;
+					uint dest = (ywidth+x)*channels;
 					uint dst_alpha = data[dest+3];
-					uint src_dest_ratio = (255-src_alpha) * dst_alpha;
-					uint dst_ratio = (src_dest_ratio * 257)>>16; // hack for faster divide by ~255
+					uint dst_ratio = (((255-src_alpha) * dst_alpha) * 257)>>16; // hack for faster divide by ~255
 					
 					// This is my own blending algorithm, can it be further optimized?
-					int reciprocal = 0x10001 / (src_alpha + dst_ratio); // calculate reciprocal for fast integer division
-															// A lookup table of reciprocals could make this faster.
-					data[dest  ] = ((color.ub[0]*src_alpha + data[dest  ]*dst_ratio) * reciprocal)>>16; // colors
-					data[dest+1] = ((color.ub[1]*src_alpha + data[dest+1]*dst_ratio) * reciprocal)>>16;
-					data[dest+2] = ((color.ub[2]*src_alpha + data[dest+2]*dst_ratio) * reciprocal)>>16;
+					uint reciprocal = 0x10001 / (src_alpha + dst_ratio); // calculate reciprocal for fast integer division.
+					data[dest  ] = ((color.r*src_alpha + data[dest  ]*dst_ratio) * reciprocal)>>16; // colors
+					data[dest+1] = ((color.g*src_alpha + data[dest+1]*dst_ratio) * reciprocal)>>16;
+					data[dest+2] = ((color.b*src_alpha + data[dest+2]*dst_ratio) * reciprocal)>>16;
 
-					//data[dest+3] = (src_alpha*src_alpha + (255-src_alpha)*dst_alpha) / 255;
-					data[dest+3] = ((src_alpha*src_alpha + src_dest_ratio) * 257)>>16;
+					data[dest+3] = src_alpha + dst_ratio;
 				}
 		}	}
 	}
 	unittest
 	{	Image a = new Image(1, 16, 16);
 		Image b = new Image(4, 8, 8);
-		b.overlaySkewAndColor(a, Color("#FFFFFF"), -4, -4);
+		b.overlayAndColor(a, Color("#FFFFFF"), -4, -4);
 	}
 	
 	/**

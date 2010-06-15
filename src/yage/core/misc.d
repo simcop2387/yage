@@ -15,7 +15,7 @@ import tango.text.Util;
 import yage.core.array;
 import yage.core.parse;
 import yage.core.timer;
-
+import yage.system.log;
 
 /**
  * Resolve "../", "./", "//" and other redirections from any path.
@@ -44,6 +44,31 @@ char[] cleanPath(char[] path)
 	}
 	path = join(result, sep);
 	return path;
+}
+
+/**
+ * Make a shallow copy of a class.
+ * TODO: dup for structs, and this also doesn't copy base Members. 
+ * TODO: Betware arrays, both will be slices of the same array afterward, even after resizing one. */
+T dup(T : Object)(T object)
+{	if (!object)
+		return null;
+	T result = new T();
+	
+	foreach (int index, _; object.tupleof)
+		result.tupleof[index] = object.tupleof[index];
+	return result;
+}
+class DupTest { int a, b; }
+class DupTest2 : DupTest { int c; }
+unittest {	
+	auto a = new DupTest2();
+	a.a = 3;
+	a.c = 4;
+	auto b = dup(a);
+	assert(a !is b);
+	assert(b.c==4);	
+	//assert(b.a==3);
 }
 
 /**

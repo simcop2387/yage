@@ -42,18 +42,27 @@ class Joint
 };
 */
 
+///
 class Joint : Tree!(Joint)
 {
-	Matrix relative;
-	Matrix absolute;
+	int number;
+	char[] name;
+	
+	Matrix relative;	///
+	Matrix absolute;	///
+	
+	Matrix inverseBind; /// This exists in Collada but I'm not yet sure what it's for.
+}
+
+///
+struct JointInfluence
+{	int joint;       /// Index of the joint in the joints array.
+	float influence; /// How much the joint influences this vertex.  All influences for a vertex should sum to 1.
 }
 
 /**
- * A Model is a 3D object, often loaded from a file.
- *
- * Each model is divided into one or more Meshes; each Mesh has its own material
- * and an array of triangle indices that correspond to vertices in the Model's vertex array.  
- * ModelNodes can be used to create 3D models in a scene.*/
+ * A Model is a Geometry that includes a skeleton for skeltal animation.
+ * ModelNodes can be used to create 3D models in a scene. */
 class Model : Geometry
 {	
 	private char[] source;
@@ -62,11 +71,19 @@ class Model : Geometry
 	protected float fps=24;
 	protected bool animated = false;
 	protected double animation_time=-1;
-	protected double animation_max_time=0;	
-	//protected int[] joint_indices;
+	protected double animation_max_time=0;
 		
-	protected Joint[] skeleton; // All of the joints that makeup the skeleton.  The first Joint is the root.
+	protected Vec3f[] originalVertices;
+	protected Vec3f[] originalNormals;
+	
 
+	
+	Joint[] joints; /// All of the joints that makeup the skeleton.  The first Joint is the root.
+	JointInfluence[][] jointInfluences; /// This is a jagged array of joint influences for each vertex.  It must be the same length as the number of vertices.
+
+	
+	bool drawJoints;
+	
 	/// Instantiate an empty model.
 	this()
 	{	
@@ -77,13 +94,22 @@ class Model : Geometry
 	{	this();		
 		source = ResourceManager.resolvePath(filename);
 		auto c = new Collada(filename);
-		auto geometry = c.getMergedGeometry();
+		auto model = c.getMergedGeometry();
 		
-		this.attributes = geometry.attributes;
-		this.meshes = geometry.meshes;
-		delete geometry;
+		this.attributes = model.attributes;
+		this.meshes = model.meshes;
+		this.joints = model.joints;
+		delete model;
 	}
 
+	/**
+	 * Convert a Geometry into the Model subclass. */
+	this (Geometry geometry)
+	{	attributes = geometry.attributes;
+		meshes = geometry.meshes;
+		drawNormals = geometry.drawNormals;
+		drawTangents = geometry.drawTangents;
+	}
 	/*
 	 * Advance this Model's animation to time.
 	 * This still has bugs somehow.
@@ -206,5 +232,40 @@ class Model : Geometry
 	{	return source;
 	}
 
+	override int[] optimize()
+	{
+		
+		int[] remap = super.optimize();
+		
+		// Remap joint influences from the old vertex order to the new optimized one.\
+		if (jointInfluences.length)
+		{	JointInfluence[][] influences2;
+			influences2.length = getVertexBuffer(Geometry.VERTICES).length;
+			foreach (from, to; remap)		
+				influences2[to] = jointInfluences[from];
+			delete jointInfluences;
+			jointInfluences = influences2;
+		}
+		
+		return remap;		
+	}
+	
+	override static Model merge(Model[] models)
+	{	Geometry geometryResult = Geometry.merge(models);
+	
+		Model result = new Model(geometryResult);
+		
+		// TODO: Merge joint influences, make all joints have a common root.
+		foreach (model; models)
+		{	
+			result.jointInfluences ~= model.jointInfluences;
+			if (model.joints.length && !result.joints.length) // for now we only grab the first set of joints.
+				result.joints = model.joints;				
+			
+		
+		}
+		
+		return result;
+	}
 }
 

@@ -259,12 +259,16 @@ class OpenGL : GraphicsAPI
 				}	}
 				else
 				{	glDisable(GL_BLEND);
-					glDepthMask(true);
+					glDepthMask(pass.depthWrite);
 					
 					glEnable(GL_ALPHA_TEST);
 					glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
 				}
 			}
+			if (pass.depthRead)
+				glEnable(GL_DEPTH_TEST);
+			else
+				glDisable(GL_DEPTH_TEST);
 			
 			// Polygon Mode
 			if (pass.draw != currentPass.draw)
@@ -276,9 +280,11 @@ class OpenGL : GraphicsAPI
 						break;
 					case MaterialPass.Draw.LINES:
 						glPolygonMode(cullMode, GL_LINE);
+						glLineWidth(pass.linePointSize);
 						break;
 					case MaterialPass.Draw.POINTS:
 						glPolygonMode(cullMode, GL_POINT);
+						glPointSize(pass.linePointSize);
 						break;
 				}
 			}
@@ -602,7 +608,7 @@ class OpenGL : GraphicsAPI
 		
 		foreach (i, texture; textures)
 		{
-			// Skip if this texture if it's already bound
+			// Skip if this texture is already bound
 			if (current.textures.length > i && *current.textures[i] == texture)
 				continue;
 			
@@ -730,7 +736,7 @@ class OpenGL : GraphicsAPI
 				float time = timer.tell();
 				float min = 0.05f;
 				if (time > min)
-					Log.info("Texture %s uploaded to video memory in %s seconds (times less than %fs are not logged)", 
+					Log.info("Texture %s uploaded to video memory in %s seconds (times less than %.2fs are not logged)", 
 						texture.texture.getSource(), time, min);
 			}
 			
@@ -850,9 +856,10 @@ class OpenGL : GraphicsAPI
 			GL_ELEMENT_ARRAY_BUFFER_ARB :
 			GL_ARRAY_BUFFER_ARB;
 		
-		int useVbo = Probe.feature(Probe.Feature.VBO);
+		bool supportsVbo = cast(bool)Probe.feature(Probe.Feature.VBO);
+		bool useVbo;
 		if (vb)
-		{	useVbo = useVbo && vb.cache;
+		{	useVbo = supportsVbo && vb.cache;
 
 			// Bind vbo and update data if necessary.
 			if (useVbo)
@@ -869,6 +876,9 @@ class OpenGL : GraphicsAPI
 				{	glBufferDataARB(vbo_type, vb.data.length, vb.ptr, GL_STATIC_DRAW_ARB);
 					vb.dirty = false;
 			}	}
+			else if (supportsVbo)
+				glBindBufferARB(vbo_type, 0);
+				
 			// Bind the data			
 			if (type==Geometry.VERTICES)
 			{	glEnableClientState(GL_VERTEX_ARRAY);				
@@ -894,7 +904,7 @@ class OpenGL : GraphicsAPI
 				if (maxTextures > 1)
 					glClientActiveTextureARB(GL_TEXTURE0_ARB);
 			} 
-			else if (type==Mesh.TRIANGLES || type==Mesh.LINES)
+			else if (type==Mesh.TRIANGLES || type==Mesh.LINES || type==Mesh.POINTS)
 			{	// glBindBuffer was called above, no other action necessary
 			}
 			else
@@ -973,20 +983,27 @@ class OpenGL : GraphicsAPI
 		// Draw the polygons
 		int useVbo = Probe.feature(Probe.Feature.VBO) && polygons.cache;
 		if (indexed)
-		{	bindVertexBuffer(polygons, type);
+		{	bindVertexBuffer(polygons, type); // type is an indexed type
 			if (type==Mesh.TRIANGLES)
 				glDrawElements(GL_TRIANGLES, polygons.length()*3, GL_UNSIGNED_INT, useVbo ? null : polygons.ptr);
 			else
 				throw new GraphicsException("Unsupported polygon type %s", type);
 		}		
 		else
-		{	bindVertexBuffer(polygons, type);
-			if (type==Mesh.TRIANGLES)
-				glDrawArrays(GL_TRIANGLES, 0, polygons.length()*3);
-			else if (type==Mesh.LINES)
-				glDrawArrays(GL_LINES, 0, polygons.length());
-			else
-				throw new GraphicsException("Unsupported polygon type %s", type);
+		{	bindVertexBuffer(polygons, Geometry.VERTICES);
+			switch (type)
+			{	case Mesh.TRIANGLES:
+					glDrawArrays(GL_TRIANGLES, 0, polygons.length()*3);
+					break;
+				case Mesh.LINES:
+					glDrawArrays(GL_LINES, 0, polygons.length());
+					break;
+				case Mesh.POINTS:
+					glDrawArrays(GL_POINTS, 0, polygons.length());
+					break;
+				default:
+					throw new GraphicsException("Unsupported polygon type %s", type);					
+			}
 		}
 	}
 	

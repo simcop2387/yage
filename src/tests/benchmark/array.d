@@ -4,7 +4,7 @@
  * License:    Boost 1.0
  */
 
-module unittests.benchmark.array;
+module tests.benchmark.array;
 
 import tango.io.Stdout;
 import tango.text.convert.Format;
@@ -13,6 +13,7 @@ import yage.core.array;
 import yage.core.timer;
 
 /**
+ * Test the speed of ArrayBuilder concatenation against the built-in array.
  * On a P4 2.8ghz Windows XP Laptop, this shows that ArrayBuilder!(int) is 3-6x faster with ~= as int[]. */
 void main()
 {

@@ -71,7 +71,10 @@ struct TextureInstance
 	/// 
 	Texture texture;
 	
-	protected static int[int] translate;
+	///
+	char[] toString()
+	{	return format(`TextureInstance {source: "%s"}`, texture ? texture.source : "null");
+	}
 
 	/// Create a new TextureInstance with the parameters specified.
 	static TextureInstance opCall(Texture texture, bool clamp=false, int filter=TextureInstance.Filter.DEFAULT)
@@ -82,10 +85,6 @@ struct TextureInstance
 		result.clamp = clamp;
 		result.filter = filter;
 		return result;
-	}
-	
-	char[] toString()
-	{	return swritef(`TextureInstance {source: "%s"}`, texture ? texture.source : "null");
 	}
 }
 

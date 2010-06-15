@@ -102,7 +102,13 @@ package class SurfaceGeometry : Geometry
 		// Make a new material with a single layer with a diffuse color of white.
 		Material createMaterial()
 		{	auto result = new Material();
-			result.setPass(new MaterialPass());
+			auto pass = new MaterialPass();			
+			pass.diffuse = "white";
+			pass.blend = MaterialPass.Blend.AVERAGE;
+			pass.lighting =
+			pass.depthRead =
+			pass.depthWrite = false;
+			result.setPass(pass);
 			return result;
 		}
 		
@@ -133,6 +139,7 @@ package class SurfaceGeometry : Geometry
 			top, right, bottom, left, backgroundColor, backgroundImage,
 			topLeftImage, topImage, topRightImage, rightImage, 
 			bottomRightImage, bottomImage, bottomLeftImage, leftImage, centerImage, text]);
+		setMaterials(null, null, null, null, null, 1.0);
 	}
 	
 	/**
@@ -232,8 +239,10 @@ package class SurfaceGeometry : Geometry
 			result.textures  ~= TextureInstance(texture, clamp, TextureInstance.Filter.BILINEAR);
 			result.diffuse = Color(1f, 1f, 1f, opacity);
 			result.blend = MaterialPass.Blend.AVERAGE;
-			result.lighting = false;
-			result.emissive = Color(0xffffffff); // even with this, we still have to turn off lighting to render, but why?
+			result.lighting =
+			result.depthRead =
+			result.depthWrite = false;
+			//result.emissive = Color(0xffffffff); // even with this, we still have to turn off lighting to render, but why?
 			return result;
 		}
 		
@@ -246,14 +255,14 @@ package class SurfaceGeometry : Geometry
 		
 		// Border Images
 		foreach(mesh; this.borderImage)
-		{	if (borderImage[0])
+		{	if (borderImage.length && borderImage[0])
 			{	mesh.setMaterial(new Material());
 				mesh.getMaterial().setPass(createPass(borderImage[0]));
 			} else
 				mesh.setMaterial(cast(Material)null);
 		}
 		foreach(mesh; this.borderCornerImage)
-		{	if (borderCornerImage[0])
+		{	if (borderCornerImage.length && borderCornerImage[0])
 			{	mesh.setMaterial(new Material());
 				mesh.getMaterial().setPass(createPass(borderCornerImage[0]));
 			} else

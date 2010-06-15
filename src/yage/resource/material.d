@@ -11,6 +11,7 @@ import tango.text.convert.Format;
 import tango.io.device.File;
 import yage.core.all;
 import yage.core.object2;
+import yage.core.misc;
 import yage.resource.texture;
 import yage.resource.manager;
 import yage.resource.shader;
@@ -29,11 +30,26 @@ class Material
 	///
 	this(bool createAPass=false) {
 		if (createAPass)
-		{	techniques ~= new MaterialTechnique();
-			techniques[0].passes ~= new MaterialPass();			
-		}
-		
+			setPass(new MaterialPass());
 	};
+	
+	/**
+	 * Create a deep copy of the Material, cloning both techniques and passes. */
+	Material dup()
+	{	auto result = .dup(this);
+		result.techniques = new MaterialTechnique[0]; // reset array pointer
+		foreach (t; techniques)
+			result.techniques ~= t.dup();
+		return result;
+	}
+	unittest
+	{	Material a = new Material();
+		a.setPass(new MaterialPass());
+		auto b = a.dup();
+		assert(a !is b);
+		assert(a.techniques[0] !is b.techniques[0]);
+		assert(a.getPass() !is b.getPass());
+	}
 	
 	/**
 	 * This is a convenience function to set the value for the first pass of the first technique.
@@ -73,6 +89,15 @@ class MaterialTechnique
 {	
 	MaterialPass[] passes; ///
 
+	///
+	MaterialTechnique dup()
+	{	auto result = .dup(this);
+		result.passes = new MaterialPass[0]; // reset array pointer
+		foreach (p; passes)
+			result.passes ~= .dup(p);
+		return result;
+	}
+	
 	/**
 	 * Returns true if the Technique has regions that can be partially seen through.
 	 * This is true if the first pass has blending enabled. */
@@ -124,37 +149,19 @@ class MaterialPass
 	bool reflective;		/// Use environment mapping for the texture
 	bool lighting = true; 	/// If false, diffuse is used as the color.
 	bool flat = false;		/// If true, use flat shading
-	float lineWidth = 1;	/// Thickness in pixels of lines and points. 
+	float linePointSize = 1;	/// Thickness in pixels of lines and points. 
 	TextureInstance[] textures;
 	
 	Blend blend = Blend.NONE; /// Loaded from Collada's transparent property.
 	Cull cull = Cull.BACK;
 	Draw draw = Draw.POLYGONS;
+	
+	bool depthRead = true;
+	bool depthWrite = true;
 		
 	Shader shader;
 	ShaderUniform[] shaderUniforms;
 	AutoShader autoShader = AutoShader.NONE;
-	
-	/// TODO: make a generic clone function using traits.
-	MaterialPass clone()
-	{	auto result = new MaterialPass();
-		result.diffuse = diffuse;
-		result.ambient = ambient;
-		result.specular = specular;
-		result.emissive = emissive;
-		result.shininess = shininess;
-		result.reflective = reflective;
-		result.lighting = lighting;
-		result.flat = flat;
-		result.lineWidth = lineWidth;
-		result.textures = textures;
-		result.blend = blend;
-		result.draw = draw;
-		result.shader = shader;
-		result.shaderUniforms = shaderUniforms;
-		result.autoShader = autoShader;
-		return result;	
-	}
 	
 	void setDiffuseTexture(TextureInstance texture)
 	{	if (textures.length < 1)

@@ -73,13 +73,15 @@ void main()
 	eye_direction = -normalize(v);
 	
 	// Put each light direction in tangent space
-	for (int i=0; i<NUM_LIGHTS; i++)
-	{	vec3 lightDirection = lights[i].position.xyz - eye_position;
-		v.x = dot(lightDirection, tangent);
-		v.y = dot(lightDirection, binormal);
-		v.z = dot(lightDirection, normal);	
-		light_directions[i] = (v);
-	}
+	#if NUM_LIGHTS > 0
+		for (int i=0; i<NUM_LIGHTS; i++)
+		{	vec3 lightDirection = lights[i].position.xyz - eye_position;
+			v.x = dot(lightDirection, tangent);
+			v.y = dot(lightDirection, binormal);
+			v.z = dot(lightDirection, normal);	
+			light_directions[i] = (v);
+		}
+	#endif
 #else // keep eye_direction and light_directions in world space (or is it model space?)	
 	eye_direction = -normalize(eye_position);
 	for (int i=0; i<NUM_LIGHTS; i++)

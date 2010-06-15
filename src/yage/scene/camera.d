@@ -117,7 +117,7 @@ class CameraNode : MovableNode
 	 *         it to be set automatically by the Camera resolution.  Zero is also the default value.
 	 *         threshold = Minimum size of a node in pixels before it's rendered.  The default
 	 *         is 0.667 (2/3rds of a pixel).*/
-	void setView(float near=1, float far=100000, float fov=45, float aspect=0, float threshold=0.667)
+	void setView(float near=1, float far=1000000, float fov=45, float aspect=0, float threshold=0.667)
 	{	this.near = near;
 		this.far = far;
 		this.fov = fov;

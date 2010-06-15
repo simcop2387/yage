@@ -7,6 +7,7 @@
 module yage.resource.geometry;
 
 import tango.math.Math;
+import yage.core.array;
 import yage.core.format;
 import yage.core.math.vector;
 import yage.resource.manager;
@@ -45,7 +46,8 @@ class VertexBuffer
 }
 
 /**
- * Stores vertex data and meshes for any 3D geometry. */
+ * Each Geometry has arrays of vertex data and one or more Meshes; each Mesh has its own material
+ * and an array of triangle indices that correspond to vertices in the Geometry vertex array. */
 class Geometry
 {	
 	/**
@@ -247,20 +249,16 @@ class Geometry
 		return sqrt(result);
 	}
 
-	import yage.core.array;
-	import yage.core.timer;
-	
 	/**
 	 * Merge duplicate vertices and Meshes.
-	 * This should be done before creating binormals in order to work well. */
-	void optimize()
+	 * This should be done before creating binormals in order to work well. 
+	 * Returns:  a map from the old vertex indices to the new ones. */
+	int[] optimize()
 	{
-		debug {
+		debug { // assertions
 			int length =  getVertexBuffer(Geometry.VERTICES).length;
 			foreach (name, attribute; attributes)
-			{	assert(attribute.length == length, format("%s is only of length %s, but vertices are of length %s", name, attribute.length, length));
-			}
-			
+				assert(attribute.length == length, format("%s is only of length %s, but vertices are of length %s", name, attribute.length, length));
 		}
 		
 		// Merge duplicate vertices
@@ -304,13 +302,14 @@ class Geometry
 		
 		// This is the slow part
 		// Build a map of how to merge vertices
-		scope int[int] remap;
+		int[] remap = new int[vb.length];
 		scope int[int] remapReverse;
 		int offset = 0;
 		for (int i=0; i<vertices.length/c; i++)
 		{	bool remapped = false;
 			foreach (d; getDuplicateVertices(i))
-				if (!(d in remap))
+				//if (!(d in remap))
+				if (remap[d] == 0)
 				{	remap[d] = offset;
 					remapReverse[offset] = d;
 					remapped = true;					
@@ -344,6 +343,8 @@ class Geometry
 			}			
 			mesh.setTriangles(triangles);
 		}
+		
+		return remap;
 	}
 	
 	/**
@@ -444,7 +445,8 @@ class Geometry
 class Mesh
 {
 	static const char[] TRIANGLES = "GL_TRIANGLES"; /// Constants used to specify various built-in polgyon attribute type names.
-	static const char[] LINES = "GL_LINES"; /// Constants used to specify various built-in polgyon attribute type names.
+	static const char[] LINES = "GL_LINES"; /// ditto
+	static const char[] POINTS = "GL_POINTS"; /// ditto
 	
 	protected VertexBuffer triangles;
 	public Material material;

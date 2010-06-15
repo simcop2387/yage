@@ -179,7 +179,7 @@ struct TextLayout
 					
 					// Overlay the glyph onto the main image
 					float skew = istyle.fontStyle == Style.FontStyle.ITALIC ? .33f : 0;
-					result.overlaySkewAndColor(letter.image, istyle.color, x+letter.left, baseline-letter.top, 0);
+					result.overlayAndColor(letter.image, istyle.color, x+letter.left, baseline-letter.top);
 					
 					// Render underline, overline, and linethrough
 					if (istyle.textDecoration == Style.TextDecoration.UNDERLINE)

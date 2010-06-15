@@ -21,7 +21,7 @@ import yage.scene.node;
 /// A node used for rendering a 3D model.
 class ModelNode : VisibleNode
 {
-	protected Geometry model;	// The 3D model used by this node
+	protected Model model;	// The 3D model used by this node
 	protected float radius=0;	// cached radius
 	
 	protected Timer animation_timer;
@@ -34,9 +34,12 @@ class ModelNode : VisibleNode
 	this()
 	{	super();
 	}
-	this(Geometry model) /// ditto
+	this(Geometry geometry) /// ditto
 	{	this();
-		setModel(model);
+		if (cast(Model)geometry)
+			setModel(cast(Model)geometry);
+		else
+			setModel(new Model(geometry));
 	}	
 	this(char[] filename) /// ditto
 	{	this();
@@ -121,11 +124,14 @@ class ModelNode : VisibleNode
 	 * If a filename is passed, the ResourceManager Manager will ensure that no Model is loaded twice.
 	 * If no argument is passed to setModel(), the model will be cleared.
 	 * Equivalent of setModel(ResourceManager.model(filename)); */
-	Geometry getModel()
+	Model getModel()
 	{	return model;
 	}
 	void setModel(Geometry model=null) /// ditto
-	{	this.model = model;
+	{	if (cast(Model)model)
+			this.model = cast(Model)model;
+		else
+			this.model = new Model(model);
 		if (model)
 			radius = model.getRadius()*size.max();
 		else

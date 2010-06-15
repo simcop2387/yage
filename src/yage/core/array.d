@@ -101,7 +101,7 @@ T amin(T, K)(T[] array, K delegate(T elem) getKey)
 /**
  * .dup for associative arrays.
  * params:
- *     deep = If true, child dynamic and associative arrays will also be dup'd.*/
+ *     deep = If true, child dynamic and associative arrays will also be dup'd.
 T[K] dup(T, K)(T[K] array, bool deep=false)
 {	T[K] result;
 	foreach (k, v; array)
@@ -149,7 +149,7 @@ unittest // complete coverage
 		assert(bar["a"][0] == 2);
 	}
 }
-
+*/
 
 /**
  * Is the array sorted?
@@ -493,19 +493,19 @@ struct ArrayBuilder(T)
 	AT opSlice()		 		  // overloads a[], a slice of the entire array
 	{	return AT(array[0..size]);		
 	}
-	AT opSlice(size_t start, size_t end) 		  // overloads a[i .. j]
-	{	assert(end < size);
+	AT opSlice(size_t start, size_t end) /// ditto
+	{	assert(end < size);  // overloads a[i .. j]
 		return AT(array[start..end]);		
 	}
 	
 	///
-	AT opSliceAssign(T v)			  // overloads a[] = v
+	AT opSliceAssign(T v) // overloads a[] = v
 	{	array[0..size] = v;
 		return *this;
 	}
 	
 	///
-	AT opSliceAssign(T v, size_t start, size_t end) // overloads a[i .. j] = v
+	AT opSliceAssign(T v, size_t start, size_t end)  // overloads a[i .. j] = v
 	{	assert(end < size);
 		array[start..end] =	v;
 		return *this;
