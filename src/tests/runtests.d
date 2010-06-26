@@ -4,10 +4,9 @@
  * Copyright (c) 2009-2010 Eric Poggel
  * 
  * This is a customized version of CDC for running Yage tests. 
- * See the customBuild() function for yage-specific customizations
+ * See the main() function for yage-specific customizations
  * 
- * See:
- * http://dsource.org/projects/cdc/
+ * See: <a href="http://dsource.org/projects/cdc/">The CDC Project</a>
  */
 
 module cdc;
@@ -32,26 +31,36 @@ int main(char[][] args)
 	// Parse Options
 	char[][] options1;	// options for both derelict and yage
 	char[][] options2;  // options for only yage
-	bool silent, release, verbose, debug_;
+	bool silent, ddoc, verbose, run, debug_, lib;
 	foreach (char[] arg; args)
 	{	switch(String.toLower(arg))
-		{	case "-debug": 		debug_=true; options1 ~= ["-debug", "-g"]; break;
+		{	case "-ddoc": 		ddoc = true; options2 ~= ["-D", "-Dd../doc"]; break;
+			case "-debug": 		debug_=true; options1 ~= ["-debug", "-g"]; break;
+			case "-lib": 		lib=true; break;
 			case "-profile": 	options1 ~= ["-profile"]; break;
-			case "-release": 	options2 ~= ["-O", "-inline", "-release"]; release = true; break;
+			case "-run": 		run=true; break;
+			case "-silent": 	silent=true; break;
 			case "-verbose": 	verbose=true; break;
-			default: break;
+			default: System.trace(arg ~ " is not supported.");
 	}	}
-	if (!release)
+	if (debug_)
 		options1 ~= ["-unittest"];
+	else
+		options1 ~= ["-O", "-inline", "-release"];
+	options2 ~= "-d"; // allow deprecated items
 
 	// Show Options
 	if (!silent)
 	{	System.trace("Running Yage Tests...");
 		System.trace("If you're curious, the options are:");
-		System.trace("   -debug     Include debugging symbols.");
-		System.trace("   -profile   Compile in profiling code.");
-		System.trace("   -release   Optimize, inline expand functions, and remove unit tests/asserts.");
-		System.trace("   -verbose   Print all commands as they're being executed.");
+		System.trace("   -ddoc     Generate documentation in the doc folder");
+		System.trace("   -debug    Include debugging symbols and enable stack tracing on Windows.");
+		System.trace("             Otherwise optimize, inline functions, and remove unittests/asserts.");
+		System.trace("   -lib      Create a yage lib file in the lib folder.");
+		System.trace("   -profile  Compile in profiling code.");
+		System.trace("   -run      Run when finished.");
+		System.trace("   -silent   Don't print this message.");
+		System.trace("   -verbose  Print all commands as they're being executed.");
 		System.trace("Example:  dmd -run runtests.d ");
 	}
 
@@ -85,7 +94,51 @@ int main(char[][] args)
 
 	return 0; // success
 }
-
+// Yage-specific function for creating yage/resource/embed/embed.d from other files in the same folder.
+void createEmbeddedResources()
+{
+	// TODO: Only re-embed files if the date changes?
+	char[] path = "../src/yage/resource/embed";
+	
+	char[] source = 
+		"module yage.resource.embed.embed;\r\n\r\n"
+		"/// Yage's build script generates this struct automatically from the other files in the resource/embed folder."
+		"\r\nstruct Embed {\r\n";
+	
+	foreach (file; FS.listDir(path))
+	{
+		// Skip the output file
+		if (file=="embed.d")
+			continue;
+		
+		char[] contents = cast(char[])FS.read(path~"/"~file);
+		char[] encodedContents = "";
+		foreach (c; contents)
+		{	// Encode as a binary-safe D string
+			if (c =='\t')
+				encodedContents ~= "\\t";
+			else if (c =='\r')
+				encodedContents ~= "\\r";
+			else if (c =='\n')
+				encodedContents ~= "\\n";			
+			else if (c=='"' || c=='\\')
+				encodedContents ~= "\\"~c;
+			else if (c < 32 || 126 < c) // embed invalid utf-8 characters as hex
+			{	char[] encode = "0123456789ABCDEF";
+				encodedContents ~= "\\x"~encode[c/16]~encode[c%16];
+			}
+			else
+				encodedContents ~= c;			
+		}
+		
+		// Add to the struct as a static member.p
+		source ~= "\tstatic char[] " ~ String.replace(String.replace(file, " ", "_"), ".", "_") ~ " = \"" ~
+			encodedContents ~ "\"; /// embedded version of "~file~"\r\n";		
+	}
+	source ~= "}";
+	
+	FS.write(path ~ "/embed.d", source);
+}
 
 /*
  * ----------------------------------------------------------------------------
@@ -753,6 +806,13 @@ struct FS
 	unittest {
 		assert (!remove("foo/bar/ding/dong/do.txt")); // a non-existant file
 		Log.operations = null;
+	}
+	
+	static ubyte[] read(char[] filename)
+	{	version (Tango)
+			return cast(ubyte[])File.get(filename);
+		else
+			return .read(filename); // wonder if this works
 	}
 
 	/// Write a file to disk

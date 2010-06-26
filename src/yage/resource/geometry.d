@@ -85,16 +85,15 @@ class Geometry
 	 * From: Lengyel, Eric. "Computing Tangent Space Basis Vectors for an Arbitrary Mesh". 
 	 * Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html */
 	public Vec3f[] createTangentVectors()
-	{
-		
-		// TODO: Make sure we have vertices, texcoords, and normals in the right format
+	{		
 		// TODO: Multiple meshes
 		
 		Vec3f[] vertices = cast(Vec3f[])getAttribute(Geometry.VERTICES);
 		Vec3f[] normals = cast(Vec3f[])getAttribute(Geometry.NORMALS);
-		Vec2f[] texCoords = cast(Vec2f[])getAttribute(Geometry.TEXCOORDS0);
-		
-		//return texCoords; // TODO: Temporary
+		float[] texCoords = cast(float[])getAttribute(Geometry.TEXCOORDS0);
+		int texCoordCount = getVertexBuffer(Geometry.TEXCOORDS0).components;		
+		assert(texCoords.length/texCoordCount == vertices.length);
+	
 		
 		Vec3f[] tan1 = new Vec3f[vertices.length];
 		Vec3f[] tan2 = new Vec3f[vertices.length];
@@ -109,9 +108,9 @@ class Geometry
 				Vec3f v2 = vertices[tri.y];
 				Vec3f v3 = vertices[tri.z];
 				
-				Vec2f w1 = texCoords[tri.x];
-				Vec2f w2 = texCoords[tri.y];
-				Vec2f w3 = texCoords[tri.z];
+				Vec2f w1 = Vec2f(texCoords[tri.x*texCoordCount..tri.x*texCoordCount+1]);
+				Vec2f w2 = Vec2f(texCoords[tri.y*texCoordCount..tri.y*texCoordCount+1]);
+				Vec2f w3 = Vec2f(texCoords[tri.z*texCoordCount..tri.z*texCoordCount+1]);
 				
 				float x1 = v2.x - v1.x;
 				float x2 = v3.x - v1.x;

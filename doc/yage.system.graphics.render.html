@@ -141,6 +141,17 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">lightCount</span>
+<script type="text/javascript">explorer.outline.addDecl('lightCount');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">RenderStatistics 
 <span class="currsymbol">opAdd</span>
 <script type="text/javascript">explorer.outline.addDecl('opAdd');</script>
@@ -211,6 +222,131 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Shader 
+<span class="currsymbol">generateShader</span>
+<script type="text/javascript">explorer.outline.addDecl('generateShader');</script>
+(MaterialPass <span class="funcparam">pass</span>, LightNode[] <span class="funcparam">lights</span>, bool <span class="funcparam">fog</span>, ref ArrayBuilder!(ShaderUniform) <span class="funcparam">uniforms</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Generate a phong/normal map shader for the <span class="funcparam">pass</span>.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">MaterialPass <span class="funcparam">pass</span></td>
+
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">LightNode[] <span class="funcparam">lights</span></td>
+
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">fog</span></td>
+
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">ArrayBuilder!(ShaderUniform) <span class="funcparam">uniforms</span></td>
+
+               
+<td>Uniform variables to <span class="funcparam">pass</span> to the shader when binding.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static bool 
+<span class="currsymbol">bindPass</span>
+<script type="text/javascript">explorer.outline.addDecl('bindPass');</script>
+(MaterialPass <span class="funcparam">pass</span>, LightNode[] <span class="funcparam">lights</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Bind a MaterialPass, generating a shader based on the number of <span class="funcparam">lights</span>. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static MaterialTechnique 
+<span class="currsymbol">getTechnique</span>
+<script type="text/javascript">explorer.outline.addDecl('getTechnique');</script>
+(Material <span class="funcparam">material</span>, LightNode[] <span class="funcparam">lights</span> = null);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the first technique that can be used without issue, or the last technique if all have issues. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static RenderStatistics 
+<span class="currsymbol">geometry</span>
+<script type="text/javascript">explorer.outline.addDecl('geometry');</script>
+(Geometry 
+<span class="currsymbol">geometry</span>
+<script type="text/javascript">explorer.outline.addDecl('geometry');</script>
+, LightNode[] <span class="funcparam">lights</span> = null, Material[] <span class="funcparam">materialOverrides</span> = null);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static RenderStatistics 
+<span class="currsymbol">model</span>
+<script type="text/javascript">explorer.outline.addDecl('model');</script>
+(Model 
+<span class="currsymbol">model</span>
+<script type="text/javascript">explorer.outline.addDecl('model');</script>
+, LightNode[] <span class="funcparam">lights</span> = null, Material[] <span class="funcparam">materialOverrides</span> = null, float <span class="funcparam">animationTime</span> = cast(float)0);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">protected static void 
+<span class="currsymbol">postRender</span>
+<script type="text/javascript">explorer.outline.addDecl('postRender');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static void 
+<span class="currsymbol">reset</span>
+<script type="text/javascript">explorer.outline.addDecl('reset');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Completely 
+<span class="currsymbol">reset</span>
+<script type="text/javascript">explorer.outline.addDecl('reset');</script>
+ the Rendering engine.
+ All shaders will be regenerated.
+<br><br>
+<b>TODO:</b><br>
+As of now, only a few things are actually 
+<span class="currsymbol">reset</span>
+<script type="text/javascript">explorer.outline.addDecl('reset');</script>
+. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static RenderStatistics 
 <span class="currsymbol">scene</span>
 <script type="text/javascript">explorer.outline.addDecl('scene');</script>
@@ -231,7 +367,7 @@ Eric Poggel
 <td nowrap valign="top" style="padding-right: 8px">IRenderTarget <span class="funcparam">target</span></td>
 
                
-<td>Render to this <span class="funcparam">target</span>.  TODO: Convert to IRenderTarget.</td></tr>
+<td>Render to this <span class="funcparam">target</span>.</td></tr>
 </table><br>
 <b>Returns:</b><br>
 A struct containing rendering statistics 
@@ -253,7 +389,7 @@ A struct containing rendering statistics
 <dd>Render a 
 <span class="currsymbol">surface</span>
 <script type="text/javascript">explorer.outline.addDecl('surface');</script>
-
+.  TODO: Move parts of this to OpenGL.d
 <br><br>
 
 </dd>
@@ -273,10 +409,10 @@ A struct containing rendering statistics
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:22 2010
 
 	</div>
 	
@@ -290,6 +426,8 @@ A struct containing rendering statistics
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -321,6 +459,8 @@ A struct containing rendering statistics
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -347,7 +487,7 @@ A struct containing rendering statistics
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -360,8 +500,6 @@ A struct containing rendering statistics
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

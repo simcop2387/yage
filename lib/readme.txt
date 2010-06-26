@@ -4,3 +4,5 @@ if such a lib file doesn't already exist.
 
 Of course, if derelict is udpated, the derelict lib file in this folder should be deleted
 so that a new up-to-date lib can be built.
+
+The yage lib's in this folder are overwritten at every build.

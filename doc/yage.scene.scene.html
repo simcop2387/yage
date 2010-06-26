@@ -287,19 +287,6 @@ The cloned Node.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">LightNode[LightNode] 
-<span class="currsymbol">getLights</span>
-<script type="text/javascript">explorer.outline.addDecl('getLights');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get an array that contains all LightNodes that are contained within this Scene.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
 <span class="currsymbol">getDeltaTime</span>
 <script type="text/javascript">explorer.outline.addDecl('getDeltaTime');</script>
@@ -329,7 +316,7 @@ a self indexed array.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">LightNode[LightNode] 
+<dt><span class="decl">LightNode[] 
 <span class="currsymbol">getAllLights</span>
 <script type="text/javascript">explorer.outline.addDecl('getAllLights');</script>
 ();
@@ -339,7 +326,7 @@ a self indexed array.
 <dd>Get all LightNodes that are currently a part of this scene.
 <br><br>
 <b>Returns:</b><br>
-a self indexed array. 
+A copy of the Lights array to avoid synchronization issues. 
 <br><br>
 
 </dd>
@@ -364,7 +351,7 @@ a self indexed array.
 <dt><span class="decl">void 
 <span class="currsymbol">setErrorFunction</span>
 <script type="text/javascript">explorer.outline.addDecl('setErrorFunction');</script>
-(void delegate(Exception) <span class="funcparam">on_error</span>);
+(void delegate(Exception e) <span class="funcparam">on_error</span>);
 <br>void 
 <span class="currsymbol">setErrorFunction</span>
 <script type="text/javascript">explorer.outline.addDecl('setErrorFunction');</script>
@@ -378,7 +365,7 @@ a self indexed array.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
-<td nowrap valign="top" style="padding-right: 8px">void delegate(Exception) <span class="funcparam">on_error</span></td>
+<td nowrap valign="top" style="padding-right: 8px">void delegate(Exception e) <span class="funcparam">on_error</span></td>
 
                
 <td>Defaults to System.abortException.  If null
@@ -501,10 +488,10 @@ When the scene's timer (implementd as a Repeater) runs, it updates
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -518,6 +505,8 @@ When the scene's timer (implementd as a Repeater) runs, it updates
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -549,6 +538,8 @@ When the scene's timer (implementd as a Repeater) runs, it updates
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -575,7 +566,7 @@ When the scene's timer (implementd as a Repeater) runs, it updates
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -588,8 +579,6 @@ When the scene's timer (implementd as a Repeater) runs, it updates
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

@@ -46,6 +46,7 @@ class Joint
 class Joint : Tree!(Joint)
 {
 	int number;
+	char[] sid;
 	char[] name;
 	
 	Matrix relative;	///

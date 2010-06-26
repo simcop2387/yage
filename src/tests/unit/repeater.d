@@ -15,5 +15,5 @@ import yage.core.repeater;
 void main () {	
 	auto r = new Repeater();
 	r.dispose();
-	Log.trace("Creating and desposing of a Repeater didn't crash.  Test passed.");
+	Log.trace("Creating and disposing of a Repeater didn't crash.  Test passed.");
 }

@@ -44,7 +44,7 @@ class Memory
 			memory.reserve = l;
 		
 		debug {			
-			instance.allocationTypes ~= T.typeinfo;
+			instance.allocationTypes ~= typeid(T);
 			instance.allocationSizes ~= bytes;
 		}
 		
@@ -59,7 +59,7 @@ class Memory
 		debug {
 			char[] error = "Memory must be freed in the reverse order it was allocated.";
 			assert(bytes == instance.allocationSizes[$-1], error);
-			assert(T.typeinfo == instance.allocationTypes[$-1], error);
+			assert(typeid(T) == instance.allocationTypes[$-1], error);
 			instance.allocationSizes.length = instance.allocationSizes.length-1;
 			instance.allocationTypes.length = instance.allocationTypes.length-1;
 		}

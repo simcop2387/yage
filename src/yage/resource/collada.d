@@ -190,9 +190,14 @@ class Collada
 								int j = i/indicesPerVertex*c;
 								data[j..j+c] = input.data[index..index+c];
 							}
-							
-							// Store data in result's vertex attributes
 							char[] name = translate[input.name];
+							
+							// Flip the y texture coordinate for OpenGL.
+							if (name.length >= 16 && name[0..16]== "gl_MultiTexCoord")
+								for (int i=1; i<= data.length; i+=c)
+									data[i] = -data[i]; // flip y texture coordinate
+							
+							// Store data in result's vertex attributes							
 							if (c==2)
 								result.setAttribute(name, cast(Vec2f[])data);
 							else if (c==3)
@@ -202,16 +207,19 @@ class Collada
 							else
 								assert(0);
 							
-							// Create vertexRemap
-							if (name==Geometry.VERTICES)
+							// Create vertexRemap, which is later used to remap joint indices.
+							if (name==Geometry.VERTICES)   
 							{	localVertexRemap.length = result.getVertexBuffer(Geometry.VERTICES).length;
 								for (int i=0; i<indices.length; i+=indicesPerVertex)							
 									localVertexRemap[i/indicesPerVertex] = indices[i]; // TODO: Is this correct?								
 							}
+						}
 						
-							// Flip the y texture coordinate for OpenGL.
-							foreach (inout texCoord; cast(Vec2f[])result.getAttribute(Geometry.TEXCOORDS0))
-								texCoord.y = -texCoord.y;
+						// Ensure all vertex buffers are the same length
+						{	int count = result.getVertexBuffer(Geometry.VERTICES).length;
+							foreach (name, vb; result.getVertexBuffers())
+								if (vb.length != count)
+									throw new XMLException("Geometry attribute %s has data for %d vertices, but %d vertices exist", name, vb.length, count);
 						}
 						
 						// Build triangles
@@ -230,8 +238,12 @@ class Collada
 							triangles = new Vec3i[size];
 							
 							// Get each triangle
+							bool tesselationError;
 							foreach (vcount; vcounts)
-							{	assert(3<=vcount && vcount<=4); // TODO: Some collada files have more polygons.  Do I need a tesselator?
+							{	if (3<=vcount && vcount<=4 && !tesselationError) // TODO: Some collada files have more polygons.  Do I need a tesselator?
+								{	Log.error("This model has polygons with more than four vertices, but tesselation isn't yet supported.");
+									tesselationError = true;
+								}
 								triangles~= Vec3i(j, j+1, j+2); // always at least one triangle;
 								if (vcount>=4)
 									triangles[i] = Vec3i(j, j+2, j+3);
@@ -302,7 +314,7 @@ class Collada
 		result.techniques[0].passes ~= new MaterialPass();
 		MaterialPass pass = result.techniques[0].passes[0];
 		
-		Node technique;
+		Node technique;  // Unfortunately ColladaMaya sometimes references nonexistant materials.  Not sure what to do about that.
 		Node materialNode = Xml.getNodeById(doc, id, "id", "material");
 		if (materialNode.hasChild("instance_effect"))
 		{	Node instanceEffect = materialNode.getChild("instance_effect"); // TODO: instance_effect can have child nodes that specify parameters
@@ -533,7 +545,9 @@ class Collada
 		Joint traverseSkeleton(Node node)
 		{	Joint joint = new Joint();
 			joint.relative = getSceneNodeTransform(node);
-			joint.name = node.getAttribute("sid").dup; // dup should reduce memory fragmentation and allow collada text to later be freed.
+			if (node.hasAttribute("sid")) // sometimes max exports don't.
+				joint.sid = node.getAttribute("sid").dup; // dup should reduce memory fragmentation and allow collada text to later be freed.
+			joint.name = node.getAttribute("name").dup;
 			joint.number = result.length;
 			result ~= joint;
 			
@@ -592,11 +606,11 @@ class Collada
 					// Create a map of joint names to joints.  
 					ushort unused;
 					scope char[][] jointNames = getDataFromSourceId!(char[])(input.getAttribute("source"), unused);
-					scope Joint[char[]] nameToJoint;
+					scope Joint[char[]] sidToJoint;
 					foreach (joint; model.joints) // TODO: Maybe it would be good to have one of these in Model, so a gun can be attached to an arm joint.
-						nameToJoint[joint.name] = joint;
+						sidToJoint[joint.sid] = joint;
 					foreach (i, name; jointNames)
-						jointMap[i] = nameToJoint[name];
+						jointMap[i] = sidToJoint[name];
 					
 				}
 				else if (semantic == "INV_BIND_MATRIX") 
@@ -852,6 +866,8 @@ class Collada
 			});
 			if (result.nodes.length)
 				return Node(result.nodes[0]);
+			if (type.length)
+				throw new XMLException("The document does not have an element of type %s with %s='%s'", type, attributeName, id);
 			throw new XMLException("The document does not have an element with %s='%s'", attributeName, id);
 		}
 		

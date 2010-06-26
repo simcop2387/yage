@@ -348,6 +348,17 @@ Eric Poggel, Matt Peterson
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static Matrix 
+<span class="currsymbol">IDENTITY</span>
+<script type="text/javascript">explorer.outline.addDecl('IDENTITY');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Matrix 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
 ();
@@ -423,6 +434,33 @@ Eric Poggel, Matt Peterson
 <span class="currsymbol">determinant</span>
 <script type="text/javascript">explorer.outline.addDecl('determinant');</script>
  of the Matrix.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f 
+<span class="currsymbol">getPosition</span>
+<script type="text/javascript">explorer.outline.addDecl('getPosition');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get the position component of the Matrix as a Vector. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f 
+<span class="currsymbol">getScale</span>
+<script type="text/javascript">explorer.outline.addDecl('getScale');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Extract the scale Vector from the rotation component of the Matrix.
+ Scale components will always be positive. 
 <br><br>
 
 </dd>
@@ -579,22 +617,6 @@ make this count almost uniform as uniform, to fix floating point errors.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f 
-<span class="currsymbol">position</span>
-<script type="text/javascript">explorer.outline.addDecl('position');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get the 
-<span class="currsymbol">position</span>
-<script type="text/javascript">explorer.outline.addDecl('position');</script>
- component of the Matrix as a Vector. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float* 
 <span class="currsymbol">ptr</span>
 <script type="text/javascript">explorer.outline.addDecl('ptr');</script>
@@ -635,56 +657,19 @@ make this count almost uniform as uniform, to fix floating point errors.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Rotation and scale are intimately related in the Matrix.
- This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. 
+<dd>In a Matrix, rotation and scale are intimately related.
+ This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it.
 <br><br>
-Rotation and scale are intimately related in the Matrix.
- This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. 
+<b>TODO:</b><br>
+This is the leading cause of Matrix drift when the scale isn't uniform! 
+<br><br>
+
+ In a Matrix, rotation and scale are intimately related.
+ This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it.
+<br><br>
+<b>TODO:</b><br>
+This is the leading cause of Matrix drift when the scale isn't uniform! 
  ditto
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix 
-<span class="currsymbol">rotateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
-(Vec3f <span class="funcparam">axis</span>);
-<br>Matrix 
-<span class="currsymbol">rotateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
-(Quatrn <span class="funcparam">rotation</span>);
-<br>Matrix 
-<span class="currsymbol">rotateAbsolute</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolute');</script>
-(Matrix <span class="funcparam">m</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Return a copy of this Matrix with its rotation values incremented by an
- <span class="funcparam">axis</span> angle Vector, a Quaternion or another Matrix, relative to the absolute worldspace <span class="funcparam">axis</span>.
- This function hasn't been verified to be correct in all circumstances. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Matrix 
-<span class="currsymbol">rotateAbsolutePreservingScale</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolutePreservingScale');</script>
-(Vec3f <span class="funcparam">axis</span>);
-<br>Matrix 
-<span class="currsymbol">rotateAbsolutePreservingScale</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolutePreservingScale');</script>
-(Quatrn <span class="funcparam">rotation</span>);
-<br>Matrix 
-<span class="currsymbol">rotateAbsolutePreservingScale</span>
-<script type="text/javascript">explorer.outline.addDecl('rotateAbsolutePreservingScale');</script>
-(Matrix <span class="funcparam">b</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>This is mostly untested. 
 <br><br>
 
 </dd>
@@ -726,7 +711,9 @@ Rotation and scale are intimately related in the Matrix.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Return a copy of this Matrix scaled by <span class="funcparam">s</span>
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -752,7 +739,7 @@ Rotation and scale are intimately related in the Matrix.
 <br>void 
 <span class="currsymbol">setRotation</span>
 <script type="text/javascript">explorer.outline.addDecl('setRotation');</script>
-(Vec3f <span class="funcparam">rot</span>);
+(Vec3f <span class="funcparam">axis</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -844,15 +831,15 @@ Rotation and scale are intimately related in the Matrix.
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Vec3f 
-<span class="currsymbol">toScale</span>
-<script type="text/javascript">explorer.outline.addDecl('toScale');</script>
-();
+<dt><span class="decl">Matrix 
+<span class="currsymbol">transformAffine</span>
+<script type="text/javascript">explorer.outline.addDecl('transformAffine');</script>
+(Matrix <span class="funcparam">b</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Extract the scale Vector from the rotation component of the Matrix.
- Scale components will always be positive. 
+<dd>Multiply two matrices and return a third Matrix result, ignoring values that aren't needed
+ in affine transformations.  This makes it almost half the operations of a Matrix multiplication. 
 <br><br>
 
 </dd>
@@ -902,10 +889,10 @@ Rotation and scale are intimately related in the Matrix.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:20 2010
 
 	</div>
 	
@@ -919,6 +906,8 @@ Rotation and scale are intimately related in the Matrix.
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -950,6 +939,8 @@ Rotation and scale are intimately related in the Matrix.
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -976,7 +967,7 @@ Rotation and scale are intimately related in the Matrix.
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -989,8 +980,6 @@ Rotation and scale are intimately related in the Matrix.
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

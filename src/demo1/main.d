@@ -119,7 +119,7 @@ int main()
 	// Init and create window
 	System.init(); 
 	auto window = Window.getInstance();
-	window.setResolution(640, 480, 0, true, 4); // golden ratio
+	window.setResolution(720, 445, 0, false, 0); // golden ratio
 	//window.setResolution(1920, 1080, 0, true, 4);
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 

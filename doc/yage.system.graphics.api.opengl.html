@@ -121,6 +121,53 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">MatrixType</span>
+<script type="text/javascript">explorer.outline.addDecl('MatrixType');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">PROJECTION</span>
+<script type="text/javascript">explorer.outline.addDecl('PROJECTION');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">TEXTURE</span>
+<script type="text/javascript">explorer.outline.addDecl('TEXTURE');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">TRANSFORM</span>
+<script type="text/javascript">explorer.outline.addDecl('TRANSFORM');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">this();
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -147,206 +194,74 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set all of the OpenGL states to the values of this material layer.
+<dd>Enable this <span class="funcparam">light</span> as the given <span class="funcparam">light</span> number and apply its properties.
+<br><br>
+<b>TODO:</b><br>
+Perhaps this should be bindLights(LightNode[]) instead.
+ This function is used internally by the engine and should not be called manually or exported. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">bindMatrix</span>
+<script type="text/javascript">explorer.outline.addDecl('bindMatrix');</script>
+(Matrix* <span class="funcparam">matrix</span>, MatrixType <span class="funcparam">type</span> = cast(MatrixType)2);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Push or Pop Matrices on an OpenGL <span class="funcparam">matrix</span> stack.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
+<td nowrap valign="top" style="padding-right: 8px">Matrix* <span class="funcparam">matrix</span></td>
+
+               
+<td>Multiply the current Matrix at the top of the stack by this Matrix and push the result onto the stack,
+     or if <span class="funcparam">matrix</span> is null
+, pop it off the stack.
+     This is a pointer to allow null
+'s, a copy is made for internal use.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">MatrixType <span class="funcparam">type</span></td>
+
+               
+<td>Determines which OpenGL <span class="funcparam">matrix</span> stack to modify. </td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">bindPass</span>
+<script type="text/javascript">explorer.outline.addDecl('bindPass');</script>
+(MaterialPass <span class="funcparam">pass</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Profiling has shown that changing shaders, textures, and blending operations are the slowest parts of this funciton.
+<br><br>
+<b>TODO:</b><br>
+This can be made faster by only changing the shader and blending when different from a previous <span class="funcparam">pass</span>.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">MaterialPass <span class="funcparam">pass</span></td>
+
+               
+<td></td></tr>
+<tr>
 <td nowrap valign="top" style="padding-right: 8px">lights</td>
 
                
-<td>An array containing the LightNodes that affect this material,
-     passed to the shader through uniform variables (unfinished).
-     This function is used internally by the engine and doesn't normally need to be called.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">color</td>
-
-               
-<td>Used to set color on a per-instance basis, combined with existing material colors.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">Model</td>
-
-               
-<td>Used to retrieve texture coordinates for multitexturing.
-	void bindLayer(Layer layer, LightNode[] lights = null
-, Color color = Color("white"), Geometry model=null
-)
-	{
-		if (layer)
-		{	// Material
-			glMaterialfv(GL_FRONT, GL_AMBIENT, layer.ambient.vec4f.scale(color.vec4f).v.ptr);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, layer.diffuse.vec4f.scale(color.vec4f).v.ptr);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, layer.specular.vec4f.scale(color.vec4f).v.ptr);
-			glMaterialfv(GL_FRONT, GL_EMISSION, layer.emissive.vec4f.scale(color.vec4f).v.ptr);
-			glMaterialfv(GL_FRONT, GL_SHININESS, &layer.specularity);
-<br><br>
-
-			glColor4fv(layer.color.vec4f.ptr);
-<br><br>
-
-			// Blend
-			if (layer.blend != BLEND_NONE)
-			{	glEnable(GL_BLEND);
-				glDepthMask(false
-);
-				switch (layer.blend)
-				{	case BLEND_ADD:
-						glBlendFunc(GL_ONE, GL_ONE);
-						break;
-					case BLEND_AVERAGE:
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						break;
-					case BLEND_MULTIPLY:
-						glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-						break;</td></tr>
+<td>Array of LightNodes that affect this material.  Required if the <span class="funcparam">pass</span>'s autoShader is not AutoShader.NONE.</td></tr>
 </table><br>
-<b>default:</b><br>
-break;
-			}	}
-			else
-			{	glEnable(GL_ALPHA_TEST);
-				glAlphaFunc(GL_GREATER, 0.5f); // If blending is disabled, any pixel less than 0.5 opacity will not be drawn
-			}
-<br><br>
-
-			// Cull
-			if (layer.cull == LAYER_CULL_FRONT)
-				glCullFace(GL_FRONT);
-<br><br>
-
-			// Polygon
-			switch (layer.draw)
-			{	default:
-				case LAYER_DRAW_FILL:
-					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					break;
-				case LAYER_DRAW_LINES:
-					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-					glLineWidth(layer.width);
-					break;
-				case LAYER_DRAW_POINTS:
-					glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-					glPointSize(layer.width);
-					break;
-			}
-<br><br>
-
-			// Textures
-			if (layer.textures.length&gt;1 &amp;&amp; Probe.feature(Probe.Feature.MULTITEXTURE))
-			{	int length = min(layer.textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
-<br><br>
-
-				// Loop through all of Layer's textures up to the maximum allowed.
-				// TODO: there's currently no coverage for this block
-				for (int i=0; i<length; i++)
-				{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
-
-					// Activate texture unit and enable texturing
-					glActiveTextureARB(GL_TEXTUREI_ARB);
-					glEnable(GL_TEXTURE_2D);
-					glClientActiveTextureARB(GL_TEXTUREI_ARB);
-
-					// TODO: bind closest level of texture coordinates available instead of always using 0.
-					bindVertexBuffer(model.getVertexBuffer(Geometry.TEXCOORDS0), Geometry.TEXCOORDS0);
-					bindTexture(layer.textures[i]);
-				}
-			}
-			else if(layer.textures.length == 1){
-				glEnable(GL_TEXTURE_2D);
-				bindTexture(layer.textures[0]);
-			} else
-				glDisable(GL_TEXTURE_2D);
-
-
-			if (layer.shader)
-			{
-				ShaderUniform[3] uniforms;
-				uniforms[0] = ShaderUniform("light_number", ShaderUniform.Type.F1, cast(float)lights.length);
-				uniforms[1] = ShaderUniform("fog_enabled", ShaderUniform.Type.F1, cast(float)current.camera.getScene().fogEnabled);
-
-
-				// int uniforms = glGetObjectParameterivARB(GL_ACTIVE_UNIFORMS);
-
-				// Bind Textures to UniformSampler2D
-				// TODO: Use glGetActiveUniform to get user defined uniforms that are sampler2D and automatically bind textures in order
-				// keep in mind 1d, 3d, cupe, and shadow textures
-				for (int i=0; i<layer.textures.length; i++)
-				{
-					if (layer.textures[i].name.length)
-					{	char[256] cname = 0;
-						cname[0..layer.textures[i].name.length]= layer.textures[i].name;
-						int location = glGetUniformLocationARB(layer.program, cname.ptr);
-						if (location == -1)
-						{}//	throw new Exception("Warning:  Unable to set texture sampler: " ~ textures[i].name);
-						else
-							glUniform1iARB(location, i);
-				}	}
-
-
-				bindShader(layer.shader, layer, uniforms);
-			}
-		} else // unbind
-		{
-			glColor4f(1, 1, 1, 1);
-
-			// Material
-			float s=0;
-			glMaterialfv(GL_FRONT, GL_AMBIENT, Vec4f().v.ptr);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, Vec4f(1).v.ptr);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, Vec4f().v.ptr);
-			glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
-			glMaterialfv(GL_FRONT, GL_SHININESS, &s);
-
-			// Blend
-			if (current.layer.blend != BLEND_NONE)
-			{	glDisable(GL_BLEND);
-				glDepthMask(true);
-			}else
-			{	glDisable(GL_ALPHA_TEST);
-				glAlphaFunc(GL_ALWAYS, 0);
-			}
-
-			// Cull, polygon
-			glCullFace(GL_BACK);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-
-			// Textures
-			if (current.layer.textures.length>1 &amp;&amp; Probe.feature(Probe.Feature.VBO))
-			{	int length = min(layer.textures.length, Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS));
-<br><br>
-
-				for (int i=length-1; i&gt;=0; i--)
-				{	glActiveTextureARB(GL_TEXTURE0_ARB+i);
-					glDisable(GL_TEXTURE_2D);
-<br><br>
-
-					if (layer.textures[i].reflective)
-					{	glDisable(GL_TEXTURE_GEN_S);
-						glDisable(GL_TEXTURE_GEN_T);
-					}
-					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-					textureUnbind(layer.textures[i]);
-				}
-				glClientActiveTextureARB(GL_TEXTURE0_ARB);
-			}
-			else if(current.layer.textures.length == 1){
-				textureUnbind(current.layer.textures[0]);
-				//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-			}
-			glDisable(GL_TEXTURE_2D);
-<br><br>
-
-			bindShader(null
-, null
-);
-		}
-		current.layer = layer;
-	}
-	
-<br><br>
-
- Enable this <span class="funcparam">light</span> as the given <span class="funcparam">light</span> number and apply its properties.
- This function is used internally by the engine and should not be called manually or exported. 
+<b>Returns:</b><br>
+false
+ if Not all of the textures or the shader couldn't be bound.  Even if this happens, as much of the
+     <span class="funcparam">pass</span> will be bound as possible, including as many textures as possible.
+	 
 <br><br>
 
 </dd>
@@ -402,42 +317,53 @@ break;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><b>TODO:</b><br>
-Allow specifying uniform variable assignments.
+<dd>Make this <span class="funcparam">shader</span> program the currently active <span class="funcparam">shader</span>.
+ It will be compiled if necessary.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">Shader <span class="funcparam">shader</span></td>
+
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">ShaderUniform[] <span class="funcparam">variables</span></td>
+
+               
+<td>Unless specified otherwise, the currently bound textures specified by bindTextures will be bound
+         to uniform <span class="funcparam">variables</span> texture0, texture1, etc. </td></tr>
+</table><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">bindTextures</span>
+<script type="text/javascript">explorer.outline.addDecl('bindTextures');</script>
+(TextureInstance[] <span class="funcparam">textures</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Bind Textures for rendering.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">TextureInstance[] <span class="funcparam">textures</span></td>
+
+               
+<td>Textures to be bound.  Texture units beyond the array length will be disabled.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+True if all of the <span class="funcparam">textures</span> were bound.  Otherwise as many as possible will be bound. 
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">bindTexture</span>
-<script type="text/javascript">explorer.outline.addDecl('bindTexture');</script>
-(ref Texture <span class="funcparam">texture</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">textureUnbind</span>
-<script type="text/javascript">explorer.outline.addDecl('textureUnbind');</script>
-(Texture <span class="funcparam">texture</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><b>TODO:</b><br>
-merge into bindTexture
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
+<dt><span class="decl">bool 
 <span class="currsymbol">bindVertexBuffer</span>
 <script type="text/javascript">explorer.outline.addDecl('bindVertexBuffer');</script>
-(VertexBuffer <span class="funcparam">vb</span>, char[] <span class="funcparam">type</span> = "");
+(VertexBuffer <span class="funcparam">vb</span>, char[] <span class="funcparam">type</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -461,7 +387,7 @@ merge into bindTexture
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Free any resources from graphics memory are either:
+<dd>Reset OpenGL state and free any resources from graphics memory are either:
  - haven't been used for longer than <span class="funcparam">age</span>,
  - are no longer referenced.
  If removed from graphics memory, they will be re-uploaded when needed again.
@@ -477,27 +403,29 @@ merge into bindTexture
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">RenderStatistics 
-<span class="currsymbol">drawGeometry</span>
-<script type="text/javascript">explorer.outline.addDecl('drawGeometry');</script>
-(Geometry <span class="funcparam">geometry</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd><br><br>
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">drawVertexBuffer</span>
-<script type="text/javascript">explorer.outline.addDecl('drawVertexBuffer');</script>
-(VertexBuffer <span class="funcparam">polygons</span>, char[] <span class="funcparam">type</span>);
+<span class="currsymbol">drawPolygons</span>
+<script type="text/javascript">explorer.outline.addDecl('drawPolygons');</script>
+(VertexBuffer <span class="funcparam">polygons</span>, char[] <span class="funcparam">type</span>, bool <span class="funcparam">indexed</span> = true);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Draw the contents of a vertex buffer, such as a buffer of triangle indices.
  @param triangles If not null
 , this array of triangle indices will be used for drawing the mesh
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">reset</span>
+<script type="text/javascript">explorer.outline.addDecl('reset');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>TODO
 <br><br>
 
 </dd>
@@ -517,10 +445,10 @@ merge into bindTexture
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:22 2010
 
 	</div>
 	
@@ -534,6 +462,8 @@ merge into bindTexture
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -565,6 +495,8 @@ merge into bindTexture
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -591,7 +523,7 @@ merge into bindTexture
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -604,8 +536,6 @@ merge into bindTexture
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

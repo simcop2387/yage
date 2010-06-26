@@ -90,13 +90,12 @@ Eric Poggel
  
 <br><br>
 
+$(DDOC_MODULE_MEMBERS 
 
-<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
-<dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">class 
-<span class="currsymbol">Cache</span>
-<script type="text/javascript">explorer.outline.addDecl('Cache');</script>
+<span class="currsymbol">RegexCache</span>
+<script type="text/javascript">explorer.outline.addDecl('RegexCache');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -123,10 +122,37 @@ Eric Poggel
 
 
 </dd>
-</dl>
-<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">struct 
+<span class="currsymbol">Cache</span>
+<script type="text/javascript">explorer.outline.addDecl('Cache');</script>
+(alias func);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
+<dd>Wrap a function so that when it's called more than once with the same arguments,
+ subsequent results are returned from a cache.
+<br><br>
+<b>Limitations:</b><br>
+The function must be pure (obviously).
+ The function used must either be a top-level function or a static nested function
+ that doesn't reference any local variables.
+
+<br><br>
+<b>Example:</b><br>
+<pre class="d_code">
+ static bool foo(int a, float b) { return a>b; }
+
+ Cache!(foo) fooCached;
+
+ fooCached(1, 3.5f); // body of foo is executed
+ fooCached(1, 3.5f); // body of foo is not executed, previous result returned.
+ 
+</pre>
+<br><br>
+
+</dd>
 </td></tr>
 				</table>
 			</div>
@@ -134,10 +160,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:19 2010
 
 	</div>
 	
@@ -151,6 +177,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -182,6 +210,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -208,7 +238,7 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -221,8 +251,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

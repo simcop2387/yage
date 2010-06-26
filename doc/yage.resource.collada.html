@@ -175,66 +175,34 @@ If any error occurs during parsing, an XmlException will be thrown.
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Geometry 
-<span class="currsymbol">getMergedGeometry</span>
-<script type="text/javascript">explorer.outline.addDecl('getMergedGeometry');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get all geometry from the file merged into a single Yage Geometry instance.
- This is usually the desired behavior when loading a collada file as a model. 
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Geometry 
 <span class="currsymbol">getGeometryById</span>
 <script type="text/javascript">explorer.outline.addDecl('getGeometryById');</script>
 (char[] <span class="funcparam">id</span>);
+<br>Geometry 
+<span class="currsymbol">getGeometryById</span>
+<script type="text/javascript">explorer.outline.addDecl('getGeometryById');</script>
+(char[] <span class="funcparam">id</span>, bool <span class="funcparam">calledByGetMerged</span>, out int[] <span class="funcparam">vertexRemap</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
-</dd>
+<dd><b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">id</span></td>
 
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Image 
-<span class="currsymbol">getImageById</span>
-<script type="text/javascript">explorer.outline.addDecl('getImageById');</script>
-(char[] <span class="funcparam">id</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">calledByGetMerged</td>
 
-<dd><b>TODO:</b><br>
-This isn't used
-<br><br>
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">vertexRemap</td>
 
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">GPUTexture 
-<span class="currsymbol">getTextureById</span>
-<script type="text/javascript">explorer.outline.addDecl('getTextureById');</script>
-(char[] <span class="funcparam">id</span>);
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get a yage GPUTexture from the Collada file by its <span class="funcparam">id</span>.
- This uses ResourceManager.texture internally, so subsequent calls will return an already loaded GPUTexture.
-<br><br>
-These are Yage-specific notes for loading Collada textures:
- <li>TODO: An image's <hint precision="_"> value determines whether texture compression is used.
-     LOW (or not specified at all): 8 byte channels, texture compression
-<br><br>
-<b>MID:</b><br>
-8 byte channels, no compression
-<br><br>
-<b>HIGH:</b><br>
-16 bit float (not supported yet)
-<br><br>
-<b>MAX:</b><br>
-32 bit float (not supported yet)</li> 
+               
+<td>Vertex indices are changed during loading.  This is a map of their new indices back to their old ones.</td></tr>
+</table><br>
+<b>Returns:</b><br>
 <br><br>
 
 </dd>
@@ -251,10 +219,98 @@ These are Yage-specific notes for loading Collada textures:
  This uses ResourceManager.material internally, so subsequent calls will return an already loaded Material.
 <br><br>
 These are Yage-specific notes for loading Collada materials:
+ <ul>
  <li>profile_COMMON is read, any other profiles are ignored.</li>
  <li>Trancparency opaque attributes of RGB_ONE are mapped to  MaterialPass.Blend.ADD, RGB_ZERO is mapped
      to MaterialPass.Blend.MULTIPLY.  Otherwise, AVERAGE or NONE are used depending on whether any
-     transparency is specified or if the material has an alpha channel.</li> 
+     transparency is specified or if the material has an alpha channel.</li>
+ <li>If the first child of profile_COMMON is &lt;phong&gt;, then A shader will be created to enable phong shading.
+     If it's &lt;lambert&gt;, then flat shading from the fixed function pipeline will be used.  Otherwise
+     fixed-function gourard shading will be used.</li>
+ <li>The unofficial &lt;phong&gt;&lt;bump&gt; texture is used for a normal texture, if present.
+     A specular map will be used from the alpha channel, if present.
+     See http://www.feelingsoftware.com/uploads/documents/ColladaMax.pdf, section 6.</li>
+ <ul>
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Model 
+<span class="currsymbol">getMergedGeometry</span>
+<script type="text/javascript">explorer.outline.addDecl('getMergedGeometry');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get all geometry from the file merged into a single Yage Model..
+ This is usually the desired behavior when loading a collada file as a model.
+<br><br>
+Unlike getGeometryById, this takes into account the file's asset/up_axis. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Joint[] 
+<span class="currsymbol">getJointsById</span>
+<script type="text/javascript">explorer.outline.addDecl('getJointsById');</script>
+(char[] <span class="funcparam">id</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">JointInfluence[][] 
+<span class="currsymbol">getJointInfluencesByControllerId</span>
+<script type="text/javascript">explorer.outline.addDecl('getJointInfluencesByControllerId');</script>
+(char[] <span class="funcparam">id</span>, Model <span class="funcparam">model</span>, int[] <span class="funcparam">vertexRemap</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">char[] <span class="funcparam">id</span></td>
+
+               
+<td></td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">Model <span class="funcparam">model</span></td>
+
+               
+<td>A <span class="funcparam">model</span> with the joints and vertex arrays previously populated.</td></tr>
+</table><br>
+<b>Returns:</b><br>
+An array the same length as the <span class="funcparam">model</span>'s vertices, with each sub array a list of the joints that influence that vertex. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Texture 
+<span class="currsymbol">getTextureById</span>
+<script type="text/javascript">explorer.outline.addDecl('getTextureById');</script>
+(char[] <span class="funcparam">id</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get a yage Texture from the Collada file by its <span class="funcparam">id</span>.
+ This uses ResourceManager.texture internally, so subsequent calls will return an already loaded Texture.
+<br><br>
+These are Yage-specific notes for loading Collada textures:
+ <li>An image's <hint precision="_"> value determines whether texture compression is used.
+     LOW (or not specified at all): 8 byte channels, texture compression
+<br><br>
+<b>MID:</b><br>
+8 byte channels, no compression
+<br><br>
+<b>HIGH:</b><br>
+16 bit float (not supported yet)
+<br><br>
+<b>MAX:</b><br>
+32 bit float (not supported yet)</li> 
 <br><br>
 
 </dd>
@@ -287,10 +343,10 @@ These are Yage-specific notes for loading Collada materials:
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -304,6 +360,8 @@ These are Yage-specific notes for loading Collada materials:
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -335,6 +393,8 @@ These are Yage-specific notes for loading Collada materials:
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -361,7 +421,7 @@ These are Yage-specific notes for loading Collada materials:
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -374,8 +434,6 @@ These are Yage-specific notes for loading Collada materials:
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

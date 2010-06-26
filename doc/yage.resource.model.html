@@ -94,9 +94,21 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">struct 
-<span class="currsymbol">KeyFrame</span>
-<script type="text/javascript">explorer.outline.addDecl('KeyFrame');</script>
+<dt><span class="decl">class 
+<span class="currsymbol">Joint</span>
+<script type="text/javascript">explorer.outline.addDecl('Joint');</script>
+: yage.core.tree.Tree!(Joint).Tree;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Matrix 
+<span class="currsymbol">relative</span>
+<script type="text/javascript">explorer.outline.addDecl('relative');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -105,14 +117,78 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
-<span class="currsymbol">Joint</span>
-<script type="text/javascript">explorer.outline.addDecl('Joint');</script>
+<dt><span class="decl">Matrix 
+<span class="currsymbol">absolute</span>
+<script type="text/javascript">explorer.outline.addDecl('absolute');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Matrix 
+<span class="currsymbol">inverseBind</span>
+<script type="text/javascript">explorer.outline.addDecl('inverseBind');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>This exists in Collada but I'm not yet sure what it's for.
+<br><br>
+
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">struct 
+<span class="currsymbol">JointInfluence</span>
+<script type="text/javascript">explorer.outline.addDecl('JointInfluence');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int 
+<span class="currsymbol">joint</span>
+<script type="text/javascript">explorer.outline.addDecl('joint');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Index of the 
+<span class="currsymbol">joint</span>
+<script type="text/javascript">explorer.outline.addDecl('joint');</script>
+ in the joints array.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">influence</span>
+<script type="text/javascript">explorer.outline.addDecl('influence');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>How much the joint influences this vertex.  All influences for a vertex should sum to 1.
+<br><br>
+
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -126,19 +202,42 @@ Eric Poggel
 <dd>A 
 <span class="currsymbol">Model</span>
 <script type="text/javascript">explorer.outline.addDecl('Model');</script>
- is a 3D object, often loaded from a file.
-<br><br>
-Each model is divided into one or more Meshes; each Mesh has its own material
- and an array of triangle indices that correspond to vertices in the 
-<span class="currsymbol">Model</span>
-<script type="text/javascript">explorer.outline.addDecl('Model');</script>
-'s vertex array.
- ModelNodes can be used to create 3D models in a scene.
+ is a Geometry that includes a skeleton for skeltal animation.
+ ModelNodes can be used to create 3D models in a scene. 
 <br><br>
 
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Joint[] 
+<span class="currsymbol">joints</span>
+<script type="text/javascript">explorer.outline.addDecl('joints');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>All of the 
+<span class="currsymbol">joints</span>
+<script type="text/javascript">explorer.outline.addDecl('joints');</script>
+ that makeup the skeleton.  The first Joint is the root.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">JointInfluence[][] 
+<span class="currsymbol">jointInfluences</span>
+<script type="text/javascript">explorer.outline.addDecl('jointInfluences');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>This is a jagged array of joint influences for each vertex.  It must be the same length as the number of vertices.
+<br><br>
+
+</dd>
+
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">this();
 </span></dt>
@@ -160,36 +259,11 @@ Each model is divided into one or more Meshes; each Mesh has its own material
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">void 
-<span class="currsymbol">animateTo</span>
-<script type="text/javascript">explorer.outline.addDecl('animateTo');</script>
-(double <span class="funcparam">time</span>);
+<dt><span class="decl">this(Geometry <span class="funcparam">geometry</span>);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Advance this Model's animation to <span class="funcparam">time</span>.
- This still has bugs somehow.
-<br><br>
-<b>Params:</b><br>
-<table><tr>
-<td nowrap valign="top" style="padding-right: 8px">double <span class="funcparam">time</span></td>
-
-               
-<td></td></tr>
-</table><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Joint[] 
-<span class="currsymbol">getJoints</span>
-<script type="text/javascript">explorer.outline.addDecl('getJoints');</script>
-();
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Get an array of all of the Model's Joints, which are used for skeletal animation.
- This can be traversed as an array, or as a tree since each Joint references its parent and children. 
+<dd>Convert a Geometry into the Model subclass. 
 <br><br>
 
 </dd>
@@ -248,10 +322,10 @@ Each model is divided into one or more Meshes; each Mesh has its own material
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -265,6 +339,8 @@ Each model is divided into one or more Meshes; each Mesh has its own material
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -296,6 +372,8 @@ Each model is divided into one or more Meshes; each Mesh has its own material
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -322,7 +400,7 @@ Each model is divided into one or more Meshes; each Mesh has its own material
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -335,8 +413,6 @@ Each model is divided into one or more Meshes; each Mesh has its own material
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

@@ -117,11 +117,24 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">this();
+<dt><span class="decl">this(bool <span class="funcparam">createAPass</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Material 
+<span class="currsymbol">dup</span>
+<script type="text/javascript">explorer.outline.addDecl('dup');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Create a deep copy of the Material, cloning both techniques and passes. 
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -151,6 +164,17 @@ Eric Poggel
 <br><br>
 
 </dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Material 
+<span class="currsymbol">getDefaultMaterial</span>
+<script type="text/javascript">explorer.outline.addDecl('getDefaultMaterial');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -178,6 +202,33 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">MaterialTechnique 
+<span class="currsymbol">dup</span>
+<script type="text/javascript">explorer.outline.addDecl('dup');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">hasTranslucency</span>
+<script type="text/javascript">explorer.outline.addDecl('hasTranslucency');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Returns true
+ if the Technique has regions that can be partially seen through.
+ This is true
+ if the first pass has blending enabled. 
+<br><br>
+
 </dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
@@ -331,8 +382,8 @@ Eric Poggel
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">
-<span class="currsymbol">FILL</span>
-<script type="text/javascript">explorer.outline.addDecl('FILL');</script>
+<span class="currsymbol">POLYGONS</span>
+<script type="text/javascript">explorer.outline.addDecl('POLYGONS');</script>
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -404,31 +455,19 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Per pixel lighting, but no normal map.
+<dd>Per pixel lighting, and if there's a second texture, use it as a normal map
 <br><br>
 
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">
-<span class="currsymbol">NORMAL</span>
-<script type="text/javascript">explorer.outline.addDecl('NORMAL');</script>
+<span class="currsymbol">DETAIL</span>
+<script type="text/javascript">explorer.outline.addDecl('DETAIL');</script>
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Use the second texture as a normal map.
-<br><br>
-
-</dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">
-<span class="currsymbol">DETAIL_MAP</span>
-<script type="text/javascript">explorer.outline.addDecl('DETAIL_MAP');</script>
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Use the second texture as a detail map.
+<dd>Per pixel lighting, and if there's a second texture, use it as a detail texture
 <br><br>
 
 </dd>
@@ -466,9 +505,26 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">flat</span>
+<script type="text/javascript">explorer.outline.addDecl('flat');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>If true
+, use 
+<span class="currsymbol">flat</span>
+<script type="text/javascript">explorer.outline.addDecl('flat');</script>
+ shading
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">float 
-<span class="currsymbol">lineWidth</span>
-<script type="text/javascript">explorer.outline.addDecl('lineWidth');</script>
+<span class="currsymbol">linePointSize</span>
+<script type="text/javascript">explorer.outline.addDecl('linePointSize');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -506,10 +562,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -523,6 +579,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -554,6 +612,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -580,7 +640,7 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -593,8 +653,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

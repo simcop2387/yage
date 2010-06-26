@@ -70,7 +70,7 @@ struct Log
 		if ((level >= this.level) && output)
 		{	
 			char[] msg = swritef(_arguments, _argptr);
-			synchronized(Log.typeinfo)
+			synchronized(typeid(Log))
 			{	
 				if (output & Output.CONSOLE)				
 				{	try {

@@ -97,11 +97,18 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">Geometry</span>
 <script type="text/javascript">explorer.outline.addDecl('Geometry');</script>
-: yage.resource.resource.Resource;
+;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Stores vertex data and meshes for any 3D geometry. 
+<dd>Each 
+<span class="currsymbol">Geometry</span>
+<script type="text/javascript">explorer.outline.addDecl('Geometry');</script>
+ has arrays of vertex data and one or more Meshes; each Mesh has its own material
+ and an array of triangle indices that correspond to vertices in the 
+<span class="currsymbol">Geometry</span>
+<script type="text/javascript">explorer.outline.addDecl('Geometry');</script>
+ vertex array. 
 <br><br>
 
 
@@ -183,6 +190,23 @@ An optional secondary color value for each vertex.
 <b>FOGCOORDS:</b><br>
 Currently unused.
 	 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec3f[] 
+<span class="currsymbol">createTangentVectors</span>
+<script type="text/javascript">explorer.outline.addDecl('createTangentVectors');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Create tangent vectors required for MaterialPass.AutoShader.PHONG when a normal map is used.
+<br><br>
+<b>From:</b><br>
+Lengyel, Eric. "Computing Tangent Space Basis Vectors for an Arbitrary Mesh".
+ Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html 
 <br><br>
 
 </dd>
@@ -317,6 +341,23 @@ are these accessors needed?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">int[] 
+<span class="currsymbol">optimize</span>
+<script type="text/javascript">explorer.outline.addDecl('optimize');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Merge duplicate vertices and Meshes.
+ This should be done before creating binormals in order to work well.
+<br><br>
+<b>Returns:</b><br>
+a map from the old vertex indices to the new ones. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static Geometry 
 <span class="currsymbol">merge</span>
 <script type="text/javascript">explorer.outline.addDecl('merge');</script>
@@ -335,8 +376,8 @@ The new Geometry will have copies of all vertex attributes and triangles, but sh
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static Geometry 
-<span class="currsymbol">getPlane</span>
-<script type="text/javascript">explorer.outline.addDecl('getPlane');</script>
+<span class="currsymbol">createPlane</span>
+<script type="text/javascript">explorer.outline.addDecl('createPlane');</script>
 (int <span class="funcparam">widthSegments</span> = 1, int <span class="funcparam">heightSegments</span> = 1);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -355,7 +396,7 @@ The new Geometry will have copies of all vertex attributes and triangles, but sh
 <dt><span class="decl">class 
 <span class="currsymbol">Mesh</span>
 <script type="text/javascript">explorer.outline.addDecl('Mesh');</script>
-: yage.resource.resource.Resource;
+;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -376,6 +417,14 @@ The new Geometry will have copies of all vertex attributes and triangles, but sh
 <dt><span class="decl">static const char[] 
 <span class="currsymbol">TRIANGLES</span>
 <script type="text/javascript">explorer.outline.addDecl('TRIANGLES');</script>
+;
+<br>static const char[] 
+<span class="currsymbol">LINES</span>
+<script type="text/javascript">explorer.outline.addDecl('LINES');</script>
+;
+<br>static const char[] 
+<span class="currsymbol">POINTS</span>
+<script type="text/javascript">explorer.outline.addDecl('POINTS');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
@@ -471,10 +520,10 @@ The new Geometry will have copies of all vertex attributes and triangles, but sh
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -488,6 +537,8 @@ The new Geometry will have copies of all vertex attributes and triangles, but sh
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -519,6 +570,8 @@ The new Geometry will have copies of all vertex attributes and triangles, but sh
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -545,7 +598,7 @@ The new Geometry will have copies of all vertex attributes and triangles, but sh
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -558,8 +611,6 @@ The new Geometry will have copies of all vertex attributes and triangles, but sh
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

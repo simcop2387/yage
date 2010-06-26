@@ -103,13 +103,16 @@ Eric Poggel
 
 <dd>LightNodes are Nodes that emit light.
  Opengl hardware lights are used by default, but shaders can be used to go
- beyond their capabilities.  Each material has an optional max-lights property
- and this is used to only enable the lights that most affect the polygons
- when rendering that instance of the material.
+ beyond their capabilities.
 <br><br>
 All color values are floating point in the range from 0 to 1 and in the order
  of red, green, blue and alpha.  For example,
  (1, .5, 0, 0) is orange, since it is 100% red and 50% green.
+<br><br>
+
+ Spotlights default to shining in the -z direction (the same as the default looking direction of the camera).
+ They can be rotated by rotating the Node itself.
+ 
 <br><br>
 
 
@@ -249,7 +252,8 @@ All color values are floating point in the range from 0 to 1 and in the order
 
 <dd>Spotlight exponent of the light.
  If the light type is a spotlight, this is how focussed the light is.
- Larger values produce more focussed spotlights. 
+ Larger values produce brighter concentrations of light in the center of the circle
+ A value of 0 provides an even distribution of light across the entire spot circle. 
 <br><br>
 
 </dd>
@@ -307,7 +311,9 @@ The cloned Node.
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Get the quadratic attenuation calculated from the light's radius. 
+<br><br>
+
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -357,10 +363,10 @@ The cloned Node.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -374,6 +380,8 @@ The cloned Node.
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -405,6 +413,8 @@ The cloned Node.
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -431,7 +441,7 @@ The cloned Node.
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -444,8 +454,6 @@ The cloned Node.
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

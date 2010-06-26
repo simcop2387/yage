@@ -95,15 +95,15 @@ Eric Poggel
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">struct 
-<span class="currsymbol">Texture</span>
-<script type="text/javascript">explorer.outline.addDecl('Texture');</script>
+<span class="currsymbol">TextureInstance</span>
+<script type="text/javascript">explorer.outline.addDecl('TextureInstance');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>An instance of a GPUTexture.
- This allows many options to be set per instance of a GPUTexture instead of
- creating multiple copies of the GPUTexture (and consuming valuable memory)
+<dd>An instance of a Texture.
+ This allows many options to be set per instance of a Texture instead of
+ creating multiple copies of the Texture (and consuming valuable memory)
  just to change filtering, clamping, or relative scale. 
 <br><br>
 
@@ -177,7 +177,7 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">GPUTexture 
+<dt><span class="decl">Texture 
 <span class="currsymbol">texture</span>
 <script type="text/javascript">explorer.outline.addDecl('texture');</script>
 ;
@@ -188,10 +188,21 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">static Texture 
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static TextureInstance 
 <span class="currsymbol">opCall</span>
 <script type="text/javascript">explorer.outline.addDecl('opCall');</script>
-(GPUTexture <span class="funcparam">texture</span>, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 0);
+(Texture <span class="funcparam">texture</span>, bool <span class="funcparam">clamp</span> = false, int <span class="funcparam">filter</span> = 0);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -207,18 +218,18 @@ Eric Poggel
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">class 
-<span class="currsymbol">GPUTexture</span>
-<script type="text/javascript">explorer.outline.addDecl('GPUTexture');</script>
+<span class="currsymbol">Texture</span>
+<script type="text/javascript">explorer.outline.addDecl('Texture');</script>
 : yage.core.object2.IRenderTarget;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>A 
-<span class="currsymbol">GPUTexture</span>
-<script type="text/javascript">explorer.outline.addDecl('GPUTexture');</script>
+<span class="currsymbol">Texture</span>
+<script type="text/javascript">explorer.outline.addDecl('Texture');</script>
  represents image data in video memory.
 <br><br>
-Also, there's no need to be concerned about making
+There's no need to be concerned about making
  texture dimensions a power of two, as they're automatically resized up to
  the next highest supported size if the non_power_of_two OpenGL extension
  isn't supported in hardware. 
@@ -240,8 +251,8 @@ Also, there's no need to be concerned about making
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Create a GPUTexture from an image.
- The image will be uploaded to memory when the GPUTexture is first bound. 
+<dd>Create a Texture from an image.
+ The image will be uploaded to memory when the Texture is first bound. 
 <br><br>
 
 </dd>
@@ -251,6 +262,19 @@ Also, there's no need to be concerned about making
 <span class="currsymbol">getImage</span>
 <script type="text/javascript">explorer.outline.addDecl('getImage');</script>
 ();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Get / set the Image used by this texture.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">hasAlpha</span>
+<script type="text/javascript">explorer.outline.addDecl('hasAlpha');</script>
+();
 <br>void 
 <span class="currsymbol">setImage</span>
 <script type="text/javascript">explorer.outline.addDecl('setImage');</script>
@@ -258,7 +282,8 @@ Also, there's no need to be concerned about making
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get / set the Image used by this texture.
+<dd>Returns true
+ if the Texture Format includes an alpha channel.
 <br><br>
 
 </dd>
@@ -346,10 +371,10 @@ The width/height of the Texture in pixels.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -363,6 +388,8 @@ The width/height of the Texture in pixels.
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -394,6 +421,8 @@ The width/height of the Texture in pixels.
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -420,7 +449,7 @@ The width/height of the Texture in pixels.
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -433,8 +462,6 @@ The width/height of the Texture in pixels.
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

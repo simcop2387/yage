@@ -120,8 +120,10 @@
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get a new array of type T. 
+<dd>Get a new array of type T.
 <br><br>
+<b>Params:</b><br>
+<table></table><br>
 
 </dd>
 
@@ -155,66 +157,6 @@
 
 
 </dd>
-
-<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">alias 
-<span class="currsymbol">DisposeEvt</span>
-<script type="text/javascript">explorer.outline.addDecl('DisposeEvt');</script>
-;
-</span></dt>
-<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
-
-<dd>Creates a weak reference to a class instance.
-<br><br>
-A weak reference lets you hold onto a pointer to an object without
- preventing the garbage collector from collecting it.
- If the garbage collector collects the object then the weak pointer will
- become 'null
-'.  Thus one should always check a weak pointer for null
-
- before doing anything that depends upon it having a value.
-<br><br>
-
- Tested with:
-	DMD 1.025 / Phobos 1.025
-	DMD 1.025 / Tango 0.99.4
-<br><br>
-
- Usage example:
-<pre class="d_code"> <span style="color: blue">class</span> Something {}
-
- <span style="color: blue">auto</span> a = <span style="color: blue">new</span> Something();
- <span style="color: blue">auto</span> wa = <span style="color: blue">new</span> WeakRef!(Something)(a);
- std.gc.fullCollect();
-
- <span style="color: green">// Reference 'a' prevents collection so wa.ptr is non-null
-</span> <span style="color: blue">assert</span>(wa.ptr <span style="color: blue">is</span> a);
-
- <span style="color: blue">delete</span> a;
-
- <span style="color: green">// 'a' is gone now, so wa.ptr magically becomes null
-</span> <span style="color: blue">assert</span>(wa.ptr <span style="color: blue">is</span> <span style="color: blue">null</span>);
-</pre>
-
-
-<br><br>
-<b>Author:</b><br>
-William V. Baxter III
-<br><br>
-<b>Contributors:</b><br>
-<br><br>
-<b>Date:</b><br>
-21 Jan 2008
-<br><br>
-<b>Copyright:</b><br>
-(C) 2008  William Baxter
-<br><br>
-<b>License:</b><br>
-Public Domain where allowed by law, ZLIB/PNG otherwise.
- 
-<br><br>
-
-</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -226,10 +168,10 @@ Public Domain where allowed by law, ZLIB/PNG otherwise.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:20 2010
 
 	</div>
 	
@@ -243,6 +185,8 @@ Public Domain where allowed by law, ZLIB/PNG otherwise.
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -274,6 +218,8 @@ Public Domain where allowed by law, ZLIB/PNG otherwise.
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -300,7 +246,7 @@ Public Domain where allowed by law, ZLIB/PNG otherwise.
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -313,8 +259,6 @@ Public Domain where allowed by law, ZLIB/PNG otherwise.
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

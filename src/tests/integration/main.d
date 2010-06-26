@@ -1,10 +1,10 @@
-/**
+/*
  * Copyright:  (c) 2005-2010 Eric Poggel
  * Authors:    Eric Poggel
  * License:    Boost 1.0
  */
 
-module unittests.demo.main;
+module tests.demo.main;
 
 import tango.core.Thread;
 import tango.math.Math;

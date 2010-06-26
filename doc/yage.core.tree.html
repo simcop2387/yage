@@ -102,6 +102,7 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Implements an element that can be used in a tree, with parents and children.
+ This is probably/maybe threadsafe.
 <br><br>
 <b>Example:</b><br>
 <pre class="d_code"> <span style="color: blue">class</span> Node : <b>Tree</b>!(Node) {}
@@ -118,7 +119,7 @@ Eric Poggel
 <dt><span class="decl">template 
 <span class="currsymbol">addChild</span>
 <script type="text/javascript">explorer.outline.addDecl('addChild');</script>
-(S)</span></dt>
+(S : T)</span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Add a child element.
@@ -171,7 +172,7 @@ A reference to the <span class="funcparam">child</span>.
 <dt><span class="decl">template 
 <span class="currsymbol">removeChild</span>
 <script type="text/javascript">explorer.outline.addDecl('removeChild');</script>
-(S)</span></dt>
+(S : T)</span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Remove a child element
@@ -278,10 +279,10 @@ The <span class="funcparam">child</span> element.  For convenience, the return t
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:20 2010
 
 	</div>
 	
@@ -295,6 +296,8 @@ The <span class="funcparam">child</span> element.  For convenience, the return t
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -326,6 +329,8 @@ The <span class="funcparam">child</span> element.  For convenience, the return t
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -352,7 +357,7 @@ The <span class="funcparam">child</span> element.  For convenience, the return t
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -365,8 +370,6 @@ The <span class="funcparam">child</span> element.  For convenience, the return t
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

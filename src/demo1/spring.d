@@ -1,7 +1,9 @@
 /**
- * Copyright:  (c) 2005-2009 Eric Poggel
+ * Copyright:  Public Domain
  * Authors:    Eric Poggel
- * License:    <a href="lgpl3.txt">LGPL v3</a>
+ * Warranty:   none
+ *
+ * This module is not technically part of the engine, but merely uses it.
  */
 
 module demo1.spring;

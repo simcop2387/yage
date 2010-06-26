@@ -111,6 +111,28 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">T 
+<span class="currsymbol">dup</span>
+<script type="text/javascript">explorer.outline.addDecl('dup');</script>
+(T : Object)(T <span class="funcparam">object</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Make a shallow copy of a class.
+<br><br>
+<b>TODO:</b><br>
+
+<span class="currsymbol">dup</span>
+<script type="text/javascript">explorer.outline.addDecl('dup');</script>
+ for structs, and this also doesn't copy base Members.
+<br><br>
+<b>TODO:</b><br>
+Betware arrays, both will be slices of the same array afterward, even after resizing one. 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">R delegate(P) 
 <span class="currsymbol">toDelegate</span>
 <script type="text/javascript">explorer.outline.addDecl('toDelegate');</script>
@@ -236,10 +258,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:20 2010
 
 	</div>
 	
@@ -253,6 +275,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -284,6 +308,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -310,7 +336,7 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -323,8 +349,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

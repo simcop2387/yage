@@ -97,7 +97,7 @@ Eric Poggel
 <dt><span class="decl">class 
 <span class="currsymbol">Image</span>
 <script type="text/javascript">explorer.outline.addDecl('Image');</script>
-: yage.resource.resource.Resource;
+;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -441,9 +441,9 @@ A new image of the size <span class="funcparam">right</span>-<span class="funcpa
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">void 
-<span class="currsymbol">overlaySkewAndColor</span>
-<script type="text/javascript">explorer.outline.addDecl('overlaySkewAndColor');</script>
-(Image <span class="funcparam">img</span>, Color <span class="funcparam">color</span>, int <span class="funcparam">xoffset</span> = 0, int <span class="funcparam">yoffset</span> = 0, float <span class="funcparam">skew</span> = cast(float)0);
+<span class="currsymbol">overlayAndColor</span>
+<script type="text/javascript">explorer.outline.addDecl('overlayAndColor');</script>
+(Image <span class="funcparam">img</span>, Color <span class="funcparam">color</span>, int <span class="funcparam">xoffset</span> = 0, int <span class="funcparam">yoffset</span> = 0);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -472,14 +472,9 @@ A new image of the size <span class="funcparam">right</span>-<span class="funcpa
 
                
 <td>y-offset of <span class="funcparam">img</span> from this image's top side.  Out of bounds values will be cropped.</td></tr>
-<tr>
-<td nowrap valign="top" style="padding-right: 8px">float <span class="funcparam">skew</span></td>
-
-               
-<td>horizontally <span class="funcparam">skew</span> the overlayed image by this amount.  .5 will <span class="funcparam">skew</span> it by 45 degrees</td></tr>
 </table><br>
 <b>TODO:</b><br>
-Make the top go to the right instead of taking the bottom to the left
+Make the top go to the right instead of taking the bottom to the left when skewing
 	 
 <br><br>
 
@@ -508,7 +503,6 @@ Make the top go to the right instead of taking the bottom to the left
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Resize this image using bilinear interpolation.
- This is 5.5x faster than gluScaleImage (which also uses a bilinear filter when enlarging) in resizing from 32x32 to 512x512.
 <br><br>
 <b>Params:</b><br>
 <table><tr>
@@ -551,6 +545,94 @@ Replace this with crop.
 
 
 </dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">abstract class 
+<span class="currsymbol">ImageBase</span>
+<script type="text/javascript">explorer.outline.addDecl('ImageBase');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">ubyte[] 
+<span class="currsymbol">getBytes</span>
+<script type="text/javascript">explorer.outline.addDecl('getBytes');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Image2!(T2,C2) 
+<span class="currsymbol">convert</span>
+<script type="text/javascript">explorer.outline.addDecl('convert');</script>
+(T2 : real, int C2)();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">class 
+<span class="currsymbol">Image2</span>
+<script type="text/javascript">explorer.outline.addDecl('Image2');</script>
+(T : real,int C): ImageBase;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Successor to the Image class.
+<br><br>
+<b>TODO:</b><br>
+The rest of Image's functionality should be migrated to 
+<span class="currsymbol">Image2</span>
+<script type="text/javascript">explorer.outline.addDecl('Image2');</script>
+, Image deleted, and 
+<span class="currsymbol">Image2</span>
+<script type="text/javascript">explorer.outline.addDecl('Image2');</script>
+ renamed as Image.
+ @param T Type of each pixel component
+ @param C number of channels. 
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">this(int width, int height, T[C][] data = null);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">ubyte[] 
+<span class="currsymbol">getBytes</span>
+<script type="text/javascript">explorer.outline.addDecl('getBytes');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -562,10 +644,10 @@ Replace this with crop.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -579,6 +661,8 @@ Replace this with crop.
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -610,6 +694,8 @@ Replace this with crop.
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -636,7 +722,7 @@ Replace this with crop.
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -649,8 +735,6 @@ Replace this with crop.
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

@@ -600,19 +600,19 @@ Additional CSS3 border-image properties?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">GPUTexture 
+<dt><span class="decl">Texture 
 <span class="currsymbol">borderTopImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderTopImage');</script>
 ;
-<br>GPUTexture 
+<br>Texture 
 <span class="currsymbol">borderRightImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderRightImage');</script>
 ;
-<br>GPUTexture 
+<br>Texture 
 <span class="currsymbol">borderBottomImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderBottomImage');</script>
 ;
-<br>GPUTexture 
+<br>Texture 
 <span class="currsymbol">borderLeftImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderLeftImage');</script>
 ;
@@ -625,7 +625,7 @@ Additional CSS3 border-image properties?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">GPUTexture[4u] 
+<dt><span class="decl">Texture[4u] 
 <span class="currsymbol">borderImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderImage');</script>
 ;
@@ -638,7 +638,7 @@ Additional CSS3 border-image properties?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">GPUTexture 
+<dt><span class="decl">Texture 
 <span class="currsymbol">borderCenterImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderCenterImage');</script>
 ;
@@ -651,19 +651,19 @@ Additional CSS3 border-image properties?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">GPUTexture 
+<dt><span class="decl">Texture 
 <span class="currsymbol">borderTopLeftImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderTopLeftImage');</script>
 ;
-<br>GPUTexture 
+<br>Texture 
 <span class="currsymbol">borderTopRightImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderTopRightImage');</script>
 ;
-<br>GPUTexture 
+<br>Texture 
 <span class="currsymbol">borderBottomLeftImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderBottomLeftImage');</script>
 ;
-<br>GPUTexture 
+<br>Texture 
 <span class="currsymbol">borderBottomRightImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderBottomRightImage');</script>
 ;
@@ -676,7 +676,7 @@ Additional CSS3 border-image properties?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">GPUTexture[4u] 
+<dt><span class="decl">Texture[4u] 
 <span class="currsymbol">borderCornerImage</span>
 <script type="text/javascript">explorer.outline.addDecl('borderCornerImage');</script>
 ;
@@ -730,7 +730,7 @@ Additional CSS3 border-image properties?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">GPUTexture 
+<dt><span class="decl">Texture 
 <span class="currsymbol">backgroundImage</span>
 <script type="text/javascript">explorer.outline.addDecl('backgroundImage');</script>
 ;
@@ -984,10 +984,10 @@ Finish this function.
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:20 2010
 
 	</div>
 	
@@ -1001,6 +1001,8 @@ Finish this function.
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -1032,6 +1034,8 @@ Finish this function.
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -1058,7 +1062,7 @@ Finish this function.
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -1071,8 +1075,6 @@ Finish this function.
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

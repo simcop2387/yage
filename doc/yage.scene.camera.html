@@ -101,15 +101,8 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A 
-<span class="currsymbol">CameraNode</span>
-<script type="text/javascript">explorer.outline.addDecl('CameraNode');</script>
- renders everything it sees to a Texture.
- Currently, several constraints are used that allow for render-to-texture
- on hardware that only supports power-of-two sized textures.  In the future,
- this will be dropped for a more robust but less backward-compatible solution.
- Node that two Cameras cannot render concurrently since OpenGL itself
- isn't threadsafe.
+<dd><b>TODO:</b><br>
+Document me. 
 <br><br>
 
 
@@ -160,7 +153,7 @@ Eric Poggel
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Get the inverse of the camera's absolute matrix.  This is pre-calculated per call to .toTexture().
+<dd>Get the inverse of the camera's absolute matrix.
 <br><br>
 
 </dd>
@@ -193,18 +186,33 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">VisibleNode 
-<span class="currsymbol">getNodeAtCoordinate</span>
-<script type="text/javascript">explorer.outline.addDecl('getNodeAtCoordinate');</script>
-(int <span class="funcparam">x</span>, int <span class="funcparam">y</span>);
+<dt><span class="decl">VisibleNode[] 
+<span class="currsymbol">getNodesAtCoordinate</span>
+<script type="text/javascript">explorer.outline.addDecl('getNodesAtCoordinate');</script>
+(Vec!(2,float) <span class="funcparam">position</span>, bool <span class="funcparam">includeBoundingSphere</span> = false);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Unfinished!
- Return the closest Node to the Camera in the Camera's Scene at the <span class="funcparam">x</span>, <span class="funcparam">y</span>
- coordinates in the Camera's Texture.  This will not return any Nodes from
- the Scene's skybox.  Returns null
- if no Node is at the position.
+<dd>This function casts a ray from the Camera's view into the scene
+ and returns all Nodes that it collides with.
+ This will not return any Nodes from the Scene's skybox.
+<br><br>
+<b>Params:</b><br>
+<table><tr>
+<td nowrap valign="top" style="padding-right: 8px">Vec!(2,float) <span class="funcparam">position</span></td>
+
+               
+<td>Coordinates between 0 and 1 in the camera's near view frustum.</td></tr>
+<tr>
+<td nowrap valign="top" style="padding-right: 8px">bool <span class="funcparam">includeBoundingSphere</span></td>
+
+               
+<td>If true
+, collision tests will only be performed against Object's bounding
+     sphere and not on a per-polygon basis.  The bounding sphere is determined by VisibleNode.getRadius().</td></tr>
+</table><br>
+<b>Returns:</b><br>
+An unsorted array of matching Nodes. 
 <br><br>
 
 </dd>
@@ -239,7 +247,7 @@ Eric Poggel
 <dt><span class="decl">void 
 <span class="currsymbol">setView</span>
 <script type="text/javascript">explorer.outline.addDecl('setView');</script>
-(float <span class="funcparam">near</span> = cast(float)1, float <span class="funcparam">far</span> = cast(float)100000, float <span class="funcparam">fov</span> = cast(float)45, float <span class="funcparam">aspect</span> = cast(float)0, float <span class="funcparam">threshold</span> = 0.667F);
+(float <span class="funcparam">near</span> = cast(float)1, float <span class="funcparam">far</span> = cast(float)1000000, float <span class="funcparam">fov</span> = cast(float)45, float <span class="funcparam">aspect</span> = cast(float)0, float <span class="funcparam">threshold</span> = 0.667F);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -278,10 +286,10 @@ Eric Poggel
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Array!(VisibleNode) 
+<dt><span class="decl">ArrayBuilder!(VisibleNode) 
 <span class="currsymbol">getVisibleNodes</span>
 <script type="text/javascript">explorer.outline.addDecl('getVisibleNodes');</script>
-(Node <span class="funcparam">root</span> = cast(Node)null, ref Array!(VisibleNode) <span class="funcparam">lookaside</span> = opCall());
+(Node <span class="funcparam">root</span> = cast(Node)null, ref ArrayBuilder!(VisibleNode) <span class="funcparam">lookaside</span> = opCall());
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -294,7 +302,7 @@ Eric Poggel
                
 <td>Root of the scenegraph to scan.  Defaults to the camera's scene.</td></tr>
 <tr>
-<td nowrap valign="top" style="padding-right: 8px">Array!(VisibleNode) <span class="funcparam">lookaside</span></td>
+<td nowrap valign="top" style="padding-right: 8px">ArrayBuilder!(VisibleNode) <span class="funcparam">lookaside</span></td>
 
                
 <td>Optional buffer to use for result to avoid memory allocation. </td></tr>
@@ -317,10 +325,10 @@ Eric Poggel
 	  </tr>
 	</table>
 	<div id="docfooter">
-		Yage and all source files &copy; 2005-2009 Eric Poggel<br>
+		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Thu Apr  8 00:06:44 2010
+		on Sat Jun 26 15:54:21 2010
 
 	</div>
 	
@@ -334,6 +342,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("demo1.spring");
 
 	explorer.packageExplorer.addModule("yage.all");
+
+	explorer.packageExplorer.addModule("yage.core.ThreadPool");
 
 	explorer.packageExplorer.addModule("yage.core.all");
 
@@ -365,6 +375,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.core.object2");
 
+	explorer.packageExplorer.addModule("yage.core.parallel");
+
 	explorer.packageExplorer.addModule("yage.core.parse");
 
 	explorer.packageExplorer.addModule("yage.core.repeater");
@@ -391,7 +403,7 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
 
-	explorer.packageExplorer.addModule("yage.resource.embed.juras_medium_ascii_ttf");
+	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
 	explorer.packageExplorer.addModule("yage.resource.font");
 
@@ -404,8 +416,6 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.resource.material");
 
 	explorer.packageExplorer.addModule("yage.resource.model");
-
-	explorer.packageExplorer.addModule("yage.resource.resource");
 
 	explorer.packageExplorer.addModule("yage.resource.shader");
 

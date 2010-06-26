@@ -19,6 +19,7 @@ int main(char[][] args)
 {	
 	// Operate cdc as a generic build script
 	//return defaultBuild(args);
+	// Commented out, and instead we add custom build instructions for Yage:
 	
 	// Get platform
 	version (Win32)
@@ -35,49 +36,57 @@ int main(char[][] args)
 	// Parse Options
 	char[][] options1;	// options for both derelict and yage
 	char[][] options2;  // options for only yage
-	bool silent, release, ddoc, verbose, run, debug_;
+	bool silent, ddoc, verbose, run, debug_, lib;
 	foreach (char[] arg; args)
 	{	switch(String.toLower(arg))
-		{	case "-ddoc": 		options2 ~= ["-D", "-Dd../doc"]; ddoc = true; break;
+		{	case "-ddoc": 		ddoc = true; options2 ~= ["-D", "-Dd../doc"]; break;
 			case "-debug": 		debug_=true; options1 ~= ["-debug", "-g"]; break;
+			case "-lib": 		lib=true; break;
 			case "-profile": 	options1 ~= ["-profile"]; break;
-			case "-release": 	options2 ~= ["-O", "-inline", "-release"]; release = true; break;
 			case "-run": 		run=true; break;
 			case "-silent": 	silent=true; break;
 			case "-verbose": 	verbose=true; break;
-			default: break;
+			default: System.trace(arg ~ " is not supported.");
 	}	}
-	if (!release)
+	if (debug_)
 		options1 ~= ["-unittest"];
+	else
+		options1 ~= ["-O", "-inline", "-release"];
 	options2 ~= "-d"; // allow deprecated items
 
 	// Show Options
 	if (!silent)
 	{	System.trace("Building Yage...");
 		System.trace("If you're curious, the options are:");
-		System.trace("   -ddoc      Generate documentation in the doc folder");
-		System.trace("   -debug     Include debugging symbols and enable stack tracing on Windows.");
-		System.trace("   -profile   Compile in profiling code.");
-		System.trace("   -release   Optimize, inline expand functions, and remove unit tests/asserts.");
-		System.trace("   -run       Run when finished.");
-		System.trace("   -silent    Don't print this message.");
-		System.trace("   -verbose   Print all commands as they're being executed.");
-		System.trace("Example:  dmd -run buildyage.d -release -run");
+		System.trace("   -ddoc    Generate documentation in the doc folder");
+		System.trace("   -debug   Include debugging symbols and enable stack tracing on Windows.");
+		System.trace("            Otherwise optimize, inline functions, and remove unittests/asserts.");
+		System.trace("   -lib     Create a yage lib file in the lib folder.");
+		System.trace("   -profile Compile in profiling code.");
+		System.trace("   -run     Run when finished.");
+		System.trace("   -silent  Don't print this message.");
+		System.trace("   -verbose Print all commands as they're being executed.");
+		System.trace("Example:  dmd -run buildyage.d -release -run\n...");
 	}
 
-	// create cdc
 	long startTime = System.time();
 
-	// Build derelict if not built.
+	// Build derelict into a lib if not built.
 	char[] debugstr = debug_ ? "-d" : "";
-	char[] derelict = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;
-	if (!FS.exists(derelict))
-		CDC.compile(["derelict"], ["-of"~derelict, "-lib"] ~ options1, null, "../src", verbose);
+	char[] derelictLib = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;
+	if (!FS.exists(derelictLib))
+		CDC.compile(["derelict"], ["-of"~derelictLib, "-lib"] ~ options1, null, "../src", verbose);
 	
+	// Build derelict.lib and yage source into yage.lib if not built.  Unlike Derelict, this lib is deleted and recreated every build since Yage changes frequently.	
 	createEmbeddedResources();
-
-	// Build yage
-	CDC.compile(["yage", app, derelict], ["-of../bin/yage3d"] ~ options1 ~ options2, null, "../src", verbose);
+	
+	char[] yageLib;
+	if (lib) // Compiling yage into a separate lib adds about 40% to the build time
+	{	yageLib = "yage-"~compiler~"-"~platform~debugstr~lib_ext;
+		CDC.compile(["yage"], ["-of../lib/"~yageLib, "-lib"] ~ options1, null, "../src", verbose);
+		CDC.compile([app, yageLib, derelictLib], ["-of../bin/yage3d"] ~ options1 ~ options2, null, "../src", verbose);
+	} else
+		CDC.compile([app, "yage", derelictLib], ["-of../bin/yage3d"] ~ options1 ~ options2, null, "../src", verbose);
 	
 	// Remove leftover files.
 	foreach (file; ["cdc", "cdc.exe", "cdc.o", "cdc.obj", "cdc.map"])
@@ -85,6 +94,8 @@ int main(char[][] args)
 
 	// Print success
 	System.trace("The build completed successfully in {} seconds.",  (System.time() - startTime)/1_000f);
+	if (lib)
+		System.trace(`{} has been placed in ../lib`, yageLib);
 	System.trace(`yage3d{} executable has been placed in ../bin`, bin_ext);
 	if (ddoc)
 		System.trace(`Documentation files have been placed in ../doc`, bin_ext);
@@ -597,8 +608,7 @@ struct System
 		version (Windows)
 			if (String.starts(command, "./"))
 				command = command[2..$];
-				
-		
+
 		version (Tango)
 		{	/+ // hangs in Tango 0.99.9
 			scope p = new Process(true);

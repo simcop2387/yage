@@ -1,5 +1,3 @@
-module yage.core.ThreadPool;
-
 /**
  * This module provides an implementation of the classical thread-pool model.
  *
@@ -9,6 +7,7 @@ module yage.core.ThreadPool;
  * 
  * Patched by Eric Poggel to add the wait() function.
  */
+module yage.core.ThreadPool;
 
 private import  tango.core.Thread,
                 tango.core.Atomic;
