@@ -10,6 +10,7 @@ import tango.math.Math;
 import yage.core.array;
 import yage.core.format;
 import yage.core.math.vector;
+import yage.core.object2;
 import yage.resource.manager;
 import yage.resource.material;
 import yage.system.system;
@@ -85,32 +86,36 @@ class Geometry
 	 * From: Lengyel, Eric. "Computing Tangent Space Basis Vectors for an Arbitrary Mesh". 
 	 * Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html */
 	public Vec3f[] createTangentVectors()
-	{		
-		// TODO: Multiple meshes
-		
+	{			
 		Vec3f[] vertices = cast(Vec3f[])getAttribute(Geometry.VERTICES);
 		Vec3f[] normals = cast(Vec3f[])getAttribute(Geometry.NORMALS);
+		
 		float[] texCoords = cast(float[])getAttribute(Geometry.TEXCOORDS0);
 		int texCoordCount = getVertexBuffer(Geometry.TEXCOORDS0).components;		
 		assert(texCoords.length/texCoordCount == vertices.length);
 	
-		
 		Vec3f[] tan1 = new Vec3f[vertices.length];
-		Vec3f[] tan2 = new Vec3f[vertices.length];
-		
+		//Vec3f[] tan2 = new Vec3f[vertices.length];		
 		Vec3f[] tangents = new Vec3f[vertices.length];
 		
 		foreach (mesh; meshes)
 			foreach (tri; mesh.getTriangles())
-			{
-				
+			{				
 				Vec3f v1 = vertices[tri.x];
 				Vec3f v2 = vertices[tri.y];
 				Vec3f v3 = vertices[tri.z];
 				
-				Vec2f w1 = Vec2f(texCoords[tri.x*texCoordCount..tri.x*texCoordCount+1]);
-				Vec2f w2 = Vec2f(texCoords[tri.y*texCoordCount..tri.y*texCoordCount+1]);
-				Vec2f w3 = Vec2f(texCoords[tri.z*texCoordCount..tri.z*texCoordCount+1]);
+				Vec2f w1, w2, w3;
+				if (texCoordCount==2)
+				{	w1 = (cast(Vec2f[])texCoords)[tri.x];
+					w2 = (cast(Vec2f[])texCoords)[tri.y];
+					w3 = (cast(Vec2f[])texCoords)[tri.z];
+				} else if (texCoordCount==3)
+				{	w1 = Vec2f((cast(Vec3f[])texCoords)[tri.x].v);
+					w2 = Vec2f((cast(Vec3f[])texCoords)[tri.y].v);
+					w3 = Vec2f((cast(Vec3f[])texCoords)[tri.z].v);
+				} else
+					throw new ResourceException("Texture coordinates must have 2 or 3 components to generate tangent vectors.");
 				
 				float x1 = v2.x - v1.x;
 				float x2 = v3.x - v1.x;
@@ -138,9 +143,9 @@ class Geometry
 				tan1[tri.y] += sdir;
 				tan1[tri.z] += sdir;
 				
-				tan2[tri.x] += tdir;
-				tan2[tri.y] += tdir;
-				tan2[tri.z] += tdir;			
+				//tan2[tri.x] += tdir;
+				//tan2[tri.y] += tdir;
+				//tan2[tri.z] += tdir;			
 			}
 		
 		foreach (i, vert; vertices)
@@ -148,13 +153,11 @@ class Geometry
 			Vec3f n = normals[i];
 			Vec3f t = tan1[i];
 			
-			tangents[i] = (t-n * n.dot(t)).normalize();
-			
-			//tangents[i].w = n.cross(t).dot(tan2[i]) < 0 ? -1 : 1;
-			
+			tangents[i] = (t-n * n.dot(t)).normalize();			
+			//tangents[i].w = n.cross(t).dot(tan2[i]) < 0 ? -1 : 1;			
 		}
 		delete tan1;
-		delete tan2;
+		//delete tan2;
 		
 		return tangents;
 	}

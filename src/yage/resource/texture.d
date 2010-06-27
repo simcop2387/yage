@@ -12,6 +12,7 @@ import yage.core.math.math;
 import yage.core.math.matrix;
 import yage.core.math.vector;
 import yage.core.object2;
+import yage.resource.dds;
 import yage.resource.image;
 import yage.resource.manager;
 import yage.system.system;
@@ -134,6 +135,13 @@ class Texture : IRenderTarget
 	
 	protected char[] source;	
 	protected Image image; // if not null, the texture will be updated with this image the next time it is used.
+	//protected ubyte[] ddsImageData;
+	protected DDSImageData* ddsImageData;
+	
+	
+	public char[] ddsFile;
+	
+	//public char[] ddsFile; // if not null, a dds texture will be loaded from this file the next time the texture is used.
 	Vec2i padding;	// padding stores how many pixels of the original texture are unused.
 					// e.g. getWidth() returns the used texture + the padding.  
 					// Padding is applied to the top and the right, and can be negative.
@@ -153,15 +161,30 @@ class Texture : IRenderTarget
 	{	source = ResourceManager.resolvePath(filename);
 		this.format = format;
 		this.mipmap = mipmap;
-		setImage(new Image(source), format, mipmap, source);
+		
+		if (filename[$-4..$]==".dds")
+		{	ddsFile = source;
+			ubyte[] contents = ResourceManager.getFile(filename);
+			ddsImageData = loadDDSTextureFile(contents);
+		}
+		else
+			setImage(new Image(source), format, mipmap, source);
 	}
 	
+	///
 	this(Image image, Format format=Texture.Format.AUTO, bool mipmap=true, char[] source="", bool padding=false)
 	{	this.format = format;
 		this.mipmap = mipmap;
 		setImage(image, format, mipmap, source, padding);
 	}
-
+	
+	/**
+	 * If the texture is loaded from a dds file instead of an image, return the unparsed dds file contents.
+	 * Otherwise an empty array is returned.  */
+	DDSImageData* getDDSImageData()
+	{	return ddsImageData;
+	}
+	
 	/// Get / set the Image used by this texture.
 	Image getImage()
 	{	return image;		
@@ -172,13 +195,16 @@ class Texture : IRenderTarget
 	{	return format == Format.COMPRESSED_LUMINANCE_ALPHA || format == Format.LUMINANCE8_ALPHA8 || format == Format.COMPRESSED_RGBA || format == Format.RGBA8;
 	}
 	
+	///
 	void setImage(Image image)
 	{	setImage(image, format, mipmap, source, padding.length2() != 0);
-	}
-	
+	}	
+	/// ditto
 	void setImage(Image image, Format format, bool mipmap=true, char[] source="", bool pad=false) /// ditto
 	{	assert(image !is null);
-		assert(image.getData() !is null);		
+		assert(image.getData() !is null);
+		ddsImageData = null;
+		
 		this.image = image;
 		this.format = format;
 		this.mipmap = mipmap;

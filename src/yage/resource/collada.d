@@ -419,7 +419,7 @@ class Collada
 		
 		// Enable blending if there's alpha.
 		if (pass.blend==MaterialPass.Blend.NONE)
-			if (pass.diffuse.a < 255 || (pass.textures.length && pass.textures[0].texture.getImage().getChannels()==4))
+			if (pass.diffuse.a < 255 || (pass.textures.length && pass.textures[0].texture.getImage() && pass.textures[0].texture.getImage().getChannels()==4))
 				pass.blend = MaterialPass.Blend.AVERAGE;
 		
 		// Create a fallback technique that uses no shaders.

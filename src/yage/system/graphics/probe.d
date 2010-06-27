@@ -19,17 +19,18 @@ import yage.system.system;
 abstract class Probe
 {
 	private static char[] extensions; // return value from glGetString(GL_EXTENSIONS)
-	private static int fbo=-1, shader=-1, vbo=-1, mt=-1, np2=-1;	// so lookup only has to occur once.
+	private static int fbo=-1, shader=-1, vbo=-1, mt=-1, np2=-1, textureCompression=-1;	// so lookup only has to occur once.
 	
 	/**
 	 * Options for Probe.feature() */
 	enum Feature
 	{	MAX_LIGHTS,			/// Maximum number of lights that can be used at one time (isn't this always 8?)
 		MAX_TEXTURE_SIZE,	/// Maximum allowed size for a texture
-		MAX_TEXTURE_UNITS,	/// Maximum number of textures that can be used in multitexturing
+		MAX_TEXTURE_UNITS,	/// Maximum number of textures that can be used in multitexturing		
 		
 		FBO,				/// Hardware support for rendering directly to a texture (Frame Buffer Object); first available in GeForce FX and Radeon 9x00
 		MULTITEXTURE,		/// Hardware support for using multiple textures in a single rendering pass; first available on Voodoo2?
+		TEXTURE_COMPRESSION,
 		NON_2_TEXTURE,		/// Hardware support for textures of arbitrary size; first available in GeForce FX and Radeon 9500
 		SHADER,				/// Hardware support for openGl vertex and fragment shaders; first available in GeForce FX and Radeon 9x00
 		VBO				/// Hardware support for caching vertex data in video memory (Vertex Buffer Object), first available in Riva TNT and Rage 128?
@@ -81,6 +82,10 @@ abstract class Probe
 				if (mt==-1)
 					mt = cast(int)checkExtension("GL_ARB_multitexture");
 				return mt;
+			case Feature.TEXTURE_COMPRESSION:
+				if (textureCompression==-1)
+					textureCompression = cast(int)checkExtension("GL_ARB_texture_compression");
+				return textureCompression;
 			case Feature.NON_2_TEXTURE:
 				if (np2==-1)
 					np2 = cast(int)checkExtension("GL_ARB_texture_non_power_of_two");

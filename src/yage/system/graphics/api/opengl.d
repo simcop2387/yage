@@ -19,6 +19,7 @@ import derelict.opengl.glext;
 import yage.core.all;
 import yage.gui.surface;
 import yage.gui.style;
+import yage.resource.dds;
 import yage.resource.geometry;
 import yage.resource.image;
 import yage.resource.material;
@@ -647,89 +648,125 @@ class OpenGL : GraphicsAPI
 			if (gpuTexture.dirty)
 			{	
 				Timer timer = new Timer(true);
+				assert(gpuTexture.getImage() || gpuTexture.ddsFile.length);
 				
 				// Upload new image to graphics card memory
 				Image image = gpuTexture.getImage();
-				assert(image);
-							
-				// Convert auto format to a real format based on the image given.
-				Texture.Format format;
-				if (gpuTexture.getFormat() == Texture.Format.AUTO)
-					switch(image.getChannels()) // This will support float formats when we switch to using Image2.
-					{	case 1: format = Texture.Format.COMPRESSED_LUMINANCE; break;
-						case 2: format = Texture.Format.COMPRESSED_LUMINANCE_ALPHA; break;
-						case 3: format = Texture.Format.COMPRESSED_RGB; break;					
-						case 4: format = Texture.Format.COMPRESSED_RGBA; break;					
-						default: throw new ResourceException("Images with more than 4 channels are not supported.");
-					}
-				else if (gpuTexture.getFormat() == Texture.Format.AUTO_UNCOMPRESSED)
-					switch(image.getChannels()) // This will support float formats when we switch to using Image2.
-					{	case 1: format = Texture.Format.LUMINANCE8; break;
-						case 2: format = Texture.Format.LUMINANCE8_ALPHA8; break;
-						case 3: format = Texture.Format.RGB8; break;					
-						case 4: format = Texture.Format.RGBA8; break;					
-						default: throw new ResourceException("Images with more than 4 channels are not supported.");
-					}
-				
-				// Convert from Texture.Format to OpenGL format constants.
-				uint[Texture.Format] glFormatMap = [
-					Texture.Format.COMPRESSED_LUMINANCE : GL_LUMINANCE,
-					Texture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_LUMINANCE_ALPHA,
-					Texture.Format.COMPRESSED_RGB : GL_RGB,
-					Texture.Format.COMPRESSED_RGBA : GL_RGBA,
-					Texture.Format.LUMINANCE8 : GL_LUMINANCE,
-					Texture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
-					Texture.Format.RGB8 : GL_RGB,
-					Texture.Format.RGBA8 : GL_RGBA,				
-				];
-				uint[Texture.Format] glInternalFormatMap = [
-					Texture.Format.COMPRESSED_LUMINANCE : GL_COMPRESSED_LUMINANCE,
-					Texture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_COMPRESSED_LUMINANCE_ALPHA,
-					Texture.Format.COMPRESSED_RGB : GL_COMPRESSED_RGB,
-					Texture.Format.COMPRESSED_RGBA : GL_COMPRESSED_RGBA,
-					Texture.Format.LUMINANCE8 : GL_LUMINANCE,
-					Texture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
-					Texture.Format.RGB8 : GL_RGB,
-					Texture.Format.RGBA8 : GL_RGBA,				
-				];			
-				uint glFormat = glFormatMap[format];
-				uint glInternalFormat = glInternalFormatMap[format];
-				
-
-				gpuTexture.width = image.getWidth();
-				gpuTexture.height = image.getHeight();
-				
-				uint max = Probe.feature(Probe.Feature.MAX_TEXTURE_SIZE);
-				uint new_width = image.getWidth();
-				uint new_height= image.getHeight();
-				
-				// Ensure power of two sized if required
-				if (!Probe.feature(Probe.Feature.NON_2_TEXTURE))
+				if (image)
 				{
-					if (log2(new_height) != floor(log2(new_height)))
-						new_height = nextPow2(new_height);
-					if (log2(new_width) != floor(log2(new_width)))
-						new_width = nextPow2(new_width);
-
-					// Resize if necessary
-					if (new_width != gpuTexture.width || new_height != gpuTexture.height)
-						image = image.resize(min(new_width, max), min(new_height, max));
+					// Convert auto format to a real format based on the image given.
+					Texture.Format format;
+					if (gpuTexture.getFormat() == Texture.Format.AUTO)
+						switch(image.getChannels()) // This will support float formats when we switch to using Image2.
+						{	case 1: format = Texture.Format.COMPRESSED_LUMINANCE; break;
+							case 2: format = Texture.Format.COMPRESSED_LUMINANCE_ALPHA; break;
+							case 3: format = Texture.Format.COMPRESSED_RGB; break;					
+							case 4: format = Texture.Format.COMPRESSED_RGBA; break;					
+							default: throw new ResourceException("Images with more than 4 channels are not supported.");
+						}
+					else if (gpuTexture.getFormat() == Texture.Format.AUTO_UNCOMPRESSED)
+						switch(image.getChannels()) // This will support float formats when we switch to using Image2.
+						{	case 1: format = Texture.Format.LUMINANCE8; break;
+							case 2: format = Texture.Format.LUMINANCE8_ALPHA8; break;
+							case 3: format = Texture.Format.RGB8; break;					
+							case 4: format = Texture.Format.RGBA8; break;					
+							default: throw new ResourceException("Images with more than 4 channels are not supported.");
+						}
+					
+					// Convert from Texture.Format to OpenGL format constants.
+					uint[Texture.Format] glFormatMap = [
+						Texture.Format.COMPRESSED_LUMINANCE : GL_LUMINANCE,
+						Texture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_LUMINANCE_ALPHA,
+						Texture.Format.COMPRESSED_RGB : GL_RGB,
+						Texture.Format.COMPRESSED_RGBA : GL_RGBA,
+						Texture.Format.LUMINANCE8 : GL_LUMINANCE,
+						Texture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
+						Texture.Format.RGB8 : GL_RGB,
+						Texture.Format.RGBA8 : GL_RGBA,				
+					];
+					uint[Texture.Format] glInternalFormatMap = [
+						Texture.Format.COMPRESSED_LUMINANCE : GL_COMPRESSED_LUMINANCE,
+						Texture.Format.COMPRESSED_LUMINANCE_ALPHA : GL_COMPRESSED_LUMINANCE_ALPHA,
+						Texture.Format.COMPRESSED_RGB : GL_COMPRESSED_RGB,
+						Texture.Format.COMPRESSED_RGBA : GL_COMPRESSED_RGBA,
+						Texture.Format.LUMINANCE8 : GL_LUMINANCE,
+						Texture.Format.LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA,
+						Texture.Format.RGB8 : GL_RGB,
+						Texture.Format.RGBA8 : GL_RGBA,				
+					];			
+					uint glFormat = glFormatMap[format];
+					uint glInternalFormat = glInternalFormatMap[format];
+					
+	
+					gpuTexture.width = image.getWidth();
+					gpuTexture.height = image.getHeight();
+					
+					uint max = Probe.feature(Probe.Feature.MAX_TEXTURE_SIZE);
+					uint new_width = image.getWidth();
+					uint new_height= image.getHeight();
+					
+					// Ensure power of two sized if required
+					if (!Probe.feature(Probe.Feature.NON_2_TEXTURE))
+					{
+						if (log2(new_height) != floor(log2(new_height)))
+							new_height = nextPow2(new_height);
+						if (log2(new_width) != floor(log2(new_width)))
+							new_width = nextPow2(new_width);
+	
+						// Resize if necessary
+						if (new_width != gpuTexture.width || new_height != gpuTexture.height)
+							image = image.resize(min(new_width, max), min(new_height, max));
+					}
+						
+					// Build mipmaps (doing it ourself is several times faster than gluBuild2DMipmaps,
+					int level = 0;
+					while(true) {
+						glTexImage2D(GL_TEXTURE_2D, level, glInternalFormat, image.getWidth(), image.getHeight(), 0, glFormat, GL_UNSIGNED_BYTE, image.getData().ptr);
+						level++;
+						
+						if (!gpuTexture.mipmap || image.getWidth() <= 4 || image.getHeight() <= 4)
+							break;
+						
+						image = image.resize(image.getWidth()/2, image.getHeight()/2);
+													
+					}
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level-1);
+					
+				} else if (gpuTexture.getDDSImageData() ){					
+					
+					// This block is from Bill Baxter's DDS loader, See license in resource/dds.d
+					DDSImageData* ddsData = gpuTexture.getDDSImageData();
+					if(ddsData) {
+						int nHeight = ddsData.height;
+						int nWidth = ddsData.width;
+						int nNumMipMaps = ddsData.numMipMaps;
+						int nBlockSize;
+						if(ddsData.format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
+							nBlockSize = 8;
+						else
+							nBlockSize = 16;
+						glGenTextures(1, &info.id);
+						glBindTexture(GL_TEXTURE_2D, info.id);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+						int nSize;
+						int nOffset = 0;
+						// Load the mip-map levels
+						for(int k = 0; k < nNumMipMaps; ++k) {
+							if(nWidth == 0)
+								nWidth = 1;
+							if(nHeight == 0)
+								nHeight = 1;
+							nSize = ((nWidth + 3) / 4) * ((nHeight + 3) / 4) * nBlockSize;
+							glCompressedTexImage2DARB(GL_TEXTURE_2D, k, ddsData.format, nWidth, nHeight, 0, nSize, &ddsData.pixels[0] + nOffset);
+							nOffset += nSize;
+							// Half the image size for the next mip-map level...
+							nWidth = (nWidth / 2);
+							nHeight = (nHeight / 2);
+						}
+					}
+					// end resource/dds.d license
 				}
-					
-				// Build mipmaps (doing it ourself is several times faster than gluBuild2DMipmaps,
-				int level = 0;
-				while(true) {
-					glTexImage2D(GL_TEXTURE_2D, level, glInternalFormat, image.getWidth(), image.getHeight(), 0, glFormat, GL_UNSIGNED_BYTE, image.getData().ptr);
-					level++;
-					
-					if (!gpuTexture.mipmap || image.getWidth() <= 4 || image.getHeight() <= 4)
-						break;
-					
-					image = image.resize(image.getWidth()/2, image.getHeight()/2);
-												
-				}
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level-1);
-				
 				gpuTexture.dirty = false;
 				gpuTexture.flipped = false;
 				

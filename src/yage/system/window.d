@@ -152,12 +152,20 @@ class Window : IRenderTarget
 		// These have to be set after window creation.
 		SDL_EnableUNICODE(1);
 		SDL_EnableKeyRepeat(1, 100);
-
+		
 		// Attempt to load multitexturing		
 		if (Probe.feature(Probe.Feature.MULTITEXTURE))
 		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
 				throw new YageException("GL_ARB_multitexture extension detected but it could not be loaded.");
 			Log.info("GL_ARB_multitexture support enabled.");
+		}else
+			Log.info("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
+		
+		// Texture Compression
+		if (Probe.feature(Probe.Feature.TEXTURE_COMPRESSION))
+		{	if (!ARBTextureCompression.load("GL_ARB_texture_compression"))
+				throw new YageException("GL_ARB_texture_compression extension detected but it could not be loaded.");
+			Log.info("GL_ARB_texture_compression support enabled.");
 		}else
 			Log.info("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
 
