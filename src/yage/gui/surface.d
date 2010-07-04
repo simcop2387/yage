@@ -16,6 +16,7 @@ import yage.system.input;
 import yage.system.log;
 import yage.system.graphics.render;
 import yage.system.window;
+import yage.resource.manager;
 import yage.resource.texture;
 import yage.resource.image;
 import yage.resource.material;
@@ -34,17 +35,16 @@ class Surface : Tree!(Surface)
 	Style style;
 	
 	char[] text;
-	bool editable = true;	
+	protected char[] oldText;
+	protected Texture textTexture;	
+	
+	bool editable = true;
 	bool mouseChildren = true;
 	
 	TextLayout textLayout;
-	
-	protected char[] oldText;
-	protected Texture textTexture;	
 
 	/// Callback functions
 	bool delegate(Surface self) onBlur; ///
-	bool delegate(Surface self) onDraw; ///
 	bool delegate(Surface self) onFocus; ///
 	bool delegate(Surface self, byte buttons, Vec2i coordinates) onClick; /// unfinished
 	bool delegate(Surface self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
@@ -83,33 +83,28 @@ class Surface : Tree!(Surface)
 		SHIFT = LSHIFT | RSHIFT, /// ditto
 		ALT   = LALT | RALT, /// ditto
 		META  = LMETA | RMETA /// ditto
-	};
-	
-	// internal values (TODO: these should be replaced with calculated style values)
-	Style calculatedStyle;
+	};	
 	
 	protected Vec2f offset;		// pixel distance of the topleft corner from parent's top left, a relative offset
 	protected Vec2f size;		// pixel outer width/height, which includes borders and padding.
-	//public Vec4f border;		// now stored in calculatedStyle
-	//protected Vec4f padding;	
 	
 	public Vec2f offsetAbsolute;	// pixel distance of top left from the window's top left at 0, 0, an absolute offset
 	
 	protected bool mouseIn; 		// used to track mouseover/mouseout
-	protected bool _grabbed;	
+	protected bool grabbed;	
 	protected bool resize_dirty = true;
 	
-	protected SurfaceGeometry geometry;
+	protected SurfaceGeometry geometry; // geometry used to render this surface
 	
-	protected static final Style defaultStyle;
-	
-	protected static Surface grabbedSurface;
-	protected static Surface focusSurface;
+	protected static Style defaultStyle; // Used by getDefaultStyle()	
+	protected static Surface grabbedSurface; // surface that has captured the mouse
+	protected static Surface focusSurface; // surface that has focus for receiving input
 
-	///
+	/**
+	 * Create a new Surface at 0, 0 with 0 width and height. */
 	this()
 	{	geometry = new SurfaceGeometry();
-		updateDimensions();
+		updateDimensions(getCalculatedStyle());
 		if (!focusSurface)
 			focus();
 	}
@@ -117,7 +112,7 @@ class Surface : Tree!(Surface)
 	/**
 	 * Release focus if this Surface has focus when it's destroyed. */
 	~this()
-	{	if (focusSurface==this)
+	{	if (focusSurface is this)
 			focusSurface = null;
 	}
 	
@@ -133,19 +128,23 @@ class Surface : Tree!(Surface)
 	/**
 	 * Get the inner-most width/height of the surface.  Just as with CSS, this is the width/height inside the padding. */
 	float width() 
-	{	return innerWidth() - calculatedStyle.paddingLeft.value - calculatedStyle.paddingRight.value;
+	{	float parent_width = parentWidth();
+		return innerWidth() - style.paddingLeft.toPx(parent_width, false) - style.paddingRight.toPx(parent_width, false);
 	}	
 	float height() /// ditto
-	{	return innerHeight() - calculatedStyle.paddingTop.value - calculatedStyle.paddingBottom.value;
+	{	float parent_height = parentHeight();
+		return innerHeight() - style.paddingTop.toPx(parent_height, false) - style.paddingBottom.toPx(parent_height, false);
 	}
 	
 	/**
 	 * Get the width/height of the surface, including the width/height of the padding, but not including the border. */
 	float innerWidth()
-	{	return outerWidth() - calculatedStyle.borderLeftWidth.value - calculatedStyle.borderRightWidth.value;
+	{	float parent_width = parentWidth();
+		return outerWidth() - style.borderLeftWidth.toPx(parent_width, false) - style.borderRightWidth.toPx(parent_width, false);
 	}
 	float innerHeight() /// ditto
-	{	return outerHeight() - calculatedStyle.borderTopWidth.value - calculatedStyle.borderBottomWidth.value;
+	{	float parent_height = parentHeight();
+		return outerHeight() - style.borderTopWidth.toPx(parent_height, false) - style.borderBottomWidth.toPx(parent_height, false);
 	}
 	
 	/**
@@ -186,20 +185,12 @@ class Surface : Tree!(Surface)
 		
 		// Search self
 		Vec2f[4] polygon;
-		getPolygon(polygon.ptr);
+		getPolygon(polygon);
 		if (Vec2f(x, y).inside(polygon))
 			return this;
 		
 		return null;		
-	}
-	
-	
-	/**
-	 * Get a style with all auto/null/inherit/% values replaced with absolute values. */
-	Style getCalculatedStyle()
-	{	return calculatedStyle;
-	}
-	
+	}	
 	
 	/**
 	 * Get the geometry data used for rendering this Surface. */
@@ -249,9 +240,8 @@ class Surface : Tree!(Surface)
 	void move(Vec2f amount, bool constrain=false)
 	{	
 		// Get top, right, bottom, and left in terms of pixels, or nan.
-		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
+		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());		
 		Vec4f dimension;
-
 		for (int i=0; i<4; i++)
 		{	int xy = (i+1) % 2;
 			dimension[i] = style.dimension[i].toPx(parent_size[xy]);
@@ -268,7 +258,7 @@ class Surface : Tree!(Surface)
 		if (constrain)
 		{
 			Vec2f[4] polygon;
-			getPolygon(polygon.ptr);
+			getPolygon(polygon);
 
 			for (int i=0; i<4; i++)
 			{	if (polygon[i].y < bounds[0]) // topmost
@@ -311,25 +301,25 @@ class Surface : Tree!(Surface)
 				style.dimension[i].value = dimension[i] + amount[xy]*multiplier;
 		}
 		
-		updateDimensions(); // dragging breaks w/o this.
+		updateDimensions(getCalculatedStyle()); // dragging breaks w/o this.
 	}
 	
 	/**
 	 * Update all of this Surface's dimensions, geometry, and children to prepare it for rendering. */
 	void update()
 	{
-		updateDimensions();
+		Style cs = getCalculatedStyle();
+		//alias calculatedStyle cs;
+		updateDimensions(cs);
 		if (resize_dirty)
 		{	
 			Vec4f border;
 			Vec4f padding;
 			for (int i=0; i<4; i++)
-			{	border[i] = calculatedStyle.borderWidth[i].value;
-				padding[i] = calculatedStyle.padding[i].value;
+			{	border[i] = cs.borderWidth[i].value;
+				padding[i] = cs.padding[i].value;
 			}
 			geometry.setDimensions(Vec2f(width(), height()), border, padding);
-		
-		
 		}
 		
 		// Text
@@ -337,14 +327,14 @@ class Surface : Tree!(Surface)
 		{
 			int width = cast(int)width();
 			int height = cast(int)height();
-			textLayout.update(text, style, width, height);
-			Image textImage = textLayout.render(style, true); // TODO: Change true to Probe.NextPow2
+			
+			textLayout.update(text, cs, width, height);			
+			Image textImage = textLayout.render(cs, true); // TODO: Change true to Probe.NextPow2
 			assert(textImage !is null);
 			
 			if (!textTexture) // create texture on first go
 				textTexture = new Texture(textImage, Texture.Format.AUTO, false, "Surface Text", true);
 			else
-			//	textTexture.commit(textImage, false, false, text, true);
 				textTexture.setImage(textImage);
 			textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
 			
@@ -526,11 +516,14 @@ class Surface : Tree!(Surface)
 	 * Coordinates are relative to the parent Surface.
 	 * Params:
 	 *     polygon = A pointer to a Vec2f[4] where the result will be stored. */
-	protected void getPolygon(Vec2f *polygon)
-	{	polygon[0] = Vec3f(0).transform(style.transform).vec2f + offset;			// top left
+	protected Vec2f[] getPolygon(in Vec2f[] polygon=null)
+	{	if (polygon.length < 4)
+			polygon = new Vec2f[4];
+		polygon[0] = Vec3f(0).transform(style.transform).vec2f + offset;			// top left
 		polygon[1] = Vec3f(size.x, 0, 0).transform(style.transform).vec2f + offset;	// top right
 		polygon[2] = size.vec3f.transform(style.transform).vec2f + offset;			// bottom right
 		polygon[3] = Vec3f(0, size.y, 0).transform(style.transform).vec2f + offset;	// bottom left
+		return polygon;
 	}
 	
 	
@@ -555,69 +548,107 @@ class Surface : Tree!(Surface)
 	}
 	// Get dimensions of this Surface's parent in pixels
 	protected float parentWidth() 
-	{	return parent ? parent.width() : Window.getInstance.getWidth(); 
+	{	return parent ? parent.width() : Window.getInstance().getWidth(); 
 	}
 	protected float parentHeight() // ditto
 	{	return parent ? parent.height() : Window.getInstance.getHeight(); 
+	}
+	
+
+	static Style getDefaultStyle()
+	{
+		if (!defaultStyle.fontFamily)
+		{	defaultStyle.fontFamily = ResourceManager.getDefaultFont();
+			defaultStyle.fontSize = 12;
+			defaultStyle.fontStyle = Style.FontStyle.NORMAL;
+			defaultStyle.fontWeight = Style.FontWeight.NORMAL;
+			defaultStyle.color = "black";
+			defaultStyle.textAlign = Style.TextAlign.LEFT;
+			defaultStyle.textDecoration = Style.TextDecoration.NONE;			
+		}
+		return defaultStyle;
+	}
+	
+	/**
+	 * Get a style with all auto/null/inherit/% values replaced with absolute values. */
+	Style getCalculatedStyle()
+	{	
+		Style cs = style;  // calculated style
+		Style pcs = parent ? parent.getCalculatedStyle() : getDefaultStyle();
+		
+		// Font and text properties
+		cs.fontFamily = style.fontFamily is null ? pcs.fontFamily : style.fontFamily;
+		cs.fontSize = style.fontSize == CSSValue.AUTO ? pcs.fontSize : style.fontSize;
+		cs.fontStyle = style.fontStyle == Style.FontStyle.AUTO ? pcs.fontStyle : style.fontStyle;
+		cs.fontWeight = style.fontWeight == Style.FontWeight.AUTO ? pcs.fontWeight : style.fontWeight;
+		cs.textAlign = style.textAlign == Style.TextAlign.AUTO ? pcs.textAlign : style.textAlign;
+		cs.textDecoration = style.textDecoration == Style.TextDecoration.AUTO ? pcs.textDecoration : style.textDecoration;
+		
+		// Dimensional properties:
+		
+		// Convert all sizes to pixels
+		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
+		cs.width = style.width.toPx(parent_size.x);
+		cs.height = style.height.toPx(parent_size.y);		
+		for (int i=0; i<4; i++)
+		{	ubyte xy = i%2;
+			float scale_by = xy==0 ? parent_size.y : parent_size.x;			
+			cs.padding[i] = style.padding[i].toPx(scale_by, false);
+			cs.borderWidth[i] = style.borderWidth[i].toPx(scale_by, false);			
+			cs.dimension[i].value = style.dimension[i].toPx(parent_size[xy]);
+		}
+		
+		// Ensure at least 4 of the 6 of top/right/bottom/left/width/height are set.
+		for (int xy=0; xy<2; xy++)
+		{	int topLeft= xy==0 ? 3 : 0; // top or left
+			int bottomRight = xy==0 ? 1 : 2; // bottom or right
+			if (isNaN(cs.dimension[topLeft].value))
+			{	if (isNaN(cs.dimension[bottomRight].value))
+					cs.dimension[topLeft] = 0;
+				if (isNaN(cs.size[xy].value))
+					cs.size[xy] = parent_size[xy];			
+			}
+		}
+		return cs;
 	}
 
 	/*
 	 * Update the internally stored x, y, width, and height based on the style.
 	 * This will also update the geometry, recurse through children, and call the resize event if necessary. */
-	protected void updateDimensions()
+	protected void updateDimensions(Style cs)
 	{
 		Vec2f old_offset = offset;
 		Vec2f old_size = size;
-		
-		alias calculatedStyle cs;
-		
-		// Copy/convert borders and padding to internal pixel values.
+				
+		// Convert style dimensions to pixels.
 		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
-		for (int i=0; i<4; i++)
-		{	float scale_by = i%2==0 ? parent_size.y : parent_size.x;			
-			cs.padding[i] = style.padding[i].toPx(scale_by, false);
-			cs.borderWidth[i] = style.borderWidth[i].toPx(scale_by, false);
-		}
+		Vec2f style_size = Vec2f( // style size doesn't include borders and padding, but this does.
+			cs.width.value + cs.borderLeftWidth.value + cs.borderRightWidth.value + cs.paddingLeft.value + cs.paddingRight.value, 
+			cs.height.value + cs.borderTopWidth.value + cs.borderBottomWidth.value + cs.paddingTop.value + cs.paddingBottom.value);
 		
-		// Convert style dimensions to pixels.		
-		Vec4f style_dimensions = Vec4f(
-			style.top.toPx(parent_size.y),
-			style.right.toPx(parent_size.x),
-			style.bottom.toPx(parent_size.y),
-			style.left.toPx(parent_size.x));
-		Vec2f style_size = Vec2f( // style size doesn't include borders and padding, but the internal size does.
-			style.width.toPx(parent_size.x) + cs.borderLeftWidth.value + cs.borderRightWidth.value + cs.paddingLeft.value + cs.paddingRight.value, 
-			style.height.toPx(parent_size.y) + cs.borderTopWidth.value + cs.borderBottomWidth.value + cs.paddingTop.value + cs.paddingBottom.value);
-		
-		// This loop over xy combines the x/left/right and y/top/bottom calulations into one block of code.
+		// Calculate size and offset from top, left, bottom, right, width, height
+		// (at this point, at most only one of left/width/right will be NaN)
 		for (int xy=0; xy<2; xy++)
 		{	int topLeft= xy==0 ? 3 : 0; // top or left
 			int bottomRight = xy==0 ? 1 : 2; // bottom or right
+
+			float grandparent_size=0, parent_border=0, parent_padding=0;
+			if (parent)
+			{	grandparent_size = xy==0 ? parent.parentHeight() : parent.parentWidth();			
+				parent_border = parent.style.borderWidth[xy].toPx(grandparent_size, false);
+				parent_padding = parent.style.padding[xy].toPx(grandparent_size, false);
+			}				
 			
-			// Ensure at least 4 of the 6 style dimensions are set.
-			if (isNaN(style_dimensions[topLeft]))
-			{	if (isNaN(style_dimensions[bottomRight]))
-					style_dimensions[topLeft] = 0;
-				if (isNaN(style_size[xy]))
-					style_size[xy] = parent_size[xy];			
-			}
-			
-			float parent_border = (parent ? parent.calculatedStyle.borderWidth[xy].value : 0);
-			float parent_padding = (parent ? parent.calculatedStyle.padding[xy].value : 0);
-			
-			// Position	
-			// Convert CSS style top, left, bottom, right, width, height to internal pixel x, y, width, height.
-			// (at this point, at most only one of left/width/right will be NaN)
-			if (isNaN(style_dimensions[topLeft])) // top or left is NaN
+			if (isNaN(cs.dimension[topLeft].value)) // top or left is NaN
 			{	size[xy] = style_size[xy];
-				offset[xy] = parent_size[xy] - size[xy] - style_dimensions[bottomRight] + parent_border + parent_padding;
+				offset[xy] = parent_size[xy] - size[xy] - cs.dimension[bottomRight].value + parent_border + parent_padding;
 			}
 			else if (isNaN(style_size[xy])) // width or height is NaN
-			{	offset[xy] = style_dimensions[topLeft];
-				size[xy] = (parent_size[xy] - style_dimensions[bottomRight]) - offset[xy];
+			{	offset[xy] = cs.dimension[topLeft].value;
+				size[xy] = (parent_size[xy] - cs.dimension[bottomRight].value) - offset[xy];
 			}
 			else // bottom or right is NaN
-			{	offset[xy] = style_dimensions[topLeft] + parent_border + parent_padding;
+			{	offset[xy] = cs.dimension[topLeft].value + parent_border + parent_padding;
 				size[xy] = style_size[xy];
 		}	}	
 		
@@ -632,7 +663,7 @@ class Surface : Tree!(Surface)
 		{	resize_dirty = true;
 			resize(size-old_size); // trigger resize event.
 			foreach (c; children)
-				c.updateDimensions();
+				c.updateDimensions(c.getCalculatedStyle());
 		}
 	}
 }

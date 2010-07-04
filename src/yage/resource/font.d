@@ -184,7 +184,7 @@ class Font
 			return cache[key];
 		else
 		{	Letter result;
-		
+			
 			// Use regular or italic (shear) matrix?
 			FT_Matrix matrix;
 			matrix.xx = matrix.yy = 0x10000; // 65k (half the int bits are used as decimal)

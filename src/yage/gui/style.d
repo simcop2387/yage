@@ -29,6 +29,8 @@ import yage.core.timer;
  * Represents a CSS value.  It can store pixels or precent. */
 struct CSSValue
 {	
+	static const CSSValue AUTO;  /// Has a value of float.nan.  This means inherit from parent style.
+	
 	/**
 	 * CSSValues used to set units for measurements, such as width, padding, etc. */
 	// should this be in CSSValue?
@@ -144,23 +146,24 @@ struct CSSValue
  * TextAlign.JUSTIFY */
 struct Style
 {
-
 	/// CSSValues that can be assigned to the borderImagestyle property.
 	enum BorderImageStyle
-	{	STRETCH, ///
+	{	STRETCH, /// Allowed values.
 		ROUND, /// ditto
 		REPEAT	 /// ditto
 	}
 
 	/// CSSValues that can be assigned to the fontStyle property.
 	enum FontStyle
-	{	NORMAL, /// Allowed values.
+	{	AUTO, /// Allowed values.
+		NORMAL, /// ditto
 		ITALIC /// ditto
 	}
 
 	/// CSSValues that can be assigned to the fontWeight property.
 	enum FontWeight
-	{	NORMAL, /// Allowed values.
+	{	AUTO, /// Allowed values.
+		NORMAL, /// ditto
 		BOLD /// ditto
 	}
 	
@@ -172,7 +175,8 @@ struct Style
 		
 	/// CSSValues that can be assigned to the textAlign property.
 	enum TextAlign
-	{	LEFT, /// Allowed values.
+	{	AUTO, /// Allowed values.
+		LEFT, /// ditto
 		CENTER, /// ditto
 		RIGHT, /// ditto
 		JUSTIFY /// ditto
@@ -180,17 +184,12 @@ struct Style
 	
 	/// CSSValues that can be assigned to the textDecoration property.
 	enum TextDecoration
-	{	NONE, /// Allowed values.
+	{	AUTO,
+		NONE, /// Allowed values.
 		UNDERLINE, /// ditto
 		OVERLINE, /// ditto
 		LINETHROUGH /// ditto
 	}
-
-	/*
-	char[] enumToString(T)(T e)
-	{
-		return e.stringof;
-	}*/
 	
 	union { 
 		struct { 
@@ -266,26 +265,25 @@ struct Style
 	Color backgroundColor; /// ditto
 
 	// Cursor
-	Material cursor;
-	float cursorSize=float.nan; // in pixels, float.nan to default to size of image.
+	Material cursor; /// TODO
+	float cursorSize=float.nan; /// in pixels, float.nan to default to size of image.
 	
 	/// Font properties
 	Font fontFamily;
-	CSSValue fontSize = CSSValue(12); /// ditto
+	CSSValue fontSize; /// ditto
 	FontStyle fontStyle; /// ditto
 	FontWeight fontWeight; /// ditto
 	
 	/// Text properties
-	Color color = {r:0, g:0, b:0, a:255};
+	Color color = {r:0, g:0, b:0, a:255}; // TODO: How to have a value for AUTO?
 	TextAlign textAlign = TextAlign.LEFT; /// ditto
 	TextDecoration textDecoration = TextDecoration.NONE; /// ditto
-	CSSValue lineHeight = CSSValue(float.nan); /// ditto
+	CSSValue lineHeight; /// ditto
 	CSSValue letterSpacing; /// ditto
 	
 	/**
 	 * CSS 3D transform property, defaults to identity matrix.  See: http://w3.org/TR/css3-3d-transforms	 */
-	Matrix transform;
-	bool backfaceVisibility = true;
+	Matrix transform;	
 
 	// Other
 	float opacity = 1; // 0 to 1.
@@ -299,6 +297,9 @@ struct Style
 	}
 	bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
 	int zIndex; /// Sets the stack order of the surface relative to its siblings.
+	
+	bool backfaceVisibility = true; /// Draw the back side of surfaces if they're rotated in 3d.
+	
 
 	/**
 	 * Constructor, returns a new Style with all properties set to their defaults. */
@@ -469,24 +470,33 @@ struct Style
 			case Style.BorderImageStyle.REPEAT: return "repeat";
 	}	}
 	static char[] enumToString(Style.FontStyle style) /// ditto
-	{	return style==Style.FontStyle.NORMAL ? "normal" : "italic";
-	}
+	{	switch(style)
+		{	case Style.FontStyle.AUTO: return "auto";
+			case Style.FontStyle.NORMAL: return "normal";
+			case Style.FontStyle.ITALIC: return "italic";
+	}	}
+	
 	static char[] enumToString(Style.FontWeight style) /// ditto
-	{	return style==Style.FontWeight.NORMAL ? "normal" : "bold";
-	}
+	{	switch(style)
+		{	case Style.FontWeight.AUTO: return "auto";
+			case Style.FontWeight.NORMAL: return "normal";
+			case Style.FontWeight.BOLD: return "bold";
+	}	}
 	static char[] enumToString(Style.Overflow style) /// ditto
 	{	return style==Style.Overflow.VISIBLE ? "visible" : "hidden";
 	}
 	static char[] enumToString(Style.TextAlign style) /// ditto
 	{	switch(style)
-		{	case Style.TextAlign.LEFT: return "left";
+		{	case Style.TextAlign.AUTO: return "auto";
+			case Style.TextAlign.LEFT: return "left";
 			case Style.TextAlign.CENTER: return "center";
 			case Style.TextAlign.RIGHT: return "right";
 			case Style.TextAlign.JUSTIFY: return "justify";
 	}	}
 	static char[] enumToString(Style.TextDecoration style) /// ditto
 	{	switch(style)
-		{	case Style.TextDecoration.NONE: return "none";
+		{	case Style.TextDecoration.AUTO: return "auto";
+			case Style.TextDecoration.NONE: return "none";
 			case Style.TextDecoration.UNDERLINE: return "underline";
 			case Style.TextDecoration.OVERLINE: return "overline";
 			case Style.TextDecoration.LINETHROUGH: return "line-through";

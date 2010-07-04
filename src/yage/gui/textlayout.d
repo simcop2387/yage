@@ -367,7 +367,7 @@ struct TextLayout
 private struct InlineStyle
 {	// Font
 	Font fontFamily;
-	int fontSize = 12; // default to 12px font size.
+	ushort fontSize = 12; // default to 12px font size.
 	Color color = {r:0, g:0, b:0, a:255};
 	Style.FontWeight fontWeight;
 	Style.FontStyle fontStyle;

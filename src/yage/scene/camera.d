@@ -202,7 +202,7 @@ class CameraNode : MovableNode
 	 * It might also be good to put this in calcTransform() instead.*/
 	public void buildFrustum(Scene scene)
 	{	//assert(!transform_dirty);
-		assert(System.isSystemThread()); // this shouldn't be necessary after removing the opengl calls.
+		//assert(System.isSystemThread()); // this shouldn't be necessary after removing the opengl calls.
 		
 		// Create the clipping matrix from the modelview and projection matrices
 		Matrix clip, model;
@@ -228,6 +228,12 @@ class CameraNode : MovableNode
 
 		foreach (inout Plane p; frustum)
 			p = p.normalize();
+	}
+	
+	override protected void calcTransform()
+	{	super.calcTransform();
+		//if (scene)
+		//	buildFrustum(scene);
 	}
 
 	/*

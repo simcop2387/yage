@@ -65,7 +65,7 @@ int main()
 	auto info = view.addChild(new Surface());
 	info.style.set("top: 40px; left: 40px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font: 14px url('Vera.ttf'); text-align: right; opacity: .8; overflow: hidden");
+		"font-family: url('Vera.ttf'); text-align: right; opacity: .8; overflow: hidden");
 	info.style.overflowX = Style.Overflow.HIDDEN;
 	info.style.overflowY = Style.Overflow.HIDDEN;
 	

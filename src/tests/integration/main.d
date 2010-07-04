@@ -74,13 +74,13 @@ class TestScene : Scene
 	}	
 	
 	void keyState(int key, bool state)
-	{	if (key == SDLK_w)
+	{	if (key == SDLK_w || key == SDLK_UP)
 			camera.up = state;
-		if (key == SDLK_a)
+		if (key == SDLK_a || key == SDLK_LEFT)
 			camera.left = state;
-		if (key == SDLK_s)
+		if (key == SDLK_s || key == SDLK_DOWN)
 			camera.down = state;
-		if (key == SDLK_d)
+		if (key == SDLK_d || key == SDLK_RIGHT)
 			camera.right = state;
 		
 		if (key == SDLK_x)
@@ -134,9 +134,37 @@ class LotsOfObjects : TestScene
 		LightNode l4 = rotater1.addChild(new LightNode());
 		l4.setPosition(Vec3f(-100, 0, 0));
 		l4.setLightRadius(100);
-		l4.diffuse = "blue";
+		l4.diffuse = "blue";		
 		
+		//camera.setPosition(Vec3f(0, 0, -500));
+	}
+}
+
+class Picking : TestScene
+{
+	Model asteroid;
+	
+	this()
+	{
+		int length = 4;
+		int spacing = 150;
 		
+		// Add asteroids
+		asteroid = new Model("space/asteroid1.dae");
+		for (int x=-length/2; x<length/2; x++)
+			for (int y=-length/2; y<length/2; y++)
+				for (int z=-length/2; z<length/2; z++)
+				{	auto node = new ModelNode(asteroid);
+					node.setPosition(Vec3f(x*spacing, y*spacing, z*spacing));
+					node.setScale(Vec3f(random(.2, 5)));
+					addChild(node);
+				}
+		
+		// Add rotating lights
+		LightNode l = addChild(new LightNode());
+		l.setPosition(Vec3f(30, 30, 130));
+		l.setLightRadius(400);
+			
 		//camera.setPosition(Vec3f(0, 0, -500));
 	}
 }
@@ -390,7 +418,7 @@ void main()
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
-	auto scene = new LightsAndFog(); // set which scene to test
+	auto scene = new Picking(); // set which scene to test
 	scene.getUpdateThread().setFrequency(60);
 	scene.play(); // start scene thread
 	
