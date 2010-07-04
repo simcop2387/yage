@@ -12,5 +12,6 @@ public {
 	import yage.gui.exceptions;
 	import yage.gui.style;
 	import yage.gui.surface;
-	import yage.gui.textlayout;
+	import yage.gui.surfacegeometry;
+	import yage.gui.textblock;
 } 

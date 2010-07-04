@@ -6,7 +6,6 @@
 
 module yage.gui.surface;
 
-import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.math.Math;
 import tango.text.convert.Utf;
@@ -21,7 +20,7 @@ import yage.resource.texture;
 import yage.resource.image;
 import yage.resource.material;
 import yage.gui.style;
-import yage.gui.textlayout;
+import yage.gui.textblock;
 import yage.gui.surfacegeometry;
 
 /** 
@@ -34,15 +33,12 @@ class Surface : Tree!(Surface)
 {	
 	Style style;
 	
-	char[] text;
-	protected char[] oldText;
-	protected Texture textTexture;	
+	char[] text; /// This html text will be rendered inside the surface.
 	
-	bool editable = true;
-	bool mouseChildren = true;
+	bool editable = true; /// The text of this surface is editable.
+	bool mouseChildren = true; /// Allow the mouse to interact with this Surface's children.
+	TextCursor textCursor; ///
 	
-	TextLayout textLayout;
-
 	/// Callback functions
 	bool delegate(Surface self) onBlur; ///
 	bool delegate(Surface self) onFocus; ///
@@ -55,8 +51,6 @@ class Surface : Tree!(Surface)
 	 * Triggered when a key is pressed down and repeats at the key repeat rate.
 	 * Unlike onKeyDown and onKeyUp, key is the unicode value of the key press, instead of the sdl key code. */
 	bool delegate(Surface self, dchar key, int modifier) onKeyPress; 
-	
-	
 	bool delegate(Surface self, byte buttons, Vec2i coordinates, char[] href) onMouseDown; ///
 	bool delegate(Surface self, byte buttons, Vec2i coordinates, char[] href) onMouseUp; ///
 	bool delegate(Surface self, byte buttons, Vec2i amount, char[] href) onMouseMove; ///
@@ -84,19 +78,22 @@ class Surface : Tree!(Surface)
 		ALT   = LALT | RALT, /// ditto
 		META  = LMETA | RMETA /// ditto
 	};	
+
+	protected char[] oldText;		// Used for comparison to see if text has changed.  setHtml() would be more performant.
+	protected Texture textTexture;	// texture that constains rendered text image.
 	
-	protected Vec2f offset;		// pixel distance of the topleft corner from parent's top left, a relative offset
-	protected Vec2f size;		// pixel outer width/height, which includes borders and padding.
+	protected Vec2f offset;			// pixel distance of the topleft corner from parent's top left, a relative offset
+	protected Vec2f size;			// pixel outer width/height, which includes borders and padding.
 	
 	public Vec2f offsetAbsolute;	// pixel distance of top left from the window's top left at 0, 0, an absolute offset
 	
 	protected bool mouseIn; 		// used to track mouseover/mouseout
-	protected bool grabbed;	
-	protected bool resize_dirty = true;
+	protected bool resizeDirty = true;
 	
 	protected SurfaceGeometry geometry; // geometry used to render this surface
+	protected TextBlock textLayout;
 	
-	protected static Style defaultStyle; // Used by getDefaultStyle()	
+	protected static Style defaultStyle; // Used as a cache by getDefaultStyle()	
 	protected static Surface grabbedSurface; // surface that has captured the mouse
 	protected static Surface focusSurface; // surface that has focus for receiving input
 
@@ -191,6 +188,50 @@ class Surface : Tree!(Surface)
 		
 		return null;		
 	}	
+	
+	/**
+	 * Get a style with all auto/null/inherit/% values replaced with absolute values. */
+	Style getCalculatedStyle()
+	{	
+		Style cs = style;  // calculated style
+		Style pcs = parent ? parent.getCalculatedStyle() : getDefaultStyle();
+		
+		// Font and text properties
+		cs.fontFamily = style.fontFamily is null ? pcs.fontFamily : style.fontFamily;
+		cs.fontSize = style.fontSize == CSSValue.AUTO ? pcs.fontSize : style.fontSize;
+		cs.fontStyle = style.fontStyle == Style.FontStyle.AUTO ? pcs.fontStyle : style.fontStyle;
+		cs.fontWeight = style.fontWeight == Style.FontWeight.AUTO ? pcs.fontWeight : style.fontWeight;
+		cs.textAlign = style.textAlign == Style.TextAlign.AUTO ? pcs.textAlign : style.textAlign;
+		cs.textDecoration = style.textDecoration == Style.TextDecoration.AUTO ? pcs.textDecoration : style.textDecoration;
+		
+		// Dimensional properties:
+		
+		// Convert all sizes to pixels
+		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
+		cs.width = style.width.toPx(parent_size.x);
+		cs.height = style.height.toPx(parent_size.y);		
+		for (int i=0; i<4; i++)
+		{	ubyte xy = i%2;
+			float scale_by = xy==0 ? parent_size.y : parent_size.x;			
+			cs.padding[i] = style.padding[i].toPx(scale_by, false);
+			cs.borderWidth[i] = style.borderWidth[i].toPx(scale_by, false);			
+			cs.dimension[i].value = style.dimension[i].toPx(parent_size[xy]);
+		}
+		
+		// Ensure at least 4 of the 6 of top/right/bottom/left/width/height are set.
+		for (int xy=0; xy<2; xy++)
+		{	int topLeft= xy==0 ? 3 : 0; // top or left
+			int bottomRight = xy==0 ? 1 : 2; // bottom or right
+			if (isNaN(cs.dimension[topLeft].value))
+			{	if (isNaN(cs.dimension[bottomRight].value))
+					cs.dimension[topLeft] = 0;
+				if (isNaN(cs.size[xy].value))
+					cs.size[xy] = parent_size[xy];			
+			}
+		}
+		return cs;
+	}
+
 	
 	/**
 	 * Get the geometry data used for rendering this Surface. */
@@ -311,7 +352,7 @@ class Surface : Tree!(Surface)
 		Style cs = getCalculatedStyle();
 		//alias calculatedStyle cs;
 		updateDimensions(cs);
-		if (resize_dirty)
+		if (resizeDirty)
 		{	
 			Vec4f border;
 			Vec4f padding;
@@ -323,7 +364,7 @@ class Surface : Tree!(Surface)
 		}
 		
 		// Text
-		if (text.length && (text != oldText || resize_dirty))
+		if (text.length && (text != oldText || resizeDirty))
 		{
 			int width = cast(int)width();
 			int height = cast(int)height();
@@ -355,7 +396,7 @@ class Surface : Tree!(Surface)
 		foreach(child; children)
 			child.update();
 		
-		resize_dirty = false;
+		resizeDirty = false;
 	}
 
 	/**
@@ -414,10 +455,7 @@ class Surface : Tree!(Surface)
 		if (propagate)
 		{	if (editable)
 			{	
-				// Log.trace(cast(int)key, " ", unicode);
-				//text ~= unicode; // TODO: send calculatedStyle to surface so
-				// it can have the correct font for adding letters.
-				//text = textLayout.input(key, mod, unicode);
+				text = textLayout.input(key, mod, unicode, textCursor);
 			}
 			if(parent) 
 				parent.keyPress(key, mod);
@@ -496,11 +534,21 @@ class Surface : Tree!(Surface)
 			onResize(this, amount);
 	}
 
-	
 	/**
-	 * Return the Surface that is currently grabbing mouse input, or null if no Surfaces are. */
-	static Surface getGrabbedSurface()
-	{	return grabbedSurface;		
+	 * Get the default style for Surface.
+	 * None of these styles will be set to AUTO. */
+	static Style getDefaultStyle()
+	{
+		if (!defaultStyle.fontFamily)
+		{	defaultStyle.fontFamily = ResourceManager.getDefaultFont();
+			defaultStyle.fontSize = 12;
+			defaultStyle.fontStyle = Style.FontStyle.NORMAL;
+			defaultStyle.fontWeight = Style.FontWeight.NORMAL;
+			defaultStyle.color = "black";
+			defaultStyle.textAlign = Style.TextAlign.LEFT;
+			defaultStyle.textDecoration = Style.TextDecoration.NONE;			
+		}
+		return defaultStyle;
 	}
 	
 	/**
@@ -510,6 +558,13 @@ class Surface : Tree!(Surface)
 			return grabbedSurface;
 		else return focusSurface;		
 	}
+	
+	/**
+	 * Return the Surface that is currently grabbing mouse input, or null if no Surfaces are. */
+	static Surface getGrabbedSurface()
+	{	return grabbedSurface;		
+	}
+
 	
 	/*
 	 * Get a 4-sided polygon of the outline of this surface, after all styles and the transformation are applied.
@@ -554,64 +609,6 @@ class Surface : Tree!(Surface)
 	{	return parent ? parent.height() : Window.getInstance.getHeight(); 
 	}
 	
-
-	static Style getDefaultStyle()
-	{
-		if (!defaultStyle.fontFamily)
-		{	defaultStyle.fontFamily = ResourceManager.getDefaultFont();
-			defaultStyle.fontSize = 12;
-			defaultStyle.fontStyle = Style.FontStyle.NORMAL;
-			defaultStyle.fontWeight = Style.FontWeight.NORMAL;
-			defaultStyle.color = "black";
-			defaultStyle.textAlign = Style.TextAlign.LEFT;
-			defaultStyle.textDecoration = Style.TextDecoration.NONE;			
-		}
-		return defaultStyle;
-	}
-	
-	/**
-	 * Get a style with all auto/null/inherit/% values replaced with absolute values. */
-	Style getCalculatedStyle()
-	{	
-		Style cs = style;  // calculated style
-		Style pcs = parent ? parent.getCalculatedStyle() : getDefaultStyle();
-		
-		// Font and text properties
-		cs.fontFamily = style.fontFamily is null ? pcs.fontFamily : style.fontFamily;
-		cs.fontSize = style.fontSize == CSSValue.AUTO ? pcs.fontSize : style.fontSize;
-		cs.fontStyle = style.fontStyle == Style.FontStyle.AUTO ? pcs.fontStyle : style.fontStyle;
-		cs.fontWeight = style.fontWeight == Style.FontWeight.AUTO ? pcs.fontWeight : style.fontWeight;
-		cs.textAlign = style.textAlign == Style.TextAlign.AUTO ? pcs.textAlign : style.textAlign;
-		cs.textDecoration = style.textDecoration == Style.TextDecoration.AUTO ? pcs.textDecoration : style.textDecoration;
-		
-		// Dimensional properties:
-		
-		// Convert all sizes to pixels
-		Vec2f parent_size = Vec2f(parentWidth(), parentHeight());
-		cs.width = style.width.toPx(parent_size.x);
-		cs.height = style.height.toPx(parent_size.y);		
-		for (int i=0; i<4; i++)
-		{	ubyte xy = i%2;
-			float scale_by = xy==0 ? parent_size.y : parent_size.x;			
-			cs.padding[i] = style.padding[i].toPx(scale_by, false);
-			cs.borderWidth[i] = style.borderWidth[i].toPx(scale_by, false);			
-			cs.dimension[i].value = style.dimension[i].toPx(parent_size[xy]);
-		}
-		
-		// Ensure at least 4 of the 6 of top/right/bottom/left/width/height are set.
-		for (int xy=0; xy<2; xy++)
-		{	int topLeft= xy==0 ? 3 : 0; // top or left
-			int bottomRight = xy==0 ? 1 : 2; // bottom or right
-			if (isNaN(cs.dimension[topLeft].value))
-			{	if (isNaN(cs.dimension[bottomRight].value))
-					cs.dimension[topLeft] = 0;
-				if (isNaN(cs.size[xy].value))
-					cs.size[xy] = parent_size[xy];			
-			}
-		}
-		return cs;
-	}
-
 	/*
 	 * Update the internally stored x, y, width, and height based on the style.
 	 * This will also update the geometry, recurse through children, and call the resize event if necessary. */
@@ -660,7 +657,7 @@ class Surface : Tree!(Surface)
 		
 		// If resized
 		if (size != old_size)
-		{	resize_dirty = true;
+		{	resizeDirty = true;
 			resize(size-old_size); // trigger resize event.
 			foreach (c; children)
 				c.updateDimensions(c.getCalculatedStyle());

@@ -410,7 +410,7 @@ struct Style
 				case "visibility":			visible = tokens[0] != "hidden"; break;
 				
 				default:
-					throw new CSSException("Unsupported CSS Property: '{}'", property);
+					throw new CSSException("Unsupported CSS Property: '%s'", property);
 			}
 		}
 	}

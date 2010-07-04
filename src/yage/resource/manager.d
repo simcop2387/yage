@@ -41,6 +41,21 @@ struct ResourceManager
 	{	char[] source;
 		Texture.Format format;
 		bool mipmap;
+		
+		hash_t toHash()
+		{	return typeid(char[]).getHash(&source) ^ format ^ mipmap;
+		}
+		int opEquals(TextureKey* rhs) // seems to go unused
+		{	return source == rhs.source && format == rhs.format && mipmap == rhs.mipmap;
+		}
+		int opCmp(TextureKey* rhs)
+		{	// return positive if this is greater, negative if rhs is greater
+			if (source != rhs.source) 
+				return source > rhs.source ? 1 : -1;
+        	if (format != rhs.format)
+        		return format = rhs.format;
+        	return cast(byte)mipmap - cast(byte)rhs.mipmap;
+		}
 	}
 	
 	private static char[][] paths = [""];		// paths to look for resources
