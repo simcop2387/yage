@@ -6,11 +6,12 @@
 
 module yage.core.types;
 
+import tango.stdc.string : memcpy;
+import tango.math.Math;
 import yage.core.math.math;
 import yage.core.parse;
 import yage.core.math.vector;
 import yage.core.math.vector:Vec4f;
-import tango.stdc.string : memcpy;
 
 /**
  * Allow for easy bit-by-bit conversion from one two-byte type to another.
@@ -33,9 +34,7 @@ struct word
 	/// Convert to word
 	static word opCall(T)(T i)
 	{	word res;
-		static if(T.sizeof < 2)
-			throw new Exception("Variable must be at least 2 bytes to be converted to a word.");
-		memcpy(&res.s, &i, 2);
+		memcpy(&res.s, &i, min(2, T.sizeof));
 		return res;
 	}
 	
@@ -64,10 +63,7 @@ struct dword
 	/// Convert to dword
 	static dword opCall(T)(T i)
 	{	dword res;
-		static if(T.sizeof < 4)
-			throw new Exception("Variable must be at least 4 bytes to be converted to a dword.");		
-		memcpy(&res.i, &i, 4);
-		
+		memcpy(&res.i, &i, min(4, T.sizeof));		
 		return res;
 	}
 	
@@ -98,9 +94,7 @@ union qword
 	/// Convert to qword
 	static qword opCall(T)(T i)
 	{	qword res;
-		static if(T.sizeof < 8)
-			throw new Exception("Variable must be at least 8 bytes to be converted to a qword.");
-		memcpy(&res.l, &i, 8);
+		memcpy(&res.l, &i, min(8, T.sizeof));
 		return res;
 	}
 	

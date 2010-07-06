@@ -16,13 +16,15 @@
  */
 module yage.core.array;
 
+import tango.stdc.stdlib : malloc, free;
+import tango.core.Traits;
+import tango.math.Math;
+import tango.text.convert.Format;
 import yage.core.format;
 import yage.core.math.math;
 import yage.core.types;
 import yage.core.timer;
-import tango.stdc.stdlib : malloc, free;
-import tango.core.Traits;
-import tango.text.convert.Format;
+import yage.system.log;
 
 /**
  * Add an element to an already sorted array, maintaining the same sort order.
@@ -481,7 +483,7 @@ struct ArrayBuilder(T)
 	
 	/// TODO: This returns a copy, so a[i].b = 3; doesn't work!!
 	T* opIndex(size_t i)
-	{	assert(i<size);
+	{	assert(i<size, format("array index %s out of bounds", i));
 		return &array[i];
 	}
 	T opIndexAssign(T val, size_t i) /// ditto
@@ -520,6 +522,51 @@ struct ArrayBuilder(T)
 	AT reverse()
 	{	array.reverse;
 		return *this;
+	}
+	
+	/**
+	 * Add and remove elements from the array, in-place
+	 * Params:
+	 *     index = 
+	 *     remove = Number of elements to remove, including and after index
+	 *     insert = Element to insert before index, after elements have been removed. */
+	void splice(size_t index, size_t remove, T[] insert ...)
+	{	assert(index+remove <= size, format("%s index + %s remove is greater than %s size", index, remove, size));
+	
+		int difference = insert.length - remove;
+		if (difference > 0) // if array will be longer
+		{	length(size+difference); // grow to fit
+			long i = (cast(long)size)-difference-1;
+			for (; i>=index; i--) // shift elements
+			//	if (i>=0 && i+difference < size)
+					data[i + difference] = data[i];
+			
+		}
+		
+		if (difference < 0) // if array will be shorter
+		{	for (int i=index; i<size+difference; i++) // shift elements
+				data[i] = data[i - difference];			
+			length(size + difference); // shrink to fit
+		}
+		
+		// Insert new elements
+		for (int i=0; i<insert.length; i++)
+			data[i+index] = insert[i];
+	}
+	unittest {
+		auto test = ArrayBuilder!(int)([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);		
+		test.splice(3, 3);
+		assert(test.data == [0, 1, 2, 6, 7, 8, 9]);
+		test.splice(3, 0, [3, 4, 5]);
+		assert(test.data == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+		test.splice(0, 3, [2, 1, 0]);
+		assert(test.data == [2, 1, 0, 3, 4, 5, 6, 7, 8, 9]);
+		test.splice(test.length, 0, 10);
+		assert(test.data == [2, 1, 0, 3, 4, 5, 6, 7, 8, 9, 10]);
+		
+		auto test2 = ArrayBuilder!(int)();
+		test2.splice(0, 0, 1);
+		assert(test2.data == [1]);
 	}
 	
 	///

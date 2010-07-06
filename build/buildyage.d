@@ -9,7 +9,7 @@
  * See: <a href="http://dsource.org/projects/cdc/">The CDC Project</a>
  */
 
-const char[] app = "demo2"; // set which program to build against yage.
+const char[] app = "demo1"; // set which program to build against yage.
 //const char[] app = "tests/integration/main.d";
 
 /**
@@ -426,7 +426,7 @@ struct CDC
 		// If -run is set.
 		if (co.run)
 		{	System.execute("./" ~ co.of, run_args);
-			version(Windows) // give dmd windows time to release the lock.
+			version(Windows) // Hack: give dmd windows time to release the lock.
 				if (compiler=="dmd")
 					System.sleep(.1);
 			FS.remove(co.of); // just like dmd

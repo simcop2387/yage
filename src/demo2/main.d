@@ -52,7 +52,7 @@ int main()
 			System.abort("Yage aborted by esc key press.");
 		return true;
 	};
-	view.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href) {
+	view.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.grabMouse(!self.getGrabbedMouse());
 		return true;
 	};
@@ -69,27 +69,27 @@ int main()
 	info.style.overflowX = Style.Overflow.HIDDEN;
 	info.style.overflowY = Style.Overflow.HIDDEN;
 	
-	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href){
+	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates){
 		self.raise();
 		self.focus();
-		return true;
+		return false;
 	};
-	info.onMouseMove = delegate bool(Surface self, byte buttons, Vec2i amount, char[] href) {
+	info.onMouseMove = delegate bool(Surface self, byte buttons, Vec2i amount) {
 		if(buttons == 1) 
 			self.move(cast(Vec2f)amount, true);
-		return true;
+		return false;
 	};
-	info.onMouseUp = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href) {
+	info.onMouseUp = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.blur();
-		return true;
+		return false;
 	};
 	info.onMouseOver = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear3.png')");
-		return true;
+		return false;
 	};
 	info.onMouseOut = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear2.png')");
-		return true;
+		return false;
 	};
 	//info.style.transform = Matrix().scale(Vec3f(.5, .5, .5));
 	
@@ -108,7 +108,7 @@ int main()
 	int fps = 0;
 	Timer frame = new Timer(true);
 	while(!System.isAborted())
-	{		
+	{	
 		Input.processAndSendTo(view);
 		auto stats = Render.scene(camera, window);
 		Render.surface(view, window);

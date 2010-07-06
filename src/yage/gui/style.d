@@ -506,26 +506,37 @@ struct Style
 	private static T stringToEnum(T)(char[] string)
 	{	static if (is (T==Style.TextAlign))
 			switch (string)
-			{	case "left": return TextAlign.LEFT; 
+			{	case "auto": return TextAlign.AUTO; 
+				case "left": return TextAlign.LEFT; 
 				case "center": return TextAlign.CENTER; 
 				case "right": return TextAlign.RIGHT; 
 				case "justify": return TextAlign.JUSTIFY;
+				default: throw new CSSException("Unsupported text-alignment %s", string);
 			}
 		static if (is (T==Style.TextDecoration))
 			switch(string)
-			{	case "none": return TextDecoration.NONE; 
+			{	case "auto": return TextDecoration.AUTO; 
+				case "none": return TextDecoration.NONE; 
 				case "underline": return TextDecoration.UNDERLINE; 
 				case "overline": return TextDecoration.OVERLINE; 
 				case "line-through": return TextDecoration.LINETHROUGH;
+				default: throw new CSSException("Unsupported text-decoration %s", string);
 			}
 		static if (is (T==Style.FontStyle))
 			switch(string)
-			{	case "normal":return FontStyle.NORMAL; 
-				case "italic": return FontStyle.ITALIC; 
+			{	case "auto": return FontStyle.AUTO; 
+				case "normal":return FontStyle.NORMAL; 
+				case "italic":
 				case "oblique": return FontStyle.ITALIC;
+				default: throw new CSSException("Unsupported font-style %s", string);
 			}
 		static if (is (T==Style.FontWeight))
-			return string=="normal" ? FontWeight.NORMAL : FontWeight.BOLD;
+			switch(string)
+			{	case "auto": return FontWeight.AUTO; 
+				case "normal":return FontWeight.NORMAL; 
+				case "bold": return FontWeight.BOLD;
+				default: throw new CSSException("Unsupported font-weight %s", string);
+			}
 	}
 
 	/* Helper for set)

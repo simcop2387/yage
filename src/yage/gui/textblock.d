@@ -52,29 +52,41 @@ struct TextBlock
 	private ubyte[] imageLookaside; // TODO: Have the lookaside passed into Render
 	
 	private char[] text;
-	private InlineStyle style; // base style of entire text block
+	package InlineStyle style; // base style of entire text block
 	private int width;
 	private int height;
 	
-	// Deprecated in favor of TextCursor
-	int cursorPosition;
-	int selectionStart;
-	int selectionEnd;
-	
-	// Previous settings
-	/*
-	struct Previous
-	{	char[] text;
-		InlineStyle style;
-		int width;
-		int height;
-	}
-	Previous previous;
-	*/
-	
 	private ArrayBuilder!(Line) lines;
 	private ArrayBuilder!(Letter) letters;
-	private ArrayBuilder!(InlineStyle) styles;	// A style for each letter
+	private ArrayBuilder!(InlineStyle) styles;	// Styles pointed to by the letters
+	
+	/**
+	 * Get a line number and the position in that line from a position relative to the start of the TextBlock
+	 * Params:
+	 *     position = Character position from the beginning of the TextBlock
+	 *     After the function executes, this will be the position on the line returned.
+	 * Returns:  The line number.  If position is after the last line, then the number of the last line +1 is returned.*/
+	int positionToLine(inout int position)
+	{	foreach (i, line; lines.data)
+		{	if (position < line.letters.length)
+				return i;
+			position -= line.letters.length;
+		}
+		return lines.length;
+	}
+	
+	/**
+	 * Get cursor position from the beginning of the TextBlock based on a line number and the position in that line.
+	 * Params:
+	 *     line = 
+	 *     position = Position from the beginning of the line.
+	 * Returns: */
+	int lineToPosition(int line, int position)
+	{	int m = min(line, lines.length);
+		for (int i=0; i<m; i++)
+			position += lines[i].letters.length;
+		return position;
+	}
 	
 	/**
 	 * Update lines and letters data structures from keyboard input
@@ -82,45 +94,102 @@ struct TextBlock
 	 *     key = SDL key code constant
 	 *     mod = modifier key.
 	 *     unicode = Unicode value of the pressed key.
-	 *     cursor
-	 * Returns: new html text.
+	 *     cursor = The Surface's TextCursor.
 	 */
-	char[] input(int key, int mod, dchar unicode, inout TextCursor cursor)
-	{
-		Log.trace("%s %s", cursor.position, letters.length);
+	void input(int key, int mod, dchar unicode, inout TextCursor cursor, Style computedStyle)
+	{	
+		style = InlineStyle(computedStyle);
 		assert(cursor.position <= letters.length);
 		
+		// Get the x position in pixels of a character on a line.
+		int positionToX(int line, int position)
+		{	assert (line < lines.length);				
+			int x;
+			int last = min(lines[line].letters.length, position);
+			for (int i=0; i<last; i++)
+				x+= lines[line].letters[i].advanceX;
+			return x;
+		}
+		
+		// Get the nearest character position on a line from an x poxition in pixels
+		int xToPosition(int line, int x)
+		{	int position;
+			for (int i=0; i<lines[line].letters.length; i++)
+			{	x-= lines[line].letters[i].advanceX;
+				if (x<0) // TODO: More accurate rounding
+					return i;
+			}
+		}
+		
 		// Position cursor
+		int position = cursor.position;
+		int currentLine = positionToLine(position);
 		switch(key) 
-		{
-			case SDLK_LEFT: if (cursorPosition>0) cursorPosition--; break;
-			case SDLK_RIGHT: if (cursorPosition<letters.length) cursorPosition++; break;
-			case SDLK_UP: break;
-			case SDLK_DOWN: break;
-			case SDLK_HOME: break;
-			case SDLK_END: break;
+		{	
+			// Positioning keys
+			case SDLK_LEFT: if (cursor.position>0) cursor.position--; break;
+			case SDLK_RIGHT: if (cursor.position<letters.length) cursor.position++; break;
+			case SDLK_UP: 
+				if (currentLine > 0)
+				{	int x = positionToX(currentLine, position);
+					currentLine--;
+					cursor.position = lineToPosition(currentLine, xToPosition(currentLine, x));					
+				}
+				break;
+			case SDLK_DOWN: 
+				if (currentLine < lines.length-1)
+				{	int x = positionToX(currentLine, position);
+					currentLine++;
+					cursor.position = lineToPosition(currentLine, xToPosition(currentLine, x));					
+				}
+				break;
+			case SDLK_HOME: 
+				positionToLine(position); // position is now relativeto the beginning of the line.
+				cursor.position -= position;
+				break;
+			case SDLK_END: 
+				positionToLine(position);
+				cursor.position += (lines[currentLine].letters.length - position);
+				break;
 			
-			default: break;			
-			// ctrl+a, z, x, c, v
-		}
-		
-		
-		if (unicode)
-		{	InlineStyle style;
-		
-			/*
+			// Editing Keys
 			case SDLK_INSERT: break;			
-			case SDLK_BACKSPACE: break;
+			case SDLK_BACKSPACE: 
+				if (cursor.position > 0)
+				{	letters.splice(cursor.position-1, 1);
+					cursor.position--;
+				}			
+				break;
 			case SDLK_DELETE:  break;
-			 */
-			
-			Letter l = style.fontFamily.getLetter(unicode, 10, 10); // style.fontFamily is null.
-			letters ~= l;
-		}
+				if (cursor.position < letters.length)  // doesn't work
+					letters.splice(cursor.position, 1);
+			// New letters
+			default: 
+				if (unicode)
+				{	
+					// Get the style to use for a new letter
+					InlineStyle *style;
+					if (cursor.position > 0) // get style from previous letter
+						style = cast(InlineStyle*)letters[cursor.position-1].extra;
+					else if (letters.length && cursor.position < letters.length-1) // get style from next letter
+						style = cast(InlineStyle*)letters[cursor.position].extra;
+					else // get base style of the TextBlock.
+						style = &this.style;
+				
+					Letter l = style.fontFamily.getLetter(unicode, style.fontSize);
+					l.extra = style;
+					letters.splice(cursor.position, 0, l);
+					cursor.position++;
+				}
+			break;			
+			// ctrl+a, z, x, c, v
+		}		
 		
-		lines = lettersToLines(letters.data, width, lines);
 		
-		return toString();
+		
+		//lines = lettersToLines(letters.data, width, lines);
+		
+		//return toString();
 	}
 	
 	/**
@@ -212,13 +281,10 @@ struct TextBlock
 		return result;
 	}
 	
-	
 	/**
 	 * Reverse the normal function of TextLayout and convert letters[] back to a string of html text.
-	 * The text may use different tags (since some information is lost) 
-	 * but will be functionally the same. 
-	 * TODO: Move this to lettersToHtml(), since it's the opposite of htmlToLetters()	 
-	 */
+	 * The text may use different tags than the original html, (since some information is lost) 
+	 * but will be functionally the same.  */
 	char[] toString()
 	{
 		char[] result = "<span>";
@@ -240,7 +306,7 @@ struct TextBlock
 				// Only print styles that don't match the Surface's style
 				if (style.fontFamily && style.fontFamily != newStyle.fontFamily)
 					styleString ~= swritef(`font-family: url('%s')`, newStyle.fontFamily);
-				if (dword(style.fontSize) != dword(newStyle.fontSize)) // BUG: converts % font size to px.
+				if (dword(style.fontSize) != dword(newStyle.fontSize))
 					styleString ~= swritef(`font-size: %spx`, newStyle.fontSize);
 				if (style.color != newStyle.color)
 					styleString ~= swritef(`color: %spx`, newStyle.color);
@@ -273,8 +339,7 @@ struct TextBlock
 	 *     width = 
 	 *     height = 
 	 * Returns: True if the text will need to be re-rendered, false otherwise.
-	 * TODO: Should this be a constructor to maintain RAII?  Doing so will cause more allocations of letters and lines!
-	 */
+	 * TODO: Should this be a constructor to maintain RAII? */
 	bool update(char[] text, Style style, int width, int height)
 	{
 		InlineStyle istyle = InlineStyle(style);
@@ -305,7 +370,6 @@ struct TextBlock
 	}
 	
 	/*
-	 * 
 	 * Params:
 	 *     letters = 
 	 *     width = 

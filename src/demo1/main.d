@@ -158,23 +158,23 @@ int main()
 		}
 		
 		scene.ship.keyDown(key);
-		return true;
+		return false;
 	};
 	
 	view.onKeyUp = (Surface self, int key, int modifier){
 		scene.ship.keyUp(key);
-		return true;
+		return false;
 	};
 	
-	view.onMouseDown = (Surface self, byte buttons, Vec2i coordinates, char[] href){
+	view.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
 		self.grabMouse(scene.ship.acceptInput);
-		return true;
+		return false;
 	};
-	view.onMouseMove = (Surface self, byte buttons, Vec2i rel, char[] href){
+	view.onMouseMove = (Surface self, byte buttons, Vec2i rel){
 		if(scene.ship.acceptInput)
 			scene.ship.input.mouseDelta += rel;
-		return true;
+		return false;
 	};
 		
 	// Make a draggable window to show some useful info.
@@ -183,27 +183,27 @@ int main()
 		"border-width: 5px; border-image: url('gui/skin/clear2.png'); font-size: 12px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
-	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href) {
+	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.raise();
 		self.focus();
-		return true;
+		return false; // don't propagate upward
 	};
-	info.onMouseMove = delegate bool(Surface self, byte buttons, Vec2i amount, char[] href) {
+	info.onMouseMove = delegate bool(Surface self, byte buttons, Vec2i amount) {
 		if(buttons == 1) 
 			self.move(cast(Vec2f)amount, true);
-		return true;
+		return false;
 	};
-	info.onMouseUp = delegate bool(Surface self, byte buttons, Vec2i coordinates, char[] href) {
+	info.onMouseUp = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.blur();
-		return true;
+		return false;
 	};
 	info.onMouseOver = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear3.png')");
-		return true;
+		return false;
 	};
 	info.onMouseOut = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
 		self.style.set("border-image: url('gui/skin/clear2.png')");
-		return true;
+		return false;
 	};
 
 	int fps = 0;
