@@ -327,7 +327,7 @@ struct Style
 			if (tokens.length<2)
 				continue;
 			char[] property = trim(tokens[0]);
-			property = toLower(property, property);
+			property = toLower(property);
 			tokens = delimit(trim(tokens[1]), " \r\n\t");
 			
 			// TODO: account for parse errors.			
@@ -360,7 +360,7 @@ struct Style
 				case "font-style":			fontStyle = Style.stringToEnum!(FontStyle)(tokens[0]);  break;
 				case "font-weight":			fontWeight = Style.stringToEnum!(FontWeight)(tokens[0]);  break;
 			
-				case "top":					top = tokens[0];  break;
+				case "top":				top = tokens[0];  break;
 				case "right":				right = tokens[0];  break;
 				case "bottom":				bottom = tokens[0];  break;
 				case "left":				left = tokens[0];  break;
@@ -403,9 +403,9 @@ struct Style
 				case "text-decoration":		textDecoration = Style.stringToEnum!(TextDecoration)(tokens[0]); break;
 				
 				case "opacity":				opacity = to!(float)(tokens[0]);  break;
-				case "overflow":			overflowX = overflowY = (toLower(tokens[0], tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
-				case "overflow-x":			overflowX = (toLower(tokens[0], tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
-				case "overflow-y":			overflowY = (toLower(tokens[0], tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
+				case "overflow":			overflowX = overflowY = (toLower(tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
+				case "overflow-x":			overflowX = (toLower(tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
+				case "overflow-y":			overflowY = (toLower(tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
 				case "zIndex":				zIndex = to!(int)(tokens[0]); break;
 				case "visibility":			visible = tokens[0] != "hidden"; break;
 				
