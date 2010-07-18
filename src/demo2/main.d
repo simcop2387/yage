@@ -91,6 +91,7 @@ int main()
 		self.style.set("border-image: url('gui/skin/clear2.png')");
 		return false;
 	};
+	info.editable = view.editable = true;
 	//info.style.transform = Matrix().scale(Vec3f(.5, .5, .5));
 	
 	auto clip = info.addChild(new Surface());

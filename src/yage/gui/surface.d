@@ -47,7 +47,7 @@ class Surface : Tree!(Surface)
 	bool delegate(Surface self, int key, int modifier) onKeyUp; /// Triggered once when a key is released
 	
 	/**
-	 * Triggered when a key is pressed down and repeats at the key repeat rate.
+	 * Triggered when a key is pressed down and repeats at Input's key repeat rates.
 	 * Unlike onKeyDown and onKeyUp, key is the unicode value of the key press, instead of the sdl key code. */
 	bool delegate(Surface self, dchar key, int modifier) onKeyPress; 
 	bool delegate(Surface self, byte buttons, Vec2i coordinates) onMouseDown; ///
@@ -370,7 +370,7 @@ class Surface : Tree!(Surface)
 			int height = cast(int)height();
 			
 			textBlock.update(text, cs, width, height);
-			Image textImage = textBlock.render(cs, true); // TODO: Change true to Probe.NextPow2
+			Image textImage = textBlock.render(cs, true, editable && focusSurface==this ? &textCursor : null); // TODO: Change true to Probe.NextPow2
 			assert(textImage !is null);
 			
 			if (!textTexture) // create texture on first go
@@ -437,7 +437,10 @@ class Surface : Tree!(Surface)
 	
 	/**
 	 * Trigger a keyDown event and call the onKeyDown callback function if set. 
-	 * If the onKeyDown function is not set, call the parent's keyDown function. */ 
+	 * If the onKeyDown function is not set, call the parent's keyDown function. 
+	 * Params:
+	 *     key = SDL's key code of the pressed key.
+	 *     mod = Modifier key held down while key was pressed.*/ 
 	void keyDown(int key, int mod=ModifierKey.NONE)
 	{	bool propagate = true;
 		if(onKeyDown)
@@ -448,7 +451,10 @@ class Surface : Tree!(Surface)
 	
 	/**
 	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
-	 * If the onKeyUp function is not set, call the parent's keyUp function.*/ 
+	 * If the onKeyUp function is not set, call the parent's keyUp function.
+	 * Params:
+	 *     key = SDL's key code of the pressed key.
+	 *     mod = Modifier key held down while key was pressed.*/ 
 	void keyUp(int key, int mod=ModifierKey.NONE)
 	{	bool propagate = true;
 		if(onKeyUp)
@@ -458,8 +464,12 @@ class Surface : Tree!(Surface)
 	}
 	
 	/**
-	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
-	 * If the onKeyUp function is not set, call the parent's keyUp function.*/ 
+	 * Trigger a keyPress event and call the onKeyPress callback function if set. 
+	 * If the onKeyPress function is not set, call the parent's keyPress function.
+	 * Params:
+	 *     key = SDL's key code of the pressed key.
+	 *     mod = Modifier key held down while key was pressed.
+	 *     unicode = unicode value of pressed key. */ 
 	void keyPress(int key, int mod=ModifierKey.NONE, dchar unicode=0)
 	{	bool propagate = true;
 		if(onKeyPress)

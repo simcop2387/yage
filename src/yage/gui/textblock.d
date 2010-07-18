@@ -24,6 +24,7 @@ import yage.core.cache;
 import yage.core.color;
 import yage.core.format;
 import yage.core.math.math;
+import yage.core.math.vector;
 import yage.core.memory;
 import yage.core.object2;
 import yage.core.types;
@@ -60,32 +61,87 @@ struct TextBlock
 	private ArrayBuilder!(Letter) letters;
 	private ArrayBuilder!(InlineStyle) styles;	// Styles pointed to by the letters
 	
-	/**
-	 * Get a line number and the position in that line from a position relative to the start of the TextBlock
-	 * Params:
-	 *     position = Character position from the beginning of the TextBlock
-	 *     After the function executes, this will be the position on the line returned.
-	 * Returns:  The line number.  If position is after the last line, then the number of the last line +1 is returned.*/
-	int positionToLine(inout int position)
-	{	foreach (i, line; lines.data)
-		{	if (position < line.letters.length)
-				return i;
-			position -= line.letters.length;
-		}
-		return lines.length;
-	}
+
 	
-	/**
-	 * Get cursor position from the beginning of the TextBlock based on a line number and the position in that line.
-	 * Params:
-	 *     line = 
-	 *     position = Position from the beginning of the line.
-	 * Returns: */
-	int lineToPosition(int line, int position)
-	{	int m = min(line, lines.length);
-		for (int i=0; i<m; i++)
-			position += lines[i].letters.length;
-		return position;
+	/// Functions for converting between line/letter/cursor space and x/y position.
+	struct {
+		
+		///
+		Vec2i cursorToXy(int position)
+		{	Vec2i result;
+			int line = cursorToLine(position);
+			for (int i=0; i<line; i++)
+				result.y += lines[i].height;
+			line = min(line, lines.length-1);
+			Log.trace(position);
+			int last = min(lines[line].letters.length, position);
+			for (int i=0; i<last; i++)
+				result.x += lines[line].letters[i].advanceX;
+			return result;
+		}
+		
+		int xyToCursor(Vec2i xy)
+		{	
+			int line;
+			for (; line<lines.length && 0 <= xy.y; line++)
+				xy.y -= lines[line].height;			
+			
+			int position;
+			for (; position<lines[line].letters.length && 0 < xy.x; position++)
+				xy.x -= lines[line].letters[position].advanceX;
+			
+			return lineToCursor(line, position);
+		}
+		
+		
+		/**
+		 * Get a line number and the position in that line from a position relative to the start of the TextBlock
+		 * Params:
+		 *     position = Character position from the beginning of the TextBlock
+		 *     After the function executes, this will be the position on the line returned.
+		 * Returns:  The line number.  If position is after the last line, then the number of the last line +1 is returned.*/
+		int cursorToLine(inout int position)
+		{	foreach (i, line; lines.data)
+			{	if (position < line.letters.length)
+					return i;
+				position -= line.letters.length;
+			}
+			return lines.length;
+		}
+		
+		/**
+		 * Get cursor position from the beginning of the TextBlock based on a line number and the position in that line.
+		 * Params:
+		 *     line = 
+		 *     position = Position from the beginning of the line.
+		 * Returns: */
+		int lineToCursor(int line, int position)
+		{	int m = min(line, lines.length);
+			for (int i=0; i<m; i++)
+				position += lines[i].letters.length;
+			return position;
+		}
+		/*
+		// Get the x position in pixels of a character on a line.  TODO: Also y.
+		int positionToX(int line, int position)
+		{	assert (line < lines.length);				
+			int x;
+			int last = min(lines[line].letters.length, position);
+			for (int i=0; i<last; i++)
+				x+= lines[line].letters[i].advanceX;
+			return x;
+		}
+		
+		// Get the nearest character position on a line from an x poxition in pixels
+		int xToPosition(int line, int x)
+		{	
+			for (int i=0; i<lines[line].letters.length; i++)
+			{	x-= lines[line].letters[i].advanceX;
+				if (x<0) // TODO: More accurate rounding
+					return i;
+			}
+		}
+		*/
 	}
 	
 	/**
@@ -101,29 +157,9 @@ struct TextBlock
 		style = InlineStyle(computedStyle);
 		assert(cursor.position <= letters.length);
 		
-		// Get the x position in pixels of a character on a line.
-		int positionToX(int line, int position)
-		{	assert (line < lines.length);				
-			int x;
-			int last = min(lines[line].letters.length, position);
-			for (int i=0; i<last; i++)
-				x+= lines[line].letters[i].advanceX;
-			return x;
-		}
-		
-		// Get the nearest character position on a line from an x poxition in pixels
-		int xToPosition(int line, int x)
-		{	int position;
-			for (int i=0; i<lines[line].letters.length; i++)
-			{	x-= lines[line].letters[i].advanceX;
-				if (x<0) // TODO: More accurate rounding
-					return i;
-			}
-		}
-		
 		// Position cursor
 		int position = cursor.position;
-		int currentLine = positionToLine(position);
+		int currentLine = cursorToLine(position);
 		switch(key) 
 		{	
 			// Positioning keys
@@ -131,24 +167,24 @@ struct TextBlock
 			case SDLK_RIGHT: if (cursor.position<letters.length) cursor.position++; break;
 			case SDLK_UP: 
 				if (currentLine > 0)
-				{	int x = positionToX(currentLine, position);
-					currentLine--;
-					cursor.position = lineToPosition(currentLine, xToPosition(currentLine, x));					
+				{	Vec2i xy = cursorToXy(cursor.position).x;			
+					xy.y -= lines[currentLine].height;
+					cursor.position = lineToCursor(currentLine, xyToCursor(xy));
 				}
 				break;
 			case SDLK_DOWN: 
 				if (currentLine < lines.length-1)
-				{	int x = positionToX(currentLine, position);
-					currentLine++;
-					cursor.position = lineToPosition(currentLine, xToPosition(currentLine, x));					
+				{	Vec2i xy = cursorToXy(cursor.position).x;
+					xy.y += lines[currentLine].height;
+					cursor.position = lineToCursor(currentLine, xyToCursor(xy));	
 				}
 				break;
 			case SDLK_HOME: 
-				positionToLine(position); // position is now relativeto the beginning of the line.
+				//cursorToLine(position); // position is now relativeto the beginning of the line.
 				cursor.position -= position;
 				break;
 			case SDLK_END: 
-				positionToLine(position);
+				//cursorToLine(position);
 				cursor.position += (lines[currentLine].letters.length - position);
 				break;
 			
@@ -160,9 +196,10 @@ struct TextBlock
 					cursor.position--;
 				}			
 				break;
-			case SDLK_DELETE:  break;
+			case SDLK_DELETE:  
 				if (cursor.position < letters.length)  // doesn't work
 					letters.splice(cursor.position, 1);
+				break;
 			// New letters
 			default: 
 				if (unicode)
@@ -182,7 +219,7 @@ struct TextBlock
 					cursor.position++;
 				}
 			break;			
-			// ctrl+a, z, x, c, v
+			// TODO: selection, ctrl+a, z, x, c, v
 		}		
 		
 		
@@ -199,20 +236,13 @@ struct TextBlock
 	 * Characters with a bold font-weight are rendered at 1.5x normal width.
 	 * Characters with a italic/oblique font-style are rendered skewed.
 	 * For ideal rendering, instead use a font-family that has a bold or italic style.
-	 * Params:
-	 *     text = String of utf-8 encoded html text to render.
-	 *       The following html tags are supported:<br> 
-	 *       	a, b, br, del, i, span, sub, sup, u <br>
-	 *       The following css is supported via inline style attributes: <br>
-	 *         color, font-family, font-size[%|px], font-style[normal|italic|oblique], font-weight[normal|bold],
-	 *         letter-spacing[%|px], line-height[%|px], 
-	 *         text-align[left|center|right] text-decoration[none|underline|overline|line-through]
+	 * Params:     
 	 *     style = A style with fontSize and lineHeight in terms of pixels
-	 *     width = Available width for rendering text
-	 *     height = Available height for rendering text.
+	 *     pow2 = Render an image with dimensions that are a power of 2 (useful for older graphics cards)
+	 *     cursor = Render this text cursor if not null.
 	 * Returns:  An RGBA image of width pixels wide and is shorter or equal to height.  
 	 *     Note that the same buffer is used for each return, so one call to this function will overwrite a previous result.*/
-	Image render(Style style, bool pow2=false)
+	Image render(Style style, bool pow2=false, TextCursor* cursor=null)
 	{
 		Image result;
 
@@ -268,6 +298,15 @@ struct TextBlock
 							for (int j=x; j<x+letter.advanceX; j++)
 								result[j, h] = istyle.color.ub;
 					
+					
+					if (cursor)
+					{
+						Vec2i xy = cursorToXy(cursor.position+1);
+						for (int h=max(0, xy.y); h<min(line.height+xy.y, height); h++)
+							for (int w=max(0, xy.x); w<min(xy.x+2, width); w++)
+								result[w, h] = style.color.ub;
+						
+					}
 					
 					x+= letter.advanceX; // + istyle.letterSpacing;
 					y+= letter.advanceY;
@@ -334,10 +373,16 @@ struct TextBlock
 	 * Replace the text with new text, rebuilding the internal lines and letters data structures.
 	 * This is unlike input(), which modifies the text based on a single keystroke.
 	 * Params:
-	 *     text = 
-	 *     style = Root style of the text.  Inline styles override this.
-	 *     width = 
-	 *     height = 
+	 *     text = String of utf-8 encoded html text to render.
+	 *       The following html tags are supported:<br> 
+	 *       	a, b, br, del, i, span, sub, sup, u <br>
+	 *       The following css is supported via inline style attributes: <br>
+	 *         color, font-family, font-size[%|px], font-style[normal|italic|oblique], font-weight[normal|bold],
+	 *         letter-spacing[%|px], line-height[%|px], 
+	 *         text-align[left|center|right] text-decoration[none|underline|overline|line-through]
+	 *     style = A style with fontSize and lineHeight in terms of pixels
+	 *     width = Available width for rendering text
+	 *     height = Available height for rendering text.
 	 * Returns: True if the text will need to be re-rendered, false otherwise.
 	 * TODO: Should this be a constructor to maintain RAII? */
 	bool update(char[] text, Style style, int width, int height)

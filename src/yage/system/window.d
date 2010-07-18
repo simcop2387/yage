@@ -151,7 +151,8 @@ class Window : IRenderTarget
 		
 		// These have to be set after window creation.
 		SDL_EnableUNICODE(1);
-		SDL_EnableKeyRepeat(1, 100);
+		//SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+		SDL_EnableKeyRepeat(0, 0); // disable, we handle it ourselves
 		
 		// Attempt to load multitexturing		
 		if (Probe.feature(Probe.Feature.MULTITEXTURE))

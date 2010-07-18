@@ -7,7 +7,7 @@
 module yage.system.input;
 
 public import derelict.sdl.sdl;
-
+import tango.stdc.time;
 import yage.core.math.vector;
 import yage.system.log;
 import yage.system.system;
@@ -22,18 +22,23 @@ import yage.gui.surface;
  */ 
 class Input
 {
+	public static int KEY_DELAY = 500; /// milliseconds before repeating a call to keyPress after holding a key down.
+	public static int KEY_REPEAT = 30; /// milliseconds before subsequent calls to keyPress after KEY_DELAY occurs.
+	
 	protected static Vec2i mouse; // The current pixel location of the mouse cursor; (0, 0) is top left.
 	protected static Surface currentSurface;	// Surface that the mouse is currently over
 
+	protected static SDL_keysym lastKeyDown; // Used for manual key-repeat.
+	protected static uint lastKeyDownTime;
+	
 	/** 
 	 * Process input, handle window resize and close events, and send the remaining events to surface,
 	 * calling the surfaces's keyDown, keyUp, mouseDown, MouseUp, and mouseOver functions as appropriate. */
 	static void processAndSendTo(Surface surface)
 	{
-		// Disable key repeating, we'll handle that manually.
-		//SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL); // why doesn't this work? Need to try again since I have the latest version of SDL
 		
 		SDL_EnableUNICODE(1);
+		auto focus = getFocusSurface(surface);
 				
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
@@ -42,22 +47,20 @@ class Input
 			{
 				// Keyboard
 				case SDL_KEYDOWN:
-					
-					auto focus = getFocusSurface(surface);
 					if(focus) // keysym.sym gets all keys on the keyboard, including separate keys for numpad, keysym.unicde should be reserved for text.
 					{	focus.keyDown(event.key.keysym.sym, event.key.keysym.mod);
+					
+						// Kepress will be called with the key repeat settings.
 						focus.keyPress(event.key.keysym.sym, event.key.keysym.mod, event.key.keysym.unicode);
-						//focus.keyDown(event.key.keysym.unicode, event.key.keysym.mod);
-						//focus.text ~= toUTF8([cast(dchar)(event.key.keysym.sym)]);
+						lastKeyDown = event.key.keysym;
+						lastKeyDownTime = clock()*1000 / CLOCKS_PER_SEC;
 					}
 					break;
-				case SDL_KEYUP:
-	    			
-	    			auto focus = getFocusSurface(surface);
+				case SDL_KEYUP:	    			
 					if(focus)
 						focus.keyUp(event.key.keysym.sym, event.key.keysym.mod);
 						//focus.keyUp(event.key.keysym.unicode, event.key.keysym.mod);
-					
+					lastKeyDownTime = uint.max;
 					break;
 				// Mouse
 				case SDL_MOUSEBUTTONDOWN:
@@ -91,7 +94,7 @@ class Input
 						
 						currentSurface = over; //The new current surface
 					}
-					
+
 					break;
 	
 				// System
@@ -107,7 +110,17 @@ class Input
 				default:
 					break;
 			}
-		}		
+		}
+		
+		// Key repeat
+		if (focus)
+		{		
+			uint now = clock()*1000/CLOCKS_PER_SEC;			
+			if (now - KEY_DELAY > lastKeyDownTime)
+			{	focus.keyPress(lastKeyDown.sym, lastKeyDown.mod, lastKeyDown.unicode);
+				lastKeyDownTime += KEY_REPEAT;
+			}
+		}
 	}
 	
 	/**
@@ -119,7 +132,7 @@ class Input
 	}
 	
 	/**
-	 * Get the surface that currently has focus. */
+	 * Get the surface that currently has focus, or the given surface if no surface has focus */
 	private static Surface getFocusSurface(Surface surface) {
 		if(Surface.getFocusSurface()) 
 			return Surface.getFocusSurface();
