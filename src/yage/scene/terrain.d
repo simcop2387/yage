@@ -83,8 +83,8 @@ interface TerrainGenerator
 	
 	/**
 	 * Get a lightmap Texture to use across the range of coordinates.
-	 * If no lightmap is desired, this function can return a Texture without a Texture.
-	 * The same GPU Texture can be reused across multiple calls with different values, 
+	 * If no lightmap is desired, this function can return a TextureInstance with a null Texture.
+	 * The same TextureInstance can be reused across multiple calls with different values, 
 	 * if the Textures' texture matrix adjusted as needed.
 	 * Params:
 	 *     min = Minumum xy coordinate of the rectangle needing a lightmap.
