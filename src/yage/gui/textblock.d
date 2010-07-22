@@ -47,8 +47,8 @@ struct TextCursor
  * This class is used internally by the engine.  In most cases it shouldn't need to be called externally.. */
 struct TextBlock
 {
-	private static const char[] whitespace = " \t\r\n";
-	private static const char[] breaks = " *()-+=/\\,.;:|()[]{}<>\t\r\n"; // breaking characters
+	private static const dchar[] whitespace = " \t\r\n"d;
+	private static const dchar[] breaks = " *()-+=/\\,.;:|()[]{}<>\t\r\n"d; // breaking characters
 	
 	private ubyte[] imageLookaside; // TODO: Have the lookaside passed into Render
 	
@@ -68,12 +68,14 @@ struct TextBlock
 		
 		///
 		Vec2i cursorToXy(int position)
-		{	Vec2i result;
+		{
+			if (!lines.length)
+				return Vec2i(0);
+			Vec2i result;
 			int line = cursorToLine(position);
 			for (int i=0; i<line; i++)
 				result.y += lines[i].height;
 			line = min(line, lines.length-1);
-			Log.trace(position);
 			int last = min(lines[line].letters.length, position);
 			for (int i=0; i<last; i++)
 				result.x += lines[line].letters[i].advanceX;
@@ -179,12 +181,10 @@ struct TextBlock
 					cursor.position = lineToCursor(currentLine, xyToCursor(xy));	
 				}
 				break;
-			case SDLK_HOME: 
-				//cursorToLine(position); // position is now relativeto the beginning of the line.
+			case SDLK_HOME:
 				cursor.position -= position;
 				break;
 			case SDLK_END: 
-				//cursorToLine(position);
 				cursor.position += (lines[currentLine].letters.length - position);
 				break;
 			
@@ -224,7 +224,7 @@ struct TextBlock
 		
 		
 		
-		//lines = lettersToLines(letters.data, width, lines);
+		lines = lettersToLines(letters.data, width, lines);
 		
 		//return toString();
 	}
@@ -287,26 +287,16 @@ struct TextBlock
 					// Render underline, overline, and linethrough
 					if (istyle.textDecoration == Style.TextDecoration.UNDERLINE)
 						for (int h=max(0, baseline); h<min(baseline+lineWidth, height); h++)
-							for (int j=x; j<x+letter.advanceX; j++) // [above] make underline 1/10th as thick as line-height
-								result[j, h] = istyle.color.ub;
+							for (int w=x; w<min(x+letter.advanceX, width); w++) // [above] make underline 1/10th as thick as line-height
+								result[w, h] = istyle.color.ub;
 					else if (istyle.textDecoration == Style.TextDecoration.OVERLINE)
 						for (int h=max(0, capheight); h<min(capheight+lineWidth, height); h++)
-							for (int j=x; j<x+letter.advanceX; j++)
-								result[j, h] = istyle.color.ub;
+							for (int w=x; w<min(x+letter.advanceX, width); w++)
+								result[w, h] = istyle.color.ub;
 					else if (istyle.textDecoration == Style.TextDecoration.LINETHROUGH)
 						for (int h=max(0, midline); h<min(midline+lineWidth, height); h++)
-							for (int j=x; j<x+letter.advanceX; j++)
-								result[j, h] = istyle.color.ub;
-					
-					
-					if (cursor)
-					{
-						Vec2i xy = cursorToXy(cursor.position+1);
-						for (int h=max(0, xy.y); h<min(line.height+xy.y, height); h++)
-							for (int w=max(0, xy.x); w<min(xy.x+2, width); w++)
-								result[w, h] = style.color.ub;
-						
-					}
+							for (int w=x; w<min(x+letter.advanceX, width); w++)
+								result[w, h] = istyle.color.ub;
 					
 					x+= letter.advanceX; // + istyle.letterSpacing;
 					y+= letter.advanceY;
@@ -316,7 +306,25 @@ struct TextBlock
 				if (y>height)
 					break;
 			}
-		}		
+		}
+		
+		// Draw cursor
+		if (cursor)
+		{	Vec2i xy = cursorToXy(cursor.position);
+			int lineHeight = cast(int)style.lineHeight.toPx(0);
+			if (letters.length)
+			{	//xy.x += letters[cursor.position].advanceX;
+				int position = cursor.position; // copy
+				int line = min(cursorToLine(position), lines.length-1);
+				lineHeight = lines[line].height;
+			}
+			int hmin = max(0, xy.y), hmax = min(lineHeight+xy.y, height);
+			int wmin = max(0, xy.x), wmax = min(xy.x+2, width);
+			for (int h=hmin; h<hmax; h++)
+				for (int w=wmin; w<wmax; w++)
+					result[w, h] = style.color.ub;
+		}
+		
 		return result;
 	}
 	
@@ -425,60 +433,82 @@ struct TextBlock
 		
 		// Build lines from letters
 		// TODO: Instead of having this here, create lettersToLines function (to Match HtmlParse.htmlToLetters())
-		int i;
+		int i, lineEnd;
 		while (i<letters.length)
-		{	int start=i;
+		{	int lineStart = i = lineEnd;
 			int x=0, lineHeight=0;
-			int last_break=i;
+			Line line;
+			
+			// Skip beginning spaces unless they are on a line started from a line return.
+			if (i>0 && letters[i-1].letter != '\n' && letters[i].letter == ' ')
+			{	while (i<letters.length && letters[i].letter == ' ')
+					i++;
+				lineStart = lineEnd = i;
+			}
 			
 			// Loop through as many as we can fit on this line
-			while (x<width && i<letters.length)
-			{	InlineStyle* letterStyle = (cast(InlineStyle*)letters[i].extra);
+			// and populate lineStart and lineEnd
+			while (i<letters.length)
+			{	
+				// Get line height (Defaults to fontSize if not specified)
+				// TODO: Don't change lineHeight if it's already specified.
+				InlineStyle* letterStyle = (cast(InlineStyle*)letters[i].extra);
+				if (lineHeight < letterStyle.fontSize)
+					lineHeight = letterStyle.fontSize;
+	
+				dchar letter = letters[i].letter;
+				dchar letterBefore = i>0 ? letters[i-1].letter : letter;
+				bool letterCanBreak = contains(breaks, letterBefore);
+	
+				// Store position of last breakable character
+				if (letterCanBreak) 
+					lineEnd = i;
 				
-				// Get line height (Defaults to fontSize*1.2 if not specified)
-				int calculatedLineHeight = cast(int)(isNaN(letterStyle.lineHeight) ? letterStyle.fontSize : letterStyle.lineHeight);
-				if (lineHeight < calculatedLineHeight)
-					lineHeight = calculatedLineHeight;
+				
+				//  Store position of last breakable character
+				if (letterCanBreak) 
+					lineEnd = i;
+				
+				//line.xOffsets.append(x);
+				x+= letters[i].advanceX; // + style.letterSpacing;
+				//if (!whitespace.contains(letterBefore) && whitespace.contains(letter))
+				//	x+= style.wordSpacing * fontScale;
 
-				x+= letters[i].advanceX;
-				
-				// Convert letter to utf-8 for comparison. TODO: This won't be necessary if we store breaks as utf-32.
-				char[4] lookaside;
-				char[] utf8 = letters[i].toString(lookaside);
-				
-				if (containsPattern(breaks, utf8)) // store position of last breaking character
-					last_break = i;
-				if (x<width)
-					i++;
-				if (i==letters.length) // include the final characters.
-					last_break = i;
-				
-				if (utf8[0] == '\n') // break on line returns.
+				// Time to go to the next line
+				if (letter == '\n' || (x >= width && i > lineStart))
+				{	if (letter == '\n') // If line return
+						lineEnd = i+1;
+					else if (lineEnd == lineStart) // if word is too long to fit on one line.
+						lineEnd = i;
 					break;
+				} else if (i+1==letters.length) // include the final characters.
+					lineEnd = i+1;
+
+				i++;				
 			}
 			
-			// Add a new line
-			Line line;
-			if (start<last_break) // don't count spaces at the end of the line.
-			{	i = last_break;
-				if (i < letters.length && letters[i].letter=='\n')
-					i++; // skip line returns
-				assert(last_break <= letters.length);
-				line.letters = letters[start..last_break]; // slice directly from the letters array to avoid copy allocation
-			}
-			
-			// trim line
-			int firstChar, lastChar=line.letters.length-1;
-			while (firstChar < line.letters.length && whitespace.contains(cast(char)line.letters[firstChar].letter))
-				firstChar++;
-			while (lastChar>=0 && whitespace.contains(cast(char)line.letters[lastChar].letter))
-				lastChar--;
-			line.letters = line.letters[firstChar..lastChar+1];
+			// Add a new line		
+			if (lineStart < lineEnd) // if line has characters
+			{	assert(lineEnd <= letters.length);
+				line.letters = letters[lineStart..lineEnd];
+				//line.xOffsets.resize(lineEnd);
 				
-			// Calculate line width
-			foreach (letter; line.letters)
-				line.width += letter.advanceX;
-			
+				if (line.letters[$-1].letter == '\n')
+					line.letters.length = line.letters.length-1;
+
+				// Calculate line.width
+				int lastLetter = line.letters.length-1;
+				while (lastLetter >=0 && whitespace.contains(line.letters[lastLetter].letter))
+					lastLetter--; // trim whitespace from end
+				
+				//Style style = *styles.at(lastLetter);
+				//style.size *= fontScale;
+				//Letter* letter = ResourceManager::getLetter(text.at(lastLetter), &style);
+				//line.width = line.xOffsets.at(lastLetter) + letter->left + letter->advanceX;
+				for (int i=0; i<=lastLetter; i++)
+					line.width += line.letters[i].advanceX;
+			}
+
 			line.height = lineHeight;
 			lines ~= line;
 		}

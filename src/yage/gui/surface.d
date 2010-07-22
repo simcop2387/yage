@@ -33,7 +33,7 @@ class Surface : Tree!(Surface)
 {	
 	Style style;
 	
-	char[] text; /// This html text will be rendered inside the surface.	
+	protected char[] text; /// This html text will be rendered inside the surface.	
 	bool editable = false; /// The text of this surface is editable.
 	bool mouseChildren = true; /// Allow the mouse to interact with this Surface's children.
 	TextCursor textCursor; ///
@@ -78,7 +78,6 @@ class Surface : Tree!(Surface)
 		META  = LMETA | RMETA /// ditto
 	};	
 
-	protected char[] oldText;		// Used for comparison to see if text has changed.  setHtml() would be more performant.
 	protected Texture textTexture;	// texture that constains rendered text image.
 	
 	protected Vec2f offset;			// pixel distance of the topleft corner from parent's top left, a relative offset
@@ -89,6 +88,7 @@ class Surface : Tree!(Surface)
 	protected bool mouseIn; 		// used to track mouseover/mouseout
 	protected bool mouseMoved;		// used for click() event.
 	protected bool resizeDirty = true;
+	protected bool textDirty = true;
 	
 	protected SurfaceGeometry geometry; // geometry used to render this surface
 	public TextBlock textBlock;
@@ -260,6 +260,15 @@ class Surface : Tree!(Surface)
 	{	return (grabbedSurface is this);
 	}
 	
+	///
+	public char[] innerHtml()
+	{	return text;
+	}
+	/// ditto
+	public void innerHtml(char[] html)
+	{	this.text = html;
+		textDirty = true;
+	}
 	
 	/**
 	 * Set the zIndex of this Surface to one more or less than the highest or lowest of its siblings. */
@@ -350,7 +359,6 @@ class Surface : Tree!(Surface)
 	void update()
 	{
 		Style cs = getComputedStyle();
-		//alias computedStyle cs;
 		updateDimensions(cs);
 		if (resizeDirty)
 		{	
@@ -364,13 +372,13 @@ class Surface : Tree!(Surface)
 		}
 		
 		// Text
-		if (text.length && (text != oldText || resizeDirty))
+		if (text.length && (resizeDirty || textDirty))
 		{
 			int width = cast(int)width();
 			int height = cast(int)height();
 			
 			textBlock.update(text, cs, width, height);
-			Image textImage = textBlock.render(cs, true, editable && focusSurface==this ? &textCursor : null); // TODO: Change true to Probe.NextPow2
+			Image textImage = textBlock.render(cs, true, editable && focusSurface is this ? &textCursor : null); // TODO: Change true to Probe.NextPow2
 			assert(textImage !is null);
 			
 			if (!textTexture) // create texture on first go
@@ -379,7 +387,7 @@ class Surface : Tree!(Surface)
 				textTexture.setImage(textImage);
 			textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
 			
-			oldText = text;
+			textDirty = false;
 		}
 		
 		if (!text.length)
@@ -479,6 +487,7 @@ class Surface : Tree!(Surface)
 			{	
 				textBlock.input(key, mod, unicode, textCursor, getComputedStyle());
 				text = textBlock.toString(); // TODO: Do this lazily?
+				textDirty = true;
 			}
 			if(parent) 
 				parent.keyPress(key, mod);
@@ -686,8 +695,8 @@ class Surface : Tree!(Surface)
 		if (size != old_size)
 		{	resizeDirty = true;
 			resize(size-old_size); // trigger resize event.
-			foreach (c; children)
-				c.updateDimensions(c.getComputedStyle());
+			//foreach (c; children)
+			//	c.updateDimensions(c.getComputedStyle());
 		}
 	}
 }
