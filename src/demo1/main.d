@@ -179,8 +179,8 @@ int main()
 		
 	// Make a draggable window to show some useful info.
 	auto info = view.addChild(new Surface());
-	info.style.set("top: 5px; right: 5px; width: 130px; height: 100px; color: black; padding: 3px; " ~
-		"border-width: 5px; border-image: url('gui/skin/clear2.png'); font-size: 12px");
+	info.style.set("top: 5px; right: 12px; width: 110px; height: 100px; color: white; padding: -6px; " ~
+		"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 12px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
 	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
@@ -198,11 +198,11 @@ int main()
 		return false;
 	};
 	info.onMouseOver = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		self.style.set("border-image: url('gui/skin/clear3.png')");
+		self.style.set("border-image: url('gui/skin/panel2.png')");
 		return false;
 	};
 	info.onMouseOut = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		self.style.set("border-image: url('gui/skin/clear2.png')");
+		self.style.set("border-image: url('gui/skin/panel1.png')");
 		return false;
 	};
 

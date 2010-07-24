@@ -52,7 +52,7 @@ struct TextBlock
 	
 	private ubyte[] imageLookaside; // TODO: Have the lookaside passed into Render
 	
-	private char[] text;
+	private char[] html;
 	package InlineStyle style; // base style of entire text block
 	private int width;
 	private int height;
@@ -73,6 +73,7 @@ struct TextBlock
 				return Vec2i(0);
 			Vec2i result;
 			int line = cursorToLine(position);
+			//Log.trace(line, " ", position);
 			for (int i=0; i<line; i++)
 				result.y += lines[i].height;
 			line = min(line, lines.length-1);
@@ -101,14 +102,14 @@ struct TextBlock
 		 * Params:
 		 *     position = Character position from the beginning of the TextBlock
 		 *     After the function executes, this will be the position on the line returned.
-		 * Returns:  The line number.  If position is after the last line, then the number of the last line +1 is returned.*/
+		 * Returns:  The line number.  If position is after the last line, then the number of the last line is returned.*/
 		int cursorToLine(inout int position)
 		{	foreach (i, line; lines.data)
-			{	if (position < line.letters.length)
+			{	if (position <= line.letters.length)
 					return i;
 				position -= line.letters.length;
 			}
-			return lines.length;
+			return lines.length-1;
 		}
 		
 		/**
@@ -123,27 +124,10 @@ struct TextBlock
 				position += lines[i].letters.length;
 			return position;
 		}
-		/*
-		// Get the x position in pixels of a character on a line.  TODO: Also y.
-		int positionToX(int line, int position)
-		{	assert (line < lines.length);				
-			int x;
-			int last = min(lines[line].letters.length, position);
-			for (int i=0; i<last; i++)
-				x+= lines[line].letters[i].advanceX;
-			return x;
-		}
-		
-		// Get the nearest character position on a line from an x poxition in pixels
-		int xToPosition(int line, int x)
-		{	
-			for (int i=0; i<lines[line].letters.length; i++)
-			{	x-= lines[line].letters[i].advanceX;
-				if (x<0) // TODO: More accurate rounding
-					return i;
-			}
-		}
-		*/
+	}
+	
+	char[] getHtml()
+	{	return html;
 	}
 	
 	/**
@@ -157,6 +141,7 @@ struct TextBlock
 	void input(int key, int mod, dchar unicode, inout TextCursor cursor, Style computedStyle)
 	{	
 		style = InlineStyle(computedStyle);
+		//Log.trace(cursor.position, " " , letters.length);
 		assert(cursor.position <= letters.length);
 		
 		// Position cursor
@@ -197,13 +182,17 @@ struct TextBlock
 				}			
 				break;
 			case SDLK_DELETE:  
-				if (cursor.position < letters.length)  // doesn't work
+				if (cursor.position < letters.length)
 					letters.splice(cursor.position, 1);
 				break;
 			// New letters
-			default: 
+			default:				
 				if (unicode)
 				{	
+					if (unicode=='\r')
+						unicode='\n';
+					//Log.trace(cast(int)unicode);
+					
 					// Get the style to use for a new letter
 					InlineStyle *style;
 					if (cursor.position > 0) // get style from previous letter
@@ -218,15 +207,14 @@ struct TextBlock
 					letters.splice(cursor.position, 0, l);
 					cursor.position++;
 				}
-			break;			
-			// TODO: selection, ctrl+a, z, x, c, v
-		}		
-		
-		
+			break;
+			
+			
+			// TODO: click to position cursor, selection, ctrl+a, z, x, c, v
+		}
 		
 		lines = lettersToLines(letters.data, width, lines);
-		
-		//return toString();
+		//Log.trace(lines.length);
 	}
 	
 	/**
@@ -246,7 +234,7 @@ struct TextBlock
 	{
 		Image result;
 
-		if (text.length)
+		if (html.length || cursor)
 		{	
 			// Get total height of all lines
 			int totalHeight;
@@ -271,7 +259,11 @@ struct TextBlock
 					x = (width - line.width) / 2;
 
 				foreach (letter; line.letters)
-				{	InlineStyle* istyle = (cast(InlineStyle*)letter.extra);
+				{	
+					if (letter.letter < 32)
+						continue; // skip non-printable letters.
+					
+					InlineStyle* istyle = (cast(InlineStyle*)letter.extra);
 				
 					// Calculate local coordinates
 					int baseline = y + line.height;
@@ -306,23 +298,23 @@ struct TextBlock
 				if (y>height)
 					break;
 			}
-		}
-		
-		// Draw cursor
-		if (cursor)
-		{	Vec2i xy = cursorToXy(cursor.position);
-			int lineHeight = cast(int)style.lineHeight.toPx(0);
-			if (letters.length)
-			{	//xy.x += letters[cursor.position].advanceX;
-				int position = cursor.position; // copy
-				int line = min(cursorToLine(position), lines.length-1);
-				lineHeight = lines[line].height;
+			
+			// Draw cursor
+			if (cursor)
+			{	Vec2i xy = cursorToXy(cursor.position);
+				int lineHeight = cast(int)style.lineHeight.toPx(0);
+				if (letters.length)
+				{	//xy.x += letters[cursor.position].advanceX;
+					int position = cursor.position; // copy
+					int line = min(cursorToLine(position), lines.length-1);
+					lineHeight = lines[line].height;
+				}
+				int hmin = max(0, xy.y), hmax = min(lineHeight+xy.y, height);
+				int wmin = max(0, xy.x), wmax = min(xy.x+2, width);
+				for (int h=hmin; h<hmax; h++)
+					for (int w=wmin; w<wmax; w++)
+						result[w, h] = style.color.ub;
 			}
-			int hmin = max(0, xy.y), hmax = min(lineHeight+xy.y, height);
-			int wmin = max(0, xy.x), wmax = min(xy.x+2, width);
-			for (int h=hmin; h<hmax; h++)
-				for (int w=wmin; w<wmax; w++)
-					result[w, h] = style.color.ub;
 		}
 		
 		return result;
@@ -393,21 +385,21 @@ struct TextBlock
 	 *     height = Available height for rendering text.
 	 * Returns: True if the text will need to be re-rendered, false otherwise.
 	 * TODO: Should this be a constructor to maintain RAII? */
-	bool update(char[] text, Style style, int width, int height)
+	bool update(char[] html, Style style, int width, int height)
 	{
 		InlineStyle istyle = InlineStyle(style);
 		
 		// If text has changed
 		//bool newLetters = text != (*this).text || istyle != (*this).style;
-		bool newLetters = text != this.text || istyle != this.style;
+		bool newLetters = html != this.html || istyle != this.style;
 		if (newLetters)
 		{	
 			// Update the arrays of letters and styles
 			letters.length = 0;			
 			styles.length = 0;
-			HtmlParser.htmlToLetters(text, style, letters, styles);
+			HtmlParser.htmlToLetters(html, style, letters, styles);
 			
-			this.text = text;
+			this.html = html;
 			this.style = istyle;
 		}
 		
@@ -493,8 +485,8 @@ struct TextBlock
 				line.letters = letters[lineStart..lineEnd];
 				//line.xOffsets.resize(lineEnd);
 				
-				if (line.letters[$-1].letter == '\n')
-					line.letters.length = line.letters.length-1;
+				//if (line.letters[$-1].letter == '\n')
+				//	line.letters.length = line.letters.length-1;
 
 				// Calculate line.width
 				int lastLetter = line.letters.length-1;

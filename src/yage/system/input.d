@@ -15,12 +15,12 @@ import yage.system.window;
 import yage.gui.surface;
 
 /**
- * A class to handle keyboard, mouse, and eventually joystick input.
+ * A static class to handle keyboard, mouse, and eventually joystick input.
  * This polls SDL for input and passes it to the current surface.
  * 
  * TODO: Ditch SDL!  SDL requires input processing to be in the same thread as the renderer.
  */ 
-class Input
+abstract class Input
 {
 	public static int KEY_DELAY = 500; /// milliseconds before repeating a call to keyPress after holding a key down.
 	public static int KEY_REPEAT = 30; /// milliseconds before subsequent calls to keyPress after KEY_DELAY occurs.
@@ -29,7 +29,7 @@ class Input
 	protected static Surface currentSurface;	// Surface that the mouse is currently over
 
 	protected static SDL_keysym lastKeyDown; // Used for manual key-repeat.
-	protected static uint lastKeyDownTime;
+	protected static uint lastKeyDownTime = uint.max;
 	
 	/** 
 	 * Process input, handle window resize and close events, and send the remaining events to surface,
@@ -59,9 +59,9 @@ class Input
 				case SDL_KEYUP:	    			
 					if(focus)
 						focus.keyUp(event.key.keysym.sym, event.key.keysym.mod);
-						//focus.keyUp(event.key.keysym.unicode, event.key.keysym.mod);
 					lastKeyDownTime = uint.max;
 					break;
+				
 				// Mouse
 				case SDL_MOUSEBUTTONDOWN:
 					auto over = getMouseSurface(surface);

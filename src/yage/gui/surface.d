@@ -33,7 +33,7 @@ class Surface : Tree!(Surface)
 {	
 	Style style;
 	
-	protected char[] text; /// This html text will be rendered inside the surface.	
+	//protected char[] text; /// This html text will be rendered inside the surface.	
 	bool editable = false; /// The text of this surface is editable.
 	bool mouseChildren = true; /// Allow the mouse to interact with this Surface's children.
 	TextCursor textCursor; ///
@@ -262,12 +262,14 @@ class Surface : Tree!(Surface)
 	
 	///
 	public char[] innerHtml()
-	{	return text;
+	{	return textBlock.getHtml();
 	}
 	/// ditto
 	public void innerHtml(char[] html)
-	{	this.text = html;
+	{	//this.text = html;
 		textDirty = true;
+		Style cs = getComputedStyle();
+		textBlock.update(html, cs, cast(int)width(), cast(int)height());
 	}
 	
 	/**
@@ -372,26 +374,30 @@ class Surface : Tree!(Surface)
 		}
 		
 		// Text
-		if (text.length && (resizeDirty || textDirty))
+		if (resizeDirty || textDirty)
 		{
 			int width = cast(int)width();
 			int height = cast(int)height();
 			
-			textBlock.update(text, cs, width, height);
+			//textBlock.update(text, cs, width, height);
+			//textBlock.update(text, cs, width, height);
+			textBlock.update(textBlock.getHtml(), cs, width, height);
 			Image textImage = textBlock.render(cs, true, editable && focusSurface is this ? &textCursor : null); // TODO: Change true to Probe.NextPow2
-			assert(textImage !is null);
 			
-			if (!textTexture) // create texture on first go
-				textTexture = new Texture(textImage, Texture.Format.AUTO, false, "Surface Text", true);
-			else
-				textTexture.setImage(textImage);
-			textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
+			if (textImage)
+			{	if (!textTexture) // create texture on first go
+					textTexture = new Texture(textImage, Texture.Format.AUTO, false, "Surface Text", true);
+				else
+					textTexture.setImage(textImage);
+				textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
+			} else
+				textTexture = null;
 			
 			textDirty = false;
 		}
 		
-		if (!text.length)
-			textTexture = null;
+		//if (!text.length)
+		//	textTexture = null;
 		
 		geometry.setColors(style.backgroundColor, style.borderColor, style.opacity);
 		geometry.setMaterials(style.backgroundImage, style.borderCenterImage, 
@@ -479,14 +485,14 @@ class Surface : Tree!(Surface)
 	 *     mod = Modifier key held down while key was pressed.
 	 *     unicode = unicode value of pressed key. */ 
 	void keyPress(int key, int mod=ModifierKey.NONE, dchar unicode=0)
-	{	bool propagate = true;
+	{	
+		bool propagate = true;
 		if(onKeyPress)
 			propagate = onKeyPress(this, key, mod);		
 		if (propagate)
 		{	if (editable)
 			{	
 				textBlock.input(key, mod, unicode, textCursor, getComputedStyle());
-				text = textBlock.toString(); // TODO: Do this lazily?
 				textDirty = true;
 			}
 			if(parent) 

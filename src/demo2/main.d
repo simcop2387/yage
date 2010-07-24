@@ -10,7 +10,7 @@
 module demo2.main;
 
 import tango.text.convert.Format;
-import tango.io.Stdout;
+import tango.math.Math;
 import tango.io.device.File;
 import derelict.sdl.sdl;
 import yage.all;
@@ -31,7 +31,7 @@ int main()
 	// Create and start a Scene
 	Scene scene = new Scene();
 	scene.play();
-	scene.backgroundColor = "green";
+	scene.backgroundColor = "gray";
 	
 	// Ship	
 	auto ship = scene.addChild(new ModelNode());
@@ -63,9 +63,9 @@ int main()
 
 	// For Testing
 	auto info = view.addChild(new Surface());
-	info.style.set("top: 40px; left: 40px; width: 500px; height: 260px; padding: 3px; color: brown; " ~
-		"border-width: 5px; border-image: url('gui/skin/clear2.png'); " ~
-		"font-family: url('Vera.ttf'); text-align: right; opacity: .8; overflow: hidden");
+	info.style.set("top: 40px; left: 40px; width: 500px; height: 260px; padding: 3px; color: #ff8800; " ~
+		"border-width: 12px; border-image: url('gui/skin/panel1.png'); " ~
+		"font-family: url('Vera.ttf'); text-align: center; opacity: .8; overflow: hidden");
 	info.style.overflowX = Style.Overflow.HIDDEN;
 	info.style.overflowY = Style.Overflow.HIDDEN;
 	
@@ -84,11 +84,11 @@ int main()
 		return false;
 	};
 	info.onMouseOver = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		self.style.set("border-image: url('gui/skin/clear3.png')");
+		//self.style.set("border-image: url('gui/skin/panel2.png')");
 		return false;
 	};
 	info.onMouseOut = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		self.style.set("border-image: url('gui/skin/clear2.png')");
+		//self.style.set("border-image: url('gui/skin/panel1.png')");
 		return false;
 	};
 	info.editable = view.editable = true;
@@ -107,6 +107,7 @@ int main()
 	
 	// Rendering / Input Loop
 	int fps = 0;
+	Timer total = new Timer(true);
 	Timer frame = new Timer(true);
 	while(!System.isAborted())
 	{	
@@ -118,12 +119,13 @@ int main()
 		
 		// Print framerate
 		fps++;
-		//info.style.transform = info.style.transform.move(Vec3f(-40, -40, 0));
-		//info.style.transform *= Matrix().rotate(Vec3f(0, 0.0005, 0.0005));
-		//info.style.transform = info.style.transform.move(Vec3f(40, 40, 0));
+		info.style.transform = Matrix();
+		info.style.transform = info.style.transform.move(Vec3f(-300, -20, 0));
+		info.style.transform *= Matrix().rotate(Vec3f(0, sin(total.tell()/2)/2, sin(total.tell()/2)/5));
+		info.style.transform = info.style.transform.move(Vec3f(300, 20, 0));
 		
 		
-		if (frame.tell()>=.25f)
+		if (frame.tell()>=.25f && !(Surface.getFocusSurface() is info))
 		{	
 			info.innerHtml = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
 			`<u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) `~
@@ -136,7 +138,7 @@ int main()
 			`appropriate for the language it was required for in order to set a complete page in that language. `~
 			`Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and `~
 			`line-width spacers, were not part of a specific font in pre-digital usage, but were separate, `~
-			`generic pieces.[1]             `~ Format.convert(` {} fps<br/>`, fps/frame.tell());
+			`generic pieces.[1] 	         `~ Format.convert(` {} fps<br/>`, fps/frame.tell());
 			
 			frame.seek(0);
 			fps = 0;
