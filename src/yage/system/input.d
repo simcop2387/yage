@@ -54,12 +54,13 @@ abstract class Input
 						focus.keyPress(event.key.keysym.sym, event.key.keysym.mod, event.key.keysym.unicode);
 						lastKeyDown = event.key.keysym;
 						lastKeyDownTime = clock()*1000 / CLOCKS_PER_SEC;
-					}
+					}  
 					break;
 				case SDL_KEYUP:	    			
 					if(focus)
 						focus.keyUp(event.key.keysym.sym, event.key.keysym.mod);
-					lastKeyDownTime = uint.max;
+					if (event.key.keysym.sym==lastKeyDown.sym) // if the same key we're repeating
+						lastKeyDownTime = uint.max; // stop repeating
 					break;
 				
 				// Mouse
@@ -83,13 +84,13 @@ abstract class Input
 					if(currentSurface)
 						currentSurface.mouseMove(event.button.button, Vec2i(event.motion.xrel, event.motion.yrel));
 	
-					//if the surface that the mouse is in has changed
+					// If the surface that the mouse is in has changed
 					auto over = getMouseSurface(surface);
 					if(currentSurface !is over)
 					{	
 						if(currentSurface) //Tell it that the mouse left
 							currentSurface.mouseOut(over, event.button.button, mouse);
-						if(over) //Tell it that the mosue entered
+						if(over) //Tell it that the mouse entered
 							over.mouseOver(event.button.button, mouse);							
 						
 						currentSurface = over; //The new current surface
@@ -115,7 +116,7 @@ abstract class Input
 		// Key repeat
 		if (focus)
 		{		
-			uint now = clock()*1000/CLOCKS_PER_SEC;			
+			uint now = clock()*1000/CLOCKS_PER_SEC; // time in milliseconds
 			if (now - KEY_DELAY > lastKeyDownTime)
 			{	focus.keyPress(lastKeyDown.sym, lastKeyDown.mod, lastKeyDown.unicode);
 				lastKeyDownTime += KEY_REPEAT;

@@ -382,7 +382,7 @@ class Surface : Tree!(Surface)
 			//textBlock.update(text, cs, width, height);
 			//textBlock.update(text, cs, width, height);
 			textBlock.update(textBlock.getHtml(), cs, width, height);
-			Image textImage = textBlock.render(cs, true, editable && focusSurface is this ? &textCursor : null); // TODO: Change true to Probe.NextPow2
+			Image textImage = textBlock.render(true, editable && focusSurface is this ? &textCursor : null); // TODO: Change true to Probe.NextPow2
 			
 			if (textImage)
 			{	if (!textTexture) // create texture on first go

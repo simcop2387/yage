@@ -54,41 +54,53 @@ struct TextBlock
 	
 	private char[] html;
 	package InlineStyle style; // base style of entire text block
+	private Style.TextAlign alignment;
 	private int width;
 	private int height;
 	
 	private ArrayBuilder!(Line) lines;
 	private ArrayBuilder!(Letter) letters;
 	private ArrayBuilder!(InlineStyle) styles;	// Styles pointed to by the letters
-	
-
-	
+		
 	/// Functions for converting between line/letter/cursor space and x/y position.
 	struct {
 		
-		///
+		/**
+		 * Get the xy pixel position of a cursor position. */
 		Vec2i cursorToXy(int position)
 		{
+			// Special case
 			if (!lines.length)
-				return Vec2i(0);
+				return Vec2i(Line.getOffset(0, width, alignment), 0);
+			
+			// Get y value
 			Vec2i result;
-			int line = cursorToLine(position);
-			//Log.trace(line, " ", position);
+			int line = cursorToLine(position); // modifies position
 			for (int i=0; i<line; i++)
 				result.y += lines[i].height;
-			line = min(line, lines.length-1);
+			
+			// Get x value
 			int last = min(lines[line].letters.length, position);
 			for (int i=0; i<last; i++)
 				result.x += lines[line].letters[i].advanceX;
+			result.x += Line.getOffset(lines[line].width, width, alignment);
 			return result;
 		}
 		
+		/**
+		 * Get the cursor position from an xy pixel position. */
 		int xyToCursor(Vec2i xy)
 		{	
+			// Calculate line
 			int line;
-			for (; line<lines.length && 0 <= xy.y; line++)
-				xy.y -= lines[line].height;			
+			for (; line<lines.length-1 && 0 <= xy.y; line++)
+				xy.y -= lines[line].height;
 			
+			// Take alignment into account
+			int lineWidth = lines.length ? lines[line].width : 0;
+			xy.x -= Line.getOffset(lineWidth, width, alignment);
+			
+			// Calculate position on line.
 			int position;
 			for (; position<lines[line].letters.length && 0 < xy.x; position++)
 				xy.x -= lines[line].letters[position].advanceX;
@@ -98,26 +110,31 @@ struct TextBlock
 		
 		
 		/**
-		 * Get a line number and the position in that line from a position relative to the start of the TextBlock
+		 * Convert an absolute cursor position to a line/position pair.
 		 * Params:
 		 *     position = Character position from the beginning of the TextBlock
 		 *     After the function executes, this will be the position on the line returned.
-		 * Returns:  The line number.  If position is after the last line, then the number of the last line is returned.*/
+		 * Returns:  The line number.  If position is after the last line, 
+		 *     then the number of the last line is returned and position is an offset from this.*/
 		int cursorToLine(inout int position)
-		{	foreach (i, line; lines.data)
-			{	if (position <= line.letters.length)
+		{	if (!lines.length) // special case if no lines
+				return position = 0;
+			
+			foreach (i, line; lines.data)
+			{	if (position < line.letters.length)
 					return i;
 				position -= line.letters.length;
 			}
+			position += lines.data[$-1].letters.length;
 			return lines.length-1;
 		}
 		
 		/**
-		 * Get cursor position from the beginning of the TextBlock based on a line number and the position in that line.
+		 * Convert a cursor line/position pair to an absolute position.
 		 * Params:
 		 *     line = 
-		 *     position = Position from the beginning of the line.
-		 * Returns: */
+		 *     position = Position from the beginning of the line, may be negative or exceed the line length.
+		 * Returns: The absolute position of the cursor from the beginning of the text block. */
 		int lineToCursor(int line, int position)
 		{	int m = min(line, lines.length);
 			for (int i=0; i<m; i++)
@@ -126,6 +143,7 @@ struct TextBlock
 		}
 	}
 	
+	///
 	char[] getHtml()
 	{	return html;
 	}
@@ -136,41 +154,61 @@ struct TextBlock
 	 *     key = SDL key code constant
 	 *     mod = modifier key.
 	 *     unicode = Unicode value of the pressed key.
-	 *     cursor = The Surface's TextCursor.
-	 */
+	 *     cursor = The Surface's TextCursor. */
 	void input(int key, int mod, dchar unicode, inout TextCursor cursor, Style computedStyle)
 	{	
 		style = InlineStyle(computedStyle);
 		//Log.trace(cursor.position, " " , letters.length);
 		assert(cursor.position <= letters.length);
+		static int xPosition; // save the cursor's x position when moving from one line to the next.
 		
 		// Position cursor
-		int position = cursor.position;
-		int currentLine = cursorToLine(position);
+		int linePosition = cursor.position;
+		int currentLine = cursorToLine(linePosition);
+		if (key != SDLK_UP && key != SDLK_DOWN)
+			xPosition = 0; // clear stored x cursor position		
 		switch(key) 
 		{	
 			// Positioning keys
-			case SDLK_LEFT: if (cursor.position>0) cursor.position--; break;
-			case SDLK_RIGHT: if (cursor.position<letters.length) cursor.position++; break;
+			case SDLK_LEFT: 
+				if (cursor.position>0) 
+					cursor.position--; 				
+				break;
+			case SDLK_RIGHT: 
+				if (cursor.position<letters.length) 
+					cursor.position++; 
+				break;
 			case SDLK_UP: 
-				if (currentLine > 0)
-				{	Vec2i xy = cursorToXy(cursor.position).x;			
-					xy.y -= lines[currentLine].height;
-					cursor.position = lineToCursor(currentLine, xyToCursor(xy));
+				if (currentLine > 0) // [below] get the x position on the current line
+				{	Line* newLine = lines[currentLine-1];
+					int i;
+					int x = xPosition = xPosition ? xPosition : cursorToXy(cursor.position).x;
+					x -= Line.getOffset(newLine.width, width, alignment);
+					for (; i<newLine.letters.length && x >=0; i++)
+						x-= newLine.letters[i].advanceX; // find the cursor position for the previous x position
+					cursor.position = lineToCursor(currentLine-1, i-1);
 				}
 				break;
 			case SDLK_DOWN: 
-				if (currentLine < lines.length-1)
-				{	Vec2i xy = cursorToXy(cursor.position).x;
-					xy.y += lines[currentLine].height;
-					cursor.position = lineToCursor(currentLine, xyToCursor(xy));	
+				if (currentLine < (cast(int)lines.length)-1)
+				{	Line* newLine = lines[currentLine+1];
+					int i;
+					int x = xPosition = xPosition ? xPosition : cursorToXy(cursor.position).x;	
+					x -= Line.getOffset(newLine.width, width, alignment);
+					for (; i<newLine.letters.length && x >=0; i++)
+						x-= newLine.letters[i].advanceX;
+					cursor.position = lineToCursor(currentLine+1, i-1);
 				}
 				break;
 			case SDLK_HOME:
-				cursor.position -= position;
+				cursor.position -= linePosition;
 				break;
 			case SDLK_END: 
-				cursor.position += (lines[currentLine].letters.length - position);
+				auto letters = lines[currentLine].letters;
+				int newPosition = (cast(int)letters.length) - linePosition;
+				if (currentLine != lines.length-1) 
+					newPosition--; // if not the last line, go back one before the character that causes the new line.
+				cursor.position += newPosition;
 				break;
 			
 			// Editing Keys
@@ -210,7 +248,7 @@ struct TextBlock
 			break;
 			
 			
-			// TODO: click to position cursor, selection, ctrl+a, z, x, c, v
+			// TODO: tabs, center cursor position, end crashes on centered textblock, click to position cursor, selection, ctrl+a, z, x, c, v
 		}
 		
 		lines = lettersToLines(letters.data, width, lines);
@@ -230,7 +268,7 @@ struct TextBlock
 	 *     cursor = Render this text cursor if not null.
 	 * Returns:  An RGBA image of width pixels wide and is shorter or equal to height.  
 	 *     Note that the same buffer is used for each return, so one call to this function will overwrite a previous result.*/
-	Image render(Style style, bool pow2=false, TextCursor* cursor=null)
+	Image render(bool pow2=false, TextCursor* cursor=null)
 	{
 		Image result;
 
@@ -253,10 +291,7 @@ struct TextBlock
 			imageLookaside = result.getData();
 			foreach (i, line; lines.data)
 			{
-				if (style.textAlign == Style.TextAlign.RIGHT)
-					x = width - line.width;
-				else if (style.textAlign == Style.TextAlign.CENTER)
-					x = (width - line.width) / 2;
+				x = Line.getOffset(line.width, width, alignment);
 
 				foreach (letter; line.letters)
 				{	
@@ -302,15 +337,15 @@ struct TextBlock
 			// Draw cursor
 			if (cursor)
 			{	Vec2i xy = cursorToXy(cursor.position);
-				int lineHeight = cast(int)style.lineHeight.toPx(0);
+				int lineHeight = cast(int)style.lineHeight;
 				if (letters.length)
-				{	//xy.x += letters[cursor.position].advanceX;
-					int position = cursor.position; // copy
+				{	int position = cursor.position; // copy to prevent inout modification
 					int line = min(cursorToLine(position), lines.length-1);
 					lineHeight = lines[line].height;
 				}
+				
 				int hmin = max(0, xy.y), hmax = min(lineHeight+xy.y, height);
-				int wmin = max(0, xy.x), wmax = min(xy.x+2, width);
+				int wmin = max(0, xy.x), wmax = min(xy.x+1, width);
 				for (int h=hmin; h<hmax; h++)
 					for (int w=wmin; w<wmax; w++)
 						result[w, h] = style.color.ub;
@@ -388,6 +423,7 @@ struct TextBlock
 	bool update(char[] html, Style style, int width, int height)
 	{
 		InlineStyle istyle = InlineStyle(style);
+		alignment = style.textAlign;
 		
 		// If text has changed
 		//bool newLetters = text != (*this).text || istyle != (*this).style;
@@ -523,7 +559,7 @@ private struct InlineStyle
 	// Text	
 	Style.TextDecoration textDecoration;
 	float lineHeight;
-	float letterSpacing;
+	float letterSpacing; // not supported yet
 	
 	/*
 	 * Create an InlineStyle from a Style. */
@@ -571,6 +607,14 @@ private struct Line
 	static Line opCall()
 	{	Line result;
 		return result;
+	}
+	
+	static int getOffset(int lineWidth, int width, Style.TextAlign align_)
+	{	if (align_ == Style.TextAlign.LEFT)
+			return 0;
+		if (align_ == Style.TextAlign.CENTER)
+			return (width - lineWidth) / 2;
+		return width - lineWidth; // TextAlign.RIGHT
 	}
 }
 
