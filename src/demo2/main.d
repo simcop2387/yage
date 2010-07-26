@@ -18,6 +18,8 @@ import yage.all;
 import derelict.opengl.gl;
 import derelict.opengl.glext;
 
+bool dragging;
+
 // program entry point.
 int main()
 {
@@ -52,16 +54,12 @@ int main()
 			System.abort("Yage aborted by esc key press.");
 		return true;
 	};
-	view.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		self.grabMouse(!self.getGrabbedMouse());
-		return true;
-	};
 	
 	// Lights
 	auto l1 = scene.addChild(new LightNode());
 	l1.setPosition(Vec3f(0, 200, -30));	
 
-	// For Testing
+	// A window with text in it
 	auto info = view.addChild(new Surface());
 	info.style.set("top: 40px; left: 40px; width: 500px; height: 260px; padding: 3px; color: #ff8800; " ~
 		"border-width: 12px; border-image: url('gui/skin/panel1.png'); " ~
@@ -69,31 +67,33 @@ int main()
 	info.style.overflowX = Style.Overflow.HIDDEN;
 	info.style.overflowY = Style.Overflow.HIDDEN;
 	
-	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates){
-		self.raise();
-		self.focus();
+	bool dragging;
+	info.onMouseDown = delegate bool(Surface self, Input.MouseButton button, Vec2i coordinates) {
+		if (button == Input.MouseButton.LEFT)
+			dragging = true;
 		return false;
 	};
-	info.onMouseMove = delegate bool(Surface self, byte buttons, Vec2i amount) {
-		if(buttons == 1) 
-			self.move(cast(Vec2f)amount, true);
+	info.onMouseMove = delegate bool(Surface self, Vec2i amount) {		
+		if (dragging)
+			self.move(amount.toFloat(), true);
 		return false;
 	};
-	info.onMouseUp = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		self.blur();
+	info.onMouseUp = delegate bool(Surface self, Input.MouseButton button, Vec2i coordinates) {
+		if (button == Input.MouseButton.LEFT)
+			dragging = false;
 		return false;
 	};
-	info.onMouseOver = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		//self.style.set("border-image: url('gui/skin/panel2.png')");
+	info.onMouseOver = delegate bool(Surface self) {
+		self.style.set("border-image: url('gui/skin/panel2.png')");
 		return false;
 	};
-	info.onMouseOut = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		//self.style.set("border-image: url('gui/skin/panel1.png')");
+	info.onMouseOut = delegate bool(Surface self) {
+		self.style.set("border-image: url('gui/skin/panel1.png')");
 		return false;
 	};
 	info.editable = view.editable = true;
-	//info.style.transform = Matrix().scale(Vec3f(.5, .5, .5));
-	
+	/*
+	// Test overflow clipping
 	auto clip = info.addChild(new Surface());
 	clip.style.set("width: 60px; height: 60px; background-color: black; top: -30px; left: -30px; overflow: hidden");
 	
@@ -102,7 +102,7 @@ int main()
 	
 	auto clip3 = info.addChild(new Surface());
 	clip3.style.set("width: 60px; height: 60px; background-color: orange; top: -30px; right: -30px");
-	
+	*/
 	
 	
 	// Rendering / Input Loop
@@ -114,31 +114,22 @@ int main()
 		Input.processAndSendTo(view);
 		auto stats = Render.scene(camera, window);
 		Render.surface(view, window);
-
 		Render.complete(); // swap buffers
 		
-		// Print framerate
-		fps++;
+		// Rotate the info box
+		float amount = total.tell();
 		info.style.transform = Matrix();
 		info.style.transform = info.style.transform.move(Vec3f(-300, -20, 0));
-		info.style.transform *= Matrix().rotate(Vec3f(0, sin(total.tell()/2)/2, sin(total.tell()/2)/5));
+		info.style.transform *= Matrix().rotate(Vec3f(0, /*sin(amount/2)/2*/0, sin(amount/2)/5));
 		info.style.transform = info.style.transform.move(Vec3f(300, 20, 0));
 		
 		
+		fps++;
 		if (frame.tell()>=.25f && !(Surface.getFocusSurface() is info))
-		{	
-			info.innerHtml = `In a <s>traditional</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
-			`<u>M</u>a<s>nua</s>l <u style="font-size: 18px">printing</u></span> (letterpress) `~
-			`<span style="text-decoration: overline">house</span> the font would refer to a complete set of metal `~
-			`type that <b>would be used</b> to type-set an entire page. Unlike a digital typeface it would not `~
-			`include a single definition of each character, but commonly used characters (such as vowels and periods) `~
-			`would have more <i>physical type-pieces included. A <b>font <i style="font-style: normal">when</i> bought</b> new would often be sold as `~
-			`(for example in a roman alphabet) 12pt 14A 34a, meaning that it would be a <span style="font-size: 30px">size</span> 12pt fount containing `~
-			`14 upper-case 'A's, and 34 lower-case 'A's.</i> The rest of the characters would be provided in quantities `~
-			`appropriate for the language it was required for in order to set a complete page in that language. `~
-			`Some metal type required in type-setting, such as varying sizes of inter-word spacing pieces and `~
-			`line-width spacers, were not part of a specific font in pre-digital usage, but were separate, `~
-			`generic pieces.[1] 	         `~ Format.convert(` {} fps<br/>`, fps/frame.tell());
+		{	info.setHtml(`Click <s>here</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
+			`<u>To</u><s> type and</s> <u style="font-size: 18px">edit</u></span> this `~
+			`<span style="text-decoration: overline">block</span> of <b>text. <i style="font-style: normal">No,</i> really</b> it `~
+			`works,<br/><br/>Another line of text.<br/><br/><br/> `~ Format.convert(` {} fps<br/>`, fps/frame.tell()));
 			
 			frame.seek(0);
 			fps = 0;

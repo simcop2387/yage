@@ -158,6 +158,8 @@ struct Vec(int S, T : real, int D=0)
 		Vec2f[] polygon = [Vec2f(-1, -1), Vec2f(0, 1), Vec2f(1, -1)];
 		assert(Vec2f(0, 0).inside(polygon));
 		assert(!Vec2f(0, 2).inside(polygon));
+		assert(Vec2f(0, .999999).inside(polygon));
+		assert(!Vec2f(0, 1.00001).inside(polygon));
 	}
 	
 	/// Return the _length of the vector (the magnitude).
@@ -289,13 +291,19 @@ struct Vec(int S, T : real, int D=0)
 	*/
 	
 	/// Allow casting to float where appropriate
-	static if (is(T : float))	// if T can be implicitly cast to float
-	{	Vec!(S, float) opCast()
-		{	Vec!(S, float) result;
-			for (int i=0; i<v.length; i++)
-				result.v[i] = v[i];
-			return result;
-	}	}
+	Vec!(S, float) toFloat()
+	{	Vec!(S, float) result;
+		for (int i=0; i<v.length; i++)
+			result.v[i] = v[i];
+		return result;
+	}
+	
+	Vec!(S, int) toInt()
+	{	Vec!(S, int) result;
+		for (int i=0; i<v.length; i++)
+			result.v[i] = cast(int)v[i];
+		return result;
+	}
 	
 	/// Get the element at i
 	float opIndex(size_t i)

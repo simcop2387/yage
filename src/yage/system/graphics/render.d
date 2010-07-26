@@ -741,10 +741,11 @@ struct Render
 			
 			// Bind surface properties	
 			glPushMatrix();
-			glMultMatrixf(surface.style.transform.ptr);
 			glTranslatef(surface.left(), surface.top(), 0);
+			glMultMatrixf(surface.style.transform.ptr);
 			surface.style.backfaceVisibility ? glDisable(GL_CULL_FACE) : glEnable(GL_CULL_FACE);
 			
+			// Render the surface
 			geometry(surface.getGeometry());
 			
 			// Apply or remove a layer in the stencil mask

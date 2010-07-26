@@ -6,19 +6,19 @@
 
 module yage.gui.surface;
 
+public import derelict.sdl.sdl;
+
 import tango.math.IEEE;
 import tango.math.Math;
 import tango.text.convert.Utf;
 import yage.core.all;
-import yage.system.system;
-import yage.system.input;
 import yage.system.log;
-import yage.system.graphics.render;
 import yage.system.window;
 import yage.resource.manager;
 import yage.resource.texture;
 import yage.resource.image;
 import yage.resource.material;
+import yage.system.input;
 import yage.gui.style;
 import yage.gui.textblock;
 import yage.gui.surfacegeometry;
@@ -32,17 +32,17 @@ import yage.gui.surfacegeometry;
 class Surface : Tree!(Surface)
 {	
 	Style style;
-	
-	//protected char[] text; /// This html text will be rendered inside the surface.	
+		
 	bool editable = false; /// The text of this surface is editable.
 	bool mouseChildren = true; /// Allow the mouse to interact with this Surface's children.
+	int mouseX, mouseY;	/// Current position of the mouse cursor.  (Read-only for now)
 	TextCursor textCursor; ///
 	
 	/// Callback functions
 	bool delegate(Surface self) onBlur; ///
 	bool delegate(Surface self) onFocus; ///
-	bool delegate(Surface self, byte buttons, Vec2i coordinates) onClick; /// When a mouse button is pressed and released without moving the mouse.
-	bool delegate(Surface self, byte buttons, Vec2i coordinates) onDblCick; /// unfinished
+	bool delegate(Surface self, Input.MouseButton button, Vec2i coordinates) onClick; /// When a mouse button is pressed and released without moving the mouse.
+	bool delegate(Surface self, Input.MouseButton button, Vec2i coordinates) onDblCick; /// TODO unfinished
 	bool delegate(Surface self, int key, int modifier) onKeyDown; /// Triggered once when a key is pressed down
 	bool delegate(Surface self, int key, int modifier) onKeyUp; /// Triggered once when a key is released
 	
@@ -50,34 +50,13 @@ class Surface : Tree!(Surface)
 	 * Triggered when a key is pressed down and repeats at Input's key repeat rates.
 	 * Unlike onKeyDown and onKeyUp, key is the unicode value of the key press, instead of the sdl key code. */
 	bool delegate(Surface self, dchar key, int modifier) onKeyPress; 
-	bool delegate(Surface self, byte buttons, Vec2i coordinates) onMouseDown; ///
-	bool delegate(Surface self, byte buttons, Vec2i coordinates) onMouseUp; ///
-	bool delegate(Surface self, byte buttons, Vec2i amount) onMouseMove; ///
-	bool delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOver; ///
-	bool delegate(Surface self, byte buttons, Vec2i coordinates) onMouseOut; ///
+	bool delegate(Surface self, Input.MouseButton button, Vec2i coordinates) onMouseDown; ///
+	bool delegate(Surface self, Input.MouseButton button, Vec2i coordinates) onMouseUp; ///
+	bool delegate(Surface self, Vec2i amount) onMouseMove; ///
+	bool delegate(Surface self) onMouseOver; ///
+	bool delegate(Surface self) onMouseOut; ///
 	void delegate(Surface self, Vec2f amount) onResize; ///
 	
-	/// This is a mirror of SDLMod (SDL's modifier key struct)
-	enum ModifierKey
-	{	NONE  = 0x0000, /// Allowed values.
-		LSHIFT= 0x0001, /// ditto
-		RSHIFT= 0x0002, /// ditto
-		LCTRL = 0x0040, /// ditto
-		RCTRL = 0x0080, /// ditto
-		LALT  = 0x0100, /// ditto
-		RALT  = 0x0200, /// ditto
-		LMETA = 0x0400, /// ditto
-		RMETA = 0x0800, /// ditto
-		NUM   = 0x1000, /// ditto
-		CAPS  = 0x2000, /// ditto
-		MODE  = 0x4000, /// ditto
-		RESERVED = 0x8000, /// ditto
-		CTRL  = LCTRL | RCTRL, /// ditto
-		SHIFT = LSHIFT | RSHIFT, /// ditto
-		ALT   = LALT | RALT, /// ditto
-		META  = LMETA | RMETA /// ditto
-	};	
-
 	protected Texture textTexture;	// texture that constains rendered text image.
 	
 	protected Vec2f offset;			// pixel distance of the topleft corner from parent's top left, a relative offset
@@ -87,6 +66,7 @@ class Surface : Tree!(Surface)
 	
 	protected bool mouseIn; 		// used to track mouseover/mouseout
 	protected bool mouseMoved;		// used for click() event.
+	
 	protected bool resizeDirty = true;
 	protected bool textDirty = true;
 	
@@ -154,6 +134,9 @@ class Surface : Tree!(Surface)
 	{	return size.y;
 	}
 
+	
+	
+	
 	/**
 	 * Find the surface at the given coordinates.
 	 * Surfaces are ordered by zIndex with higher values appearing on top.
@@ -165,26 +148,27 @@ class Surface : Tree!(Surface)
 	 *     useMouseChildren = If true (the default), and a surface has mouseChildren=false, 
 	 *         the children will not be searched.
 	 * Returns: The surface at the coordinates (may be self), or null if coordinates are outside of this surface. */
-	Surface findSurface(float x, float y, bool useMouseChildren=true)
+	Surface findSurface(Vec2i xy, bool useMouseChildren=true)
 	{	
-		// Search children
-		if (useMouseChildren && mouseChildren)
-		{	// Sort if necessary
-			if (!children.sorted(false, (Surface s){return s.style.zIndex;}))
-				children.radixSort(false, (Surface s){return s.style.zIndex;});
-			
-			foreach(surf; children)
-			{	Surface result = surf.findSurface(x, y);
-				if (result)
-					return result;
-			}
-		}
-		
 		// Search self
 		Vec2f[4] polygon;
 		getPolygon(polygon);
-		if (Vec2f(x, y).inside(polygon))
+		if (xy.toFloat().inside(polygon)) // TODO: This doesn't take clipping into account.
+		{	
+			// Search children
+			if (useMouseChildren && mouseChildren)
+			{	// Sort if necessary
+				if (!children.sorted(false, (Surface s){return s.style.zIndex;}))
+					children.radixSort(false, (Surface s){return s.style.zIndex;});
+				
+				foreach(surf; children)
+				{	Surface result = surf.findSurface(xy);
+					if (result)
+						return result;
+			}	}
+			
 			return this;
+		}
 		
 		return null;		
 	}	
@@ -239,6 +223,22 @@ class Surface : Tree!(Surface)
 	{	return geometry;		
 	}
 	
+	/**
+	 * Get a 4-sided polygon of the outline of this surface, after all styles and the transformation are applied.
+	 * Coordinates are relative to the parent Surface.
+	 * Params:
+	 *     polygon = A pointer to a Vec2f[4] where the result will be stored and returned.  
+	 *         If null, new memory will be allocated. */
+	public Vec2f[] getPolygon(in Vec2f[] polygon=null)
+	{	if (polygon.length < 4)
+			polygon = new Vec2f[4];
+		polygon[0] = localToParent(Vec2f(0));			// top left
+		polygon[1] = localToParent(Vec2f(size.x, 0));	// top right
+		polygon[2] = localToParent(size);				// bottom right
+		polygon[3] = localToParent(Vec2f(0, size.y));	// bottom left
+		return polygon;
+	}
+	
 	/** 
 	 * When a Surface has grabMouse() enabled, the mouse cursor will be hidden this surface alone will receive all mouse input.
 	 * This also mouse movement so the mouse can move infinitely without encountering any boundaries.
@@ -254,22 +254,58 @@ class Surface : Tree!(Surface)
 		else
 		{	SDL_WM_GrabInput(SDL_GRAB_OFF);			
 			grabbedSurface = null;
+			SDL_WarpMouse(mouseX+cast(int)offsetAbsolute.x, mouseY+cast(int)offsetAbsolute.y);
 		}		
 	}
 	bool getGrabbedMouse() /// ditto
 	{	return (grabbedSurface is this);
 	}
 	
-	///
-	public char[] innerHtml()
+	/**
+	 * Get and set the html text displayed inside this Surface. */
+	public char[] getHtml()
 	{	return textBlock.getHtml();
 	}
 	/// ditto
-	public void innerHtml(char[] html)
-	{	//this.text = html;
-		textDirty = true;
-		Style cs = getComputedStyle();
-		textBlock.update(html, cs, cast(int)width(), cast(int)height());
+	public void setHtml(char[] html)
+	{	textDirty = true;
+		textBlock.setHtml(html);
+	}
+	
+	/**
+	 * Convert between global, parent, and local coordinate systems.
+	 * style.transform is taken into account.
+	 * Params:
+	 *     xy = Coordinates relative to the left side of the function name.
+	 * Returns: Coordinates relative to the right side of the function name. */
+	Vec2f localToParent(Vec2f xy)
+	{	if (parent) /// TODO: innerXy
+			return xy.vec3f.transform(style.transform).vec2f + offset;
+		return xy;
+	}
+	Vec2f localToGlobal(Vec2f xy) /// ditto
+	{	if (parent)
+			return localToGlobal(localToParent(xy));  // untested
+		return xy;
+	}
+	Vec2f parentToLocal(Vec2f xy) /// ditto
+	{	Vec2f parentSize = Vec2f(parentWidth(), parentHeight());
+		Vec2f extra = Vec2f(
+			style.borderLeftWidth.toPx(parentSize.x, false) + style.paddingLeft.toPx(parentSize.x, false),
+			style.borderTopWidth.toPx(parentSize.y, false) + style.paddingTop.toPx(parentSize.y, false));
+		Vec2f innerXy = xy - offset - extra;
+		
+		if (parent)
+		{	if (style.transform == Matrix.IDENTITY)
+				return innerXy; // simple common case
+			return innerXy.vec3f.transform(style.transform.inverse()).vec2f; // TODO: this fails if there's non-z rotation
+		}
+		return innerXy;
+	}
+	Vec2f globalToLocal(Vec2f xy) /// ditto
+	{	if (parent)
+			return parentToLocal(parent.globalToLocal(xy)); // untested
+		return xy;
 	}
 	
 	/**
@@ -359,7 +395,7 @@ class Surface : Tree!(Surface)
 	/**
 	 * Update all of this Surface's dimensions, geometry, and children to prepare it for rendering. */
 	void update()
-	{
+	{	
 		Style cs = getComputedStyle();
 		updateDimensions(cs);
 		if (resizeDirty)
@@ -379,19 +415,18 @@ class Surface : Tree!(Surface)
 			int width = cast(int)width();
 			int height = cast(int)height();
 			
-			//textBlock.update(text, cs, width, height);
-			//textBlock.update(text, cs, width, height);
-			textBlock.update(textBlock.getHtml(), cs, width, height);
-			Image textImage = textBlock.render(true, editable && focusSurface is this ? &textCursor : null); // TODO: Change true to Probe.NextPow2
-			
-			if (textImage)
-			{	if (!textTexture) // create texture on first go
-					textTexture = new Texture(textImage, Texture.Format.AUTO, false, "Surface Text", true);
-				else
-					textTexture.setImage(textImage);
-				textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
-			} else
-				textTexture = null;
+			if (textBlock.update(cs, width, height))
+			{	Image textImage = textBlock.render(true, editable && focusSurface is this ? &textCursor : null); // TODO: Change true to Probe.NextPow2
+				
+				if (textImage)
+				{	if (!textTexture) // create texture on first go
+						textTexture = new Texture(textImage, Texture.Format.AUTO, false, "Surface Text", true);
+					else
+						textTexture.setImage(textImage);
+					textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
+				} else
+					textTexture = null;
+			}
 			
 			textDirty = false;
 		}
@@ -437,25 +472,36 @@ class Surface : Tree!(Surface)
 		Surface.focusSurface = this;
 	}
 	
-	///
-	void click(byte buttons, Vec2i coordinates, bool allowFocus=true)
-	{	bool propagate = true;
+	/** 
+	 * Trigger a click event and call the onClick callback function if set. 
+	 * Click events occur after a mouseDown and mouseUp when the mouse hasn't moved between the two.
+	 * If the onClick function is not set, or if it returns true (propagate), call the parent's click function. 
+	 * Params:
+	 *     button = 
+	 *     coordinates = Coordinates relative to the Surface, with style.transform taken into account.
+	 *     allowFocus = Used internally to prevent focus from propagating updward */
+	void click(Input.MouseButton button, Vec2i coordinates, bool allowFocus=true)
+	{	bool propagate = true; // TODO: Should coordinates be relative to inner area?
 		if(onClick)
-			propagate = onClick(this, buttons, coordinates);
-		if (allowFocus && Surface.focusSurface !is this)
-			focus(); // give focus on click if not already focussed.
+			propagate = onClick(this, button, coordinates);
+		if (editable)
+		{	if (allowFocus && Surface.focusSurface !is this)
+		    	focus(); // give focus on click if editable not already focussed.
+			textCursor.position = textBlock.xyToCursor(coordinates);
+			textDirty = true; // redraw
+		}
+		
 		if(parent && propagate) 
-			parent.click(buttons, coordinates, false);
+			parent.click(button, coordinates, false);
 	}
 
-	
 	/**
 	 * Trigger a keyDown event and call the onKeyDown callback function if set. 
-	 * If the onKeyDown function is not set, call the parent's keyDown function. 
+	 * If the onKeyDown function is not set, or if it returns true (propagate), call the parent's keyDown function. 
 	 * Params:
 	 *     key = SDL's key code of the pressed key.
 	 *     mod = Modifier key held down while key was pressed.*/ 
-	void keyDown(int key, int mod=ModifierKey.NONE)
+	void keyDown(int key, int mod=Input.ModifierKey.NONE)
 	{	bool propagate = true;
 		if(onKeyDown)
 			propagate = onKeyDown(this, key, mod);
@@ -465,11 +511,11 @@ class Surface : Tree!(Surface)
 	
 	/**
 	 * Trigger a keyUp event and call the onKeyUp callback function if set. 
-	 * If the onKeyUp function is not set, call the parent's keyUp function.
+	 * If the onKeyUp function is not set, or if it returns true (propagate), call the parent's keyUp function.
 	 * Params:
 	 *     key = SDL's key code of the pressed key.
 	 *     mod = Modifier key held down while key was pressed.*/ 
-	void keyUp(int key, int mod=ModifierKey.NONE)
+	void keyUp(int key, int mod=Input.ModifierKey.NONE)
 	{	bool propagate = true;
 		if(onKeyUp)
 			propagate = onKeyUp(this, key, mod);
@@ -478,93 +524,99 @@ class Surface : Tree!(Surface)
 	}
 	
 	/**
-	 * Trigger a keyPress event and call the onKeyPress callback function if set. 
-	 * If the onKeyPress function is not set, call the parent's keyPress function.
+	 * Trigger a keyPress event and call the onKeyPress callback function if set.
+	 * Keypress events occur after a keyDown event and reoccur at Input's key repeat rates until after a keyUp occurs.
+	 * If the onKeyPress function is not set, or if it returns true (propagate), call the parent's keyPress function.
+	 * If editable is true, the TextBlock of this Surface will receive the input.
 	 * Params:
 	 *     key = SDL's key code of the pressed key.
 	 *     mod = Modifier key held down while key was pressed.
 	 *     unicode = unicode value of pressed key. */ 
-	void keyPress(int key, int mod=ModifierKey.NONE, dchar unicode=0)
-	{	
+	void keyPress(int key, int mod=Input.ModifierKey.NONE, dchar unicode=0) {
 		bool propagate = true;
 		if(onKeyPress)
-			propagate = onKeyPress(this, key, mod);		
-		if (propagate)
-		{	if (editable)
-			{	
-				textBlock.input(key, mod, unicode, textCursor, getComputedStyle());
-				textDirty = true;
-			}
-			if(parent) 
-				parent.keyPress(key, mod);
+			propagate = onKeyPress(this, key, mod);			
+		if (editable)
+		{	textBlock.input(key, mod, unicode, textCursor);
+			textDirty = true;
 		}
+		if(parent && propagate) 
+			parent.keyPress(key, mod);
 	}
 
 	/**
 	 * Trigger a mouseDown event and call the onMouseDown callback function if set. 
-	 * If the onMouseDown function is not set, call the parent's mouseDown function.*/ 
-	void mouseDown(byte buttons, Vec2i coordinates){ 
+	 * If the onMouseDown function is not set, or if it returns true (propagate), call the parent's mouseDown function.
+	 * Params:
+	 *     button = Current state of the mouse buttons
+	 *     coordinates = Coordinates relative to the Surface, with style.transform taken into account. */
+	void mouseDown(Input.MouseButton button, Vec2i coordinates) { 
 		mouseMoved = false;
 		bool propagate = true;
 		if(onMouseDown)
-			propagate = onMouseDown(this, buttons, coordinates);
+			propagate = onMouseDown(this, button, coordinates);
 		if(parent && propagate) 
-			parent.mouseDown(buttons, coordinates);
+			parent.mouseDown(button, coordinates);
 	}
 	
 	/**
 	 * Trigger a mouseUp event and call the onMouseUp callback function if set. 
-	 * If the onMouseUp function is not set, call the parent's mouseUp function.*/ 
-	void mouseUp(byte buttons, Vec2i coordinates){ 
+	 * If the onMouseUp function is not set, or if it returns true (propagate), call the parent's mouseUp function.
+	 * Params:
+	 *     button = Current state of the mouse buttons
+	 *     coordinates = Coordinates relative to the Surface, with style.transform taken into account. */
+	void mouseUp(Input.MouseButton button, Vec2i coordinates) { 
 		bool propagate = true;
 		if(onMouseUp)
-			propagate = onMouseUp(this, buttons, coordinates);
+			propagate = onMouseUp(this, button, coordinates);
 		if (!mouseMoved) // trigger the click event if the mouse button went down and up without the mouse moving.
-			click(buttons, coordinates);		
+			click(button, coordinates);		
 		if(parent && propagate) 
-			parent.mouseUp(buttons, coordinates);
+			parent.mouseUp(button, coordinates);
 	}
 	
 	/**
-	 * Trigger a mouseMove event and call the onMouseMove callback function if set. */ 
-	void mouseMove(byte buttons, Vec2i amount){
+	 * Trigger a mouseMove event and call the onMouseMove callback function if set. 
+	 * If the onMouseMove function is not set, or if it returns true (propagate), call the parent's mouseMove function.*/ 
+	void mouseMove(Vec2i amount) {
 		mouseMoved = true;
 		bool propagate = true;
 		if(onMouseMove)
-			propagate = onMouseMove(this, buttons, amount);
+			propagate = onMouseMove(this, amount);
 		if(parent && propagate) 
-			parent.mouseMove(buttons, amount);
+			parent.mouseMove(amount);
 	}
 
 	/**
-	 * Trigger a mouseOver event and call the onMouseOver callback function if set. */ 
-	void mouseOver(byte buttons, Vec2i coordinates) {
+	 * Trigger a mouseOver event and call the onMouseOver callback function if set. 
+	 * If the onMouseOver function is not set, or if it returns true (propagate), call the parent's mouseOver function.*/ 
+	void mouseOver() {
 		if(!mouseIn)
-		{	bool propagate = true;
-				
+		{	bool propagate = true;				
 			mouseIn = true;
 			if(onMouseOver) 
-				propagate = onMouseOver(this, buttons, coordinates);
+				propagate = onMouseOver(this);
 			if(parent && propagate) 
-				parent.mouseOver(buttons, coordinates);		
+				parent.mouseOver();		
 		}
 	}
 
 	/**
-	 * Trigger a mouseOut event and call the onMouseOut callback function if set */ 
-	void mouseOut(Surface next, byte buttons, Vec2i coordinates)
+	 * Trigger a mouseOut event and call the onMouseOut callback function if set 
+	 * If the onMouseOut function is not set, or if it returns true (propagate), call the parent's mouseOut function.*/  
+	void mouseOut(Surface next)
 	{
 		if(mouseIn)
-		{	bool propagate = true;
+		{	
 			if(isChild(next))
-				return;
-			else
-			{	mouseIn = false;
-				if(onMouseOut)
-					propagate = onMouseOut(this, buttons, coordinates);			
-				if(next !is parent && parent && propagate)
-					parent.mouseOut(next, buttons, coordinates);
-			}
+				return; // Don't do anything if mouseOut occurs when going into a child.
+			
+			mouseIn = false;
+			bool propagate = true;
+			if(onMouseOut)
+				propagate = onMouseOut(this);			
+			if(next !is parent && parent && propagate)
+				parent.mouseOut(next);
 		}
 	}
 
@@ -607,23 +659,6 @@ class Surface : Tree!(Surface)
 	{	return grabbedSurface;		
 	}
 
-	
-	/*
-	 * Get a 4-sided polygon of the outline of this surface, after all styles and the transformation are applied.
-	 * Coordinates are relative to the parent Surface.
-	 * Params:
-	 *     polygon = A pointer to a Vec2f[4] where the result will be stored. */
-	protected Vec2f[] getPolygon(in Vec2f[] polygon=null)
-	{	if (polygon.length < 4)
-			polygon = new Vec2f[4];
-		polygon[0] = Vec3f(0).transform(style.transform).vec2f + offset;			// top left
-		polygon[1] = Vec3f(size.x, 0, 0).transform(style.transform).vec2f + offset;	// top right
-		polygon[2] = size.vec3f.transform(style.transform).vec2f + offset;			// bottom right
-		polygon[3] = Vec3f(0, size.y, 0).transform(style.transform).vec2f + offset;	// bottom left
-		return polygon;
-	}
-	
-	
 	// Set style dimensions from pixels.
 	protected void top(float v)    
 	{	style.top    = style.top.unit   == CSSValue.Unit.PERCENT ? 100*v/parentHeight() : v; 

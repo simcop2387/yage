@@ -166,12 +166,12 @@ int main()
 		return false;
 	};
 	
-	view.onMouseDown = (Surface self, byte buttons, Vec2i coordinates){
+	view.onMouseDown = (Surface self, Input.MouseButton button, Vec2i coordinates){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
 		self.grabMouse(scene.ship.acceptInput);
 		return false;
 	};
-	view.onMouseMove = (Surface self, byte buttons, Vec2i rel){
+	view.onMouseMove = (Surface self, Vec2i rel){
 		if(scene.ship.acceptInput)
 			scene.ship.input.mouseDelta += rel;
 		return false;
@@ -179,29 +179,31 @@ int main()
 		
 	// Make a draggable window to show some useful info.
 	auto info = view.addChild(new Surface());
-	info.style.set("top: 5px; right: 12px; width: 110px; height: 100px; color: white; padding: -6px; " ~
+	info.style.set("top: 5px; right: 12px; width: 115px; height: 100px; color: white; " ~
 		"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 12px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
-	info.onMouseDown = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		self.raise();
-		self.focus();
+	bool dragging;
+	info.onMouseDown = delegate bool(Surface self, Input.MouseButton button, Vec2i coordinates) {
+		if (button == Input.MouseButton.LEFT)
+			dragging = true;
 		return false; // don't propagate upward
 	};
-	info.onMouseMove = delegate bool(Surface self, byte buttons, Vec2i amount) {
-		if(buttons == 1) 
-			self.move(cast(Vec2f)amount, true);
+	info.onMouseMove = delegate bool(Surface self, Vec2i amount) {
+		if (dragging)
+			self.move(amount.toFloat(), true);
 		return false;
 	};
-	info.onMouseUp = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
-		self.blur();
+	info.onMouseUp = delegate bool(Surface self, Input.MouseButton button, Vec2i coordinates) {
+		if (button == Input.MouseButton.LEFT)
+			dragging = false;
 		return false;
 	};
-	info.onMouseOver = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseOver = delegate bool(Surface self) {
 		self.style.set("border-image: url('gui/skin/panel2.png')");
 		return false;
 	};
-	info.onMouseOut = delegate bool(Surface self, byte buttons, Vec2i coordinates) {
+	info.onMouseOut = delegate bool(Surface self) {
 		self.style.set("border-image: url('gui/skin/panel1.png')");
 		return false;
 	};
@@ -228,13 +230,13 @@ int main()
 		if (frame.tell()>=1f)
 		{	float framerate = fps/frame.tell();
 			window.setCaption(format("Yage Demo | %.2f fps\0", framerate));
-			info.innerHtml = format(
+			info.setHtml(format(
 				`%.2f <b>fps</span><br/>`
 				`%d <b>objects</b><br/>`
 				`%d <b>polygons</b><br/>`
 				`%d <b>vertices</b><br/>`
 				`%d <b>lights</b><br/><br/> wasd to move<br/> +q for hyperdrive<br/>space to shoot`,
-				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ Profile.getTimesAndClear();
+				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ Profile.getTimesAndClear());
 			frame.seek(0);
 			fps = 0;
 		}

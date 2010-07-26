@@ -44,7 +44,8 @@ struct TextCursor
 
 /**
  * Render text and simple html with styles to an image.
- * This class is used internally by the engine.  In most cases it shouldn't need to be called externally.. */
+ * TextBlock has two modes of input:  setHtml() and the input() function that receives keypresses.
+ * This class is used internally by the engine.  In most cases it shouldn't need to be called externally. */
 struct TextBlock
 {
 	private static const dchar[] whitespace = " \t\r\n"d;
@@ -53,6 +54,8 @@ struct TextBlock
 	private ubyte[] imageLookaside; // TODO: Have the lookaside passed into Render
 	
 	private char[] html;
+	private bool htmlDirty = true;		// html has changed, letters may be out of date
+	private bool lettersDirty = false;	// letters have chagned via input, html may be out of date
 	package InlineStyle style; // base style of entire text block
 	private Style.TextAlign alignment;
 	private int width;
@@ -90,11 +93,17 @@ struct TextBlock
 		/**
 		 * Get the cursor position from an xy pixel position. */
 		int xyToCursor(Vec2i xy)
-		{	
+		{	if (!lines.length)
+				return 0;
+			
 			// Calculate line
-			int line;
-			for (; line<lines.length-1 && 0 <= xy.y; line++)
-				xy.y -= lines[line].height;
+			int line, y;
+			while(true)
+			{	y += lines[line].height;
+				if (line>=lines.length-1 || y >= xy.y)
+					break;
+				line++;
+			}
 			
 			// Take alignment into account
 			int lineWidth = lines.length ? lines[line].width : 0;
@@ -104,6 +113,16 @@ struct TextBlock
 			int position;
 			for (; position<lines[line].letters.length && 0 < xy.x; position++)
 				xy.x -= lines[line].letters[position].advanceX;
+			
+			/*
+			int position, x;
+			while(true)
+			{	y += lines[line].letters[position].advanceX;
+				if (position>=lines[line].letters.length-1 || x > xy.x)
+					break;
+				position++;
+			}
+			 */
 			
 			return lineToCursor(line, position);
 		}
@@ -143,9 +162,69 @@ struct TextBlock
 		}
 	}
 	
-	///
-	char[] getHtml()
-	{	return html;
+	/**
+	 * Reverse the normal function of TextLayout and convert letters[] back to a string of html text.
+	 * The text may use different tags than the original html, (since some information is lost) 
+	 * but will be functionally the same.  */
+	public char[] getHtml()
+	{
+		if (!lettersDirty)
+			return html;
+		
+		// If the user has typed text, regenerate html from scratch
+		html = "<span>";
+		InlineStyle style = this.style;		
+		InlineStyle currentStyle = style; // style of the previous letter
+		
+		foreach(i, l; letters.data)
+		{
+			InlineStyle* newStyle = cast(InlineStyle*) l.extra;
+			if (currentStyle != *newStyle) // if style has changed since last letter
+			{	
+				char[][] styleString;			
+				
+				// TODO: Would it be better to create arrays to group sequential letters of the same style?
+				// then we could make a single xml node to contain those that have similar styles.
+				// If nothing else, the first version of this function could just return unformatted text.
+				// Should text be stored lazily so we don't have to recreate this all on every keypress?
+				
+				// Only print styles that don't match the Surface's style
+				if (style.fontFamily && style.fontFamily != newStyle.fontFamily)
+					styleString ~= swritef(`font-family: url('%s')`, newStyle.fontFamily);
+				if (dword(style.fontSize) != dword(newStyle.fontSize))
+					styleString ~= swritef(`font-size: %spx`, newStyle.fontSize);
+				if (style.color != newStyle.color)
+					styleString ~= swritef(`color: %spx`, newStyle.color);
+				if (style.fontWeight != newStyle.fontWeight)
+					styleString ~= swritef(`font-weight: %s`, Style.enumToString(newStyle.fontWeight));
+				if (style.fontStyle != newStyle.fontStyle)
+					styleString ~= swritef(`font-style: %s`, Style.enumToString(newStyle.fontStyle));
+				if (style.textDecoration != newStyle.textDecoration) 
+					styleString ~= swritef(`text-decoration: %s`, Style.enumToString(newStyle.textDecoration));
+				if (dword(style.lineHeight) != dword(newStyle.lineHeight))
+					styleString ~= swritef(`lineHeight: %spx`, newStyle.lineHeight);
+				if (dword(style.letterSpacing) != dword(newStyle.letterSpacing)) 
+					styleString ~= swritef(`letterSpacing: %spx`, newStyle.letterSpacing);				
+				
+				html ~= swritef(`</span><span style="%s">`, join(styleString, "; "));
+				currentStyle = *newStyle;
+			}
+			switch (l.letter)
+			{	case '>': html ~= "\&gt;"; break;
+				case '<': html ~= "\&lt;"; break;
+				case '&': html ~= "\&amp;"; break;
+				case '\n': html ~= "<br/>"; break;
+				case ' ': 
+					if (i>0 && letters[i-1].letter ==' ')
+					{	html ~= "\&nbsp;"; // encode multiple spaces as " &nbsp;" 
+						break;
+					} // fall through:
+				default:
+					html ~= l.toString();
+			}
+		}
+		 html ~= "</span>";
+		return html;
 	}
 	
 	/**
@@ -155,10 +234,19 @@ struct TextBlock
 	 *     mod = modifier key.
 	 *     unicode = Unicode value of the pressed key.
 	 *     cursor = The Surface's TextCursor. */
-	void input(int key, int mod, dchar unicode, inout TextCursor cursor, Style computedStyle)
+	void input(int key, int mod, dchar unicode, inout TextCursor cursor)
 	{	
-		style = InlineStyle(computedStyle);
-		//Log.trace(cursor.position, " " , letters.length);
+		
+		// If the html has changed we need to update the lines before continuing.
+		if (htmlDirty)
+		{	letters.length = 0;			
+			styles.length = 0;
+			HtmlParser.htmlToLetters(html, style, letters, styles);	
+			lines = lettersToLines(letters.data, width, lines);
+			htmlDirty = false;
+		}
+		lettersDirty = true;
+		
 		assert(cursor.position <= letters.length);
 		static int xPosition; // save the cursor's x position when moving from one line to the next.
 		
@@ -184,9 +272,9 @@ struct TextBlock
 					int i;
 					int x = xPosition = xPosition ? xPosition : cursorToXy(cursor.position).x;
 					x -= Line.getOffset(newLine.width, width, alignment);
-					for (; i<newLine.letters.length && x >=0; i++)
+					for (; i<newLine.letters.length && x>=0; i++)
 						x-= newLine.letters[i].advanceX; // find the cursor position for the previous x position
-					cursor.position = lineToCursor(currentLine-1, i-1);
+					cursor.position = lineToCursor(currentLine-1, max(i-1, 0));
 				}
 				break;
 			case SDLK_DOWN: 
@@ -195,20 +283,24 @@ struct TextBlock
 					int i;
 					int x = xPosition = xPosition ? xPosition : cursorToXy(cursor.position).x;	
 					x -= Line.getOffset(newLine.width, width, alignment);
-					for (; i<newLine.letters.length && x >=0; i++)
+					for (; i<newLine.letters.length && x>=0; i++)
 						x-= newLine.letters[i].advanceX;
-					cursor.position = lineToCursor(currentLine+1, i-1);
+					//if (currentLine <lines.length-1)
+					//	i--; // if not the last line, go back one before the character that causes the new line.
+					cursor.position = lineToCursor(currentLine+1, max(i-1, 0));
 				}
 				break;
 			case SDLK_HOME:
 				cursor.position -= linePosition;
 				break;
-			case SDLK_END: 
-				auto letters = lines[currentLine].letters;
-				int newPosition = (cast(int)letters.length) - linePosition;
-				if (currentLine != lines.length-1) 
-					newPosition--; // if not the last line, go back one before the character that causes the new line.
-				cursor.position += newPosition;
+			case SDLK_END:
+				if (lines.length)
+				{	auto letters = lines[currentLine].letters;
+					int newPosition = (cast(int)letters.length) - linePosition;
+					if (currentLine != lines.length-1) 
+						newPosition--; // if not the last line, go back one before the character that causes the new line.
+					cursor.position += newPosition;
+				}
 				break;
 			
 			// Editing Keys
@@ -229,7 +321,6 @@ struct TextBlock
 				{	
 					if (unicode=='\r')
 						unicode='\n';
-					//Log.trace(cast(int)unicode);
 					
 					// Get the style to use for a new letter
 					InlineStyle *style;
@@ -247,12 +338,10 @@ struct TextBlock
 				}
 			break;
 			
-			
-			// TODO: tabs, center cursor position, end crashes on centered textblock, click to position cursor, selection, ctrl+a, z, x, c, v
+			// TODO: tabs, click to position cursor, selection, ctrl+a, z, x, c, v
 		}
 		
 		lines = lettersToLines(letters.data, width, lines);
-		//Log.trace(lines.length);
 	}
 	
 	/**
@@ -311,7 +400,7 @@ struct TextBlock
 					float skew = istyle.fontStyle == Style.FontStyle.ITALIC ? .33f : 0;
 					result.overlayAndColor(letter.image, istyle.color, x+letter.left, baseline-letter.top);
 					
-					// Render underline, overline, and linethrough
+					// Render underline, overline, and line-through
 					if (istyle.textDecoration == Style.TextDecoration.UNDERLINE)
 						for (int h=max(0, baseline); h<min(baseline+lineWidth, height); h++)
 							for (int w=x; w<min(x+letter.advanceX, width); w++) // [above] make underline 1/10th as thick as line-height
@@ -356,97 +445,58 @@ struct TextBlock
 	}
 	
 	/**
-	 * Reverse the normal function of TextLayout and convert letters[] back to a string of html text.
-	 * The text may use different tags than the original html, (since some information is lost) 
-	 * but will be functionally the same.  */
-	char[] toString()
-	{
-		char[] result = "<span>";
-		InlineStyle style = this.style;		
-		InlineStyle currentStyle = style; // style of the previous letter
-		
-		foreach(Letter l; letters)
-		{
-			InlineStyle* newStyle = cast(InlineStyle*) l.extra;
-			if (currentStyle != *newStyle) // if style has changed since last letter
-			{	
-				char[][] styleString;			
-				
-				// TODO: Would it be better to create arrays to group sequential letters of the same style?
-				// then we could make a single xml node to contain those that have similar styles.
-				// If nothing else, the first version of this function could just return unformatted text.
-				// Should text be stored lazily so we don't have to recreate this all on every keypress?
-				
-				// Only print styles that don't match the Surface's style
-				if (style.fontFamily && style.fontFamily != newStyle.fontFamily)
-					styleString ~= swritef(`font-family: url('%s')`, newStyle.fontFamily);
-				if (dword(style.fontSize) != dword(newStyle.fontSize))
-					styleString ~= swritef(`font-size: %spx`, newStyle.fontSize);
-				if (style.color != newStyle.color)
-					styleString ~= swritef(`color: %spx`, newStyle.color);
-				if (style.fontWeight != newStyle.fontWeight)
-					styleString ~= swritef(`font-weight: %s`, Style.enumToString(newStyle.fontWeight));
-				if (style.fontStyle != newStyle.fontStyle)
-					styleString ~= swritef(`font-style: %s`, Style.enumToString(newStyle.fontStyle));
-				if (style.textDecoration != newStyle.textDecoration) 
-					styleString ~= swritef(`text-decoration: %s`, Style.enumToString(newStyle.textDecoration));
-				if (dword(style.lineHeight) != dword(newStyle.lineHeight))
-					styleString ~= swritef(`lineHeight: %spx`, newStyle.lineHeight);
-				if (dword(style.letterSpacing) != dword(newStyle.letterSpacing)) 
-					styleString ~= swritef(`letterSpacing: %spx`, newStyle.letterSpacing);				
-				
-				result ~= swritef(`</span><span style="%s">`, join(styleString, "; "));
-				currentStyle = *newStyle;
-			}
-			result ~= l.toString();
-		}
-		
-		return result ~ "</span>";
+	 * Set the contents of the Textblock with html.
+	 * Params:
+	 *     html = String of utf-8 encoded html text to render.
+	 *       The following html tags are supported:<br> 
+	 *       	a, b, br, del, i, span, sub, sup, u <br>
+	 *       The following css is supported via inline style attributes: <br>
+	 *         color, font-family, font-size[%|px], font-style[normal|italic|oblique], font-weight[normal|bold],
+	 *         letter-spacing[%|px], line-height[%|px], 
+	 *         text-align[left|center|right] text-decoration[none|underline|overline|line-through] */
+	void setHtml(char[] html)
+	{	this.html = html;
+		htmlDirty = true;
+		lettersDirty = false;
 	}
 
 	/**
 	 * Replace the text with new text, rebuilding the internal lines and letters data structures.
 	 * This is unlike input(), which modifies the text based on a single keystroke.
 	 * Params:
-	 *     text = String of utf-8 encoded html text to render.
-	 *       The following html tags are supported:<br> 
-	 *       	a, b, br, del, i, span, sub, sup, u <br>
-	 *       The following css is supported via inline style attributes: <br>
-	 *         color, font-family, font-size[%|px], font-style[normal|italic|oblique], font-weight[normal|bold],
-	 *         letter-spacing[%|px], line-height[%|px], 
-	 *         text-align[left|center|right] text-decoration[none|underline|overline|line-through]
 	 *     style = A style with fontSize and lineHeight in terms of pixels
 	 *     width = Available width for rendering text
 	 *     height = Available height for rendering text.
 	 * Returns: True if the text will need to be re-rendered, false otherwise.
 	 * TODO: Should this be a constructor to maintain RAII? */
-	bool update(char[] html, Style style, int width, int height)
+	bool update(Style style, int width, int height)
 	{
 		InlineStyle istyle = InlineStyle(style);
 		alignment = style.textAlign;
 		
-		// If text has changed
-		//bool newLetters = text != (*this).text || istyle != (*this).style;
-		bool newLetters = html != this.html || istyle != this.style;
+		// If letters have changed
+		if (lettersDirty) // recreate html from letters.
+			html = getHtml();
+		
+		 // Reparse the arrays of letters and styles from the html
+		bool newLetters = htmlDirty || istyle != this.style;
 		if (newLetters)
-		{	
-			// Update the arrays of letters and styles
-			letters.length = 0;			
+		{	letters.length = 0;			
 			styles.length = 0;
-			HtmlParser.htmlToLetters(html, style, letters, styles);
-			
-			this.html = html;
-			this.style = istyle;
+			HtmlParser.htmlToLetters(html, istyle, letters, styles);			
 		}
+		
+		this.style = istyle;
+		htmlDirty = false;
 		
 		// If text or dimensions have changed
 		if (newLetters || width != this.width || height != this.height)
-		{				
-			this.width = width;
+		{	this.width = width;
 			this.height = height;			
 			lines = lettersToLines(letters.data, width, lines);
 			return true;
 		}
+		
 		return false;
 	}
 	
@@ -630,7 +680,7 @@ private struct HtmlParser
 	 *     styles = Style results will be appended to this array.
 	 * Returns:
 	 */
-	static void htmlToLetters(char[] htmlText, Style style, inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
+	static void htmlToLetters(char[] htmlText, InlineStyle style, inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
 	{
 		char[] lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
 		htmlText = htmlToAscii(htmlText, lookaside);
@@ -645,7 +695,7 @@ private struct HtmlParser
 			Memory.free(lookaside);
 		}
 
-		htmlNodeToLetters(doc.query.nodes[0], InlineStyle(style), letters, styles);
+		htmlNodeToLetters(doc.query.nodes[0], style, letters, styles);
 	}
 		
 	/*
@@ -686,7 +736,7 @@ private struct HtmlParser
 		// Get any text from in the node.
 		styles ~= style;
 		if (input.value.length)
-		{	char[] text = htmlEntityDecode(input.value);
+		{	char[] text = entityDecode(input.value);
 			foreach (dchar c; text) // dchar to iterate over each utf-8 char group
 			{	if (style.fontFamily)
 				{	int size = style.fontSize;
@@ -748,8 +798,9 @@ private struct HtmlParser
 	 * For speed, only xml entities are replaced for now (not html entities).
 	 * Note that this could avoid heap activity altogether with lookaside buffers.
 	 * See: http://en.wikipedia.org/wiki/Character_encodings_in_HTML#XML_character_entity_references */ 
-	private static char[] htmlEntityDecode(char[] text)
-	{	text = text.substitute("&amp;", "&"); // TODO: fix garbage created by this function.
+	private static char[] entityDecode(char[] text)
+	{	// TODO: Perform this in one pass
+		text = text.substitute("&amp;", "&"); // TODO: fix garbage created by this function.
 		text = text.substitute("&lt;", "<");
 		text = text.substitute("&gt;", ">");
 		text = text.substitute("&quot;", `"`);
@@ -760,6 +811,6 @@ private struct HtmlParser
 	unittest
 	{	char[] test = "<>Hello Goodbye&nbsp; &amp;&quot;&apos;&lt;&gt;";
 		char[] result="<>Hello Goodbye\&nbsp; &\"'<>";
-		assert (htmlEntityDecode(test) == result);
+		assert (entityDecode(test) == result);
 	}
 }
