@@ -114,16 +114,6 @@ struct TextBlock
 			for (; position<lines[line].letters.length && 0 < xy.x; position++)
 				xy.x -= lines[line].letters[position].advanceX;
 			
-			/*
-			int position, x;
-			while(true)
-			{	y += lines[line].letters[position].advanceX;
-				if (position>=lines[line].letters.length-1 || x > xy.x)
-					break;
-				position++;
-			}
-			 */
-			
 			return lineToCursor(line, position);
 		}
 		

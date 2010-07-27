@@ -27,16 +27,18 @@ import yage.gui.surfacegeometry;
  * Surfaces are similar to HTML DOM elements, including having text inside it, 
  * margin, padding, a border, and a background texture, including textures from a camera. 
  * Surfaces will exist in a hierarchical structure, with each having a parent and an array of children. 
- * Surfacs are positioned relative to their parent. 
+ * They are positioned relative to their parent. 
  * A style struct defines most of the styles associated with the Surface. */
 class Surface : Tree!(Surface)
 {	
-	Style style;
+	Style style; /// Controls positioning and appearance of the Surface via CSS-like properties.
+	TextBlock textBlock; /// Provides low-level access to this Surface's text.  Normally, setHtml() is all that's needed.
+	TextCursor textCursor; ///
 		
 	bool editable = false; /// The text of this surface is editable.
+	bool multiLine = true; /// TODO
 	bool mouseChildren = true; /// Allow the mouse to interact with this Surface's children.
 	int mouseX, mouseY;	/// Current position of the mouse cursor.  (Read-only for now)
-	TextCursor textCursor; ///
 	
 	/// Callback functions
 	bool delegate(Surface self) onBlur; ///
@@ -60,30 +62,27 @@ class Surface : Tree!(Surface)
 	protected Texture textTexture;	// texture that constains rendered text image.
 	
 	protected Vec2f offset;			// pixel distance of the topleft corner from parent's top left, a relative offset
-	protected Vec2f size;			// pixel outer width/height, which includes borders and padding.
-	
+	protected Vec2f size;			// pixel outer width/height, which includes borders and padding.	
 	public Vec2f offsetAbsolute;	// pixel distance of top left from the window's top left at 0, 0, an absolute offset
 	
 	protected bool mouseIn; 		// used to track mouseover/mouseout
-	protected bool mouseMoved;		// used for click() event.
-	
+	protected bool mouseMoved;		// used for click() event.	
 	protected bool resizeDirty = true;
 	protected bool textDirty = true;
 	
 	protected SurfaceGeometry geometry; // geometry used to render this surface
-	public TextBlock textBlock;
-	
+		
 	protected static Style defaultStyle; // Used as a cache by getDefaultStyle()	
 	protected static Surface grabbedSurface; // surface that has captured the mouse
 	protected static Surface focusSurface; // surface that has focus for receiving input
 
 	/**
 	 * Create a new Surface at 0, 0 with 0 width and height. */
-	this()
+	this(Surface parent=null)
 	{	geometry = new SurfaceGeometry();
 		updateDimensions(getComputedStyle());
-		if (!focusSurface)
-			focus();
+		if (parent)
+			parent.addChild(this);
 	}
 	
 	/**
@@ -134,9 +133,6 @@ class Surface : Tree!(Surface)
 	{	return size.y;
 	}
 
-	
-	
-	
 	/**
 	 * Find the surface at the given coordinates.
 	 * Surfaces are ordered by zIndex with higher values appearing on top.
@@ -215,7 +211,6 @@ class Surface : Tree!(Surface)
 		}
 		return cs;
 	}
-
 	
 	/**
 	 * Get the geometry data used for rendering this Surface. */

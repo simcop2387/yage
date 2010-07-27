@@ -265,7 +265,7 @@ struct Style
 	Color backgroundColor; /// ditto
 
 	// Cursor
-	Material cursor; /// TODO
+	Material cursor; /// TODO: Unimplemented
 	float cursorSize=float.nan; /// in pixels, float.nan to default to size of image.
 	
 	/// Font properties
@@ -279,14 +279,14 @@ struct Style
 	TextAlign textAlign = TextAlign.LEFT; /// ditto
 	TextDecoration textDecoration = TextDecoration.NONE; /// ditto
 	CSSValue lineHeight; /// ditto
-	CSSValue letterSpacing; /// ditto
+	CSSValue letterSpacing; /// TODO: Unimplemented
 	
 	/**
 	 * CSS 3D transform property, defaults to identity matrix.  See: http://w3.org/TR/css3-3d-transforms	 */
 	Matrix transform;	
 
 	// Other
-	float opacity = 1; // 0 to 1.
+	float opacity = 1; ///
 	
 	union
 	{	struct
