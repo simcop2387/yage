@@ -265,7 +265,7 @@ int defaultBuild(char[][] args)
 struct CDC
 {
 	/**
-	 * Compile d code using the current compiler.
+	 * Compile d code using same compiler that compiled CDC.
 	 * Params:
 	 *     paths = Array of source and library files and folders.  Folders are recursively searched.
 	 *     options = Compiler options.

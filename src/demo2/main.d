@@ -46,7 +46,7 @@ int main()
 	camera.setPosition(Vec3f(0, 5, 30));
 	
 	// Main surface
-	auto view = new Surface();
+	auto view = new Surface("width: 100%; height: 100%");
 	
 	// Events for main surface.
 	view.onKeyDown = delegate bool(Surface self, int key, int modifier){
@@ -60,25 +60,23 @@ int main()
 	l1.setPosition(Vec3f(0, 200, -30));	
 
 	// A window with text in it
-	auto info = view.addChild(new Surface());
+	auto info = new Surface(view);
 	info.style.set("top: 40px; left: 40px; width: 500px; height: 260px; padding: 3px; color: #ff8800; " ~
 		"border-width: 12px; border-image: url('gui/skin/panel1.png'); " ~
 		"font-family: url('Vera.ttf'); text-align: center; opacity: .8; overflow: hidden");
-	info.style.overflowX = Style.Overflow.HIDDEN;
-	info.style.overflowY = Style.Overflow.HIDDEN;
 	
 	bool dragging;
-	info.onMouseDown = delegate bool(Surface self, Input.MouseButton button, Vec2i coordinates) {
+	info.onMouseDown = delegate bool(Surface self, Input.MouseButton button, Vec2f coordinates) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = true;
 		return false;
 	};
-	info.onMouseMove = delegate bool(Surface self, Vec2i amount) {		
+	info.onMouseMove = delegate bool(Surface self, Vec2f amount) {		
 		if (dragging)
-			self.move(amount.toFloat(), true);
+			self.move(amount, true);
 		return false;
 	};
-	info.onMouseUp = delegate bool(Surface self, Input.MouseButton button, Vec2i coordinates) {
+	info.onMouseUp = delegate bool(Surface self, Input.MouseButton button, Vec2f coordinates) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = false;
 		return false;
@@ -94,13 +92,13 @@ int main()
 	info.editable = view.editable = true;
 	/*
 	// Test overflow clipping
-	auto clip = info.addChild(new Surface());
+	auto clip = new Surface(info);
 	clip.style.set("width: 60px; height: 60px; background-color: black; top: -30px; left: -30px; overflow: hidden");
 	
-	auto clip2 = clip.addChild(new Surface());
+	auto clip2 = new Surface(clip);
 	clip2.style.set("width: 30px; height: 30px; background-color: blue; top: 15px; left: 45px");
 	
-	auto clip3 = info.addChild(new Surface());
+	auto clip3 = new Surface(info);
 	clip3.style.set("width: 60px; height: 60px; background-color: orange; top: -30px; right: -30px");
 	*/
 	
@@ -115,14 +113,14 @@ int main()
 		auto stats = Render.scene(camera, window);
 		Render.surface(view, window);
 		Render.complete(); // swap buffers
-		
+		/+
 		// Rotate the info box
 		float amount = total.tell();
 		info.style.transform = Matrix();
 		info.style.transform = info.style.transform.move(Vec3f(-300, -20, 0));
 		info.style.transform *= Matrix().rotate(Vec3f(0, /*sin(amount/2)/2*/0, sin(amount/2)/5));
 		info.style.transform = info.style.transform.move(Vec3f(300, 20, 0));
-		
+		+/
 		
 		fps++;
 		if (frame.tell()>=.25f && !(Surface.getFocusSurface() is info))

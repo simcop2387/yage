@@ -290,8 +290,9 @@ Boost 1.0
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Get a lightmap Texture to use across the range of coordinates.
- If no lightmap is desired, this function can return a Texture without a Texture.
- The same GPU Texture can be reused across multiple calls with different values,
+ If no lightmap is desired, this function can return a TextureInstance with a null
+ Texture.
+ The same TextureInstance can be reused across multiple calls with different values,
  if the Textures' texture matrix adjusted as needed.
 <br><br>
 <b>Params:</b><br>
@@ -383,7 +384,7 @@ An RGB texture to use as a baked light-map.  It's color values will be modulated
 		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jun 26 15:54:21 2010
+		on Wed Aug 11 11:14:29 2010
 
 	</div>
 	
@@ -444,6 +445,8 @@ An RGB texture to use as a baked light-map.  It's color values will be modulated
 
 	explorer.packageExplorer.addModule("yage.gui.all");
 
+	explorer.packageExplorer.addModule("yage.gui.controls");
+
 	explorer.packageExplorer.addModule("yage.gui.exceptions");
 
 	explorer.packageExplorer.addModule("yage.gui.style");
@@ -452,11 +455,13 @@ An RGB texture to use as a baked light-map.  It's color values will be modulated
 
 	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
-	explorer.packageExplorer.addModule("yage.gui.textlayout");
+	explorer.packageExplorer.addModule("yage.gui.textblock");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
+
+	explorer.packageExplorer.addModule("yage.resource.dds");
 
 	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
@@ -515,6 +520,8 @@ An RGB texture to use as a baked light-map.  It's color values will be modulated
 	explorer.packageExplorer.addModule("yage.system.graphics.render");
 
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.libraries");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 

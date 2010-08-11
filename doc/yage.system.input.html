@@ -94,14 +94,14 @@ Eric Poggel, Joe Pusdesris (deformative0@gmail.com)
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">class 
+<dt><span class="decl">abstract class 
 <span class="currsymbol">Input</span>
 <script type="text/javascript">explorer.outline.addDecl('Input');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>A class to handle keyboard, mouse, and eventually joystick input.
+<dd>A static class to handle keyboard, mouse, and eventually joystick input.
  This polls SDL for input and passes it to the current surface.
 <br><br>
 <b>TODO:</b><br>
@@ -112,6 +112,256 @@ Ditch SDL!  SDL requires input processing to be in the same thread as the render
 
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">ModifierKey</span>
+<script type="text/javascript">explorer.outline.addDecl('ModifierKey');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>This is a mirror of SDLMod (SDL's modifier key struct)
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">NONE</span>
+<script type="text/javascript">explorer.outline.addDecl('NONE');</script>
+<br>
+<span class="currsymbol">LSHIFT</span>
+<script type="text/javascript">explorer.outline.addDecl('LSHIFT');</script>
+<br>
+<span class="currsymbol">RSHIFT</span>
+<script type="text/javascript">explorer.outline.addDecl('RSHIFT');</script>
+<br>
+<span class="currsymbol">LCTRL</span>
+<script type="text/javascript">explorer.outline.addDecl('LCTRL');</script>
+<br>
+<span class="currsymbol">RCTRL</span>
+<script type="text/javascript">explorer.outline.addDecl('RCTRL');</script>
+<br>
+<span class="currsymbol">LALT</span>
+<script type="text/javascript">explorer.outline.addDecl('LALT');</script>
+<br>
+<span class="currsymbol">RALT</span>
+<script type="text/javascript">explorer.outline.addDecl('RALT');</script>
+<br>
+<span class="currsymbol">LMETA</span>
+<script type="text/javascript">explorer.outline.addDecl('LMETA');</script>
+<br>
+<span class="currsymbol">RMETA</span>
+<script type="text/javascript">explorer.outline.addDecl('RMETA');</script>
+<br>
+<span class="currsymbol">NUM</span>
+<script type="text/javascript">explorer.outline.addDecl('NUM');</script>
+<br>
+<span class="currsymbol">CAPS</span>
+<script type="text/javascript">explorer.outline.addDecl('CAPS');</script>
+<br>
+<span class="currsymbol">MODE</span>
+<script type="text/javascript">explorer.outline.addDecl('MODE');</script>
+<br>
+<span class="currsymbol">RESERVED</span>
+<script type="text/javascript">explorer.outline.addDecl('RESERVED');</script>
+<br>
+<span class="currsymbol">CTRL</span>
+<script type="text/javascript">explorer.outline.addDecl('CTRL');</script>
+<br>
+<span class="currsymbol">SHIFT</span>
+<script type="text/javascript">explorer.outline.addDecl('SHIFT');</script>
+<br>
+<span class="currsymbol">ALT</span>
+<script type="text/javascript">explorer.outline.addDecl('ALT');</script>
+<br>
+<span class="currsymbol">META</span>
+<script type="text/javascript">explorer.outline.addDecl('META');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Allowed values.
+<br><br>
+
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">enum 
+<span class="currsymbol">MouseButton</span>
+<script type="text/javascript">explorer.outline.addDecl('MouseButton');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">
+<span class="currsymbol">LEFT</span>
+<script type="text/javascript">explorer.outline.addDecl('LEFT');</script>
+<br>
+<span class="currsymbol">CENTER</span>
+<script type="text/javascript">explorer.outline.addDecl('CENTER');</script>
+<br>
+<span class="currsymbol">RIGHT</span>
+<script type="text/javascript">explorer.outline.addDecl('RIGHT');</script>
+<br>
+<span class="currsymbol">WHEEL_UP</span>
+<script type="text/javascript">explorer.outline.addDecl('WHEEL_UP');</script>
+<br>
+<span class="currsymbol">WHEEL_DOWN</span>
+<script type="text/javascript">explorer.outline.addDecl('WHEEL_DOWN');</script>
+<br>
+<span class="currsymbol">FOUR</span>
+<script type="text/javascript">explorer.outline.addDecl('FOUR');</script>
+<br>
+<span class="currsymbol">FIVE</span>
+<script type="text/javascript">explorer.outline.addDecl('FIVE');</script>
+<br>
+<span class="currsymbol">SIX</span>
+<script type="text/javascript">explorer.outline.addDecl('SIX');</script>
+<br>
+<span class="currsymbol">SEVEN</span>
+<script type="text/javascript">explorer.outline.addDecl('SEVEN');</script>
+<br>
+<span class="currsymbol">EIGHT</span>
+<script type="text/javascript">explorer.outline.addDecl('EIGHT');</script>
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Allowed values.
+<br><br>
+
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static int 
+<span class="currsymbol">KEY_DELAY</span>
+<script type="text/javascript">explorer.outline.addDecl('KEY_DELAY');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>milliseconds before repeating a call to keyPress after holding a key down.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static int 
+<span class="currsymbol">KEY_REPEAT</span>
+<script type="text/javascript">explorer.outline.addDecl('KEY_REPEAT');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>milliseconds before subsequent calls to keyPress after KEY_DELAY occurs.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">struct 
+<span class="currsymbol">Mouse</span>
+<script type="text/javascript">explorer.outline.addDecl('Mouse');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Position of the mouse and state of each button.
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Vec2i 
+<span class="currsymbol">position</span>
+<script type="text/javascript">explorer.outline.addDecl('position');</script>
+;
+<br>bool 
+<span class="currsymbol">left</span>
+<script type="text/javascript">explorer.outline.addDecl('left');</script>
+;
+<br>bool 
+<span class="currsymbol">center</span>
+<script type="text/javascript">explorer.outline.addDecl('center');</script>
+;
+<br>bool 
+<span class="currsymbol">right</span>
+<script type="text/javascript">explorer.outline.addDecl('right');</script>
+;
+<br>bool 
+<span class="currsymbol">four</span>
+<script type="text/javascript">explorer.outline.addDecl('four');</script>
+;
+<br>bool 
+<span class="currsymbol">five</span>
+<script type="text/javascript">explorer.outline.addDecl('five');</script>
+;
+<br>bool 
+<span class="currsymbol">six</span>
+<script type="text/javascript">explorer.outline.addDecl('six');</script>
+;
+<br>bool 
+<span class="currsymbol">seven</span>
+<script type="text/javascript">explorer.outline.addDecl('seven');</script>
+;
+<br>bool 
+<span class="currsymbol">eight</span>
+<script type="text/javascript">explorer.outline.addDecl('eight');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static Mouse 
+<span class="currsymbol">mouse</span>
+<script type="text/javascript">explorer.outline.addDecl('mouse');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Stores the current state of the 
+<span class="currsymbol">mouse</span>
+<script type="text/javascript">explorer.outline.addDecl('mouse');</script>
+.
+<br><br>
+
+</dd>
+
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">static void 
 <span class="currsymbol">processAndSendTo</span>
@@ -144,7 +394,7 @@ Ditch SDL!  SDL requires input processing to be in the same thread as the render
 		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jun 26 15:54:22 2010
+		on Wed Aug 11 11:14:29 2010
 
 	</div>
 	
@@ -205,6 +455,8 @@ Ditch SDL!  SDL requires input processing to be in the same thread as the render
 
 	explorer.packageExplorer.addModule("yage.gui.all");
 
+	explorer.packageExplorer.addModule("yage.gui.controls");
+
 	explorer.packageExplorer.addModule("yage.gui.exceptions");
 
 	explorer.packageExplorer.addModule("yage.gui.style");
@@ -213,11 +465,13 @@ Ditch SDL!  SDL requires input processing to be in the same thread as the render
 
 	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
-	explorer.packageExplorer.addModule("yage.gui.textlayout");
+	explorer.packageExplorer.addModule("yage.gui.textblock");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
+
+	explorer.packageExplorer.addModule("yage.resource.dds");
 
 	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
@@ -276,6 +530,8 @@ Ditch SDL!  SDL requires input processing to be in the same thread as the render
 	explorer.packageExplorer.addModule("yage.system.graphics.render");
 
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.libraries");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 

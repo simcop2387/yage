@@ -1,7 +1,7 @@
 /**
  * Copyright:  (c) 2005-2009 Eric Poggel
- * Authors:    Eric Poggel
- * License:    <a href="lgpl3.txt">LGPL v3</a>
+ * Authors:	Eric Poggel
+ * License:	<a href="lgpl3.txt">LGPL v3</a>
  */
 
 module yage.core.types;
@@ -9,9 +9,9 @@ module yage.core.types;
 import tango.stdc.string : memcpy;
 import tango.math.Math;
 import yage.core.math.math;
-import yage.core.parse;
-import yage.core.math.vector;
 import yage.core.math.vector:Vec4f;
+import yage.core.parse;
+import yage.core.format;
 
 /**
  * Allow for easy bit-by-bit conversion from one two-byte type to another.
@@ -104,4 +104,86 @@ union qword
 		assert(qword("yageyage").c == "yageyage");
 		assert(qword(3.0).l == qword(qword(1.0).d + qword(2.0).d).l);
 	}
+}
+
+
+/**
+ * Nullable from Phobos 2, ported to D1 by Eric Poggel
+ * 
+ * Copyright: Copyright the respective authors, 2008-
+ * License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * Authors:   $(WEB erdani.org, Andrei Alexandrescu),
+ *			$(WEB bartoszmilewski.wordpress.com, Bartosz Milewski),
+ *			Don Clugston,
+ *			Shin Fujishiro
+ * 
+ * Defines a value paired with a distinctive "null" state that denotes
+ * the absence of a valud value. If default constructed, a $(D
+ * Nullable!T) object starts in the null state. Assigning it renders it
+ * non-null. Calling $(D nullify) can nullify it again.
+ * 
+ * Example:
+ * --------
+ * Nullable!int a;
+ * assert(a.isNull);
+ * a = 5;
+ * assert(!a.isNull);
+ * assert(a == 5);
+ * --------
+ * 
+ * Practically, Nullable!(T) stores a T and a bool. */
+struct Nullable(T)
+{
+	static Nullable!(T) NULL;
+	
+	private T _value;
+	private bool _isNull = true;
+
+	/// Constructor initializing with a value or null.
+	static Nullable!(T) OpCall(T value)
+	{	Nullable!(T) result;
+		result._value = value;
+		result._isNull = false;
+		return result;
+	}
+	static Nullable!(T) OpCall(Object value=null) /// ditto
+	{	Nullable!(T) result;
+		result._isNull = true;
+		return result;
+	}
+
+	/**
+	 * Assigns value or null to the internally-held state.*/
+	void opAssign(T value)
+	{	_value = value;
+		_isNull = false;
+	}
+	void opAssign(Object value) /// ditto
+	{	_isNull = value is null;
+	}
+
+	/**
+	 * Gets the value. Throws an exception if $(D this) is in the null
+	 * state. This function is also called for the implicit conversion to $(D T). */
+	T* get()
+	{	if (_isNull)
+			return null;
+		return &_value;
+	}
+	
+	///
+	char[] toString()
+	{	if (_isNull)
+			return "null";
+		return format("%s", _value);
+	}
+}
+
+unittest
+{
+	Nullable!(int) a;
+	assert(a.get() is null);
+	a = 5;
+	assert(a.get() !is null);
+	assert(*a.get() == 5);
 }

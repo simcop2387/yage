@@ -70,13 +70,6 @@ struct ResourceManager
 	
 	private static Font defaultFont;
 	
-	/**
-	 * Load embedded resources.  This is called from System.init() and shouldn't be called manually.
-	 */
-	static void init()
-	{		
-	}
-	
 	/// Get the array of path strings
 	static char[][] getPaths()
 	{	return paths;

@@ -22,7 +22,7 @@
 
  William Baxter wbaxter@gmail.com
  
- Modified by Eric Poggel for use in Yage.
+ Modified by Eric Poggel for use in Yage (the license above is the zlib/libpng license).
  */
 module yage.resource.dds;
 

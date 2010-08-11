@@ -723,13 +723,14 @@ struct Render
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();	
 			
-		//This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
+		// This may need to be changed for when people wish to render surfaces individually so the already rendered are not cleared.
 		if (!cleared)
 		{	glClear(GL_COLOR_BUFFER_BIT);
 			cleared = true;
 		}
 		
-		surface.update();
+		Vec2f size = Vec2f(target.getWidth(), target.getHeight());
+		surface.update(&size);
 		
 		
 		// We increment the stencil buffer with each stencil write.
@@ -739,9 +740,12 @@ struct Render
 		// Function to draw surface and recurse through children.
 		void draw(Surface surface) {
 			
+			if (!surface.style.visible || !surface.style.display)
+				return;
+			
 			// Bind surface properties	
 			glPushMatrix();
-			glTranslatef(surface.left(), surface.top(), 0);
+			glTranslatef(surface.offsetX(), surface.offsetY(), 0);
 			glMultMatrixf(surface.style.transform.ptr);
 			surface.style.backfaceVisibility ? glDisable(GL_CULL_FACE) : glEnable(GL_CULL_FACE);
 			
@@ -765,15 +769,16 @@ struct Render
 					glStencilOp(GL_KEEP, GL_KEEP, on ? GL_INCR : GL_DECR);
 					
 					// Allow overflowing in only one direction by scaling the stencil in that direction
+					Vec2f offset = surface.localToGlobal(Vec2f(surface.top(), surface.left()));
 					if (surface.style.overflowX != Style.Overflow.HIDDEN)
 					{	glPushMatrix();
-						glTranslatef(-surface.offsetAbsolute.x, 0, 0);
+						glTranslatef(-offset.x, 0, 0); // scale the clip region to the width of the window.
 						glScalef(Window.getInstance().getWidth() / surface.outerWidth(), 1, 1);
 						
 					}
 					else if (surface.style.overflowY != Style.Overflow.HIDDEN)
 					{	glPushMatrix();
-						glTranslatef(0, -surface.offsetAbsolute.y, 0);
+						glTranslatef(0, -offset.y, 0); // scale the clip region to the height of the window.
 						glScalef(1, Window.getInstance().getHeight() / surface.outerHeight(), 1);						
 					}										
 					

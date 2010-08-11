@@ -129,8 +129,7 @@ int main()
 	scene.play(); // update 60 times per second
 	
 	// Main surface that receives input.
-	Surface view = new Surface();
-	view.style.set("width: 100%; height: 100%");
+	Surface view = new Surface("width: 100%; height: 100%");
 	
 	// Events for main surface.
 	view.onKeyDown = (Surface self, int key, int modifier){
@@ -166,35 +165,35 @@ int main()
 		return false;
 	};
 	
-	view.onMouseDown = (Surface self, Input.MouseButton button, Vec2i coordinates){
+	view.onMouseDown = (Surface self, Input.MouseButton button, Vec2f coordinates){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
 		self.grabMouse(scene.ship.acceptInput);
 		return false;
 	};
-	view.onMouseMove = (Surface self, Vec2i rel){
+	view.onMouseMove = (Surface self, Vec2f amount){
 		if(scene.ship.acceptInput)
-			scene.ship.input.mouseDelta += rel;
+			scene.ship.input.mouseDelta += amount.vec2i;
 		return false;
 	};
 		
 	// Make a draggable window to show some useful info.
-	auto info = view.addChild(new Surface());
+	auto info = new Surface(view);
 	info.style.set("top: 5px; right: 12px; width: 115px; height: 100px; color: white; " ~
 		"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 12px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
 	bool dragging;
-	info.onMouseDown = delegate bool(Surface self, Input.MouseButton button, Vec2i coordinates) {
+	info.onMouseDown = delegate bool(Surface self, Input.MouseButton button, Vec2f coordinates) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = true;
 		return false; // don't propagate upward
 	};
-	info.onMouseMove = delegate bool(Surface self, Vec2i amount) {
+	info.onMouseMove = delegate bool(Surface self, Vec2f amount) {
 		if (dragging)
-			self.move(amount.toFloat(), true);
+			self.move(amount, true);
 		return false;
 	};
-	info.onMouseUp = delegate bool(Surface self, Input.MouseButton button, Vec2i coordinates) {
+	info.onMouseUp = delegate bool(Surface self, Input.MouseButton button, Vec2f coordinates) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = false;
 		return false;

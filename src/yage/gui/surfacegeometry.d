@@ -229,57 +229,46 @@ package class SurfaceGeometry : Geometry
 		setAttribute(Geometry.TEXCOORDS0, texcoords);
 	}
 
-	// TODO: Convert this to accept materials as well as textures, 
+	// TODO: Convert this to accept materials as well as textures,
 	// or maybe just allow instantiation of a Material from a Texture or TextureInstance
+	// TODO: This allocates for every surface on every frame!!!
 	void setMaterials(Texture backgroundImage, Texture centerImage, 
 	                  Texture[] borderImage, Texture[] borderCornerImage, Texture text, float opacity)
 	{	
-		MaterialPass createPass(Texture texture, bool clamp=false)
-		{	auto result = new MaterialPass();
-			result.textures  ~= TextureInstance(texture, clamp, TextureInstance.Filter.BILINEAR);
-			result.diffuse = Color(1f, 1f, 1f, opacity);
-			result.blend = MaterialPass.Blend.AVERAGE;
-			result.lighting =
-			result.depthRead =
-			result.depthWrite = false;
-			//result.emissive = Color(0xffffffff); // even with this, we still have to turn off lighting to render, but why?
-			return result;
+		// Set or clear Texture 0 on a Mesh's Material's Technique's Pass.
+		void setMeshTexture(Mesh mesh, Texture texture, bool clamp=false)
+		{	if (texture)
+			{	if (!mesh.getMaterial())
+					mesh.setMaterial(new Material());
+				MaterialPass pass = mesh.getMaterial().getPass();
+				if (!pass)
+				{	mesh.getMaterial().setPass(pass = new MaterialPass());
+					pass.diffuse = Color(1f, 1f, 1f, opacity);
+					pass.blend = MaterialPass.Blend.AVERAGE;
+					pass.lighting =
+					pass.depthRead =
+					pass.depthWrite = false;
+				}			
+				pass.setDiffuseTexture(TextureInstance(texture, clamp, TextureInstance.Filter.BILINEAR));
+			}
+			else
+				mesh.setMaterial(cast(Material)null);
 		}
 		
 		// Background Image
-		if (backgroundImage)
-		{	this.backgroundImage.setMaterial(new Material());
-			this.backgroundImage.getMaterial().setPass(createPass(backgroundImage));
-		} else
-			this.backgroundImage.setMaterial(cast(Material)null);
+		setMeshTexture(this.backgroundImage, backgroundImage);
 		
 		// Border Images
-		foreach(mesh; this.borderImage)
-		{	if (borderImage.length && borderImage[0])
-			{	mesh.setMaterial(new Material());
-				mesh.getMaterial().setPass(createPass(borderImage[0]));
-			} else
-				mesh.setMaterial(cast(Material)null);
-		}
-		foreach(mesh; this.borderCornerImage)
-		{	if (borderCornerImage.length && borderCornerImage[0])
-			{	mesh.setMaterial(new Material());
-				mesh.getMaterial().setPass(createPass(borderCornerImage[0]));
-			} else
-				mesh.setMaterial(cast(Material)null);
-		}
-
-		if (centerImage)
-		{	this.centerImage.setMaterial(new Material());
-			this.centerImage.getMaterial().setPass(createPass(centerImage));
-		} else
-			this.centerImage.setMaterial(cast(Material)null);
+		for (int i=0; i<borderImage.length && i<4; i++)
+			setMeshTexture(this.borderImage[i], borderImage[i]);
+		for (int i=0; i<borderCornerImage.length && i<4; i++)
+			setMeshTexture(this.borderCornerImage[i], borderCornerImage[i]);
+		setMeshTexture(this.centerImage, centerImage);
 		
+		// Text Image
+		setMeshTexture(this.text, text);
 		if (text)
-		{	this.text.setMaterial(new Material());
-			this.text.getMaterial().setPass(createPass(text, true));
-			this.text.getMaterial().getPass().textures[0].filter = TextureInstance.Filter.NONE;
-			
+		{				
 			// Text bottom vertices depend on text texture size.
 			float height = text.getHeight();
 			
@@ -290,8 +279,6 @@ package class SurfaceGeometry : Geometry
 			Vec2f[] texcoords = cast(Vec2f[])(getAttribute(Geometry.TEXCOORDS0));			
 			texcoords[21].y = texcoords[23].y = height / (height-text.padding.y);	// why is padding.y negative?		
 			setAttribute(Geometry.TEXCOORDS0, texcoords);
-			
-		} else
-			this.text.setMaterial(cast(Material)null);
+		}
 	}
 }

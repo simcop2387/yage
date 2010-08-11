@@ -57,8 +57,8 @@ abstract class Input
 		EIGHT /// ditto
 	}
 	
-	public static int KEY_DELAY = 500; /// milliseconds before repeating a call to keyPress after holding a key down.
-	public static int KEY_REPEAT = 30; /// milliseconds before subsequent calls to keyPress after KEY_DELAY occurs.
+	static int KEY_DELAY = 500; /// milliseconds before repeating a call to keyPress after holding a key down.
+	static int KEY_REPEAT = 30; /// milliseconds before subsequent calls to keyPress after KEY_DELAY occurs.
 	
 	/// Position of the mouse and state of each button.
 	struct Mouse
@@ -95,9 +95,6 @@ abstract class Input
 	}
 	static Mouse mouse; /// Stores the current state of the mouse.
 	
-	//protected static ubyte mouseButtons; /// A bitmask of MouseButton for the current state of the mouse buttons.
-	
-	//protected static Vec2i mouse; // The current pixel location of the mouse cursor; (0, 0) is top left.
 	protected static Surface currentSurface;	// Surface that the mouse is currently over
 
 	protected static SDL_keysym lastKeyDown; // Used for manual key-repeat.
@@ -141,8 +138,7 @@ abstract class Input
 					mouse.fromMouseButton(event.button.button, true); // set					
 					auto over = getMouseSurface(surface);
 					if(over) 
-					{	
-						Vec2i localMouse = currentSurface.parentToLocal(mouse.position.toFloat()).toInt();
+					{	Vec2f localMouse = currentSurface.globalToLocal(mouse.position.vec2f);
 						over.mouseDown(cast(MouseButton)event.button.button, localMouse);
 					}
 	
@@ -151,7 +147,7 @@ abstract class Input
 					mouse.fromMouseButton(event.button.button, false); // clear
 					auto over = getMouseSurface(surface);
 					if(over)
-					{	Vec2i localMouse = currentSurface.globalToLocal(mouse.position.toFloat()).toInt();
+					{	Vec2f localMouse = currentSurface.globalToLocal(mouse.position.vec2f);
 						over.mouseUp(cast(MouseButton)event.button.button, localMouse);
 					}
 	
@@ -163,17 +159,16 @@ abstract class Input
 					// Doing this before getMouseSurface() fixes the mouse leaving the surface while dragging.
 					if(currentSurface)
 					{	if (currentSurface !is Surface.getGrabbedSurface())
-						{	Vec2i localMouse = currentSurface.globalToLocal(mouse.position.toFloat()).toInt();
-							currentSurface.mouseX = localMouse.x;						
-							currentSurface.mouseY = localMouse.y;
-						}
-						currentSurface.mouseMove(Vec2i(event.motion.xrel, event.motion.yrel));
+							currentSurface.mouse = currentSurface.globalToLocal(mouse.position.vec2f);
+						
+						currentSurface.mouseMove(Vec2f(event.motion.xrel, event.motion.yrel));
 					}
 	
 					// If the surface that the mouse is in has changed
 					auto over = getMouseSurface(surface);
 					if(currentSurface !is over)
 					{	
+						// TODO: Sometimes mouseOver and mouseOut need to be called for more than one Surface when they're nested!
 						if(currentSurface) //Tell it that the mouse left
 							currentSurface.mouseOut(over);
 						if(over) // Tell it that the mouse entered
@@ -214,7 +209,7 @@ abstract class Input
 	private static Surface getMouseSurface(Surface surface) {
 		if(Surface.getGrabbedSurface()) 
 			return Surface.getGrabbedSurface();
-		return surface.findSurface(mouse.position);
+		return surface.findSurface(mouse.position.vec2f);
 	}
 	
 	/**

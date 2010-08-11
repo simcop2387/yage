@@ -108,6 +108,19 @@ Eric Poggel
 <script type="text/javascript">explorer.outline.incSymbolLevel();</script>
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">static CSSValue 
+<span class="currsymbol">AUTO</span>
+<script type="text/javascript">explorer.outline.addDecl('AUTO');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Has a value of float.nan.  This means inherit from parent style.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">enum 
 <span class="currsymbol">Unit</span>
 <script type="text/javascript">explorer.outline.addDecl('Unit');</script>
@@ -196,11 +209,11 @@ Eric Poggel
 <dt><span class="decl">float 
 <span class="currsymbol">toPx</span>
 <script type="text/javascript">explorer.outline.addDecl('toPx');</script>
-(float <span class="funcparam">target</span>, bool <span class="funcparam">allow_nan</span> = true);
+(lazy float <span class="funcparam">target</span>, bool <span class="funcparam">allow_nan</span> = true);
 <br>float 
 <span class="currsymbol">toPercent</span>
 <script type="text/javascript">explorer.outline.addDecl('toPercent');</script>
-(float <span class="funcparam">target</span>, bool <span class="funcparam">allow_nan</span> = true);
+(lazy float <span class="funcparam">target</span>, bool <span class="funcparam">allow_nan</span> = true);
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
@@ -293,7 +306,9 @@ Additional CSS3 border-image properties?
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd><br><br>
+<dd>Allowed values.
+<br><br>
+
 </dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
@@ -317,6 +332,9 @@ Additional CSS3 border-image properties?
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">
+<span class="currsymbol">AUTO</span>
+<script type="text/javascript">explorer.outline.addDecl('AUTO');</script>
+<br>
 <span class="currsymbol">NORMAL</span>
 <script type="text/javascript">explorer.outline.addDecl('NORMAL');</script>
 <br>
@@ -351,6 +369,9 @@ Additional CSS3 border-image properties?
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">
+<span class="currsymbol">AUTO</span>
+<script type="text/javascript">explorer.outline.addDecl('AUTO');</script>
+<br>
 <span class="currsymbol">NORMAL</span>
 <script type="text/javascript">explorer.outline.addDecl('NORMAL');</script>
 <br>
@@ -417,6 +438,9 @@ Additional CSS3 border-image properties?
 <dl>
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">
+<span class="currsymbol">AUTO</span>
+<script type="text/javascript">explorer.outline.addDecl('AUTO');</script>
+<br>
 <span class="currsymbol">LEFT</span>
 <script type="text/javascript">explorer.outline.addDecl('LEFT');</script>
 <br>
@@ -750,6 +774,33 @@ Additional CSS3 border-image properties?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Material 
+<span class="currsymbol">cursor</span>
+<script type="text/javascript">explorer.outline.addDecl('cursor');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><b>TODO:</b><br>
+Unimplemented
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">cursorSize</span>
+<script type="text/javascript">explorer.outline.addDecl('cursorSize');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>in pixels, float.nan to default to size of image.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
 <dt><span class="decl">Font 
 <span class="currsymbol">fontFamily</span>
 <script type="text/javascript">explorer.outline.addDecl('fontFamily');</script>
@@ -775,7 +826,7 @@ Additional CSS3 border-image properties?
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
-<dt><span class="decl">Color 
+<dt><span class="decl">Nullable!(Color) 
 <span class="currsymbol">color</span>
 <script type="text/javascript">explorer.outline.addDecl('color');</script>
 ;
@@ -791,14 +842,24 @@ Additional CSS3 border-image properties?
 <span class="currsymbol">lineHeight</span>
 <script type="text/javascript">explorer.outline.addDecl('lineHeight');</script>
 ;
-<br>CSSValue 
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Text properties
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">CSSValue 
 <span class="currsymbol">letterSpacing</span>
 <script type="text/javascript">explorer.outline.addDecl('letterSpacing');</script>
 ;
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Text properties
+<dd><b>TODO:</b><br>
+Unimplemented
 <br><br>
 
 </dd>
@@ -817,6 +878,17 @@ Additional CSS3 border-image properties?
  property, defaults to identity matrix.  See: http://w3.org/TR/css3-3d-transforms	 
 <br><br>
 
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">float 
+<span class="currsymbol">opacity</span>
+<script type="text/javascript">explorer.outline.addDecl('opacity');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
 </dd>
 
 <script type="text/javascript">explorer.outline.writeEnabled = true;</script>
@@ -860,13 +932,22 @@ Additional CSS3 border-image properties?
 </span></dt>
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
-<dd>Set whether the element is 
-<span class="currsymbol">visible</span>
-<script type="text/javascript">explorer.outline.addDecl('visible');</script>
-. visibility is an alias of 
-<span class="currsymbol">visible</span>
-<script type="text/javascript">explorer.outline.addDecl('visible');</script>
- for CSS compatibility.
+<dd>Set whether the element is rendered, If false
+ the Surface will still receive events.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">display</span>
+<script type="text/javascript">explorer.outline.addDecl('display');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Set whether the element exists, If false
+, the Surface will not be rendered or receive events and will be treated like it doesn't exist.
 <br><br>
 
 </dd>
@@ -880,6 +961,19 @@ Additional CSS3 border-image properties?
 <script type="text/javascript">explorer.outline.writeEnabled = false;</script>
 
 <dd>Sets the stack order of the surface relative to its siblings.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">bool 
+<span class="currsymbol">backfaceVisibility</span>
+<script type="text/javascript">explorer.outline.addDecl('backfaceVisibility');</script>
+;
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Draw the back side of surfaces if they're rotated in 3d.
 <br><br>
 
 </dd>
@@ -987,7 +1081,7 @@ Finish this function.
 		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jun 26 15:54:20 2010
+		on Wed Aug 11 11:14:27 2010
 
 	</div>
 	
@@ -1048,6 +1142,8 @@ Finish this function.
 
 	explorer.packageExplorer.addModule("yage.gui.all");
 
+	explorer.packageExplorer.addModule("yage.gui.controls");
+
 	explorer.packageExplorer.addModule("yage.gui.exceptions");
 
 	explorer.packageExplorer.addModule("yage.gui.style");
@@ -1056,11 +1152,13 @@ Finish this function.
 
 	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
-	explorer.packageExplorer.addModule("yage.gui.textlayout");
+	explorer.packageExplorer.addModule("yage.gui.textblock");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
+
+	explorer.packageExplorer.addModule("yage.resource.dds");
 
 	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
@@ -1119,6 +1217,8 @@ Finish this function.
 	explorer.packageExplorer.addModule("yage.system.graphics.render");
 
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.libraries");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 

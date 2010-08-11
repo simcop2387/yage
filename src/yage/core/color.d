@@ -38,7 +38,24 @@ struct Color
 {
 	private const real frac = 1.0f/255;
 	
-	// public static Color GREEN = Color(0xFF008000); // fails due to CTFE union bug.
+	static const Color BLACK = {0, 0, 0, 255};
+	static const Color BLUE = {0, 0, 255, 255};
+	static const Color BROWN = {165, 42, 42, 255};
+	static const Color CYAN = {0, 255, 255, 255};
+	static const Color GOLD = {255, 215, 0, 255};
+	static const Color GRAY = {128, 128, 128, 255};
+	static const Color GREY = {128, 128, 128, 255};	
+	static const Color GREEN = {0, 128, 0, 255};
+	static const Color INDIGO = {75, 0, 130, 255};
+	static const Color MAGENTA = {255, 0, 255, 255};
+	static const Color ORANGE = {255, 165, 0, 255};
+	static const Color PINK = {255, 184, 195, 255};
+	static const Color PURPLE = {128, 0, 128, 255};
+	static const Color RED = {255, 0, 0, 255};
+	static const Color TRANSPARENT = {0, 0, 0, 0};
+	static const Color VIOLET = {238, 130, 238, 255};
+	static const Color WHITE = {255, 255, 255, 255};
+	static const Color YELLOW = {255, 255, 0, 255};
 	
 	union // this union breaks CTFE with this struct
 	{	struct { ubyte r, g, b, a; } /// Access each color component: TODO: test to ensure order is correct.
@@ -118,24 +135,24 @@ struct Color
 		{	char[20] lower;
 			toLower(string, lower);
 			switch (lower[0..string.length])
-			{	case "black":	return Color(0xFF000000);
-				case "blue":	return Color(0xFFFF0000);
-				case "brown":	return Color(0xFF2A2AA5);				
-				case "cyan":	return Color(0xFFFFFF00);
-				case "gold":	return Color(0xFF00D7FF);
+			{	case "black":	return Color.BLACK;
+				case "blue":	return Color.BLUE;
+				case "brown":	return Color.BROWN;				
+				case "cyan":	return Color.CYAN;
+				case "gold":	return Color.GOLD;
 				case "gray":	
-				case "grey":	return Color(0xFF808080);
-				case "green":	return Color(0xFF008000);
-				case "indigo":	return Color(0xFF82004B);
-				case "magenta":	return Color(0xFFFF00FF);
-				case "orange":	return Color(0xFF00A5FF);
-				case "pink":	return Color(0xFFCBC0FF);
-				case "purple":	return Color(0xFF800080);
-				case "red":		return Color(0xFF0000FF);
-				case "transparent":	return Color(0x00000000); // transparent
-				case "violet":	return Color(0xFFEE82EE);
-				case "white":	return Color(0xFFFFFFFF);
-				case "yellow":	return Color(0xFF00FFFF);
+				case "grey":	return Color.GRAY;
+				case "green":	return Color.GREEN;
+				case "indigo":	return Color.INDIGO;
+				case "magenta":	return Color.MAGENTA;
+				case "orange":	return Color.ORANGE;
+				case "pink":	return Color.PINK;
+				case "purple":	return Color.PURPLE;
+				case "red":		return Color.RED;
+				case "transparent":	return Color.TRANSPARENT;
+				case "violet":	return Color.VIOLET;
+				case "white":	return Color.WHITE;
+				case "yellow":	return Color.YELLOW;
 				default: break;
 		}	}
 		

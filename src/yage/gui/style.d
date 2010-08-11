@@ -6,17 +6,16 @@
 
 module yage.gui.style;
 
-import tango.io.Stdout;
 import tango.math.IEEE;
 import tango.text.Util;
 import tango.text.Unicode;
-import tango.text.convert.Format;
 import tango.util.Convert;
 
 import yage.core.color;
 import yage.core.format;
 import yage.core.math.matrix;
 import yage.core.math.vector;
+import yage.core.types;
 import yage.resource.font;
 import yage.resource.manager;
 import yage.resource.material;
@@ -102,14 +101,14 @@ struct CSSValue
 	 * Params:
 	 *     target = If the value is a pixel value, it will be converted to a percentage in terms of this width/height. 
 	 *     allow_nan If false, nan's will be converted to 0.*/
-	float toPx(float target, bool allow_nan=true)
+	float toPx(lazy float target, bool allow_nan=true)
 	{	if (!allow_nan && isNaN(value))
 			return 0;
 		if (unit==Unit.PERCENT)
 			return value*target*0.01f;
 		return value;
 	}
-	float toPercent(float target, bool allow_nan=true) /// ditto
+	float toPercent(lazy float target, bool allow_nan=true) /// ditto
 	{	if (!allow_nan && isNaN(value))
 			return 0;
 		if (unit==Unit.PERCENT)
@@ -269,13 +268,13 @@ struct Style
 	float cursorSize=float.nan; /// in pixels, float.nan to default to size of image.
 	
 	/// Font properties
-	Font fontFamily;
+	Font fontFamily; // TODO: Convert to string so FreeType doesn't have to be loaded in order to make Surfaces.
 	CSSValue fontSize; /// ditto
 	FontStyle fontStyle; /// ditto
 	FontWeight fontWeight; /// ditto
 	
 	/// Text properties
-	Color color = {r:0, g:0, b:0, a:255}; // TODO: How to have a value for AUTO?
+	Nullable!(Color) color = Nullable!(Color)(Color.BLACK); //{r:0, g:0, b:0, a:255}; // TODO: How to have a value for AUTO?
 	TextAlign textAlign = TextAlign.LEFT; /// ditto
 	TextDecoration textDecoration = TextDecoration.NONE; /// ditto
 	CSSValue lineHeight; /// ditto
@@ -295,7 +294,8 @@ struct Style
 		}
 		Overflow[2] overflow; /// Set both overflow properties in one array.
 	}
-	bool visible = true; /// Set whether the element is visible. visibility is an alias of visible for CSS compatibility.
+	bool visible = true; /// Set whether the element is rendered, If false the Surface will still receive events.
+	bool display = true; /// Set whether the element exists, If false, the Surface will not be rendered or receive events and will be treated like it doesn't exist.
 	int zIndex; /// Sets the stack order of the surface relative to its siblings.
 	
 	bool backfaceVisibility = true; /// Draw the back side of surfaces if they're rotated in 3d.
@@ -360,7 +360,7 @@ struct Style
 				case "font-style":			fontStyle = Style.stringToEnum!(FontStyle)(tokens[0]);  break;
 				case "font-weight":			fontWeight = Style.stringToEnum!(FontWeight)(tokens[0]);  break;
 			
-				case "top":				top = tokens[0];  break;
+				case "top":					top = tokens[0];  break;
 				case "right":				right = tokens[0];  break;
 				case "bottom":				bottom = tokens[0];  break;
 				case "left":				left = tokens[0];  break;
@@ -573,12 +573,12 @@ struct Style
  * Helper for toString() */
 private template styleCompare(char[] name="")
 {     const char[] styleCompare =
-    	 `if (`~name~`!=def.`~name~`) result ~= "`~toCSSName(name)~`: "~Format("{}", `~name~`);`;
+    	 `if (`~name~`!=def.`~name~`) result ~= "`~toCSSName(name)~`: "~format("%s", `~name~`);`;
 }
 
 /*
- * Convert from a property name to a css name. "
- * For example, fontSize" to "font-size". */
+ * Convert from a property name to a css name.
+ * For example, "fontSize" to "font-size". */
 private char[] toCSSName(char[] name)
 {
 	char[] result;

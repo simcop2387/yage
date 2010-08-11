@@ -614,7 +614,7 @@ private struct InlineStyle
 		result.fontWeight = style.fontWeight;
 		result.fontStyle = style.fontStyle;
 		
-		result.color = style.color;
+		result.color = *style.color.get();
 		result.textDecoration = style.textDecoration;
 		
 		result.letterSpacing = style.letterSpacing.toPx(0);

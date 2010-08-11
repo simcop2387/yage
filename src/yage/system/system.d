@@ -16,7 +16,6 @@ import derelict.opengl.glext;
 import derelict.util.exception;
 import derelict.sdl.sdl;
 import derelict.sdl.image;
-import derelict.ogg.vorbis;
 import derelict.freetype.ft;
 import yage.core.all;
 import yage.gui.surface;
@@ -28,11 +27,7 @@ import yage.core.math.vector;
 import yage.scene.scene;
 import yage.resource.manager;
 import yage.system.window;
-
-// OpenGL constants to enable specular highlights with textures.
-const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
-const int SINGLE_COLOR_EXT = 0x81F9;
-const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
+import yage.system.libraries;
 
 /**
  * The System class exists to initilize/deinitialize Yage and provide a place for
@@ -61,15 +56,12 @@ abstract class System
 		this.self_thread = Thread.getThis();
 
 		// load shared libraries (should these be loaded lazily?)
+		// Currently DerelictGL and DerelcitGLU are loaded in Window's constructor.
 		DerelictSDL.load();
 		DerelictSDLImage.load();
-		DerelictFT.load();
 		DerelictAL.load();
-		DerelictVorbis.load();
-		DerelictVorbisFile.load();
-				
-		// Load embedded resources.
-		ResourceManager.init();
+		Libraries.loadVorbis();
+		Libraries.loadFreeType();
 		
 		// Create OpenAL device, context, and start sound processing thread.
 		SoundContext.init();
@@ -108,10 +100,9 @@ abstract class System
 		SDL_Quit();
 		DerelictSDL.unload();
 		DerelictSDLImage.unload();
-		DerelictFT.unload();
 		DerelictAL.unload();
-		DerelictVorbis.unload();
-		DerelictVorbisFile.unload();
+		Libraries.loadVorbis(false);
+		Libraries.loadFreeType(false);
 		active = false;
 		Log.info("Yage has been de-initialized successfully.");
 	}
@@ -142,5 +133,44 @@ abstract class System
 	/// Has the abort flag been set?
 	static bool isAborted()
 	{	return aborted;
+	}
+
+	
+	struct Credit
+	{	char[] name;
+		char[] handle;
+		char[] code;
+		char[] license;
+		static Credit opCall(char[] name, char[] handle, char[] code, char[] license)
+		{	Credit result;
+			result.name=name;
+			result.handle=handle;
+			result.code=code;
+			result.license=license;
+			return result;
+		}
+	}
+	
+	static Credit[] getCredits()
+	{
+		return [
+		    Credit("Joe Pusderis", "Deformative", "The first versions of yage.gui.surface, initial version of terrain support, .obj model file format loader, linux fixes", "LGPL v3"),
+		    Credit("Brandon Lyons", "Etherous", "Ideas and interface for a second version of the Terrain engine", "Boost 1.0"),
+		    Credit("Ludovic Angot", "anarky", "Linux fixes", "Boost 1.0"),
+		    Credit("William V. Baxter III", "", "yage.resource.dds", "Zlib/LibPng"),
+		    Credit("Michael Parker and Others", "Aldacron", "Derelict", "BSD"),
+		    Credit("Walter Bright and others", "", "The D Programming Language", ""),
+		    Credit("Tango Developers", "", "The Tango Library", "Academic Free License v3.0 or BSD License"),
+		    Credit("FreeType Developers", "", "FreeType Project", "FreeType License or GPL"),
+		    Credit("Xiph Foundation", "", "Ogg/Vorbis", "BSD"),
+		    Credit("Jean-Loup Gailly and Mark Adler", "", "ZLib", "Zlib/LibPng"),
+		    Credit("LibPng Developers", "", "LibPng", "Zlib/LibPng"),
+		    Credit("Independent JPEG Group", "", "Jpeg", "This software is based in part on the work of the Independent JPEG Group."),
+		    Credit("Sam Lantiga and others", "", "SDL", "LGPL"),
+		    Credit("Sam Lantinga and Mattias Engdegård", "", "SDL_Image", "LGPL"),
+			Credit("Eric Poggel", "JoeCoder", "everything else", "LGPL v3")
+			
+			
+		];
 	}
 }

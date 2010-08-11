@@ -86,6 +86,7 @@ class ScrollBar : Surface
 	int pageScrollSize; /// Amount scrolled when scroll bar is clicked.
 	
 	Resizer bar;
+	Surface upArrow, downArrow;
 	void delegate(ScrollBar self) onScrollChange; 
 	
 	protected int value;

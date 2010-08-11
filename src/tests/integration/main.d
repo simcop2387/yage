@@ -65,7 +65,7 @@ class TestScene : Scene
 {
 	protected FPSCamera camera;
 	
-	this()
+	this(char[] name)
 	{	camera = scene.addChild(new FPSCamera());	
 	}
 	
@@ -97,8 +97,9 @@ class LotsOfObjects : TestScene
 {
 	Model asteroid;
 	
-	this()
-	{
+	this(char[] name)
+	{	super(name);
+		
 		int length = 24;
 		int spacing = 10;
 		
@@ -144,8 +145,9 @@ class Picking : TestScene
 {
 	Model asteroid;
 	
-	this()
-	{
+	this(char[] name)
+	{	super(name);
+	
 		int length = 4;
 		int spacing = 150;
 		
@@ -177,8 +179,10 @@ class LightsAndFog : TestScene
 	MaterialPass pass;
 	LightNode /*light1, */light2, light3, light4;
 	
-	this()
-	{	backgroundColor = "gray";
+	this(char[] name)
+	{	super(name);
+	
+		backgroundColor = "gray";
 		
 		// Create a textured plane
 		Geometry geometry = Geometry.createPlane(4, 4);
@@ -300,8 +304,9 @@ class Transparency : TestScene
 	MaterialPass pass;
 	LightNode light1, light2, light3, light4;
 	
-	this()
-	{	backgroundColor = "white";
+	this(char[] name)
+	{	super(name);
+		backgroundColor = "white";
 		
 		// Create a textured plane
 		Geometry geometry = Geometry.createPlane(1, 1);
@@ -344,7 +349,6 @@ class Transparency : TestScene
 			plane2.setPosition(Vec3f(cos(angle)*number, 0, sin(angle)*number));
 			plane2.setRotation(Vec3f(0, -angle, 0)); // back side
 			plane2.setSize(Vec3f(10));
-			
 		}
 		
 		// Lights
@@ -373,38 +377,120 @@ class Transparency : TestScene
  * UI Provides a surface for the main rendering area and a small window to show info. */
 class UI : Surface
 {
-	Surface info;
-	TestScene scene;
 	
-	this(TestScene scene) 
-	{	this.scene = scene;
-		info = addChild(new Surface());
-		info.style.set("width: 200px; height: 100%; color: white; border-right: 1px solid white; " ~ 
-			"background-color: #000000cf; font-size: 14px");		
+	TestScene currentScene;
+	TestScene[] scenes;
+	
+	class Info : Surface
+	{
+		Surface stats, scene, controls;
+		private bool dragging = false;
+		
+		this(Surface parent=null)
+		{	super(parent);
+			style.set("width: 400px; height: 300px; color: white; " ~
+				"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 13px");
+			
+			// Tabs
+			Surface tabs = new Surface(this);
+			Surface statsTab = new Surface("width: 60px; height: 20px; background-color: green", "Stats", tabs);
+			statsTab.onClick = (Surface self, Input.MouseButton button, Vec2f coordinates)
+			{	if (button==Input.MouseButton.LEFT)
+				{	Log.trace("tab click", coordinates);
+					self.style.display = false;
+					//(cast(Info)self).stats.style.visible = true;
+				}
+				return false;
+			};
+			statsTab.onMouseOver = (Surface self)
+			{	self.style.set("background-color: red");
+				return false;
+			};
+			statsTab.onMouseOut = (Surface self)
+			{	self.style.set("background-color: red");
+				return false;
+			};
+			
+			Surface sceneTab = new Surface("width: 60px; height: 20px; left: 60px", "Scenes", tabs);
+			Surface controlsTab = new Surface("width: 60px; height: 20px; left: 120px", "Controls", tabs);
+			
+			// Content area
+			Surface content = new Surface("width: 50%; height: 70px; top: 30px; left: 30px", this);
+			content.onMouseOver = (Surface self)
+			{	self.style.set("background-color: blue");
+				return false;
+			};		
+			content.onMouseOut = (Surface self)
+			{	self.style.set("background-color: transparent");
+				return false;
+			};
+			
+			/*
+			stats = new Surface("width: 100%; height: 100%", "stats", content);
+			scene = new Surface("width: 100%; height: 100%", content);
+			controls = new Surface("width: 100%; height: 100%", content);
+			stats.style.visible = scene.style.visible = controls.style.visible = false;		
+			*/
+			
+			
+			// Allow dragging
+			onMouseDown = (Surface self, Input.MouseButton button, Vec2f coordinates)
+			{	if (button==Input.MouseButton.LEFT)
+					(cast(Info)self).dragging = true;
+				return false;
+			};
+			onMouseMove = (Surface self, Vec2f amount)
+			{	if ((cast(Info)self).dragging)
+					self.move(amount, true);
+				return false;
+			};
+			onMouseUp = (Surface self, Input.MouseButton button, Vec2f coordinates)
+			{	if (button==Input.MouseButton.LEFT)
+					(cast(Info)self).dragging = false;
+				return false;
+			};
+			onMouseOver = (Surface self)
+			{	self.style.set("border-image: url('gui/skin/panel2.png')");
+				return false;
+			};
+			onMouseOut = (Surface self)
+			{	self.style.set("border-image: url('gui/skin/panel1.png')");
+				return false;
+			};
+			
+			
+		}
+	}
+	Info info;
+	
+	this(TestScene[] scenes) 
+	{	currentScene = scenes[0];
+		style.set("width: 100%; height: 100%");
+		info = new Info(this);
 	}
 	
-	override void mouseDown(byte buttons, Vec2i coordinates, char[] href=null)
-	{	super.mouseDown(buttons, coordinates, href);
+	override void mouseDown(Input.MouseButton button, Vec2f coordinates)
+	{	super.mouseDown(button, coordinates);
 		grabMouse(!getGrabbedMouse());
 	};
 	
-	override void mouseMove(byte buttons, Vec2i rel, char[] href=null) 
-	{	super.mouseMove(buttons, rel, href);		
+	override void mouseMove(Vec2f amount) 
+	{	super.mouseMove(amount);		
 		if (getGrabbedMouse())
-			scene.getCamera().rotation += Vec2f(rel.x, rel.y);
+			currentScene.getCamera().rotation += amount;
 	};
 	
 	override void keyDown(int key, int modifier) 
 	{	super.keyDown(key, modifier);
-		scene.keyState(key, true);
+		currentScene.keyState(key, true);
 		
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
 	};
 	
 	override void keyUp(int key, int modifier) 
-	{	super.keyDown(key, modifier);
-		scene.keyState(key, false);
+	{	super.keyUp(key, modifier);
+		currentScene.keyState(key, false);
 	};
 }
 
@@ -418,12 +504,12 @@ void main()
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
-	auto scene = new Picking(); // set which scene to test
+	auto scene = new Picking("Picking"); // set which scene to test
 	scene.getUpdateThread().setFrequency(60);
 	scene.play(); // start scene thread
 	
 	// User interface
-	UI ui = new UI(scene);
+	UI ui = new UI([scene]);
 	
 	// Rendering loop
 	int fps = 0;
@@ -441,14 +527,14 @@ void main()
 		if (frame.tell()>=1f)
 		{	float framerate = fps/frame.tell();
 			window.setCaption(format("Yage Integration Tests | %s fps\0", framerate));
-			ui.info.text = format(
+			/*ui.info.stats.setHtml(format(
 				`%s <b>fps</span><br/>`
 				`%s <b>objects</b><br/>`
 				`%s <b>polygons</b><br/>`
 				`%s <b>vertices</b><br/>`,
 				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount) ~
-				Profile.getTimesAndClear().substitute("\n", "<br/>");
-			
+				Profile.getTimesAndClear().substitute("\n", "<br/>"));
+			*/
 			frame.seek(0);
 			fps = 0;
 		}

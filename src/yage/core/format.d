@@ -1212,7 +1212,8 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 				dchar getFmtChar()
 				{   // Valid format specifier characters will never be UTF
 					if (i == fmt.length)
-						throw new FormatError("invalid specifier");
+						return fmt[i-1];
+					//throw new FormatError("invalid specifier");
 					return fmt[i++];
 				}
 		

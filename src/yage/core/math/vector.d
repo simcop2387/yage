@@ -290,21 +290,6 @@ struct Vec(int S, T : real, int D=0)
 	}
 	*/
 	
-	/// Allow casting to float where appropriate
-	Vec!(S, float) toFloat()
-	{	Vec!(S, float) result;
-		for (int i=0; i<v.length; i++)
-			result.v[i] = v[i];
-		return result;
-	}
-	
-	Vec!(S, int) toInt()
-	{	Vec!(S, int) result;
-		for (int i=0; i<v.length; i++)
-			result.v[i] = cast(int)v[i];
-		return result;
-	}
-	
 	/// Get the element at i
 	float opIndex(size_t i)
 	{	return v[i];
@@ -394,8 +379,7 @@ struct Vec(int S, T : real, int D=0)
 	 *     S2 = Size (number of components) of new Vec.
 	 *     T2 = type of new Vec. */
 	Vec!(S2, T2) toVec(int S2, T2 : real)()
-	{
-		Vec!(S2, T2) result = Vec!(S2, T2)();
+	{	Vec!(S2, T2) result = Vec!(S2, T2)();
 		for (int i=0; i<min(S, S2); i++)
 			result.v[i] = cast(T2)v[i];
 		return result;

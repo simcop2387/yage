@@ -23,6 +23,7 @@ import yage.core.object2;
 import yage.resource.image;
 import yage.resource.manager;
 import yage.resource.texture;
+import yage.system.libraries;
 import yage.system.log;
 
 /**
@@ -124,9 +125,11 @@ class Font
 		// Initialize Freetype library if not initialized
 		uint error;
 		if (!library)
-		{	error = FT_Init_FreeType(&library); // TODO: Call FT_Done_FreeType at some point.
+		{	Libraries.loadFreeType();
+			
+			error = FT_Init_FreeType(&library); // TODO: Call FT_Done_FreeType at some point.
 			if (error)
-				throw new ResourceException("Freetype2 Failed to load.  Error code %s", error);
+				throw new ResourceException("FreeType2 Failed to load.  Error code %s", error);
 		}
 		
 		// HACK: write a temporary file and then read it.

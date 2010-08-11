@@ -329,6 +329,124 @@ Eric Poggel
 
 
 </dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">struct 
+<span class="currsymbol">Nullable</span>
+<script type="text/javascript">explorer.outline.addDecl('Nullable');</script>
+(T);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>
+<span class="currsymbol">Nullable</span>
+<script type="text/javascript">explorer.outline.addDecl('Nullable');</script>
+ from Phobos 2, ported to D1 by Eric Poggel
+<br><br>
+<b>Copyright:</b><br>
+Copyright the respective authors, 2008-
+<br><br>
+<b>License:</b><br>
+.
+<br><br>
+<b>Authors:</b><br>
+,
+			,
+			Don Clugston,
+			Shin Fujishiro
+<br><br>
+
+ Defines a value paired with a distinctive "null
+" state that denotes
+ the absence of a valud value. If default constructed, a  object starts in the null
+ state. Assigning it renders it
+ non-null
+. Calling  can nullify it again.
+
+<br><br>
+<b>Example:</b><br>
+<pre class="d_code"> <b>Nullable</b>!<span style="color: blue">int</span> a;
+ <span style="color: blue">assert</span>(a.isNull);
+ a = 5;
+ <span style="color: blue">assert</span>(!a.isNull);
+ <span style="color: blue">assert</span>(a == 5);
+</pre>
+
+ Practically, 
+<span class="currsymbol">Nullable</span>
+<script type="text/javascript">explorer.outline.addDecl('Nullable');</script>
+!(T) stores a T and a bool. 
+<br><br>
+
+
+<script type="text/javascript">explorer.outline.incSymbolLevel();</script>
+<dl>
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">Nullable!(T) 
+<span class="currsymbol">OpCall</span>
+<script type="text/javascript">explorer.outline.addDecl('OpCall');</script>
+(T <span class="funcparam">value</span>);
+<br>Nullable!(T) 
+<span class="currsymbol">OpCall</span>
+<script type="text/javascript">explorer.outline.addDecl('OpCall');</script>
+(Object <span class="funcparam">value</span> = null);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Constructor initializing with a <span class="funcparam">value</span> or null
+.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">void 
+<span class="currsymbol">opAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opAssign');</script>
+(T <span class="funcparam">value</span>);
+<br>void 
+<span class="currsymbol">opAssign</span>
+<script type="text/javascript">explorer.outline.addDecl('opAssign');</script>
+(Object <span class="funcparam">value</span>);
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Assigns <span class="funcparam">value</span> or null
+ to the internally-held state.
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">T* 
+<span class="currsymbol">get</span>
+<script type="text/javascript">explorer.outline.addDecl('get');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd>Gets the value. Throws an exception if  is in the null
+
+ state. This function is also called for the implicit conversion to . 
+<br><br>
+
+</dd>
+
+<script type="text/javascript">explorer.outline.writeEnabled = true;</script>
+<dt><span class="decl">char[] 
+<span class="currsymbol">toString</span>
+<script type="text/javascript">explorer.outline.addDecl('toString');</script>
+();
+</span></dt>
+<script type="text/javascript">explorer.outline.writeEnabled = false;</script>
+
+<dd><br><br>
+</dd>
+</dl>
+<script type="text/javascript">explorer.outline.decSymbolLevel();</script>
+
+
+</dd>
 </dl>
 <script type="text/javascript">explorer.outline.decSymbolLevel();</script>
 
@@ -343,7 +461,7 @@ Eric Poggel
 		Yage source files are copywritten by their specified authors and available under the terms of the GNU LGPL.<br>
 		Documentation generated with <a href="http://www.dsource.org/projects/helix/wiki/CandyDoc">
 		<img src="img/candydoc.gif" alt="CandyDoc" style="vertical-align:middle; top:-1px"></a>
-		on Sat Jun 26 15:54:20 2010
+		on Wed Aug 11 11:14:27 2010
 
 	</div>
 	
@@ -404,6 +522,8 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.gui.all");
 
+	explorer.packageExplorer.addModule("yage.gui.controls");
+
 	explorer.packageExplorer.addModule("yage.gui.exceptions");
 
 	explorer.packageExplorer.addModule("yage.gui.style");
@@ -412,11 +532,13 @@ Eric Poggel
 
 	explorer.packageExplorer.addModule("yage.gui.surfacegeometry");
 
-	explorer.packageExplorer.addModule("yage.gui.textlayout");
+	explorer.packageExplorer.addModule("yage.gui.textblock");
 
 	explorer.packageExplorer.addModule("yage.resource.all");
 
 	explorer.packageExplorer.addModule("yage.resource.collada");
+
+	explorer.packageExplorer.addModule("yage.resource.dds");
 
 	explorer.packageExplorer.addModule("yage.resource.embed.embed");
 
@@ -475,6 +597,8 @@ Eric Poggel
 	explorer.packageExplorer.addModule("yage.system.graphics.render");
 
 	explorer.packageExplorer.addModule("yage.system.input");
+
+	explorer.packageExplorer.addModule("yage.system.libraries");
 
 	explorer.packageExplorer.addModule("yage.system.log");
 

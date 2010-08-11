@@ -34,7 +34,6 @@ const int LIGHT_MODEL_COLOR_CONTROL_EXT = 0x81F8;
 const int SINGLE_COLOR_EXT = 0x81F9;
 const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
 
-
 /**
  * This class is for creating and managing the Window that Yage uses for rendering.
  * Due to the same limitation in SDL, Yage only supports one Window at a time.
@@ -96,6 +95,10 @@ class Window : IRenderTarget
 	///
 	Vec2i getViewportSize()
 	{	return viewportSize;
+	}
+	
+	static bool hasInstance()
+	{	return instance !is null;
 	}
 	
 	/**
@@ -313,7 +316,7 @@ class Window : IRenderTarget
 /**
  * This class is the unimplemented successor to Window.
  * It will use native system calls instead of SDL.
- * All windows should share the same OpenGL context, created and destroyed in System.init/deInit
+ * All windows should share the same OpenGL context, created and destroyed in System.init/deInit, or perhaps created lazily?
  */
 class Window2
 {
