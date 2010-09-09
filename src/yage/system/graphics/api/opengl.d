@@ -548,9 +548,10 @@ class OpenGL : GraphicsAPI
 				// Bind textures to "texture0", "texture1", etc. in the shader.
 				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 				for (int i=0; i<maxTextures; i++)
-				{	char* name = "texture0\0";
-					name[7] = i + '0';
-					int location = glGetUniformLocationARB(info.id, name);	
+				{	
+					char[] name = "texture0\0".dup;
+					name[7] = i;
+					int location = glGetUniformLocationARB(info.id, cast(char*)name);
 					if (location != -1)
 						glUniform1iARB(location, i);
 				}

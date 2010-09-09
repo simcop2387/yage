@@ -57,8 +57,14 @@ class Window : IRenderTarget
 	protected Vec2i viewportPosition;
 	protected Vec2i viewportSize;
 	protected char[] title, taskbarName;
-	
+
 	protected static Window instance;	
+
+	version (linux)
+	{
+		// Linux need to remember the fullscreen state when resizing
+		protected bool fullscreen;
+	}
 
 	private this()
 	{	
@@ -128,10 +134,20 @@ class Window : IRenderTarget
 	 *     fullscreen = The window is fullscreen if true; windowed otherwise.
 	 *     samples = The number of samples to use for anti-aliasing (1 for no aa).
 	 */
-	void setResolution(int width, int height, ubyte depth=0, bool fullscreen=false, ubyte samples=1)
+	void setResolution(int width, int height, ubyte depth=0, bool fullscreen_=false, ubyte samples=1)
 	{
 		assert(depth==0 || depth==16 || depth==24 || depth==32); // 0 for current screen depth
 		assert(width>0 && height>0);
+
+		version (linux)
+		{
+			fullscreen = fullscreen_;
+		}
+
+		version (windows)
+		{
+			bool fullscreen = fullscreen_;
+		}
 
 		// Anti-aliasing
 		if (samples > 1)

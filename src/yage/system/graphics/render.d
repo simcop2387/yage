@@ -219,8 +219,10 @@ struct Render
 			foreach (i, light; lights)
 			{	
 				char[] makeName(char[] name, int i)
-				{	name[7] = i + 48; // convert int to single digit ascii.
-					return name;
+				{	
+					char[] result = name.dup;
+					result[7] = i + 48; // convert int to single digit ascii.
+					return result;
 				}
 				
 				// Doing it inline seems to make things slightly faster

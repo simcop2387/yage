@@ -132,16 +132,17 @@ class Font
 				throw new ResourceException("FreeType2 Failed to load.  Error code %s", error);
 		}
 		
-		// HACK: write a temporary file and then read it.
-		scope tempFile = new TempFile(TempFile.Permanent);
-		char[] tempFilePath = tempFile.toString();
-		tempFile.close();
+		// HACK: write a temporary file and then read it. Not possible to use TempFile because
+		//       that returns an absolute path and the constructor expects a relative path.
+		char[] tempFilePath = "TEMPORARY~FONT";
 		File.set(tempFilePath, data);
 		
 		this(tempFilePath);
 		//FilePath(tempFile).remove(); // freetype maintains lock, can't delete.
 		this.resourceName = resourceName;
 		
+		(new FilePath(tempFilePath)).remove();
+
 		/*
 		// Use freetype's API to load the font directly from memory.  This breaks for unknown reasons.
 		this.resourceName = resourceName;

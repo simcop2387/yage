@@ -23,6 +23,9 @@ import yage.gui.style;
 import yage.gui.textblock;
 import yage.gui.surfacegeometry;
 
+// For initializing freetype for unit tests
+import yage.system.libraries;
+
 /** 
  * Surfaces are similar to HTML DOM elements, including having text inside it, 
  * margin, padding, a border, and a background texture, including textures from a camera. 
@@ -82,6 +85,11 @@ class Surface : Tree!(Surface)
 	protected static Style defaultStyle; // Used as a cache by getDefaultStyle()	
 	protected static Surface grabbedSurface; // surface that has captured the mouse
 	protected static Surface focusSurface; // surface that has focus for receiving input
+
+	unittest {
+		// Needed for unit testing because freetype is not loaded beforehand 
+		Libraries.loadFreeType();
+	}
 
 	/**
 	 * Create a new Surface at 0, 0 with 0 width and height. */
@@ -300,7 +308,8 @@ class Surface : Tree!(Surface)
 		return null;		
 	}
 	unittest
-	{	Surface a = new Surface("width: 1000px; height: 1000px");
+	{	
+		Surface a = new Surface("width: 1000px; height: 1000px");
 		Surface b = new Surface("top: 5px; left: 5px; width: 500px; height: 500px", a); // + 5
 		Surface c = new Surface("top: 10px; left: 10px; padding: 20px; width: 500px; height: 500px", b); // + 30
 		Surface d = new Surface("top: 20px; left: 20px; padding: 40px; border-width: 80; width: 500px; height: 500px", c); // + 140
