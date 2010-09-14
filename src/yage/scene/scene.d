@@ -75,7 +75,7 @@ class Scene : Node//, ITemporal
 	
 	
 	/// Construct an empty Scene.
-	this()
+	this(float frequency = 60)
 	{	super();
 		delta = new Timer(true);
 		scene = this;
@@ -84,6 +84,7 @@ class Scene : Node//, ITemporal
 		fogColor = Color("gray");
 		
 		update_thread = new Repeater();
+		update_thread.setFrequency(frequency);
 		update_thread.setFunction(&update);		
 		update_thread.setErrorFunction(&defaultErrorFunction);
 	

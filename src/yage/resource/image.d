@@ -54,7 +54,7 @@ class Image
 	}	
 
 	/**
-	 * Create a new emtpy image.
+	 * Create a new image from existing data
 	 * Params:
 	 *     channels = number of color channels.
 	 *     width = width in pixels
@@ -64,7 +64,6 @@ class Image
 		if (lookaside.length < size)
 			lookaside.length = size;
 		data = lookaside;
-		data[0..$] = 0;
 		
 		//data.length = channels*width*height;
 		this.channels = channels;

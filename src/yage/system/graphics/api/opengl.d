@@ -84,6 +84,8 @@ class OpenGL : GraphicsAPI
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
 	
+	private char* glslTextureName;
+	
 	bool[Shader] failedShaders;
 
 	///
@@ -91,6 +93,8 @@ class OpenGL : GraphicsAPI
 	{	textures = new HashMap!(uint, ResourceInfo);
 		vbos = new HashMap!(uint, ResourceInfo);
 		shaders = new HashMap!(uint, ResourceInfo);
+		
+		glslTextureName = cast(char*)("texture0\0".dup);
 	}
 	
 	///
@@ -549,9 +553,8 @@ class OpenGL : GraphicsAPI
 				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 				for (int i=0; i<maxTextures; i++)
 				{	
-					char[] name = "texture0\0".dup;
-					name[7] = i;
-					int location = glGetUniformLocationARB(info.id, cast(char*)name);
+					glslTextureName[7] = i + '0';
+					int location = glGetUniformLocationARB(info.id, glslTextureName);
 					if (location != -1)
 						glUniform1iARB(location, i);
 				}

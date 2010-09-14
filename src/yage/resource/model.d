@@ -81,7 +81,6 @@ class Model : Geometry
 	
 	Joint[] joints; /// All of the joints that makeup the skeleton.  The first Joint is the root.
 	JointInfluence[][] jointInfluences; /// This is a jagged array of joint influences for each vertex.  It must be the same length as the number of vertices.
-
 	
 	bool drawJoints;
 	

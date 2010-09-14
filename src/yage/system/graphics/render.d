@@ -758,7 +758,7 @@ struct Render
 			void doStencil(bool on)
 			{
 				// Apply Stencil if overflow is used.
-				if (surface.style.overflowX == Style.Overflow.HIDDEN || surface.style.overflowY == Style.Overflow.HIDDEN)
+				if (surface.style.overflow == Style.Overflow.HIDDEN)
 				{	
 					if (on)
 					   stencil++;
@@ -770,25 +770,7 @@ struct Render
 					glStencilFunc(GL_ALWAYS, 0, 0);// Make the stencil test always pass, increment existing value
 					glStencilOp(GL_KEEP, GL_KEEP, on ? GL_INCR : GL_DECR);
 					
-					// Allow overflowing in only one direction by scaling the stencil in that direction
-					Vec2f offset = surface.localToGlobal(Vec2f(surface.top(), surface.left()));
-					if (surface.style.overflowX != Style.Overflow.HIDDEN)
-					{	glPushMatrix();
-						glTranslatef(-offset.x, 0, 0); // scale the clip region to the width of the window.
-						glScalef(Window.getInstance().getWidth() / surface.outerWidth(), 1, 1);
-						
-					}
-					else if (surface.style.overflowY != Style.Overflow.HIDDEN)
-					{	glPushMatrix();
-						glTranslatef(0, -offset.y, 0); // scale the clip region to the height of the window.
-						glScalef(1, Window.getInstance().getHeight() / surface.outerHeight(), 1);						
-					}										
-					
-					geometry(surface.getGeometry().getClipGeometry());
-					
-					if (surface.style.overflowX != Style.Overflow.HIDDEN || surface.style.overflowY != Style.Overflow.HIDDEN)
-						glPopMatrix();
-
+					geometry(surface.getGeometry().getClipGeometry()); // draw stencil
 					// Undo state changes above (this is faster than push/popState)
 					glColorMask(1, 1, 1, 1);
 					glStencilFunc(GL_EQUAL, stencil, uint.max); //Draw only where stencil buffer = current stencil level (broken?)

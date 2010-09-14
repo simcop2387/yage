@@ -104,13 +104,15 @@ class Repeater : Timer, IDisposable
 	override void pause()
 	{	super.pause(); // pause the timer
 
-		// This is a primitive way to implement this, but i'm not sure of a better way
+		// Block until the repeater has paused().
+		// This is a primitive way to implement a sleep wait, but i'm not sure of a better way
 		while (calling)
 			Thread.sleep(.001/frequency); // sleep for 1 1000th of the frequency.
 	}
 
 	/**
 	 * Get / set the call time.
+	 * This is the call count * 1/frequency
 	 * This will always be within tell() and tell()-frequency unless the repeater is behind in calling its function.
 	 * Unless the frequency changes, call time can be divided by frequency to get the call count.
 	 * Returns: time in seconds. */

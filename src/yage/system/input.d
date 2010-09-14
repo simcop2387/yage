@@ -107,7 +107,7 @@ abstract class Input
 	{
 		assert(surface);
 		
-		SDL_EnableUNICODE(1);
+		SDL_EnableUNICODE(1); // TODO: Move this
 		auto focus = getFocusSurface(surface);
 				
 		SDL_Event event;
@@ -119,7 +119,10 @@ abstract class Input
 				case SDL_KEYDOWN:
 					
 					// keysym.sym gets all keys on the keyboard, including separate keys for numpad, keysym.unicde should be reserved for text.
-					focus.keyDown(event.key.keysym.sym, event.key.keysym.mod);
+					if (focus.onKeyDown)
+						focus.onKeyDown(event.key.keysym.sym, event.key.keysym.mod);
+					else
+						focus.keyDown(event.key.keysym.sym, event.key.keysym.mod);
 				
 					// Kepress will be called with the key repeat settings.
 					focus.keyPress(event.key.keysym.sym, event.key.keysym.mod, event.key.keysym.unicode);
@@ -127,8 +130,11 @@ abstract class Input
 					lastKeyDownTime = clock()*1000 / CLOCKS_PER_SEC;
 					  
 					break;
-				case SDL_KEYUP:	    			
-					focus.keyUp(event.key.keysym.sym, event.key.keysym.mod);
+				case SDL_KEYUP:
+					if (focus.onKeyUp)
+						focus.onKeyUp(event.key.keysym.sym, event.key.keysym.mod);
+					else
+						focus.keyUp(event.key.keysym.sym, event.key.keysym.mod);
 					if (event.key.keysym.sym==lastKeyDown.sym) // if the same key we're repeating
 						lastKeyDownTime = uint.max; // stop repeating
 					break;
@@ -139,7 +145,10 @@ abstract class Input
 					auto over = getMouseSurface(surface);
 					if(over) 
 					{	Vec2f localMouse = currentSurface.globalToLocal(mouse.position.vec2f);
-						over.mouseDown(cast(MouseButton)event.button.button, localMouse);
+						if (over.onMouseDown)
+							over.onMouseDown(cast(MouseButton)event.button.button, localMouse);
+						else
+							over.mouseDown(cast(MouseButton)event.button.button, localMouse);
 					}
 	
 					break;
@@ -148,7 +157,10 @@ abstract class Input
 					auto over = getMouseSurface(surface);
 					if(over)
 					{	Vec2f localMouse = currentSurface.globalToLocal(mouse.position.vec2f);
-						over.mouseUp(cast(MouseButton)event.button.button, localMouse);
+						if (over.onMouseUp)
+							over.onMouseUp(cast(MouseButton)event.button.button, localMouse);
+						else
+							over.mouseUp(cast(MouseButton)event.button.button, localMouse);
 					}
 	
 					break;
@@ -161,7 +173,10 @@ abstract class Input
 					{	if (currentSurface !is Surface.getGrabbedSurface())
 							currentSurface.mouse = currentSurface.globalToLocal(mouse.position.vec2f);
 						
-						currentSurface.mouseMove(Vec2f(event.motion.xrel, event.motion.yrel));
+						if (currentSurface.onMouseMove)
+							currentSurface.onMouseMove(Vec2f(event.motion.xrel, event.motion.yrel));
+						else
+							currentSurface.mouseMove(Vec2f(event.motion.xrel, event.motion.yrel));
 					}
 	
 					// If the surface that the mouse is in has changed
@@ -169,11 +184,19 @@ abstract class Input
 					if(currentSurface !is over)
 					{	
 						// TODO: Sometimes mouseOver and mouseOut need to be called for more than one Surface when they're nested!
-						if(currentSurface) //Tell it that the mouse left
-							currentSurface.mouseOut(over);
-						if(over) // Tell it that the mouse entered
-							over.mouseOver();							
-						
+						if(currentSurface && (!over || !over.isAncestor(currentSurface))) //Tell it that the mouse left
+						{	if (currentSurface.onMouseOut)
+								currentSurface.onMouseOut(over);
+							else
+								currentSurface.mouseOut(over);
+						}
+						if (over) // Tell it that the mouse entered
+						{
+							if (over.onMouseOver)
+								over.onMouseOver();
+							else
+								over.mouseOver();							
+						}
 						currentSurface = over; //The new current surface
 					}
 

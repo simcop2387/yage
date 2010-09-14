@@ -21,6 +21,7 @@ import yage.resource.manager;
 import yage.resource.material;
 import yage.resource.texture;
 import yage.gui.exceptions;
+import yage.system.log;
 
 import yage.core.timer;
 
@@ -287,13 +288,8 @@ struct Style
 	// Other
 	float opacity = 1; ///
 	
-	union
-	{	struct
-		{	Overflow overflowX = Overflow.VISIBLE; /// Control whether an element is clipped when placed outside its parent.
-			Overflow overflowY = Overflow.VISIBLE; /// ditto
-		}
-		Overflow[2] overflow; /// Set both overflow properties in one array.
-	}
+	Overflow overflow; /// Set both overflow properties in one array.
+	
 	bool visible = true; /// Set whether the element is rendered, If false the Surface will still receive events.
 	bool display = true; /// Set whether the element exists, If false, the Surface will not be rendered or receive events and will be treated like it doesn't exist.
 	int zIndex; /// Sets the stack order of the surface relative to its siblings.
@@ -321,11 +317,12 @@ struct Style
 		
 		// Parse and apply the style
 		//scope styles = Cache.getRegex(";\\s*").split(style);
-		foreach (exp; patterns(style, ";"))
-		{	exp = trim(exp);
-			char[][] tokens = split(exp, ":");
+		foreach (expr; patterns(style, ";"))
+		{	
+			expr = trim(expr);
+			scope char[][] tokens = split(expr, ":");
 			if (tokens.length<2)
-				continue;
+				throw new CSSException("CSS Property: '%s' has no value", expr);
 			char[] property = trim(tokens[0]);
 			property = toLower(property);
 			tokens = delimit(trim(tokens[1]), " \r\n\t");
@@ -403,11 +400,10 @@ struct Style
 				case "text-decoration":		textDecoration = Style.stringToEnum!(TextDecoration)(tokens[0]); break;
 				
 				case "opacity":				opacity = to!(float)(tokens[0]);  break;
-				case "overflow":			overflowX = overflowY = (toLower(tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
-				case "overflow-x":			overflowX = (toLower(tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
-				case "overflow-y":			overflowY = (toLower(tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
+				case "overflow":			overflow = (toLower(tokens[0])=="hidden" ? Overflow.HIDDEN : Overflow.VISIBLE); break;
 				case "zIndex":				zIndex = to!(int)(tokens[0]); break;
-				case "visibility":			visible = tokens[0] != "hidden"; break;
+				case "display":				display = tokens[0] != "none" && tokens[0] != "false"; break;
+				case "visibility":			visible = tokens[0] != "hidden" && tokens[0] != "false"; break;
 				
 				default:
 					throw new CSSException("Unsupported CSS Property: '%s'", property);

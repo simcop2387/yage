@@ -146,7 +146,7 @@ class Window : IRenderTarget
 
 		version (windows)
 		{
-			bool fullscreen = fullscreen_;
+			fullscreen = fullscreen_;
 		}
 
 		// Anti-aliasing
@@ -162,8 +162,8 @@ class Window : IRenderTarget
 		// If SDL ever decouples window creation from initialization, we can move these to System.init().
 		// Create the screen surface (window)
 		uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
-		if (fullscreen) flags |= SDL_FULLSCREEN;
-		sdlSurface = SDL_SetVideoMode(size.x, size.y, depth, flags);
+		if (fullscreen_) flags |= SDL_FULLSCREEN;
+			sdlSurface = SDL_SetVideoMode(size.x, size.y, depth, flags);
 		if(sdlSurface is null)
 			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
 		SDL_LockSurface(sdlSurface);

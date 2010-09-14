@@ -9,7 +9,7 @@
  * See: <a href="http://dsource.org/projects/cdc/">The CDC Project</a>
  */
 
-const char[] app = "demo1"; // set which program to build against yage.
+const char[] app = "demo2"; // set which program to build against yage.
 //const char[] app = "tests/integration/main.d";
 
 /**
@@ -46,7 +46,8 @@ int main(char[][] args)
 			case "-run": 		run=true; break;
 			case "-silent": 	silent=true; break;
 			case "-verbose": 	verbose=true; break;
-			default: System.trace(arg ~ " is not supported.");
+			case ".\\buildyage.exe": break;
+			default: System.trace(arg ~ " is not a supported argument.");
 	}	}
 	if (debug_)
 		options1 ~= ["-unittest"];
@@ -70,7 +71,7 @@ int main(char[][] args)
 	}
 
 	long startTime = System.time();
-
+	
 	// Build derelict into a lib if not built.
 	char[] debugstr = debug_ ? "-d" : "";
 	char[] derelictLib = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;

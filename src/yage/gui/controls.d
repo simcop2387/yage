@@ -124,8 +124,7 @@ class ScrollArea : Surface
 	ScrollBar verticalScrollBar;
 	
 	this(Surface parent=null)
-	{	style.overflowX = 
-		style.overflowY = Style.Overflow.HIDDEN;
+	{	style.overflow = Style.Overflow.HIDDEN;
 	
 		horizontalScrollBar = new ScrollBar(this);
 		verticalScrollBar = new ScrollBar(this);

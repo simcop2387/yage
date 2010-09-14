@@ -40,7 +40,7 @@ class FPSCamera : MovableNode
 	}
 	
 	override void update(float delta)
-	{					
+	{	
 		// Dampen and accelerate linear velocity
 		float speed = this.speed*delta;
 		setVelocity(getVelocity().scale(max(1-delta*dampen, 0.0f)));
@@ -63,10 +63,12 @@ class FPSCamera : MovableNode
  * Other test Scenes typically inherit from this. */
 class TestScene : Scene
 {
+	char[] name = "Unnamed Scene";
 	protected FPSCamera camera;
 	
 	this(char[] name)
-	{	camera = scene.addChild(new FPSCamera());	
+	{	this.name = name;
+		camera = scene.addChild(new FPSCamera());
 	}
 	
 	FPSCamera getCamera()
@@ -83,7 +85,7 @@ class TestScene : Scene
 		if (key == SDLK_d || key == SDLK_RIGHT)
 			camera.right = state;
 		
-		if (key == SDLK_x)
+		if (key == SDLK_x) // reset shaders
 		{
 			Embed.phong_vert = cast(char[])ResourceManager.getFile("../src/yage/resource/embed/phong.vert");
 			Embed.phong_frag = cast(char[])ResourceManager.getFile("../src/yage/resource/embed/phong.frag");
@@ -97,8 +99,8 @@ class LotsOfObjects : TestScene
 {
 	Model asteroid;
 	
-	this(char[] name)
-	{	super(name);
+	this()
+	{	super("Lots of Objects");
 		
 		int length = 24;
 		int spacing = 10;
@@ -145,8 +147,8 @@ class Picking : TestScene
 {
 	Model asteroid;
 	
-	this(char[] name)
-	{	super(name);
+	this()
+	{	super("Picking");
 	
 		int length = 4;
 		int spacing = 150;
@@ -179,8 +181,8 @@ class LightsAndFog : TestScene
 	MaterialPass pass;
 	LightNode /*light1, */light2, light3, light4;
 	
-	this(char[] name)
-	{	super(name);
+	this()
+	{	super("Lights and Fog");
 	
 		backgroundColor = "gray";
 		
@@ -304,16 +306,18 @@ class Transparency : TestScene
 	MaterialPass pass;
 	LightNode light1, light2, light3, light4;
 	
-	this(char[] name)
-	{	super(name);
+	this()
+	{	super("Transparency");
 		backgroundColor = "white";
+		
+		camera.move(Vec3f(5));
 		
 		// Create a textured plane
 		Geometry geometry = Geometry.createPlane(1, 1);
 		auto texture = TextureInstance(ResourceManager.texture("misc/reference2.png"));
 		
 		pass = geometry.getMeshes()[0].getMaterial().getPass();			
-		pass.emissive = Color(0x222222);
+		pass.emissive = 0x222222;
 		pass.diffuse = "white";
 		pass.emissive = "gray";
 		pass.blend = MaterialPass.Blend.AVERAGE;
@@ -323,7 +327,7 @@ class Transparency : TestScene
 		auto texture2 = TextureInstance(ResourceManager.texture("fx/smoke.png"));
 		
 		MaterialPass pass2 = geometry2.getMeshes()[0].getMaterial().getPass();			
-		pass2.emissive = Color(0x222222);
+		pass2.emissive = 0x222222;
 		pass2.diffuse = "white";
 		pass2.emissive = "gray";
 		pass2.blend = MaterialPass.Blend.AVERAGE;
@@ -335,7 +339,7 @@ class Transparency : TestScene
 		auto rotator = scene.addChild(new MovableNode());
 		rotator.setAngularVelocity(Vec3f(0, .1, 0));
 		
-		int number = 500;
+		int number = 50;
 		for (int i=0; i<number; i++)
 		{
 			float angle = i/cast(float)number * PI*2;
@@ -377,164 +381,175 @@ class Transparency : TestScene
  * UI Provides a surface for the main rendering area and a small window to show info. */
 class UI : Surface
 {
-	
-	TestScene currentScene;
 	TestScene[] scenes;
 	
-	class Info : Surface
+	/**
+	 * A tab on the Panel */
+	class Tab : Surface
+	{	
+		this(char[] name, Surface parent, Panel info, Surface show)
+		{	super("width: 58px; height: 20px; background-color: black", name, parent);
+			onMouseOver = curry((Tab self)
+			{	self.style.set("background-color: gray");
+				self.mouseOver();
+			}, this);
+			onMouseOut = curry((Surface next, Tab self)
+			{	self.style.set("background-color: black");
+				self.mouseOut(next);
+			}, this);
+				
+			onClick = curry((Input.MouseButton button, Vec2f coordinates, Panel info, Surface show)
+			{	info.stats.style.display = info.stats is show;
+				info.scene.style.display = info.scene is show;
+				info.controls.style.display = info.controls is show;
+			}, info, show);
+		}
+	}
+	
+	/**
+	 * A dialog for showing
+	 */
+	class Panel : Surface
 	{
 		Surface stats, scene, controls;
 		private bool dragging = false;
 		
-		this(Surface parent=null)
-		{	super(parent);
+		this(TestScene[] scenes, Surface parent=null)
+		{	
+			super(parent);
 			style.set("width: 400px; height: 300px; color: white; " ~
 				"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 13px");
 			
+			// Content
+			Surface content = new Surface("width: 100%; height: 100%; top: 25px", this); // container for content pages
+			
+			char[] contentStyle = "width: 100%; height: 100%; display: none";
+			stats = new Surface(contentStyle, "Stats", content);
+			scene = new Surface(contentStyle, "Scene", content);
+			controls = new Surface(contentStyle, "", content);
+			stats.style.display = true;
+			
 			// Tabs
 			Surface tabs = new Surface(this);
-			Surface statsTab = new Surface("width: 60px; height: 20px; background-color: green", "Stats", tabs);
-			statsTab.onClick = (Surface self, Input.MouseButton button, Vec2f coordinates)
+			Surface statsTab = new Tab("Stats", tabs, this, stats);
+			Surface sceneTab = new Tab("Scenes", tabs, this, scene);
+			sceneTab.style.left = "60px";
+			Surface controlsTab = new Tab("Controls", tabs, this, controls);
+			controlsTab.style.left = "120px";
+						
+			// Events
+			onMouseDown = curry((Input.MouseButton button, Vec2f coordinates, Panel self)
 			{	if (button==Input.MouseButton.LEFT)
-				{	Log.trace("tab click", coordinates);
-					self.style.display = false;
-					//(cast(Info)self).stats.style.visible = true;
-				}
-				return false;
-			};
-			statsTab.onMouseOver = (Surface self)
-			{	self.style.set("background-color: red");
-				return false;
-			};
-			statsTab.onMouseOut = (Surface self)
-			{	self.style.set("background-color: red");
-				return false;
-			};
-			
-			Surface sceneTab = new Surface("width: 60px; height: 20px; left: 60px", "Scenes", tabs);
-			Surface controlsTab = new Surface("width: 60px; height: 20px; left: 120px", "Controls", tabs);
-			
-			// Content area
-			Surface content = new Surface("width: 50%; height: 70px; top: 30px; left: 30px", this);
-			content.onMouseOver = (Surface self)
-			{	self.style.set("background-color: blue");
-				return false;
-			};		
-			content.onMouseOut = (Surface self)
-			{	self.style.set("background-color: transparent");
-				return false;
-			};
-			
-			/*
-			stats = new Surface("width: 100%; height: 100%", "stats", content);
-			scene = new Surface("width: 100%; height: 100%", content);
-			controls = new Surface("width: 100%; height: 100%", content);
-			stats.style.visible = scene.style.visible = controls.style.visible = false;		
-			*/
-			
-			
-			// Allow dragging
-			onMouseDown = (Surface self, Input.MouseButton button, Vec2f coordinates)
-			{	if (button==Input.MouseButton.LEFT)
-					(cast(Info)self).dragging = true;
-				return false;
-			};
-			onMouseMove = (Surface self, Vec2f amount)
-			{	if ((cast(Info)self).dragging)
+					self.dragging = true;
+			}, this);
+			onMouseMove = curry((Vec2f amount, Panel self) // allow dragging
+			{	if (self.dragging)
 					self.move(amount, true);
-				return false;
-			};
-			onMouseUp = (Surface self, Input.MouseButton button, Vec2f coordinates)
+			}, this);
+			onMouseUp =  curry((Input.MouseButton button, Vec2f coordinates, Panel self)
 			{	if (button==Input.MouseButton.LEFT)
-					(cast(Info)self).dragging = false;
-				return false;
-			};
-			onMouseOver = (Surface self)
-			{	self.style.set("border-image: url('gui/skin/panel2.png')");
-				return false;
-			};
-			onMouseOut = (Surface self)
-			{	self.style.set("border-image: url('gui/skin/panel1.png')");
-				return false;
-			};
+					self.dragging = false;
+			}, this);
 			
+			// Populate the list of scenes on the scenes tab.
+			int y = 0;
+			foreach (scene; scenes)
+			{	auto button = new Surface("width: 100px; height: 18px; background-color: gray", scene.name, this.scene);
+				button.style.top = y;
+				button.onClick = curry((Input.MouseButton button, Vec2f coordinates, Panel panel, TestScene scene) {
+					App.setScene(scene);
+				}, this, scene);
+				y+=20;
+			}
 			
+			// Controls
+			Surface textAreaLabel = new Surface("", "TextArea:", controls); // TODO: textarea's overflow: hidden hides the tabs.  why?
+			Surface textarea = new Surface("width: 100px; height: 96px; top: 15px; border: 1px solid white; padding: 3px; background-color: #00000088; overflow: hidden", "Click here to edit", controls);
+			textarea.editable = true;
 		}
 	}
-	Info info;
+	Panel panel;
 	
 	this(TestScene[] scenes) 
-	{	currentScene = scenes[0];
-		style.set("width: 100%; height: 100%");
-		info = new Info(this);
-	}
-	
-	override void mouseDown(Input.MouseButton button, Vec2f coordinates)
-	{	super.mouseDown(button, coordinates);
-		grabMouse(!getGrabbedMouse());
-	};
-	
-	override void mouseMove(Vec2f amount) 
-	{	super.mouseMove(amount);		
-		if (getGrabbedMouse())
-			currentScene.getCamera().rotation += amount;
-	};
-	
-	override void keyDown(int key, int modifier) 
-	{	super.keyDown(key, modifier);
-		currentScene.keyState(key, true);
+	{	
+		style.set("width: 100%; height: 100%"); // no longer necessary?
+		panel = new Panel(scenes, this);
 		
-		if (key == SDLK_ESCAPE)
-			System.abort("Yage aborted by esc key press.");
-	};
-	
-	override void keyUp(int key, int modifier) 
-	{	super.keyUp(key, modifier);
-		currentScene.keyState(key, false);
-	};
+		// Mouse Events
+		onMouseUp = curry((Input.MouseButton button, Vec2f coordinates, Surface self) // grab on click
+		{	self.grabMouse(!self.getGrabbedMouse());
+		}, this);
+		onMouseMove = curry((Vec2f amount, UI self) { // rotate camera on mouse move when grabbed
+			if (self.getGrabbedMouse())
+				App.scene.getCamera().rotation += amount;
+		}, this);
+		
+		// Keyboard events
+		onKeyDown = (int key, int modifier) 
+		{	App.scene.keyState(key, true);
+			if (key == SDLK_ESCAPE)
+				System.abort("Yage aborted by esc key press.");
+		};
+		onKeyUp = (int key, int modifier) 
+		{	App.scene.keyState(key, false);
+		};
+	}
 }
+
+class App
+{	static Window window;
+	static TestScene scene;
+	static UI ui;
+	
+	static void setScene(TestScene scene)
+	{
+		if (this.scene)
+			this.scene.pause();
+		this.scene = scene;
+		scene.play();
+	}	
+}
+
 
 // Entry point
 void main()
-{		
+{	
 	// Initialize and create window
 	System.init(); 
-	auto window = Window.getInstance();
-	window.setResolution(720, 445, 0, false, 1); // golden ratio
+	App.window = Window.getInstance();
+	App.window.setResolution(720, 445, 0, false, 1); // golden ratio
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
-
-	// Create and start a Scene
-	auto scene = new Picking("Picking"); // set which scene to test
-	scene.getUpdateThread().setFrequency(60);
-	scene.play(); // start scene thread
+	
+	TestScene[] scenes = [cast(TestScene)new Transparency(), new Picking(), new LightsAndFog(), new LotsOfObjects];
+	App.setScene(scenes[0]);
 	
 	// User interface
-	UI ui = new UI([scene]);
+	App.ui = new UI(scenes);
 	
 	// Rendering loop
 	int fps = 0;
 	Timer frame = new Timer(true);
-	Timer delta = new Timer(true);
 	while(!System.isAborted())
 	{
-		Input.processAndSendTo(ui);
-		auto stats = Render.scene(scene.getCamera().camera, window);
-		Render.surface(ui, window);
+		Input.processAndSendTo(App.ui);
+		auto stats = Render.scene(App.scene.getCamera().camera, App.window);
+		Render.surface(App.ui, App.window);
 		Render.complete(); // swap buffers
 		
 		// Print framerate
 		fps++;		
 		if (frame.tell()>=1f)
 		{	float framerate = fps/frame.tell();
-			window.setCaption(format("Yage Integration Tests | %s fps\0", framerate));
-			/*ui.info.stats.setHtml(format(
+			App.window.setCaption(format("Yage Integration Tests | %s fps\0", framerate));
+			App.ui.panel.stats.setHtml(format(
 				`%s <b>fps</span><br/>`
 				`%s <b>objects</b><br/>`
 				`%s <b>polygons</b><br/>`
-				`%s <b>vertices</b><br/>`,
+				`%s <b>vertices</b><br/>`
+				`Press w, a, s, d to move.<br/>`
+				`Click the screen for mouse grab.<br/>`,
 				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount) ~
 				Profile.getTimesAndClear().substitute("\n", "<br/>"));
-			*/
 			frame.seek(0);
 			fps = 0;
 		}

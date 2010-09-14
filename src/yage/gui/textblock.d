@@ -117,7 +117,6 @@ struct TextBlock
 			return lineToCursor(line, position);
 		}
 		
-		
 		/**
 		 * Convert an absolute cursor position to a line/position pair.
 		 * Params:
@@ -214,6 +213,8 @@ struct TextBlock
 			}
 		}
 		 html ~= "</span>";
+		 lettersDirty = false;
+		 
 		return html;
 	}
 	
@@ -225,8 +226,7 @@ struct TextBlock
 	 *     unicode = Unicode value of the pressed key.
 	 *     cursor = The Surface's TextCursor. */
 	void input(int key, int mod, dchar unicode, inout TextCursor cursor)
-	{	
-		
+	{			
 		// If the html has changed we need to update the lines before continuing.
 		if (htmlDirty)
 		{	letters.length = 0;			
@@ -235,8 +235,6 @@ struct TextBlock
 			lines = lettersToLines(letters.data, width, lines);
 			htmlDirty = false;
 		}
-		lettersDirty = true;
-		
 		assert(cursor.position <= letters.length);
 		static int xPosition; // save the cursor's x position when moving from one line to the next.
 		
@@ -299,11 +297,14 @@ struct TextBlock
 				if (cursor.position > 0)
 				{	letters.splice(cursor.position-1, 1);
 					cursor.position--;
+					lettersDirty = true;
 				}			
 				break;
 			case SDLK_DELETE:  
 				if (cursor.position < letters.length)
-					letters.splice(cursor.position, 1);
+				{	letters.splice(cursor.position, 1);
+					lettersDirty = true;
+				}
 				break;
 			// New letters
 			default:				
@@ -325,13 +326,15 @@ struct TextBlock
 					l.extra = style;
 					letters.splice(cursor.position, 0, l);
 					cursor.position++;
+					lettersDirty = true;
 				}
 			break;
 			
-			// TODO: tabs, click to position cursor, selection, ctrl+a, z, x, c, v
+			// TODO: tabs, selection, ctrl+a/z/x/c/v
 		}
 		
-		lines = lettersToLines(letters.data, width, lines);
+		if (lettersDirty)
+			lines = lettersToLines(letters.data, width, lines);
 	}
 	
 	/**
@@ -341,8 +344,7 @@ struct TextBlock
 	 * Characters with a bold font-weight are rendered at 1.5x normal width.
 	 * Characters with a italic/oblique font-style are rendered skewed.
 	 * For ideal rendering, instead use a font-family that has a bold or italic style.
-	 * Params:     
-	 *     style = A style with fontSize and lineHeight in terms of pixels
+	 * Params:
 	 *     pow2 = Render an image with dimensions that are a power of 2 (useful for older graphics cards)
 	 *     cursor = Render this text cursor if not null.
 	 * Returns:  An RGBA image of width pixels wide and is shorter or equal to height.  
@@ -363,10 +365,12 @@ struct TextBlock
 			
 			// Render Image	
 			int x, y;
+			imageLookaside[0..$] = 0; // clear
 			if (pow2)
 				result = new Image(4, nextPow2(width), nextPow2(height), imageLookaside);
 			else
 				result = new Image(4, width, height, imageLookaside);
+			Image resultExact = new Image(4, result.getWidth(), height, result.data); // Points to same image data, but is exact height to ensure letters are cropped.
 			imageLookaside = result.getData();
 			foreach (i, line; lines.data)
 			{
@@ -388,7 +392,7 @@ struct TextBlock
 					
 					// Overlay the glyph onto the main image
 					float skew = istyle.fontStyle == Style.FontStyle.ITALIC ? .33f : 0;
-					result.overlayAndColor(letter.image, istyle.color, x+letter.left, baseline-letter.top);
+					resultExact.overlayAndColor(letter.image, istyle.color, x+letter.left, baseline-letter.top);
 					
 					// Render underline, overline, and line-through
 					if (istyle.textDecoration == Style.TextDecoration.UNDERLINE)
@@ -463,24 +467,20 @@ struct TextBlock
 	{
 		InlineStyle istyle = InlineStyle(style);
 		alignment = style.textAlign;
-		
-		// If letters have changed
-		if (lettersDirty) // recreate html from letters.
-			html = getHtml();
-		
+				
 		 // Reparse the arrays of letters and styles from the html
 		bool newLetters = htmlDirty || istyle != this.style;
 		if (newLetters)
-		{	letters.length = 0;			
+		{	letters.length = 0;
 			styles.length = 0;
-			HtmlParser.htmlToLetters(html, istyle, letters, styles);			
+			HtmlParser.htmlToLetters(html, istyle, letters, styles);
+			htmlDirty = false;
 		}
 		
 		this.style = istyle;
-		htmlDirty = false;
 		
 		// If text or dimensions have changed
-		if (newLetters || width != this.width || height != this.height)
+		if (lettersDirty || newLetters || width != this.width || height != this.height)
 		{	this.width = width;
 			this.height = height;			
 			lines = lettersToLines(letters.data, width, lines);

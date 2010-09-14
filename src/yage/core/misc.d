@@ -10,6 +10,7 @@
 module yage.core.misc;
 
 import tango.core.Thread;
+import tango.core.Traits;
 import tango.math.Math;
 import tango.text.Util;
 import yage.core.array;
@@ -44,6 +45,45 @@ char[] cleanPath(char[] path)
 	}
 	path = join(result, sep);
 	return path;
+}
+
+
+/**
+ * Curry arguments to a function (replacing the last parameters) and return a new function.
+ * The curried arguments are heap-allocated.  This is useful for making closures, which is done automatically in D2.
+ * Modified from http://rosettacode.org/wiki/Y_combinator#D
+ * See:  http://en.wikipedia.org/wiki/Currying */
+ReturnTypeOf!(F) delegate(ParameterTupleOf!(F)[0..$-Args.length]) curry(F, Args...)(F func, Args curriedArgs) {
+	alias ParameterTupleOf!(F) AllArgs;
+	alias ReturnTypeOf!(F) Ret;
+ 
+	struct Context {
+		AllArgs[$-Args.length..$] curriedArgs; // curried arguments of input function
+		F func; // input function
+		
+		Ret call(AllArgs[0..$-Args.length] args) {
+			return func(args, curriedArgs);
+		}
+	}
+ 
+	auto context = new Context();
+	context.curriedArgs = curriedArgs;
+	context.func = func;
+	return &context.call;
+}
+unittest
+{	auto f1 = (char[] a, char[] b, char[] c) { return a~b~c; };
+	auto f2 = curry(f1, "3");
+	auto f3 = curry(f2, "2");
+	
+	assert(f2("1", "2")=="123");
+	assert(f3("1")=="123");
+	
+	auto f4 = curry(f1, "2", "3");
+	assert(f4("1")=="123");
+	
+	auto f5 = curry(f3, "1");
+	assert(f5()=="123");
 }
 
 /**

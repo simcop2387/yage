@@ -686,14 +686,14 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 	
 			case Mangle.Tstruct:
 			{	TypeInfo_Struct tis = cast(TypeInfo_Struct)ti;
-				if (tis.xtoString is null)
-					throw new FormatError("Can't convert " ~ tis.toString() ~ " to string: \"string toString()\" not defined");
 				version(DigitalMars){
-					
-					char[] delegate() toString;
-					toString.ptr = argptr;
-					toString.funcptr = cast(char[] function())tis.xtoString; 
-					s = Utf.fromString8 (toString(), s);				
+					if (!(tis.xtoString is null))
+					{	char[] delegate() toString;
+						toString.ptr = argptr;
+						toString.funcptr = cast(char[] function())tis.xtoString; 
+						s = Utf.fromString8 (toString(), s);
+					} else
+						s =  tis.toString(); // use typename as tostring.
 					// s = tis.xtoString(argptr);
 					
 					argptr += (tis.tsize() + 3) & ~3;

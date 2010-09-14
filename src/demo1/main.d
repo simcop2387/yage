@@ -132,7 +132,7 @@ int main()
 	Surface view = new Surface("width: 100%; height: 100%");
 	
 	// Events for main surface.
-	view.onKeyDown = (Surface self, int key, int modifier){
+	view.onKeyDown = (int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
 		
@@ -157,24 +157,20 @@ int main()
 		}
 		
 		scene.ship.keyDown(key);
-		return false;
 	};
 	
-	view.onKeyUp = (Surface self, int key, int modifier){
+	view.onKeyUp = curry((int key, int modifier, DemoScene scene){
 		scene.ship.keyUp(key);
-		return false;
-	};
+	}, scene);
 	
-	view.onMouseDown = (Surface self, Input.MouseButton button, Vec2f coordinates){
+	view.onMouseDown = curry((Input.MouseButton button, Vec2f coordinates, Surface self, DemoScene scene){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
 		self.grabMouse(scene.ship.acceptInput);
-		return false;
-	};
-	view.onMouseMove = (Surface self, Vec2f amount){
+	}, view, scene);
+	view.onMouseMove = curry((Vec2f amount, DemoScene scene) {
 		if(scene.ship.acceptInput)
 			scene.ship.input.mouseDelta += amount.vec2i;
-		return false;
-	};
+	}, scene);
 		
 	// Make a draggable window to show some useful info.
 	auto info = new Surface(view);
@@ -183,29 +179,24 @@ int main()
 
 	//window.style.backgroundImage = scene.camera.getTexture();
 	bool dragging;
-	info.onMouseDown = delegate bool(Surface self, Input.MouseButton button, Vec2f coordinates) {
+	info.onMouseDown = curry((Input.MouseButton button, Vec2f coordinates, Surface self) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = true;
-		return false; // don't propagate upward
-	};
-	info.onMouseMove = delegate bool(Surface self, Vec2f amount) {
+	}, info);
+	info.onMouseMove = curry((Vec2f amount, Surface self) {
 		if (dragging)
 			self.move(amount, true);
-		return false;
-	};
-	info.onMouseUp = delegate bool(Surface self, Input.MouseButton button, Vec2f coordinates) {
+	}, info);
+	info.onMouseUp = curry((Input.MouseButton button, Vec2f coordinates, Surface self) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = false;
-		return false;
-	};
-	info.onMouseOver = delegate bool(Surface self) {
+	}, info);
+	info.onMouseOver = curry((Surface self) {
 		self.style.set("border-image: url('gui/skin/panel2.png')");
-		return false;
-	};
-	info.onMouseOut = delegate bool(Surface self) {
+	}, info);
+	info.onMouseOut = curry((Surface next, Surface self) {
 		self.style.set("border-image: url('gui/skin/panel1.png')");
-		return false;
-	};
+	}, info);
 
 	int fps = 0;
 	Timer frame = new Timer(true);

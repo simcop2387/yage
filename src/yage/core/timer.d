@@ -66,10 +66,17 @@ class Timer
 	 * Stop the timer.  When play() is called again, it will start from the time when it was paused. */
 	void pause()
 	{	synchronized(this)
-		{	_paused = true;
-			hpc.stop();
-			us += hpc.microsec();
-		}
+		{	if (!_paused)
+			{	_paused = true;
+				hpc.stop();
+				us += hpc.microsec();
+		}	}
+	}
+	unittest {
+		Timer a = new Timer();
+		a.pause(); // a bug once made this sequence of calls
+		a.play();  // set the time to a very large number.
+		assert(a.tell() < 0.1);
 	}
 	
 	/// Is the Timer paused?
