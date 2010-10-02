@@ -52,10 +52,11 @@ T clamp(T)(T v, T lower, T upper)
  * Example:
  * nextPow2(9); // returns 16 */
 uint nextPow2(uint input)
-{	if (0 == input)
+{	
+	if (0 == input)
 		return 1;
-	int msb = bsr(input);	// get first bit set, starting with most significant.
-	if ((1 << msb) == input)				// If already equal to a power of two
+	int msb = bsr(input);		// get first bit set, starting with most significant.
+	if ((1 << msb) == input)	// If already equal to a power of two
 		return input;
 	return 2 << msb;
 }

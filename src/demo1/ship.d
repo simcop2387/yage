@@ -119,18 +119,18 @@ class Ship : GameObject
 			puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
 			
-			void fade(Node self)
-			{	SpriteNode node = cast(SpriteNode)self;
-				node.getMaterial().getPass().diffuse.a = cast(ubyte)(node.getLifetime() * 51);
+			void fade(SpriteNode node)
+			{	node.getMaterial().getPass().diffuse.a = cast(ubyte)(node.getLifetime() * 51);
 				float scale = tango.math.Math.sqrt(20.0f)-tango.math.Math.sqrt(node.getLifetime()*4) + .4;
 				node.setSize(scale);
 				node.setVelocity(node.getVelocity().scale(max(1-1/30f, 0.0f)));
 			}
-			puff.onUpdate(&fade);
+			puff.onUpdate = curry(&fade, puff);
 
 			puff = ship.getScene().addChild(puff.clone());
 			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-
+			puff.onUpdate = curry(&fade, puff);
+			
 			if (sound.paused())
 				sound.play();
 		}

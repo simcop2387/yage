@@ -84,7 +84,6 @@ class OpenGL : GraphicsAPI
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
 	
-	private char* glslTextureName;
 	
 	bool[Shader] failedShaders;
 
@@ -93,8 +92,6 @@ class OpenGL : GraphicsAPI
 	{	textures = new HashMap!(uint, ResourceInfo);
 		vbos = new HashMap!(uint, ResourceInfo);
 		shaders = new HashMap!(uint, ResourceInfo);
-		
-		glslTextureName = cast(char*)("texture0\0".dup);
 	}
 	
 	///
@@ -115,7 +112,7 @@ class OpenGL : GraphicsAPI
 	void bindLight(LightNode light, int num)
 	{	assert (num<=Probe.feature(Probe.Feature.MAX_LIGHTS));
 		
-			LightNode currentLight = current.lights[num];
+		LightNode currentLight = current.lights[num];
 	
 		glPushMatrix();
 		glLoadMatrixf(current.camera.inverse_absolute.v.ptr); // required for spotlights.
@@ -455,106 +452,20 @@ class OpenGL : GraphicsAPI
 			ResourceInfo info = ResourceInfo.getOrCreate(shader, shaders);
 			
 			// Compile shader if not already compiled
-			if (!info.id)
-			{	
-				// Mark as failed on exit, unless something sets failed to false.
-				bool failed = true;
-				scope(exit)
-					if (failed)
-						failedShaders[shader] = true;
-					
-				shader.compileLog = "";
-				uint vertexObj, fragmentObj;
-				
-				// Cleanup on exit
-				scope(exit)
-				{	if (vertexObj) // Mark shader objects for deletion 
-						glDeleteObjectARB(vertexObj); // so they'll be deleted when the shader program is deleted.
-					if (fragmentObj)
-						glDeleteObjectARB(fragmentObj);
-				}
-				scope(failure)
-					if (info.id)
-						glDeleteObjectARB(info.id);
-				
-				// Get OpenGL's log for a shader object.
-				char[] getLog(uint id)
-				{	int len;  char *log;
-					glGetObjectParameterivARB(id, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
-					if (len > 0)
-					{	log = (new char[len]).ptr;
-						glGetInfoLogARB(id, len, &len, log);
-					}
-					return log[0..len];
-				}
-				
-				// Compile a shader into object code.
-				uint compile(char[] source, uint type)
-				{
-					// Compile this shader into a binary object					
-					char* sourceZ = source.ptr;
-					uint shaderObj = glCreateShaderObjectARB(type);
-					glShaderSourceARB(shaderObj, 1, &sourceZ, null);
-					glCompileShaderARB(shaderObj);
-					
-					// Get the compile log and check for errors
-					char[] compileLog = getLog(shaderObj);
-					shader.compileLog ~= compileLog;
-					int status;
-					glGetObjectParameterivARB(shaderObj, GL_OBJECT_COMPILE_STATUS_ARB, &status);
-					if (!status)
-						throw new GraphicsException("Could not compile %s shader.\nReason:  %s", 
-							type==GL_VERTEX_SHADER_ARB ? "vertex" : "fragment", compileLog);
-					
-					return shaderObj;
-				}
-				
-				// Compile
-				vertexObj = compile(shader.getVertexSource(true), GL_VERTEX_SHADER_ARB);
-				fragmentObj = compile(shader.getFragmentSource(true), GL_FRAGMENT_SHADER_ARB);
-				assert(vertexObj);
-				assert(fragmentObj);
-				
-				// Link
-				info.id = glCreateProgramObjectARB();
-				glAttachObjectARB(info.id, vertexObj);
-				glAttachObjectARB(info.id, fragmentObj);
-				glLinkProgramARB(info.id); // common failure point
-				
-				// Check for errors
-				char[] linkLog = getLog(info.id);
-				shader.compileLog ~= "\n"~linkLog;
-				int status;
-				glGetObjectParameterivARB(info.id, GL_OBJECT_LINK_STATUS_ARB, &status);
-				if (!status)					
-					throw new GraphicsException("Could not link the shaders.\nReason:  %s", linkLog);
-				
-				// Validate
-				glValidateProgramARB(info.id);
-				char[] validateLog = getLog(info.id);
-				shader.compileLog ~= validateLog;
-				int isValid;				
-				glGetObjectParameterivARB(info.id, GL_VALIDATE_STATUS, &isValid);
-				if (!isValid)
-					throw new GraphicsException("Shader failed validation.\nReason:  %s", validateLog);
-					
-				failed = false;
-				
-				// Temporary?
-				Log.info(shader.compileLog);
-			}
-			
+			if (!info.id)	
+				info.id = compileShader(shader);
 			assert(info.id);
 			
 			if (shader !is current.shader)
 			{	glUseProgramObjectARB(info.id);
 			
 				// Bind textures to "texture0", "texture1", etc. in the shader.
+				static char[] glslTextureName = "texture0\0".dup;
 				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 				for (int i=0; i<maxTextures; i++)
 				{	
 					glslTextureName[7] = i + '0';
-					int location = glGetUniformLocationARB(info.id, glslTextureName);
+					int location = glGetUniformLocationARB(info.id, glslTextureName.ptr);
 					if (location != -1)
 						glUniform1iARB(location, i);
 				}
@@ -1059,5 +970,101 @@ class OpenGL : GraphicsAPI
 		bindPass(null);
 		//bindLights(null);
 		bindTextures(null);
+	}
+	
+	/*
+	 * Compile a Shader and return its new OpenGL handle. 
+	 * On failure, temporary opengl objects are cleaned up and an exception is thrown. */
+	private int compileShader(Shader shader)
+	{
+		int result=0;
+		
+		// Mark as failed on exit, unless something sets failed to false.
+		bool failed = true;
+		scope(exit)
+			if (failed)
+				failedShaders[shader] = true;
+			
+		shader.compileLog = "";
+		uint vertexObj, fragmentObj;
+		
+		// Cleanup on exit
+		scope(exit)
+		{	if (vertexObj) // Mark shader objects for deletion 
+				glDeleteObjectARB(vertexObj); // so they'll be deleted when the shader program is deleted.
+			if (fragmentObj)
+				glDeleteObjectARB(fragmentObj);
+		}
+		scope(failure)
+			if (result)
+				glDeleteObjectARB(result);
+		
+		// Get OpenGL's log for a shader object.
+		char[] getLog(uint id)
+		{	int len;  char *log;
+			glGetObjectParameterivARB(id, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
+			if (len > 0)
+			{	log = (new char[len]).ptr;
+				glGetInfoLogARB(id, len, &len, log);
+			}
+			return log[0..len];
+		}
+		
+		// Compile a shader into object code.
+		uint compile(char[] source, uint type)
+		{
+			// Compile this shader into a binary object					
+			char* sourceZ = source.ptr;
+			uint shaderObj = glCreateShaderObjectARB(type);
+			glShaderSourceARB(shaderObj, 1, &sourceZ, null);
+			glCompileShaderARB(shaderObj);
+			
+			// Get the compile log and check for errors
+			char[] compileLog = getLog(shaderObj);
+			shader.compileLog ~= compileLog;
+			int status;
+			glGetObjectParameterivARB(shaderObj, GL_OBJECT_COMPILE_STATUS_ARB, &status);
+			if (!status)
+				throw new GraphicsException("Could not compile %s shader.\nReason:  %s", 
+					type==GL_VERTEX_SHADER_ARB ? "vertex" : "fragment", compileLog);
+			
+			return shaderObj;
+		}
+		
+		// Compile
+		vertexObj = compile(shader.getVertexSource(true), GL_VERTEX_SHADER_ARB);
+		fragmentObj = compile(shader.getFragmentSource(true), GL_FRAGMENT_SHADER_ARB);
+		assert(vertexObj);
+		assert(fragmentObj);
+		
+		// Link
+		result = glCreateProgramObjectARB();
+		glAttachObjectARB(result, vertexObj);
+		glAttachObjectARB(result, fragmentObj);
+		glLinkProgramARB(result); // common failure point
+		
+		// Check for errors
+		char[] linkLog = getLog(result);
+		shader.compileLog ~= "\n"~linkLog;
+		int status;
+		glGetObjectParameterivARB(result, GL_OBJECT_LINK_STATUS_ARB, &status);
+		if (!status)					
+			throw new GraphicsException("Could not link the shaders.\nReason:  %s", linkLog);
+		
+		// Validate
+		glValidateProgramARB(result);
+		char[] validateLog = getLog(result);
+		shader.compileLog ~= validateLog;
+		int isValid;				
+		glGetObjectParameterivARB(result, GL_VALIDATE_STATUS, &isValid);
+		if (!isValid)
+			throw new GraphicsException("Shader failed validation.\nReason:  %s", validateLog);
+			
+		failed = false;
+		
+		// Temporary?
+		Log.info(shader.compileLog);
+		
+		return result;
 	}
 }

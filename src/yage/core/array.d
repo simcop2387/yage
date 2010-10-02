@@ -153,6 +153,18 @@ unittest // complete coverage
 }
 */
 
+void replaceSmallestIfBigger(T)(T[] array, T item, bool delegate (T a, T b) isABigger)
+{	
+	for (int i=0; i<array.length; i++)
+		if (isABigger(item, array[i]))
+		{	for (int j=i; j<array.length-1; j++) // move all of the items after it over one place
+				array[j+1] = array[j];
+			array[i] = item; // and insert new item
+		}
+}
+
+
+
 /**
  * Is the array sorted?
  * Params:

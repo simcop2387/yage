@@ -6,6 +6,8 @@
 
 module yage.scene.scene;
 
+import tango.core.Thread;
+import tango.core.sync.Mutex;
 import tango.time.Clock;
 import yage.core.all;
 import yage.system.system;
@@ -40,20 +42,50 @@ import yage.scene.visible;
  */
 class Scene : Node//, ITemporal
 {
+	protected Mutex mutex;
+	protected int lockCount;
+	public Thread owner;
 	
+	/**
+	 * Scenes are often used by multiple threads at once.
+	 * When a thread users a scene, it will first call lock() to acquire ownership and then unlock() when finished.
+	 * This is done automatically by Node member functions.  However, if several operations need to be performed,
+	 * an entire block of code can be nested between manual calls to lock() and unlock().  This will also perform
+	 * better than the otherwise fine-grained synchronization.
+	 * 
+	 * For convenience, lock() and unlock() calls may be nested.  Subsequent lock() calls will still maintain the lock, 
+	 * but unlocking will only occur after unlock() has been called an equal number of times. */
+	void lock()
+	{	if (Thread.getThis() !is owner) 
+		{	mutex.lock();
+			owner = Thread.getThis();
+		}
+		lockCount++;
+	}	
+	void unlock() /// ditto
+	{	assert(Thread.getThis() is owner);
+		lockCount--;
+		if (!lockCount)
+		{	mutex.unlock();
+			owner = null;
+		}
+	}
 	
-	public Color ambient;				/// The color of the scene's global ambient light, defaults to black.
-	public Color backgroundColor;		/// Background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
-	public Color fogColor;				/// Color of global scene fog, when fog is enabled.
-	public float fogDensity = 0.1;		/// The thickness (density) of the Scene's global fog, when fog is enabled.
+	// Old:
+	//---------------------------------------------
+	
+	Color ambient;				/// The color of the scene's global ambient light; defaults to black.
+	Color backgroundColor;		/// Background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
+	Color fogColor;				/// Color of global scene fog, when fog is enabled.
+	float fogDensity = 0.1;		/// The thickness (density) of the Scene's global fog, when fog is enabled.
 										/// Depending on the scale of your scene, decent values range between .001 and .1.
-	public bool  fogEnabled = false;	/// Get / set whether global distance fog is enabled for this scene.
-										/// For best results, use no skybox and set the clear color the same as the fog color.
-										/// For improved performance, set the cameras' max view distance to just beyond
-										/// where objects become completely obscured by the fog. */
-	public float speedOfSound = 343f;	/// Speed of sound in units/second
+	bool  fogEnabled = false;	/// Get / set whether global distance fog is enabled for this scene.
+								/// For best results, use no skybox and set the clear color the same as the fog color.
+								/// For improved performance, set the cameras' max view distance to just beyond
+								/// where objects become completely obscured by the fog. */
+	float speedOfSound = 343f;	/// Speed of sound in units/second
 	
-	public Scene skyBox;				/// A Scene can have another heirarchy of nodes that will be rendered as a skybox by any camera. 
+	Scene skyBox;				/// A Scene can have another heirarchy of nodes that will be rendered as a skybox by any camera. 
 	
 	protected CameraNode[CameraNode] cameras;	
 	protected LightNode[LightNode] lights;
@@ -76,7 +108,10 @@ class Scene : Node//, ITemporal
 	
 	/// Construct an empty Scene.
 	this(float frequency = 60)
-	{	super();
+	{	mutex = new Mutex();
+		
+		super();
+	
 		delta = new Timer(true);
 		scene = this;
 		ambient	= Color("#333"); // OpenGL default global ambient light.
@@ -264,10 +299,14 @@ class Scene : Node//, ITemporal
 	 * Params:
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
 	override void update(float delta = delta.tell())
-	{	super.update(delta);
+	{	lock(); // new!
+	
+		super.update(delta);
 		delta_time = delta;
 		this.delta.seek(0);
 		scene.swapTransformWrite();
+		
+		unlock(); // new!
 	}
 
 	/*

@@ -408,10 +408,11 @@ struct Vec3f
 	static const byte components = 3;
 	
 	union
-	{	float v[3] = [0, 0, 0]; // same as x, y, and z
-		struct
-		{	float x, y, z;
-	}	}
+	{	struct
+		{	float x=0, y=0, z=0;
+		}
+		float v[3];
+	}
 
 	/** Test some of the more common and more complex functions. */
 	unittest

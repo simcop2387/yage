@@ -159,55 +159,59 @@ int main()
 		scene.ship.keyDown(key);
 	};
 	
-	view.onKeyUp = curry((int key, int modifier, DemoScene scene){
+	view.onKeyUp = curry(delegate void(int key, int modifier, DemoScene scene){
 		scene.ship.keyUp(key);
 	}, scene);
 	
-	view.onMouseDown = curry((Input.MouseButton button, Vec2f coordinates, Surface self, DemoScene scene){
+	view.onMouseDown = curry(delegate void(Input.MouseButton button, Vec2f coordinates, Surface self, DemoScene scene){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
 		self.grabMouse(scene.ship.acceptInput);
 	}, view, scene);
-	view.onMouseMove = curry((Vec2f amount, DemoScene scene) {
+	view.onMouseMove = curry(delegate void(Vec2f amount, DemoScene scene) {
 		if(scene.ship.acceptInput)
 			scene.ship.input.mouseDelta += amount.vec2i;
 	}, scene);
-		
+	
 	// Make a draggable window to show some useful info.
 	auto info = new Surface(view);
-	info.style.set("top: 5px; right: 12px; width: 115px; height: 100px; color: white; " ~
+	info.style.set("top: 5px; right: 12px; width: 115px; height: 110px; color: white; " ~
 		"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 12px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
 	bool dragging;
-	info.onMouseDown = curry((Input.MouseButton button, Vec2f coordinates, Surface self) {
+	info.onMouseDown = curry(delegate void(Input.MouseButton button, Vec2f coordinates, Surface self) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = true;
 	}, info);
-	info.onMouseMove = curry((Vec2f amount, Surface self) {
+	info.onMouseMove = curry(delegate void(Vec2f amount, Surface self) {
 		if (dragging)
 			self.move(amount, true);
 	}, info);
-	info.onMouseUp = curry((Input.MouseButton button, Vec2f coordinates, Surface self) {
+	info.onMouseUp = curry(delegate void(Input.MouseButton button, Vec2f coordinates, Surface self) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = false;
 	}, info);
-	info.onMouseOver = curry((Surface self) {
+	info.onMouseOver = curry(delegate void(Surface self) {
 		self.style.set("border-image: url('gui/skin/panel2.png')");
 	}, info);
-	info.onMouseOut = curry((Surface next, Surface self) {
+	info.onMouseOut = curry(delegate void(Surface next, Surface self) {
 		self.style.set("border-image: url('gui/skin/panel1.png')");
 	}, info);
-
+	
 	int fps = 0;
 	Timer frame = new Timer(true);
 	Timer delta = new Timer(true);
 	Log.info("Starting rendering loop.");
 	GC.collect();
+	GC.disable();
 	
 	// Rendering loop
+	float dtime=0, ltime=0;
 	while(!System.isAborted())
 	{
-		float dtime = delta.tell();
+		ltime = dtime;
+		dtime = delta.tell();
+		//Log.trace(dtime-ltime);
 		delta.seek(0);
 
 		Input.processAndSendTo(view);

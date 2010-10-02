@@ -6,12 +6,18 @@
 
 module yage.scene.node;
 
+import tango.core.Thread;
 import tango.text.convert.Format;
 import yage.core.all;
 import yage.core.tree;
 import yage.scene.scene;
 import yage.scene.all;
 import yage.system.log;
+
+/// Add this as the first line of a function to synchronize the entire body using the name of a Tango mutex.
+template Sync(char[] T)
+{	const char[] Sync = T~".lock(); scope(exit) " ~ T ~ ".unlock();";	
+}
 
 /**
  * Nodes are used for building scene graphs in Yage.
@@ -41,12 +47,101 @@ import yage.system.log;
  *                                   // to 0, 0, 0, instead of a.
  * --------
  */
-abstract class Node : Tree!(Node), IDisposable, ICloneable
+class Node : Tree!(Node), IDisposable, ICloneable
 {
+	// New
+	protected Vec3f position;
+	protected Vec3f rotation;
+	protected Vec3f scale;
+	
+	protected Vec3f velocity;
+	protected Vec3f angularVelocity;
+	
+	protected Vec3f worldPosition;
+	protected Vec3f worldRotation;
+	protected Vec3f worldScale;
+	
+	/**
+	 * Get / set the xyz position of this Node relative to its parent's position. */
+	Vec3f getPosition()
+	{	mixin(Sync!("scene"));
+		return position;
+	}	
+	void setPosition(Vec3f position) /// ditto
+	{	mixin(Sync!("scene"));
+		this.position = position;
+	}
+	
+	/**
+	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
+	Vec3f getRotation()
+	{	mixin(Sync!("scene"));
+		return rotation;
+	}	
+	void setRotation(Vec3f rotation) /// ditto
+	{	mixin(Sync!("scene"));
+		this.rotation = rotation;
+	}
+	
+	/**
+	 * Get / set the xyz scale of this Node relative to its parent's scale. */
+	Vec3f getScale()
+	{	mixin(Sync!("scene"));
+		return scale;
+	}	
+	void setScale(Vec3f scale) /// ditto
+	{	mixin(Sync!("scene"));
+		this.scale = scale;
+	}
+	
+	/**
+	 * Get the position, axis-angle rotation, or scale in world coordinates, 
+	 * instead of relative to the parent Node. */
+	Vec3f getWorldPosition()
+	{	mixin(Sync!("scene"));
+		return getWorldMatrix().getPosition(); // TODO: optimize
+	}
+	Vec3f getWorldRotation() /// ditto
+	{	mixin(Sync!("scene"));
+		return getWorldMatrix().toAxis();
+	}
+	Vec3f getWorldScale() /// ditto
+	{	mixin(Sync!("scene"));
+		return getWorldMatrix().getScale();
+	}
+	
+	// Temporary until I have something more optimized
+	Matrix getWorldMatrix()
+	{	mixin(Sync!("scene"));
+		Matrix parentTransform = parent ? parent.getWorldMatrix() :	Matrix();
+			
+		Matrix transform = Matrix.compose(position, rotation, scale);		
+		return transform.transformAffine(parentTransform); // is this backward?
+	}
+	
+	
+	protected void checkLock()
+	{	if (scene)
+			assert(Thread.getThis() is scene.owner, "Please call lock() on this Node's scene in thread before using functions in this Node.");
+	}
+	
+	void update2()
+	{	mixin(Sync!("scene"));
+		
+		foreach (node; children)
+			node.update2();
+	}
+	
+	
+
+	// old:
+	// ---------------------------------------------
+	
 	// These are public for easy internal access.
 	Scene	scene;			// The Scene that this node belongs to.
 	protected float lifetime = float.infinity;	// in seconds
-	protected void delegate(Node self) on_update = null;	// called on update
+	
+	void delegate() onUpdate = null;	// Set a function that will be called every time this Node is updated.
 	
 	protected Matrix	transform;				// The position and rotation of this node relative to its parent
 	protected Matrix	transform_abs;			// The position and rotation of this node in worldspace coordinates
@@ -73,10 +168,6 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 	/// Constructor
 	this()
 	{	
-	}
-	
-	~this()
-	{		
 	}
 	
 	/**
@@ -118,7 +209,7 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 	{	Node result = cast(Node)this.classinfo.create();		
 		
 		// Since "this" may have its properties changed by other calls during this process.
-		// TODO: Nothing else syncrhonizes, so this doesn't really provide any protection!
+		// TODO: Nothing else synchronizes, so this doesn't really provide any protection!
 		synchronized(this) 
 		{	result.lifetime = lifetime;
 			result.transform = transform;
@@ -128,7 +219,7 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 			result.angular_velocity_abs = angular_velocity_abs;
 			result.cache[0..3] = cache[0..3];
 			
-			result.on_update = on_update;
+			result.onUpdate = onUpdate;
 			
 			if (children)
 				foreach (c; this.children)
@@ -187,44 +278,20 @@ abstract class Node : Tree!(Node), IDisposable, ICloneable
 	override char[] toString()
 	{	return Format.convert("<{} children=\"{}\"/>", getType(), children.length);
 	}
-	
-	/**
-	 * Set a function that will be called every time this Node is updated.
-	 * Specifically, the supplied function is called after a Node's matrices
-	 * are updated and before its children are updated and before it's removed if
-	 * it's lifetime is zero.
-	 * Params:
-	 * on_update = the function that will be called.  Use null as an argument to clear
-	 * the function.
-	 * 
-	 * Example:
-	 * --------------------------------
-	 * SpriteNode s = new SpriteNode(scene);
-	 * s.setMaterial("something.xml");
-	 *
-	 * // Gradually fade to transparent as lifetime decreases.
-	 * void fade(Node self)
-	 * {   SpriteNode node = cast(SpriteNode)self;
-	 *     node.setColor(1, 1, 1, node.getLifetime()/5);
-	 * }
-	 * s.setLifetime(5);
-	 * s.onUpdate(&fade);
-	 * --------------------------------*/
-	void onUpdate(void delegate(typeof(this) self) on_update)
-	{	this.on_update = on_update;
-	}
+
 
 	/**
 	 * Update the positions and rotations of this Node and all children by delta seconds.*/ 
 	void update(float delta)
 	{	
 		// Call the onUpdate() function
-		if (on_update !is null)
-			on_update(this);
+		if (onUpdate !is null)
+			onUpdate();
+		
+		update2();
 		
 		// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.
-		// TODO: synchronize?
 		if (scene)
 		{	cache[scene.transform_write].transform = transform;
 			if (transform_dirty)

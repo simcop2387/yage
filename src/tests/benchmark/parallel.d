@@ -13,8 +13,7 @@ import yage.core.parallel;
 import yage.core.timer;
 import yage.system.log;
 
-/**
- * On a P4 2.8ghz Windows XP Laptop, this shows that ArrayBuilder!(int) is 3-6x faster with ~= as int[]. */
+// A test of parallel foreach.
 void main()
 {
 	

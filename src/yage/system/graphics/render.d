@@ -210,7 +210,13 @@ struct Render
 		
 		// Set uniform values
 		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{			
+		{	
+			static char[] lightPosition = "lights[_].position\0".dup;
+			static char[] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
+			static char[] lightSpotDirection = "lights[_].spotDirection\0".dup;
+			static char[] lightSpotCutoff = "lights[_].spotCutoff\0".dup;
+			static char[] lightSpotExponent = "lights[_].spotExponent\0".dup;
+			
 			Matrix camInverse = graphics.current.camera.getInverseAbsoluteMatrix();
 			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
 			
@@ -219,15 +225,13 @@ struct Render
 			foreach (i, light; lights)
 			{	
 				char[] makeName(char[] name, int i)
-				{	
-					char[] result = name.dup;
-					result[7] = i + 48; // convert int to single digit ascii.
-					return result;
+				{	name[7] = i + '0'; // convert int to single digit ascii.
+					return name;
 				}
 				
 				// Doing it inline seems to make things slightly faster
 				ShaderUniform* su = &uniforms.data[idx];
-				char[] name = makeName("lights[_].position\0", i);
+				char[] name = makeName(lightPosition, i);
 				su.name[0..name.length] = name[0..$];
 				su.type = ShaderUniform.Type.F4;
 				su.floatValues[0..3] = light.inverseCameraPosition.v[0..3];
@@ -235,7 +239,7 @@ struct Render
 				idx++;
 				
 				su = &uniforms.data[idx];
-				name = makeName("lights[_].quadraticAttenuation\0", i);
+				name = makeName(lightQuadraticAttenuation, i);
 				su.name[0..name.length] = name[0..$];
 				su.type = ShaderUniform.Type.F1;
 				su.floatValues[0] =light.getQuadraticAttenuation();
@@ -258,6 +262,8 @@ struct Render
 		
 		return result;
 	}
+	
+	
 	
 	/**
 	 * Bind a MaterialPass, generating a shader based on the number of lights. */
@@ -597,7 +603,7 @@ struct Render
 					// TODO: Two things that can speed this up:
 					// Only test light spheres that overlap the view frustum
 					// Do a distance test for an early rejection of get light brightness.
-					scope lights = n.getLights(all_lights, num_lights);					
+					LightNode[] lights = n.getLights(all_lights, num_lights);					
 					for (int i=lights.length; i<num_lights; i++)
 						glDisable(GL_LIGHT0+i);					
 					for (int i=0; i<min(num_lights, lights.length); i++)

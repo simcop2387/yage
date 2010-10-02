@@ -126,6 +126,34 @@ struct Matrix
 		return true;
 	}
 
+	static Matrix compose(Vec3f position, Vec3f rotation, Vec3f scale)
+	{	Matrix result = Matrix(); // TODO void initialization
+		result.setPosition(position);
+		if (rotation.length2())
+			result.setRotation(rotation);
+		if (scale.x!=1 || scale.y != 1 || scale.z != 1)
+			result.setScalePreservingRotation(scale);
+		return result;	
+	}
+	
+	/// Decompose into a position, axis/angle rotation, and scale.
+	void decompose(out Vec3f position, Vec3f rotation, Vec3f scale)
+	{		
+		// Extract the translation directly
+		position.x = v30;
+		position.y = v31;
+		position.z = v32;
+		
+		// Is there a faster way?
+		rotation = toAxis();
+		
+		// Take the lengths of the basis vectors to find the scale factors.
+		scale.x = (cast(Vec3f*)v[0..3]).length();
+		scale.y = (cast(Vec3f*)v[4..7]).length();
+		scale.z = (cast(Vec3f*)v[8..11]).length();
+	}
+	
+	
 	/**
 	 * Decompose this Matrix into a position, rotation, and scaling Matrix. */
 	void decompose(out Matrix position, out Matrix rotation, out Matrix scale)
@@ -558,7 +586,7 @@ struct Matrix
 	 * Return an axis vector of the rotation values of this Matrix.
 	 * Note that the non-rotation values of the Matrix are lost. */
 	Vec3f toAxis()
-	{	return toQuatrn().toAxis();
+	{	return toQuatrn().toAxis(); /// TODO: replace with setRotation worked out in reverse.
 	}
 
 	/**

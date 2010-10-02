@@ -278,16 +278,18 @@ struct Quatrn
 
 	/// Create a Vec3f rotation axis from this Quaternion
 	Vec3f toAxis()
-	{	double angle = acos(w)*2;
-		double sin_a = sqrt(1.0 - w*w);
-		if (abs(sin_a) < 0.0005)	// arbitrary small number
-			sin_a = 1;
-		Vec3f axis;
-		axis.x = x/sin_a;
-		axis.y = y/sin_a;
-		axis.z = z/sin_a;
-		if (angle>0)
+	{	auto angle = acos(w)*2;
+		if (angle != 0)
+		{	auto sin_a = sqrt(1 - w*w);
+			if (abs(sin_a) < 0.0005)	// arbitrary small number
+				sin_a = 1;
+			Vec3f axis;
+			auto inv_sin_a = 1/sin_a;
+			axis.x = x*inv_sin_a;
+			axis.y = y*inv_sin_a;
+			axis.z = z*inv_sin_a;		
 			return axis.length(angle);
+		}
 		return Vec3f();	// zero vector, no rotation
 	}
 

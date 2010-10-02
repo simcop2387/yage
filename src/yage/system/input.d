@@ -106,6 +106,8 @@ abstract class Input
 	static void processAndSendTo(Surface surface)
 	{
 		assert(surface);
+		if (!currentSurface)
+			currentSurface = surface;
 		
 		SDL_EnableUNICODE(1); // TODO: Move this
 		auto focus = getFocusSurface(surface);

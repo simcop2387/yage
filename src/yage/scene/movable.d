@@ -26,6 +26,8 @@ import yage.system.log;
  * yage.scene.node */
 class MovableNode : Node
 {
+	
+	
 	/**
 	 * Move and rotate by the transformation Matrix.
 	 * In other words, apply t as a transformation Matrix. */

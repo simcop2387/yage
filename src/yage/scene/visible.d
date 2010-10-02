@@ -7,6 +7,7 @@
 module yage.scene.visible;
 
 import tango.math.Math;
+import tango.util.container.more.Heap;
 import yage.core.all;
 import yage.resource.material;
 import yage.scene.all;
@@ -26,19 +27,22 @@ class VisibleNode : MovableNode
 {	
 	protected bool 	visible = true;
 	protected Vec3f	size;
-	protected Color color;				// RGBA, used for glColor4f()
+	protected Color color;			// RGBA, used for glColor4f()
 	
-	bool onscreen = true;	// used internally by cameras to mark if they can see this node.
-	protected LightNode[] lights;		// Lights that affect this VisibleNode
+	bool onscreen = true;			// used internally by cameras to mark if they can see this node.
+	protected LightNode[] lights;	// Lights that affect this VisibleNode
+	//protected MaxHeap!(LightNode) lights2;
 
-	Material[] materialOverrides;  /// Use thes materials instead of the model's meshes' or sprite's materials.
+	Material[] materialOverrides;	/// Use thes materials instead of the model's meshes' or sprite's materials.
 	
 	/**
 	 * Construct */
 	this()
 	{	super();
 		size = Vec3f(1);
-		color = Color("white");			
+		color = Color("white");	
+		
+		//lights2 = new MaxHeap!(LightNode)(); // TODO: Go to stack overflow to research best algorithm for this.
 	}
 
 	/**
@@ -116,27 +120,47 @@ class VisibleNode : MovableNode
 	 * TODO: Take into account a spotlight inside a VisibleNode that shines outward but doesn't shine
 	 * on the Node's center.  Need to test to see if this is even broken.
 	 * Also perhaps use axis sorting for faster calculations. */
-	LightNode[] getLights(LightNode[] all_lights, ubyte number=8)
+	LightNode[] getLights(LightNode[] allLights, ubyte number=8, ArrayBuilder!(LightNode) lookAside=ArrayBuilder!(LightNode)())
 	{	
 		// Calculate the intensity of all lights on this node
 		lights.length = 0;
+		lights[0..$] = null;
 		Vec3f position;
 		position.v[0..3] = (getAbsoluteTransform(true)).v[12..15];
 		
 		/*
-		// This i sprobably slower until maxRange can be sped up and no longer do allocations.
-		lights = maxRange!(LightNode, float)(all_lights, min(number, all_lights.length), (LightNode l){
+		// This is probably slower until maxRange can be sped up and no longer do allocations.
+		lights = maxRange!(LightNode, float)(allLights, min(number, allLights.length), (LightNode l){
 			return l.getBrightness(position, getRadius()).vec3f.average(); 
 		}, 1/256f);
 		lights.radixSort(false);
 		return lights;
 		*/
 		
-		foreach (l; all_lights)
+		// Leaks memory?
+		foreach (l; allLights)
 		{	l.intensity = l.getBrightness(position, getRadius()).vec3f.average();
 			if (l.intensity >= 1/256f) // smallest noticeable brightness for 8-bit per channel color (1/256f).
 				addSorted!(LightNode, float)(lights, l, false, (LightNode a){return a.intensity;}, number );
 		}
+		
+		/*
+		// This is faster but fails!
+		foreach (light; allLights)
+		{	Color brightness = light.getBrightness(position, getRadius());
+			light.intensity = (brightness.r + brightness.g + brightness.b) / 768f; // average of three-color brightness.
+			if (light.intensity > 1/256f)
+			{	replaceSmallestIfBigger(lights, light, (LightNode a, LightNode b) {
+					if (!b)
+						return true;
+					return a.intensity > b.intensity;
+				});				
+		}	}
+		
+		for (int i=0; i<lights.length; i++)
+			if (lights[i] is null)
+				return lights[0..i];	
+		*/
 		return lights;
 	}
 }

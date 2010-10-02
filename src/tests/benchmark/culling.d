@@ -7,6 +7,7 @@
 module tests.benchmark.culling;
 
 import tango.core.sync.Mutex;
+import tango.core.sync.ReadWriteMutex;
 import yage.core.array;
 import yage.core.timer;
 import yage.core.math.plane;
@@ -51,7 +52,8 @@ void cull(int S)(int size)
 		node = NodePosition!(S)();
 	
 	auto mutex = new Object();
-	auto mutex2 = new Mutex();
+	auto mutex2 = new Mutex(); // also testing Tango vs D's mutex
+	auto mutex3 = new ReadWriteMutex(); // also testing Tango vs D's mutex
 	
 	Plane[6] frustum; // just a simple 200^3 sized box
 	frustum [0] = Plane(-1, 0, 0, 100);
@@ -63,9 +65,12 @@ void cull(int S)(int size)
 	
 	ArrayBuilder!(void*) visibleNodes;
 	foreach (node; nodes)
-	{	bool visible = true;	
-		//synchronized(mutex)
-		//mutex2.lock();
+	{	bool visible = true; // [below] a quick test for synchronization speeds
+		// none, 146 ms
+		//synchronized(mutex) // 229 ms
+		//mutex2.lock(); // 173ms
+		//mutex3.reader().lock(); // 375 ms
+		//mutex3.writer().lock(); // 374 ms
 		{	foreach (f; frustum)
 			{	if (f.x*node.position.x +f.y*node.position.y + f.z*node.position.z + f.d < 0)
 				{	visible = false;			
@@ -76,6 +81,8 @@ void cull(int S)(int size)
 				visibleNodes ~= node.node;
 		}
 		//mutex2.unlock();
+		//mutex3.reader().unlock();
+		//mutex3.writer().unlock();
 	}
 }
 

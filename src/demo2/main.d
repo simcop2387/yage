@@ -49,10 +49,9 @@ int main()
 	auto view = new Surface("width: 100%; height: 100%");
 	
 	// Events for main surface.
-	view.onKeyDown = delegate bool(Surface self, int key, int modifier){
+	view.onKeyDown = (int key, int modifier){
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
-		return true;
 	};
 	
 	// Lights
@@ -66,29 +65,24 @@ int main()
 		"font-family: url('Vera.ttf'); text-align: center; opacity: .8; overflow: hidden");
 	
 	bool dragging;
-	info.onMouseDown = delegate bool(Surface self, Input.MouseButton button, Vec2f coordinates) {
+	info.onMouseDown = curry((Input.MouseButton button, Vec2f coordinates, Surface self) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = true;
-		return false;
-	};
-	info.onMouseMove = delegate bool(Surface self, Vec2f amount) {		
+	}, info);
+	info.onMouseMove = curry((Vec2f amount, Surface self) {		
 		if (dragging)
 			self.move(amount, true);
-		return false;
-	};
-	info.onMouseUp = delegate bool(Surface self, Input.MouseButton button, Vec2f coordinates) {
+	}, info);
+	info.onMouseUp = curry((Input.MouseButton button, Vec2f coordinates, Surface self) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = false;
-		return false;
-	};
-	info.onMouseOver = delegate bool(Surface self) {
+	}, info);
+	info.onMouseOver = curry((Surface self) {
 		self.style.set("border-image: url('gui/skin/panel2.png')");
-		return false;
-	};
-	info.onMouseOut = delegate bool(Surface self) {
+	}, info);
+	info.onMouseOut = curry((Surface next, Surface self) {
 		self.style.set("border-image: url('gui/skin/panel1.png')");
-		return false;
-	};
+	}, info);
 	info.editable = view.editable = true;
 	/*
 	// Test overflow clipping
