@@ -123,44 +123,36 @@ class VisibleNode : MovableNode
 	LightNode[] getLights(LightNode[] allLights, ubyte number=8, ArrayBuilder!(LightNode) lookAside=ArrayBuilder!(LightNode)())
 	{	
 		// Calculate the intensity of all lights on this node
-		lights.length = 0;
+		lights.length = number;
 		lights[0..$] = null;
 		Vec3f position;
 		position.v[0..3] = (getAbsoluteTransform(true)).v[12..15];
+		float radius = getRadius();
 		
-		/*
-		// This is probably slower until maxRange can be sped up and no longer do allocations.
-		lights = maxRange!(LightNode, float)(allLights, min(number, allLights.length), (LightNode l){
-			return l.getBrightness(position, getRadius()).vec3f.average(); 
-		}, 1/256f);
-		lights.radixSort(false);
-		return lights;
-		*/
-		
-		// Leaks memory?
-		foreach (l; allLights)
-		{	l.intensity = l.getBrightness(position, getRadius()).vec3f.average();
-			if (l.intensity >= 1/256f) // smallest noticeable brightness for 8-bit per channel color (1/256f).
-				addSorted!(LightNode, float)(lights, l, false, (LightNode a){return a.intensity;}, number );
-		}
-		
-		/*
-		// This is faster but fails!
+		int count=0;
 		foreach (light; allLights)
-		{	Color brightness = light.getBrightness(position, getRadius());
-			light.intensity = (brightness.r + brightness.g + brightness.b) / 768f; // average of three-color brightness.
-			if (light.intensity > 1/256f)
-			{	replaceSmallestIfBigger(lights, light, (LightNode a, LightNode b) {
-					if (!b)
-						return true;
-					return a.intensity > b.intensity;
-				});				
-		}	}
+		{	
+			// First pass, discard lights that are too far away.  
+			float lr = light.getLightRadius(); // [below] distance is greater than 8*radius.  At 8*radius, we have 1/256th brightness.
+			if (light.getAbsolutePosition().distance2(position) < 256 * lr*lr)
+			{	Color brightness = light.getBrightness(position, radius);
+				light.intensity = (brightness.r + cast(int)brightness.g + brightness.b); // average of three-color brightness.
+				
+				// Second pass, discard lights that aren't bright enough.
+				if (light.intensity > 3) // > 1/256ths of a color value
+				{	bool replaced = true;
+					if (!count)
+						lights[0] = light;
+					else
+						replaced = replaceSmallestIfBigger(lights, light, (LightNode a, LightNode b) {
+							if (!b)
+								return true;
+							return a.intensity > b.intensity;
+						});
+					if (replaced)
+						count++;
+		}	}	}
 		
-		for (int i=0; i<lights.length; i++)
-			if (lights[i] is null)
-				return lights[0..i];	
-		*/
-		return lights;
+		return lights[0..min($, count)];
 	}
 }

@@ -56,7 +56,7 @@ class LightNode : MovableNode
 	 * A value of 0 provides an even distribution of light across the entire spot circle. */
 	float spotExponent = 0;
 
-	package float intensity; // Used internally as a temp variable to sort lights by intensity for each node.
+	public int intensity; // Used internally as a temp variable to sort lights by intensity for each node.
 	float	quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
 	
 	Vec3f inverseCameraPosition; // Used internally to store the position in camera-space.

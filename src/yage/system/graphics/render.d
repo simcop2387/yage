@@ -262,9 +262,7 @@ struct Render
 		
 		return result;
 	}
-	
-	
-	
+		
 	/**
 	 * Bind a MaterialPass, generating a shader based on the number of lights. */
 	static bool bindPass(MaterialPass pass, LightNode[] lights)
@@ -580,12 +578,15 @@ struct Render
 			RenderStatistics result;
 			result.nodeCount = nodes.length;
 
-			int num_lights = Probe.feature(Probe.Feature.MAX_LIGHTS);
-			scope LightNode[] all_lights = camera.getScene().getAllLights(); // Does this copy also prevents threading issues (obviously not, see below!).
-			result.lightCount += all_lights.length;
+			// Get lights
+			int maxLights = Probe.feature(Probe.Feature.MAX_LIGHTS);
+			scope LightNode[] allLights = camera.getScene().getAllLights(); // Does this copy also prevents threading issues (obviously not, see below!).
+			result.lightCount += allLights.length;
 			
-			foreach (light; all_lights) // [below] TODO: An access violation that randomly occurs here!!  Surely it's due to thread misuse!  It happens when lots of lights are created and destroyed.
+			foreach (light; allLights) // [below] TODO: An access violation that randomly occurs here!!  Surely it's due to thread misuse!  It happens when lots of lights are created and destroyed.
 				light.inverseCameraPosition = light.getAbsoluteTransform(true).getPosition().transform(camera.getInverseAbsoluteMatrix());
+			
+		
 			
 			// Loop through all nodes in the queue and render them
 			foreach (VisibleNode n; nodes)
@@ -603,10 +604,10 @@ struct Render
 					// TODO: Two things that can speed this up:
 					// Only test light spheres that overlap the view frustum
 					// Do a distance test for an early rejection of get light brightness.
-					LightNode[] lights = n.getLights(all_lights, num_lights);					
-					for (int i=lights.length; i<num_lights; i++)
+					LightNode[] lights =   n.getLights(allLights, maxLights);					
+					for (int i=lights.length; i<maxLights; i++)
 						glDisable(GL_LIGHT0+i);					
-					for (int i=0; i<min(num_lights, lights.length); i++)
+					for (int i=0; i<min(maxLights, lights.length); i++)
 						graphics.bindLight(lights[i], i);
 					
 					// Render

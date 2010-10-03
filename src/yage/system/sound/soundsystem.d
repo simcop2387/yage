@@ -404,6 +404,7 @@ class SoundContext
 			concat[3..6] = up.v;
 			
 			// Create an array of the loudest sounds
+			// TODO: Borrow new algorithm from VisibleNode.getLights
 			sounds.length = 0;
 			synchronized(scene.getSoundsMutex())
 				foreach (sound; listener.getScene().getAllSounds())
