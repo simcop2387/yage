@@ -16,7 +16,7 @@ import yage.system.log;
 
 /// Add this as the first line of a function to synchronize the entire body using the name of a Tango mutex.
 template Sync(char[] T)
-{	const char[] Sync = T~".lock(); scope(exit) " ~ T ~ ".unlock();";	
+{	const char[] Sync = "if ("~T~") { "~T~".lock(); scope(exit) " ~ T ~ ".unlock(); }";	
 }
 
 /**
@@ -52,7 +52,7 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	// New
 	protected Vec3f position;
 	protected Vec3f rotation;
-	protected Vec3f scale;
+	protected Vec3f scale = Vec3f(1);
 	
 	protected Vec3f velocity;
 	protected Vec3f angularVelocity;
@@ -63,35 +63,62 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	
 	/**
 	 * Get / set the xyz position of this Node relative to its parent's position. */
-	Vec3f getPosition()
+	Vec3f getPosition2()
 	{	mixin(Sync!("scene"));
 		return position;
 	}	
-	void setPosition(Vec3f position) /// ditto
+	void setPosition2(Vec3f position) /// ditto
 	{	mixin(Sync!("scene"));
 		this.position = position;
 	}
 	
 	/**
 	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
-	Vec3f getRotation()
+	Vec3f getRotation2()
 	{	mixin(Sync!("scene"));
 		return rotation;
 	}	
-	void setRotation(Vec3f rotation) /// ditto
+	void setRotation2(Vec3f rotation) /// ditto
 	{	mixin(Sync!("scene"));
 		this.rotation = rotation;
 	}
 	
 	/**
 	 * Get / set the xyz scale of this Node relative to its parent's scale. */
-	Vec3f getScale()
+	Vec3f getScale2()
 	{	mixin(Sync!("scene"));
 		return scale;
 	}	
-	void setScale(Vec3f scale) /// ditto
+	void setScale2(Vec3f scale) /// ditto
 	{	mixin(Sync!("scene"));
 		this.scale = scale;
+	}
+
+	
+	/**
+	 * Get / set the linear velocity this Node relative to its parent's velocity. */
+	Vec3f getVelocity2()
+	{	mixin(Sync!("scene"));
+		return velocity;
+	}	
+	void setVelocit2(Vec3f velocity) /// ditto
+	{	mixin(Sync!("scene"));
+		this.velocity = velocity;
+	}
+	
+	/**
+	 * Get / set the angular (rotation) velocity this Node relative to its parent's velocity. */
+	Vec3f getAngularVelocity2()
+	{	mixin(Sync!("scene"));
+		return velocity;
+	}	
+	void setAngularVelocity2(Vec3f axis) /// ditto
+	{	mixin(Sync!("scene"));
+		this.angularVelocity = axis;
+	}
+	
+	Matrix getMatrix2()
+	{	return Matrix.compose(position, rotation, scale);
 	}
 	
 	/**
@@ -113,12 +140,21 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	// Temporary until I have something more optimized
 	Matrix getWorldMatrix()
 	{	mixin(Sync!("scene"));
-		Matrix parentTransform = parent ? parent.getWorldMatrix() :	Matrix();
-			
-		Matrix transform = Matrix.compose(position, rotation, scale);		
-		return transform.transformAffine(parentTransform); // is this backward?
+		
+		if (parent) // TODO and if parent isn't scene?
+			return parent.getWorldMatrix().transformAffine(getMatrix2());		
+		return getMatrix2();
+	}	
+	unittest
+	{
+		Node a = new Node();
+		a.setRotation2(Vec3f(0, 3.1415927, 0));
+		a.setPosition2(Vec3f(3, 0, 0));
+		
+		Node b = new Node(a);
+		b.setPosition2(Vec3f(5, 0, 0));
+		assert(b.getWorldPosition().almostEqual(Vec3f(-2, 0, 0)));
 	}
-	
 	
 	protected void checkLock()
 	{	if (scene)
@@ -166,8 +202,9 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	/* protected*/ Cache cache[3];
 
 	/// Constructor
-	this()
-	{	
+	this(Node parent=null)
+	{	if (parent)
+			parent.addChild(this);
 	}
 	
 	/**
@@ -286,7 +323,7 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	{	
 		// Call the onUpdate() function
 		if (onUpdate !is null)
-			onUpdate();
+			onUpdate(); // TODO: make this exclusive like Surface events.
 		
 		update2();
 		

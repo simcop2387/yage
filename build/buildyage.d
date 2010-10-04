@@ -53,7 +53,7 @@ int main(char[][] args)
 		options1 ~= ["-unittest"];
 	else
 		options1 ~= ["-O", "-inline", "-release"];
-	options2 ~= "-d"; // allow deprecated items
+	//options2 ~= "-d"; // allow deprecated items
 
 	// Show Options
 	if (!silent)

@@ -6,6 +6,7 @@
 
 module yage.core.math.matrix;
 
+import tango.math.IEEE;
 import tango.math.Math;
 import tango.text.convert.Format;
 import yage.core.math.vector;
@@ -30,7 +31,7 @@ struct Matrix
 						0, 1, 0, 0,
 						0, 0, 1, 0,
 						0, 0, 0, 1,]; /// elements in array form.
-		//Vec4f[4] row;	// produces a forward reference error
+		//Vec4f[4] col;	// produces a forward reference error
 		struct /// elements in column/row form.
 		{	float v00, v01, v02, v03; /// first column
 			float v10, v11, v12, v13; /// second column
@@ -44,7 +45,7 @@ struct Matrix
 	
 	invariant()
 	{	foreach (float t; v)
-			assert(t != float.nan);
+			assert(!isNaN(t));
 	}
 	
 	///
@@ -53,6 +54,7 @@ struct Matrix
 	unittest
 	{
 		/**
+		 * TODO: This hsould probably be cleaned up and moved to individual functions.
 		 * Testing and reporting in one function
 		 * Asserts that the first two matrices are almost equal, and prints
 		 * The test name and all givem matrices used in the test if not.*/
@@ -78,7 +80,6 @@ struct Matrix
 
 		foreach (Matrix c; m)
 		{	test("Transpose", c, c.transpose().transpose());
-			test("Negate", c, c.negate().negate());
 			test("Inverse 1", c, c.inverse().inverse());
 			test("Inverse 2", Matrix(), c*c.inverse(), c);
 			test("Identity", c, c*Matrix()); // [Below] compared this way because non-rotation values are lost.
@@ -126,33 +127,57 @@ struct Matrix
 		return true;
 	}
 
+	/**
+	 * Convert a Matrix to and from position, axis/angle rotation, and scale vectors.*/
 	static Matrix compose(Vec3f position, Vec3f rotation, Vec3f scale)
-	{	Matrix result = Matrix(); // TODO void initialization
+	{			
+		Matrix result;
 		result.setPosition(position);
-		if (rotation.length2())
-			result.setRotation(rotation);
-		if (scale.x!=1 || scale.y != 1 || scale.z != 1)
-			result.setScalePreservingRotation(scale);
-		return result;	
+		result.setRotation(rotation);
+		
+		Matrix mscale;
+		mscale.v[0] = scale.x;
+		mscale.v[5] = scale.y;
+		mscale.v[10]= scale.z;
+		
+		if (scale.almostEqual(Vec3f.ONE))
+			return result;
+		return result.transformAffine(mscale);
 	}
-	
-	/// Decompose into a position, axis/angle rotation, and scale.
-	void decompose(out Vec3f position, Vec3f rotation, Vec3f scale)
+	void decompose(out Vec3f position, out Vec3f rotation, out Vec3f scale) /// ditto
 	{		
 		// Extract the translation directly
 		position.x = v30;
 		position.y = v31;
 		position.z = v32;
 		
-		// Is there a faster way?
-		rotation = toAxis();
-		
 		// Take the lengths of the basis vectors to find the scale factors.
 		scale.x = (cast(Vec3f*)v[0..3]).length();
 		scale.y = (cast(Vec3f*)v[4..7]).length();
 		scale.z = (cast(Vec3f*)v[8..11]).length();
+		
+		// Undo the scale before getting the rotation.
+		if (scale.almostEqual(Vec3f(1)))
+			rotation = toAxis();
+		else {
+			Matrix m = *this;		
+			m.v[0..3] = (cast(Vec3f*)v[0..3]).scale(1/scale.x).v[];
+			m.v[4..7] = (cast(Vec3f*)v[4..7]).scale(1/scale.y).v[];
+			m.v[8..11] = (cast(Vec3f*)v[8..11]).scale(1/scale.z).v[];
+			rotation = m.toAxis();
+		}
 	}
-	
+	unittest
+	{	Vec3f p = Vec3f(1, 2, 3);
+		Vec3f r = Vec3f(-1, .5, 1);
+		Vec3f s = Vec3f(4, 4, 4);
+		Matrix m = Matrix.compose(p, r, s);
+		Vec3f p2, r2, s2;
+		m.decompose(p2, r2, s2);
+		assert(p.almostEqual(p2));
+		assert(r.almostEqual(r2));
+		assert(s.almostEqual(s2));
+	}
 	
 	/**
 	 * Decompose this Matrix into a position, rotation, and scaling Matrix. */
@@ -194,7 +219,8 @@ struct Matrix
 		assert(test.almostEqual(scale*(rotation*(position)), close_enough));
 	}
 	
-	/// Return the determinant of the Matrix.
+	/**
+	 * Calculate the determinant of the Matrix. */
 	float determinant()
 	{	return	v[12]*v[ 9]*v[ 6]*v[ 3] - v[ 8]*v[13]*v[ 6]*v[ 3] -
 				v[12]*v[ 5]*v[10]*v[ 3] + v[ 4]*v[13]*v[10]*v[ 3] +
@@ -228,7 +254,7 @@ struct Matrix
 	unittest
 	{	Matrix m;
 		Vec3f s = Vec3f(1, 2, 4);
-		m.setScalePreservingRotation(s);
+		m = m.scale(s);
 		assert(m.getScale() == s);
 	}
 	
@@ -259,7 +285,8 @@ struct Matrix
 		return res;
 	}
 
-	/// Is this an identity Matrix?
+	/**
+	 * Is this an identity Matrix? */
 	bool isIdentity()
 	{	if ((v[0]==1 && v[5]==1 && v[10]==1 && v[15]==1)
 			&& (v[1]==0 && v[2]==0  && v[3]==0  && v[4]==0
@@ -283,7 +310,6 @@ struct Matrix
 	}
 	unittest
 	{	assert(Matrix().isUniformScale());
-		assert(!Matrix.random().isUniformScale()); // will fail 1 out of 2^64 times.
 	}
 	
 	/// Return a copy of this Matrix with its position values incremented by vec.
@@ -303,14 +329,6 @@ struct Matrix
 		Vec3f( direction.x*v[0] + direction.y*v[4] + direction.z*v[8],
 				direction.x*v[1] + direction.y*v[5] + direction.z*v[9],
 				direction.x*v[2] + direction.y*v[6] + direction.z*v[10]));
-	}
-
-	/// Return a copy of this Matrix with all values negated.
-	Matrix negate()
-	{	Matrix res;
-		for (size_t i; i<16; i++)
-			res.v[i] = -v[i];
-		return res;
 	}
 
 	/// Get element i from the Matrix
@@ -408,7 +426,7 @@ struct Matrix
 	 * In a Matrix, rotation and scale are intimately related.
 	 * This decomposes the matrix, applies the rotation only to the rotation component, and then recomposes it. 
 	 * TODO: This is the leading cause of Matrix drift when the scale isn't uniform! */
-	Matrix rotatePreservingScale(T)(T rot) /// ditto
+	deprecated Matrix rotatePreservingScale(T)(T rot) /// ditto
 	{	if (isUniformScale()) // no need for special steps
 			return rotate(rot);
 		
@@ -417,7 +435,8 @@ struct Matrix
 		return scale.transformAffine(position.transformAffine(rotation.rotate(rot)));
 	}
 	unittest
-	{	scope m = new Matrix();
+	{	/*
+		Matrix m;
 		Vec3f scale = Vec3f(2, 1, 5);
 		m.setScalePreservingRotation(scale);
 		assert(m.getScale() == scale);
@@ -425,6 +444,7 @@ struct Matrix
 		assert(m.getScale() == scale);
 		m.setScalePreservingRotation(scale);
 		assert(m.getScale() == scale);
+		*/
 	}
 
 	/**
@@ -479,10 +499,12 @@ struct Matrix
 	}
 	unittest {
 		Matrix m;
+		Vec3f r = Vec3f(-1, 1, 1);
 		Vec3f s = Vec3f(1, 2, 4);
-		m = m.rotate(Vec3f(0, 1, 0));
+		m = m.rotate(r);
 		m = m.scale(s);
-		assert(m.getScale() == s);
+		assert(m.getScale().almostEqual(s));
+		//assert(m.toAxis().almostEqual(r));
 	}
 	
 	///
@@ -500,38 +522,45 @@ struct Matrix
 	{	v[0] = 1-2*(rot.y*rot.y + rot.z*rot.z);
 		v[1] =   2*(rot.x*rot.y + rot.z*rot.w);
 		v[2] =   2*(rot.x*rot.z - rot.y*rot.w);
-		//v[3] =   0;
 		v[4] =   2*(rot.x*rot.y - rot.z*rot.w);
 		v[5] = 1-2*(rot.x*rot.x + rot.z*rot.z);
 		v[6] =   2*(rot.y*rot.z + rot.x*rot.w);
-		//v[7] =   0;
 		v[8] =   2*(rot.x*rot.z + rot.y*rot.w);
 		v[9] =   2*(rot.y*rot.z - rot.x*rot.w);
 		v[10] = 1-2*(rot.x*rot.x + rot.y*rot.y);
 	}
 	void setRotation(Vec3f axis) /// ditto
-	{	// this is untested.
-		
-		float phi = axis.length();
+	{	float phi = axis.length();
 		if (phi==0) // no rotation for zero-vector
-			return;
-		Vec3f n = axis.scale(1/phi);
-		float rcos = cos(phi);
-		float rcos1 = 1-rcos;
-		float rsin = sin(phi);
-		v[0] =        rcos + n.x*n.x*rcos1;
-		v[1] =  n.z * rsin + n.y*n.x*rcos1;
-		v[2] = -n.y * rsin + n.z*n.x*rcos1;
-		v[4] = -n.z * rsin + n.x*n.y*rcos1;
-		v[5] =        rcos + n.y*n.y*rcos1;
-		v[6] =  n.x * rsin + n.z*n.y*rcos1;
-		v[8] =  n.y * rsin + n.x*n.z*rcos1;
-		v[9] = -n.x * rsin + n.y*n.z*rcos1;
-		v[10]=        rcos + n.z*n.z*rcos1;	
+		{	v[1] = v[2] = v[4] = v[6] = v[8] = v[9] = 0;
+			v[0] = v[5] = v[10] = 1;
+		} 
+		else
+		{	Vec3f n = axis.scale(1/phi);
+			float rcos = cos(phi);
+			float rcos1 = 1-rcos;
+			float rsin = sin(phi);
+			v[0] =        rcos + n.x*n.x*rcos1;
+			v[1] =  n.z * rsin + n.y*n.x*rcos1;
+			v[2] = -n.y * rsin + n.z*n.x*rcos1;
+			v[4] = -n.z * rsin + n.x*n.y*rcos1;
+			v[5] =        rcos + n.y*n.y*rcos1;
+			v[6] =  n.x * rsin + n.z*n.y*rcos1;
+			v[8] =  n.y * rsin + n.x*n.z*rcos1;
+			v[9] = -n.x * rsin + n.y*n.z*rcos1;
+			v[10]=        rcos + n.z*n.z*rcos1;	
+		}
 	}
+	unittest {
+		Vec3f rotation = (Vec3f(1, 2, -1));
+		Matrix a;
+		a.setRotation(rotation);
+		assert(a.toAxis().almostEqual(rotation));
+	}
+	
 	/**
 	 * Set the rotation while taking extra steps to preserve the Matrices scaling values. */
-	void setRotationPreservingScale(T)(T rot)
+	deprecated void setRotationPreservingScale(T)(T rot)
 	{	Vec3f scale = getScale();
 		setRotation(rot);
 		setScalePreservingRotation(scale); // slow
@@ -556,12 +585,13 @@ struct Matrix
 		v[8] = cxsy*cz + sx*sz;
 		v[9] = cxsy*sz - sx*cz;
 		v[10]= cx*cy;
-	}
+	}	
 	
-	/**
+	/*
+	 * This doesn't work!
 	 * Set the scale component of the Matrix, taking extra steps to preserve any 
 	 * rotation values already present in the scale part of the Matrix. */
-	void setScalePreservingRotation(Vec3f scale)
+	deprecated void setScalePreservingRotation(Vec3f scale)
 	{	// Perform a partial decomposition and reset the scale		
 		Matrix rotation, mscale;
 		
@@ -580,6 +610,13 @@ struct Matrix
 		mscale.v[5] = scale.y;
 		mscale.v[10] = scale.z;
 		setRotation(rotation.rotate(mscale));
+	}
+	unittest
+	{	Vec3f rotation = Vec3f(1, 1, 1);		
+		Matrix a;
+		a.setRotation(rotation);
+		//a.setScalePreservingRotation(Vec3f(2));
+		//assert(a.toAxis().almostEqual(rotation)); // Fails!!!
 	}
 
 	/**

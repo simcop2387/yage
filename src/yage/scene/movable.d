@@ -26,8 +26,6 @@ import yage.system.log;
  * yage.scene.node */
 class MovableNode : Node
 {
-	
-	
 	/**
 	 * Move and rotate by the transformation Matrix.
 	 * In other words, apply t as a transformation Matrix. */
@@ -100,7 +98,8 @@ class MovableNode : Node
 	{	return transform.toAxis();
 	}
 	void setRotation(Vec3f axis) /// ditto
-	{	transform.setRotationPreservingScale(axis);
+	{	//transform.setRotationPreservingScale(axis);
+		transform.setRotation(axis);
 		setTransformDirty();
 	}
 	
@@ -118,7 +117,8 @@ class MovableNode : Node
 		return transform.getScale();
 	}
 	void setScale(Vec3f scale) /// ditto;
-	{	transform.setScalePreservingRotation(scale);
+	{	//transform.setScalePreservingRotation(scale);
+		transform = transform.scale(scale);
 	}
 	
 	/// Get / set the velocity of this Node relative to its parent's linear and angular velocity.
@@ -188,7 +188,7 @@ class MovableNode : Node
 
 	/// Rotate this Node relative to its current rotation axis, using an axis angle
 	void rotate(Vec3f axis)
-	{	transform = transform.rotatePreservingScale(axis);
+	{	transform = transform.rotate(axis);
 		setTransformDirty();
 	}
 	

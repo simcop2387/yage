@@ -16,12 +16,12 @@
  */
 module yage.core.array;
 
-import tango.stdc.stdlib : malloc, free;
 import tango.core.Traits;
 import tango.math.Math;
 import tango.text.convert.Format;
 import yage.core.format;
 import yage.core.math.math;
+import yage.core.memory;
 import yage.core.types;
 import yage.core.timer;
 import yage.system.log;
@@ -153,14 +153,16 @@ unittest // complete coverage
 }
 */
 
-void replaceSmallestIfBigger(T)(T[] array, T item, bool delegate (T a, T b) isABigger)
+bool replaceSmallestIfBigger(T)(T[] array, T item, bool delegate (T a, T b) isABigger)
 {	
 	for (int i=0; i<array.length; i++)
 		if (isABigger(item, array[i]))
 		{	for (int j=i; j<array.length-1; j++) // move all of the items after it over one place
 				array[j+1] = array[j];
 			array[i] = item; // and insert new item
+			return true;
 		}
+	return false;
 }
 
 
@@ -258,9 +260,9 @@ void radixSort(T, K)(T[] array, bool increasing, K delegate(T elem) getKey, bool
 	}	
 	
 	// Perform the radix sort.
-	int count = array.length;
-	Elem* elem_copy = cast(Elem*)malloc(count*Elem.sizeof);
-	Elem* elem = cast(Elem*)malloc(count*Elem.sizeof);
+	int count = array.length;	
+	Elem[] elem =  Memory.allocate!(Elem)(count);;
+	Elem[] elem_copy = Memory.allocate!(Elem)(count);
 
 	// Move everything into an array of structs for faster sorting.
 	// This way we don't get all of the cache misses from using classes by reference.
@@ -302,17 +304,18 @@ void radixSort(T, K)(T[] array, bool increasing, K delegate(T elem) getKey, bool
 		else // special case if floating point negative numbers exist
 		{	int negm1 = neg-1;
 			for (size_t i=0; i<count; i++)
-			{	int v = elem[i].key[k];
-				if (v >= 0)
-					elem_copy[offset[cast(ubyte)v]++] = elem[i];
+			{	int value = elem[i].key[k];
+				int index = offset[cast(ubyte)value]++;
+				if (value >= 0)
+					elem_copy[index] = elem[i];
 				else // put all negative numbers in reverse order, since not represented /w 2's comp
-					elem_copy[negm1-offset[cast(ubyte)v]++] = elem[i];
+					elem_copy[negm1-index] = elem[i];
 			}
 		}
 
-		// Only not swap pointers if last pass of an odd size.
+		// Only not swap arrays if last pass of an odd size (rare).
 		if (!last_pass || K.sizeof % 2 == 0)
-		{	Elem* temp = elem_copy;
+		{	Elem[] temp = elem_copy;
 			elem_copy = elem;
 			elem = temp;
 		}
@@ -338,8 +341,8 @@ void radixSort(T, K)(T[] array, bool increasing, K delegate(T elem) getKey, bool
 	}
 
 	// free memory
-	free(elem);
-	free(elem_copy);
+	Memory.free(elem_copy);
+	Memory.free(elem);
 }
 
 unittest

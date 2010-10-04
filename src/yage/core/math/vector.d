@@ -406,6 +406,7 @@ alias Vec!(4, float) Vec4f;		/// A four-component float Vec
 struct Vec3f
 {
 	static const byte components = 3;
+	static const Vec3f ONE = Vec3f(1);
 	
 	union
 	{	struct
@@ -472,15 +473,13 @@ struct Vec3f
 
 	/// Create a Vec3f with all values as s.
 	static Vec3f opCall(float s)
-	{	return Vec3f(s, s, s);
+	{	Vec3f res={s, s, s};
+		return res;
 	}
 
 	/// Create a new Vec3f with the values x, y, and z
 	static Vec3f opCall(float x, float y, float z)
-	{	Vec3f res=void;
-		res.x = x;
-		res.y = y;
-		res.z = z;
+	{	Vec3f res={x, y, z};
 		return res;
 	}
 

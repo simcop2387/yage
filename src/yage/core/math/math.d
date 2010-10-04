@@ -26,7 +26,7 @@ public const float _180_PI = 57.2957795130823; // 180 / pi
 bool almostEqual(float a, float b, float fudge=0.0001)
 {	if (abs(a-b) <= fudge)
 		return true;
-	return abs((a-b)/b) <= fudge;
+	return abs(a-b) <= fudge*abs(b);
 }
 unittest
 {	assert(almostEqual(0, 0));
@@ -34,6 +34,7 @@ unittest
 	assert(almostEqual(0, 0.0001));
 	assert(almostEqual(0, -0.0001));
 	assert(almostEqual(1, 1.000099));
+	assert(almostEqual(-1, -1.000099));
 	assert(almostEqual(1000, 1000.1));
 	assert(!almostEqual(10000, 10001.01));
 	//assert(almostEqual(float.infinity, float.infinity));

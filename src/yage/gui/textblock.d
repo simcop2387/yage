@@ -573,8 +573,8 @@ struct TextBlock
 				//style.size *= fontScale;
 				//Letter* letter = ResourceManager::getLetter(text.at(lastLetter), &style);
 				//line.width = line.xOffsets.at(lastLetter) + letter->left + letter->advanceX;
-				for (int i=0; i<=lastLetter; i++)
-					line.width += line.letters[i].advanceX;
+				for (int j=0; j<=lastLetter; j++)
+					line.width += line.letters[j].advanceX;
 			}
 
 			line.height = lineHeight;

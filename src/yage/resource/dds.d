@@ -135,7 +135,7 @@ DDSImageData* loadDDSTextureFile(ubyte[] fileContents) {
 	
 	// Get the surface descriptor
 	DDSInfo ddsinfo;
-	memcpy(&ddsinfo, fileContents[4..$], ddsinfo.sizeof); // TODO: size check
+	memcpy(&ddsinfo, fileContents[4..$].ptr, ddsinfo.sizeof); // TODO: size check
 	int nread = ddsinfo.sizeof;
 	bswapLE(ddsinfo.size);
 	

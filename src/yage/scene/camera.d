@@ -78,7 +78,8 @@ class CameraNode : MovableNode
 	{	listener = this;		
 	}
 	
-	/**
+	/*
+	 * Unfinished!
 	 * This function casts a ray from the Camera's view into the scene
 	 * and returns all Nodes that it collides with.
 	 * This will not return any Nodes from the Scene's skybox.
@@ -91,7 +92,7 @@ class CameraNode : MovableNode
 	{	return null;
 	}
 
-	/**
+	/*
 	 * Unfinished!
 	 * Get the 3d coordinate at the 2d screen coordinate at a distance of z from the camera.
 	 * Params:
@@ -206,16 +207,15 @@ class CameraNode : MovableNode
 		
 		// Create the clipping matrix from the modelview and projection matrices
 		Matrix clip, model;
-		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
-		glGetFloatv(GL_MODELVIEW_MATRIX, model.v.ptr);
+		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr); // TODO: Stop using OpenGL for this!  Look and see how mesa does it!
+		//glGetFloatv(GL_MODELVIEW_MATRIX, model.v.ptr);
 		
-		/*// Alternate approach that doesn't require glGetFloatv(GL_MODELVIEW_MATRIX
-		  // This sometimes has issues with clipping the near plane.
+		// Alternate approach that doesn't require glGetFloatv(GL_MODELVIEW_MATRIX)
 		if (scene == this.scene)
-			clip = getAbsoluteTransform().inverse() * clip;
-		else
-			clip = getAbsoluteTransform().toAxis().toMatrix().inverse() * clip;
-		*/
+			clip = getAbsoluteTransform(true).inverse() * clip;
+		else // this is a skybox.  Only transform by rotation.
+			clip = getAbsoluteTransform(true).toAxis().toMatrix().inverse() * clip;
+		
 		clip = model*clip;
 		
 		// Convert the clipping matrix to our six frustum planes.
