@@ -29,7 +29,6 @@ class CameraNode : MovableNode
 	public float near = 1;			// the distance of the camera's near plane.
 	public float far = 100000;		// camera's far plane
 	public float fov = 45;			// field of view angle of the camera.
-	public float aspect	= 0;		// aspect ratio of the view
 	public float threshold = 1;	// minimum size of node in pixels before it's rendered. Stored as 1/(size^2)
 
 	protected Plane[6] frustum;
@@ -117,11 +116,10 @@ class CameraNode : MovableNode
 	 *         it to be set automatically by the Camera resolution.  Zero is also the default value.
 	 *         threshold = Minimum size of a node in pixels before it's rendered.  The default
 	 *         is 0.667 (2/3rds of a pixel).*/
-	void setView(float near=1, float far=1000000, float fov=45, float aspect=0, float threshold=0.667)
+	void setView(float near=1, float far=1000000, float fov=45, float threshold=0.667)
 	{	this.near = near;
 		this.far = far;
 		this.fov = fov;
-		this.aspect = aspect;
 		this.threshold = 1/(threshold*threshold);
 	}
 
@@ -134,81 +132,57 @@ class CameraNode : MovableNode
 	{
 		if (!root)
 			root=scene;
-		float height = Window.getInstance().getHeight();
 		
+		// Test this node for visibility
 		VisibleNode vnode = cast(VisibleNode)root;
 		if (vnode && root.getVisible())
 		{	
-			// Cull nodes that are not inside the frustum
-			float[3] position;
-			//synchronized (vnode) // req'd if parallel foreach is used, and that gives only a small speed up.
-				position[] = vnode.cache[scene.transform_read].transform_abs.v[12..15];			
-			
-			float r = -vnode.getRadius();
-			
-			
-			vnode.onscreen = true;			
-			foreach (f; frustum)
-			{	
-				// formula for the plane distance-to-point function, expanded in-line.			
-				if (f.x*position[0] +f.y*position[1] + f.z*position[2] + f.d < r)
-				{	vnode.onscreen = false;
-					break;
-				}
-				
-				// Why is the vector op version slower?
-				//float[3] result = f.v[0..3][] * node_abs.v[12..15][];
-				//if (result[0] + result[1] + result[2] + f.d < r)
-			}
-
-			// cull nodes that are too small to see.
-			if (vnode.onscreen)
-			{	
-				Matrix* cam_abs = &cache[scene.transform_read].transform_abs;
-				float x = cam_abs.v[12]-position[0];
-				float y = cam_abs.v[13]-position[1];
-				float z = cam_abs.v[14]-position[2];
-
-				float dist = sqrt(x*x + y*y+z*z);
-				float pixelHeight = 2*height * -r/dist;
-				if (r*r*height*height*threshold < x*x + y*y + z*z) // equivalent to r/dist < pixel threshold
-					vnode.onscreen = false;
-				else // Onscreen and big enough to draw
-					// synchronized(this)
-						lookaside ~= vnode;
-			}
+			float height = Window.getInstance().getHeight();
+			Vec3f* position = cast(Vec3f*)vnode.cache[scene.transform_read].transform_abs.v[12..15].ptr;
+			if (isVisible(*position, vnode.getRadius(), height, threshold))
+				lookaside ~= vnode;
 		}
 		
 		// Recurse through and render children.
 		auto children = root.getChildren();
-		//if (children.length > 100) // this makes things so much faster but crashes randomly with an access violation and weird stack trace, or an odd exit status code.
-		//	foreach (Node c; parallel(children)) // and objects also flicker in and out of existence.
-		//		getVisibleNodes(c, lookaside);
-		//else
 			foreach (Node c; children)
 				getVisibleNodes(c, lookaside);
 
 		
 		return lookaside;
 	}
+	
+	/**
+	 * Is this point/sphere within the view area of the camera and large enough to be drawn?
+	 * Params:
+	 *     point = Point in 3d space, in world coordinates
+	 *     radius = Radius of this point (sphere).
+	 *     totalHeight = Pixel height of the screen.
+	 *     minHeight = Minimum pixel height of this object in order for it to be seen. */
+	bool isVisible(Vec3f point, float radius, float totalHeight, float minHeight=1)
+	{
+		// See if it's inside the frustum
+		float nr = -radius;
+		foreach (f; frustum)
+			if (f.x*point.x +f.y*point.y + f.z*point.z + f.d < nr) // plane distance-to-point function, expanded in-line.
+				return false;
+		
+		// See if it's large enough to be drawn
+		Vec3f* cameraPosition = cast(Vec3f*)cache[scene.transform_read].transform_abs.v[12..15].ptr;
+		float distance2 = (*cameraPosition - point).length2();
+		return radius*radius*totalHeight*totalHeight*minHeight > distance2;
+	}
 
 	/*
 	 * Calculate a 6-plane view frutum based on the orientation of the camera and
-	 * the parameters passed to setView(). 
-	 * This needs to be recalculated 
-	 * 
-	 * This needs to be rewritten to use the camera's transform matrix + fov and
-	 * not rely on the current state of OpenGL's view matrix.
-	 * It might also be good to put this in calcTransform() instead.*/
-	public void buildFrustum(Scene scene, int xres, int yres)
-	{	//assert(!transform_dirty);
-		
+	 * the parameters passed to setView().*/
+	public void buildFrustum(Scene scene, float aspect)
+	{	
 		// Create the clipping matrix from the modelview and projection matrices
-		float aspect = xres / cast(float)yres;
 		Matrix projection = Matrix.createProjection(fov*3.1415927f/180f, aspect, near, far);
 		Matrix model = scene == this.scene ?
 			getAbsoluteTransform(true).inverse() :
-			getAbsoluteTransform(true).toAxis().toMatrix().inverse();		
+			getAbsoluteTransform(true).toAxis().toMatrix().inverse(); // shed all but the rotation values
 		Matrix clip = model*projection;
 		
 		// Convert the clipping matrix to our six frustum planes.

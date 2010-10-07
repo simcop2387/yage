@@ -643,7 +643,7 @@ struct Render
 			// start reading from the most recently updated set of buffers.
 			scene.swapTransformRead();
 			
-			graphics.bindCamera(camera, target.getWidth(), target.getHeight());	
+			graphics.bindCamera(camera, target.getWidth()/ cast(float)target.getHeight());	
 			glLoadIdentity();
 			
 			// Precalculate the inverse of the Camera's absolute transformation Matrix.
@@ -677,7 +677,7 @@ struct Render
 					glClear(GL_DEPTH_BUFFER_BIT); // reset depth buffer for drawing after a skybox
 			}
 				
-			camera.buildFrustum(scene, target.getWidth(), target.getHeight());
+			camera.buildFrustum(scene, target.getWidth()/ cast(float)target.getHeight());
 			visibleNodes = camera.getVisibleNodes(scene, visibleNodes);
 			result += drawNodes(visibleNodes.data);
 			visibleNodes.reserve = visibleNodes.length;

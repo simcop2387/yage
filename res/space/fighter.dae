@@ -54,10 +54,10 @@
                             <texture texture="fighter.xml-image-sampler" texcoord="" />
                         </diffuse>
                         <specular>
-                            <color>0.000000 0.000000 0.000000 1.000000</color>
+                            <color>1.000000 1.000000 1.000000 1.000000</color>
                         </specular>
                         <shininess>
-                            <float>0.000000</float>
+                            <float>127.000000</float>
                         </shininess>
                         <reflective>
                             <color>1.000000 1.000000 1.000000 1.000000</color>
