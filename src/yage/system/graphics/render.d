@@ -677,7 +677,7 @@ struct Render
 					glClear(GL_DEPTH_BUFFER_BIT); // reset depth buffer for drawing after a skybox
 			}
 				
-			camera.buildFrustum(scene);
+			camera.buildFrustum(scene, target.getWidth(), target.getHeight());
 			visibleNodes = camera.getVisibleNodes(scene, visibleNodes);
 			result += drawNodes(visibleNodes.data);
 			visibleNodes.reserve = visibleNodes.length;

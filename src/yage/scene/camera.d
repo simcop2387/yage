@@ -6,7 +6,6 @@
 
 module yage.scene.camera;
 
-import derelict.opengl.gl;
 import tango.math.Math;
 import yage.core.array;
 import yage.core.math.matrix;
@@ -102,8 +101,8 @@ class CameraNode : MovableNode
 	{	Matrix clip;
 		Matrix modl;
 
-		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
-		glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
+		//glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
+		//glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
 		
 		return Vec3f();
 	}
@@ -201,22 +200,16 @@ class CameraNode : MovableNode
 	 * This needs to be rewritten to use the camera's transform matrix + fov and
 	 * not rely on the current state of OpenGL's view matrix.
 	 * It might also be good to put this in calcTransform() instead.*/
-	public void buildFrustum(Scene scene)
+	public void buildFrustum(Scene scene, int xres, int yres)
 	{	//assert(!transform_dirty);
-		//assert(System.isSystemThread()); // this shouldn't be necessary after removing the opengl calls.
 		
 		// Create the clipping matrix from the modelview and projection matrices
-		Matrix clip, model;
-		glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr); // TODO: Stop using OpenGL for this!  Look and see how mesa does it!
-		//glGetFloatv(GL_MODELVIEW_MATRIX, model.v.ptr);
-		
-		// Alternate approach that doesn't require glGetFloatv(GL_MODELVIEW_MATRIX)
-		if (scene == this.scene)
-			clip = getAbsoluteTransform(true).inverse() * clip;
-		else // this is a skybox.  Only transform by rotation.
-			clip = getAbsoluteTransform(true).toAxis().toMatrix().inverse() * clip;
-		
-		clip = model*clip;
+		float aspect = xres / cast(float)yres;
+		Matrix projection = Matrix.createProjection(fov*3.1415927f/180f, aspect, near, far);
+		Matrix model = scene == this.scene ?
+			getAbsoluteTransform(true).inverse() :
+			getAbsoluteTransform(true).toAxis().toMatrix().inverse();		
+		Matrix clip = model*projection;
 		
 		// Convert the clipping matrix to our six frustum planes.
 		frustum[0] = Plane(clip[3]-clip[0], clip[7]-clip[4], clip[11]-clip[ 8], clip[15]-clip[12]);

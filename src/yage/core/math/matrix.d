@@ -31,12 +31,12 @@ struct Matrix
 						0, 1, 0, 0,
 						0, 0, 1, 0,
 						0, 0, 0, 1,]; /// elements in array form.
-		//Vec4f[4] col;	// produces a forward reference error
+		Vec4f[4] col;	// produces a forward reference error
 		struct /// elements in column/row form.
-		{	float v00, v01, v02, v03; /// first column
-			float v10, v11, v12, v13; /// second column
-			float v20, v21, v22, v23; /// third column
-			float v30, v31, v32, v33; /// fourth column
+		{	float c0r0, c0r1, c0r2, c0r3; /// first column
+			float c1r0, c1r1, c1r2, c1r3; /// second column
+			float c2r0, c2r1, c2r2, c2r3; /// third column
+			float c3r0, c3r1, c3r2, c3r3; /// fourth column
 		}
 	}
 	
@@ -106,12 +106,12 @@ struct Matrix
 		float tb = top-bottom;
 		float fn = far-near;
 		Matrix result;
-		result.v00 = 2/rl;
-		result.v11 = 2/tb;
-		result.v22 = -2/fn;
-		result.v[12] = -(right+left)/rl;
-		result.v[13] = -(top+bottom)/tb;
-		result.v[14] = -(far+near)/fn;
+		result.c0r0 = 2/rl;
+		result.c1r1 = 2/tb;
+		result.c2r2 = -2/fn;
+		result.c3r0 = -(right+left)/rl;
+		result.c3r1 = -(top+bottom)/tb;
+		result.c3r2 = -(far+near)/fn;
 
 		//assert(result * result.transpose() == Matrix());
 		
@@ -147,9 +147,9 @@ struct Matrix
 	void decompose(out Vec3f position, out Vec3f rotation, out Vec3f scale) /// ditto
 	{		
 		// Extract the translation directly
-		position.x = v30;
-		position.y = v31;
-		position.z = v32;
+		position.x = c3r0;
+		position.y = c3r1;
+		position.z = c3r2;
 		
 		// Take the lengths of the basis vectors to find the scale factors.
 		scale.x = (cast(Vec3f*)v[0..3]).length();
@@ -185,9 +185,7 @@ struct Matrix
 	{	position = rotation = scale = Matrix(); // set each to identity.
 		
 		// Extract the translation directly
-		position.v30 = v30;
-		position.v31 = v31;
-		position.v32 = v32;
+		position.v[12..15] = v[12..15];
 		
 		// Extract the orientation basis vectors
 		Vec3f* rx = cast(Vec3f*)v[0..3];
@@ -203,15 +201,15 @@ struct Matrix
 		rotation.v[8..11]= rz.scale(1/rz_length).v[];
 		
 		// Take the lengths of the basis vectors to find the scale factors.
-		scale.v00 = rx_length;
-		scale.v11 = ry_length;
-		scale.v22 = rz_length;
+		scale.c0r0 = rx_length;
+		scale.c1r1 = ry_length;
+		scale.c2r2 = rz_length;
 	}
 	unittest
 	{	// Decompose and recompose a random matrix to make sure we get back what we started with.
 		Matrix test = Matrix.random(); // I guess it doesn't have to be affine to work
-		test.v03 = test.v13 = test.v23 = 0;
-		test.v33 = 1; // the last row isn't used in decompose, so we set it to identity.
+		test.c0r3 = test.c1r3 = test.c2r3 = 0;
+		test.c3r3 = 1; // the last row isn't used in decompose, so we set it to identity.
 		
 		Matrix position, rotation, scale;
 		test.decompose(position, rotation, scale);
@@ -729,6 +727,37 @@ struct Matrix
 		Format.convert("[{} {} {} {}]\n", v[2], v[6], v[10], v[14]) ~
 		Format.convert("[{} {} {} {}]\n", v[3], v[7], v[11], v[15]);
 	}
+	
+
+	/**
+	 * Params:
+	 *     fovy = In radians
+	 *     aspect = 
+	 *     zNear = 
+	 *     zFar = 
+	 * Returns:
+	 */
+	static Matrix createProjection(float fovY, float aspect, float near, float far)
+	{	Matrix result;
+		
+		float halfFov = fovY * .5f;		
+
+		float sine = sin(halfFov);
+		float zdist = far - near;
+		if (aspect == 0 || zdist == 0 || sine == 0)
+			return result;
+		
+		float cotangent = cos(halfFov) / sine;
+		
+		result.c0r0 = cotangent / aspect;
+		result.c1r1 = cotangent;
+		result.c2r2 = -(far + near) / zdist;
+		result.c2r3 = -1;
+		result.c3r2 = -2 * near * far / zdist;
+		result.c3r3 = 0;
+		return result;
+	}
+	
 	
 	// Get a random matrix, good for unit-testing.
 	protected static Matrix random()

@@ -90,11 +90,6 @@ class Surface : Tree!(Surface)
 	protected static Surface grabbedSurface; // surface that has captured the mouse
 	protected static Surface focusSurface; // surface that has focus for receiving input
 
-	unittest {
-		// Needed for unit testing because freetype is not loaded beforehand
-		// This seems to only be needed on Linux?  Whit unittest caused the failure?
-		Libraries.loadFreeType();
-	}
 
 	/**
 	 * Create a new Surface at 0, 0 with 0 width and height. */
