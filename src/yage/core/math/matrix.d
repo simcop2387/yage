@@ -31,7 +31,7 @@ struct Matrix
 						0, 1, 0, 0,
 						0, 0, 1, 0,
 						0, 0, 0, 1,]; /// elements in array form.
-		Vec4f[4] col;	// produces a forward reference error
+		Vec!(4, float)[4] col;	// produces a forward reference error
 		struct /// elements in column/row form.
 		{	float c0r0, c0r1, c0r2, c0r3; /// first column
 			float c1r0, c1r1, c1r2, c1r3; /// second column

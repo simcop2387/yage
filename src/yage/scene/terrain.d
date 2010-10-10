@@ -53,7 +53,7 @@ class TerrainNode : VisibleNode
 	 *         Every block returned will have its polygons smaller than pixelsPerPolygon.
 	 *         Smaller values for pixelsPerPolygon will yield blocks with more polygons and a better rendering.
 	 */
-	Geometry[] getVisibleGeometry(CameraNode camera, float pixelsPerPolygon=32)
+	override Geometry[] getVisibleGeometry(CameraNode camera/*, float pixelsPerPolygon=32*/)
 	{
 		/// TODO
 		// This Geometry can be passed directly to the render system.

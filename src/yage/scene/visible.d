@@ -9,6 +9,7 @@ module yage.scene.visible;
 import tango.math.Math;
 import tango.util.container.more.Heap;
 import yage.core.all;
+import yage.resource.geometry;
 import yage.resource.material;
 import yage.scene.all;
 import yage.scene.scene;
@@ -110,6 +111,10 @@ class VisibleNode : MovableNode
 	{	return visible;
 	}
 
+	Geometry[] getVisibleGeometry(CameraNode camera)
+	{	return null;
+	}
+	
 	/*
 	 * Find the lights that most affect the brightness of this Node.
 	 * Params:

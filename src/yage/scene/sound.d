@@ -230,13 +230,15 @@ class SoundNode : MovableNode, ITemporal
 	 * This should be protected, but making it anything but public causes it not to be called.
 	 * Most likely a D bug. */
 	override void ancestorChange(Node old_ancestor)
-	{	Scene old_scene = old_ancestor ? old_ancestor.scene : null;
-		super.ancestorChange(old_ancestor); // must be called first so scene is set.
+	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		
 		// Update scene's list of sounds
-		if (old_scene && old_scene !is scene)
-			old_scene.removeSound(this);
-		if (scene && scene !is old_scene)
-			scene.addSound(this);
+		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
+		if (old_scene !is scene)
+		{	if (old_scene)
+				old_scene.removeSound(this);
+			if (scene)
+				scene.addSound(this);
+		}
 	}
 }

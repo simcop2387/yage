@@ -155,17 +155,12 @@ class Node : Tree!(Node), IDisposable, ICloneable
 		b.setPosition2(Vec3f(5, 0, 0));
 		assert(b.getWorldPosition().almostEqual(Vec3f(-2, 0, 0)));
 	}
-	
-	protected void checkLock()
-	{	if (scene)
-			assert(Thread.getThis() is scene.owner, "Please call lock() on this Node's scene in thread before using functions in this Node.");
-	}
-	
-	void update2()
+
+	void update2(float delta)
 	{	mixin(Sync!("scene"));
 		
 		foreach (node; children)
-			node.update2();
+			node.update2(delta);
 	}
 	
 	
@@ -324,8 +319,6 @@ class Node : Tree!(Node), IDisposable, ICloneable
 		// Call the onUpdate() function
 		if (onUpdate !is null)
 			onUpdate(); // TODO: make this exclusive like Surface events.
-		
-		update2();
 		
 		// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.

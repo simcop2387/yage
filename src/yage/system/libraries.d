@@ -24,7 +24,8 @@ abstract class Libraries
 	 * Params:
 	 *     load = If false, FreeType will be unloaded. */
 	static void loadFreeType(bool load=true)
-	{	if (load && !freeTypeLoaded)
+	{	
+		if (load && !freeTypeLoaded)
 		{	Log.info("Loading FreeType.");
 			DerelictFT.load();
 			if (!FT_Init_FreeType)

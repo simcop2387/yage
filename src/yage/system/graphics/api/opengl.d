@@ -95,11 +95,11 @@ class OpenGL : GraphicsAPI
 	}
 	
 	///
-	void bindCamera(CameraNode camera, float aspectRatio)
+	void bindCamera(CameraNode camera)
 	{	current.camera = camera;
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(camera.fov, aspectRatio, camera.near, camera.far);
+		gluPerspective(camera.fov, camera.aspectRatio, camera.near, camera.far);
 
 		glMatrixMode(GL_MODELVIEW);
 	}

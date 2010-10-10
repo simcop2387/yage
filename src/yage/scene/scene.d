@@ -40,39 +40,8 @@ import yage.scene.visible;
  * scene.setSkybox(skybox);
  * --------------------------------
  */
-class Scene : Node//, ITemporal
+class Scene : Node//, ITemporal, IDisposable
 {
-	protected Mutex mutex;
-	protected int lockCount;
-	public Thread owner;
-	
-	/**
-	 * Scenes are often used by multiple threads at once.
-	 * When a thread users a scene, it will first call lock() to acquire ownership and then unlock() when finished.
-	 * This is done automatically by Node member functions.  However, if several operations need to be performed,
-	 * an entire block of code can be nested between manual calls to lock() and unlock().  This will also perform
-	 * better than the otherwise fine-grained synchronization.
-	 * 
-	 * For convenience, lock() and unlock() calls may be nested.  Subsequent lock() calls will still maintain the lock, 
-	 * but unlocking will only occur after unlock() has been called an equal number of times. */
-	void lock()
-	{	if (Thread.getThis() !is owner) 
-		{	mutex.lock();
-			owner = Thread.getThis();
-		}
-		lockCount++;
-	}	
-	void unlock() /// ditto
-	{	assert(Thread.getThis() is owner);
-		lockCount--;
-		if (!lockCount)
-		{	mutex.unlock();
-			owner = null;
-		}
-	}
-	
-	// Old:
-	//---------------------------------------------
 	
 	Color ambient;				/// The color of the scene's global ambient light; defaults to black.
 	Color backgroundColor;		/// Background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
@@ -87,28 +56,32 @@ class Scene : Node//, ITemporal
 	
 	Scene skyBox;				/// A Scene can have another heirarchy of nodes that will be rendered as a skybox by any camera. 
 	
+	
 	protected CameraNode[CameraNode] cameras;	
 	protected LightNode[LightNode] lights;
 	protected SoundNode[SoundNode] sounds;
-	package Object cameras_mutex;
-	package Object lights_mutex;
-	package Object sounds_mutex;	
-	package Object transform_mutex;			// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
+	protected FastLock mutex;
+	protected Mutex camerasMutex;
+	protected Mutex lightsMutex; // Having a separate mutex prevents render from watiing for the start of the next update loop.
+	protected Object sounds_mutex;	
 
 	protected Repeater update_thread;
-	
-	protected long timestamp[3];			// Used for timestamps of newest transform_read/write
-	package int transform_read=0, transform_write=1;
 
 	protected Timer delta; 					// time since the last time this Scene was updated.
 	protected float delta_time;
 
 	protected static Scene[Scene] all_scenes;
 	
+	// Deprecated
+	protected long timestamp[3];			// Used for timestamps of newest transform_read/write
+	package int transform_read=0, transform_write=1;
+	package Object transform_mutex;			// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
+
+	
 	
 	/// Construct an empty Scene.
 	this(float frequency = 60)
-	{	mutex = new Mutex();
+	{	mutex = new FastLock();
 		
 		super();
 	
@@ -123,8 +96,8 @@ class Scene : Node//, ITemporal
 		update_thread.setFunction(&update);		
 		update_thread.setErrorFunction(&defaultErrorFunction);
 	
-		cameras_mutex = new Object();
-		lights_mutex = new Object();
+		camerasMutex = new Mutex();
+		lightsMutex = new Mutex();
 		sounds_mutex = new Object();
 		transform_mutex = new Object();
 		
@@ -144,8 +117,10 @@ class Scene : Node//, ITemporal
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
 	override Scene clone(bool children=false)
-	{	auto result = cast(Scene)super.clone(children);
-				
+	{	
+		mixin(Sync!("this"));
+		
+		auto result = cast(Scene)super.clone(children);				
 		result.ambient = ambient;
 		result.speedOfSound = speedOfSound;
 		result.backgroundColor = backgroundColor;
@@ -154,11 +129,8 @@ class Scene : Node//, ITemporal
 		result.fogEnabled = fogEnabled;
 		result.skyBox = skyBox;
 		
-		// non-atomic operations
-		synchronized (this)
-		{	result.delta.seek(delta.tell());
-			result.delta.pause();
-		}
+		result.delta.seek(delta.tell());
+		result.delta.pause();		
 		
 		return result;
 	}
@@ -184,7 +156,7 @@ class Scene : Node//, ITemporal
 			{	update_thread.dispose();
 				update_thread = null;
 			}
-			
+			cameras = null;
 			lights = null;
 			sounds = null;
 			all_scenes.remove(this);
@@ -194,28 +166,6 @@ class Scene : Node//, ITemporal
 	/// Return the amount of time since the last time update() was called for this Scene.
 	float getDeltaTime()
 	{	return delta_time;
-	}
-	
-	/**
-	 * Get all CameraNodes that are currently a part of this scene.
-	 * Returns: a self indexed array. */
-	CameraNode[CameraNode] getAllCameras()
-	{	return cameras;		
-	}
-	
-	/**
-	 * Get all LightNodes that are currently a part of this scene.
-	 * Returns:  A copy of the Lights array to avoid synchronization issues. */
-	LightNode[] getAllLights()
-	{	synchronized (lights_mutex) // crashes occur without this
-			return lights.values;
-	}
-	
-	/**
-	 * Get all SoundNodes that are currently a part of this scene.
-	 * Returns: a self indexed array. */
-	SoundNode[SoundNode] getAllSounds()
-	{	return sounds;		
 	}
 
 	/**
@@ -230,11 +180,31 @@ class Scene : Node//, ITemporal
 	void setErrorFunction(void function(Exception e) on_error) /// ditto
 	{	update_thread.setErrorFunction(on_error);
 	}
-	void defaultErrorFunction(Exception e)
-	{	Log.error("The scene thread threw an uncaught exception:  %s", e.msg);
+	void defaultErrorFunction(Exception e) /// ditto
+	{	char[] msg;
+		e.writeOut(delegate void(char[] a) {
+			msg ~= a;
+		});
+		Log.error("The scene thread threw an uncaught exception:  %s", msg);
 		System.abort("Yage is aborting due to scene exception.");
 	}
 
+	/**
+	 * Scenes are often used by multiple threads at once.
+	 * When a thread users a scene, it will first call lock() to acquire ownership and then unlock() when finished.
+	 * This is done automatically by Node member functions.  However, if several operations need to be performed,
+	 * an entire block of code can be nested between manual calls to lock() and unlock().  This will also perform
+	 * better than the otherwise fine-grained synchronization.
+	 * 
+	 * For convenience, lock() and unlock() calls may be nested.  Subsequent lock() calls will still maintain the lock, 
+	 * but unlocking will only occur after unlock() has been called an equal number of times. */
+	void lock()
+	{	mutex.lock();
+	}	
+	void unlock() /// ditto
+	{	mutex.unlock();
+	}
+	
 	/*
 	 * Get the Repeater that calls update() in its own thread.
 	 * This allows more advanced interaction than the shorthand functions implemented below.
@@ -267,6 +237,101 @@ class Scene : Node//, ITemporal
 	}
 
 	/**
+	 * Update all Nodes in the scene by delta seconds.
+	 * This function is typically called automatically at a set interval from the scene's update_thread once scene.play() is called.
+	 * Params:
+	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
+	override void update(float delta = delta.tell())
+	{	mixin(Sync!("this"));
+	
+		// deprecated
+		super.update(delta);		
+		delta_time = delta;
+		this.delta.seek(0);
+		scene.swapTransformWrite();
+		
+		// New
+		//super.update2(delta); // recurses through children
+		
+		camerasMutex.lock();
+		//foreach (camera; cameras)
+		//	camera.buildVisibleList();
+		camerasMutex.unlock();
+	}
+
+	/*
+	 * Add/remove the light from the scene's list of lights.
+	 * This function is used internally by the engine and doesn't normally need to be called.*/
+	package void addLight(LightNode light)
+	{	mixin(Sync!("lightsMutex"));
+		lights[light] = light;
+	}
+	package void removeLight(LightNode light) // ditto
+	{	mixin(Sync!("lightsMutex"));
+		lights.remove(light); 
+	}
+	
+	/**
+	 * Get all LightNodes that are currently a part of this scene.
+	 * Returns:  A copy of the Lights array to avoid synchronization issues. */
+	LightNode[] getAllLights()
+	{	mixin(Sync!("lightsMutex"));
+		return lights.values;
+	}
+	
+	/*
+	 * Add/remove the camera from the scene's list of cameras.
+	 * This function is used internally by the engine and doesn't normally need to be called.*/
+	package void addCamera(CameraNode camera)
+	{	mixin(Sync!("camerasMutex"));
+		cameras[camera] = camera;
+	}
+	package void removeCamera(CameraNode camera) // ditto
+	{	mixin(Sync!("camerasMutex"));
+		cameras.remove(camera);
+	}
+
+	/**
+	 * Get all CameraNodes that are currently a part of this scene.
+	 * Returns: a self indexed array. */
+	CameraNode[CameraNode] getAllCameras()
+	{	mixin(Sync!("camerasMutex"));
+		return cameras;		
+	}
+	
+	/*
+	 * Add/remove the sound from the scene's list of sounds.
+	 * This function is used internally by the engine and doesn't normally need to be called.*/
+	package void addSound(SoundNode sound)
+	{	synchronized (sounds_mutex) sounds[sound] = sound;	
+	}	
+	package void removeSound(SoundNode sound) // ditto
+	{	synchronized (sounds_mutex) sounds.remove(sound);
+	}	
+	
+	/**
+	 * Get all SoundNodes that are currently a part of this scene.
+	 * Returns: a self indexed array. */
+	SoundNode[SoundNode] getAllSounds()
+	{	return sounds;		
+	}
+	
+	/*
+	 * Used internally. */
+	Object getSoundsMutex()
+	{	return sounds_mutex;		
+	}
+
+	/**
+	 * Get a self-indexed array of all senes that are active (have been constructed but not disposed). */
+	static Scene[Scene] getAllScenes()
+	{	return all_scenes;		
+	}
+	
+	// Deprecated:
+	
+
+	/**
 	 * Swap the transform buffer cache for each Node to the latest that's not currently
 	 * being written to.*/
 	void swapTransformRead()
@@ -292,64 +357,5 @@ class Scene : Node//, ITemporal
 			transform_write = 3 - (transform_read+transform_write);
 		}
 	}
-
-	/**
-	 * Update all Nodes in the scene by delta seconds.
-	 * This function is typically called automatically at a set interval from the scene's update_thread once scene.play() is called.
-	 * Params:
-	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
-	override void update(float delta = delta.tell())
-	{	lock(); // new!
-	
-		super.update(delta);
-		delta_time = delta;
-		this.delta.seek(0);
-		scene.swapTransformWrite();
-		
-		unlock(); // new!
-	}
-
-	/*
-	 * Add/remove the light from the scene's list of lights.
-	 * This function is used internally by the engine and doesn't normally need to be called.*/
-	void addLight(LightNode light)
-	{	synchronized (lights_mutex) lights[light] = light;
-	}
-	void removeLight(LightNode light) // ditto
-	{	synchronized (lights_mutex) lights.remove(light);
-	}
-	
-	/*
-	 * Add/remove the camera from the scene's list of cameras.
-	 * This function is used internally by the engine and doesn't normally need to be called.*/
-	void addCamera(CameraNode camera)
-	{	synchronized (cameras_mutex) cameras[camera] = camera;
-	}
-	void removeCamera(CameraNode camera) // ditto
-	{	synchronized (cameras_mutex) cameras.remove(camera);
-	}
-	
-	/*
-	 * Add/remove the sound from the scene's list of sounds.
-	 * This function is used internally by the engine and doesn't normally need to be called.*/
-	void addSound(SoundNode sound)
-	{	synchronized (sounds_mutex) sounds[sound] = sound;	
-	}	
-	void removeSound(SoundNode sound) // ditto
-	{	synchronized (sounds_mutex) sounds.remove(sound);
-	}
-	
-	/*
-	 * Used internally. */
-	Object getSoundsMutex()
-	{	return sounds_mutex;		
-	}
-
-	/**
-	 * Get a self-indexed array of all senes that are active (have been constructed but not disposed). */
-	static Scene[Scene] getAllScenes()
-	{	return all_scenes;		
-	}
-	
 	
 }

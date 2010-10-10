@@ -20,7 +20,7 @@ class Repeater : Timer, IDisposable
 	protected double call_time = 0f;
 	
 	protected bool active = true;	
-	protected bool calling = false;
+	protected bool calling = false; // currently in the middle of calling the user function.
 	protected void delegate(float f) func;
 	protected void delegate(Exception e) on_error;
 	
@@ -41,19 +41,20 @@ class Repeater : Timer, IDisposable
 				if (!paused())
 				{						
 					// Call as many times as needed to catch up.
-					while (outer.tell() > call_time)
+					while (active && outer.tell() > call_time)
 					{	double s = outer.tell();						
 						if (func)
 						{	calling = true;
 							try {
 								func(1/frequency); // call the function.
 							} catch(Exception e)
-							{	if (on_error != null)
+							{	active = false;
+								if (on_error != null)
 									on_error(e);
 								else
-									throw e;								
+									throw e;				
 							} finally
-							{	calling = false;							
+							{	calling = false;
 							}
 						}
 						call_time += 1f/frequency;						

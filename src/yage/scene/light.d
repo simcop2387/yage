@@ -57,7 +57,7 @@ class LightNode : MovableNode
 	float spotExponent = 0;
 
 	public int intensity; // Used internally as a temp variable to sort lights by intensity for each node.
-	float	quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
+	float quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
 	
 	Vec3f inverseCameraPosition; // Used internally to store the position in camera-space.
 	
@@ -168,9 +168,11 @@ class LightNode : MovableNode
 	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		
 		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
-		if (old_scene)
-			old_ancestor.scene.removeLight(this);
-		if (scene && scene != old_scene)
-			scene.addLight(this);
+		if (scene !is old_scene)
+		{	if (old_scene)
+				old_ancestor.scene.removeLight(this);
+			if (scene)
+				scene.addLight(this);
+		}
 	}
 }

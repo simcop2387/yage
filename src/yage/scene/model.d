@@ -14,6 +14,7 @@ import yage.resource.geometry;
 import yage.resource.manager;
 import yage.resource.model;
 import yage.resource.material;
+import yage.scene.camera;
 import yage.scene.visible;
 import yage.scene.node;
 
@@ -157,6 +158,13 @@ class ModelNode : VisibleNode
 	{	return radius * getScale().max();
 	}
 
+	private Geometry[1] visibleGeometry;
+	
+	override Geometry[] getVisibleGeometry(CameraNode camera)
+	{	visibleGeometry[0] = model;
+		return visibleGeometry;
+	}
+	
 	/*
 	 * This function is called automatically as a Scene's update() function recurses through Nodes.
 	 * It normally doesn't need to be called manually.*/

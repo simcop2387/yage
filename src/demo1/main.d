@@ -56,7 +56,10 @@ class DemoScene : Scene
 		// Camera
 		camera = ship.getCameraSpot().addChild(new CameraNode());
 		ship.getCameraSpot().addChild(camera);
-		camera.setView(2, 2000000, 60, 1);	// wide angle and distanct
+		camera.near = 2;
+		camera.far = 2000000;
+		camera.fov = 60;
+		camera.threshold = 1; 
 		
 		// Music
 		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));

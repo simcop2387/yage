@@ -639,11 +639,12 @@ struct Render
 				scene = camera.getScene();
 			if (!scene)
 				throw new GraphicsException("Camera must be added to a scene before rendering.");
+			camera.aspectRatio = target.getWidth()/ cast(float)target.getHeight();
 			
 			// start reading from the most recently updated set of buffers.
 			scene.swapTransformRead();
 			
-			graphics.bindCamera(camera, target.getWidth()/ cast(float)target.getHeight());	
+			graphics.bindCamera(camera);	
 			glLoadIdentity();
 			
 			// Precalculate the inverse of the Camera's absolute transformation Matrix.
@@ -677,9 +678,21 @@ struct Render
 					glClear(GL_DEPTH_BUFFER_BIT); // reset depth buffer for drawing after a skybox
 			}
 				
-			camera.buildFrustum(scene, target.getWidth()/ cast(float)target.getHeight());
+			//camera.buildFrustum(scene, target.getWidth()/ cast(float)target.getHeight());
 			visibleNodes = camera.getVisibleNodes(scene, visibleNodes);
 			result += drawNodes(visibleNodes.data);
+			
+			/*
+			if (scene in camera.renderScenes)
+				foreach (rn; camera.renderScenes[scene].getReadBuffer())
+				{	graphics.bindMatrix(&rn.transform);
+					
+					geometry(rn.geometry, rn.lights, rn.materialOverrides);
+					graphics.bindMatrix(null);
+					
+					postRender();
+				}
+			*/
 			visibleNodes.reserve = visibleNodes.length;
 			visibleNodes.length = 0;
 	

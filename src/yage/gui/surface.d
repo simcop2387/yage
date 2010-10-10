@@ -823,7 +823,7 @@ class Surface : Tree!(Surface)
 	 * Get the default style for Surface.
 	 * None of these styles will be set to AUTO. */
 	static Style getDefaultStyle()
-	{	if (!defaultStyle.fontFamily)
+	{	if (!defaultStyle.fontFamily) // Create on first request
 		{	defaultStyle.fontFamily = ResourceManager.getDefaultFont(); // TODO: This prevents surfaces from being constructed before freetype!.
 			defaultStyle.fontSize = 12;
 			defaultStyle.fontStyle = Style.FontStyle.NORMAL;

@@ -495,7 +495,7 @@ struct TextBlock
 	 *     letters = 
 	 *     width = 
 	 *     lines = Provide an existing ArrayBuilder to fill--allows for fewer allocations */
-	private static ArrayBuilder!(Line) lettersToLines(Letter[] letters, int width, ArrayBuilder!(Line) lines=ArrayBuilder!(Line)())
+	private static ArrayBuilder!(Line) lettersToLines(Letter[] letters, int width, inout ArrayBuilder!(Line) lines=ArrayBuilder!(Line)())
 	{
 		lines.length = 0;
 		

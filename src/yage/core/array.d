@@ -511,7 +511,7 @@ struct ArrayBuilder(T)
 	{	return AT(array[0..size]);		
 	}
 	AT opSlice(size_t start, size_t end) /// ditto
-	{	assert(end < size);  // overloads a[i .. j]
+	{	assert(end <= size);  // overloads a[i .. j]
 		return AT(array[start..end]);		
 	}
 	
@@ -523,7 +523,7 @@ struct ArrayBuilder(T)
 	
 	///
 	AT opSliceAssign(T v, size_t start, size_t end)  // overloads a[i .. j] = v
-	{	assert(end < size);
+	{	assert(end <= size);
 		array[start..end] =	v;
 		return *this;
 	}

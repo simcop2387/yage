@@ -127,7 +127,11 @@ abstract class System
 		aborted = true;
 	}
 	static void abortException(Exception e) /// ditto
-	{	abort(e.toString());
+	{	char[] msg;
+		e.writeOut(delegate void(char[] piece) {
+			msg ~= piece;
+		});		
+		abort(msg);
 	}
 	
 	/// Has the abort flag been set?
