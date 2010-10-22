@@ -73,11 +73,7 @@ class SpriteNode : VisibleNode
 			rc.geometry = spriteQuad;
 			temp[0] = material;
 			//spriteQuad.getMeshes()[0].setMaterial(ResourceManager.material("space/star.dae", "star-material"));
-			rc.materialOverrides = temp;
-			
-			Log.file = "c:\\scene.txt";
-			//Log.dump(rc.materialOverrides[0]);
-			
+			rc.materialOverrides = temp;			
 			rc.setLights(getLights(lights, 8));
 			result.append(rc);
 		}
