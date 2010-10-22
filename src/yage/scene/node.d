@@ -184,18 +184,6 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	protected Vec3f		angular_velocity_abs;
 	protected bool		velocity_dirty=true;	// The absolute velocity vectors need to be recalculated.
 
-	// Rendering and scene-graph updates run in different threads.
-	// If the scene is rendered halfway through updating, rendering glitches may occur.
-	// Therefore, the scene-graph implements a sort of "triple buffering".
-	// Each node has three extra copies of its relative and absolute transform matrices.
-	// The renderer simply uses the copy (buffer) that isn't being updated.  A third copy
-	// exists so neither the renderer or updater need to wait on one another.
-	struct Cache
-	{	Matrix transform;
-		Matrix transform_abs;
-	}
-	/* protected*/ Cache cache[3];
-
 	/// Constructor
 	this(Node parent=null)
 	{	if (parent)
@@ -249,7 +237,6 @@ class Node : Tree!(Node), IDisposable, ICloneable
 			result.angular_velocity = angular_velocity;
 			result.linear_velocity_abs = linear_velocity_abs;
 			result.angular_velocity_abs = angular_velocity_abs;
-			result.cache[0..3] = cache[0..3];
 			
 			result.onUpdate = onUpdate;
 			
@@ -323,10 +310,10 @@ class Node : Tree!(Node), IDisposable, ICloneable
 		// Cache the current relative and absolute position/rotation for rendering.
 		// This prevents rendering a halfway-updated scenegraph.
 		if (scene)
-		{	cache[scene.transform_write].transform = transform;
+		{	//cache[scene.transform_write].transform = transform;
 			if (transform_dirty)
 				calcTransform();
-			cache[scene.transform_write].transform_abs = transform_abs;
+			//cache[scene.transform_write].transform_abs = transform_abs;
 		}
 		
 		// We iterate in reverse in case a child deletes itself.

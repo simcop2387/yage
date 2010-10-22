@@ -9,6 +9,7 @@ module yage.core.math.matrix;
 import tango.math.IEEE;
 import tango.math.Math;
 import tango.text.convert.Format;
+import yage.core.math.plane;
 import yage.core.math.vector;
 import yage.core.math.quatrn;
 import yage.core.math.math;
@@ -45,7 +46,7 @@ struct Matrix
 	
 	invariant()
 	{	foreach (float t; v)
-			assert(!isNaN(t));
+			assert(!isNaN(t)); // sometimes this fails!
 	}
 	
 	///
@@ -234,6 +235,22 @@ struct Matrix
 				v[ 4]*v[ 1]*v[10]*v[15] + v[ 0]*v[ 5]*v[10]*v[15];
 	}
 
+	/**
+	 * If this is a clip matrix (projection*modelView), get a 6-plane view frustum from it.
+	 * Params:
+	 *     lookAside = If set and of length=6, use this to store the result. */
+	Plane[] getFrustum(Plane[] lookAside=null)
+	{	if (lookAside.length < 6)
+			lookAside.length = 6;		
+		lookAside[0] = Plane(v[3]-v[0], v[7]-v[4], v[11]-v[ 8], v[15]-v[12]).normalize();
+		lookAside[1] = Plane(v[3]+v[0], v[7]+v[4], v[11]+v[ 8], v[15]+v[12]).normalize();
+		lookAside[2] = Plane(v[3]+v[1], v[7]+v[5], v[11]+v[ 9], v[15]+v[13]).normalize();
+		lookAside[3] = Plane(v[3]-v[1], v[7]-v[5], v[11]-v[ 9], v[15]-v[13]).normalize();
+		lookAside[4] = Plane(v[3]-v[2], v[7]-v[6], v[11]-v[10], v[15]-v[14]).normalize();
+		lookAside[5] = Plane(v[3]+v[2], v[7]+v[6], v[11]+v[10], v[15]+v[14]).normalize();
+		return lookAside;
+	}
+	
 	/**
 	 * Get the position component of the Matrix as a Vector. */
 	Vec3f getPosition()

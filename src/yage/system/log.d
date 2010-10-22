@@ -41,31 +41,31 @@ struct Log
 	 * Write to the log.  Arguments are the same as std.stdio.writefln in Phobos.
 	 * Returns true if the output settings allowed anything to be written. */
 	static bool info(...)
-	{	return write(Level.INFO, swritef(_arguments, _argptr));
+	{	return internalWrite(Level.INFO, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
 	static bool warn(...)
-	{	return write(Level.WARN, swritef(_arguments, _argptr));
+	{	return internalWrite(Level.WARN, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
 	static bool error(...)
-	{	return write(Level.ERROR, swritef(_arguments, _argptr));
+	{	return internalWrite(Level.ERROR, swritef(_arguments, _argptr));
 	}
 	
 	/// ditto
-	static bool trace(...)
-	{	return write(Level.TRACE, swritef(_arguments, _argptr));
+	static bool write(...)
+	{	return internalWrite(Level.TRACE, swritef(_arguments, _argptr));
 	}
 	
 	/// Recursively print a data structure.
 	static void dump(T)(T t)
-	{	trace(Json.encode(t));
+	{	write(Json.encode(t));
 	}
 	
 
-	private static bool write(Level level, ...)
+	private static bool internalWrite(Level level, ...)
 	{
 		if ((level >= this.level) && output)
 		{	

@@ -6,12 +6,14 @@
 
 module yage.scene.terrain;
 
+import yage.core.array;
 import yage.core.math.vector;
 import yage.resource.geometry;
 import yage.resource.image;
 import yage.resource.material;
 import yage.resource.texture;
 import yage.scene.camera;
+import yage.scene.light;
 import yage.scene.node;
 import yage.scene.visible;
 
@@ -53,14 +55,13 @@ class TerrainNode : VisibleNode
 	 *         Every block returned will have its polygons smaller than pixelsPerPolygon.
 	 *         Smaller values for pixelsPerPolygon will yield blocks with more polygons and a better rendering.
 	 */
-	override Geometry[] getVisibleGeometry(CameraNode camera/*, float pixelsPerPolygon=32*/)
+	void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 	{
 		/// TODO
 		// This Geometry can be passed directly to the render system.
 		// We should probably generate geometry lazily--this will allow for ginormous terrains too big to fit in memory.
 		// And also free mipmaps that haven't been used in a while--a complete paging system.
 		
-		return null;
 	}
 }
 

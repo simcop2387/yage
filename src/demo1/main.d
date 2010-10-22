@@ -39,7 +39,7 @@ class DemoScene : Scene
 	this()
 	{		
 		super();
-		ambient = "#123"; // global ambient
+		ambient = "#102733"; // global ambient
 		
 		// Skybox
 		skyBox = new Scene();
@@ -162,18 +162,18 @@ int main()
 		scene.ship.keyDown(key);
 	};
 	
-	view.onKeyUp = curry(delegate void(int key, int modifier, DemoScene scene){
+	view.onKeyUp = curry(delegate void(int key, int modifier, DemoScene* scene){
 		scene.ship.keyUp(key);
 	}, scene);
 	
-	view.onMouseDown = curry(delegate void(Input.MouseButton button, Vec2f coordinates, Surface self, DemoScene scene){
+	view.onMouseDown = curry(delegate void(Input.MouseButton button, Vec2f coordinates, Surface self, DemoScene* scene){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
 		self.grabMouse(scene.ship.acceptInput);
-	}, view, scene);
-	view.onMouseMove = curry(delegate void(Vec2f amount, DemoScene scene) {
+	}, view, &scene);
+	view.onMouseMove = curry(delegate void(Vec2f amount, DemoScene* scene) {
 		if(scene.ship.acceptInput)
 			scene.ship.input.mouseDelta += amount.vec2i;
-	}, scene);
+	}, &scene);
 	
 	// Make a draggable window to show some useful info.
 	auto info = new Surface(view);

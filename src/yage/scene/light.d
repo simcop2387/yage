@@ -59,7 +59,7 @@ class LightNode : MovableNode
 	public int intensity; // Used internally as a temp variable to sort lights by intensity for each node.
 	float quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
 	
-	Vec3f inverseCameraPosition; // Used internally to store the position in camera-space.
+	Vec3f cameraSpacePosition; // Used internally to store the position in camera-space.
 	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.

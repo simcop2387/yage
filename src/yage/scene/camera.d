@@ -11,15 +11,21 @@ import yage.core.array;
 import yage.core.math.matrix;
 import yage.core.math.plane;
 import yage.core.math.vector;
-import yage.core.parallel;
-import yage.scene.visible;
+import yage.scene.light;
 import yage.scene.node;
 import yage.scene.scene;
 import yage.scene.movable;
+import yage.scene.visible;
 import yage.system.log;
 import yage.system.system;
-import yage.system.graphics.render;
 import yage.system.window;
+
+//  new:
+import tango.time.Clock;
+import yage.resource.geometry;
+import yage.resource.material;
+import yage.scene.light;
+import yage.system.graphics.probe;
 
 
 /**
@@ -32,7 +38,13 @@ class CameraNode : MovableNode
 	float threshold = 1;	/// Nodes must be at least this diameter in pixels or they won't be rendered.
 	float aspectRatio = 1.25;  /// The aspect ratio of the camera.  This is normally set automatically in Render.scene() based on the size of the Render Target.
 
-	Matrix inverse_absolute;	// Inverse of the camera's absolute matrix.
+	package int currentXres;		// Used internally for determining visibility
+	package int currentYres;
+	
+
+	protected RenderScene[Scene] renderScenes; // TODO: Scenes never get removed from here--scenes can reference a lot of other stuff!!!	
+	protected Plane[6] frustum;
+	protected Plane[6] skyboxFrustum; // a special frustum with the camera centered at the origin of worldspace.
 	
 	protected static CameraNode listener; // Camera that plays audio.
 
@@ -49,11 +61,6 @@ class CameraNode : MovableNode
 	override void dispose()
 	{	if (listener && listener == this)
 			listener = null;
-	}
-
-	/// Get the inverse of the camera's absolute matrix.
-	public Matrix getInverseAbsoluteMatrix() {
-		return inverse_absolute; 
 	}
 
 	/**
@@ -102,67 +109,9 @@ class CameraNode : MovableNode
 
 
 	/*
-	 * Calculate a 6-plane view frutum based on the orientation of the camera and
-	 * the parameters passed to setView().*/
-	Plane[] getFrustum(Scene scene=null, Plane[] lookAside=null)
-	{	
-		if (!scene)
-			scene = this.scene;
-		
-		// Create the clipping matrix from the modelview and projection matrices
-		Matrix projection = Matrix.createProjection(fov*3.1415927f/180f, aspectRatio, near, far);
-		Matrix model = scene == this.scene ?
-			getAbsoluteTransform(true).inverse() :
-			getAbsoluteTransform(true).toAxis().toMatrix().inverse(); // shed all but the rotation values
-		Matrix clip = model*projection;
-		
-		// Convert the clipping matrix to our six frustum planes.
-		if (!lookAside.length)
-			lookAside.length = 6;
-		lookAside[0] = Plane(clip[3]-clip[0], clip[7]-clip[4], clip[11]-clip[ 8], clip[15]-clip[12]).normalize();
-		lookAside[1] = Plane(clip[3]+clip[0], clip[7]+clip[4], clip[11]+clip[ 8], clip[15]+clip[12]).normalize();
-		lookAside[2] = Plane(clip[3]+clip[1], clip[7]+clip[5], clip[11]+clip[ 9], clip[15]+clip[13]).normalize();
-		lookAside[3] = Plane(clip[3]-clip[1], clip[7]-clip[5], clip[11]-clip[ 9], clip[15]-clip[13]).normalize();
-		lookAside[4] = Plane(clip[3]-clip[2], clip[7]-clip[6], clip[11]-clip[10], clip[15]-clip[14]).normalize();
-		lookAside[5] = Plane(clip[3]+clip[2], clip[7]+clip[6], clip[11]+clip[10], clip[15]+clip[14]).normalize();
-		
-		return lookAside;
-	}
-	
-	/**
-	 * Get an array of all nodes that this camera can see.
-	 * Params:
-	 *     node = Root of the scenegraph to scan.  Defaults to the camera's scene.
-	 *     lookaside = Optional buffer to use for result to avoid memory allocation. */
-	ArrayBuilder!(VisibleNode) getVisibleNodes(Scene scene=null, inout ArrayBuilder!(VisibleNode) lookAside=ArrayBuilder!(VisibleNode)())
-	{
-		ArrayBuilder!(VisibleNode) recurse(Node root, Plane[] frustum,  inout ArrayBuilder!(VisibleNode) lookAside)
-		{
-			// Test this node for visibility
-			VisibleNode vnode = cast(VisibleNode)root;
-			if (vnode && root.getVisible())
-			{	
-				float height = Window.getInstance().getHeight();
-				Vec3f* position = cast(Vec3f*)vnode.cache[scene.transform_read].transform_abs.v[12..15].ptr;
-				if (isVisible(*position, vnode.getRadius(), height, threshold, frustum))
-					lookAside ~= vnode;
-			}
-			
-			// Recurse through and render children.
-			auto children = root.getChildren();
-				foreach (Node c; children)
-					recurse(c, frustum, lookAside);
-				
-			return lookAside;
-		}
-		
-		// Get variables if we don't have them already
-		if (!scene)
-			scene=this.scene;
-		Plane[6] frustum;
-		getFrustum(scene, frustum);		
-		
-		return recurse(scene, frustum, lookAside);
+	 * Calculate a 6-plane view frutum based on the orientation of the camera.*/
+	Plane[] getFrustum(bool skybox=false)
+	{	return skybox ? skyboxFrustum : frustum;
 	}
 	
 	/**
@@ -170,15 +119,10 @@ class CameraNode : MovableNode
 	 * Params:
 	 *     point = Point in 3d space, in world coordinates
 	 *     radius = Radius of this point (sphere).
-	 *     totalHeight = Pixel height of the screen.
-	 *     minHeight = Minimum pixel height of this object in order for it to be seen. 
 	 *     frustum = Use this array of 6 planes as the view frustum instead of recalculating it.*/
-	bool isVisible(Vec3f point, float radius, float totalHeight, float minHeight=1, Plane[] frustum=null)
-	{
-		if (frustum.length<6)
-		{	Plane[6] temp;
-			frustum = getFrustum(scene, frustum);
-		}
+	bool isVisible(Vec3f point, float radius, bool skybox=false)
+	{	
+		Plane[] frustum = skybox ? skyboxFrustum : this.frustum;
 		
 		// See if it's inside the frustum
 		float nr = -radius;
@@ -187,9 +131,9 @@ class CameraNode : MovableNode
 				return false;
 		
 		// See if it's large enough to be drawn
-		Vec3f* cameraPosition = cast(Vec3f*)cache[scene.transform_read].transform_abs.v[12..15].ptr;
+		Vec3f* cameraPosition = cast(Vec3f*)transform_abs.v[12..15].ptr;
 		float distance2 = (*cameraPosition - point).length2();
-		return radius*radius*totalHeight*totalHeight > distance2*minHeight*minHeight;
+		return radius*radius*currentYres*currentYres > distance2*threshold*threshold;
 	}
 
 	/*
@@ -216,27 +160,18 @@ class CameraNode : MovableNode
 		
 	}
 	
-	//  new:
-	import tango.time.Clock;
-	import yage.resource.geometry;
-	import yage.resource.material;
-	import yage.scene.light;
-	import yage.system.graphics.probe;
-	
-	struct RenderNode
-	{	Matrix transform;
-		Geometry geometry;
-		LightNode[] lights;
-		Material[] materialOverrides;
+	struct RenderBuffer
+	{	ArrayBuilder!(RenderCommand) commands;
+		long timestamp;
+		Matrix cameraInverse;
 	}
 	
 	// All of the information for rendering a scene
-	struct RenderScene
-	{	ArrayBuilder!(RenderNode)[3] buffers; // triple buffered for read, write, and swap
-		long[3] timestamp;
-		ubyte readBuffer=1;
-		ubyte writebuffer;
-		
+	protected struct RenderScene
+	{	
+		RenderBuffer[3] buffers;
+		ubyte readBuffer=1; // current read buffer
+		ubyte writebuffer; // current write buffer		
 		Object transformMutex;
 		
 		static RenderScene opCall()
@@ -247,71 +182,56 @@ class CameraNode : MovableNode
 		
 		/*
 		 * Get the most up-to-date unused  buffer to read from. */
-		ArrayBuilder!(RenderNode) getReadBuffer()
+		RenderBuffer* getReadBuffer()
 		{	synchronized (transformMutex)
 			{	int next = 3-(readBuffer+writebuffer);
-				if (timestamp[next] > timestamp[readBuffer])
+				if (buffers[next].timestamp > buffers[readBuffer].timestamp)
 					readBuffer = 3 - (readBuffer+writebuffer);
 				assert(readBuffer < 3);
 				assert(readBuffer != writebuffer);
-				return buffers[readBuffer];
+				return &buffers[readBuffer];
 			}
 		}
 
 		/*
 		 * Get an unused buffer for writing RenderNodes. */
-		ArrayBuilder!(RenderNode) getWriteBuffer()
+		RenderBuffer* getWriteBuffer()
 		{	synchronized (transformMutex)
-			{	timestamp[writebuffer] = Clock.now().ticks();
+			{	buffers[writebuffer].timestamp = Clock.now().ticks();
 				writebuffer = 3 - (readBuffer+writebuffer);
 				assert(readBuffer < 3);
 				assert(readBuffer != writebuffer);
-				buffers[writebuffer].length = 0; // reset content
-				return buffers[writebuffer];
+				auto result = &buffers[writebuffer];
+				if(result.commands.reserve < result.commands.length)  // prevent allocated size from shrinking
+					result.commands.reserve = result.commands.length;
+				result.commands.length = 0; // reset content
+				return result;
 			}
 		}
 	}
 	
-	RenderScene[Scene] renderScenes; // TODO: Scenes never get removed from here--scenes can reference a lot of other stuff!!!	
-	
-	void buildVisibleList(Scene scene=null)
+	package void updateRenderCommands(Scene scene=null)
 	{
+		currentXres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
+		currentYres = Window.getInstance().getHeight();
+		
 		// Get variables if we don't have them already
 		if (!scene)
 			scene=this.scene;
-		Plane[6] frustum;
-		getFrustum(scene, frustum);		
+		
 		int maxLights = Probe.feature(Probe.Feature.MAX_LIGHTS);
 		scope LightNode[] allLights = scene.getAllLights(); // TODO: Cull lights against view frustum
 		
-		ArrayBuilder!(RenderNode) recurse(Node root, Plane[] frustum, LightNode[] lights, inout ArrayBuilder!(RenderNode) lookAside)
+		void recurse(Node root, Plane[] frustum, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 		{
 			// Test this node for visibility
 			VisibleNode vnode = cast(VisibleNode)root;
-			if (vnode && vnode.getVisible())  // TODO: visibility should be inherited
-			{	
-				float height = Window.getInstance().getHeight();
-				Matrix* transform = &vnode.cache[scene.transform_read].transform_abs;
-				Vec3f* position = cast(Vec3f*)transform.v[12..15].ptr;
-				if (isVisible(*position, vnode.getRadius(), height, threshold, frustum))
-				{	// TODO: Move isVisible into vnode.getVisibleGeometry ?
-					
-					foreach (geometry; vnode.getVisibleGeometry(this))
-					{	RenderNode rn;
-						rn.transform = *transform;
-						rn.geometry = geometry;
-						//rn.lights = vnode.getLights(lights, 8, vnode.lights2);
-						lookAside ~= rn;
-					}
-				}
-			}
+			if (vnode && vnode.getVisible()) 
+				vnode.getRenderCommands(this, lights, result);
 			
 			// Recurse through and render children.
-			auto children = root.getChildren();
-				foreach (Node c; children)
-					recurse(c, frustum, lights, lookAside);
-				
-			return lookAside;
+			foreach (Node c;  root.getChildren())
+				recurse(c, frustum, lights, result);
 		}
 		
 		// Get or create the RenderScene
@@ -320,41 +240,36 @@ class CameraNode : MovableNode
 		{	renderScenes[scene] = RenderScene();
 			renderScene = scene in renderScenes;
 		}
-		//Log.trace("build");		
-		recurse(scene, frustum, allLights, renderScene.getWriteBuffer());
+		
+		auto buffer = renderScene.getWriteBuffer();
+		buffer.cameraInverse = getAbsoluteTransform().inverse();
+		recurse(scene, frustum, allLights, buffer.commands);
+	}
+	
+	RenderBuffer getRenderBuffer(Scene scene)
+	{	auto renderScene = scene in renderScenes;
+		if (renderScene)
+			return *renderScene.getReadBuffer();
+		
+		// Small hack.  Make up a render buffer.
+		// Sometimes this is called before the first update loop finishes.
+		RenderBuffer result;
+		result.cameraInverse = getAbsoluteTransform().inverse();
+		result.timestamp = Clock.now().ticks();
+		return result;
+	}
+	
+	/*
+	 * Update the frustums when the camera moves. */
+	protected void calcTransform()
+	{	super.calcTransform();
+		
+		// Create the clipping matrix from the modelview and projection matrices
+		Matrix projection = Matrix.createProjection(fov*3.1415927f/180f, aspectRatio, near, far);
+		Matrix model = getAbsoluteTransform(true).inverse();
+		(model*projection).getFrustum(frustum);
+		
+		model = getAbsoluteTransform(true).toAxis().toMatrix().inverse(); // shed all but the rotation values
+		(model*projection).getFrustum(skyboxFrustum);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

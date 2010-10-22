@@ -61,8 +61,6 @@ private class ResourceInfo
 	}
 }
 
-
-
 /**
  * The OpenGL class provides a higher level of abstraction over OpenGL, 
  * without limiting what can be done with low-level OpenGL calls.
@@ -73,9 +71,9 @@ class OpenGL : GraphicsAPI
 {
 	///
 	enum MatrixType
-	{	PROJECTION, ///
-		TEXTURE, ///
-		TRANSFORM ///
+	{	PROJECTION = GL_TEXTURE, ///
+		TEXTURE = GL_PROJECTION, ///
+		TRANSFORM = GL_MODELVIEW ///
 	}
 	
 	// A map from a resource's hash to it's resource info
@@ -84,7 +82,8 @@ class OpenGL : GraphicsAPI
 	protected HashMap!(uint, ResourceInfo) vbos;
 	protected HashMap!(uint, ResourceInfo) shaders;
 	
-	
+	public Matrix cameraInverse;
+	protected Shader lastDrawnShader;
 	bool[Shader] failedShaders;
 
 	///
@@ -97,104 +96,111 @@ class OpenGL : GraphicsAPI
 	///
 	void bindCamera(CameraNode camera)
 	{	current.camera = camera;
+		cameraInverse = camera.getAbsoluteTransform(true).inverse();
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluPerspective(camera.fov, camera.aspectRatio, camera.near, camera.far);
 
 		glMatrixMode(GL_MODELVIEW);
 	}
-	
+ 	
 	/**
-	 * Enable this light as the given light number and apply its properties.
-	 * TODO: Perhaps this should be bindLights(LightNode[]) instead.
-	 * This function is used internally by the engine and should not be called manually or exported. */
-	void bindLight(LightNode light, int num)
-	{	assert (num<=Probe.feature(Probe.Feature.MAX_LIGHTS));
+	 * Enable these lights, disabling all others
+	 * This function is used internally by the engine and normally doesn't need to be called from user-land. */	
+	void bindLights(LightNode[] lights)
+	{	int maxLights = Probe.feature(Probe.Feature.MAX_LIGHTS);
+		assert (lights.length<=maxLights);
 		
-		LightNode currentLight = current.lights[num];
+		foreach(num, light; lights)
+		{	assert(light);
+		
+			// Used to compare this light's properties to the one currently bound to this slot.
+			LightNode currentLight = current.lights[num];
+		
+			glPushMatrix();
+			glLoadMatrixf(cameraInverse.v.ptr); // required for spotlights.
 	
-		glPushMatrix();
-		glLoadMatrixf(current.camera.inverse_absolute.v.ptr); // required for spotlights.
-
-		// Set position and direction
-		glEnable(GL_LIGHT0+num);
-		auto type = light.type;
-		Matrix transform_abs = light.getAbsoluteTransform(true);
-		
-		Vec4f pos;
-		pos.v[0..3] = transform_abs.v[12..15];
-		pos.v[3] = type==LightNode.Type.DIRECTIONAL ? 0 : 1;
-		glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
-
-		// Spotlight settings
-		float angleDegrees = type == LightNode.Type.SPOT ? light.spotAngle*180/PI : 180;
-		glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angleDegrees);
-		if (type==LightNode.Type.SPOT)
-		{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.spotExponent);
-			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
-			// rotated by the node's rotation.  This is opposite the default direction of cameras
-			glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
-		}
-		glPopMatrix();
-
-		// Light material properties
-		if (currentLight.ambient != light.ambient)
-			glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.ambient.vec4f.ptr);
-		if (currentLight.diffuse != light.diffuse)
-			glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.diffuse.vec4f.ptr);
-		if (currentLight.specular != light.specular)
-			glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.specular.vec4f.ptr);
-		
-		// Attenuation properties TODO: only need to do this once per light
-		if (currentLight.quadAttenuation != light.quadAttenuation)
-		{	glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
-			glLightf(GL_LIGHT0+num, GL_LINEAR_ATTENUATION, 0);
-			glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, light.quadAttenuation);
-		}
-		
-		current.lights[num] = light;
-	}
+			// Set position and direction
+			glEnable(GL_LIGHT0+num);
+			auto type = light.type;
+			Matrix transform_abs = light.getAbsoluteTransform(true);
+			
+			Vec4f pos;
+			pos.v[0..3] = transform_abs.v[12..15];
+			pos.v[3] = type==LightNode.Type.DIRECTIONAL ? 0 : 1;
+			glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
 	
-	/**
-	 * Push or Pop Matrices on an OpenGL matrix stack.
-	 * Params:
-	 *     matrix = Multiply the current Matrix at the top of the stack by this Matrix and push the result onto the stack,
-	 *     or if matrix is null, pop it off the stack.
-	 *     This is a pointer to allow null's, a copy is made for internal use.
-	 *     type = Determines which OpenGL matrix stack to modify. */
-	void bindMatrix(Matrix* matrix, MatrixType type=MatrixType.TRANSFORM)
-	{	
-		ArrayBuilder!(Matrix)* s;
-		if (type==MatrixType.TRANSFORM)
-			s=&current.transformMatrixStack;
-		else if (type==MatrixType.TEXTURE)
-		{	s=&current.textureMatrixStack;
-			glMatrixMode(GL_TEXTURE);
-		}
-		else
-		{	s=&current.projectionMatrixStack;
-			glMatrixMode(GL_PROJECTION);
-		}
-			
-		if (matrix)
-		{	glPushMatrix();
-			glMultMatrixf(matrix.v.ptr);
-			
-			if (s.length)
-				*s ~= (*matrix) * *(*s)[s.length-1];
-			else
-				*s ~= *matrix;
-			if (s.reserve < s.length)
-				s.reserve = s.length;
-		} else
-		{	assert(s.length);
+			// Spotlight settings
+			float angleDegrees = type == LightNode.Type.SPOT ? light.spotAngle*180/PI : 180;
+			glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angleDegrees);
+			if (type==LightNode.Type.SPOT)
+			{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.spotExponent);
+				// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
+				// rotated by the node's rotation.  This is opposite the default direction of cameras
+				glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
+			}
 			glPopMatrix();
-			s.length = s.length-1;
+	
+			// Light material properties
+			if (currentLight.ambient != light.ambient)
+				glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.ambient.vec4f.ptr);
+			if (currentLight.diffuse != light.diffuse)
+				glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.diffuse.vec4f.ptr);
+			if (currentLight.specular != light.specular)
+				glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.specular.vec4f.ptr);
+			
+			// Attenuation properties TODO: only need to do this once per light
+			if (currentLight.quadAttenuation != light.quadAttenuation)
+			{	glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
+				glLightf(GL_LIGHT0+num, GL_LINEAR_ATTENUATION, 0);
+				glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, light.quadAttenuation);
+			}
+			
+			current.lights[num] = light;
 		}
+		for (int i=lights.length; i<maxLights; i++)
+			glDisable(GL_LIGHT0+i);
 		
-		if (type!=MatrixType.TRANSFORM)
-			glMatrixMode(GL_MODELVIEW);
 	}
+	
+	struct GLMatrix {
+		void push(MatrixType type=MatrixType.TRANSFORM)
+		{	if (type!=MatrixType.TRANSFORM) 
+				glMatrixMode(type);
+			glPushMatrix();
+			if (type!=MatrixType.TRANSFORM) 
+				glMatrixMode(GL_MODELVIEW);
+		}
+		void pop(MatrixType type=MatrixType.TRANSFORM)
+		{	if (type!=MatrixType.TRANSFORM) 
+			glMatrixMode(type);
+			glPopMatrix();
+			if (type!=MatrixType.TRANSFORM) 
+				glMatrixMode(GL_MODELVIEW);
+		}
+		void load(Matrix matrix, MatrixType type=MatrixType.TRANSFORM)
+		{	if (type!=MatrixType.TRANSFORM) 
+			glMatrixMode(type);
+			glLoadMatrixf(matrix.v.ptr);
+			if (type!=MatrixType.TRANSFORM) 
+				glMatrixMode(GL_MODELVIEW);
+		}
+		void loadIdentity(MatrixType type=MatrixType.TRANSFORM)
+		{	if (type!=MatrixType.TRANSFORM) 
+			glMatrixMode(type);
+			glLoadIdentity();
+			if (type!=MatrixType.TRANSFORM) 
+				glMatrixMode(GL_MODELVIEW);
+		}
+		void multiply(Matrix matrix, MatrixType type=MatrixType.TRANSFORM)
+		{	if (type!=MatrixType.TRANSFORM) 
+			glMatrixMode(type);
+			glMultMatrixf(matrix.v.ptr);
+			if (type!=MatrixType.TRANSFORM) 
+				glMatrixMode(GL_MODELVIEW);
+		}
+	}
+	GLMatrix matrix;
 	
 	/**
 	 * Profiling has shown that changing shaders, textures, and blending operations are the slowest parts of this funciton.
@@ -922,10 +928,7 @@ class OpenGL : GraphicsAPI
 		Current newCurrent;
 		current = newCurrent;
 	}
-	
 
-	protected Shader lastDrawnShader;
-	
 	/**
 	 * Draw the contents of a vertex buffer, such as a buffer of triangle indices.
 	 * @param triangles If not null, this array of triangle indices will be used for drawing the mesh*/
@@ -967,7 +970,7 @@ class OpenGL : GraphicsAPI
 		
 		bindShader(null);
 		bindPass(null);
-		//bindLights(null);
+		bindLights(null);
 		bindTextures(null);
 	}
 	

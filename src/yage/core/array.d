@@ -606,12 +606,12 @@ struct ArrayBuilder(T)
 }
 unittest
 {
-struct A { int x, y; }
-
-A a;
-ArrayBuilder!(A) array;
-array ~= a;
-array[0].x = 3;
-assert(array[0].x == 3); // false!
+	struct A { int x, y; }
+	
+	A a;
+	ArrayBuilder!(A) array;
+	array ~= a;
+	array[0].x = 3;
+	assert(array[0].x == 3);
 	
 }

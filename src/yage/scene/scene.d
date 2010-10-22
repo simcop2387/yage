@@ -71,14 +71,7 @@ class Scene : Node//, ITemporal, IDisposable
 	protected float delta_time;
 
 	protected static Scene[Scene] all_scenes;
-	
-	// Deprecated
-	protected long timestamp[3];			// Used for timestamps of newest transform_read/write
-	package int transform_read=0, transform_write=1;
-	package Object transform_mutex;			// Ensure that swapTransformRead and swapTransformWrite don't occur at the same time.
 
-	
-	
 	/// Construct an empty Scene.
 	this(float frequency = 60)
 	{	mutex = new FastLock();
@@ -99,7 +92,6 @@ class Scene : Node//, ITemporal, IDisposable
 		camerasMutex = new Mutex();
 		lightsMutex = new Mutex();
 		sounds_mutex = new Object();
-		transform_mutex = new Object();
 		
 		all_scenes[this] = this;
 	}
@@ -242,21 +234,29 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Params:
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
 	override void update(float delta = delta.tell())
-	{	mixin(Sync!("this"));
+	{
+		mixin(Sync!("this"));
 	
 		// deprecated
 		super.update(delta);		
 		delta_time = delta;
 		this.delta.seek(0);
-		scene.swapTransformWrite();
 		
 		// New
 		//super.update2(delta); // recurses through children
 		
 		camerasMutex.lock();
-		//foreach (camera; cameras)
-		//	camera.buildVisibleList();
+		void updateRenderCommands(Scene scene)
+		{	foreach (camera; cameras) // skybox scene has no camera!
+				camera.updateRenderCommands(scene);
+			if (scene.skyBox)
+				updateRenderCommands(scene.skyBox);
+				
+		}
+		updateRenderCommands(this);
+		
 		camerasMutex.unlock();
+	
 	}
 
 	/*
@@ -327,35 +327,5 @@ class Scene : Node//, ITemporal, IDisposable
 	static Scene[Scene] getAllScenes()
 	{	return all_scenes;		
 	}
-	
-	// Deprecated:
-	
 
-	/**
-	 * Swap the transform buffer cache for each Node to the latest that's not currently
-	 * being written to.*/
-	void swapTransformRead()
-	out
-	{	assert(transform_read < 3);
-		assert(transform_read != transform_write);
-	}body
-	{	synchronized (transform_mutex)
-		{	int next = 3-(transform_read+transform_write);
-			if (timestamp[next] > timestamp[transform_read])
-				transform_read = 3 - (transform_read+transform_write);
-		}
-	}
-
-	/// Start writing to the transform buffer cache that's not currently being read.
-	void swapTransformWrite()
-	out
-	{	assert(transform_read < 3);
-		assert(transform_read != transform_write);
-	}body
-	{	synchronized (transform_mutex)
-		{	timestamp[transform_write] = Clock.now().ticks();
-			transform_write = 3 - (transform_read+transform_write);
-		}
-	}
-	
 }

@@ -35,8 +35,7 @@ import yage.system.graphics.api.opengl;
 import yage.system.log;
 
 private struct AlphaTriangle
-{	
-	Geometry geometry;
+{	Geometry geometry;
 	Mesh mesh;
 	Material material; // Sprites all share the same Mesh, but the material changes
 	Matrix matrix;
@@ -90,7 +89,7 @@ struct Render
 	protected static Geometry currentGeometry;
 
 	protected static bool cleared; // if false, the color buffer need to be cleared before drawing?
-	protected static Geometry spriteQuad;
+	protected static Geometry spriteQuad; // TODO: Move to SpriteNode
 	
 	protected struct ShaderParams
 	{	ushort numLights;
@@ -107,7 +106,7 @@ struct Render
 	
 
 	/**
-	 * Generate build-in models (such as the sprite quad). */
+	 * Generate built-in models (such as the sprite quad). */
 	static this()
 	{	graphics = new OpenGL();
 		spriteQuad = Geometry.createPlane();
@@ -151,7 +150,8 @@ struct Render
 		params.hasTexture = pass.textures.length > 0;
 		params.hasBump = pass.textures.length > 1;
 		foreach (light; lights)
-		{	params.hasDirectional = params.hasDirectional || (light.type == LightNode.Type.DIRECTIONAL);
+		{	assert(light);
+			params.hasDirectional = params.hasDirectional || (light.type == LightNode.Type.DIRECTIONAL);
 			params.hasSpotlight  = params.hasSpotlight || (light.type == LightNode.Type.SPOT);
 		}
 	
@@ -217,7 +217,6 @@ struct Render
 			static char[] lightSpotCutoff = "lights[_].spotCutoff\0".dup;
 			static char[] lightSpotExponent = "lights[_].spotExponent\0".dup;
 			
-			Matrix camInverse = graphics.current.camera.getInverseAbsoluteMatrix();
 			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
 			
 			int idx=0;
@@ -234,7 +233,7 @@ struct Render
 				char[] name = makeName(lightPosition, i);
 				su.name[0..name.length] = name[0..$];
 				su.type = ShaderUniform.Type.F4;
-				su.floatValues[0..3] = light.inverseCameraPosition.v[0..3];
+				su.floatValues[0..3] = light.cameraSpacePosition.v[0..3];
 				su.floatValues[4] = light.type == LightNode.Type.DIRECTIONAL ? 0.0 : 1.0;
 				idx++;
 				
@@ -246,7 +245,9 @@ struct Render
 				idx++;
 							
 				if (params.hasSpotlight)
-				{	Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); 
+				{	Matrix camInverse = graphics.cameraInverse;
+					
+					Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); 
 					uniforms[idx++] = 
 						ShaderUniform(makeName("lights[_].spotDirection", i), ShaderUniform.Type.F3, lightDirection.v);
 					
@@ -299,6 +300,110 @@ struct Render
 		return material.techniques[$-1]; // return the last one even if it doesn't work.
 	}
 	
+	
+//	/
+	static RenderStatistics geometry(ref RenderCommand command)
+	{	RenderStatistics result;
+	
+		Geometry geometry = command.geometry;
+		auto lights = command.getLights();
+		assert(geometry.getAttribute(Geometry.VERTICES));
+		
+		// Bind each vertex buffer
+		VertexBuffer[char[]] vertexBuffers = geometry.getVertexBuffers();
+		if (geometry !is currentGeometry) // benchmarks show this makes things a little faster
+		{	
+			foreach (name, vb; vertexBuffers)
+			{	graphics.bindVertexBuffer(vb, name);
+				if (name==Geometry.VERTICES)
+					result.vertexCount += vb.length;
+			}
+			currentGeometry = geometry;
+		} else
+			result.vertexCount += vertexBuffers[Geometry.VERTICES].length;		
+		
+		// Loop through the meshes		
+		foreach (i, mesh; geometry.getMeshes())
+		{	
+			auto material = command.materialOverrides.length > i ? command.materialOverrides[i] : mesh.material;			
+			if (material)
+			{	
+				auto technique = getTechnique(material, lights);
+				
+				if (technique) // TODO: Honor techniques
+				{
+					assert(technique.passes.length);
+					
+					if (!technique.hasTranslucency() ||
+					    geometry.getVertexBuffer(Geometry.VERTICES).components != 3)
+					{	foreach (pass; technique.passes)
+						{	bindPass(pass, lights);
+							graphics.drawPolygons(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
+						}
+					} else if (technique.passes[0].diffuse.a > 0) // Don't render it at all if we have 0 alpha.
+					{	
+						foreach (j, tri; mesh.getTriangles())
+						{							
+							// Find center
+							Vec3f[] vertices = (cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES));	
+							Vec3f[3] v;
+							v[0] = vertices[tri.x];
+							v[1] = vertices[tri.y];
+							v[2] = vertices[tri.z];
+
+							alphaTriangles ~= AlphaTriangle(geometry, mesh, material, command.transform, lights, j, v);
+						}						
+					}					
+				}
+			}
+					
+			result.triangleCount += mesh.getTrianglesVertexBuffer().length;
+		}
+		
+		// Geometry debugging properties
+		if (geometry.drawNormals || geometry.drawTangents)
+		{
+			MaterialPass pass = new MaterialPass(); // TODO: static
+			pass.lighting = false;
+			
+			Vec3f[] vertices = cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES);
+			Vec3f[] normals = cast(Vec3f[])geometry.getAttribute(Geometry.NORMALS);
+			Vec3f[] tangents = cast(Vec3f[])geometry.getAttribute(Geometry.TEXCOORDS1);
+			
+			Vec3f[] lines = Memory.allocate!(Vec3f)(vertices.length * 2);
+			scope VertexBuffer vb = new VertexBuffer();
+			
+			if (tangents.length && geometry.drawTangents)
+			{	for (int i=0; i<vertices.length; i++)
+				{	lines[i*2] = vertices[i];
+					lines[i*2+1] = vertices[i] + tangents[i];
+				}
+				
+				pass.diffuse = "green";
+				graphics.bindPass(pass);
+				vb.setData(lines);
+				graphics.drawPolygons(vb, Mesh.LINES, false);
+			}
+			
+			if (normals.length && geometry.drawNormals)
+			{	for (int i=0; i<vertices.length; i++)
+				{	lines[i*2] = vertices[i];
+					lines[i*2+1] = vertices[i] + normals[i];
+				}
+				
+				graphics.current.pass = null;
+				pass.diffuse = "magenta";
+				graphics.bindPass(pass);
+				vb.setData(lines);
+				graphics.drawPolygons(vb, Mesh.LINES, false);
+			}
+			
+			Memory.free(lines);
+		}
+		
+		return result;
+	}
+	
 	///
 	static RenderStatistics geometry(Geometry geometry, LightNode[] lights=null, Material[] materialOverrides=null)
 	{	RenderStatistics result;
@@ -347,7 +452,7 @@ struct Render
 							v[1] = vertices[tri.y];
 							v[2] = vertices[tri.z];
 
-							alphaTriangles ~= AlphaTriangle(geometry, mesh, material, *graphics.current.transformMatrix, lights, j, v);;
+							alphaTriangles ~= AlphaTriangle(geometry, mesh, material, *graphics.current.transformMatrix, lights, j, v);
 						}						
 					}					
 				}
@@ -374,7 +479,6 @@ struct Render
 				{	lines[i*2] = vertices[i];
 					lines[i*2+1] = vertices[i] + tangents[i];
 				}
-				
 				
 				pass.diffuse = "green";
 				graphics.bindPass(pass);
@@ -486,7 +590,9 @@ struct Render
 		return result;
 	}
 			
-	///
+	/**
+	 * Perform aditional render steps that must be done after all normal rendering is done,
+	 * such as alpha triangles. */
 	protected static void postRender()
 	{	
 		// Declaring it this way instead of scope allows the same vbo to be reused each time. 
@@ -506,13 +612,13 @@ struct Render
 		});
 		
 		// Render alpha triangles
-		foreach (at; alphaTriangles.data)
-		{	
-			Vec3i[1] triangle = at.mesh.getTriangles()[at.triangle];			
+		foreach (ref at; alphaTriangles.data)
+		{	Vec3i[1] triangle = at.mesh.getTriangles()[at.triangle];			
 			mesh.setMaterial(at.material);
 			mesh.setTriangles(triangle);
 			
-			graphics.bindMatrix(&at.matrix);
+			graphics.matrix.push();
+			graphics.matrix.multiply(at.matrix);
 			
 			if (currentGeometry != at.geometry)
 			{	foreach (name, vb; at.geometry.getVertexBuffers())				
@@ -521,21 +627,18 @@ struct Render
 			}
 			
 			if (mesh.material)							
-			{	auto technique = getTechnique(mesh.material, at.lights); // slows it down a little bit			
+			{	auto technique = getTechnique(mesh.material, at.lights); // slows it down a little bit				
 				if (technique)
 				{	
-					for (int i=at.lights.length; i<num_lights; i++)
-						glDisable(GL_LIGHT0+i);					
-					for (int i=0; i<min(num_lights, at.lights.length); i++)
-						graphics.bindLight(at.lights[i], i);
+					graphics.bindLights(at.lights);
 					
-					// This is the slowest part
+					// This is the slowest part, probably due to so many state changes
 					foreach (pass; technique.passes)
 					{	bindPass(pass, at.lights);
 						graphics.drawPolygons(mesh.getTrianglesVertexBuffer(), Mesh.TRIANGLES);
 					}
 			}	}
-			graphics.bindMatrix(null);
+			graphics.matrix.pop();
 		}		
 		
 		if (alphaTriangles.reserve < alphaTriangles.length)
@@ -556,15 +659,7 @@ struct Render
 		visibleNodes.length = 0;
 		alphaTriangles.length = 0;
 	}
-	
-	/**
-	 * Render a camera's view to target.
-	 * The previous contents of target are first cleared.
-	 * Params:
-	 *	 camera = Render what the camera sees.
-	 *	 target = Render to this target.
-	 * Returns:
-	 *	 A struct containing rendering statistics */
+
 	static RenderStatistics scene(CameraNode camera, IRenderTarget target)
 	{		
 		/*
@@ -573,97 +668,54 @@ struct Render
 		 * Params:
 		 *	 nodes = Array of nodes to render.
 		 * Returns: A struct with statistics about this rendering call. */
-		RenderStatistics drawNodes(VisibleNode[] nodes)
-		{
+		RenderStatistics drawNodes(RenderCommand[] renderCommands)
+		{			
 			RenderStatistics result;
-			result.nodeCount = nodes.length;
-
-			// Get lights
-			int maxLights = Probe.feature(Probe.Feature.MAX_LIGHTS);
-			scope LightNode[] allLights = camera.getScene().getAllLights(); // Does this copy also prevents threading issues (obviously not, see below!).
-			result.lightCount += allLights.length;
-			
-			foreach (light; allLights) // [below] TODO: An access violation that randomly occurs here!!  Surely it's due to thread misuse!  It happens when lots of lights are created and destroyed.
-				light.inverseCameraPosition = light.getAbsoluteTransform(true).getPosition().transform(camera.getInverseAbsoluteMatrix());
-			
-		
+			result.nodeCount = renderCommands.length;
 			
 			// Loop through all nodes in the queue and render them
-			foreach (VisibleNode n; nodes)
-			{	synchronized (n)
-				{	if (!n.getScene()) // was recently removed from its scene.
-						continue;
-				
-					// Transform
-					Vec3f size = n.getSize();
-					Matrix transform = n.getAbsoluteTransform(true).transformAffine(Matrix().scale(size));			
-					
-					graphics.bindMatrix(&transform);
-					
-					// Enable the lights that affect this node
-					// TODO: Two things that can speed this up:
-					// Only test light spheres that overlap the view frustum
-					// Do a distance test for an early rejection of get light brightness.
-					LightNode[] lights =   n.getLights(allLights, maxLights);					
-					for (int i=lights.length; i<maxLights; i++)
-						glDisable(GL_LIGHT0+i);					
-					for (int i=0; i<min(maxLights, lights.length); i++)
-						graphics.bindLight(lights[i], i);
-					
-					// Render
-					auto modelNode = cast(ModelNode)n;
-					if (modelNode)
-					{	if (cast(Model)modelNode.getModel())
-							result += model(cast(Model)modelNode.getModel(), lights, n.materialOverrides);
-						else
-							result += geometry(modelNode.getModel(), lights, n.materialOverrides);
-					}
-					else if (cast(SpriteNode)n)
-						result += sprite((cast(SpriteNode)n).getMaterial(), lights, n.materialOverrides);
-					
-					graphics.bindMatrix(null);
-				}
+			foreach (ref command; renderCommands)
+			{	graphics.matrix.push();
+				graphics.matrix.multiply(command.transform);
+				graphics.bindLights(command.getLights());
+				result += geometry(command);
+				graphics.matrix.pop();
 			}
 			
 			postRender();
-			
-			//graphics.bindVertexBuffer(null);
 			return result;
 		}
 		
 		// Allows one scene to act as the skybox for another.
-		RenderStatistics skyboxRecurse(CameraNode camera, IRenderTarget target, Scene scene=null)
-		{			
+		RenderStatistics skyboxRecurse(CameraNode camera, Scene scene=null)
+		{	
 			RenderStatistics result;			
 			if (!scene)
 				scene = camera.getScene();
 			if (!scene)
 				throw new GraphicsException("Camera must be added to a scene before rendering.");
-			camera.aspectRatio = target.getWidth()/ cast(float)target.getHeight();
 			
 			// start reading from the most recently updated set of buffers.
-			scene.swapTransformRead();
+			graphics.bindCamera(camera);
+			graphics.matrix.loadIdentity();
 			
-			graphics.bindCamera(camera);	
-			glLoadIdentity();
+			auto renderBuffer = camera.getRenderBuffer(scene);
 			
-			// Precalculate the inverse of the Camera's absolute transformation Matrix.
-			camera.inverse_absolute = camera.getAbsoluteTransform(true).inverse();
 			if (scene is camera.scene)
-				glMultMatrixf(camera.inverse_absolute.v.ptr);
-			else
-			{	Vec3f axis = camera.inverse_absolute.toAxis();
+				glMultMatrixf(renderBuffer.cameraInverse.v.ptr);
+			else // only rotate by the camera's matrix if in a skybox.
+			{	Vec3f axis = renderBuffer.cameraInverse.toAxis();
 				glRotatef(axis.length()*57.295779513, axis.x, axis.y, axis.z);
 			}
 			
 			// Recurse through skyboxes
 			if (scene.skyBox)
 			{	
-				glPushMatrix();
-				skyboxRecurse(camera, target, scene.skyBox);
+				graphics.matrix.push();	
+				skyboxRecurse(camera, scene.skyBox);
+				graphics.matrix.pop();	
 				glDepthMask(true);
 				glClear(GL_DEPTH_BUFFER_BIT);
-				glPopMatrix();
 			}
 			
 			// Apply scene state and clear background if necessary.
@@ -671,65 +723,36 @@ struct Render
 			if (!scene.skyBox)
 			{	glDepthMask(true);
 				if (!cleared) // reset everyting the first time.
-				{	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+				{	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // is stencil necessary?
 					cleared = true;
 				}
 				else
 					glClear(GL_DEPTH_BUFFER_BIT); // reset depth buffer for drawing after a skybox
 			}
 				
-			//camera.buildFrustum(scene, target.getWidth()/ cast(float)target.getHeight());
-			visibleNodes = camera.getVisibleNodes(scene, visibleNodes);
-			result += drawNodes(visibleNodes.data);
+			// Light calculations (is there a better place for this?)
+			{
+				scope LightNode[] allLights = scene.getAllLights();				
+				result.lightCount += allLights.length;
+				foreach (light; allLights) // compute in advance to save cpu
+					light.cameraSpacePosition = light.getAbsolutePosition().transform(renderBuffer.cameraInverse);
+			}
+			result += drawNodes(renderBuffer.commands.data);
 			
-			/*
-			if (scene in camera.renderScenes)
-				foreach (rn; camera.renderScenes[scene].getReadBuffer())
-				{	graphics.bindMatrix(&rn.transform);
-					
-					geometry(rn.geometry, rn.lights, rn.materialOverrides);
-					graphics.bindMatrix(null);
-					
-					postRender();
-				}
-			*/
-			visibleNodes.reserve = visibleNodes.length;
-			visibleNodes.length = 0;
-	
 			return result;
 		}		
 		
+		camera.aspectRatio = target.getWidth()/ cast(float)target.getHeight();
 		graphics.bindRenderTarget(target);
-		auto result = skyboxRecurse(camera, target);
+		auto result = skyboxRecurse(camera);
 		graphics.bindRenderTarget(null);
 		graphics.bindPass(null);
+		//graphics.bindVertexBuffer(null);
 		cleanup();
 		
 		return result;
 	}
-	
-	// Render a sprite
-	static RenderStatistics sprite(Material material, LightNode[] lights=null, Material[] materialOverrides=null)
-	{	
-		Matrix matrix = *graphics.current.transformMatrix();
 		
-		Vec3f sprite = matrix.getPosition();
-		Vec3f camera = graphics.current.camera.getAbsoluteTransform(true).getPosition();	
-		Vec3f spriteNormal = Vec3f(0, 0, -1);		
-		Vec3f spriteToCamera = (camera - sprite).normalize();
-
-		Vec3f rotation = spriteNormal.lookAt(camera - sprite, Vec3f(0, 1, 0));
-		
-		graphics.bindMatrix(&rotation.toMatrix());		
-		
-		spriteQuad.getMeshes()[0].material = material;
-		auto result = geometry(spriteQuad, lights, materialOverrides);
-		
-		graphics.bindMatrix(null);
-		
-		return result;
-	}
-	
 	/// Render a surface.  TODO: Move parts of this to OpenGL.d
 	static void surface(Surface surface, IRenderTarget target=null)
 	{	
@@ -766,9 +789,9 @@ struct Render
 				return;
 			
 			// Bind surface properties	
-			glPushMatrix();
+			graphics.matrix.push();
 			glTranslatef(surface.offsetX(), surface.offsetY(), 0);
-			glMultMatrixf(surface.style.transform.ptr);
+			graphics.matrix.multiply(surface.style.transform);
 			surface.style.backfaceVisibility ? glDisable(GL_CULL_FACE) : glEnable(GL_CULL_FACE);
 			
 			// Render the surface
@@ -807,7 +830,7 @@ struct Render
 				draw(child);
 			
 			doStencil(false);
-			glPopMatrix();
+			graphics.matrix.pop();
 			graphics.bindPass(null);
 		}
 		

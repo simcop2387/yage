@@ -6,6 +6,8 @@
 
 module yage.scene.model;
 
+import yage.core.array;
+import yage.core.math.matrix;
 import yage.core.timer;
 import yage.core.math.vector;
 import yage.system.system;
@@ -15,9 +17,9 @@ import yage.resource.manager;
 import yage.resource.model;
 import yage.resource.material;
 import yage.scene.camera;
-import yage.scene.visible;
+import yage.scene.light;
 import yage.scene.node;
-
+import yage.scene.visible;
 
 /// A node used for rendering a 3D model.
 class ModelNode : VisibleNode
@@ -157,12 +159,21 @@ class ModelNode : VisibleNode
 	float getRadius()
 	{	return radius * getScale().max();
 	}
-
-	private Geometry[1] visibleGeometry;
 	
-	override Geometry[] getVisibleGeometry(CameraNode camera)
-	{	visibleGeometry[0] = model;
-		return visibleGeometry;
+	
+	override void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
+	{	
+		Matrix* transform = &transform_abs;
+		Vec3f* position = cast(Vec3f*)transform.v[12..15].ptr; // speed hack
+		
+		if (camera.isVisible(*position, getRadius()))	
+		{	RenderCommand rc;			
+			rc.transform = transform.scale(getSize());
+			rc.geometry = model;
+			rc.materialOverrides = materialOverrides;
+			rc.setLights(getLights(lights, 8));
+			result.append(rc);
+		}
 	}
 	
 	/*

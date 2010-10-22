@@ -10,7 +10,7 @@
  */
 
 const char[] app = "demo1"; // set which program to build against yage.
-//const char[] app = "tests/unit/fastlock.d";
+//const char[] app = "tests/integration/main.d";
 
 /**
  * Use to implement your own custom build script, or pass args on to defaultBuild() 
