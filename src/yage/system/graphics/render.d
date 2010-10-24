@@ -406,8 +406,8 @@ struct Render
 	
 	// deprecated.  Model animation will be handled in the update, or possibly another thread.
 	static RenderStatistics model(Model model, LightNode[] lights=null, Material[] materialOverrides=null, float animationTime=0) 
-	{	auto result = Render.geometry(model, lights, materialOverrides);  // TODO: animationTime won't support blending animations.
-	
+	{	//auto result = Render.geometry(model, lights, materialOverrides);  // TODO: animationTime won't support blending animations.
+		RenderStatistics result;
 		
 		if (model.joints.length)
 		{
@@ -694,7 +694,9 @@ struct Render
 			surface.style.backfaceVisibility ? glDisable(GL_CULL_FACE) : glEnable(GL_CULL_FACE);
 			
 			// Render the surface
-			geometry(surface.getGeometry());
+			RenderCommand command;
+			command.geometry = surface.getGeometry();
+			geometry(command);
 			
 			// Apply or remove a layer in the stencil mask
 			void doStencil(bool on)
@@ -712,7 +714,9 @@ struct Render
 					glStencilFunc(GL_ALWAYS, 0, 0);// Make the stencil test always pass, increment existing value
 					glStencilOp(GL_KEEP, GL_KEEP, on ? GL_INCR : GL_DECR);
 					
-					geometry(surface.getGeometry().getClipGeometry()); // draw stencil
+					RenderCommand command;
+					command.geometry = surface.getGeometry().getClipGeometry();
+					geometry(command); // draw stencil
 					// Undo state changes above (this is faster than push/popState)
 					glColorMask(1, 1, 1, 1);
 					glStencilFunc(GL_EQUAL, stencil, uint.max); //Draw only where stencil buffer = current stencil level (broken?)

@@ -162,7 +162,7 @@ class FastLock
 			owner = self;
 		}
 		lockCount++;
-	}	
+	}
 	void unlock() /// ditto
 	{	assert(Thread.getThis() is owner);
 		lockCount--;

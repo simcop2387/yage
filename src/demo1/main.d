@@ -135,7 +135,7 @@ int main()
 	Surface view = new Surface("width: 100%; height: 100%");
 	
 	// Events for main surface.
-	view.onKeyDown = (int key, int modifier){
+	view.onKeyDown = curry(delegate void (int key, int modifier, DemoScene* scene){
 		if (key == SDLK_ESCAPE)
 			System.abort("Yage aborted by esc key press.");
 		
@@ -151,7 +151,8 @@ int main()
 		// Reset the scene
 		if (key == SDLK_r)
 		{	scene.pause();
-			scene = new DemoScene();
+			GC.collect();
+			*scene = new DemoScene();
 			scene.camera.setListener();
 			scene.play();
 		}	
@@ -160,11 +161,11 @@ int main()
 		}
 		
 		scene.ship.keyDown(key);
-	};
+	}, &scene);
 	
 	view.onKeyUp = curry(delegate void(int key, int modifier, DemoScene* scene){
 		scene.ship.keyUp(key);
-	}, scene);
+	}, &scene);
 	
 	view.onMouseDown = curry(delegate void(Input.MouseButton button, Vec2f coordinates, Surface self, DemoScene* scene){
 		scene.ship.acceptInput = !scene.ship.acceptInput;
@@ -224,7 +225,7 @@ int main()
 		
 		// Print framerate
 		fps++;
-		if (frame.tell()>=1f)
+		if (frame.tell()>=10f)
 		{	float framerate = fps/frame.tell();
 			window.setCaption(format("Yage Demo | %.2f fps\0", framerate));
 			info.setHtml(format(

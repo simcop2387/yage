@@ -41,12 +41,62 @@ class CameraNode : MovableNode
 	package int currentXres;		// Used internally for determining visibility
 	package int currentYres;
 	
+	protected Plane[6] frustum;
+	protected Plane[6] skyboxFrustum; // a special frustum with the camera centered at the origin of worldspace.	
+	protected static CameraNode listener; // Camera that plays audio.
+	
+	struct RenderBuffer
+	{	ArrayBuilder!(RenderCommand) commands;
+		long timestamp;
+		Matrix cameraInverse;
+	}
+	
+	// All of the information for rendering a scene
+	protected struct RenderScene
+	{	
+		RenderBuffer[3] buffers;
+		ubyte readBuffer=1; // current read buffer
+		ubyte writebuffer; // current write buffer		
+		Object transformMutex;
+		
+		static RenderScene opCall()
+		{	RenderScene result;
+			result.transformMutex = new Object();
+			return result;
+		}
+		
+		/*
+		 * Get the most up-to-date unused  buffer to read from. */
+		RenderBuffer* getReadBuffer()
+		{	synchronized (transformMutex)
+			{	int next = 3-(readBuffer+writebuffer);
+				if (buffers[next].timestamp > buffers[readBuffer].timestamp)
+					readBuffer = next; // advance the read buffer only if what's available is newer.
+				assert(readBuffer < 3);
+				assert(readBuffer != writebuffer);
+				return &buffers[readBuffer];
+			}
+		}
+
+		/*
+		 * Get an unused buffer for writing RenderNodes. */
+		RenderBuffer* getWriteBuffer()
+		{	synchronized (transformMutex)
+			{	buffers[writebuffer].timestamp = Clock.now().ticks();
+				writebuffer = 3 - (readBuffer+writebuffer);
+				assert(readBuffer < 3);
+				assert(readBuffer != writebuffer);
+				auto result = &buffers[writebuffer];
+				if(result.commands.reserve < result.commands.length)  // prevent allocated size from shrinking
+					result.commands.reserve = result.commands.length;
+				result.commands.length = 0; // reset content
+				return result;
+			}
+		}
+	}
 
 	protected RenderScene[Scene] renderScenes; // TODO: Scenes never get removed from here--scenes can reference a lot of other stuff!!!	
-	protected Plane[6] frustum;
-	protected Plane[6] skyboxFrustum; // a special frustum with the camera centered at the origin of worldspace.
-	
-	protected static CameraNode listener; // Camera that plays audio.
+
 
 	/**
 	 * Construct */
@@ -160,55 +210,6 @@ class CameraNode : MovableNode
 		
 	}
 	
-	struct RenderBuffer
-	{	ArrayBuilder!(RenderCommand) commands;
-		long timestamp;
-		Matrix cameraInverse;
-	}
-	
-	// All of the information for rendering a scene
-	protected struct RenderScene
-	{	
-		RenderBuffer[3] buffers;
-		ubyte readBuffer=1; // current read buffer
-		ubyte writebuffer; // current write buffer		
-		Object transformMutex;
-		
-		static RenderScene opCall()
-		{	RenderScene result;
-			result.transformMutex = new Object();
-			return result;
-		}
-		
-		/*
-		 * Get the most up-to-date unused  buffer to read from. */
-		RenderBuffer* getReadBuffer()
-		{	synchronized (transformMutex)
-			{	int next = 3-(readBuffer+writebuffer);
-				if (buffers[next].timestamp > buffers[readBuffer].timestamp)
-					readBuffer = 3 - (readBuffer+writebuffer);
-				assert(readBuffer < 3);
-				assert(readBuffer != writebuffer);
-				return &buffers[readBuffer];
-			}
-		}
-
-		/*
-		 * Get an unused buffer for writing RenderNodes. */
-		RenderBuffer* getWriteBuffer()
-		{	synchronized (transformMutex)
-			{	buffers[writebuffer].timestamp = Clock.now().ticks();
-				writebuffer = 3 - (readBuffer+writebuffer);
-				assert(readBuffer < 3);
-				assert(readBuffer != writebuffer);
-				auto result = &buffers[writebuffer];
-				if(result.commands.reserve < result.commands.length)  // prevent allocated size from shrinking
-					result.commands.reserve = result.commands.length;
-				result.commands.length = 0; // reset content
-				return result;
-			}
-		}
-	}
 	
 	package void updateRenderCommands(Scene scene=null)
 	{
