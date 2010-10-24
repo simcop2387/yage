@@ -7,6 +7,7 @@
 module yage.scene.camera;
 
 import tango.math.Math;
+import tango.core.WeakRef;
 import yage.core.array;
 import yage.core.math.matrix;
 import yage.core.math.plane;
@@ -59,9 +60,12 @@ class CameraNode : MovableNode
 		ubyte writebuffer; // current write buffer		
 		Object transformMutex;
 		
-		static RenderScene opCall()
+		WeakReference!(Object) scene; // This RenderScene is invalid when the scene is released.
+		
+		static RenderScene opCall(Scene scene)
 		{	RenderScene result;
 			result.transformMutex = new Object();
+			result.scene = new WeakReference!(Object)(scene);
 			return result;
 		}
 		
@@ -95,8 +99,7 @@ class CameraNode : MovableNode
 		}
 	}
 
-	protected RenderScene[Scene] renderScenes; // TODO: Scenes never get removed from here--scenes can reference a lot of other stuff!!!	
-
+	protected RenderScene[] renderScenes; // TODO: Scenes never get removed from here--scenes can reference a lot of other stuff!!!	
 
 	/**
 	 * Construct */
@@ -138,7 +141,8 @@ class CameraNode : MovableNode
 	 *     sphere and not on a per-polygon basis.  The bounding sphere is determined by VisibleNode.getRadius().
 	 * Returns:  An unsorted array of matching Nodes. */
 	VisibleNode[] getNodesAtCoordinate(Vec2f position, bool includeBoundingSphere=false)
-	{	return null;
+	{	mixin(Sync!("scene"));
+		return null;
 	}
 
 	/*
@@ -148,7 +152,8 @@ class CameraNode : MovableNode
 	 *     x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.
 	 *     x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.  */ 
 	Vec3f getWorldCoordinate(Vec2f screenCoordinate, float z)
-	{	Matrix clip;
+	{	mixin(Sync!("scene"));
+		Matrix clip;
 		Matrix modl;
 
 		//glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
@@ -161,7 +166,8 @@ class CameraNode : MovableNode
 	/*
 	 * Calculate a 6-plane view frutum based on the orientation of the camera.*/
 	Plane[] getFrustum(bool skybox=false)
-	{	return skybox ? skyboxFrustum : frustum;
+	{	mixin(Sync!("scene"));
+		return skybox ? skyboxFrustum : frustum;
 	}
 	
 	/**
@@ -171,7 +177,7 @@ class CameraNode : MovableNode
 	 *     radius = Radius of this point (sphere).
 	 *     frustum = Use this array of 6 planes as the view frustum instead of recalculating it.*/
 	bool isVisible(Vec3f point, float radius, bool skybox=false)
-	{	
+	{	mixin(Sync!("scene"));
 		Plane[] frustum = skybox ? skyboxFrustum : this.frustum;
 		
 		// See if it's inside the frustum
@@ -185,32 +191,10 @@ class CameraNode : MovableNode
 		float distance2 = (*cameraPosition - point).length2();
 		return radius*radius*currentYres*currentYres > distance2*threshold*threshold;
 	}
-
+	
 	/*
-	 * Update the scene's list of cameras and add/remove listener reference to this CameraNode
-	 * This should be protected, but making it anything but public causes it not to be called.
-	 * Most likely a D bug. */
-	override public void ancestorChange(Node old_ancestor)
-	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
-		
-		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
-		if (scene !is old_scene)
-		{	if (old_scene)
-				old_scene.removeCamera(this);		
-			if (scene) // if scene changed.
-			{	scene.addCamera(this);
-				if (!listener)
-					listener = this;
-			}
-		}
-	
-		// no scene or scene didn't change			
-		if (!scene && listener == this)
-				listener = null;			
-		
-	}
-	
-	
+	 * Cameras update a list of RenderCommands for every Scene they see.
+	 * This is typically one Scene and its Skybox. */
 	package void updateRenderCommands(Scene scene=null)
 	{
 		currentXres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
@@ -236,19 +220,25 @@ class CameraNode : MovableNode
 		}
 		
 		// Get or create the RenderScene
-		auto renderScene = scene in renderScenes;
+		auto renderScene = getRenderScene(scene);
 		if (!renderScene)
-		{	renderScenes[scene] = RenderScene();
-			renderScene = scene in renderScenes;
+		{	renderScenes ~= RenderScene(scene);
+			renderScene = &renderScenes[$-1];
 		}
 		
 		auto buffer = renderScene.getWriteBuffer();
 		buffer.cameraInverse = getAbsoluteTransform().inverse();
 		recurse(scene, frustum, allLights, buffer.commands);
 	}
-	
+		
+	/**
+	 * Get a buffer containing the list of RenderCommands and an inverse matrix for this Camera.
+	 * This is usually what the Renderer needs
+	 * Params:
+	 *     scene = 
+	 * Returns: */
 	RenderBuffer getRenderBuffer(Scene scene)
-	{	auto renderScene = scene in renderScenes;
+	{	auto renderScene = getRenderScene(scene);
 		if (renderScene)
 			return *renderScene.getReadBuffer();
 		
@@ -261,8 +251,45 @@ class CameraNode : MovableNode
 	}
 	
 	/*
+	 * Update the scene's list of cameras and add/remove listener reference to this CameraNode
+	 * This should be protected, but making it anything but public causes it not to be called.
+	 * Most likely a D bug. */
+	override public void ancestorChange(Node old_ancestor)
+	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
+		
+		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
+		if (scene !is old_scene)
+		{	if (old_scene)
+				old_scene.removeCamera(this);		
+			if (scene) // if scene changed.
+			{	scene.addCamera(this);
+				if (!listener)
+					listener = this;
+			}
+		}
+	
+		// no scene or scene didn't change			
+		if (!scene && listener == this)
+				listener = null;	
+	}
+	
+	protected RenderScene* getRenderScene(Scene scene)
+	{	foreach (i, ref rs; renderScenes)
+		{	Scene current = cast(Scene)rs.scene.get();
+			while (!current) // if it points to a no-longer-existing scene
+			{	rs = renderScenes[$-1]; // replace with one on the end
+				renderScenes.length = renderScenes.length - 1; // TODO: This code is untested!
+				current = cast(Scene)rs.scene.get();				
+			}
+			if (current is scene)
+				return &rs;
+		}
+		return null;
+	}
+	
+	/*
 	 * Update the frustums when the camera moves. */
-	protected void calcTransform()
+	override protected void calcTransform()
 	{	super.calcTransform();
 		
 		// Create the clipping matrix from the modelview and projection matrices

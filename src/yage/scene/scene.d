@@ -42,7 +42,6 @@ import yage.scene.visible;
  */
 class Scene : Node//, ITemporal, IDisposable
 {
-	
 	Color ambient;				/// The color of the scene's global ambient light; defaults to black.
 	Color backgroundColor;		/// Background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
 	Color fogColor;				/// Color of global scene fog, when fog is enabled.
@@ -63,14 +62,14 @@ class Scene : Node//, ITemporal, IDisposable
 	protected FastLock mutex;
 	protected Mutex camerasMutex;
 	protected Mutex lightsMutex; // Having a separate mutex prevents render from watiing for the start of the next update loop.
-	protected Object sounds_mutex;	
+	protected Object soundsMutex;	
 
-	protected Repeater update_thread;
+	protected Repeater updateThread;
 
-	protected Timer delta; 					// time since the last time this Scene was updated.
-	protected float delta_time;
+	protected Timer delta;
+	protected float delta_time;	// time since the last time this Scene was updated.
 
-	protected static Scene[Scene] all_scenes;
+	protected static Scene[Scene] all_scenes; // TODO: Prevents old scenes from being removed!
 
 	/// Construct an empty Scene.
 	this(float frequency = 60)
@@ -84,14 +83,14 @@ class Scene : Node//, ITemporal, IDisposable
 		backgroundColor = Color("black");	// OpenGL default clear color
 		fogColor = Color("gray");
 		
-		update_thread = new Repeater();
-		update_thread.setFrequency(frequency);
-		update_thread.setFunction(&update);		
-		update_thread.setErrorFunction(&defaultErrorFunction);
+		updateThread = new Repeater();
+		updateThread.setFrequency(frequency);
+		updateThread.setFunction(&update);		
+		updateThread.setErrorFunction(&defaultErrorFunction);
 	
 		camerasMutex = new Mutex();
 		lightsMutex = new Mutex();
-		sounds_mutex = new Object();
+		soundsMutex = new Object();
 		
 		all_scenes[this] = this;
 	}
@@ -144,9 +143,9 @@ class Scene : Node//, ITemporal, IDisposable
 	{	if (this in all_scenes) // repeater will be null if dispose has already been called.
 		{	super.dispose(); // needs to occur before sound_thread dispose to free sound nodes.
 			
-			if (update_thread)
-			{	update_thread.dispose();
-				update_thread = null;
+			if (updateThread)
+			{	updateThread.dispose();
+				updateThread = null;
 			}
 			cameras = null;
 			lights = null;
@@ -167,10 +166,10 @@ class Scene : Node//, ITemporal, IDisposable
 	 *     on_error = Defaults to System.abortException.  If null, any errors from the Scene's 
 	 *     sound or update threads will cause the threads to terminate silently. */
 	void setErrorFunction(void delegate(Exception e) on_error)
-	{	update_thread.setErrorFunction(on_error);
+	{	updateThread.setErrorFunction(on_error);
 	}
 	void setErrorFunction(void function(Exception e) on_error) /// ditto
-	{	update_thread.setErrorFunction(on_error);
+	{	updateThread.setErrorFunction(on_error);
 	}
 	void defaultErrorFunction(Exception e) /// ditto
 	{	char[] msg;
@@ -202,7 +201,7 @@ class Scene : Node//, ITemporal, IDisposable
 	 * This allows more advanced interaction than the shorthand functions implemented below.
 	 * See:  yage.core.repeater  */
 	Repeater getUpdateThread()
-	{	return update_thread;		
+	{	return updateThread;		
 	}
 	
 	/**
@@ -213,24 +212,24 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Each Scene is updated in its own thread.  
 	 * If the updating thread gets behind, it will always attempt to catch up by updating more frequently.*/
 	void play()
-	{	update_thread.play();
+	{	updateThread.play();
 	}
 	void pause() /// ditto
-	{	update_thread.pause();
+	{	updateThread.pause();
 	}	
 	bool paused() /// ditto
-	{	return update_thread.paused();
+	{	return updateThread.paused();
 	}	
 	void seek(double seconds) /// ditto
-	{	update_thread.seek(seconds);
+	{	updateThread.seek(seconds);
 	}
 	double tell() /// ditto
-	{	return update_thread.tell();		
+	{	return updateThread.tell();		
 	}
 
 	/**
 	 * Update all Nodes in the scene by delta seconds.
-	 * This function is typically called automatically at a set interval from the scene's update_thread once scene.play() is called.
+	 * This function is typically called automatically at a set interval from the scene's updateThread once scene.play() is called.
 	 * Params:
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
 	override void update(float delta = delta.tell())
@@ -238,18 +237,18 @@ class Scene : Node//, ITemporal, IDisposable
 		mixin(Sync!("this"));
 	
 		// deprecated
-		super.update(delta);		
+		super.update(delta);
 		delta_time = delta;
 		this.delta.seek(0);
 		
 		// New
-		//super.update2(delta); // recurses through children
+		super.update2(delta); // recurses through children
 		
 		camerasMutex.lock();
 		void updateRenderCommands(Scene scene)
 		{	foreach (camera; cameras) // skybox scene has no camera!
 				camera.updateRenderCommands(scene);
-			if (scene.skyBox)
+			if (scene.skyBox) // recurse
 				updateRenderCommands(scene.skyBox);
 				
 		}
@@ -303,10 +302,10 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Add/remove the sound from the scene's list of sounds.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	package void addSound(SoundNode sound)
-	{	synchronized (sounds_mutex) sounds[sound] = sound;	
+	{	synchronized (soundsMutex) sounds[sound] = sound;	
 	}	
 	package void removeSound(SoundNode sound) // ditto
-	{	synchronized (sounds_mutex) sounds.remove(sound);
+	{	synchronized (soundsMutex) sounds.remove(sound);
 	}	
 	
 	/**
@@ -319,7 +318,7 @@ class Scene : Node//, ITemporal, IDisposable
 	/*
 	 * Used internally. */
 	Object getSoundsMutex()
-	{	return sounds_mutex;		
+	{	return soundsMutex;		
 	}
 
 	/**
@@ -327,5 +326,10 @@ class Scene : Node//, ITemporal, IDisposable
 	static Scene[Scene] getAllScenes()
 	{	return all_scenes;		
 	}
+}
 
+
+/// Add this as the first line of a function to synchronize the entire body using the name of a Tango mutex.
+template Sync(char[] T)
+{	const char[] Sync = "if ("~T~") { "~T~".lock(); scope(exit) " ~ T ~ ".unlock(); }";	
 }

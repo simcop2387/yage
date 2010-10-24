@@ -14,11 +14,6 @@ import yage.scene.scene;
 import yage.scene.all;
 import yage.system.log;
 
-/// Add this as the first line of a function to synchronize the entire body using the name of a Tango mutex.
-template Sync(char[] T)
-{	const char[] Sync = "if ("~T~") { "~T~".lock(); scope(exit) " ~ T ~ ".unlock(); }";	
-}
-
 /**
  * Nodes are used for building scene graphs in Yage.
  * Every node has an array of child nodes as well as a parent node, with
@@ -61,6 +56,8 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	protected Vec3f worldRotation;
 	protected Vec3f worldScale;
 	
+	protected bool worldDirty;
+	
 	/**
 	 * Get / set the xyz position of this Node relative to its parent's position. */
 	Vec3f getPosition2()
@@ -69,6 +66,7 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	}	
 	void setPosition2(Vec3f position) /// ditto
 	{	mixin(Sync!("scene"));
+		setWorldDirty();
 		this.position = position;
 	}
 	
@@ -80,6 +78,7 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	}	
 	void setRotation2(Vec3f rotation) /// ditto
 	{	mixin(Sync!("scene"));
+		setWorldDirty();
 		this.rotation = rotation;
 	}
 	
@@ -91,6 +90,7 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	}	
 	void setScale2(Vec3f scale) /// ditto
 	{	mixin(Sync!("scene"));
+		setWorldDirty();
 		this.scale = scale;
 	}
 
@@ -103,6 +103,7 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	}	
 	void setVelocit2(Vec3f velocity) /// ditto
 	{	mixin(Sync!("scene"));
+		setWorldDirty();
 		this.velocity = velocity;
 	}
 	
@@ -117,7 +118,7 @@ class Node : Tree!(Node), IDisposable, ICloneable
 		this.angularVelocity = axis;
 	}
 	
-	Matrix getMatrix2()
+	Matrix getMatrix()
 	{	return Matrix.compose(position, rotation, scale);
 	}
 	
@@ -126,24 +127,50 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	 * instead of relative to the parent Node. */
 	Vec3f getWorldPosition()
 	{	mixin(Sync!("scene"));
-		return getWorldMatrix().getPosition(); // TODO: optimize
+		calcWorld();
+		return worldPosition; // TODO: optimize
 	}
 	Vec3f getWorldRotation() /// ditto
 	{	mixin(Sync!("scene"));
-		return getWorldMatrix().toAxis();
+		calcWorld();
+		return worldRotation;
 	}
 	Vec3f getWorldScale() /// ditto
 	{	mixin(Sync!("scene"));
-		return getWorldMatrix().getScale();
+		calcWorld();
+		return worldScale;
 	}
 	
-	// Temporary until I have something more optimized
 	Matrix getWorldMatrix()
 	{	mixin(Sync!("scene"));
-		
-		if (parent) // TODO and if parent isn't scene?
-			return parent.getWorldMatrix().transformAffine(getMatrix2());		
-		return getMatrix2();
+		calcWorld();
+		return Matrix.compose(worldPosition, worldRotation, worldScale);
+	}
+	
+	/*
+	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
+	 * This should be called whenever a Node has its transformation matrix changed.
+	 * This function is used internally by the engine usually doesn't need to be called manually. */
+	protected void setWorldDirty()
+	{	if (!worldDirty)
+		{	worldDirty=true;
+			foreach(c; children)
+				c.setWorldDirty();
+	}	}
+	
+	protected void calcWorld()
+	{	if (worldDirty)
+		{	if (parent)
+			{	parent.calcWorld(); // TODO: optimize this!
+				Matrix matrix = parent.getWorldMatrix().transformAffine(getMatrix());	
+				matrix.decompose(worldPosition, worldRotation, worldScale);
+			} else
+			{	worldPosition = position;
+				worldRotation = rotation;
+				worldScale = scale;
+			}
+			worldDirty = false;
+		}
 	}	
 	unittest
 	{
@@ -158,6 +185,20 @@ class Node : Tree!(Node), IDisposable, ICloneable
 
 	void update2(float delta)
 	{	mixin(Sync!("scene"));
+	
+		bool dirty = false;
+		if (velocity.length2() != 0)
+		{	position += velocity*delta;
+			dirty = true;
+		}
+	
+		// Rotate if angular velocity is not zero.
+		if (angularVelocity.length2() !=0)
+		{	rotation = rotation.rotate(angularVelocity*delta);
+			dirty = true;
+		}
+		if (dirty)
+			setWorldDirty();
 		
 		foreach (node; children)
 			node.update2(delta);
@@ -184,8 +225,12 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	protected Vec3f		angular_velocity_abs;
 	protected bool		velocity_dirty=true;	// The absolute velocity vectors need to be recalculated.
 
-	/// Constructor
-	this(Node parent=null)
+	/**
+	 * Construct and optionally add as a child of another Node. */
+	this()
+	{
+	}	
+	this(Node parent) /// ditto
 	{	if (parent)
 			parent.addChild(this);
 	}
@@ -248,8 +293,8 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	}	
 	unittest
 	{	// Test child cloning
-		auto a = new VisibleNode();
-		a.addChild(new VisibleNode());
+		auto a = new Node();
+		a.addChild(new Node());
 		auto b = a.clone(true);
 		assert(b.getChildren().length == 1);
 		assert(b.getChildren()[0] != a.getChildren()[0]); // should not be equal, should've been cloned.
@@ -378,6 +423,14 @@ class Node : Tree!(Node), IDisposable, ICloneable
 		MovableNode b = a.addChild(new MovableNode());
 		b.setPosition(Vec3f(0, 2, 0));		
 		assert(b.getAbsolutePosition() == Vec3f(0, 3, 0));
+	}
+	unittest
+	{	// Ensure absolute position is calculated properly in a node heirarchy.
+		Node a = new Node();
+		a.setPosition2(Vec3f(0, 1, 0));
+		Node b = new Node(a);
+		b.setPosition2(Vec3f(0, 2, 0));		
+		assert(b.getWorldPosition() == Vec3f(0, 3, 0));
 	}
 
 	/*

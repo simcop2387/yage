@@ -30,37 +30,17 @@ abstract class GraphicsAPI
 		static IRenderTarget renderTarget; ///
 		static Scene scene; ///
 		static Shader shader; ///
-		static VertexBuffer[char[]] vertexBuffers;
-		static LightNode[8] lights;		
+		static VertexBuffer[char[]] vertexBuffers; ///
+		static LightNode[8] lights;	///
 		static MaterialPass pass; ///
 		static ArrayBuilder!(TextureInstance) textures;
-		
-		static ArrayBuilder!(Matrix) projectionMatrixStack;
-		static ArrayBuilder!(Matrix) textureMatrixStack;
-		static ArrayBuilder!(Matrix) transformMatrixStack;
-		
+
 		static Current opCall()
 		{	Current result;
 			LightNode light = new LightNode();
 			for (int i=0; i<lights.length; i++)
 				lights[i] = light;
 			return result;
-		}
-		
-		static Matrix* projectionMatrix()
-		{	if (projectionMatrixStack.length)
-				return projectionMatrixStack[projectionMatrixStack.length-1];
-			return &Matrix.IDENTITY;
-		}
-		static Matrix* textureMatrix()
-		{	if (textureMatrixStack.length)
-				return textureMatrixStack[textureMatrixStack.length-1];
-			return &Matrix.IDENTITY;
-		}
-		static Matrix* transformMatrix()
-		{	if (transformMatrixStack.length)
-				return transformMatrixStack[transformMatrixStack.length-1];
-			return &Matrix.IDENTITY;
 		}
 	}
 	Current current; /// ditto

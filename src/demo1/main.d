@@ -151,6 +151,8 @@ int main()
 		// Reset the scene
 		if (key == SDLK_r)
 		{	scene.pause();
+			scene.dispose();
+			delete *scene;
 			GC.collect();
 			*scene = new DemoScene();
 			scene.camera.setListener();
@@ -225,7 +227,7 @@ int main()
 		
 		// Print framerate
 		fps++;
-		if (frame.tell()>=10f)
+		if (frame.tell()>=1f)
 		{	float framerate = fps/frame.tell();
 			window.setCaption(format("Yage Demo | %.2f fps\0", framerate));
 			info.setHtml(format(
@@ -234,7 +236,8 @@ int main()
 				`%d <b>polygons</b><br/>`
 				`%d <b>vertices</b><br/>`
 				`%d <b>lights</b><br/><br/> wasd to move<br/> +q for hyperdrive<br/>space to shoot`,
-				framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ Profile.getTimesAndClear());
+					framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ 
+					Profile.getTimesAndClear());
 			frame.seek(0);
 			fps = 0;
 		}

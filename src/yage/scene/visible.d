@@ -46,13 +46,11 @@ struct RenderCommand
  * See_Also:
  * yage.scene.MovableNode
  * yage.scene.Node */
-class VisibleNode : MovableNode
+abstract class VisibleNode : MovableNode
 {	
 	protected bool visible = true;
 	protected Vec3f	size = Vec3f(1);
-	
 	protected ArrayBuilder!(LightNode) lights;	// Lights that affect this VisibleNode
-
 	Material[] materialOverrides;	/// Use thes materials instead of the model's meshes' or sprite's materials.
 
 	/**
@@ -64,6 +62,7 @@ class VisibleNode : MovableNode
 	{	auto result = cast(VisibleNode)super.clone(children);
 		result.visible = visible;
 		result.size = size;
+		result.materialOverrides = materialOverrides;
 		return result;
 	}
 
@@ -74,20 +73,15 @@ class VisibleNode : MovableNode
 	float getRadius()
 	{	return 0;
 	}
-
+	
 	/**
 	 * Get / set the scale of this VisibleNode in the x, y, and z directions.
 	 * The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. */	
-	void setSize(float x, float y, float z) 
-	{	size.x = x;
-		size.y = y;
-		size.z = z;
-	}
-	void setSize(Vec3f size) /// ditto
-	{	setSize(size.x, size.y, size.z); 
+	void setSize(Vec3f size)
+	{	this.size = size;
 	}
 	void setSize(float size) /// ditto
-	{	setSize(size, size, size); 
+	{	this.size.x = this.size.y = this.size.z = size;
 	} 
 	Vec3f getSize() /// ditto
 	{	return size; 
@@ -103,6 +97,12 @@ class VisibleNode : MovableNode
 	{	return visible;
 	}
 	
+	/**
+	 * Get the geometry, materials, and affecting lights necessary to render this node.
+	 * Params:
+	 *     camera = 
+	 *     lights = 
+	 *     result = Results are appended to this ArrayBuilder to minimize allocation (or eliminiate it result has a reserve set--the typical case). */
 	void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 	{	
 	}

@@ -747,6 +747,31 @@ struct Vec3f
 	 * as axis-angle vectors.*/
 	Vec3f rotate(Vec3f axis)
 	{	return rotate(axis.toMatrix());
+		/+// TODO Inline simplifcation and optimization
+		float phi = axis.length();
+		if (phi==0) // no rotation for zero-vector
+			return *this;
+		Vec3f n = axis.scale(1/phi);
+		float rcos = cos(phi);
+		float rsin = sin(phi);
+		// float ircos = 1-rcos; // TODO: Use this alsy
+		
+		Vec3f res=void;
+		res.x = x*(rcos + n.x*n.x*(1-rcos))    +    \ y*(-n.z * rsin + n.x*n.y*(1-rcos)) + z*(n.y * rsin + n.x*n.z*(1-rcos));
+		
+		/+ // TODO reduction from 17 to 13 ops (is this correct?) :
+		x*rcos + x*n.x*n.x*(1-rcos)            +    y*-n.z * y*rsin + n.x*n.y*(1-rcos) + z*n.y*rsin + z*n.x*n.z*(1-rcos);
+		x*rcos + y*-n.z*y*rsin + z*n.y*rsin    +    x*n.x*n.x*(1-rcos) + n.x*n.y*(1-rcos) + z*n.x*n.z*(1-rcos);		
+		x*rcos + y*-n.z*y*rsin + z*n.y*rsin    +    (1-rcos)*(x*n.x*n.x + n.x*n.y + z*n.x*n.z);
+		x*rcos + y*-n.z*y*rsin + z*n.y*rsin    +    (1-rcos)*n.x*(x*n.x + n.y + z*n.z);
+		x*rcos + y*y*-n.z*rsin + y*z*n.rsin    +    (1-rcos)*n.x*(x*n.x + n.y + z*n.z);
+		x*rcos + y*(y*-n.z*rsin + z*n.rsin)    +    (1-rcos)*n.x*(x*n.x + n.y + z*n.z);
+		res.x = x*rcos + y*rsin*(y*-n.z + z)   +    (1-rcos)*n.x*(x*n.x + n.y + z*n.z);
+		+/
+		res.y = x*(n.z * rsin + n.y*n.x*(1-rcos))  + y*(rcos + n.y*n.y*(1-rcos))        + z*(-n.x * rsin + n.y*n.z*(1-rcos));
+		res.z = x*(-n.y * rsin + n.z*n.x*(1-rcos)) + y*(n.x * rsin + n.z*n.y*(1-rcos))  + z*(rcos + n.z*n.z*(1-rcos));
+		return res;
+		+/
 	}
 
 	/**
@@ -754,7 +779,6 @@ struct Vec3f
 	 * Note that this is curently slower than rotate(Matrix m).*/
 	Vec3f rotate(Quatrn q)
 	{	return rotate(q.toMatrix());
-		//return q*(*this)*(q.inverse());
 	}
 
 	/// Return a copy of this vector rotated by the rotation values of Matrix m.
@@ -826,16 +850,17 @@ struct Vec3f
 			return res;
 		Vec3f n = scale(1/phi);
 		float rcos = cos(phi);
+		float ircos = 1-rcos;
 		float rsin = sin(phi);
-		res.v[0] =      rcos + n.x*n.x*(1-rcos);
-		res.v[1] =  n.z * rsin + n.y*n.x*(1-rcos);
-		res.v[2] = -n.y * rsin + n.z*n.x*(1-rcos);
-		res.v[4] = -n.z * rsin + n.x*n.y*(1-rcos);
-		res.v[5] =      rcos + n.y*n.y*(1-rcos);
-		res.v[6] =  n.x * rsin + n.z*n.y*(1-rcos);
-		res.v[8] =  n.y * rsin + n.x*n.z*(1-rcos);
-		res.v[9] = -n.x * rsin + n.y*n.z*(1-rcos);
-		res.v[10] =      rcos + n.z*n.z*(1-rcos);
+		res.v[0] =      rcos + n.x*n.x*ircos;
+		res.v[1] =  n.z * rsin + n.y*n.x*ircos;
+		res.v[2] = -n.y * rsin + n.z*n.x*ircos;
+		res.v[4] = -n.z * rsin + n.x*n.y*ircos;
+		res.v[5] =      rcos + n.y*n.y*ircos;
+		res.v[6] =  n.x * rsin + n.z*n.y*ircos;
+		res.v[8] =  n.y * rsin + n.x*n.z*ircos;
+		res.v[9] = -n.x * rsin + n.y*n.z*ircos;
+		res.v[10] =      rcos + n.z*n.z*ircos;
 		return res;
 	}
 
