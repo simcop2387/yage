@@ -36,7 +36,7 @@ class Material
 	/**
 	 * Create a deep copy of the Material, cloning both techniques and passes. */
 	Material dup()
-	{	auto result = .dup(this);
+	{	auto result = clone(this);
 		result.techniques = new MaterialTechnique[0]; // reset array pointer
 		foreach (t; techniques)
 			result.techniques ~= t.dup();
@@ -91,10 +91,10 @@ class MaterialTechnique
 
 	///
 	MaterialTechnique dup()
-	{	auto result = .dup(this);
+	{	auto result = clone(this);
 		result.passes = new MaterialPass[0]; // reset array pointer
 		foreach (p; passes)
-			result.passes ~= .dup(p);
+			result.passes ~= clone(p);
 		return result;
 	}
 	

@@ -9,7 +9,6 @@
 
 module demo2.main;
 
-import tango.text.convert.Format;
 import tango.math.Math;
 import tango.io.device.File;
 import derelict.sdl.sdl;
@@ -121,7 +120,7 @@ int main()
 		{	info.setHtml(`Click <s>here</s> <span style="color: green; text-decoration: overline; font-size:40px">`~
 			`<u>To</u><s> type and</s> <u style="font-size: 18px">edit</u></span> this `~
 			`<span style="text-decoration: overline">block</span> of <b>text. <i style="font-style: normal">No,</i> really</b> it `~
-			`works,<br/><br/>Another line of text.<br/><br/><br/> `~ Format.convert(` {} fps<br/>`, fps/frame.tell()));
+			`works,<br/><br/>Another line of text.<br/><br/><br/> `~format(` %s fps<br/>`, fps/frame.tell()));
 			
 			frame.seek(0);
 			fps = 0;

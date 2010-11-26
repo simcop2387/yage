@@ -20,7 +20,7 @@ import yage.core.color;
 import yage.core.format;
 import yage.core.math.matrix;
 import yage.core.math.vector;
-import yage.core.misc : dup;
+import yage.core.misc : clone;
 import yage.core.object2;
 import yage.core.timer;
 import yage.resource.geometry;
@@ -426,7 +426,7 @@ class Collada
 		if (result.getPass().autoShader == MaterialPass.AutoShader.PHONG)
 		{
 			MaterialTechnique t = new MaterialTechnique();
-			MaterialPass p = dup(result.getPass());
+			MaterialPass p = clone(result.getPass());
 			p.autoShader = MaterialPass.AutoShader.NONE;
 			if (p.textures.length > 1)
 				p.textures.length = 1;

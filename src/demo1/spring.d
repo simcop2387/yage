@@ -17,12 +17,12 @@ import yage.scene.all;
 // Totally wigs out if stiffness is greater than the framerate?
 class Spring
 {
-	MovableNode		head;
-	MovableNode		tail;
+	Node		head;
+	Node		tail;
 	Vec3f		distance;
 	float		stiffness = 16; // arbitrary
 
-	this(MovableNode head, MovableNode tail)
+	this(Node head, Node tail)
 	{	this.head = head;
 		this.tail = tail;
 		distance = Vec3f(0, 2, 6);
@@ -44,11 +44,11 @@ class Spring
 	{	stiffness = s;
 	}
 
-	MovableNode getHead()
+	Node getHead()
 	{	return head;
 	}
 
-	MovableNode getTail()
+	Node getTail()
 	{	return tail;
 	}
 	
@@ -58,9 +58,9 @@ class Spring
 
 	/// Update the position of the floater relative to what it's attached to.
 	void update(float delta){
-		tail.setRotation(head.getAbsoluteRotation());
+		tail.setRotation(head.getWorldRotation());
 
-		Vec3f dist = head.getAbsolutePosition() + distance.rotate(head.getAbsoluteTransform()) - tail.getAbsolutePosition();		
+		Vec3f dist = head.getWorldPosition() + distance.rotate(head.getWorldTransform()) - tail.getWorldPosition();		
 		Vec3f vel = dist.scale(stiffness); 
 
 		if (vel.length*delta > dist.length)

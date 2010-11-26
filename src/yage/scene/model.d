@@ -62,8 +62,8 @@ class ModelNode : VisibleNode
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	override ModelNode clone(bool children=false)
-	{	auto result = cast(ModelNode)super.clone(children);
+	/*override*/ ModelNode clone(bool children=false, ModelNode destination=null)
+	{	auto result = cast(ModelNode)super.clone(children, destination);
 		result.model = model; // atomic
 		result.radius = radius;
 		return result;
@@ -163,15 +163,18 @@ class ModelNode : VisibleNode
 	
 	override void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 	{	
-		Matrix* transform = &transform_abs;
-		Vec3f* position = cast(Vec3f*)transform.v[12..15].ptr; // speed hack
+		Vec3f wp = getWorldPosition();
+		if (camera.scene !is scene)
+			wp += camera.getWorldPosition();		
 		
-		if (camera.isVisible(*position, getRadius()))	
-		{	RenderCommand rc;			
-			rc.transform = transform.scale(getSize());
+		if (camera.isVisible(wp, getRadius()))	
+		{	
+			RenderCommand rc;			
+			rc.transform = getWorldTransform().scale(getSize());
 			rc.geometry = model;
 			rc.materialOverrides = materialOverrides;
-			rc.setLights(getLights(lights, 8));
+			auto l = getLights(lights, 8);
+			rc.setLights(l);
 			result.append(rc);
 		}
 	}

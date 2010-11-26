@@ -18,7 +18,6 @@ public
 	import yage.scene.graph;
 	import yage.scene.light;	
 	import yage.scene.model;
-	import yage.scene.movable;	
 	import yage.scene.node;
 	import yage.scene.scene;
 	import yage.scene.sound;

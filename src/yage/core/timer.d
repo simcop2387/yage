@@ -23,7 +23,7 @@ import tango.time.StopWatch;
 class Timer
 {
 	protected bool 		_paused	= false;
-	protected double	pause_after = double.infinity;
+	protected double	pause_after = double.infinity;  // This is extreneous.  It serves the same function as max and loop=false
 	protected double	min		= 0;
 	protected double 	max		= double.infinity;
 	//protected double	speed	= 1.0;

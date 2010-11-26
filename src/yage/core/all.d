@@ -22,7 +22,6 @@ public
 	import yage.core.misc;
 	import yage.core.object2;
 	import yage.core.parallel;
-	import yage.core.parse;
 	import yage.core.repeater;
 	import yage.core.timer;
 	import yage.core.tree;

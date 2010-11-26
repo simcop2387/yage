@@ -7,7 +7,6 @@
 module yage.scene.visible;
 
 import tango.math.Math;
-import tango.util.container.more.Heap;
 import yage.core.all;
 import yage.resource.geometry;
 import yage.resource.material;
@@ -15,41 +14,17 @@ import yage.scene.camera;
 import yage.scene.scene;
 import yage.scene.light;
 import yage.scene.node;
-import yage.scene.movable;
 import yage.system.log;
-
-struct RenderCommand
-{	
-	Matrix transform;
-	Geometry geometry;
-	Material[] materialOverrides;
-	
-	private ubyte lightsLength;
-	private LightNode[8] lights;
-	
-	LightNode[] getLights()
-	{	return lights[0..lightsLength];		 	              
-	}
-	
-	void setLights(LightNode[] lights)
-	{	lightsLength = lights.length;
-		this.lights[0..lightsLength] = lights[0..$];
-		foreach (light; lights[0..lightsLength])
-			assert(light);
-	}
-}
-
-
 
 /**
  * VisibleNode is the parent of all Nodes that are visible and can be rendered.
  * See_Also:
  * yage.scene.MovableNode
  * yage.scene.Node */
-abstract class VisibleNode : MovableNode
+abstract class VisibleNode : Node
 {	
 	protected bool visible = true;
-	protected Vec3f	size = Vec3f(1);
+	protected Vec3f	size = Vec3f(1); // TODO: Deprecate this to make things more light-weight
 	protected ArrayBuilder!(LightNode) lights;	// Lights that affect this VisibleNode
 	Material[] materialOverrides;	/// Use thes materials instead of the model's meshes' or sprite's materials.
 
@@ -58,8 +33,8 @@ abstract class VisibleNode : MovableNode
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	override VisibleNode clone(bool children=false)
-	{	auto result = cast(VisibleNode)super.clone(children);
+	/*override*/ VisibleNode clone(bool children=false, VisibleNode destination=null) // override should work, it's covariant!
+	{	auto result = cast(VisibleNode)super.clone(children, destination);
 		result.visible = visible;
 		result.size = size;
 		result.materialOverrides = materialOverrides;
@@ -104,9 +79,8 @@ abstract class VisibleNode : MovableNode
 	 *     lights = 
 	 *     result = Results are appended to this ArrayBuilder to minimize allocation (or eliminiate it result has a reserve set--the typical case). */
 	void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
-	{	
+	{	// intenionally blank.  subclasses will override this method.
 	}
-	
 	
 	/*
 	 * Find the lights that most affect the brightness of this Node.
@@ -122,14 +96,14 @@ abstract class VisibleNode : MovableNode
 		lights.length = number;
 		lights.data[0..$] = null;
 		Vec3f position;
-		position.v[0..3] = (getAbsoluteTransform(true)).v[12..15];
+		position.v[0..3] = (getWorldTransform()).v[12..15];
 		float radius = getRadius();
 		
 		foreach (light; allLights)
 		{	
 			// First pass, discard lights that are too far away.  
 			float lr = light.getLightRadius(); // [below] distance is greater than 8*radius.  At 8*radius, we have 1/256th brightness.
-			if (light.getAbsolutePosition().distance2(position) < 256 * lr*lr)
+			if (light.getWorldPosition().distance2(position) < 256 * lr*lr)
 			{	Color brightness = light.getBrightness(position, radius);
 				light.intensity = (brightness.r + cast(int)brightness.g + brightness.b); // average of three-color brightness.
 				

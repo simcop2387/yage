@@ -7,8 +7,8 @@
 module yage.core.json;
 
 import tango.core.Traits;
-import tango.text.convert.Format;
 import yage.system.log;
+import yage.core.misc;
 
 
 /// TODO: This fails for base classes!
@@ -217,14 +217,4 @@ struct Json
 		{	int test=5;
 		}
 	}
-}
-
-
-
-// Testing
-template BaseClassOf(T) {                                                      
-    static if (is(T S == super))                                         
-        alias S[0] BaseClassOf;
-    else
-        static assert(false, "fail");
 }

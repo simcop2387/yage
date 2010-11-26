@@ -8,7 +8,6 @@ module yage.system.sound.soundsystem;
 import derelict.openal.al;
 
 import tango.math.Math;
-import tango.io.Stdout;
 import tango.util.Convert;
 import tango.core.Thread;
 import tango.core.Traits;
@@ -19,6 +18,7 @@ import yage.core.object2;
 import yage.core.math.all;
 import yage.core.misc;
 import yage.core.repeater;
+import yage.core.timer;
 import yage.scene.camera;
 import yage.scene.sound;
 import yage.system.system;
@@ -42,11 +42,11 @@ private class SoundSource : IDisposable
 {
 	package uint al_source;
 	
-	protected SoundNode soundNode;
+	protected SoundNode soundNode;	// It would be good if this became unnecessary
 	
 	protected Sound sound;
 	protected float	pitch;
-	protected float	radius;	// The radius of the Sound that plays.
+	protected float	radius;			// The radius of the Sound that plays.
 	protected float	volume;	
 	protected bool	looping = false;
 	protected Vec3f position;
@@ -85,72 +85,61 @@ private class SoundSource : IDisposable
 	 * SoundNodes act as a virtual instance of a real SoundSource
 	 * This function ensures the SoundSource matches all of the parameters of the SoundNode. 
 	 * If called multiple times from the same SoundNode, this will just update the parameters. */
-	void bind(SoundNode soundNode)
+	void bind(SoundCommand command)
 	{	
-		this.soundNode = soundNode;
-		this.looping = soundNode.getLooping();
+		soundNode = command.soundNode;
+		looping = command.looping;
 		
 		synchronized(OpenAL.getMutex())
 		{
-			
-			if (sound !is soundNode.getSound())
-			{	// Stdout.format("Changing sound to %s", soundNode.getSound().getSource());
-				sound = soundNode.getSound();
+			if (sound !is command.sound)
+			{	sound = command.sound;
 			
 				// Ensure that our number of buffers isn't more than what exists in the sound file
 				int len = sound.getBuffersLength();
 				int sec = sound.getBuffersPerSecond();
 				size = len < sec ? len : sec;
 				
-				seek(soundNode.tell());
+				seek(command.position);
 			}
 			
-			if (radius != soundNode.getSoundRadius())
-			{	radius = soundNode.getSoundRadius();
-				// Stdout.format("Changing radius to %s", radius);
+			if (radius != command.radius)
+			{	radius = command.radius;
 				OpenAL.sourcef(al_source, AL_ROLLOFF_FACTOR, 1.0/radius);
 			}
 			
-			if (this.volume != soundNode.getVolume())
-			{	volume = soundNode.getVolume();
-				// Stdout.format("Changing volume to %s", volume);
+			if (volume != command.volume)
+			{	volume = command.volume;
 				OpenAL.sourcef(al_source, AL_GAIN, volume);
 			}
 			
-			if (this.pitch != soundNode.getPitch())
-			{	pitch = soundNode.getPitch();
-				// Stdout.format("Changing pitch to %s", pitch);
+			if (pitch != command.pitch)
+			{	pitch = command.pitch;
 				OpenAL.sourcef(al_source, AL_PITCH, pitch);
 			}
 			
-			double epsilon = 1.0/sound.getBuffersPerSecond(); // is this always .05?
+			double marginOfError = 1.0/ /*sound.getBuffersPerSecond()*/ 0.05; // is this always .05?
 			double _tell = tell();
-			double seconds = soundNode.tell();
-			//Stdout.format("times: %f, %f", _tell, seconds);
-			if (soundNode.reseek && (seconds+epsilon < _tell ||  _tell < seconds-epsilon))
-			{	// Stdout.format("Changing playback position from %s to %s", _tell, seconds);				
-				seek(seconds);
-				// Stdout.format(tell());
-			} else if (enqueue) // update soundNode's playback timer to the real playback location.
-				soundNode.seek(_tell);
-			soundNode.reseek = false;
-			
-			Vec3f position = soundNode.getAbsolutePosition();			
-			if (this.position != position)
-			{	//Stdout.format("Changing position from %s to %s", this.position, position);
-				this.position = position;
+			double seconds = command.position;
+			if ((seconds+marginOfError < _tell ||  _tell < seconds-marginOfError))
+			{	if (command.reseek)			
+					seek(seconds);
+				else if (enqueue) // update soundNode's playback timer to the real playback location.
+				{	Log.write("reseek!");
+					command.soundNode.seek(_tell); // Warning-- this should be behind a lock!
+				}
+			}
+			command.reseek = false;// is this necessary?
+					
+			if (position != command.worldPosition)
+			{	position = command.worldPosition;
 				OpenAL.sourcefv(al_source, AL_POSITION, position.ptr);
 			}
 			
-			Vec3f velocity = soundNode.getAbsoluteVelocity();
-			if (this.velocity != velocity)
-			{	this.velocity = velocity;
-				
+			if (velocity != command.worldVelocity)
+			{	velocity = command.worldVelocity;
 				OpenAL.sourcefv(al_source, AL_VELOCITY, velocity.ptr);
 			}
-			
-			//Stdout.format("radius is %s, volume is %s, paused is %s, tell is %s, position is %s, velocity is %s",
-			//	radius, volume, _paused, seconds, position, velocity);
 		}
 	}
 	
@@ -250,7 +239,7 @@ private class SoundSource : IDisposable
 			}
 	
 			// If not playing
-			// Is this block unnecessary if everything behaves as it should?
+			// Is this block still necessary if everything behaves as it should?
 			int state;
 			OpenAL.getSourcei(al_source, AL_SOURCE_STATE, &state);
 			if (state==AL_STOPPED || state==AL_INITIAL)
@@ -295,8 +284,6 @@ private class SoundSource : IDisposable
 	}
 }
 
-import yage.core.timer;
-
 /**
  * This is a representation of an OpenAL Context as a statif class, simce many OpenAL implementations support only one context.
  * It is used internally by the engine and shouldn't need to be used manually.
@@ -307,16 +294,14 @@ import yage.core.timer;
  * Controls a sound thread that handles buffering audio to all active SoundSources. */
 class SoundContext
 {	
-	protected static const int MAX_SOURCES = 32;
-	protected static const int UPDATE_FREQUENCY = 30;
+	protected static const int MAX_SOURCES = 32;		// arbitrary.  TODO: Make this a variable
+	protected static const int UPDATE_FREQUENCY = 30;	// arbitrary
 	protected static SoundSource[] sources;
 	
 	protected static ALCdevice* device = null;
 	protected static ALCcontext* context = null;	
 	
-	protected static Repeater sound_thread = null;
-	
-	protected static SoundNode[] sounds; // currently playing sounds.
+	public static Repeater sound_thread = null;
 	
 	/**
 	 * Create a device, a context, and start a thread that automatically updates all sound buffers.
@@ -355,8 +340,18 @@ class SoundContext
 		// Start a thread to perform sound updates.
 		sound_thread = new Repeater();
 		sound_thread.setFrequency(UPDATE_FREQUENCY);
-		sound_thread.setFunction(&updateSounds);
+		sound_thread.setFunction(&updateSounds);	
+		sound_thread.setErrorFunction(&defaultErrorFunction); // doesn't work!
 		sound_thread.play();
+	}
+	
+	void defaultErrorFunction(Exception e) /// ditto
+	{	char[] msg;
+		e.writeOut(delegate void(char[] a) {
+			msg ~= a;
+		});
+		Log.error("The sound thread threw an uncaught exception:\n%s", msg);
+		System.abort("Yage is aborting due to sound system exception.");
 	}
 
 	/**
@@ -388,47 +383,36 @@ class SoundContext
 	
 	/*
 	 * Called by the sound thread to update all active source's sound buffers. */
-	protected static void updateSounds(float unused)
+	/*protected*/ static void updateSounds(float unused)
 	{	
 		auto listener = CameraNode.getListener();
 		if (listener)
-		{	auto scene = listener.getScene();
+		{	
+			auto list = listener.getSoundList();
 			
-			// Calculate the listener position, velocity, and orientation
-			Matrix transform = listener.getAbsoluteTransform();
-			Vec3f camera_position = Vec3f(transform.v[12..15]);
-			Vec3f look = Vec3f(0, 0, -1).rotate(transform);
-			Vec3f up = Vec3f(0, 1, 0).rotate(transform);
-			float[6] concat;
-			concat[0..3] = look.v;
-			concat[3..6] = up.v;
+			union Orientation {
+				struct { Vec3f look, up; }
+				float[6] values;				
+			}
+			Orientation orientation;
+			orientation.look = Vec3f(0, 0, -1).rotate(list.cameraRotation);
+			orientation.up = Vec3f(0, 1, 0).rotate(list.cameraRotation);
 			
-			// Create an array of the loudest sounds
-			// TODO: Borrow new algorithm from VisibleNode.getLights
-			sounds.length = 0;
-			synchronized(scene.getSoundsMutex())
-				foreach (sound; listener.getScene().getAllSounds())
-				{	if (!sound.paused() && sound.getSound())
-					{	sound.intensity = sound.getVolumeAtPosition(camera_position);						
-						if (sound.intensity > 0.002) // A very quiet sound, arbitrary number
-							addSorted!(SoundNode, float)(sounds, sound, false, (SoundNode s){return s.intensity;}, sources.length );
-				}	}
-	
 			synchronized (OpenAL.getMutex())
 			{	
 				// Set the listener position, velocity, and orientation
-				OpenAL.listenerfv(AL_POSITION, camera_position.ptr);
-				OpenAL.listenerfv(AL_ORIENTATION, concat.ptr);
-				OpenAL.listenerfv(AL_VELOCITY, listener.getAbsoluteVelocity().ptr);
+				OpenAL.listenerfv(AL_POSITION, list.cameraPosition.ptr);
+				OpenAL.listenerfv(AL_ORIENTATION, orientation.values.ptr);
+				OpenAL.listenerfv(AL_VELOCITY, list.cameraVelocity.ptr);
 				
-				// Unbind sources that no longer have a SoundNode.
+				// Unbind sources that no longer have a command.
 				foreach (i, source; sources)
 				{	
 					bool unbind = true;
-					foreach (sound; sounds)
-						if (source.soundNode is sound)
-						{	//Stdout.format("rebinding %s to source %d", sound.getSound().getSource(), i);
-							source.bind(sound);
+					foreach (command; list.commands)
+						if (source.soundNode is command.soundNode) // already bound here, change nothing.
+						{	//Log.write("rebinding %s to source %d", command.sound.getSource(), i);
+							source.bind(command); // update the source with the new command variables
 							unbind = false;
 							break;					
 						}
@@ -436,27 +420,26 @@ class SoundContext
 						source.unbind();
 				}
 								
-				// Bind SoundNodes to empty sources.
-				foreach (sound; sounds)			
+				// Bind commands to empty sources.
+				foreach (command; list.commands)			
 				{	bool unbound = true;
 					foreach (source; sources)
-						if (source.soundNode is sound)
+						if (source.soundNode is command.soundNode)
 						{	unbound = false;
-							break;					
+							break;
 						}
 					
-					// if this sound is not bould to any source
+					// if this command is not bould to any source
 					if (unbound)
 					{	foreach (i, source; sources) // find a source to bind to.
 							if (!source.soundNode)
-							{	//Stdout.format("binding %s to source %d, intensity=%f", sound.getSound().getSource(), i, sound.intensity);
-								source.bind(sound); // this is never getting called.
+							{	//Log.write("binding %s to source %d, intensity=%f", command.sound.getSource(), i, command. intensity);
+								source.bind(command);
 								break;
 							}
 					}
 				}
 			}
-			
 		}
 		
 		// update each source's sound buffers.

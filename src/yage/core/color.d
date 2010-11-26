@@ -15,7 +15,6 @@ import yage.core.format;
 import yage.core.math.math;
 import yage.core.math.vector;
 import yage.core.types;
-import yage.core.parse;
 import yage.core.object2;
 
 /**

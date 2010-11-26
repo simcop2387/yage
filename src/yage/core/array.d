@@ -18,17 +18,15 @@ module yage.core.array;
 
 import tango.core.Traits;
 import tango.math.Math;
-import tango.text.convert.Format;
 import yage.core.format;
 import yage.core.math.math;
 import yage.core.memory;
 import yage.core.types;
 import yage.core.timer;
-import yage.system.log;
 
 /**
  * Add an element to an already sorted array, maintaining the same sort order.
- * deprecated: replace this with a Heap.
+ * replace this with a Heap?
  * Params:
  *     array = The array to use.
  *     value = Value to add.
@@ -36,11 +34,7 @@ import yage.system.log;
  *     getKey = A function to return a key of type K for each element.
  *     			K must be either a primitive type or a type that impelments opCmp.
  *              Only required for arrays of classes and structs. */
-void addSorted(T)(inout T[] array, T value, bool increasing=true)
-{	addSorted(array, value, increasing, (T a) { return a; });
-}
-/// ditto
-void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem) getKey, int max_length=int.max)
+void addSorted(T,K)(ref T[] array, T value, bool increasing, K delegate(T elem) getKey, int max_length=int.max)
 {
 	if (!array.length)
 	{	array ~= value;
@@ -50,7 +44,7 @@ void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem
 	K key_value = getKey(value);
 	if (array.length < max_length) // increase the length
 		array.length = array.length+1; // [below] If fixed length and no place to add, immediately return.
-	else if (increasing ? key_value > getKey(array[length-1]) : key_value < getKey(array[length-1]))
+	else if (increasing ? key_value > getKey(array[$-1]) : key_value < getKey(array[$-1]))
 		return;
 	
 	// Despite two loops, this still runs in worst-case O(n)
@@ -62,8 +56,33 @@ void addSorted(T,K)(inout T[] array, T value, bool increasing, K delegate(T elem
 			return;
 	}	}
 
-	array[length-1] = value;
+	array[$-1] = value;
 }
+void addSorted(T,K)(ref ArrayBuilder!(T) array, T value, bool increasing, K delegate(T elem) getKey, int max_length=int.max) /// ditto
+{
+	if (!array.length)
+	{	array ~= value;
+		return;		
+	}
+	
+	K key_value = getKey(value);
+	if (array.length < max_length) // increase the length
+		array.length = array.length+1; // [below] If fixed length and no place to add, immediately return.
+	else if (increasing ? key_value > getKey(array.data[$-1]) : key_value < getKey(array.data[$-1]))
+		return;
+	
+	// Despite two loops, this still runs in worst-case O(n)
+	for (int i=0; i<array.length-1; i++) // TODO: Use a binary search instead of linear.
+	{	if (increasing ? key_value <= getKey(array.data[i]) : key_value >= getKey(array.data[i]))
+		{	for (int j=array.length-2; j>=i; j--) // Shift all elements forward
+				array.data[j+1] = array.data[j];			
+			array.data[i] = value;
+			return;
+	}	}
+
+	array.data[$-1] = value;
+}
+
 
 /// Return the element with the minimum or maximum value from an unsorted array.
 T amax(T)(T[] array, )
@@ -100,58 +119,6 @@ T amin(T, K)(T[] array, K delegate(T elem) getKey)
 	return m;
 }
 
-/**
- * .dup for associative arrays.
- * params:
- *     deep = If true, child dynamic and associative arrays will also be dup'd.
-T[K] dup(T, K)(T[K] array, bool deep=false)
-{	T[K] result;
-	foreach (k, v; array)
-	{	if (!deep)
-			result[k] = v;
-		else
-		{	static if (isAssocArrayType!(T))
-				result[k] = dup(v);
-			else static if (isDynamicArrayType!(T))
-				result[k] = v.dup;
-			else
-				result[k] = v;
-	}	}
-	return result;
-}
-unittest // complete coverage
-{
-	// Test shallow aa copy
-	{	int[int][char[]] foo;
-		foo["a"] = [1:1, 2:2];
-		foo["b"] = [0:0];
-		auto bar = dup(foo, false);
-		bar["a"][1] ++;
-		assert(foo["a"][1] == 2);
-		assert(bar["a"][1] == 2);
-	}
-	
-	// Test deep aa copy
-	{	int[int][char[]] foo;
-		foo["a"] = [1:1, 2:2];
-		foo["b"] = [0:0];
-		auto bar = dup(foo, true);
-		bar["a"][1] ++;
-		assert(foo["a"][1] == 1);
-		assert(bar["a"][1] == 2);
-	}
-	
-	// Test deep array copy
-	{	int[][char[]] foo;
-		foo["a"] = [1, 2][];
-		foo["b"] = [0][];
-		auto bar = dup(foo, true);
-		bar["a"][0] ++;
-		assert(foo["a"][0] == 1);
-		assert(bar["a"][0] == 2);
-	}
-}
-*/
 
 bool replaceSmallestIfBigger(T)(T[] array, T item, bool delegate (T a, T b) isABigger)
 {	
@@ -383,13 +350,16 @@ unittest
  * Behaves the same as built-in arrays, except about 6x faster with concatenation at the expense of the base pointer
  * being 4 system words instead of two (16 instead of 8 bytes on a 32-bit system).
  * Internally, it's implemented similarly to java's StringBuffer.
- * Use .data to access the underlying array. */
+ * Use .data to access the underlying array. 
+ * ArrayBuilder is a value type, so all copies point to the same data, unless either:
+ * - A slice is taken and then appended to.
+ * - .dup() is called. */
 struct ArrayBuilder(T)
 {
 	alias ArrayBuilder!(T) AT;
 	
-	private T[] array;
-	private size_t size;
+	private T[] array; // array.length is capacity
+	private size_t size; // current used size
 	size_t reserve; // capacity will never be less than this size, takes effect after the next grow.
 	
 	///
@@ -411,7 +381,7 @@ struct ArrayBuilder(T)
 	{	return array.length;		
 	}
 	
-	///
+	/// 
 	T[] data()
 	{	return array[0..size];		
 	}
@@ -498,11 +468,11 @@ struct ArrayBuilder(T)
 	
 	/// TODO: This returns a copy, so a[i].b = 3; doesn't work!!
 	T* opIndex(size_t i)
-	{	assert(i<size, format("array index %s out of bounds", i));
+	{	assert(i<size, format("array index %s out of bounds 0..%s", i, size));
 		return &array[i];
 	}
 	T opIndexAssign(T val, size_t i) /// ditto
-	{	assert(i<size);
+	{	assert(i<size, format("array index %s out of bounds 0..%s", i, size));
 		return array[i] = val;
 	}
 	
@@ -511,8 +481,8 @@ struct ArrayBuilder(T)
 	{	return AT(array[0..size]);		
 	}
 	AT opSlice(size_t start, size_t end) /// ditto
-	{	assert(end <= size);  // overloads a[i .. j]
-		return AT(array[start..end]);		
+	{	assert(end <= size, format("array index %s out of bounds 0..%s", end, size));
+		return AT(array[start..end]); // overloads a[i .. j]	
 	}
 	
 	///
@@ -526,6 +496,12 @@ struct ArrayBuilder(T)
 	{	assert(end <= size);
 		array[start..end] =	v;
 		return *this;
+	}
+	
+	void reserveAndClear()
+	{	if (reserve < array.length)
+			reserve = array.length;
+		size = 0;
 	}
 	
 	///
@@ -568,21 +544,6 @@ struct ArrayBuilder(T)
 		for (int i=0; i<insert.length; i++)
 			data[i+index] = insert[i];
 	}
-	unittest {
-		auto test = ArrayBuilder!(int)([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);		
-		test.splice(3, 3);
-		assert(test.data == [0, 1, 2, 6, 7, 8, 9]);
-		test.splice(3, 0, [3, 4, 5]);
-		assert(test.data == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-		test.splice(0, 3, [2, 1, 0]);
-		assert(test.data == [2, 1, 0, 3, 4, 5, 6, 7, 8, 9]);
-		test.splice(test.length, 0, 10);
-		assert(test.data == [2, 1, 0, 3, 4, 5, 6, 7, 8, 9, 10]);
-		
-		auto test2 = ArrayBuilder!(int)();
-		test2.splice(0, 0, 1);
-		assert(test2.data == [1]);
-	}
 	
 	///
 	AT sort()
@@ -605,13 +566,38 @@ struct ArrayBuilder(T)
 	}
 }
 unittest
-{
-	struct A { int x, y; }
-	
-	A a;
-	ArrayBuilder!(A) array;
-	array ~= a;
-	array[0].x = 3;
-	assert(array[0].x == 3);
-	
+{	{
+		struct A { int x, y; }	
+		A a;
+		ArrayBuilder!(A) array;
+		array ~= a;
+		array[0].x = 3;
+		assert(array[0].x == 3);	
+	}	
+	{ // Test slice and append; ensure copy on append is performed
+		auto test = ArrayBuilder!(int)([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+		auto original = ArrayBuilder!(int)([0, 1, 2, 3]);
+		auto s = original[1..3];
+		assert(s[0] == original[1]); // compares pointer
+		s ~= 12;
+		assert(*s[0] == 1);
+		assert(*s[1] == 2);
+		assert(*s[2] == 12);
+		assert(*original[3] == 3);
+	}
+	{ // Test splice
+		auto test = ArrayBuilder!(int)([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+		test.splice(3, 3);
+		assert(test.data == [0, 1, 2, 6, 7, 8, 9]);
+		test.splice(3, 0, [3, 4, 5]);
+		assert(test.data == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+		test.splice(0, 3, [2, 1, 0]);
+		assert(test.data == [2, 1, 0, 3, 4, 5, 6, 7, 8, 9]);
+		test.splice(test.length, 0, 10);
+		assert(test.data == [2, 1, 0, 3, 4, 5, 6, 7, 8, 9, 10]);
+		
+		auto test2 = ArrayBuilder!(int)();
+		test2.splice(0, 0, 1);
+		assert(test2.data == [1]);
+	}
 }

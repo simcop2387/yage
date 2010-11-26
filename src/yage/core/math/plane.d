@@ -11,9 +11,6 @@ import tango.text.convert.Format;
 import yage.core.math.vector;
 import yage.core.misc;
 
-import yage.system.log;
-
-
 /**
  * A class representing a plane in 3D space.  This is defined as a struct instead of a
  * class so it can be created and destroyed without any dynamic memory allocation.*/

@@ -1,0 +1,438 @@
+<DProject>
+ <ProjectGuid>{BF1475D7-D908-4784-8653-0F6D7FCC9D01}</ProjectGuid>
+ <Config name="Debug">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>1</lib>
+  <multiobj>0</multiobj>
+  <oneobj>0</oneobj>
+  <trace>0</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <symdebug>1</symdebug>
+  <optimize>0</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>0</useDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>1</useUnitTests>
+  <useInline>0</useInline>
+  <release>0</release>
+  <preservePaths>0</preservePaths>
+  <warnings>0</warnings>
+  <infowarnings>0</infowarnings>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>1</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <otherDMD>0</otherDMD>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath />
+  <fileImppath />
+  <outdir>../../lib</outdir>
+  <objdir>../../bin/trash/derelict</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>0</doXGeneration>
+  <xfilename>$(IntDir)\$(ProjectName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids />
+  <versionlevel>0</versionlevel>
+  <versionids />
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>1</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>1</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <objfiles />
+  <linkswitches />
+  <libfiles />
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(OutDir)\derelict-dmd-win32-d.lib</exefile>
+  <additionalOptions />
+  <preBuildCommand />
+  <postBuildCommand />
+  <debugtarget>$(TARGETPATH)</debugtarget>
+  <debugarguments />
+  <debugworkingdir />
+  <debugattach>0</debugattach>
+  <debugremote />
+  <debugEngine>0</debugEngine>
+  <filesToClean>*.obj</filesToClean>
+ </Config>
+ <Config name="Release">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>1</lib>
+  <multiobj>0</multiobj>
+  <oneobj>0</oneobj>
+  <trace>0</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <symdebug>0</symdebug>
+  <optimize>1</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>0</useDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>1</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>0</useUnitTests>
+  <useInline>1</useInline>
+  <release>1</release>
+  <preservePaths>0</preservePaths>
+  <warnings>0</warnings>
+  <infowarnings>0</infowarnings>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>1</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <otherDMD>0</otherDMD>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath />
+  <fileImppath />
+  <outdir>../../lib</outdir>
+  <objdir>../../bin/trash/derelict</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>0</doXGeneration>
+  <xfilename>$(IntDir)\$(ProjectName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids />
+  <versionlevel>0</versionlevel>
+  <versionids />
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>1</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>0</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <objfiles />
+  <linkswitches />
+  <libfiles />
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(OutDir)\derelict-dmd-win32.lib</exefile>
+  <additionalOptions />
+  <preBuildCommand />
+  <postBuildCommand />
+  <debugtarget>$(TARGETPATH)</debugtarget>
+  <debugarguments />
+  <debugworkingdir />
+  <debugattach>0</debugattach>
+  <debugremote />
+  <debugEngine>0</debugEngine>
+  <filesToClean>*.obj</filesToClean>
+ </Config>
+ <Folder name="Derelict">
+  <Folder name="ogg">
+   <File path="../../src/derelict\ogg\ogg.d" />
+   <File path="../../src/derelict\ogg\oggtypes.d" />
+   <File path="../../src/derelict\ogg\vorbis.d" />
+   <File path="../../src/derelict\ogg\vorbiscodec.d" />
+   <File path="../../src/derelict\ogg\vorbisfile.d" />
+   <File path="../../src/derelict\ogg\vorbistypes.d" />
+  </Folder>
+  <Folder name="openal">
+   <File path="../../src/derelict\openal\al.d" />
+   <File path="../../src/derelict\openal\alctypes.d" />
+   <File path="../../src/derelict\openal\alfuncs.d" />
+   <File path="../../src/derelict\openal\altypes.d" />
+  </Folder>
+  <Folder name="opengl">
+   <Folder name="extension">
+    <Folder name="arb">
+     <File path="../../src/derelict\opengl\extension\arb\color_buffer_float.d" />
+     <File path="../../src/derelict\opengl\extension\arb\depth_texture.d" />
+     <File path="../../src/derelict\opengl\extension\arb\draw_buffers.d" />
+     <File path="../../src/derelict\opengl\extension\arb\fragment_program.d" />
+     <File path="../../src/derelict\opengl\extension\arb\fragment_program_shadow.d" />
+     <File path="../../src/derelict\opengl\extension\arb\fragment_shader.d" />
+     <File path="../../src/derelict\opengl\extension\arb\half_float_pixel.d" />
+     <File path="../../src/derelict\opengl\extension\arb\matrix_palette.d" />
+     <File path="../../src/derelict\opengl\extension\arb\multisample.d" />
+     <File path="../../src/derelict\opengl\extension\arb\multitexture.d" />
+     <File path="../../src/derelict\opengl\extension\arb\occlusion_query.d" />
+     <File path="../../src/derelict\opengl\extension\arb\pixel_buffer_object.d" />
+     <File path="../../src/derelict\opengl\extension\arb\point_parameters.d" />
+     <File path="../../src/derelict\opengl\extension\arb\point_sprite.d" />
+     <File path="../../src/derelict\opengl\extension\arb\shader_objects.d" />
+     <File path="../../src/derelict\opengl\extension\arb\shading_language_100.d" />
+     <File path="../../src/derelict\opengl\extension\arb\shadow.d" />
+     <File path="../../src/derelict\opengl\extension\arb\shadow_ambient.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_border_clamp.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_compression.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_cube_map.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_env_add.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_env_combine.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_env_crossbar.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_env_dot3.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_float.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_mirrored_repeat.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_non_power_of_two.d" />
+     <File path="../../src/derelict\opengl\extension\arb\texture_rectangle.d" />
+     <File path="../../src/derelict\opengl\extension\arb\transpose_matrix.d" />
+     <File path="../../src/derelict\opengl\extension\arb\vertex_blend.d" />
+     <File path="../../src/derelict\opengl\extension\arb\vertex_buffer_object.d" />
+     <File path="../../src/derelict\opengl\extension\arb\vertex_program.d" />
+     <File path="../../src/derelict\opengl\extension\arb\vertex_shader.d" />
+     <File path="../../src/derelict\opengl\extension\arb\window_pos.d" />
+    </Folder>
+    <Folder name="ati">
+     <File path="../../src/derelict\opengl\extension\ati\draw_buffers.d" />
+     <File path="../../src/derelict\opengl\extension\ati\element_array.d" />
+     <File path="../../src/derelict\opengl\extension\ati\envmap_bumpmap.d" />
+     <File path="../../src/derelict\opengl\extension\ati\fragment_shader.d" />
+     <File path="../../src/derelict\opengl\extension\ati\map_object_buffer.d" />
+     <File path="../../src/derelict\opengl\extension\ati\pn_triangles.d" />
+     <File path="../../src/derelict\opengl\extension\ati\separate_stencil.d" />
+     <File path="../../src/derelict\opengl\extension\ati\shader_texture_lod.d" />
+     <File path="../../src/derelict\opengl\extension\ati\texture_compression_3dc.d" />
+     <File path="../../src/derelict\opengl\extension\ati\texture_env_combine3.d" />
+     <File path="../../src/derelict\opengl\extension\ati\texture_float.d" />
+     <File path="../../src/derelict\opengl\extension\ati\texture_mirror_once.d" />
+     <File path="../../src/derelict\opengl\extension\ati\text_fragment_shader.d" />
+     <File path="../../src/derelict\opengl\extension\ati\vertex_array_object.d" />
+     <File path="../../src/derelict\opengl\extension\ati\vertex_attrib_array_object.d" />
+     <File path="../../src/derelict\opengl\extension\ati\vertex_streams.d" />
+    </Folder>
+    <Folder name="ext">
+     <File path="../../src/derelict\opengl\extension\ext\abgr.d" />
+     <File path="../../src/derelict\opengl\extension\ext\bgra.d" />
+     <File path="../../src/derelict\opengl\extension\ext\bindable_uniform.d" />
+     <File path="../../src/derelict\opengl\extension\ext\blend_color.d" />
+     <File path="../../src/derelict\opengl\extension\ext\blend_equation_separate.d" />
+     <File path="../../src/derelict\opengl\extension\ext\blend_func_separate.d" />
+     <File path="../../src/derelict\opengl\extension\ext\blend_minmax.d" />
+     <File path="../../src/derelict\opengl\extension\ext\blend_subtract.d" />
+     <File path="../../src/derelict\opengl\extension\ext\Cg_shader.d" />
+     <File path="../../src/derelict\opengl\extension\ext\clip_volume_hint.d" />
+     <File path="../../src/derelict\opengl\extension\ext\cmyka.d" />
+     <File path="../../src/derelict\opengl\extension\ext\color_subtable.d" />
+     <File path="../../src/derelict\opengl\extension\ext\compiled_vertex_array.d" />
+     <File path="../../src/derelict\opengl\extension\ext\convolution.d" />
+     <File path="../../src/derelict\opengl\extension\ext\coordinate_frame.d" />
+     <File path="../../src/derelict\opengl\extension\ext\cull_vertex.d" />
+     <File path="../../src/derelict\opengl\extension\ext\depth_bounds_test.d" />
+     <File path="../../src/derelict\opengl\extension\ext\draw_buffers2.d" />
+     <File path="../../src/derelict\opengl\extension\ext\draw_instanced.d" />
+     <File path="../../src/derelict\opengl\extension\ext\draw_range_elements.d" />
+     <File path="../../src/derelict\opengl\extension\ext\fog_coord.d" />
+     <File path="../../src/derelict\opengl\extension\ext\four22_pixels.d" />
+     <File path="../../src/derelict\opengl\extension\ext\fragment_lighting.d" />
+     <File path="../../src/derelict\opengl\extension\ext\framebuffer_blit.d" />
+     <File path="../../src/derelict\opengl\extension\ext\framebuffer_multisample.d" />
+     <File path="../../src/derelict\opengl\extension\ext\framebuffer_object.d" />
+     <File path="../../src/derelict\opengl\extension\ext\framebuffer_sRGB.d" />
+     <File path="../../src/derelict\opengl\extension\ext\geometry_shader4.d" />
+     <File path="../../src/derelict\opengl\extension\ext\gpu_program_parameters.d" />
+     <File path="../../src/derelict\opengl\extension\ext\gpu_shader4.d" />
+     <File path="../../src/derelict\opengl\extension\ext\histogram.d" />
+     <File path="../../src/derelict\opengl\extension\ext\light_texture.d" />
+     <File path="../../src/derelict\opengl\extension\ext\misc_attribute.d" />
+     <File path="../../src/derelict\opengl\extension\ext\multisample.d" />
+     <File path="../../src/derelict\opengl\extension\ext\multi_draw_arrays.d" />
+     <File path="../../src/derelict\opengl\extension\ext\packed_depth_stencil.d" />
+     <File path="../../src/derelict\opengl\extension\ext\packed_float.d" />
+     <File path="../../src/derelict\opengl\extension\ext\packed_pixels.d" />
+     <File path="../../src/derelict\opengl\extension\ext\paletted_texture.d" />
+     <File path="../../src/derelict\opengl\extension\ext\pixel_buffer_object.d" />
+     <File path="../../src/derelict\opengl\extension\ext\pixel_transform.d" />
+     <File path="../../src/derelict\opengl\extension\ext\pixel_transform_color_table.d" />
+     <File path="../../src/derelict\opengl\extension\ext\point_parameters.d" />
+     <File path="../../src/derelict\opengl\extension\ext\rescale_normal.d" />
+     <File path="../../src/derelict\opengl\extension\ext\scene_marker.d" />
+     <File path="../../src/derelict\opengl\extension\ext\secondary_color.d" />
+     <File path="../../src/derelict\opengl\extension\ext\separate_specular_color.d" />
+     <File path="../../src/derelict\opengl\extension\ext\shadow_funcs.d" />
+     <File path="../../src/derelict\opengl\extension\ext\shared_texture_palette.d" />
+     <File path="../../src/derelict\opengl\extension\ext\stencil_clear_tag.d" />
+     <File path="../../src/derelict\opengl\extension\ext\stencil_two_side.d" />
+     <File path="../../src/derelict\opengl\extension\ext\stencil_wrap.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture3D.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_array.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_buffer_object.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_compression_dxt1.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_compression_latc.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_compression_rgtc.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_compression_s3tc.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_cube_map.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_edge_clamp.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_env_add.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_env_combine.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_env_dot3.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_filter_anisotropic.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_integer.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_lod_bias.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_mirror_clamp.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_perturb_normal.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_rectangle.d" />
+     <File path="../../src/derelict\opengl\extension\ext\texture_sRGB.d" />
+     <File path="../../src/derelict\opengl\extension\ext\timer_query.d" />
+     <File path="../../src/derelict\opengl\extension\ext\vertex_shader.d" />
+     <File path="../../src/derelict\opengl\extension\ext\vertex_weighting.d" />
+    </Folder>
+    <Folder name="hp">
+     <File path="../../src/derelict\opengl\extension\hp\convolution_border_modes.d" />
+    </Folder>
+    <Folder name="nv">
+     <File path="../../src/derelict\opengl\extension\nv\blend_square.d" />
+     <File path="../../src/derelict\opengl\extension\nv\copy_depth_to_color.d" />
+     <File path="../../src/derelict\opengl\extension\nv\depth_buffer_float.d" />
+     <File path="../../src/derelict\opengl\extension\nv\depth_clamp.d" />
+     <File path="../../src/derelict\opengl\extension\nv\evaluators.d" />
+     <File path="../../src/derelict\opengl\extension\nv\fence.d" />
+     <File path="../../src/derelict\opengl\extension\nv\float_buffer.d" />
+     <File path="../../src/derelict\opengl\extension\nv\fog_distance.d" />
+     <File path="../../src/derelict\opengl\extension\nv\fragment_program.d" />
+     <File path="../../src/derelict\opengl\extension\nv\fragment_program2.d" />
+     <File path="../../src/derelict\opengl\extension\nv\fragment_program4.d" />
+     <File path="../../src/derelict\opengl\extension\nv\fragment_program_option.d" />
+     <File path="../../src/derelict\opengl\extension\nv\framebuffer_multisample_coverage.d" />
+     <File path="../../src/derelict\opengl\extension\nv\geometry_program4.d" />
+     <File path="../../src/derelict\opengl\extension\nv\geometry_shader4.d" />
+     <File path="../../src/derelict\opengl\extension\nv\gpu_program4.d" />
+     <File path="../../src/derelict\opengl\extension\nv\half_float.d" />
+     <File path="../../src/derelict\opengl\extension\nv\light_max_exponent.d" />
+     <File path="../../src/derelict\opengl\extension\nv\multisample_filter_hint.d" />
+     <File path="../../src/derelict\opengl\extension\nv\occlusion_query.d" />
+     <File path="../../src/derelict\opengl\extension\nv\packed_depth_stencil.d" />
+     <File path="../../src/derelict\opengl\extension\nv\parameter_buffer_object.d" />
+     <File path="../../src/derelict\opengl\extension\nv\pixel_data_range.d" />
+     <File path="../../src/derelict\opengl\extension\nv\point_sprite.d" />
+     <File path="../../src/derelict\opengl\extension\nv\primitive_restart.d" />
+     <File path="../../src/derelict\opengl\extension\nv\register_combiners.d" />
+     <File path="../../src/derelict\opengl\extension\nv\register_combiners2.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texgen_emboss.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texgen_reflection.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texture_compression_vtc.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texture_env_combine4.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texture_expand_normal.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texture_rectangle.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texture_shader.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texture_shader2.d" />
+     <File path="../../src/derelict\opengl\extension\nv\texture_shader3.d" />
+     <File path="../../src/derelict\opengl\extension\nv\transform_feedback.d" />
+     <File path="../../src/derelict\opengl\extension\nv\vertex_array_range.d" />
+     <File path="../../src/derelict\opengl\extension\nv\vertex_array_range2.d" />
+     <File path="../../src/derelict\opengl\extension\nv\vertex_program.d" />
+     <File path="../../src/derelict\opengl\extension\nv\vertex_program1_1.d" />
+     <File path="../../src/derelict\opengl\extension\nv\vertex_program2.d" />
+     <File path="../../src/derelict\opengl\extension\nv\vertex_program2_option.d" />
+     <File path="../../src/derelict\opengl\extension\nv\vertex_program3.d" />
+     <File path="../../src/derelict\opengl\extension\nv\vertex_program4.d" />
+    </Folder>
+    <Folder name="sgi">
+     <File path="../../src/derelict\opengl\extension\sgi\color_matrix.d" />
+    </Folder>
+    <Folder name="sgis">
+     <File path="../../src/derelict\opengl\extension\sgis\generate_mipmap.d" />
+    </Folder>
+    <File path="../../src/derelict\opengl\extension\loader.d" />
+   </Folder>
+   <File path="../../src/derelict\opengl\cgl.d" />
+   <File path="../../src/derelict\opengl\gl.d" />
+   <File path="../../src/derelict\opengl\gl12.d" />
+   <File path="../../src/derelict\opengl\gl13.d" />
+   <File path="../../src/derelict\opengl\gl14.d" />
+   <File path="../../src/derelict\opengl\gl15.d" />
+   <File path="../../src/derelict\opengl\gl20.d" />
+   <File path="../../src/derelict\opengl\gl21.d" />
+   <File path="../../src/derelict\opengl\glext.d" />
+   <File path="../../src/derelict\opengl\glfuncs.d" />
+   <File path="../../src/derelict\opengl\gltypes.d" />
+   <File path="../../src/derelict\opengl\glu.d" />
+   <File path="../../src/derelict\opengl\glx.d" />
+   <File path="../../src/derelict\opengl\wgl.d" />
+  </Folder>
+  <Folder name="sdl">
+   <File path="../../src/derelict\sdl\active.d" />
+   <File path="../../src/derelict\sdl\audio.d" />
+   <File path="../../src/derelict\sdl\byteorder.d" />
+   <File path="../../src/derelict\sdl\cdrom.d" />
+   <File path="../../src/derelict\sdl\cpuinfo.d" />
+   <File path="../../src/derelict\sdl\endian.d" />
+   <File path="../../src/derelict\sdl\error.d" />
+   <File path="../../src/derelict\sdl\events.d" />
+   <File path="../../src/derelict\sdl\image.d" />
+   <File path="../../src/derelict\sdl\joystick.d" />
+   <File path="../../src/derelict\sdl\keyboard.d" />
+   <File path="../../src/derelict\sdl\keysym.d" />
+   <File path="../../src/derelict\sdl\loadso.d" />
+   <File path="../../src/derelict\sdl\mouse.d" />
+   <File path="../../src/derelict\sdl\mutex.d" />
+   <File path="../../src/derelict\sdl\rwops.d" />
+   <File path="../../src/derelict\sdl\sdl.d" />
+   <File path="../../src/derelict\sdl\sdlversion.d" />
+   <File path="../../src/derelict\sdl\syswm.d" />
+   <File path="../../src/derelict\sdl\thread.d" />
+   <File path="../../src/derelict\sdl\timer.d" />
+   <File path="../../src/derelict\sdl\types.d" />
+   <File path="../../src/derelict\sdl\video.d" />
+  </Folder>
+  <Folder name="util">
+   <File path="../../src/derelict\util\exception.d" />
+   <File path="../../src/derelict\util\loader.d" />
+   <File path="../../src/derelict\util\wintypes.d" />
+   <File path="../../src/derelict\util\wrapper.d" />
+  </Folder>
+  <Folder name="freetype">
+   <File path="../../src/derelict\freetype\ft.d" />
+   <File path="../../src/derelict\freetype\ftfuncs.d" />
+   <File path="../../src/derelict\freetype\fttypes.d" />
+   <File path="../../src/derelict\freetype\sftfuncs.d" />
+  </Folder>
+ </Folder>
+</DProject>

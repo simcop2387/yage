@@ -8,7 +8,6 @@ module yage.scene.sound;
 
 import tango.stdc.math;
 import tango.math.Math;
-import tango.text.convert.Format;
 import yage.core.object2;;
 import yage.core.object2;;
 import yage.core.math.math;
@@ -17,25 +16,21 @@ import yage.core.math.vector;
 import yage.resource.manager;
 import yage.resource.sound;
 import yage.scene.node;
-import yage.scene.movable;
 import yage.scene.scene;
 
 /**
- * A node that emits a sound.
- */ 
-class SoundNode : MovableNode, ITemporal
+ * A node that emits a sound. */ 
+class SoundNode : Node, ITemporal
 {	
+	float pitch = 1.0;		/// The sound pitch.  Less than 1.0 is deeper, greater than 1.0 is higher.
+	float radius = 256;		/// The sound radius.  The sound will be 1/2 its volume at this distance.  The volume falls off at a rate of inverse distance squared.
+	float volume = 1.0;		///
+	bool looping = false;	/// Get / set whether the playback of the sound starts again from the beginning when playback is finished.
+	
+	protected Timer timer;	
 	protected Sound	sound;			// The Sound ResourceManager (file) itself.
-
-	protected float	pitch = 1.0;
-	protected float	radius = 256;	// The radius of the Sound that plays.
-	protected float	volume = 1.0;
-	protected bool	looping = false;
-	
-	Timer timer;
-	
-	public float intensity; // used internally by the engine.
-	public bool reseek = false;
+	package float intensity;		// used internally for sorting
+	package bool reseek = false;	// used internally to tell the sound system to adjust the playback position.
 	
 	/**
 	 * Create a SoundNode and optionally set the sound from an already loaded sound or a sound filename. */
@@ -43,19 +38,17 @@ class SoundNode : MovableNode, ITemporal
 	{	super();
 		timer = new Timer(false);
 	}
-	this(Sound sound) /// ditto
-	{	this();
+	this(Node parent)
+	{	super(parent);
+		timer = new Timer(false);
+	}
+	this(Sound sound, Node parent=null) /// ditto
+	{	this(parent);
 		setSound(sound);
 	}	
-	this(char[] filename) /// ditto
-	{	this();
+	this(char[] filename, Node parent=null) /// ditto
+	{	this(parent);
 		setSound(filename);
-	}
-	
-	/**
-	 * Overridden to call dispose(). */
-	~this()
-	{	dispose();
 	}
 	
 	/**
@@ -63,101 +56,54 @@ class SoundNode : MovableNode, ITemporal
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	override SoundNode clone(bool children=false)
-	{	auto result = cast(SoundNode)super.clone(children);
+	/*override*/ SoundNode clone(bool children=false, SoundNode destination=null)
+	{	auto result = cast(SoundNode)super.clone(children, destination);
 		
 		result.setSound(sound);
 		result.timer = timer.clone();
-		result.setPitch(pitch);
-		result.setSoundRadius(radius);
-		result.setVolume(volume);
-		result.setLooping(looping);
+		result.pitch = pitch;
+		result.radius = radius;
+		result.volume = volume;
+		result.looping = looping;
 		return result;
 	}
 
 	/**
-	 * Get / set the Sound ResourceManager that this SoundNode will play. */
+	 * Get / set the Sound Resource that this SoundNode will play. */
 	Sound getSound()
 	{	return sound;
 	}	
 	void setSound(Sound sound) /// ditto
 	{	this.sound = sound;
 	}
-
-	/** Set the Sound used by this Node, using the ResourceManager Manager
-	 *  to ensure that no Sound is loaded twice.
-	 *  Equivalent of setSound(ResourceManager.sound(filename)); */
-	void setSound(char[] filename)
+	void setSound(char[] filename) /// ditto
 	{	setSound(ResourceManager.sound(filename));
 	}
 
 	/**
-	 * Get / set the pitch of the SoundNode.
-	 * This has nothing to do with the frequency of the loaded Sound ResourceManager.
-	 * Params:
-	 * pitch = Less than 1.0 is deeper, greater than 1.0 is higher. */
-	float getPitch() /// ditto
-	{	return pitch;
-	}
-	void setPitch(float pitch)
-	{	this.pitch = pitch;
-	}
-
-	/**
-	 * Get / set the radius of the SoundNode.  The volume of the sound falls off at a rate of
-	 * inverse distance squared.  The default radius is 256.
-	 * Params:
-	 * radius = The sound will be 1/2 its volume at this distance.*/
-	float getSoundRadius()
-	{	return radius;
-	}
-	void setSoundRadius(float radius) /// ditto
-	{	this.radius = radius;
-	}
-
-	/**
-	 * Get / set the volume (gain) of the SoundNode.
-	 * Params:
-	 * volume = 1.0 is the default. */
-	float getVolume()
-	{	return volume;
-	}
-	void setVolume(float volume) /// ditto
-	{	this.volume = volume;
-	}
-	
-	/**
 	 * Get the volume of this sound as it would be heard at an arbitrary position.
 	 * Params:
 	 *     position = 3D Coordinates
-	 * Returns: The volume, where n is the volume of a SoundNode with a volume of 1.0 at a distnace of n. */
+	 * Returns: The volume at position.  Multiply this by the SoundNode's. */
 	float getVolumeAtPosition(Vec3f position)
 	{	if (timer.paused())
 			return 0;
 		
-		float dist = getAbsolutePosition().distance(position);
-		if (radius/dist<256) // TODO: implement min/max volume.
-			return radius / dist;
-		else return 256;
+		float dist = getWorldPosition().distance(position);
+		float result = radius/dist;
+		if (result<256) 
+			return result;
+		else return 256; // Prevent insanely loud volumes.
 	}
 	unittest
 	{	
 		auto s = new SoundNode();
 		s.setPosition(Vec3f(2, 1, 0));
-		s.setSoundRadius(12);
+		s.radius = 12;
 		s.play(); // otherwise the function will always return 0.
 		assert(s.getVolumeAtPosition(Vec3f(2,  7, 0)) == 2.0f); // distance of 6
 		assert(s.getVolumeAtPosition(Vec3f(2, 13, 0)) == 1.0f); // distance of 12
 		assert(s.getVolumeAtPosition(Vec3f(2, 25, 0)) == 0.5f); // distance of 24
-	}
-
-	/**
-	 * Get / set whether the playback of the SoundNode loops when playback is finished. */ 
-	bool getLooping()
-	{	return looping;
-	}
-	void setLooping(bool looping=true) /// ditto
-	{	this.looping = looping;
 	}
 
 	/// Begin / resume playback of the sound at the last position.
@@ -198,32 +144,6 @@ class SoundNode : MovableNode, ITemporal
 	void stop()
 	{	timer.stop();
 	}
-
-	/**
-	 * Return a string representation of this Node for human reading.
-	 * Params:
-	 * recurse = Print this Node's children as well. */
-	override char[] toString()
-	{	return toString(false);
-	}	
-	char[] toString(bool recurse) /// ditto
-	{	static int indent;
-		char[] pad = new char[indent*3];
-		pad[0..length] = ' ';
-
-		char[] result = super.toString();
-		result ~= pad~"Sound: " ~ sound.getSource() ~ "\n";
-		delete pad;
-
-		if (recurse)
-		{	indent++;
-			foreach (Node c; children)
-				result ~= c.toString();
-			indent--;
-		}
-
-		return result;
-	}
 	
 	/*
 	 * Stop playing the sound when
@@ -233,7 +153,7 @@ class SoundNode : MovableNode, ITemporal
 	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		
 		// Update scene's list of sounds
-		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
+		Scene old_scene = old_ancestor ? old_ancestor.getScene() : null;	
 		if (old_scene !is scene)
 		{	if (old_scene)
 				old_scene.removeSound(this);

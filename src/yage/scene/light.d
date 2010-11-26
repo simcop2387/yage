@@ -11,7 +11,6 @@ import tango.math.Math;
 import yage.core.all;
 import yage.resource.material;
 import yage.scene.node;
-import yage.scene.movable;
 import yage.scene.scene;
 import yage.system.graphics.probe;
 import yage.scene.camera;
@@ -29,7 +28,7 @@ import yage.system.log;
  * Spotlights default to shining in the -z direction (the same as the default looking direction of the camera).
  * They can be rotated by rotating the Node itself.
  * */
-class LightNode : MovableNode
+class LightNode : Node
 {
 	/// Values that can be assigned to type.
 	enum Type
@@ -37,7 +36,6 @@ class LightNode : MovableNode
 		POINT,			/// A light that shines outward in all directions
 		SPOT			/// A light that emits light outward from a point in a single direction
 	}
-		
  	Type type = Type.POINT; /// The type of light (directional, point, or spot)
 
 	Color ambient = {r:0,   g:0,   b:0,   a:255}; /// Ambient color of the light.  Defaults to black
@@ -55,19 +53,27 @@ class LightNode : MovableNode
 	 * Larger values produce brighter concentrations of light in the center of the circle
 	 * A value of 0 provides an even distribution of light across the entire spot circle. */
 	float spotExponent = 0;
-
+	
+	
+	// properties I wish were private or would go away
+	public float quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary			
 	public int intensity; // Used internally as a temp variable to sort lights by intensity for each node.
-	float quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary
-	
-	Vec3f cameraSpacePosition; // Used internally to store the position in camera-space.
-	
+	public Vec3f cameraSpacePosition; // Used internally to store the position in camera-space.
+
+	this()
+	{	// Currently required for clone()
+	}	
+	this(Node parent) /// ditto
+	{	super(parent);
+	}
+
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	override LightNode clone(bool children=false)
-	{	auto result = cast(LightNode)super.clone(children);
+	/*override*/ LightNode clone(bool children=false, LightNode destination=null)
+	{	auto result = cast(LightNode)super.clone(children, destination);
 		
 		result.quadAttenuation = quadAttenuation;
 		result.type = type;
@@ -116,7 +122,7 @@ class LightNode : MovableNode
 			return Color(ambient.r+diffuse.r, ambient.g+diffuse.g, ambient.b+diffuse.b);
 
 		// light_direction is vector from light to point
-		Vec3f light_direction = point - Vec3f(getAbsoluteTransform().v[12..15]);
+		Vec3f light_direction = point - Vec3f(getWorldTransform().v[12..15]);
 		// distance squared to light
 		float d2 = light_direction.x*light_direction.x + light_direction.y*light_direction.y + light_direction.z*light_direction.z;
 		float intensity = 1/(quadAttenuation*d2);	// quadratic attenuation.
@@ -130,8 +136,9 @@ class LightNode : MovableNode
 			
 			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
 			// rotated by the node's rotation.  This is opposite the default direction of cameras
-			float spotDot = Vec3f(transform_abs.v[8..11]).normalize().dot(light_direction/d);
-	
+			//float spotDot = Vec3f(transform_abs.v[8..11]).normalize().dot(light_direction/d);
+			float spotDot = rotation.normalize().dot(light_direction/d);
+			
 			// Extra spotlight angle (in radians) to satisfy margin distance
 			float extraAngle = margin>0 ? atan2(margin, d) : 0;			
 
@@ -167,10 +174,10 @@ class LightNode : MovableNode
 	override public void ancestorChange(Node old_ancestor)
 	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		
-		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
+		Scene old_scene = old_ancestor ? old_ancestor.getScene() : null;	
 		if (scene !is old_scene)
 		{	if (old_scene)
-				old_ancestor.scene.removeLight(this);
+				old_ancestor.getScene().removeLight(this);
 			if (scene)
 				scene.addLight(this);
 		}

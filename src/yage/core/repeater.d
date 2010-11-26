@@ -98,6 +98,11 @@ class Repeater : Timer, IDisposable
 		}
 	}
 
+	///
+	Thread getThread()
+	{	return thread;
+	}
+	
 	/**
 	 * Pause the repeater.
 	 * This is guaranteed to never pause in the middle of a call to the repeater's function, but will

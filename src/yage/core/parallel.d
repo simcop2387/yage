@@ -5,11 +5,9 @@
  */
 module yage.core.parallel;
 
-
+import tango.core.tools.Cpuid;
 import yage.core.ThreadPool;
 import yage.core.timer;
-import yage.system.log;
-import tango.core.tools.Cpuid;
 
 
 //free list of thread pools to avoid more than one being used at the same time.

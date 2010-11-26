@@ -6,7 +6,6 @@
 
 module yage.system.log;
 
-import tango.text.convert.Format;
 import tango.io.device.File;
 import tango.io.Console;
 

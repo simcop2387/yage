@@ -66,9 +66,8 @@ class Scene : Node//, ITemporal, IDisposable
 
 	protected Repeater updateThread;
 
-	protected Timer delta;
-	protected float delta_time;	// time since the last time this Scene was updated.
-
+	float updateTime;
+	
 	protected static Scene[Scene] all_scenes; // TODO: Prevents old scenes from being removed!
 
 	/// Construct an empty Scene.
@@ -77,7 +76,6 @@ class Scene : Node//, ITemporal, IDisposable
 		
 		super();
 	
-		delta = new Timer(true);
 		scene = this;
 		ambient	= Color("#333"); // OpenGL default global ambient light.
 		backgroundColor = Color("black");	// OpenGL default clear color
@@ -85,7 +83,7 @@ class Scene : Node//, ITemporal, IDisposable
 		
 		updateThread = new Repeater();
 		updateThread.setFrequency(frequency);
-		updateThread.setFunction(&update);		
+		updateThread.setFunction(&update);
 		updateThread.setErrorFunction(&defaultErrorFunction);
 	
 		camerasMutex = new Mutex();
@@ -107,11 +105,11 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	override Scene clone(bool children=false)
+	/*override*/ Scene clone(bool children=false, Scene destination=null)
 	{	
 		mixin(Sync!("this"));
 		
-		auto result = cast(Scene)super.clone(children);				
+		auto result = cast(Scene)super.clone(children, destination);				
 		result.ambient = ambient;
 		result.speedOfSound = speedOfSound;
 		result.backgroundColor = backgroundColor;
@@ -119,9 +117,6 @@ class Scene : Node//, ITemporal, IDisposable
 		result.fogDensity = fogDensity;
 		result.fogEnabled = fogEnabled;
 		result.skyBox = skyBox;
-		
-		result.delta.seek(delta.tell());
-		result.delta.pause();		
 		
 		return result;
 	}
@@ -154,11 +149,6 @@ class Scene : Node//, ITemporal, IDisposable
 		}
 	}
 
-	/// Return the amount of time since the last time update() was called for this Scene.
-	float getDeltaTime()
-	{	return delta_time;
-	}
-
 	/**
 	 * Get / a function to call if the sound or update thread's update function throws an exception.
 	 * If this is set to null (the default), then the exception will just be thrown. 
@@ -176,7 +166,7 @@ class Scene : Node//, ITemporal, IDisposable
 		e.writeOut(delegate void(char[] a) {
 			msg ~= a;
 		});
-		Log.error("The scene thread threw an uncaught exception:  %s", msg);
+		Log.error("The scene thread threw an uncaught exception:\n%s", msg);
 		System.abort("Yage is aborting due to scene exception.");
 	}
 
@@ -232,30 +222,30 @@ class Scene : Node//, ITemporal, IDisposable
 	 * This function is typically called automatically at a set interval from the scene's updateThread once scene.play() is called.
 	 * Params:
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
-	override void update(float delta = delta.tell())
+	override void update(float delta)
 	{
 		mixin(Sync!("this"));
+		
+		Timer a = new Timer(true);
 	
-		// deprecated
-		super.update(delta);
-		delta_time = delta;
-		this.delta.seek(0);
+		// Update all nodes recursively
+		super.update(delta); 
 		
-		// New
-		super.update2(delta); // recurses through children
+		//Log.write(a.tell());
 		
+		Timer b = new Timer(true);
+		
+		// Cull and create render commands for each camera
 		camerasMutex.lock();
-		void updateRenderCommands(Scene scene)
-		{	foreach (camera; cameras) // skybox scene has no camera!
-				camera.updateRenderCommands(scene);
-			if (scene.skyBox) // recurse
-				updateRenderCommands(scene.skyBox);
-				
+		foreach (camera; cameras) 
+		{	camera.updateRenderCommands();
+			if (CameraNode.getListener() is camera)
+				camera.updateSoundCommands();
 		}
-		updateRenderCommands(this);
+		//Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
 		
 		camerasMutex.unlock();
-	
+		updateTime = a.tell();
 	}
 
 	/*
@@ -302,10 +292,12 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Add/remove the sound from the scene's list of sounds.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	package void addSound(SoundNode sound)
-	{	synchronized (soundsMutex) sounds[sound] = sound;	
+	{	synchronized (soundsMutex) // Why does this cause a deadlock?
+			sounds[sound] = sound;	
 	}	
 	package void removeSound(SoundNode sound) // ditto
-	{	synchronized (soundsMutex) sounds.remove(sound);
+	{	synchronized (soundsMutex) 
+			sounds.remove(sound);
 	}	
 	
 	/**
@@ -331,5 +323,13 @@ class Scene : Node//, ITemporal, IDisposable
 
 /// Add this as the first line of a function to synchronize the entire body using the name of a Tango mutex.
 template Sync(char[] T)
-{	const char[] Sync = "if ("~T~") { "~T~".lock(); scope(exit) " ~ T ~ ".unlock(); }";	
+{	const char[] Sync = 
+		"typeof("~T~") tempT;" ~
+		"if ("~T~")" ~
+		"{	tempT = "~T~";" ~
+		"	tempT.lock();" ~
+		"}"~
+		"scope(exit)" ~
+		"	if (tempT)" ~
+		" 		tempT.unlock();";	
 }

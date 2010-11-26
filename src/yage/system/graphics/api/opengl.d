@@ -96,11 +96,9 @@ class OpenGL : GraphicsAPI
 	///
 	void bindCamera(CameraNode camera)
 	{	current.camera = camera;
-		cameraInverse = camera.getAbsoluteTransform(true).inverse();
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluPerspective(camera.fov, camera.aspectRatio, camera.near, camera.far);
-
 		glMatrixMode(GL_MODELVIEW);
 	}
  	
@@ -123,7 +121,7 @@ class OpenGL : GraphicsAPI
 			// Set position and direction
 			glEnable(GL_LIGHT0+num);
 			auto type = light.type;
-			Matrix transform_abs = light.getAbsoluteTransform(true);
+			Matrix transform_abs = light.getWorldTransform();
 			
 			Vec4f pos;
 			pos.v[0..3] = transform_abs.v[12..15];
@@ -173,28 +171,28 @@ class OpenGL : GraphicsAPI
 		}
 		void pop(MatrixType type=MatrixType.TRANSFORM)
 		{	if (type!=MatrixType.TRANSFORM) 
-			glMatrixMode(type);
+				glMatrixMode(type);
 			glPopMatrix();
 			if (type!=MatrixType.TRANSFORM) 
 				glMatrixMode(GL_MODELVIEW);
 		}
 		void load(Matrix matrix, MatrixType type=MatrixType.TRANSFORM)
 		{	if (type!=MatrixType.TRANSFORM) 
-			glMatrixMode(type);
+				glMatrixMode(type);
 			glLoadMatrixf(matrix.v.ptr);
 			if (type!=MatrixType.TRANSFORM) 
 				glMatrixMode(GL_MODELVIEW);
 		}
 		void loadIdentity(MatrixType type=MatrixType.TRANSFORM)
 		{	if (type!=MatrixType.TRANSFORM) 
-			glMatrixMode(type);
+				glMatrixMode(type);
 			glLoadIdentity();
 			if (type!=MatrixType.TRANSFORM) 
 				glMatrixMode(GL_MODELVIEW);
 		}
 		void multiply(Matrix matrix, MatrixType type=MatrixType.TRANSFORM)
 		{	if (type!=MatrixType.TRANSFORM) 
-			glMatrixMode(type);
+				glMatrixMode(type);
 			glMultMatrixf(matrix.v.ptr);
 			if (type!=MatrixType.TRANSFORM) 
 				glMatrixMode(GL_MODELVIEW);

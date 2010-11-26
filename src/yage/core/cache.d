@@ -9,7 +9,6 @@ import tango.stdc.time : time;
 import tango.text.Regex;
 import tango.core.Traits;
 import tango.core.Tuple;
-import yage.system.log;
 
 /**
  * This class caches expensive structures (calculating them when they're first needed) 

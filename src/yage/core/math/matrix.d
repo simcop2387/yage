@@ -14,7 +14,6 @@ import yage.core.math.vector;
 import yage.core.math.quatrn;
 import yage.core.math.math;
 import yage.core.misc;
-import yage.system.log;
 
 /**
  * A 4x4 matrix class for 3D transformations.
@@ -178,6 +177,8 @@ struct Matrix
 		assert(p.almostEqual(p2));
 		assert(r.almostEqual(r2));
 		assert(s.almostEqual(s2));
+		
+		assert(Matrix.compose(Vec3f(0), Vec3f(0), Vec3f(1)) == Matrix.IDENTITY);
 	}
 	
 	/**

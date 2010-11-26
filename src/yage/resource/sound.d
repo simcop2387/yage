@@ -15,7 +15,6 @@ import derelict.openal.al;
 import derelict.ogg.vorbistypes;
 import derelict.ogg.vorbisfile;
 import yage.core.timer;
-import yage.core.parse;
 import yage.core.object2;;
 import yage.resource.manager;
 import yage.system.log;

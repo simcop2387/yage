@@ -8,7 +8,6 @@ module yage.core.object2;
 //import tango.math.random.Kiss;
 //import tango.util.Convert;
 import yage.core.format;
-import yage.system.log;
 
 debug {
 	import tango.core.tools.TraceExceptions; // provide stack trace on error when compiled in debug mode.

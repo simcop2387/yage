@@ -81,7 +81,7 @@ class Flare : GameObject
 		{	timer2.seek(0);			
 			SoundNode zap = addChild(new SoundNode());
 			zap.setSound("sound/laser3.ogg");
-			zap.setVolume(.2);
+			zap.volume = .2;
 			zap.play();
 		}
 			

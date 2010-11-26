@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Yage", "Yage.visualdproj", "{546B6783-5D43-4550-8960-8063165C1ABF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BF1475D7-D908-4784-8653-0F6D7FCC9D01} = {BF1475D7-D908-4784-8653-0F6D7FCC9D01}
+	EndProjectSection
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Derelict", "Derelict.visualdproj", "{BF1475D7-D908-4784-8653-0F6D7FCC9D01}"
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Demo1", "demo1.visualdproj", "{0AF88A0E-BCBC-449A-A122-EDAD41CB0010}"
+	ProjectSection(ProjectDependencies) = postProject
+		{546B6783-5D43-4550-8960-8063165C1ABF} = {546B6783-5D43-4550-8960-8063165C1ABF}
+		{BF1475D7-D908-4784-8653-0F6D7FCC9D01} = {BF1475D7-D908-4784-8653-0F6D7FCC9D01}
+	EndProjectSection
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Tests", "Integration.visualdproj", "{50308136-BAAF-47C2-9252-60A1BFF643FD}"
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "Demo2", "Demo2.visualdproj", "{AEA55C08-F77D-45EE-B094-B0FF1C309DC8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{546B6783-5D43-4550-8960-8063165C1ABF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{546B6783-5D43-4550-8960-8063165C1ABF}.Debug|Win32.Build.0 = Debug|Win32
+		{546B6783-5D43-4550-8960-8063165C1ABF}.Release|Win32.ActiveCfg = Release|Win32
+		{546B6783-5D43-4550-8960-8063165C1ABF}.Release|Win32.Build.0 = Release|Win32
+		{BF1475D7-D908-4784-8653-0F6D7FCC9D01}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BF1475D7-D908-4784-8653-0F6D7FCC9D01}.Debug|Win32.Build.0 = Debug|Win32
+		{BF1475D7-D908-4784-8653-0F6D7FCC9D01}.Release|Win32.ActiveCfg = Release|Win32
+		{BF1475D7-D908-4784-8653-0F6D7FCC9D01}.Release|Win32.Build.0 = Release|Win32
+		{0AF88A0E-BCBC-449A-A122-EDAD41CB0010}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0AF88A0E-BCBC-449A-A122-EDAD41CB0010}.Debug|Win32.Build.0 = Debug|Win32
+		{0AF88A0E-BCBC-449A-A122-EDAD41CB0010}.Release|Win32.ActiveCfg = Release|Win32
+		{0AF88A0E-BCBC-449A-A122-EDAD41CB0010}.Release|Win32.Build.0 = Release|Win32
+		{50308136-BAAF-47C2-9252-60A1BFF643FD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{50308136-BAAF-47C2-9252-60A1BFF643FD}.Debug|Win32.Build.0 = Debug|Win32
+		{50308136-BAAF-47C2-9252-60A1BFF643FD}.Release|Win32.ActiveCfg = Release|Win32
+		{50308136-BAAF-47C2-9252-60A1BFF643FD}.Release|Win32.Build.0 = Release|Win32
+		{AEA55C08-F77D-45EE-B094-B0FF1C309DC8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AEA55C08-F77D-45EE-B094-B0FF1C309DC8}.Debug|Win32.Build.0 = Debug|Win32
+		{AEA55C08-F77D-45EE-B094-B0FF1C309DC8}.Release|Win32.ActiveCfg = Release|Win32
+		{AEA55C08-F77D-45EE-B094-B0FF1C309DC8}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -173,8 +173,6 @@ abstract class System
 		    Credit("Sam Lantiga and others", "", "SDL", "LGPL"),
 		    Credit("Sam Lantinga and Mattias Engdegård", "", "SDL_Image", "LGPL"),
 			Credit("Eric Poggel", "JoeCoder", "everything else", "LGPL v3")
-			
-			
 		];
 	}
 }

@@ -9,8 +9,6 @@ module yage.system.graphics.render;
 import tango.math.Math;
 
 import derelict.opengl.gl;
-import derelict.opengl.glu;
-import derelict.opengl.glext;
 import derelict.sdl.sdl;
 
 import yage.core.all;
@@ -43,7 +41,7 @@ private struct AlphaTriangle
 	int triangle;	
 	Vec3f[3] vertices;	
 	
-	static AlphaTriangle opCall( Geometry geometry, Mesh mesh, Material material, Matrix matrix, LightNode[] lights, int triangle, Vec3f[3] vertices)
+	static AlphaTriangle opCall(Geometry geometry, Mesh mesh, Material material, Matrix matrix, LightNode[] lights, int triangle, Vec3f[3] vertices)
 	{	AlphaTriangle result = {geometry, mesh, material, matrix, lights, triangle, vertices};
 		return result;		
 	}
@@ -82,10 +80,7 @@ struct RenderStatistics
 struct Render
 {
 	protected static OpenGL graphics; // TODO: Replace with GraphicsAPI when interface is more finalized.
-	
-	protected static ArrayBuilder!(VisibleNode) visibleNodes;
-	protected static ArrayBuilder!(AlphaTriangle) alphaTriangles;
-	
+	protected static ArrayBuilder!(AlphaTriangle) alphaTriangles;	
 	protected static Geometry currentGeometry;
 
 	protected static bool cleared; // if false, the color buffer need to be cleared before drawing?
@@ -247,7 +242,7 @@ struct Render
 				if (params.hasSpotlight)
 				{	Matrix camInverse = graphics.cameraInverse;
 					
-					Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getAbsoluteTransform()).rotate(camInverse); 
+					Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getWorldTransform()).rotate(camInverse); 
 					uniforms[idx++] = 
 						ShaderUniform(makeName("lights[_].spotDirection", i), ShaderUniform.Type.F3, lightDirection.v);
 					
@@ -301,7 +296,7 @@ struct Render
 	}
 	
 	
-//	/
+	///
 	static RenderStatistics geometry(ref RenderCommand command)
 	{	RenderStatistics result;
 	
@@ -503,7 +498,7 @@ struct Render
 		int num_lights = Probe.feature(Probe.Feature.MAX_LIGHTS);
 				
 		// Sort alpha (translucent) triangles
-		Vec3f cameraPosition = Vec3f(graphics.current.camera.getAbsoluteTransform(true).v[12..15]);
+		Vec3f cameraPosition = graphics.cameraInverse.inverse().getPosition(); // Inverse of the inverse is wasteful.
 		radixSort(alphaTriangles.data, true, (AlphaTriangle a)
 		{	Vec3f center = (a.vertices[0]+a.vertices[1]+a.vertices[2]).scale(1/3f);
 			center = center.transform(a.matrix);
@@ -555,95 +550,56 @@ struct Render
 		failedTechniques = null;		
 		currentGeometry = null;
 		uniformsLookaside.length = 0;
-		visibleNodes.length = 0;
 		alphaTriangles.length = 0;
 	}
 
+	///
 	static RenderStatistics scene(CameraNode camera, IRenderTarget target)
-	{		
-		/*
-		 * Render an array of nodes to the current rendering target, saving
-		 * any alpha triangles to the end and then rendering them.
-		 * Params:
-		 *	 nodes = Array of nodes to render.
-		 * Returns: A struct with statistics about this rendering call. */
-		RenderStatistics drawNodes(RenderCommand[] renderCommands)
+	{	
+		RenderStatistics result;
+		
+		camera.aspectRatio = target.getWidth()/ cast(float)target.getHeight();
+		graphics.bindRenderTarget(target);
+		
+		// Loop through each commandSet.  A commandSet will be created for the camera's main scene and another for its skybox.
+		auto renderList = camera.getRenderList();
+		graphics.cameraInverse = renderList.cameraInverse;
+		graphics.bindCamera(camera);
+		foreach_reverse (i, renderScene; renderList.scenes)
 		{			
-			RenderStatistics result;
-			result.nodeCount = renderCommands.length;
+			// Bind matrices for camera position
+			graphics.matrix.loadIdentity();			
+			if (i==0) // base scene
+				glMultMatrixf(renderList.cameraInverse.v.ptr);
+			else // only rotate by the camera's matrix if in a skybox.
+			{	Vec3f axis = renderList.cameraInverse.toAxis();
+				glRotatef(axis.length()*57.295779513, axis.x, axis.y, axis.z);
+			}
 			
-			// Loop through all nodes in the queue and render them
-			foreach (ref command; renderCommands)
+			// Clear buffers
+			graphics.bindScene(renderScene.scene);
+			if (!cleared) // reset everyting the first time.
+			{	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // is stencil necessary?
+				cleared = true;
+			} else
+				glClear(GL_DEPTH_BUFFER_BIT);
+			
+			result.lightCount += renderScene.lights.length;
+						
+			// Process all render commands in the set
+			result.nodeCount += renderScene.commands.length;
+			foreach (ref RenderCommand command; renderScene.commands.data)
 			{	graphics.matrix.push();
 				graphics.matrix.multiply(command.transform);
-				graphics.bindLights(command.getLights());
+				graphics.bindLights(command.getLights()); 
 				result += geometry(command);
 				graphics.matrix.pop();
 			}
 			
+			// Take care of special rendering jobs that must occur last (like translucent polygons)
 			postRender();
-			return result;
-		}
-		
-		// Allows one scene to act as the skybox for another.
-		RenderStatistics skyboxRecurse(CameraNode camera, Scene scene=null)
-		{	
-			RenderStatistics result;			
-			if (!scene)
-				scene = camera.getScene();
-			if (!scene)
-				throw new GraphicsException("Camera must be added to a scene before rendering.");
-			
-			// start reading from the most recently updated set of buffers.
-			graphics.bindCamera(camera);
-			graphics.matrix.loadIdentity();
-			
-			auto renderBuffer = camera.getRenderBuffer(scene);
-			
-			if (scene is camera.scene)
-				glMultMatrixf(renderBuffer.cameraInverse.v.ptr);
-			else // only rotate by the camera's matrix if in a skybox.
-			{	Vec3f axis = renderBuffer.cameraInverse.toAxis();
-				glRotatef(axis.length()*57.295779513, axis.x, axis.y, axis.z);
-			}
-			
-			// Recurse through skyboxes
-			if (scene.skyBox)
-			{	
-				graphics.matrix.push();	
-				skyboxRecurse(camera, scene.skyBox);
-				graphics.matrix.pop();	
-				glDepthMask(true);
-				glClear(GL_DEPTH_BUFFER_BIT);
-			}
-			
-			// Apply scene state and clear background if necessary.
-			graphics.bindScene(scene);
-			if (!scene.skyBox)
-			{	glDepthMask(true);
-				if (!cleared) // reset everyting the first time.
-				{	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // is stencil necessary?
-					cleared = true;
-				}
-				else
-					glClear(GL_DEPTH_BUFFER_BIT); // reset depth buffer for drawing after a skybox
-			}
-				
-			// Light calculations (is there a better place for this?)
-			{
-				scope LightNode[] allLights = scene.getAllLights();				
-				result.lightCount += allLights.length;
-				foreach (light; allLights) // compute in advance to save cpu
-					light.cameraSpacePosition = light.getAbsolutePosition().transform(renderBuffer.cameraInverse);
-			}
-			result += drawNodes(renderBuffer.commands.data);
-			
-			return result;
 		}		
 		
-		camera.aspectRatio = target.getWidth()/ cast(float)target.getHeight();
-		graphics.bindRenderTarget(target);
-		auto result = skyboxRecurse(camera);
 		graphics.bindRenderTarget(null);
 		graphics.bindPass(null);
 		//graphics.bindVertexBuffer(null);

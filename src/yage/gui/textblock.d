@@ -12,7 +12,6 @@ import tango.math.Math;
 import tango.math.IEEE;
 import tango.text.convert.Float;
 import tango.text.xml.Document;
-import tango.text.convert.Format;
 import tango.text.convert.Utf;
 import tango.text.Unicode;
 import tango.text.Util;

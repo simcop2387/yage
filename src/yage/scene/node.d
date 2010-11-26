@@ -7,7 +7,6 @@
 module yage.scene.node;
 
 import tango.core.Thread;
-import tango.text.convert.Format;
 import yage.core.all;
 import yage.core.tree;
 import yage.scene.scene;
@@ -29,202 +28,41 @@ import yage.system.log;
  * Example:
  * --------
  * Scene s = new Scene();
- * ModelNode a = s.addChild(new ModelNode());   // a is a child of s, it exists in Scene s.
+ * Node a = s.addChild(new Node());  // a is a child of s, it exists in Scene s.
  * a.setPosition(3, 5, 0);           // Position is set relative to 0, 0, 0 of the entire scene.
  * a.setRotation(0, 3.14, 0);        // a is rotated PI radians (180 degrees) around the Y axis.
  *
  * SpriteNode b = new SpriteNode(a); // b is a child of a, therefore,
  * b.setPosition(5, 0, 0);           // its positoin and rotation are relative to a's.
- * b.getAbsolutePosition();          // Returns Vec3f(-2, 5, 0), b's position relative to the origin.
+ * b.getWorldPosition();             // Returns Vec3f(-2, 5, 0), b's position relative to the origin.
  *
  * s.addChild(b);                    // b is now a child of s.
- * b.getAbsolutePosition();          // Returns Vec3f(5, 0, 0), since it's position is relative
+ * b.getWorldPosition();             // Returns Vec3f(5, 0, 0), since it's position is relative
  *                                   // to 0, 0, 0, instead of a.
  * --------
  */
 class Node : Tree!(Node), IDisposable, ICloneable
 {
-	// New
-	protected Vec3f position;
-	protected Vec3f rotation;
-	protected Vec3f scale = Vec3f(1);
-	
-	protected Vec3f velocity;
-	protected Vec3f angularVelocity;
-	
-	protected Vec3f worldPosition;
-	protected Vec3f worldRotation;
-	protected Vec3f worldScale;
-	
-	protected bool worldDirty;
-	
-	/**
-	 * Get / set the xyz position of this Node relative to its parent's position. */
-	Vec3f getPosition2()
-	{	mixin(Sync!("scene"));
-		return position;
-	}	
-	void setPosition2(Vec3f position) /// ditto
-	{	mixin(Sync!("scene"));
-		setWorldDirty();
-		this.position = position;
-	}
-	
-	/**
-	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
-	Vec3f getRotation2()
-	{	mixin(Sync!("scene"));
-		return rotation;
-	}	
-	void setRotation2(Vec3f rotation) /// ditto
-	{	mixin(Sync!("scene"));
-		setWorldDirty();
-		this.rotation = rotation;
-	}
-	
-	/**
-	 * Get / set the xyz scale of this Node relative to its parent's scale. */
-	Vec3f getScale2()
-	{	mixin(Sync!("scene"));
-		return scale;
-	}	
-	void setScale2(Vec3f scale) /// ditto
-	{	mixin(Sync!("scene"));
-		setWorldDirty();
-		this.scale = scale;
-	}
+	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
 
+	package Vec3f position;
+	package Vec3f rotation;
+	package Vec3f scale = Vec3f(1);
 	
-	/**
-	 * Get / set the linear velocity this Node relative to its parent's velocity. */
-	Vec3f getVelocity2()
-	{	mixin(Sync!("scene"));
-		return velocity;
-	}	
-	void setVelocit2(Vec3f velocity) /// ditto
-	{	mixin(Sync!("scene"));
-		setWorldDirty();
-		this.velocity = velocity;
-	}
+	package Vec3f velocity;
+	package Vec3f angularVelocity;
 	
-	/**
-	 * Get / set the angular (rotation) velocity this Node relative to its parent's velocity. */
-	Vec3f getAngularVelocity2()
-	{	mixin(Sync!("scene"));
-		return velocity;
-	}	
-	void setAngularVelocity2(Vec3f axis) /// ditto
-	{	mixin(Sync!("scene"));
-		this.angularVelocity = axis;
-	}
+	package Vec3f worldPosition;
+	package Vec3f worldRotation;
+	package Vec3f worldScale = Vec3f(1);
 	
-	Matrix getMatrix()
-	{	return Matrix.compose(position, rotation, scale);
-	}
+	package Vec3f worldVelocity;
 	
-	/**
-	 * Get the position, axis-angle rotation, or scale in world coordinates, 
-	 * instead of relative to the parent Node. */
-	Vec3f getWorldPosition()
-	{	mixin(Sync!("scene"));
-		calcWorld();
-		return worldPosition; // TODO: optimize
-	}
-	Vec3f getWorldRotation() /// ditto
-	{	mixin(Sync!("scene"));
-		calcWorld();
-		return worldRotation;
-	}
-	Vec3f getWorldScale() /// ditto
-	{	mixin(Sync!("scene"));
-		calcWorld();
-		return worldScale;
-	}
-	
-	Matrix getWorldMatrix()
-	{	mixin(Sync!("scene"));
-		calcWorld();
-		return Matrix.compose(worldPosition, worldRotation, worldScale);
-	}
-	
-	/*
-	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
-	 * This should be called whenever a Node has its transformation matrix changed.
-	 * This function is used internally by the engine usually doesn't need to be called manually. */
-	protected void setWorldDirty()
-	{	if (!worldDirty)
-		{	worldDirty=true;
-			foreach(c; children)
-				c.setWorldDirty();
-	}	}
-	
-	protected void calcWorld()
-	{	if (worldDirty)
-		{	if (parent)
-			{	parent.calcWorld(); // TODO: optimize this!
-				Matrix matrix = parent.getWorldMatrix().transformAffine(getMatrix());	
-				matrix.decompose(worldPosition, worldRotation, worldScale);
-			} else
-			{	worldPosition = position;
-				worldRotation = rotation;
-				worldScale = scale;
-			}
-			worldDirty = false;
-		}
-	}	
-	unittest
-	{
-		Node a = new Node();
-		a.setRotation2(Vec3f(0, 3.1415927, 0));
-		a.setPosition2(Vec3f(3, 0, 0));
+	package bool worldDirty;
 		
-		Node b = new Node(a);
-		b.setPosition2(Vec3f(5, 0, 0));
-		assert(b.getWorldPosition().almostEqual(Vec3f(-2, 0, 0)));
-	}
-
-	void update2(float delta)
-	{	mixin(Sync!("scene"));
+	package   Scene scene;			// The Scene that this node belongs to.
+	protected float lifetime = float.infinity;	// in seconds.  TODO: Deprecate this to make things more light-weight
 	
-		bool dirty = false;
-		if (velocity.length2() != 0)
-		{	position += velocity*delta;
-			dirty = true;
-		}
-	
-		// Rotate if angular velocity is not zero.
-		if (angularVelocity.length2() !=0)
-		{	rotation = rotation.rotate(angularVelocity*delta);
-			dirty = true;
-		}
-		if (dirty)
-			setWorldDirty();
-		
-		foreach (node; children)
-			node.update2(delta);
-	}
-	
-	
-
-	// old:
-	// ---------------------------------------------
-	
-	// These are public for easy internal access.
-	Scene	scene;			// The Scene that this node belongs to.
-	protected float lifetime = float.infinity;	// in seconds
-	
-	void delegate() onUpdate = null;	// Set a function that will be called every time this Node is updated.
-	
-	protected Matrix	transform;				// The position and rotation of this node relative to its parent
-	protected Matrix	transform_abs;			// The position and rotation of this node in worldspace coordinates
-	public bool			transform_dirty=true;	// The absolute transformation matrix needs to be recalculated.
-
-	protected Vec3f		linear_velocity;
-	protected Vec3f		angular_velocity;
-	protected Vec3f		linear_velocity_abs;	// Store a cached version of the absolute linear velocity.
-	protected Vec3f		angular_velocity_abs;
-	protected bool		velocity_dirty=true;	// The absolute velocity vectors need to be recalculated.
-
 	/**
 	 * Construct and optionally add as a child of another Node. */
 	this()
@@ -232,7 +70,9 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
+		{	mixin(Sync!("scene"));
 			parent.addChild(this);
+		}
 	}
 	
 	/**
@@ -241,8 +81,8 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	 * Params:
 	 *     child = The Node to add.
 	 * Returns: The child Node that was added.  Templating is used to ensure the return type is exactly the same.*/
-	T addChild(T /*: Node*/)(T child)
-	{			
+	T addChild(T : Node)(T child)
+	{	mixin(Sync!("scene"));
 		auto old_parent = child.getParent();
 		super.addChild(child);
 		child.ancestorChange(old_parent); // handles 
@@ -255,8 +95,9 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	 * Params:
 	 *     child = The Node to remove.
 	 * Returns: The child Node that was removed.  Templating is used to ensure the return type is exactly the same.*/
-	T removeChild(T/* : Node*/)(T child)
-	{	auto old_parent = child.getParent();
+	T removeChild(T : Node)(T child)
+	{	mixin(Sync!("scene"));
+		auto old_parent = child.getParent();
 		super.removeChild(child);
 		child.ancestorChange(old_parent); // sets transform dirty also
 		return child;
@@ -270,26 +111,27 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	override Node clone()
 	{	return clone(false);		
 	}
-	Node clone(bool children) /// ditto
-	{	Node result = cast(Node)this.classinfo.create();		
+	Node clone(bool children, Node destination=null) /// ditto
+	{	mixin(Sync!("scene"));
 		
-		// Since "this" may have its properties changed by other calls during this process.
-		// TODO: Nothing else synchronizes, so this doesn't really provide any protection!
-		synchronized(this) 
-		{	result.lifetime = lifetime;
-			result.transform = transform;
-			result.linear_velocity = linear_velocity;
-			result.angular_velocity = angular_velocity;
-			result.linear_velocity_abs = linear_velocity_abs;
-			result.angular_velocity_abs = angular_velocity_abs;
-			
-			result.onUpdate = onUpdate;
-			
-			if (children)
-				foreach (c; this.children)
-					result.addChild(c.clone());
-		}
-		return result;
+		if (!destination)
+			destination = cast(Node)this.classinfo.create(); // why does new typeof(this) fail?
+		assert(destination);
+		
+		destination.lifetime = lifetime;
+		destination.position = position;
+		destination.rotation = rotation;
+		destination.scale = scale;
+		destination.velocity = velocity;
+		destination.angularVelocity = angularVelocity;
+				
+		destination.onUpdate = onUpdate;
+		
+		if (children)
+			foreach (c; this.children)
+				destination.addChild(c.clone());
+		
+		return destination;
 	}	
 	unittest
 	{	// Test child cloning
@@ -303,10 +145,170 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	/**
 	 * Some types of Nodes may need to free resources before being destructed. */
 	override void dispose()
-	{	if (children.length)
+	{	mixin(Sync!("scene"));
+		if (children.length)
 		{	foreach_reverse (c; children)
 				c.dispose();
 			children.length = 0; // prevent multiple calls.
+		}
+	}
+	
+	/**
+	 * Get / set the xyz position of this Node relative to its parent's position. */
+	Vec3f getPosition()
+	{	mixin(Sync!("scene"));
+		return position;
+	}	
+	void setPosition(Vec3f position) /// ditto
+	{	mixin(Sync!("scene"));
+		setWorldDirty();
+		this.position = position;
+	}
+	
+	/**
+	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
+	Vec3f getRotation()
+	{	mixin(Sync!("scene"));
+		return rotation;
+	}	
+	void setRotation(Vec3f axisAngle) /// ditto
+	{	mixin(Sync!("scene"));
+		setWorldDirty();
+		this.rotation = axisAngle;
+	}
+	
+	/**
+	 * Get / set the xyz scale of this Node relative to its parent's scale. */
+	Vec3f getScale()
+	{	mixin(Sync!("scene"));
+		return scale;
+	}	
+	void setScale(Vec3f scale) /// ditto
+	{	mixin(Sync!("scene"));
+		setWorldDirty();
+		this.scale = scale;
+	}
+
+	
+	/**
+	 * Get / set the linear velocity this Node relative to its parent's velocity. */
+	Vec3f getVelocity()
+	{	mixin(Sync!("scene"));
+		return velocity;
+	}	
+	void setVelocity(Vec3f velocity) /// ditto
+	{	mixin(Sync!("scene"));
+		this.velocity = velocity;
+	}
+	
+	/**
+	 * Get / set the angular (rotation) velocity this Node relative to its parent's velocity. */
+	Vec3f getAngularVelocity()
+	{	mixin(Sync!("scene"));
+		return angularVelocity;
+	}	
+	void setAngularVelocity(Vec3f axisAngle) /// ditto
+	{	mixin(Sync!("scene"));
+		this.angularVelocity = axisAngle;
+	}
+	
+	/**
+	 * Get the position, axis-angle rotation, or scale in world coordinates, 
+	 * instead of relative to the parent Node. */
+	Vec3f getWorldPosition()
+	{	mixin(Sync!("scene"));
+		if (worldDirty) // makes it faster.
+			calcWorld();
+		return worldPosition; // TODO: optimize
+	}
+	Vec3f getWorldRotation() /// ditto
+	{	mixin(Sync!("scene"));
+		calcWorld();
+		return worldRotation;
+	}
+	Vec3f getWorldScale() /// ditto
+	{	mixin(Sync!("scene"));
+		calcWorld();
+		return worldScale;
+	}
+	
+	///
+	Vec3f getWorldVelocity()
+	{	mixin(Sync!("scene"));
+		calcWorld();
+		return worldVelocity;
+	}
+	
+	// Convenience functions:
+	
+	///
+	Matrix getTransform()
+	{	return Matrix.compose(position, rotation, scale);
+	}
+	
+	///
+	Matrix getWorldTransform()
+	{	mixin(Sync!("scene"));
+		calcWorld();
+		return Matrix.compose(worldPosition, worldRotation, worldScale);
+	}
+
+	///
+	void move(Vec3f amount)
+	{	mixin(Sync!("scene"));
+		position += amount;
+		setWorldDirty();
+	}
+
+	///
+	void rotate(Vec3f axisAngle)
+	{	mixin(Sync!("scene"));
+		rotation = (rotation.toQuatrn() * axisAngle.toQuatrn()).toAxis();
+		setWorldDirty();
+	}
+
+	///
+	void accelerate(Vec3f amount)
+	{	mixin(Sync!("scene"));
+		velocity += amount;
+	}
+
+	///
+	void angularAccelerate(Vec3f axisAngle)
+	{	mixin(Sync!("scene"));
+		angularVelocity = (angularVelocity.toQuatrn() * axisAngle.toQuatrn()).toAxis(); // TODO: Is this clamped to -PI to PI?
+	}
+
+	///
+	void update(float delta)
+	{	mixin(Sync!("scene"));
+	
+		bool dirty = false;
+		if (velocity.length2() != 0)
+		{	position += velocity*delta;
+			dirty = true;
+		}
+	
+		// Rotate if angular velocity is not zero.
+		if (angularVelocity.length2() !=0)
+		{	rotation = (rotation.toQuatrn() * (angularVelocity*delta).toQuatrn()).toAxis();
+			dirty = true;
+		}
+		if (dirty)
+			setWorldDirty();
+		
+		lifetime-= delta;
+		if (lifetime <= 0)
+		{	if (parent)
+				parent.removeChild(this);
+			lifetime = float.infinity;
+		}
+		
+		foreach (node; children)
+		{	if (node.onUpdate)
+				node.onUpdate();
+			else
+				node.update(delta);
 		}
 	}
 
@@ -326,113 +328,54 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	Scene getScene()
 	{	return scene;
 	}
-
-	/// Get the type of this Node as a string; i.e. "yage.scene.visible.ModelNode".
-	char[] getType()
-	{	return this.classinfo.name;
-	}
 	
 	/// Always returns false for Nodes but can be true for subtypes.
 	bool getVisible()
 	{	return false;		
-	}
-
-	/**
-	 * Return a string representation of this Node for human reading. */	
-	override char[] toString()
-	{	return Format.convert("<{} children=\"{}\"/>", getType(), children.length);
-	}
-
-
-	/**
-	 * Update the positions and rotations of this Node and all children by delta seconds.*/ 
-	void update(float delta)
-	{	
-		// Call the onUpdate() function
-		if (onUpdate !is null)
-			onUpdate(); // TODO: make this exclusive like Surface events.
-		
-		// Cache the current relative and absolute position/rotation for rendering.
-		// This prevents rendering a halfway-updated scenegraph.
-		if (scene)
-		{	//cache[scene.transform_write].transform = transform;
-			if (transform_dirty)
-				calcTransform();
-			//cache[scene.transform_write].transform_abs = transform_abs;
-		}
-		
-		// We iterate in reverse in case a child deletes itself.
-		// What about one child deleting another?
-		// I guess the preferred way to remove an object would be to set its lifetime to 0.
-		// Perhaps we should override remove to do this so that items are removed in a controlled way?
-		foreach_reverse(Node c; children) // gdc segfaults 2 lines below unless this is foreach_reverse
-			if (c) // does this solve the problem above?
-				c.update(delta);
-		
-		lifetime-= delta;
-		if (lifetime <= 0)
-		{	if (parent)
-				parent.removeChild(this);
-			lifetime = float.infinity;
-		}
 	}
 	
 	/*
 	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
 	 * This should be called whenever a Node has its transformation matrix changed.
 	 * This function is used internally by the engine usually doesn't need to be called manually. */
-	void setTransformDirty()
-	{	if (!transform_dirty)
-		{	transform_dirty=true;
+	protected void setWorldDirty()
+	{	if (!worldDirty)
+		{	worldDirty=true;
 			foreach(c; children)
-				c.setTransformDirty();
+				c.setWorldDirty();
 	}	}
-	
-	/*
-	 * Calculate and store the absolute transformation matrices of this Node up to the first node
-	 * that has a correct absolute transformation matrix.
-	 * This is called automatically when the absolute transformation matrix of a node is needed.
-	 * Remember that rotating a Node's parent will change the Node's velocity. */
-	protected void calcTransform()
-	{
-		// TODO: IF I syncrhonize on the multiply by a copied result 
-		// of parent.getAbsoluteTransform(), that should be threadsafe.
-		if (transform_dirty) 
-			
-		{	//synchronized(this) // still causes deadlock
-			{	if (parent)
-				{	//synchronized(this.parent) // still causes deadlock.
-					{	parent.calcTransform();
-						//transform_abs = transform * parent.transform_abs;
-						transform_abs = parent.transform_abs.transformAffine(transform);
-						linear_velocity_abs = linear_velocity + parent.linear_velocity_abs;
-						// TODO: linear_velocity_abs doesn't account for angular velocity
-						
-				}	}
-				else
-				{	transform_abs = transform;
-					linear_velocity_abs = linear_velocity;
-				}
-				transform_dirty = false;
-		}	}
-	}
-	unittest
-	{	// Ensure absolute position is calculated properly in a node heirarchy.
-		MovableNode a = new MovableNode();
-		a.setPosition(Vec3f(0, 1, 0));
-		MovableNode b = a.addChild(new MovableNode());
-		b.setPosition(Vec3f(0, 2, 0));		
-		assert(b.getAbsolutePosition() == Vec3f(0, 3, 0));
-	}
-	unittest
-	{	// Ensure absolute position is calculated properly in a node heirarchy.
-		Node a = new Node();
-		a.setPosition2(Vec3f(0, 1, 0));
-		Node b = new Node(a);
-		b.setPosition2(Vec3f(0, 2, 0));		
-		assert(b.getWorldPosition() == Vec3f(0, 3, 0));
-	}
+	import tango.core.Thread;
 
+	protected void calcWorld()
+	{	
+		if (worldDirty)
+		{			
+			if (parent && parent !is scene)
+			{	parent.calcWorld(); // TODO: optimize this!
+				Matrix matrix = parent.getWorldTransform().transformAffine(getTransform());	
+				matrix.decompose(worldPosition, worldRotation, worldScale);
+				
+				worldVelocity = velocity + parent.worldVelocity; // TODO: This doesn't even take rotation into account!
+			} else
+			{	worldPosition = position;
+				worldRotation = rotation;
+				worldScale = scale;
+				worldVelocity = velocity;
+			}
+			worldDirty = false;
+		}
+	}	
+	unittest
+	{
+		Node a = new Node();
+		a.setPosition(Vec3f(3, 0, 0));
+		a.setRotation(Vec3f(0, 3.1415927, 0));
+		
+		Node b = new Node(a);
+		b.setPosition(Vec3f(5, 0, 0));
+		assert(b.getWorldPosition().almostEqual(Vec3f(-2, 0, 0)));
+	}
+	
 	/*
 	 * Called after any of a node's ancestors have their parent changed. 
 	 * This function also sets transform_dirty.  
@@ -440,11 +383,10 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	 * since the transformation matrix should always be dirty after an ancestor change. 
 	 * @param old_ancestor The ancestor that was previously one above the top node of the tree that had its parent changed. */
 	protected void ancestorChange(Node old_ancestor)
-	{	// synchronized(this) // causes deadlock with calcTransform.
-		{	transform_dirty = true;
-			scene = parent ? parent.scene : null;
-			foreach(c; children)
-				c.ancestorChange(old_ancestor);
-		}
+	{	worldDirty = true;
+		scene = parent ? parent.scene : null;
+		foreach(c; children)
+			c.ancestorChange(old_ancestor);
+		
 	}
 }

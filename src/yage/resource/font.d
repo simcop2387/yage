@@ -9,7 +9,6 @@ module yage.resource.font;
 import tango.io.device.File;
 import tango.io.FilePath;
 import tango.io.device.TempFile;
-
 import tango.text.convert.Utf;
 import tango.math.Math;
 
@@ -18,7 +17,6 @@ import derelict.freetype.ft;
 import yage.core.math.math;
 import yage.core.timer;
 import yage.core.types;
-import yage.core.parse;
 import yage.core.object2;
 import yage.resource.image;
 import yage.resource.manager;

@@ -15,7 +15,7 @@ import yage.resource.embed.embed;
 
 /*
  * A floating camera that can be moved and rotated. */
-class FPSCamera : MovableNode
+class FPSCamera : Node
 {	
 	float speed = 300; 			// units/second^2 acceleration
 	float angularSpeed = .2; 	// radians of acceleration per pixel of mouse movement.
@@ -117,24 +117,24 @@ class LotsOfObjects : TestScene
 				}
 		
 		// Add rotating lights
-		auto rotater1 = addChild(new MovableNode());
+		auto rotater1 = new Node(this);
 		rotater1.setAngularVelocity(Vec3f(0, 1, 0));
 		
-		LightNode l = rotater1.addChild(new LightNode());
+		LightNode l = new LightNode(rotater1);
 		l.setPosition(Vec3f(0, 0, 100));
 		l.setLightRadius(100);
 		
-		LightNode l2 = rotater1.addChild(new LightNode());
+		LightNode l2 =new LightNode(rotater1);
 		l2.setPosition(Vec3f(0, 0, -100));
 		l2.setLightRadius(100);
 		l2.diffuse = "green";
 		
-		LightNode l3 = rotater1.addChild(new LightNode());
+		LightNode l3 = new LightNode(rotater1);
 		l3.setPosition(Vec3f(100, 0, 0));
 		l3.setLightRadius(100);
 		l3.diffuse = "red";
 		
-		LightNode l4 = rotater1.addChild(new LightNode());
+		LightNode l4 =new LightNode(rotater1);
 		l4.setPosition(Vec3f(-100, 0, 0));
 		l4.setLightRadius(100);
 		l4.diffuse = "blue";		
@@ -143,12 +143,12 @@ class LotsOfObjects : TestScene
 	}
 }
 
-class Picking : TestScene
+class SoundsAndPicking : TestScene
 {
 	Model asteroid;
 	
 	this()
-	{	super("Picking");
+	{	super("Sounds and Picking");
 	
 		int length = 4;
 		int spacing = 150;
@@ -160,8 +160,13 @@ class Picking : TestScene
 				for (int z=-length/2; z<length/2; z++)
 				{	auto node = new ModelNode(asteroid);
 					node.setPosition(Vec3f(x*spacing, y*spacing, z*spacing));
-					node.setScale(Vec3f(random(.2, 5)));
+					node.setScale(Vec3f(random(.1, 2)));
 					addChild(node);
+					
+					auto sound = new SoundNode("sound/ship-engine.ogg", node);
+					sound.volume = .1;
+					sound.play();
+					sound.looping = true;
 				}
 		
 		// Add rotating lights
@@ -336,7 +341,7 @@ class Transparency : TestScene
 		// Make a circle of the planes
 		float PI = 3.1415927f;
 		
-		auto rotator = scene.addChild(new MovableNode());
+		auto rotator = new Node(scene);
 		rotator.setAngularVelocity(Vec3f(0, .1, 0));
 		
 		int number = 50;
@@ -506,6 +511,7 @@ class App
 		if (this.scene)
 			this.scene.pause();
 		this.scene = scene;
+		scene.camera.camera.setListener();
 		scene.play();
 	}	
 }
@@ -520,8 +526,8 @@ void main()
 	App.window.setResolution(720, 445, 0, false, 1); // golden ratio
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 	
-	TestScene[] scenes = [cast(TestScene)new Transparency(), new Picking(), new LightsAndFog(), new LotsOfObjects];
-	App.setScene(scenes[0]);
+	TestScene[] scenes = [cast(TestScene)new Transparency(), new SoundsAndPicking(), new LightsAndFog(), new LotsOfObjects];
+	App.setScene(scenes[1]);
 	
 	// User interface
 	App.ui = new UI(scenes);

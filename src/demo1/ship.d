@@ -15,7 +15,7 @@ import demo1.spring;
 
 class Ship : GameObject
 {
-	MovableNode pitch;			// attached to this node to look up and down
+	Node pitch;			// attached to this node to look up and down
 	ModelNode ship;		// attached to pitch and rolls left & right
 	Spring spring;		// spring to attach camera
 	SoundNode sound;
@@ -41,27 +41,27 @@ class Ship : GameObject
 	{
 		super();
 
-		pitch = addChild(new MovableNode());
+		pitch = addChild(new Node());
 
 		ship = pitch.addChild(new ModelNode());
 		ship.setModel("space/fighter.dae");
 		ship.setSize(Vec3f(.25));
 
-		spring = new Spring(ship, new MovableNode());
+		spring = new Spring(ship, new Node());
 		spring.setDistance(Vec3f(0, 4, 12));
 		spring.setStiffness(1);
 
 		sound = ship.addChild(new SoundNode());
 		sound.setSound("sound/ship-engine.ogg");
-		sound.setVolume(.3);
-		sound.setLooping(true);
+		sound.volume = .3;
+		sound.looping = true;
 	}
 
 	ModelNode getShip()
 	{	return ship;
 	}
 
-	MovableNode getCameraSpot()
+	Node getCameraSpot()
 	{	if (!(spring.getTail().getScene()))
 			getScene().addChild(spring.getTail());
 		
@@ -116,20 +116,21 @@ class Ship : GameObject
 			puff.setMaterial(smoke.dup());
 			puff.setLifetime(5);
 			puff.setSize(Vec3f(.4));
-			puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getAbsoluteTransform()));
-			puff.setPosition(ship.getAbsolutePosition()+Vec3f(.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
+			puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getWorldTransform()));
+			puff.setPosition(ship.getWorldPosition()+Vec3f(.8, 0, 2.5).rotate(ship.getWorldTransform()));
 			
-			void fade(SpriteNode node)
-			{	node.getMaterial().getPass().diffuse.a = cast(ubyte)(node.getLifetime() * 51);
+			void fade(SpriteNode node, float delta)
+			{	node.update(delta);
+				node.getMaterial().getPass().diffuse.a = cast(ubyte)(node.getLifetime() * 51);
 				float scale = tango.math.Math.sqrt(20.0f)-tango.math.Math.sqrt(node.getLifetime()*4) + .4;
 				node.setSize(scale);
 				node.setVelocity(node.getVelocity().scale(max(1-1/30f, 0.0f)));
 			}
-			puff.onUpdate = curry(&fade, puff);
+			puff.onUpdate = curry(&fade, puff, delta);
 
 			puff = ship.getScene().addChild(puff.clone());
-			puff.setPosition(ship.getAbsolutePosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getAbsoluteTransform()));
-			puff.onUpdate = curry(&fade, puff);
+			puff.setPosition(ship.getWorldPosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getWorldTransform()));
+			puff.onUpdate = curry(&fade, puff, delta);
 			
 			if (sound.paused())
 				sound.play();
@@ -177,8 +178,8 @@ class Ship : GameObject
 		if (input.shoot)
 		{
 			Flare flare = ship.getScene().addChild(new Flare());
-			flare.setPosition(ship.getAbsolutePosition());
-			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getAbsoluteTransform())+getVelocity());
+			flare.setPosition(ship.getWorldPosition());
+			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getWorldTransform())+getVelocity());
 			
 			//input.shoot = false;
 		}

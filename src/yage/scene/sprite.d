@@ -48,8 +48,8 @@ class SpriteNode : VisibleNode
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	override SpriteNode clone(bool children=false)
-	{	auto result = cast(SpriteNode)super.clone(children);
+	/*override*/ SpriteNode clone(bool children=false, SpriteNode destination=null)
+	{	auto result = cast(SpriteNode)super.clone(children, destination);
 		result.material = material;
 		return result;
 	}
@@ -58,18 +58,19 @@ class SpriteNode : VisibleNode
 		
 	void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 	{	
-		Matrix* transform = &transform_abs;
-		Vec3f* position = cast(Vec3f*)transform.v[12..15].ptr; // speed hack
+		//Matrix* transform = &transform_abs;
+		//Vec3f position = cast(Vec3f*)transform.v[12..15].ptr; // speed hack
+		Vec3f wp = getWorldPosition();
 		
-		if (camera.isVisible(*position, getRadius()))	
-		{	Vec3f sprite = getAbsolutePosition();
-			Vec3f cameraPosition = camera.getAbsolutePosition();	
+		if (camera.isVisible(wp, getRadius()))	
+		{	
+			Vec3f cameraPosition = camera.getWorldPosition();	
 			Vec3f spriteNormal = Vec3f(0, 0, -1);		
-			Vec3f spriteToCamera = (cameraPosition - sprite).normalize();	
-			Vec3f rotation = spriteNormal.lookAt(cameraPosition - sprite, Vec3f(0, 1, 0));
+			Vec3f spriteToCamera = (cameraPosition - wp).normalize();	
+			Vec3f rotation = spriteNormal.lookAt(cameraPosition - wp, Vec3f(0, 1, 0));
 			
 			RenderCommand rc;			
-			rc.transform = transform.scale(getSize()).rotate(rotation);
+			rc.transform = getWorldTransform().scale(getSize()).rotate(rotation);
 			rc.geometry = spriteQuad;
 			temp[0] = material;
 			//spriteQuad.getMeshes()[0].setMaterial(ResourceManager.material("space/star.dae", "star-material"));

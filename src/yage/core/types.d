@@ -10,7 +10,6 @@ import tango.stdc.string : memcpy;
 import tango.math.Math;
 import yage.core.math.math;
 import yage.core.math.vector:Vec4f;
-import yage.core.parse;
 import yage.core.format;
 
 /**

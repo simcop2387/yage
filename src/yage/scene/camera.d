@@ -9,13 +9,13 @@ module yage.scene.camera;
 import tango.math.Math;
 import tango.core.WeakRef;
 import yage.core.array;
+import yage.core.color;
 import yage.core.math.matrix;
 import yage.core.math.plane;
 import yage.core.math.vector;
 import yage.scene.light;
 import yage.scene.node;
 import yage.scene.scene;
-import yage.scene.movable;
 import yage.scene.visible;
 import yage.system.log;
 import yage.system.system;
@@ -28,10 +28,73 @@ import yage.resource.material;
 import yage.scene.light;
 import yage.system.graphics.probe;
 
+import yage.scene.sound;
+import yage.resource.sound;
+
+
+import yage.scene.model; // temporary
+
+// TODO: Move these to Render?
+struct RenderCommand
+{	
+	Matrix transform;
+	Geometry geometry;
+	Material[] materialOverrides;
+	
+	private ubyte lightsLength;
+	private LightNode[8] lights; // indices in the RenderScene's array of RenderLights
+	
+	LightNode[] getLights()
+	{	return lights[0..lightsLength];		 	              
+	}
+	
+	void setLights(LightNode[] lights)
+	{	lightsLength = lights.length;
+		for (int i=0; i<lights.length; i++)
+			this.lights[i] = lights[i];
+	}
+}
+
+// Everything in a scene seen by the Camera.
+struct RenderScene
+{	Scene scene; // Is this used?
+	ArrayBuilder!(RenderCommand) commands;
+	ArrayBuilder!(LightNode) lights;
+}
+
+struct RenderList
+{	RenderScene[] scenes; // one ArrayBuilder of commands for each scene to render.
+	long timestamp;
+	Matrix cameraInverse;
+}
+
+// Copies of SoundNode properties to provide lock-free access.
+struct SoundCommand
+{	Sound sound;
+	Vec3f worldPosition;
+	Vec3f worldVelocity;
+	float pitch;
+	float volume;
+	float radius;
+	float intensity; // used internally for sorting
+	float position; // playback position
+	size_t id;
+	SoundNode soundNode; // original SoundNode.  Must be used behind lock!
+	bool looping;
+	bool reseek;
+}
+
+struct SoundList
+{	ArrayBuilder!(SoundCommand) commands;
+	long timestamp;
+	Vec3f cameraPosition;
+	Vec3f cameraRotation;
+	Vec3f cameraVelocity;
+}
 
 /**
  * TODO: Document me. */
-class CameraNode : MovableNode
+class CameraNode : Node
 {
 	float near = 1;			/// The camera's near plane.  Nothing closer than this will be rendered.  The default is 1.
 	float far = 100000;		/// The camera's far plane.  Nothing further away than this will be rendered.  The default is 100,000.
@@ -39,72 +102,187 @@ class CameraNode : MovableNode
 	float threshold = 1;	/// Nodes must be at least this diameter in pixels or they won't be rendered.
 	float aspectRatio = 1.25;  /// The aspect ratio of the camera.  This is normally set automatically in Render.scene() based on the size of the Render Target.
 
-	package int currentXres;		// Used internally for determining visibility
+	package int currentXres;	// Used internally for determining visibility
 	package int currentYres;
 	
 	protected Plane[6] frustum;
 	protected Plane[6] skyboxFrustum; // a special frustum with the camera centered at the origin of worldspace.	
 	protected static CameraNode listener; // Camera that plays audio.
-	
-	struct RenderBuffer
-	{	ArrayBuilder!(RenderCommand) commands;
-		long timestamp;
-		Matrix cameraInverse;
+
+	struct TripleBuffer(T)
+	{	T[3] lists;
+		Object mutex;
+		ubyte read=1;
+		ubyte write=0;
+		
+		// Get a buffer for reading that is guaranteed to not currently being written.
+		T getNextRead()
+		{	synchronized (mutex)
+			{	int next = 3-(read+write);
+				if (lists[next].timestamp > lists[read].timestamp)
+					read = next; // advance the read list only if what's available is newer.
+				assert(read < 3);
+				assert(read != write);
+				
+				return lists[read];
+			}
+		}
+		
+		// Get the next write buffer that is guaranteed to not currently being read
+		private T* getNextWrite()
+		{	synchronized (mutex)
+			{	write = 3 - (read+write);
+				assert(read < 3);
+				assert(read != write);
+				return &lists[write];
+			}
+		}
+			
 	}
 	
-	// All of the information for rendering a scene
-	protected struct RenderScene
+	TripleBuffer!(SoundList) soundLists;
+	TripleBuffer!(RenderList) renderLists;
+	
+	
+	/**
+	 * Get a render list for the scene and each of the skyboxes this camera sees. */
+	RenderList getRenderList()
+	{	return renderLists.getNextRead();
+	}
+	
+	/**
+	 * List of SoundCommands that this camera can hear, in order from loudest to most quiet. */
+	SoundList getSoundList()
+	{	return soundLists.getNextRead();
+	}
+	
+	package void updateSoundCommands()
 	{	
-		RenderBuffer[3] buffers;
-		ubyte readBuffer=1; // current read buffer
-		ubyte writebuffer; // current write buffer		
-		Object transformMutex;
+		assert(Thread.getThis() == scene.getUpdateThread().getThread());
+		assert(getListener() is this);
+	
+		SoundList* list = soundLists.getNextWrite();
+		list.commands.reserveAndClear(); // reset content
 		
-		WeakReference!(Object) scene; // This RenderScene is invalid when the scene is released.
-		
-		static RenderScene opCall(Scene scene)
-		{	RenderScene result;
-			result.transformMutex = new Object();
-			result.scene = new WeakReference!(Object)(scene);
-			return result;
-		}
-		
-		/*
-		 * Get the most up-to-date unused  buffer to read from. */
-		RenderBuffer* getReadBuffer()
-		{	synchronized (transformMutex)
-			{	int next = 3-(readBuffer+writebuffer);
-				if (buffers[next].timestamp > buffers[readBuffer].timestamp)
-					readBuffer = next; // advance the read buffer only if what's available is newer.
-				assert(readBuffer < 3);
-				assert(readBuffer != writebuffer);
-				return &buffers[readBuffer];
+		Vec3f wp = getWorldPosition();
+		scope allSounds = scene.getAllSounds();
+		int i;
+		foreach (soundNode; allSounds) // Make a deep copy of the scene's sounds 
+		{	
+			if (!soundNode.paused() && soundNode.getSound())
+			{	//Log.write(2);
+				SoundCommand command;
+				command.intensity = soundNode.getVolumeAtPosition(wp);			
+				if (command.intensity > 0.002) // A very quiet sound, arbitrary number	
+				{	
+					command.sound = soundNode.getSound();
+					command.worldPosition = soundNode.getWorldPosition();
+					command.worldVelocity = soundNode.getWorldVelocity();
+					command.pitch = soundNode.pitch;
+					command.volume = soundNode.volume;
+					command.radius = soundNode.radius;
+					command.looping = soundNode.looping;
+					command.position = soundNode.tell();
+					command.soundNode = soundNode;
+					command.reseek = soundNode.reseek;
+					soundNode.reseek = false; // the value has been consumed
+					addSorted!(SoundCommand, float)(list.commands, command, false, (SoundCommand s) { return s.intensity; }); // fails!!!
+				}
 			}
+			i++;
 		}
-
-		/*
-		 * Get an unused buffer for writing RenderNodes. */
-		RenderBuffer* getWriteBuffer()
-		{	synchronized (transformMutex)
-			{	buffers[writebuffer].timestamp = Clock.now().ticks();
-				writebuffer = 3 - (readBuffer+writebuffer);
-				assert(readBuffer < 3);
-				assert(readBuffer != writebuffer);
-				auto result = &buffers[writebuffer];
-				if(result.commands.reserve < result.commands.length)  // prevent allocated size from shrinking
-					result.commands.reserve = result.commands.length;
-				result.commands.length = 0; // reset content
-				return result;
-			}
-		}
+		//Log.write("camera ", list.commands.length, " ", allSounds.length);
+		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
+		list.cameraPosition = getWorldPosition();
+		list.cameraRotation = getWorldRotation();
+		list.cameraVelocity = getWorldVelocity();
 	}
-
-	protected RenderScene[] renderScenes; // TODO: Scenes never get removed from here--scenes can reference a lot of other stuff!!!	
+	
+	/*
+	 * Cameras update a list of RenderCommands for every Scene they see.
+	 * This is typically one Scene and its Skybox. */
+	package void updateRenderCommands()
+	{
+		assert(Thread.getThis() == scene.getUpdateThread().getThread());
+		
+		currentXres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
+		currentYres = Window.getInstance().getHeight();
+		
+		void writeCommands(Node root, Plane[] frustum, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
+		{
+			// Test this node for visibility
+			VisibleNode vnode = cast(VisibleNode)root;
+			if (vnode && vnode.getVisible()) 
+			{
+				/* // inlining doesn't help performance any.
+				ModelNode m = cast(ModelNode)vnode;
+				if (m)
+				{	Vec3f wp = m.getWorldPosition();
+					if (scene !is scene)
+						wp += getWorldPosition();		
+					
+					if (isVisible(wp, m.getRadius()))	
+					{	
+						RenderCommand rc;			
+						rc.transform = m.getWorldTransform().scale(m.getSize());
+						rc.geometry = m.getModel();
+						rc.materialOverrides = m.materialOverrides;
+						rc.setLights(m.getLights(lights, 8));
+						result.append(rc);
+					}
+				} else */
+					vnode.getRenderCommands(this, lights, result);
+			}
+			
+			// Recurse through and render children.
+			foreach (Node c;  root.getChildren())
+				writeCommands(c, frustum, lights, result);
+		}
+		
+		// TODO: If this takes 1ms, it's still 15ms longer until this is called a second time that the renderer
+		// can use this info!  Maybe we need a way to say we're done writing?
+		// e.g. renderlists.performWrite(void (ref RenderList list) { ... });
+		auto list = renderLists.getNextWrite();
+		
+		// Iterate through skyboxes, clearing out the RenderList commands and refilling them
+		Scene currentScene = scene;
+		int i=0;
+		do {
+			// Ensure we have a command set for this scene
+			if (list.scenes.length <= i)
+				list.scenes.length = i+1;
+			else // clear out previous commands
+				list.scenes[i].commands.reserveAndClear(); // reset content
+			RenderScene* rs = &list.scenes[i];
+			rs.scene = currentScene;
+			
+			// Add lights that affect what this camera can see.
+			scope allLights = currentScene.getAllLights();
+			rs.lights.length = allLights.length;
+			foreach (j, ref light; rs.lights.data) // Make a deep copy of the scene's lights 
+			{	light = allLights[j].clone(false, light); // to prevent locking when the render thread uses them.
+				light.setPosition(allLights[j].getWorldPosition());
+				light.cameraSpacePosition = allLights[j].getWorldPosition().transform(list.cameraInverse); 
+				if (light.type == LightNode.Type.SPOT)
+					light.setRotation(allLights[j].getWorldRotation());
+				light.worldPosition = light.position;
+				light.worldDirty = false; // hack to prevent it from being recalculated.
+			}
+			
+			writeCommands(currentScene, frustum, rs.lights.data, list.scenes[i].commands);
+			i++;
+		} while ((currentScene = currentScene.skyBox) !is null); // iterate through skyboxes
+		list.cameraInverse = getWorldTransform().inverse();
+		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
+		
+	}
 
 	/**
 	 * Construct */
 	this()
-	{	super();		
+	{	super();
+		renderLists.mutex = new Object();
+		soundLists.mutex = new Object();
 		if (!listener)
 			listener = this;
 	}
@@ -155,9 +333,8 @@ class CameraNode : MovableNode
 	{	mixin(Sync!("scene"));
 		Matrix clip;
 		Matrix modl;
-
-		//glGetFloatv(GL_PROJECTION_MATRIX, clip.v.ptr);
-		//glGetFloatv(GL_MODELVIEW_MATRIX, modl.v.ptr);
+		
+		// TODO!
 		
 		return Vec3f();
 	}
@@ -187,67 +364,9 @@ class CameraNode : MovableNode
 				return false;
 		
 		// See if it's large enough to be drawn
-		Vec3f* cameraPosition = cast(Vec3f*)transform_abs.v[12..15].ptr;
-		float distance2 = (*cameraPosition - point).length2();
+		//Vec3f* cameraPosition = cast(Vec3f*)transform_abs.v[12..15].ptr;
+		float distance2 = (getWorldPosition() - point).length2();
 		return radius*radius*currentYres*currentYres > distance2*threshold*threshold;
-	}
-	
-	/*
-	 * Cameras update a list of RenderCommands for every Scene they see.
-	 * This is typically one Scene and its Skybox. */
-	package void updateRenderCommands(Scene scene=null)
-	{
-		currentXres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
-		currentYres = Window.getInstance().getHeight();
-		
-		// Get variables if we don't have them already
-		if (!scene)
-			scene=this.scene;
-		
-		int maxLights = Probe.feature(Probe.Feature.MAX_LIGHTS);
-		scope LightNode[] allLights = scene.getAllLights(); // TODO: Cull lights against view frustum
-		
-		void recurse(Node root, Plane[] frustum, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
-		{
-			// Test this node for visibility
-			VisibleNode vnode = cast(VisibleNode)root;
-			if (vnode && vnode.getVisible()) 
-				vnode.getRenderCommands(this, lights, result);
-			
-			// Recurse through and render children.
-			foreach (Node c;  root.getChildren())
-				recurse(c, frustum, lights, result);
-		}
-		
-		// Get or create the RenderScene
-		auto renderScene = getRenderScene(scene);
-		if (!renderScene)
-		{	renderScenes ~= RenderScene(scene);
-			renderScene = &renderScenes[$-1];
-		}
-		
-		auto buffer = renderScene.getWriteBuffer();
-		buffer.cameraInverse = getAbsoluteTransform().inverse();
-		recurse(scene, frustum, allLights, buffer.commands);
-	}
-		
-	/**
-	 * Get a buffer containing the list of RenderCommands and an inverse matrix for this Camera.
-	 * This is usually what the Renderer needs
-	 * Params:
-	 *     scene = 
-	 * Returns: */
-	RenderBuffer getRenderBuffer(Scene scene)
-	{	auto renderScene = getRenderScene(scene);
-		if (renderScene)
-			return *renderScene.getReadBuffer();
-		
-		// Small hack.  Make up a render buffer.
-		// Sometimes this is called before the first update loop finishes.
-		RenderBuffer result;
-		result.cameraInverse = getAbsoluteTransform().inverse();
-		result.timestamp = Clock.now().ticks();
-		return result;
 	}
 	
 	/*
@@ -257,7 +376,7 @@ class CameraNode : MovableNode
 	override public void ancestorChange(Node old_ancestor)
 	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		
-		Scene old_scene = old_ancestor ? old_ancestor.scene : null;	
+		Scene old_scene = old_ancestor ? old_ancestor.getScene() : null;	
 		if (scene !is old_scene)
 		{	if (old_scene)
 				old_scene.removeCamera(this);		
@@ -273,31 +392,17 @@ class CameraNode : MovableNode
 				listener = null;	
 	}
 	
-	protected RenderScene* getRenderScene(Scene scene)
-	{	foreach (i, ref rs; renderScenes)
-		{	Scene current = cast(Scene)rs.scene.get();
-			while (!current) // if it points to a no-longer-existing scene
-			{	rs = renderScenes[$-1]; // replace with one on the end
-				renderScenes.length = renderScenes.length - 1; // TODO: This code is untested!
-				current = cast(Scene)rs.scene.get();				
-			}
-			if (current is scene)
-				return &rs;
-		}
-		return null;
-	}
-	
 	/*
 	 * Update the frustums when the camera moves. */
-	override protected void calcTransform()
-	{	super.calcTransform();
+	override protected void calcWorld()
+	{	super.calcWorld();
 		
 		// Create the clipping matrix from the modelview and projection matrices
 		Matrix projection = Matrix.createProjection(fov*3.1415927f/180f, aspectRatio, near, far);
-		Matrix model = getAbsoluteTransform(true).inverse();
+		Matrix model = Matrix.compose(worldPosition, worldRotation, worldScale).inverse();
 		(model*projection).getFrustum(frustum);
 		
-		model = getAbsoluteTransform(true).toAxis().toMatrix().inverse(); // shed all but the rotation values
+		model = worldRotation.toMatrix().inverse(); // shed all but the rotation values
 		(model*projection).getFrustum(skyboxFrustum);
 	}
 }

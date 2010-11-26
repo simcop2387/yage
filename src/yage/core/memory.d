@@ -3,7 +3,6 @@ module yage.core.memory;
 import tango.core.Thread;
 import yage.core.array;
 import yage.core.misc;
-import yage.system.log;
 
 /**
  * This class allows allocating and freeing memory from a stack in a last-in/first-out manner,

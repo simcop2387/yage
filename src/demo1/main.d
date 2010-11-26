@@ -63,7 +63,7 @@ class DemoScene : Scene
 		
 		// Music
 		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
-		music.setLooping(true);
+		music.looping = true;
 		//music.play();
 
 		// Lights
@@ -80,7 +80,7 @@ class DemoScene : Scene
 		// Planet
 		planet = scene.addChild(new ModelNode("space/planet.dae"));
 		planet.setSize(Vec3f(200));
-		planet.setAngularVelocity(Vec3f(0, -0.005, 0));
+		// planet.setAngularVelocity(Vec3f(0, -0.005, 0));
 		
 		// Atmosphere
 		/*
@@ -107,7 +107,7 @@ class DemoScene : Scene
 		
 
 		// Asteroids
-		asteroidBelt(4000, 5000, planet);
+		asteroidBelt(4000, 5000, scene);
 	}
 	
 	override void update(float delta)
@@ -116,9 +116,14 @@ class DemoScene : Scene
 	}
 }
 
+Thread mainThread; // temporary for testing
+bool initialized = false;
+
 // Current program entry point.  This may change in the future.
 int main()
 {		
+	mainThread = Thread.getThis();
+	
 	// Init and create window
 	System.init(); 
 	auto window = Window.getInstance();
@@ -180,8 +185,8 @@ int main()
 	
 	// Make a draggable window to show some useful info.
 	auto info = new Surface(view);
-	info.style.set("top: 5px; right: 12px; width: 115px; height: 110px; color: white; " ~
-		"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 12px");
+	info.style.set("top: 5px; right: 12px; width: 115px; height: 115px; color: white; " ~
+		"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 11px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
 	bool dragging;
@@ -210,6 +215,7 @@ int main()
 	Log.info("Starting rendering loop.");
 	GC.collect();
 	GC.disable();
+	initialized = true;
 	
 	// Rendering loop
 	float dtime=0, ltime=0;
@@ -232,11 +238,12 @@ int main()
 			window.setCaption(format("Yage Demo | %.2f fps\0", framerate));
 			info.setHtml(format(
 				`%.2f <b>fps</span><br/>`
+				`%.1f%% <b>physics cpu</span><br/>`
 				`%d <b>objects</b><br/>`
 				`%d <b>polygons</b><br/>`
 				`%d <b>vertices</b><br/>`
 				`%d <b>lights</b><br/><br/> wasd to move<br/> +q for hyperdrive<br/>space to shoot`,
-					framerate, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ 
+					framerate, scene.updateTime*60*100, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ 
 					Profile.getTimesAndClear());
 			frame.seek(0);
 			fps = 0;

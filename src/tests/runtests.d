@@ -157,7 +157,6 @@ version(Tango)
 	import tango.io.FileSystem;
 	import tango.io.Stdout;
 	import tango.sys.Environment;
-	import tango.text.convert.Format;
 	import tango.text.Regex;
 	import tango.text.Util;
 	import tango.text.Ascii;
