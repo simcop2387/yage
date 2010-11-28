@@ -212,7 +212,8 @@ abstract class Input
 						Window.getInstance().resizeWindow(event.resize.w, event.resize.h);
 					break;
 				case SDL_QUIT:
-					System.abort("Yage aborted by window close");
+					if (Window.getInstance().onExit)
+						Window.getInstance().onExit();
 					break;
 				default:
 					break;

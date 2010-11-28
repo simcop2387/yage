@@ -110,7 +110,16 @@ class YageException : Exception
 	this(...)
 	{	// TODO: Log.warn?
 		super(swritef(_arguments, _argptr));
-	}	
+	}
+	
+	///
+	static char[] getStackTrace(Exception e)
+	{	char[] result;
+		e.writeOut(delegate void(char[] a) {
+			result ~= a;
+		});
+		return result;
+	}
 }
 
 ///

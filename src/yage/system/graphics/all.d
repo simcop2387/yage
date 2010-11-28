@@ -9,7 +9,8 @@
 module yage.system.graphics.all;
 
 public
-{	
+{	import yage.system.graphics.api;
+	import yage.system.graphics.opengl;
 	import yage.system.graphics.probe;
 	import yage.system.graphics.render;
 }

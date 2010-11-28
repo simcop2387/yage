@@ -35,10 +35,10 @@ class SoundNode : Node, ITemporal
 	/**
 	 * Create a SoundNode and optionally set the sound from an already loaded sound or a sound filename. */
 	this()
-	{	super();
+	{	super(); // default constructor required for clone.
 		timer = new Timer(false);
 	}
-	this(Node parent)
+	this(Node parent) /// ditto
 	{	super(parent);
 		timer = new Timer(false);
 	}

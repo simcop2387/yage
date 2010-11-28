@@ -12,6 +12,7 @@ import yage.core.misc;
 
 
 /// TODO: This fails for base classes!
+/// TODO: Replace this with Orange!
 struct Json
 {
 	///

@@ -35,17 +35,20 @@ class ModelNode : VisibleNode
 	/**
 	 * Create a ModelNode and optionally set the model from an already loaded model or a model filename. */
 	this()
-	{	super();
+	{	super();  // default constructor required for clone.
 	}
-	this(Geometry geometry) /// ditto
-	{	this();
+	this(Node parent) /// ditto
+	{	super(parent);
+	}
+	this(Geometry geometry, Node parent=null) /// ditto
+	{	this(parent);
 		if (cast(Model)geometry)
 			setModel(cast(Model)geometry);
 		else
 			setModel(new Model(geometry));
 	}	
-	this(char[] filename) /// ditto
-	{	this();
+	this(char[] filename, Node parent=null) /// ditto
+	{	this(parent);
 		setModel(filename);
 	}
 	

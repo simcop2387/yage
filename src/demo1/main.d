@@ -22,8 +22,6 @@ import demo1.gameobj;
 import yage.system.graphics.all;
 import yage.resource.material;
 
-import yage.system.graphics.api.api : GraphicsException;
-
 class DemoScene : Scene
 {
 	Scene skybox;
@@ -73,8 +71,7 @@ class DemoScene : Scene
 		light.setPosition(Vec3f(0, 0, -600000));
 
 		// Star
-		star = light.addChild(new SpriteNode());
-		star.setMaterial("space/star.dae", "star-material");
+		star = light.addChild(new SpriteNode("space/star.dae", "star-material"));
 		star.setSize(Vec3f(100000));
 
 		// Planet
@@ -116,19 +113,22 @@ class DemoScene : Scene
 	}
 }
 
-Thread mainThread; // temporary for testing
 bool initialized = false;
+bool running = true;
 
 // Current program entry point.  This may change in the future.
 int main()
 {		
-	mainThread = Thread.getThis();
 	
 	// Init and create window
 	System.init(); 
 	auto window = Window.getInstance();
 	window.setResolution(720, 445, 0, false, 0); // golden ratio
-	//window.setResolution(1920, 1080, 0, true, 4);
+	//window.setResolution(1920, 1080, 0, true, 4);	
+	window.onExit = delegate void() {
+		Log.info("Yage aborted by window close.");
+		running = false;
+	};
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
@@ -142,7 +142,9 @@ int main()
 	// Events for main surface.
 	view.onKeyDown = curry(delegate void (int key, int modifier, DemoScene* scene){
 		if (key == SDLK_ESCAPE)
-			System.abort("Yage aborted by esc key press.");
+		{	running = false;
+			Log.info("Yage aborted by esc key press.");
+		}
 		
 		// Trigger the garbage collector
 		if(key == SDLK_c) {
@@ -219,7 +221,7 @@ int main()
 	
 	// Rendering loop
 	float dtime=0, ltime=0;
-	while(!System.isAborted())
+	while(running && !System.getThreadExceptions())
 	{
 		ltime = dtime;
 		dtime = delta.tell();

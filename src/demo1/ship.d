@@ -111,24 +111,26 @@ class Ship : GameObject
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
 
 			// Engine smoke
-			SpriteNode puff = getScene().addChild(new SpriteNode());
+			GameObject puff = getScene().addChild(new GameObject());
+			SpriteNode puffSprite = puff.addChild(new SpriteNode());
 			Material smoke = ResourceManager.material("fx/smoke.dae", "smoke-material");
-			puff.setMaterial(smoke.dup());
-			puff.setLifetime(5);
-			puff.setSize(Vec3f(.4));
+			puffSprite.material = smoke.dup();
+			puff.lifetime = 5;
+			puff.setScale(Vec3f(.3));
 			puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getWorldTransform()));
 			puff.setPosition(ship.getWorldPosition()+Vec3f(.8, 0, 2.5).rotate(ship.getWorldTransform()));
 			
-			void fade(SpriteNode node, float delta)
+			void fade(GameObject node, float delta)
 			{	node.update(delta);
-				node.getMaterial().getPass().diffuse.a = cast(ubyte)(node.getLifetime() * 51);
-				float scale = tango.math.Math.sqrt(20.0f)-tango.math.Math.sqrt(node.getLifetime()*4) + .4;
-				node.setSize(scale);
-				node.setVelocity(node.getVelocity().scale(max(1-1/30f, 0.0f)));
+				auto sprite = (cast(SpriteNode)(node.getChildren[0]));
+				sprite.material.getPass().diffuse.a = cast(ubyte)(node.lifetime * 51);
+				node.setScale(Vec3f(5-node.lifetime + .3));
+				node.setVelocity(node.getVelocity().scale(1-1/30f));
 			}
 			puff.onUpdate = curry(&fade, puff, delta);
-
-			puff = ship.getScene().addChild(puff.clone());
+		
+			puff = cast(GameObject)puff.clone();
+			getScene().addChild(puff);
 			puff.setPosition(ship.getWorldPosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getWorldTransform()));
 			puff.onUpdate = curry(&fade, puff, delta);
 			

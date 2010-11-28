@@ -28,8 +28,8 @@ import yage.scene.visible;
 import yage.system.window;
 import yage.system.system;
 import yage.system.graphics.probe;
-import yage.system.graphics.api.api;
-import yage.system.graphics.api.opengl;
+import yage.system.graphics.api;
+import yage.system.graphics.opengl;
 import yage.system.log;
 
 private struct AlphaTriangle
@@ -128,7 +128,7 @@ struct Render
 	 *     fog = 
 	 *     uniforms = Uniform variables to pass to the shader when binding.
 	 * Returns: */
-	static Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, inout ArrayBuilder!(ShaderUniform) uniforms)
+	static Shader generateShader(MaterialPass pass, LightNode[] lights, bool fog, ref ArrayBuilder!(ShaderUniform) uniforms)
 	{	
 		//if (lights.length  >2)
 		//	lights.length = 2;
@@ -206,6 +206,7 @@ struct Render
 		// Set uniform values
 		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
 		{	
+			// Static makes .dup only occur once.
 			static char[] lightPosition = "lights[_].position\0".dup;
 			static char[] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
 			static char[] lightSpotDirection = "lights[_].spotDirection\0".dup;

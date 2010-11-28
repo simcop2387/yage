@@ -158,7 +158,7 @@ class CameraNode : Node
 	
 	package void updateSoundCommands()
 	{	
-		assert(Thread.getThis() == scene.getUpdateThread().getThread());
+		assert(Thread.getThis() == scene.getUpdateThread());
 		assert(getListener() is this);
 	
 		SoundList* list = soundLists.getNextWrite();
@@ -203,7 +203,7 @@ class CameraNode : Node
 	 * This is typically one Scene and its Skybox. */
 	package void updateRenderCommands()
 	{
-		assert(Thread.getThis() == scene.getUpdateThread().getThread());
+		assert(Thread.getThis() == scene.getUpdateThread());
 		
 		currentXres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
 		currentYres = Window.getInstance().getHeight();
@@ -247,6 +247,8 @@ class CameraNode : Node
 		// Iterate through skyboxes, clearing out the RenderList commands and refilling them
 		Scene currentScene = scene;
 		int i=0;
+		list.cameraInverse = getWorldTransform().inverse(); // must occur before the loop below
+		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
 		do {
 			// Ensure we have a command set for this scene
 			if (list.scenes.length <= i)
@@ -255,36 +257,41 @@ class CameraNode : Node
 				list.scenes[i].commands.reserveAndClear(); // reset content
 			RenderScene* rs = &list.scenes[i];
 			rs.scene = currentScene;
-			
-			// Add lights that affect what this camera can see.
+
+			// Add lights that affect what this camera can see.			
+			int j;
 			scope allLights = currentScene.getAllLights();
 			rs.lights.length = allLights.length;
-			foreach (j, ref light; rs.lights.data) // Make a deep copy of the scene's lights 
-			{	light = allLights[j].clone(false, light); // to prevent locking when the render thread uses them.
-				light.setPosition(allLights[j].getWorldPosition());
-				light.cameraSpacePosition = allLights[j].getWorldPosition().transform(list.cameraInverse); 
+			foreach (ref light; allLights) // Make a deep copy of the scene's lights 
+			{	rs.lights.data[j] = light.clone(false, rs.lights.data[j]); // to prevent locking when the render thread uses them.
+				rs.lights.data[j].setPosition(light.getWorldPosition());
+				rs.lights.data[j].cameraSpacePosition = light.getWorldPosition().transform(list.cameraInverse); 
 				if (light.type == LightNode.Type.SPOT)
-					light.setRotation(allLights[j].getWorldRotation());
-				light.worldPosition = light.position;
-				light.worldDirty = false; // hack to prevent it from being recalculated.
+					rs.lights.data[j].setRotation(light.getWorldRotation());
+				rs.lights.data[j].worldPosition = rs.lights.data[j].position;
+				rs.lights.data[j].worldDirty = false; // hack to prevent it from being recalculated.
+				j++;
 			}
 			
 			writeCommands(currentScene, frustum, rs.lights.data, list.scenes[i].commands);
 			i++;
 		} while ((currentScene = currentScene.skyBox) !is null); // iterate through skyboxes
-		list.cameraInverse = getWorldTransform().inverse();
-		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
-		
 	}
 
 	/**
 	 * Construct */
 	this()
-	{	super();
-		renderLists.mutex = new Object();
+	{	renderLists.mutex = new Object();
 		soundLists.mutex = new Object();
 		if (!listener)
 			listener = this;
+	}
+	this(Node parent)
+	{	this();
+		if (parent)
+		{	mixin(Sync!("scene"));
+			parent.addChild(this);
+		}
 	}
 
 	/**

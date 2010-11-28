@@ -22,7 +22,8 @@ import yage.system.log;
  * It is useful for special effects such as dust and flares. */
 class SpriteNode : VisibleNode
 {
-	protected Material material;
+	Material material; /// The material rendered on the sprite.
+	
 	static Geometry spriteQuad;
 	
 	static this()
@@ -32,15 +33,18 @@ class SpriteNode : VisibleNode
 	/**
 	 * Create a SpriteNode and optinally set the material from an already loaded material or a material filename. */
 	this()
-	{	super();
+	{	super();  // default constructor required for clone.
 	}
-	this(Material material) /// ditto
-	{	this();
-		setMaterial(material);
+	this(Node parent) /// ditto
+	{	super(parent);
+	}
+	this(Material material, Node parent=null) /// ditto
+	{	this(parent);
+		this.material = material;
 	}	
-	this(char[] filename, char[] id) /// ditto
-	{	this();
-		setMaterial(filename, id);
+	this(char[] filename, char[] id, Node parent=null) /// ditto
+	{	this(parent);
+		material = ResourceManager.material(filename, id);
 	}
 	
 	/**
@@ -48,9 +52,11 @@ class SpriteNode : VisibleNode
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	/*override*/ SpriteNode clone(bool children=false, SpriteNode destination=null)
-	{	auto result = cast(SpriteNode)super.clone(children, destination);
+	override Node clone(bool children=true, Node destination=null)
+	{	assert (!destination || cast(SpriteNode)destination);
+		auto result = cast(SpriteNode)super.clone(children, destination);
 		result.material = material;
+		//Log.write("sprite clone");
 		return result;
 	}
 
@@ -79,26 +85,10 @@ class SpriteNode : VisibleNode
 			result.append(rc);
 		}
 	}
-	
-	/// Return the Material assigned to the SpriteNode.
-	Material getMaterial()
-	{	return material;
-	}
 
 	/// Return the distance to the furthest point of the SpriteNode, including size but not scale.
 	float getRadius()
 	{	return 1.414213562*size.max()*getScale().max();
 	}
 
-	/// Set the Material of the SpriteNode.
-	void setMaterial(Material material)
-	{	this.material=material;
-	}
-
-	/** Set the Material of the SpriteNode, using the ResourceManager Manager
-	 *  to ensure that no Material is loaded twice.
-	 *  Equivalent of setMaterial(ResourceManager.material(filename)); */
-	void setMaterial(char[] filename, char[] id)
-	{	setMaterial(ResourceManager.material(filename, id));
-	}
 }

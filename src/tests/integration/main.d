@@ -493,7 +493,9 @@ class UI : Surface
 		onKeyDown = (int key, int modifier) 
 		{	App.scene.keyState(key, true);
 			if (key == SDLK_ESCAPE)
-				System.abort("Yage aborted by esc key press.");
+			{	running = false;
+				Log.info("Yage aborted by esc key press.");
+			}
 		};
 		onKeyUp = (int key, int modifier) 
 		{	App.scene.keyState(key, false);
@@ -516,6 +518,7 @@ class App
 	}	
 }
 
+bool running = true;
 
 // Entry point
 void main()
@@ -524,10 +527,14 @@ void main()
 	System.init(); 
 	App.window = Window.getInstance();
 	App.window.setResolution(720, 445, 0, false, 1); // golden ratio
+	App.window.onExit = delegate void() {
+		Log.info("Yage aborted by window close.");
+		running = false;
+	};
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 	
 	TestScene[] scenes = [cast(TestScene)new Transparency(), new SoundsAndPicking(), new LightsAndFog(), new LotsOfObjects];
-	App.setScene(scenes[1]);
+	App.setScene(scenes[0]);
 	
 	// User interface
 	App.ui = new UI(scenes);
@@ -535,7 +542,7 @@ void main()
 	// Rendering loop
 	int fps = 0;
 	Timer frame = new Timer(true);
-	while(!System.isAborted())
+	while(running && !System.getThreadExceptions())
 	{
 		Input.processAndSendTo(App.ui);
 		auto stats = Render.scene(App.scene.getCamera().camera, App.window);

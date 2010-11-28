@@ -4,7 +4,7 @@
  * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 
-module yage.system.graphics.api.api;
+module yage.system.graphics.api;
 
 import yage.core.array;
 import yage.core.format;
@@ -16,7 +16,7 @@ import yage.resource.material;
 import yage.resource.shader;
 import yage.scene.scene;
 import yage.scene.light;
-import yage.system.graphics.api.opengl;
+import yage.system.graphics.opengl;
 
 /**
  * Base class of all Graphics API wrappers

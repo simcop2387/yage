@@ -46,7 +46,9 @@ const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
  */
 class Window : IRenderTarget
 {
-	enum Buffer
+	void delegate() onExit;
+	
+	enum Buffer // ?
 	{	COLOR,
 		DEPTH,
 		STENCIL

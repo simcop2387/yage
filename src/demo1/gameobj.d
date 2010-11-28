@@ -16,13 +16,37 @@ import yage.resource.model;
 import yage.scene.all;
 
 
-abstract class GameObject : VisibleNode
-{
+class GameObject : VisibleNode
+{	float lifetime = float.infinity;
 	float mass=0;
 
 	this()
 	{	super();		
 	}
+	
+	override void update(float delta)
+	{	super.update(delta);
+		lifetime-= delta;
+		if (lifetime <= 0)
+		{	if (parent)
+				parent.removeChild(this);
+			lifetime = float.infinity;
+		}
+	}
+	
+	/**
+	 * Make a duplicate of this node, unattached to any parent Node.
+	 * Params:
+	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 * Returns: The cloned Node. */
+	override Node clone(bool children=true, Node destination=null)
+	{	assert (!destination || cast(GameObject)destination);
+		auto result = cast(GameObject)super.clone(children, destination);
+		result.lifetime = lifetime;
+		//Log.write("sprite clone");
+		return result;
+	}
+
 }
 
 
@@ -56,10 +80,9 @@ class Flare : GameObject
 
 	this ()
 	{	super();
-		this.setLifetime(5);
+		lifetime = 5;
 
-		auto flare = addChild(new SpriteNode());
-		flare.setMaterial("fx/flare1.dae", "flare-material");
+		auto flare = addChild(new SpriteNode("fx/flare1.dae", "flare-material"));
 		flare.setSize(Vec3f(2));
 
 		if (timer is null)

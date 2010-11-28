@@ -28,13 +28,21 @@ abstract class VisibleNode : Node
 	protected ArrayBuilder!(LightNode) lights;	// Lights that affect this VisibleNode
 	Material[] materialOverrides;	/// Use thes materials instead of the model's meshes' or sprite's materials.
 
+	this()
+	{
+	}
+	this (Node parent)
+	{	super(parent);
+	}
+	
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	/*override*/ VisibleNode clone(bool children=false, VisibleNode destination=null) // override should work, it's covariant!
-	{	auto result = cast(VisibleNode)super.clone(children, destination);
+	override Node clone(bool children=true, Node destination=null) // override should work, it's covariant!
+	{	assert (!destination || cast(VisibleNode)destination);
+		auto result = cast(VisibleNode)super.clone(children, destination);
 		result.visible = visible;
 		result.size = size;
 		result.materialOverrides = materialOverrides;

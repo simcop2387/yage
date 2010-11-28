@@ -117,10 +117,21 @@ abstract class System
 		return false;
 	}
 	
+	static Exception getThreadExceptions()
+	{
+		foreach (scene; Scene.getAllScenes())
+			if (scene.getUpdateThread().error)
+				return scene.getUpdateThread().error;
+		if (SoundContext.sound_thread.error)
+			return SoundContext.sound_thread.error;	
+		
+		return null;
+	}
+	
 	/**
 	 * Set the abort flag signalling that the application is ready for exit.
 	 * This may be called manually or automatically on an error.
-	 * abortException provides a good exception callback for any asynchronous code that may throw an exception. */
+	 * abortException provides a good exception callback for any asynchronous code that may throw an exception. 
 	static void abort(char[] message)
 	{	if (message.length)
 			Log.info(message);
@@ -137,7 +148,7 @@ abstract class System
 	/// Has the abort flag been set?
 	static bool isAborted()
 	{	return aborted;
-	}
+	}*/
 
 	
 	struct Credit

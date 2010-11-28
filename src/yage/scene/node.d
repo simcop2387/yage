@@ -41,7 +41,7 @@ import yage.system.log;
  *                                   // to 0, 0, 0, instead of a.
  * --------
  */
-class Node : Tree!(Node), IDisposable, ICloneable
+class Node : Tree!(Node), IDisposable
 {
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
 
@@ -60,13 +60,12 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	
 	package bool worldDirty;
 		
-	package   Scene scene;			// The Scene that this node belongs to.
-	protected float lifetime = float.infinity;	// in seconds.  TODO: Deprecate this to make things more light-weight
+	package Scene scene;			// The Scene that this node belongs to.
 	
 	/**
 	 * Construct and optionally add as a child of another Node. */
 	this()
-	{
+	{	// default constructor required for clone.
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
@@ -108,28 +107,26 @@ class Node : Tree!(Node), IDisposable, ICloneable
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	override Node clone()
-	{	return clone(false);		
-	}
-	Node clone(bool children, Node destination=null) /// ditto
+	Node clone(bool children=true, Node destination=null) /// ditto
 	{	mixin(Sync!("scene"));
 		
 		if (!destination)
 			destination = cast(Node)this.classinfo.create(); // why does new typeof(this) fail?
 		assert(destination);
 		
-		destination.lifetime = lifetime;
 		destination.position = position;
 		destination.rotation = rotation;
 		destination.scale = scale;
 		destination.velocity = velocity;
-		destination.angularVelocity = angularVelocity;
-				
+		destination.angularVelocity = angularVelocity;				
 		destination.onUpdate = onUpdate;
 		
 		if (children)
 			foreach (c; this.children)
-				destination.addChild(c.clone());
+			{	auto copy = cast(Node)c.classinfo.create();
+				destination.addChild(c.clone(true, copy));
+			}
+		destination.setWorldDirty();
 		
 		return destination;
 	}	
@@ -297,31 +294,12 @@ class Node : Tree!(Node), IDisposable, ICloneable
 		if (dirty)
 			setWorldDirty();
 		
-		lifetime-= delta;
-		if (lifetime <= 0)
-		{	if (parent)
-				parent.removeChild(this);
-			lifetime = float.infinity;
-		}
-		
 		foreach (node; children)
 		{	if (node.onUpdate)
 				node.onUpdate();
 			else
 				node.update(delta);
 		}
-	}
-
-	/**
-	 * Get / set the lifeime of a Node (in seconds).
-	 * The default lifetime is float.infinity.  A lower number will cause the Node to be removed
-	 * from the scene graph after that amount of time.  
-	 * It's lifetime is decreased every time update() is called (usually by the Node's scene).*/	
-	float getLifetime() 
-	{	return lifetime; 
-	}
-	void setLifetime(float seconds)  /// ditto
-	{	lifetime = seconds; 
 	}
 	
 	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a scene-less node tree.

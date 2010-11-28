@@ -4,7 +4,7 @@
  * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 
-module yage.system.graphics.api.opengl;
+module yage.system.graphics.opengl;
 
 import tango.stdc.time : time;
 import tango.core.Traits;
@@ -33,9 +33,9 @@ import yage.scene.camera: CameraNode;
 import yage.scene.visible;
 import yage.system.window;
 import yage.system.system;
-import yage.system.graphics.render;
+import yage.system.graphics.api;
 import yage.system.graphics.probe;
-import yage.system.graphics.api.api;
+import yage.system.graphics.render;
 import yage.system.log;
 
 import yage.resource.manager; // temporary for generateShader

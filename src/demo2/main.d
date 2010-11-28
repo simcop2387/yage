@@ -18,6 +18,7 @@ import derelict.opengl.gl;
 import derelict.opengl.glext;
 
 bool dragging;
+bool running = true;
 
 // program entry point.
 int main()
@@ -27,6 +28,10 @@ int main()
 	auto window = Window.getInstance();
 	window.setCaption("Yage Demo 2");
 	window.setResolution(720, 445, 0, false, 1); // golden ratio
+	window.onExit = delegate void() {
+		Log.info("Yage aborted by window close.");
+		running = false;
+	};
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 
 	// Create and start a Scene
@@ -48,9 +53,11 @@ int main()
 	auto view = new Surface("width: 100%; height: 100%");
 	
 	// Events for main surface.
-	view.onKeyDown = (int key, int modifier){
+	view.onKeyDown = delegate void (int key, int modifier){
 		if (key == SDLK_ESCAPE)
-			System.abort("Yage aborted by esc key press.");
+		{	running = false;
+			Log.info("Yage aborted by esc key press.");
+		}
 	};
 	
 	// Lights
@@ -64,22 +71,22 @@ int main()
 		"font-family: url('Vera.ttf'); text-align: center; opacity: .8; overflow: hidden");
 	
 	bool dragging;
-	info.onMouseDown = curry((Input.MouseButton button, Vec2f coordinates, Surface self) {
+	info.onMouseDown = curry(delegate void (Input.MouseButton button, Vec2f coordinates, Surface self) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = true;
 	}, info);
-	info.onMouseMove = curry((Vec2f amount, Surface self) {		
+	info.onMouseMove = curry(delegate void (Vec2f amount, Surface self) {		
 		if (dragging)
 			self.move(amount, true);
 	}, info);
-	info.onMouseUp = curry((Input.MouseButton button, Vec2f coordinates, Surface self) {
+	info.onMouseUp = curry(delegate void (Input.MouseButton button, Vec2f coordinates, Surface self) {
 		if (button == Input.MouseButton.LEFT)
 			dragging = false;
 	}, info);
-	info.onMouseOver = curry((Surface self) {
+	info.onMouseOver = curry(delegate void (Surface self) {
 		self.style.set("border-image: url('gui/skin/panel2.png')");
 	}, info);
-	info.onMouseOut = curry((Surface next, Surface self) {
+	info.onMouseOut = curry(delegate void (Surface next, Surface self) {
 		self.style.set("border-image: url('gui/skin/panel1.png')");
 	}, info);
 	info.editable = view.editable = true;
@@ -100,7 +107,7 @@ int main()
 	int fps = 0;
 	Timer total = new Timer(true);
 	Timer frame = new Timer(true);
-	while(!System.isAborted())
+	while(running && !System.getThreadExceptions())
 	{	
 		Input.processAndSendTo(view);
 		auto stats = Render.scene(camera, window);

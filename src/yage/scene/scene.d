@@ -45,8 +45,7 @@ class Scene : Node//, ITemporal, IDisposable
 	Color ambient;				/// The color of the scene's global ambient light; defaults to black.
 	Color backgroundColor;		/// Background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
 	Color fogColor;				/// Color of global scene fog, when fog is enabled.
-	float fogDensity = 0.1;		/// The thickness (density) of the Scene's global fog, when fog is enabled.
-										/// Depending on the scale of your scene, decent values range between .001 and .1.
+	float fogDensity = 0.1;		/// The thickness (density) of the Scene's global fog, when fog is enabled.  Depending on the scale of your scene, decent values range between .001 and .1.
 	bool  fogEnabled = false;	/// Get / set whether global distance fog is enabled for this scene.
 								/// For best results, use no skybox and set the clear color the same as the fog color.
 								/// For improved performance, set the cameras' max view distance to just beyond
@@ -81,16 +80,18 @@ class Scene : Node//, ITemporal, IDisposable
 		backgroundColor = Color("black");	// OpenGL default clear color
 		fogColor = Color("gray");
 		
-		updateThread = new Repeater();
-		updateThread.setFrequency(frequency);
-		updateThread.setFunction(&update);
-		updateThread.setErrorFunction(&defaultErrorFunction);
+		updateThread = new Repeater(&internalUpdate);
+		updateThread.frequency = frequency;
 	
 		camerasMutex = new Mutex();
 		lightsMutex = new Mutex();
 		soundsMutex = new Object();
 		
 		all_scenes[this] = this;
+	}
+	
+	private void internalUpdate() // release build fails to get frame pointer if this is nested.
+	{	update(1f/updateThread.frequency);
 	}
 	
 	/**
@@ -147,27 +148,6 @@ class Scene : Node//, ITemporal, IDisposable
 			sounds = null;
 			all_scenes.remove(this);
 		}
-	}
-
-	/**
-	 * Get / a function to call if the sound or update thread's update function throws an exception.
-	 * If this is set to null (the default), then the exception will just be thrown. 
-	 * Params:
-	 *     on_error = Defaults to System.abortException.  If null, any errors from the Scene's 
-	 *     sound or update threads will cause the threads to terminate silently. */
-	void setErrorFunction(void delegate(Exception e) on_error)
-	{	updateThread.setErrorFunction(on_error);
-	}
-	void setErrorFunction(void function(Exception e) on_error) /// ditto
-	{	updateThread.setErrorFunction(on_error);
-	}
-	void defaultErrorFunction(Exception e) /// ditto
-	{	char[] msg;
-		e.writeOut(delegate void(char[] a) {
-			msg ~= a;
-		});
-		Log.error("The scene thread threw an uncaught exception:\n%s", msg);
-		System.abort("Yage is aborting due to scene exception.");
 	}
 
 	/**
@@ -261,11 +241,10 @@ class Scene : Node//, ITemporal, IDisposable
 	}
 	
 	/**
-	 * Get all LightNodes that are currently a part of this scene.
-	 * Returns:  A copy of the Lights array to avoid synchronization issues. */
-	LightNode[] getAllLights()
+	 * Get all LightNodes that are currently a part of this scene. */
+	LightNode[LightNode] getAllLights()
 	{	mixin(Sync!("lightsMutex"));
-		return lights.values;
+		return lights;
 	}
 	
 	/*

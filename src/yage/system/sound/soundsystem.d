@@ -331,27 +331,15 @@ class SoundContext
 		for (int i=0; i<max_sources; i++)
 		{	try {
 				auto source = new SoundSource(); // trigger any exceptions before array length increases.
-				sources ~= source;
+				sources ~= source;				 // It would still work the same, but it's easier to see visually this way.
 			} catch (OpenALException e)
 			{	break;				
 			}
 		}
 		
 		// Start a thread to perform sound updates.
-		sound_thread = new Repeater();
-		sound_thread.setFrequency(UPDATE_FREQUENCY);
-		sound_thread.setFunction(&updateSounds);	
-		sound_thread.setErrorFunction(&defaultErrorFunction); // doesn't work!
-		sound_thread.play();
-	}
-	
-	void defaultErrorFunction(Exception e) /// ditto
-	{	char[] msg;
-		e.writeOut(delegate void(char[] a) {
-			msg ~= a;
-		});
-		Log.error("The sound thread threw an uncaught exception:\n%s", msg);
-		System.abort("Yage is aborting due to sound system exception.");
+		sound_thread = new Repeater(&updateSounds, true);
+		sound_thread.frequency = UPDATE_FREQUENCY;
 	}
 
 	/**
@@ -383,7 +371,7 @@ class SoundContext
 	
 	/*
 	 * Called by the sound thread to update all active source's sound buffers. */
-	/*protected*/ static void updateSounds(float unused)
+	/*protected*/ static void updateSounds()
 	{	
 		auto listener = CameraNode.getListener();
 		if (listener)

@@ -61,7 +61,7 @@ class LightNode : Node
 	public Vec3f cameraSpacePosition; // Used internally to store the position in camera-space.
 
 	this()
-	{	// Currently required for clone()
+	{	// default constructor required for clone.
 	}	
 	this(Node parent) /// ditto
 	{	super(parent);
