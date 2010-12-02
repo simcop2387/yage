@@ -125,7 +125,7 @@ private class SoundSource : IDisposable
 			{	if (command.reseek)			
 					seek(seconds);
 				else if (enqueue) // update soundNode's playback timer to the real playback location.
-				{	Log.write("reseek!");
+				{	//Log.write("reseek!");
 					command.soundNode.seek(_tell); // Warning-- this should be behind a lock!
 				}
 			}

@@ -7,6 +7,7 @@
 module yage.scene.camera;
 
 import tango.math.Math;
+import tango.core.Thread;
 import tango.core.WeakRef;
 import yage.core.array;
 import yage.core.color;
@@ -406,7 +407,7 @@ class CameraNode : Node
 		
 		// Create the clipping matrix from the modelview and projection matrices
 		Matrix projection = Matrix.createProjection(fov*3.1415927f/180f, aspectRatio, near, far);
-		Matrix model = Matrix.compose(worldPosition, worldRotation, worldScale).inverse();
+		Matrix model = Matrix.compose(worldPosition.newVec, worldRotation.newVec, worldScale.newVec).inverse();
 		(model*projection).getFrustum(frustum);
 		
 		model = worldRotation.toMatrix().inverse(); // shed all but the rotation values

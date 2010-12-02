@@ -125,7 +125,7 @@ class LightNode : Node
 		Vec3f light_direction = point - Vec3f(getWorldTransform().v[12..15]);
 		// distance squared to light
 		float d2 = light_direction.x*light_direction.x + light_direction.y*light_direction.y + light_direction.z*light_direction.z;
-		float intensity = 1/(quadAttenuation*d2);	// quadratic attenuation.
+		float intensity = d2!=0 ? 1/(quadAttenuation*d2) : 1;	// quadratic attenuation.
 
 		bool add_ambient = true;	// Only if this node is in the spotlight
 		if (type==Type.SPOT)
@@ -155,11 +155,12 @@ class LightNode : Node
 		}	}
 
 		// color will store the RGB color values of the intensity.
+		assert(intensity != float.infinity);
 		float scale = (1f/255f) * intensity;
 		Vec3f color = Vec3f(diffuse.r*scale, diffuse.g*scale, diffuse.b*scale);
 		if (add_ambient)
-			color.add(ambient.vec3f);	// diffuse scaled by intensity plus ambient.
-
+			color += ambient.vec3f;	// diffuse scaled by intensity plus ambient.
+		
 		/*
 		if (color.x>=1) color.x=1;
 		if (color.y>=1) color.y=1;

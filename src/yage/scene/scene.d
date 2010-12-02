@@ -211,7 +211,7 @@ class Scene : Node//, ITemporal, IDisposable
 		// Update all nodes recursively
 		super.update(delta); 
 		
-		//Log.write(a.tell());
+		//Log.write("move ", a.tell());
 		
 		Timer b = new Timer(true);
 		

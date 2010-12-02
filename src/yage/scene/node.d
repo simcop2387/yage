@@ -47,14 +47,14 @@ class Node : Tree!(Node), IDisposable
 
 	package Vec3f position;
 	package Vec3f rotation;
-	package Vec3f scale = Vec3f(1);
+	package Vec3f scale = Vec3f.ONE;
 	
 	package Vec3f velocity;
 	package Vec3f angularVelocity;
 	
 	package Vec3f worldPosition;
 	package Vec3f worldRotation;
-	package Vec3f worldScale = Vec3f(1);
+	package Vec3f worldScale = Vec3f.ONE;
 	
 	package Vec3f worldVelocity;
 	
@@ -240,14 +240,14 @@ class Node : Tree!(Node), IDisposable
 	
 	///
 	Matrix getTransform()
-	{	return Matrix.compose(position, rotation, scale);
+	{	return Matrix.compose(position.newVec, rotation.newVec, scale.newVec);
 	}
 	
 	///
 	Matrix getWorldTransform()
 	{	mixin(Sync!("scene"));
 		calcWorld();
-		return Matrix.compose(worldPosition, worldRotation, worldScale);
+		return Matrix.compose(worldPosition.newVec, worldRotation.newVec, worldScale.newVec);
 	}
 
 	///
@@ -260,7 +260,7 @@ class Node : Tree!(Node), IDisposable
 	///
 	void rotate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
-		rotation = (rotation.toQuatrn() * axisAngle.toQuatrn()).toAxis();
+		rotation = rotation.combineRotation(axisAngle).oldVec;
 		setWorldDirty();
 	}
 
@@ -273,7 +273,7 @@ class Node : Tree!(Node), IDisposable
 	///
 	void angularAccelerate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
-		angularVelocity = (angularVelocity.toQuatrn() * axisAngle.toQuatrn()).toAxis(); // TODO: Is this clamped to -PI to PI?
+		angularVelocity = angularVelocity.combineRotation(axisAngle).oldVec;; // TODO: Is this clamped to -PI to PI?
 	}
 
 	///
@@ -281,14 +281,14 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 	
 		bool dirty = false;
-		if (velocity.length2() != 0)
+		if (velocity != Vec3f.ZERO)
 		{	position += velocity*delta;
 			dirty = true;
 		}
 	
 		// Rotate if angular velocity is not zero.
-		if (angularVelocity.length2() !=0)
-		{	rotation = (rotation.toQuatrn() * (angularVelocity*delta).toQuatrn()).toAxis();
+		if (angularVelocity != Vec3f.ZERO)
+		{	rotation = rotation.combineRotation(angularVelocity*delta);
 			dirty = true;
 		}
 		if (dirty)
@@ -307,11 +307,6 @@ class Node : Tree!(Node), IDisposable
 	{	return scene;
 	}
 	
-	/// Always returns false for Nodes but can be true for subtypes.
-	bool getVisible()
-	{	return false;		
-	}
-	
 	/*
 	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
 	 * This should be called whenever a Node has its transformation matrix changed.
@@ -322,7 +317,6 @@ class Node : Tree!(Node), IDisposable
 			foreach(c; children)
 				c.setWorldDirty();
 	}	}
-	import tango.core.Thread;
 
 	protected void calcWorld()
 	{	
@@ -331,7 +325,13 @@ class Node : Tree!(Node), IDisposable
 			if (parent && parent !is scene)
 			{	parent.calcWorld(); // TODO: optimize this!
 				Matrix matrix = parent.getWorldTransform().transformAffine(getTransform());	
-				matrix.decompose(worldPosition, worldRotation, worldScale);
+				//matrix.decompose(worldPosition, worldRotation, worldScale);
+				
+				Vec!(3, float) wp, wr, ws;
+				matrix.decompose(wp, wr, ws);
+				worldPosition = wp.oldVec;
+				worldRotation = wr.oldVec;
+				worldScale = ws.oldVec;
 				
 				worldVelocity = velocity + parent.worldVelocity; // TODO: This doesn't even take rotation into account!
 			} else

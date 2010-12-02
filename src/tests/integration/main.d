@@ -248,8 +248,9 @@ class LightsAndFog : TestScene
 		auto beast = new ModelNode("character/beast.dae");
 		scene.addChild(beast);
 		beast.setScale(Vec3f(.3));
-		beast.setPosition(Vec3f(0, -40, -20));
-		//beast.setAngularVelocity(Vec3f(0, .5, 0));
+		beast.setPosition(Vec3f(0, -20, -20));
+		beast.rotate(Vec3f(1.507, 0, 0));
+		beast.setAngularVelocity(Vec3f(0, .5, 0));
 		beast.getModel().drawJoints = true;
 		
 		/*
@@ -412,8 +413,7 @@ class UI : Surface
 	}
 	
 	/**
-	 * A dialog for showing
-	 */
+	 * A dialog for showing */
 	class Panel : Surface
 	{
 		Surface stats, scene, controls;
@@ -534,7 +534,7 @@ void main()
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 	
 	TestScene[] scenes = [cast(TestScene)new Transparency(), new SoundsAndPicking(), new LightsAndFog(), new LotsOfObjects];
-	App.setScene(scenes[0]);
+	App.setScene(scenes[2]);
 	
 	// User interface
 	App.ui = new UI(scenes);

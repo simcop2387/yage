@@ -7,10 +7,13 @@
 module yage.core.math.quatrn;
 
 import tango.math.Math;
+import tango.math.IEEE;
 import tango.text.convert.Format;
 import yage.core.math.vector;
 import yage.core.math.matrix;
 import yage.core.misc;
+
+import yage.system.log;
 
 /**
  * A quaternion class.
@@ -30,7 +33,7 @@ struct Quatrn
 
 	invariant()
 	{	foreach (float t; v)
-			assert(t != float.nan);
+			assert(!isNaN(t));
 	}
 
 	unittest
@@ -48,19 +51,19 @@ struct Quatrn
 
 		// Quaternions used in testing
 		Quatrn[] q;
-		q~= Vec3f(0, 0, 0).toQuatrn();
-		q~= Vec3f(1, 0, 0).toQuatrn();
-		q~= Vec3f(0, 1, 0).toQuatrn();
-		q~= Vec3f(0, 0, 1).toQuatrn();
-		q~= Vec3f(.5, 0.0001, 2).toQuatrn();
-		q~= Vec3f(.5, 1, -2).toQuatrn();
-		q~= Vec3f(.5, -1, -2).toQuatrn();
-		q~= Vec3f(-.75, -1, -1.7).toQuatrn();
-		q~= Vec3f(-.65, -1, 2).toQuatrn();
-		q~= Vec3f(-.55, 0.005, 1).toQuatrn();
-		q~= Vec3f(-.371, .1, -1.570796).toQuatrn();
-		q~= Vec3f(1.971, -2, 1.2).toQuatrn();
-		q~= Vec3f(0.0001, 0.0001, 0.0001).toQuatrn();
+		q~= Vec!(3, float)(0, 0, 0).toQuatrn();
+		q~= Vec!(3, float)(1, 0, 0).toQuatrn();
+		q~= Vec!(3, float)(0, 1, 0).toQuatrn();
+		q~= Vec!(3, float)(0, 0, 1).toQuatrn();
+		q~= Vec!(3, float)(.5, 0.0001, 2).toQuatrn();
+		q~= Vec!(3, float)(.5, 1, -2).toQuatrn();
+		q~= Vec!(3, float)(.5, -1, -2).toQuatrn();
+		q~= Vec!(3, float)(-.75, -1, -1.7).toQuatrn();
+		q~= Vec!(3, float)(-.65, -1, 2).toQuatrn();
+		q~= Vec!(3, float)(-.55, 0.005, 1).toQuatrn();
+		q~= Vec!(3, float)(-.371, .1, -1.570796).toQuatrn();
+		q~= Vec!(3, float)(1.971, -2, 1.2).toQuatrn();
+		q~= Vec!(3, float)(0.0001, 0.0001, 0.0001).toQuatrn();
 
 		foreach (Quatrn c; q)
 		{
@@ -68,27 +71,14 @@ struct Quatrn
 
 			test("Inverse", c.inverse().inverse(), c);
 			test("Conjugate", c.conjugate().conjugate(), c);
-			test("Normalize", c.normalize(), Quatrn(c.x/l, c.y/l, c.z/l, c.w/l), c);
-			test("Multiply 1", c*c.inverse(), Quatrn());
-			test("Multiply 2", c*Quatrn(), c);
-
-			// These fail on all dmd after 0.177
-			//test("toMatrix", c.toMatrix().toQuatrn(), c);
-			//test("toAxis", c.toAxis().toQuatrn(), c);
+			if (l!=0)
+			{	test("Normalize", c.normalize(), Quatrn(c.x/l, c.y/l, c.z/l, c.w/l), c);
+				test("Multiply 1", c*c.inverse(), Quatrn());
+				test("Multiply 2", c*Quatrn(), c);
+			}
 
 			foreach (Quatrn d; q)
-			{	// These fail on all dmd after 0.177
-				//test("Rotate Quatrn", c.rotate(d).rotate(d.inverse()), c, d);
-				//test("Rotate Axis", c.rotate(d.toAxis()).rotate(d.inverse().toAxis()), c, d);
-				//test("Rotate Matrix", c.rotate(d.toMatrix()).rotate(d.inverse().toMatrix()), c, d);
-				//test("Rotate Absolute Quatrn", c.rotateAbsolute(d).rotateAbsolute(d.inverse()), c, d);
-				//test("Rotate Absolute Axis", c.rotateAbsolute(d.toAxis()).rotateAbsolute(d.inverse().toAxis()), c, d);
-				//test("Rotate Absolute Matrix", c.rotateAbsolute(d.toMatrix()).rotateAbsolute(d.inverse().toMatrix()), c, d);
 				test("Slerp", c.slerp(d, .25), d.slerp(c, .75), c, d);
-
-				// Fails (perhaps this shoudln't work anyway?)
-				//test("Rotate Euler", c.rotateEuler(d.toAxis()).rotateEuler(d.inverse().toAxis()), c, d);
-			}
 		}
 	}
 
@@ -112,19 +102,15 @@ struct Quatrn
 	{	return Quatrn(s[0], s[1], s[2], s[3]);
 	}
 
-	/// Create a Quaternion from a rotation axis Vec3f.
-	static Quatrn opCall(Vec3f axis)
-	{	return axis.toQuatrn();
-	}
-
 	/// Create a Quaternion from a rotation Matrix.
 	static Quatrn opCall(Matrix m)
 	{	return m.toQuatrn();
 	}
 
-	/** Multiply this quaternion by another and return the result.
-	 *  The result is the sum of both quaternion rotations.
-	 *  Note that quaternion multiplication is not cumulative.*/
+	/** 
+	 * Multiply this quaternion by another and return the result.
+	 * The result is the sum of both quaternion rotations.
+	 * Note that quaternion multiplication is not cumulative. */
 	Quatrn opMul(Quatrn b)
 	{	Quatrn res;
 		res.w = w*b.w - x*b.x - y*b.y - z*b.z;
@@ -163,6 +149,8 @@ struct Quatrn
 	 * This is the equivalent of the Quaternion's rotation in reverse. */
 	Quatrn inverse()
 	{	float l = length();
+		if (l==0)
+			return *this;
 		return Quatrn(-x/l, -y/l, -z/l, w/l);
 	}
 
@@ -191,7 +179,7 @@ struct Quatrn
 	{	return (*this)*q;
 	}
 
-	Quatrn rotate(Vec3f axis)
+	Quatrn rotate(Vec!(3, float) axis)
 	{	return (*this)*axis.toQuatrn();
 	}
 
@@ -199,35 +187,9 @@ struct Quatrn
 	{	return (*this)*rot.toQuatrn();
 	}
 
-	/**
-	 * Return a new Quaternion that is the sum of the current rotation and the
-	 * new rotation of the parameter, rotating in absolute worldspace coordinates. */
-	Quatrn rotateAbsolute(Quatrn q)
-	{	return q*(*this);
-	}
 
-	Quatrn rotateAbsolute(Vec3f axis)
-	{	return axis.toQuatrn()*(*this);
-	}
 
-	Quatrn rotateAbsolute(Matrix rot)
-	{	return rot.toQuatrn()*(*this);
-	}
 
-	/**
-	 * Return a new Quaternion that is the sum of the current rotation and the
-	 * new rotation of the Vec3f of euler angles, rotating first by x, then y, then z. */
-	Quatrn rotateEuler(Vec3f euler)
-	{	return *this * euler.toQuatrnEuler();
-	}
-
-	/**
-	 * Return a new Quaternion that is the sum of the current rotation and the
-	 * new rotation of the Vec3f of euler angles, rotating first by x, then y,
-	 * then z, rotating around the absolute worldspace axis */
-	Quatrn rotateEulerAbsolute(Vec3f euler)
-	{	return euler.toQuatrnEuler()*(*this);
-	}
 
 	/**
 	 * Return a rotation that is interpolated between this Quaternion and
@@ -277,20 +239,21 @@ struct Quatrn
 	}
 
 	/// Create a Vec3f rotation axis from this Quaternion
-	Vec3f toAxis()
-	{	auto angle = acos(w)*2;
+	Vec!(3, float) toAxis()
+	{	double angle = acos(w)*2;
+		assert(!isNaN(angle));
 		if (angle != 0)
 		{	auto sin_a = sqrt(1 - w*w);
 			if (abs(sin_a) < 0.0005)	// arbitrary small number
 				sin_a = 1;
-			Vec3f axis;
+			Vec!(3, float) axis;
 			auto inv_sin_a = 1/sin_a;
 			axis.x = x*inv_sin_a;
 			axis.y = y*inv_sin_a;
-			axis.z = z*inv_sin_a;		
+			axis.z = z*inv_sin_a;
 			return axis.length(angle);
 		}
-		return Vec3f();	// zero vector, no rotation
+		return Vec!(3, float).ZERO;	// zero vector, no rotation
 	}
 
 	/// Create a rotation Matrix from this quaternion.

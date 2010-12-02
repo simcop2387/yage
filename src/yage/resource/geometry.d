@@ -128,20 +128,23 @@ class Geometry
 				float s2 = w3.x - w1.x;
 				float t1 = w2.y - w1.y;
 				float t2 = w3.y - w1.y;
-						
-				float r = 1f / (s1 * t2 - s2 * t1);
-				Vec3f sdir = Vec3f(
-					(t2 * x1 - t1 * x2) * r, 
-					(t2 * y1 - t1 * y2) * r,
-					(t2 * z1 - t1 * z2) * r);
-				Vec3f tdir = Vec3f(
-					(s1 * x2 - s2 * x1) * r, 
-					(s1 * y2 - s2 * y1) * r,
-					(s1 * z2 - s2 * z1) * r);
 				
-				tan1[tri.x] += sdir;
-				tan1[tri.y] += sdir;
-				tan1[tri.z] += sdir;
+				float denom = (s1 * t2 - s2 * t1);
+				if (denom != 0)
+				{	float r = 1f / denom;
+					Vec3f sdir = Vec3f(
+						(t2 * x1 - t1 * x2) * r, 
+						(t2 * y1 - t1 * y2) * r,
+						(t2 * z1 - t1 * z2) * r);
+					Vec3f tdir = Vec3f(
+						(s1 * x2 - s2 * x1) * r, 
+						(s1 * y2 - s2 * y1) * r,
+						(s1 * z2 - s2 * z1) * r);
+					
+					tan1[tri.x] += sdir;
+					tan1[tri.y] += sdir;
+					tan1[tri.z] += sdir;
+				}
 				
 				//tan2[tri.x] += tdir;
 				//tan2[tri.y] += tdir;

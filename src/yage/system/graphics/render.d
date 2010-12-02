@@ -573,7 +573,7 @@ struct Render
 			if (i==0) // base scene
 				glMultMatrixf(renderList.cameraInverse.v.ptr);
 			else // only rotate by the camera's matrix if in a skybox.
-			{	Vec3f axis = renderList.cameraInverse.toAxis();
+			{	Vec3f axis = renderList.cameraInverse.toAxis().oldVec;
 				glRotatef(axis.length()*57.295779513, axis.x, axis.y, axis.z);
 			}
 			

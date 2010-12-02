@@ -235,13 +235,11 @@
    </Folder>
    <Folder name="system">
     <Folder name="graphics">
-     <Folder name="api">
-      <File path="..\..\src\yage\system\graphics\api\api.d" />
-      <File path="..\..\src\yage\system\graphics\api\opengl.d" />
-     </Folder>
      <File path="..\..\src\yage\system\graphics\all.d" />
      <File path="..\..\src\yage\system\graphics\probe.d" />
      <File path="..\..\src\yage\system\graphics\render.d" />
+     <File path="..\..\src\yage\system\graphics\api.d" />
+     <File path="..\..\src\yage\system\graphics\opengl.d" />
     </Folder>
     <Folder name="sound">
      <File path="..\..\src\yage\system\sound\all.d" />

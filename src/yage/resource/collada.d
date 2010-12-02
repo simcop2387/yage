@@ -768,7 +768,7 @@ class Collada
 				if (values.length!=4)
 					throw new XmlException("Expected four values for rotation.");
 				if (values[3] != 0) // if some rotation
-					result = result.rotate(Vec3f(values[3]*tango.math.Math.PI/180, values[0], values[1], values[2])); // load from axis-angle							
+					result = result.rotate(Vec3f(values[3]*tango.math.Math.PI/180, Vec3f(values))); // load from axis-angle							
 			} 
 			else if (transform.name=="scale")						
 				result = result.scale(Vec3f(Xml.parseNumberList!(float)(transform.value)));

@@ -7,11 +7,15 @@
 module yage.core.math.vector;
 
 import tango.math.Math;
+import tango.math.IEEE;
 import yage.core.format;
 //import yage.core.math.line;
 import yage.core.math.matrix;
 import yage.core.math.math;
 import yage.core.math.quatrn;
+import yage.core.array : amax;
+
+import yage.system.log;
 
 /**
  * This is a template to create a vector of any type with any number of elements.
@@ -23,14 +27,18 @@ import yage.core.math.quatrn;
  * --------------------------------
  * TODO: Convert looping code to static if's to improve performance.
  */
-struct Vec(int S, T : real, int D=0)
+struct Vec(int S, T : real)
 {
 	alias Vec!(S, T) VST;
-	static const byte components = S;
+	static const byte components = S; ///
+	
+	static const VST ZERO; ///
+	static if (S==3) // temporary, later we will support all sizes
+		static const VST ONE = {v: [1, 1, 1]}; ///
 
 	/// Allow acessiong the vector as an array of values through field v, or via .x, .y, .z, etc. up to the number of components.
 	union
-	{	T v[S] = D; ///
+	{	T v[S] = 0; ///
 	
 		struct ///
 		{	union {T x; T r; } ///
@@ -46,7 +54,14 @@ struct Vec(int S, T : real, int D=0)
 		static if (S==4) ///
 			struct {T top; T right; T bottom; T left; } ////
 	}
-
+	
+	invariant()
+	{	foreach (float t; v)
+		{	assert(!isNaN(t)); // sometimes this fails!
+			assert(t!=float.infinity); // sometimes this fails!
+		}
+	}
+	
 	/// Create a zero vector
 	static VST opCall()
 	{	VST res;
@@ -70,10 +85,18 @@ struct Vec(int S, T : real, int D=0)
 
 	/// Create a new vector with the values of s; If s is less than the size of the vector, remaining values are set to 0.
 	static VST opCall(T[] s)
-	{	VST res;
-		for (int i=0; i<s.length && i<v.length; i++)
-			res.v[i] = s[i];
+	{	assert(s.length >= S);
+		VST res;
+		res.v[] = s[0..S];
 		return res;
+	}
+
+	/// Is this vector equal to vector s, discarding relative error fudge.
+	bool almostEqual(VST s, float fudge=0.0001)
+	{	for (int i=0; i<v.length; i++)
+			if (!yage.core.math.math.almostEqual(v[i], s.v[i], fudge))
+				return false;
+		return true;
 	}
 
 	/// The angle between this vector and s, in radians.
@@ -101,6 +124,19 @@ struct Vec(int S, T : real, int D=0)
 		return result;		
 	}
 
+	// TODO: make this work for all vector sizes
+	static if (S==3)
+	{
+		/// Return the distance from this vector to another, interpreting each as 3D coordinates.
+		float distance(VST s)
+		{	return sqrt(distance2(s));
+		}
+	
+		/// Return the square of the distance from this Vec3f to another, interpreting each as 3D coordinates.
+		float distance2(VST s)
+		{	return (x-s.x)*(x-s.x) + (y-s.y)*(y-s.y) + (z-s.z)*(z-s.z);
+		}
+	}
 
 	/// Return the _dot product of this vector and s.
 	float dot(VST s)
@@ -129,7 +165,7 @@ struct Vec(int S, T : real, int D=0)
 	 * See_Also: http://www.visibone.com/inpoly */
 	bool inside(VST[] polygon)
 	{
-		Vec!(S, T) pold, p1, p2;
+		VST pold, p1, p2;
 		bool inside;
 		
 		if (polygon.length < 3)
@@ -174,121 +210,102 @@ struct Vec(int S, T : real, int D=0)
 			sum += c*c;
 		return sum;
 	}
+	
+	/// Return a copy of this vector scaled to length l.
+	VST length(float l)
+	{	if (l==0 || *this==VST.ZERO) // otherwise, setting the length of a zero vector to zero fails.
+			return VST.ZERO;
+		return scale(l/length());
+	}
 
-
-	/// Allow for linear additions, subtractions, multiplcations, and divisions among Vectors of the same size and type.
-	VST opAdd(VST s)
-	{	VST res;
-		for (int i=0; i<v.length; i++)
-			res.v[i] = v[i]+s.v[i];
-		return res;
-	}
-	/// ditto
-	void opAddAssign(VST s)
-	{	for (int i=0; i<v.length; i++)
-			v[i] += s.v[i];
-	}	
-	/// ditto
-	VST opSub(VST s)
-	{	VST res;
-		for (int i=0; i<v.length; i++)
-			res.v[i] = v[i]-s.v[i];
-		return res;
-	}
-	/// ditto
-	void opSubAssign(VST s)
-	{	for (int i=0; i<v.length; i++)
-			v[i] -= s.v[i];
-	}
-	/// ditto
-	VST opMul(VST s)
-	{	VST res;
-		for (int i=0; i<v.length; i++)
-			res.v[i] = v[i]*s.v[i];
-		return res;
-	}
-	/// ditto
-	void opMulAssign(VST s)
-	{	for (int i=0; i<v.length; i++)
-			v[i] *= s.v[i];
-	}	
-	/// ditto
-	VST opDiv(VST s)
-	{	VST res;
-		for (int i=0; i<v.length; i++)
-			res.v[i] = v[i]/s.v[i];
-		return res;
-	}
-	/// ditto
-	void opDivAssign(VST s)
-	{	for (int i=0; i<v.length; i++)
-			v[i] /= s.v[i];
+	/// Return the maximum value of the vector components
+	float max()
+	{	static if (S==3)
+		{	if (x>=y && x>=z) return x;
+			if (y>=z) return y;
+			return z;
+		} else
+			return amax(v);
 	}
 	
-	/// Allow for additions, subtractions, multiplcations, and divisions where a scalar is applied to each vector component.
-	void opMulAssign(float s)
-	{	for (int i=0; i<v.length; i++)
-			v[i] += s;
-	}
-	/// ditto
-	void opDivAssign(float s)
-	{	for (int i=0; i<v.length; i++)
-			v[i] /= s;
+	/// Return a normalized copy of this vector.
+	VST normalize()
+	{	if (*this==ZERO)
+			return ZERO;
+		
+		float l = length();
+		if (l==1)
+			return *this;
+		return scale(1/l);
 	}
 	
-	/* Postponed until D array operations are stable.
-	/// Allow for linear additions, subtractions, multiplcations, and divisions among Vectors of the same size and type.
-	VecST opAdd(T s)
-	{	return Vec!(S, T)(v[] + s);	
+	/**
+	 * Allow for additions, subtractions, multiplcations, and divisions where a scalar or another vector's value is applied to each component. */
+	VST opAdd(T s)
+	{	VST res = void;
+		res.v[] = v[] + s;
+		return res;
 	}
-	VecST opAdd(T s) /// ditto
-	{	return Vec!(S, T)(v[] + s);	
+	VST opAdd(VST s) /// ditto
+	{	VST res = void;
+		res.v[] = v[] + s.v[];
+		return res;
 	}
 	void opAddAssign(float s) /// ditto
 	{	v[] += cast(T)s;
 	}
-	void opAddAssign(VecST s) /// ditto
+	void opAddAssign(VST s) /// ditto
 	{	v[] += s.v[];
 	}
-	VecST opSub(T s) /// ditto
-	{	return Vec!(S, T)(v[] - s);	
+	VST opSub(T s) /// ditto
+	{	VST res = void;
+		res.v[] = v[] - s;
+		return res;
 	}
-	VecST opSub(VecST s) /// ditto
-	{	return Vec!(S, T)(v[] - s.v[]);
+	VST opSub(VST s) /// ditto
+	{	VST res = void;
+		res.v[] = v[] - s.v[];
+		return res;
 	}
 	void opSubAssign(float s) /// ditto
 	{	v[] -= cast(T)s;
 	}
-	void opSubAssign(VecST s) /// ditto
+	void opSubAssign(VST s) /// ditto
 	{	v[] -= s.v[];
+	}	
+	VST opMul(T s) /// ditto
+	{	VST res = void;
+		res.v[] = v[] * s;
+		return res;
 	}
-	
-	/// Allow for additions, subtractions, multiplcations, and divisions where a scalar is applied to each vector component.
-	VecST opMul(T s)
-	{	return Vec!(S, T)(v[] * s);	
-	}
-	VecST opMul(VecST s) /// ditto
-	{	return Vec!(S, T)(v[] * s.v[]);	
+	VST opMul(VST s) /// ditto
+	{	VST res = void;
+		res.v[] = v[] * s.v[];
+		return res;
 	}
 	void opMulAssign(float s) /// ditto
 	{	v[] *= cast(T)s;
 	}
-	void opMulAssign(VecST s) /// ditto
+	void opMulAssign(VST s) /// ditto
 	{	v[] *= s.v[];
 	}
-	VecST opDiv(T s) /// ditto
-	{	return Vec!(S, T)(v[] / s);	
+	VST opDiv(T s) /// ditto
+	{	VST res = void;
+		res.v[] = v[] / s;
+		return res;
 	}
-	VecST opDiv(VecST s) /// ditto
-	{	return Vec!(S, T)(v[] / s.v[]);	
+	VST opDiv(VST s) /// ditto
+	{	VST res = void;
+		res.v[] = v[] / s.v[];
+		return res;
 	}
 	void opDivAssign(float s) /// ditto
 	{	v[] /= cast(T)s;
 	}
-	void opDivAssign(VecST s) /// ditto
+	void opDivAssign(VST s) /// ditto
 	{	v[] /= s.v[];
 	}
-	*/
+	
 	
 	/// Get the element at i
 	float opIndex(size_t i)
@@ -312,10 +329,13 @@ struct Vec(int S, T : real, int D=0)
 	
 	/// Scale (multiply) this vector.
 	VST scale(float s)
-	{	VST res = *this;
-		for (int i=0; i<v.length; i++)
-			res.v[i] *= s;
-		return res;
+	{	static if (is(T==float))
+		{	assert(s!=float.infinity);
+			assert(!isNaN(s));
+		}
+		VST result;
+		result.v[] = v[]*cast(T)s; // TODO: wrong for ints!
+		return result;
 	}
 	/// ditto
 	VST scale(VST s)
@@ -391,21 +411,198 @@ struct Vec(int S, T : real, int D=0)
 	alias toVec!(2, int) vec2i; /// ditto
 	alias toVec!(3, int) vec3i; /// ditto
 	alias toVec!(4, int) vec4i; /// ditto
+	
+	import tango.core.Traits;
+	
+	// Special operations for 3-component vectors
+	static if (S==3)
+	{
+		VST newVec()
+		{	return *this;
+		}
+		VST oldVec()
+		{	return VST(x, y, z);
+		}
+		
+		/// Return the cross product of this vector with another vector.
+		VST cross(VST s)
+		{	return VST(y*s.z-z*s.y, z*s.x-x*s.z, x*s.y-y*s.x);
+		}
+
+		static if (is( T == float ))
+		{
+			///
+			static VST opCall(float angle, VST axis)
+			{	VST res=void;
+				res.v[] = axis.v[];
+				return res.length(angle);
+			}
+			
+			/**
+			 * Treat this Vector as an axis-angle and combine the rotation of another axis-angle. */
+			VST combineRotation(VST axis)
+			{	
+				// Shortcut!
+				if (cross(axis).length2() < .01) // If they point in almost the same or opposite directions
+					return *this+axis;
+				
+				Quatrn q1;
+				if (*this!=ZERO) // no rotation for zero-vector
+				{	float angle = length();
+					float hangle = angle * .5;
+					float s = sin(hangle); // / sqrt(angle);
+					q1.w = cos(hangle);
+					q1.v[0..3] = v[0..3] * (s/angle);
+				}
+				
+				Quatrn q2;
+				if (axis!=ZERO) // no rotation for zero-vector
+				{	float angle = axis.length();
+					float hangle = angle * .5;
+					float s = sin(hangle); // / sqrt(angle);
+					q2.w = cos(hangle);
+					q2.v[0..3] = axis.v[0..3] * (s/angle);
+				}
+				
+				Quatrn res;
+				res.w = q2.w*q1.w - q2.x*q1.x - q2.y*q1.y - q2.z*q1.z;
+				res.x = q2.w*q1.x + q2.x*q1.w + q2.y*q1.z - q2.z*q1.y;
+				res.y = q2.w*q1.y - q2.x*q1.z + q2.y*q1.w + q2.z*q1.x;
+				res.z = q2.w*q1.z + q2.x*q1.y - q2.y*q1.x + q2.z*q1.w;
+				
+				VST result;
+				auto angle = acos(res.w)*2;
+				if (angle != 0)
+				{	auto sin_a = sqrt(1 - res.w*res.w);
+					if (.abs(sin_a) < 0.0005)	// arbitrary small number
+						sin_a = 1;
+					auto inv_sin_a = 1/sin_a;
+					result.x = res.x*inv_sin_a;
+					result.y = res.y*inv_sin_a;
+					result.z = res.z*inv_sin_a;		
+					result = result.length(angle);
+				}
+				return result;
+			}			
+
+			///
+			VST lookAt(VST direction, VST up)
+			{	
+				auto z = direction.normalize();
+				auto x = up.cross(z).normalize();
+				auto y = z.cross(x);
+				
+				Matrix result;		
+				result.v[0..3] = x.v[0..3];
+				result.v[4..7] = y.v[0..3];
+				result.v[8..11] = z.v[0..3];
+				
+				/// TODO: This is very inefficient and possibly incorrect
+				return result/*.transformAffine(toMatrix())*/.toAxis();		
+			}
+			
+			/**
+			 * Return a copy of this vector rotated by axis. */
+			VST rotate(VST axis)
+			{	return rotate(axis.toMatrix());
+				/+// TODO Inline simplifcation and optimization
+				float phi = axis.length();
+				if (phi==0) // no rotation for zero-vector
+					return *this;
+				Vec3f n = axis.scale(1/phi);
+				float rcos = cos(phi);
+				float rsin = sin(phi);
+				// float ircos = 1-rcos; // TODO: Use this alsy
+				
+				Vec3f res=void;
+				res.x = x*(rcos + n.x*n.x*(1-rcos))    +    \ y*(-n.z * rsin + n.x*n.y*(1-rcos)) + z*(n.y * rsin + n.x*n.z*(1-rcos));
+				
+				/+ // TODO reduction from 17 to 13 ops (is this correct?) :
+				x*rcos + x*n.x*n.x*(1-rcos)            +    y*-n.z * y*rsin + n.x*n.y*(1-rcos) + z*n.y*rsin + z*n.x*n.z*(1-rcos);
+				x*rcos + y*-n.z*y*rsin + z*n.y*rsin    +    x*n.x*n.x*(1-rcos) + n.x*n.y*(1-rcos) + z*n.x*n.z*(1-rcos);		
+				x*rcos + y*-n.z*y*rsin + z*n.y*rsin    +    (1-rcos)*(x*n.x*n.x + n.x*n.y + z*n.x*n.z);
+				x*rcos + y*-n.z*y*rsin + z*n.y*rsin    +    (1-rcos)*n.x*(x*n.x + n.y + z*n.z);
+				x*rcos + y*y*-n.z*rsin + y*z*n.rsin    +    (1-rcos)*n.x*(x*n.x + n.y + z*n.z);
+				x*rcos + y*(y*-n.z*rsin + z*n.rsin)    +    (1-rcos)*n.x*(x*n.x + n.y + z*n.z);
+				res.x = x*rcos + y*rsin*(y*-n.z + z)   +    (1-rcos)*n.x*(x*n.x + n.y + z*n.z);
+				+/
+				res.y = x*(n.z * rsin + n.y*n.x*(1-rcos))  + y*(rcos + n.y*n.y*(1-rcos))        + z*(-n.x * rsin + n.y*n.z*(1-rcos));
+				res.z = x*(-n.y * rsin + n.z*n.x*(1-rcos)) + y*(n.x * rsin + n.z*n.y*(1-rcos))  + z*(rcos + n.z*n.z*(1-rcos));
+				return res;
+				+/
+			}
+
+			/**
+			 * Return a copy of this Vec3f rotated by the Quatrn q.
+			 * Note that this is curently slower than rotate(Matrix m).*/
+			VST rotate(Quatrn q)
+			{	return rotate(q.toMatrix());
+			}
+
+			/// Return a copy of this vector rotated by the rotation values of Matrix m.
+			VST rotate(Matrix m)
+			{	VST res=void;
+				res.x = x*m.v[0] + y*m.v[4] + z*m.v[8];
+				res.y = x*m.v[1] + y*m.v[5] + z*m.v[9];
+				res.z = x*m.v[2] + y*m.v[6] + z*m.v[10];
+				return res;
+			}
+			
+			/**
+			 * Interpret the values of this vector as a rotation axis and convert to a rotation Matrix.*/
+			Matrix toMatrix()
+			{	Matrix res;
+				float phi = length();
+				if (phi==0) // no rotation for zero-vector
+					return res;
+				VST n = scale(1/phi);
+				float rcos = cos(phi);
+				float ircos = 1-rcos;
+				float rsin = sin(phi);
+				res.v[0] =      rcos + n.x*n.x*ircos;
+				res.v[1] =  n.z * rsin + n.y*n.x*ircos;
+				res.v[2] = -n.y * rsin + n.z*n.x*ircos;
+				res.v[4] = -n.z * rsin + n.x*n.y*ircos;
+				res.v[5] =      rcos + n.y*n.y*ircos;
+				res.v[6] =  n.x * rsin + n.z*n.y*ircos;
+				res.v[8] =  n.y * rsin + n.x*n.z*ircos;
+				res.v[9] = -n.x * rsin + n.y*n.z*ircos;
+				res.v[10] =      rcos + n.z*n.z*ircos;
+				return res;
+			}
+			
+			/**
+			 * Interpret the values of this vector as a rotation axis/angle and convert to a Quatrn.*/
+			Quatrn toQuatrn()
+			{	Quatrn res = void;
+				if (*this!=ZERO) // no rotation for zero-vector
+				{	float angle = length();
+					float hangle = angle * .5;
+					float s = sin(hangle); // / sqrt(angle);
+					res.w = cos(hangle);
+					res.v[0..3] = v[0..3] * (s/angle);
+				}
+				return res;
+			}
+		}
+	}
 }
 
 alias Vec!(2, int) Vec2i;		/// A two-component int Vec
 alias Vec!(3, int) Vec3i;		/// A three-component int Vec
 alias Vec!(4, int) Vec4i;		/// A four-component int Vec
 alias Vec!(2, float) Vec2f;		/// A two-component float Vec
-alias Vec!(3, float) Vec3f2;	
+alias Vec!(3, float) Vec3f;	
 alias Vec!(4, float) Vec4f;		/// A four-component float Vec
 
+/+
 /**
  * A 3D vector class. 
  * This can be merged with the templated version above when D fixed the forward template declaration bugs. */
 struct Vec3f
 {
 	static const byte components = 3;
+	static const Vec3f ZERO = Vec3f(0);
 	static const Vec3f ONE = Vec3f(1);
 	
 	union
@@ -444,7 +641,7 @@ struct Vec3f
 
 		// Tests for each type of vector
 		foreach (Vec3f c; v)
-		{	test("toQuatrn", c.toQuatrn().toAxis(), c);
+		{	test("toQuatrn", c.toQuatrn().toAxis().oldVec, c);
 			// This fails on all dmd after 0.177
 			//test("toMatrix", c.toMatrix().toAxis(), c);
 			test("Length", c.length(c.length()), c);
@@ -457,12 +654,16 @@ struct Vec3f
 				// This fails on all dmd after 0.177
 				//test("Rotate Matrix", c.rotate(d.toMatrix()).rotate(d.toMatrix().inverse()), c, d);
 				test("Rotate Quatrn", c.rotate(d.toQuatrn()).rotate(d.toQuatrn().inverse()), c, d);
-				test("Add & Subtract", (c+d-d).add(d).subtract(d), c, d);
+				test("Add & Subtract", (c+d-d) + (d) - (d), c, d);
 				test("Cross Product", c.cross(d), d.negate().cross(c), c, d);
 				test("Dot Product", c.scale(c.dot(d)), c.scale(c.x*d.x+c.y*d.y+c.z*d.z));
 				test("Distance", c.scale(c.distance(d)), c.scale(sqrt((c.x-d.x)*(c.x-d.x) + (c.y-d.y)*(c.y-d.y) + (c.z-d.z)*(c.z-d.z))));
 			}
 		}
+	}
+	
+	Vec!(3, float) newVec()
+	{	return Vec!(3, float)(x, y, z);
 	}
 
 	/// Create a zero vector
@@ -484,11 +685,9 @@ struct Vec3f
 	}
 
 	/// Create a new axis-angle Vec3f from rotation angle angle and the values x, y, and z
-	static Vec3f opCall(float angle, float x, float y, float z)
+	static Vec3f opCall(float angle, Vec3f axis)
 	{	Vec3f res=void;
-		res.x = x;
-		res.y = y;
-		res.z = z;
+		res.v[] = axis.v[];
 		return res.length(angle);
 	}
 
@@ -507,11 +706,6 @@ struct Vec3f
 	{	return Vec3f(x>0?x:-x, y>0?y:-y, z>0?z:-z);
 	}
 
-	/// Add another vector into this vector
-	Vec3f add(Vec3f s)
-	{	return Vec3f(x+s.x, y+s.y, z+s.z);
-	}
-
 	/// Is this vector equal to vector s, discarding relative error fudge.
 	bool almostEqual(Vec3f s, float fudge=0.0001)
 	{	for (int i=0; i<v.length; i++)
@@ -528,8 +722,9 @@ struct Vec3f
 	{	
 		// TODO: This can be optimized?
 		Vec3f axis = cross(s);
-		float d = dot(s) / (length()*s.length());		
-		float angle = atan2(axis.length(), dot(s));
+		float ds = dot(s);
+		float d = ds / (length()*s.length());		
+		float angle = atan2(axis.length(), ds);
 
 		return axis.length(angle);
 	}
@@ -547,7 +742,7 @@ struct Vec3f
 		result.v[8..11] = z.v[0..3];
 		
 		/// TODO: This is very inefficient and possibly incorrect
-		return result/*.transformAffine(toMatrix())*/.toAxis();		
+		return result/*.transformAffine(toMatrix())*/.toAxis().oldVec;		
 	}
 	
 	/// Return the average of the x, y, and z components.
@@ -630,19 +825,21 @@ struct Vec3f
 
 	/// Return the length of the vector (the magnitude).
 	float length()
-	{	return sqrt(x*x + y*y + z*z);
+	{	return sqrt(length2());
 	}
 
 	/// Return the length of the vector squared.  This is faster than length().
 	float length2()
-	{	return x*x + y*y + z*z;
+	{	Vec3f temp = void;
+		temp.v[] = v[]*v[];
+		return temp.x + temp.y + temp.z;
 	}
 
 	/// Return a copy of this vector scaled to length l.
 	Vec3f length(float l)
-	{	if (l==0) // otherwise, setting the length of a zero vector to zero fails.
-			return Vec3f(0, 0, 0);
-		return scale(l/sqrt(x*x + y*y + z*z));
+	{	if (l==0 || *this==Vec3f.ZERO) // otherwise, setting the length of a zero vector to zero fails.
+			return Vec3f.ZERO;
+		return scale(l/length());
 	}
 
 	/// Return the maximum value of the vector components
@@ -654,25 +851,32 @@ struct Vec3f
 
 	/// Return a vector with every value of this Vec3f negated.
 	Vec3f negate()
-	{	return Vec3f(-x, -y, -z);
+	{	Vec3f result;
+		result.v[] = v[]*-1;
+		return result;
 	}
 
 	/// Return a normalized copy of this vector.
 	Vec3f normalize()
-	{	float l = length();
-		if (l!=0)
-			return scale(1/sqrt(x*x + y*y + z*z));
-		return Vec3f(0, 0, 0);
+	{	if (*this==ZERO)
+			return ZERO;
+		
+		float l = length();
+		if (l==1)
+			return *this;
+		return scale(1/l);
 	}
 
 	/// Return the sum of this vector and another.
 	Vec3f opAdd(Vec3f s)
-	{	return Vec3f(x+s.x, y+s.y, z+s.z);
+	{	Vec3f result = void;
+		result.v[] = v[] + s.v[];
+		return result;
 	}
 
 	/// Add the values of another Vec3f into this one.
-	Vec3f opAddAssign(Vec3f s)
-	{	x+=s.x, y+=s.y, z+=s.z;
+	Vec3f opAddAssign(Vec3f s) /// ditto
+	{	v[] += s.v[];
 		return *this;
 	}
 
@@ -716,12 +920,12 @@ struct Vec3f
 
 	/// Return the difference between this vector and another.
 	Vec3f opSub(Vec3f s)
-	{	return Vec3f(x-s.x, y-s.y, z-s.z);
+	{	Vec3f result = void;
+		result.v[] = v[] - s.v[];
+		return result;
 	}
-
-	/// Subtract the values of another vector from this one.
-	Vec3f opSubAssign(Vec3f s)
-	{	x-=s.x, y-=s.y, z-=s.z;
+	Vec3f opSubAssign(Vec3f s) /// ditto
+	{	v[] -= s.v[];
 		return *this;
 	}
 
@@ -743,8 +947,7 @@ struct Vec3f
 	}
 
 	/**
-	 * Return a copy of this vector rotated by axis, where both are interpreted
-	 * as axis-angle vectors.*/
+	 * Return a copy of this vector rotated by axis. */
 	Vec3f rotate(Vec3f axis)
 	{	return rotate(axis.toMatrix());
 		/+// TODO Inline simplifcation and optimization
@@ -790,55 +993,82 @@ struct Vec3f
 		return res;
 	}
 	
+	/**
+	 * Treat this Vector as an axis-angle and combine the rotation of another axis-angle. */
+	Vec3f combineRotation(Vec3f axis)
+	{	
+		// Shortcut!
+		if (cross(axis).length2() < .01) // If they point in almost the same or opposite directions
+			return *this+axis;
+		
+		Quatrn q1;
+		if (*this!=ZERO) // no rotation for zero-vector
+		{	float angle = length();
+			float hangle = angle * .5;
+			float s = sin(hangle); // / sqrt(angle);
+			q1.w = cos(hangle);
+			q1.v[0..3] = v[0..3] * (s/angle);
+		}
+		
+		Quatrn q2;
+		if (axis!=ZERO) // no rotation for zero-vector
+		{	float angle = axis.length();
+			float hangle = angle * .5;
+			float s = sin(hangle); // / sqrt(angle);
+			q2.w = cos(hangle);
+			q2.v[0..3] = axis.v[0..3] * (s/angle);
+		}
+		
+		Quatrn res;
+		res.w = q2.w*q1.w - q2.x*q1.x - q2.y*q1.y - q2.z*q1.z;
+		res.x = q2.w*q1.x + q2.x*q1.w + q2.y*q1.z - q2.z*q1.y;
+		res.y = q2.w*q1.y - q2.x*q1.z + q2.y*q1.w + q2.z*q1.x;
+		res.z = q2.w*q1.z + q2.x*q1.y - q2.y*q1.x + q2.z*q1.w;
+		
+		Vec3f result;
+		auto angle = acos(res.w)*2;
+		if (angle != 0)
+		{	auto sin_a = sqrt(1 - res.w*res.w);
+			if (.abs(sin_a) < 0.0005)	// arbitrary small number
+				sin_a = 1;
+			auto inv_sin_a = 1/sin_a;
+			result.x = res.x*inv_sin_a;
+			result.y = res.y*inv_sin_a;
+			result.z = res.z*inv_sin_a;		
+			result = result.length(angle);
+		}
+		return result;
+	}
+	
 	/// Return a copy of this vector with each component scaled by s.
 	Vec3f scale(float s)
-	{	if (s == float.infinity)
-			return Vec3f(0, 0, 0);
-		return Vec3f(x*s, y*s, z*s);
+	{	//if (s == float.infinity)
+		//	return Vec3f.ZERO;
+		assert(s!=float.infinity);
+		Vec3f result;
+		result.v[0..3] = v[0..3]*s;
+		return result;
 	}
 
 	/// Return a copy of this vector scaled by the values of another vector.
-	Vec3f scale(Vec3f v)
-	{	return Vec3f(x*v.x, y*v.y, z*v.z);
-	}
-
-	/// Set to a rotation axis from the rotation values of Matrix m.
-	void setAxis(Matrix m)
-	{	*this = m.toAxis();
-	}
-
-	/// Set to a rotation axis from the rotation values of Quatrn q.
-	void setAxis(Quatrn q)
-	{	*this = q.toAxis();
-	}
-
-	/// Return the difference between this vector and another.
-	Vec3f subtract(Vec3f s)
-	{	return Vec3f(x-s.x, y-s.y, z-s.z);
+	Vec3f scale(Vec3f s)
+	{	Vec3f result;
+		result.v[0..3] = v[0..3]*s.v[0..3];
+		return result;
 	}
 
 	/**
 	 * Interpret the values of this vector as a rotation axis/angle and convert to a Quatrn.*/
 	Quatrn toQuatrn()
 	{	Quatrn res;
-		float angle = length();
-		if (angle==0) // no rotation for zero-vector
-			return res;
-		Vec3f axis = normalize();
-		float s = sin(angle * .5); // / sqrt(angle);
-		res.w = cos(angle * .5);
-		res.x = axis.x * s; /// TODO: multiplying by s can be combined with the normalization step
-		res.y = axis.y * s;
-		res.z = axis.z * s;		
+		if (*this!=ZERO) // no rotation for zero-vector
+		{	float angle = length();
+			float hangle = angle * .5;
+			float s = sin(hangle); // / sqrt(angle);
+			res.w = cos(hangle);
+			res.v[0..3] = v[0..3] * (s/angle);
+		}
 		return res;
-	}
-	
-	/// Interpret the values of this vector as Euler angles and convert to a Quatrn.
-	Quatrn toQuatrnEuler()
-	{	return
-		   (Quatrn(sin(x*0.5), 0, 0, cos(x*0.5)) // x
-		  * Quatrn(0, sin(y*0.5), 0, cos(y*0.5))) // y
-		  * Quatrn(0, 0, sin(z*0.5), cos(z*0.5)); // z
 	}
 
 	/**
@@ -897,3 +1127,4 @@ struct Vec3f
 	{	return Vec4f(x, y, z, 0); 		
 	}
 }
++/
