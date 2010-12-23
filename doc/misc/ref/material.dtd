@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT material (layer+)>
-<!ELEMENT layer (textures, shaders?)>
-<!ELEMENT textures (texture+)>
-<!ELEMENT texture (#PCDATA)>
-<!ELEMENT shaders (shader+)>
-<!ELEMENT shader (#PCDATA)>
