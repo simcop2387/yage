@@ -205,13 +205,13 @@ struct Render
 		
 		// Set uniform values
 		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{	
+		{	/* static char[] is a problem on Linux, it causes a segfault */
 			// Static makes .dup only occur once.
-			static char[] lightPosition = "lights[_].position\0".dup;
-			static char[] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
-			static char[] lightSpotDirection = "lights[_].spotDirection\0".dup;
-			static char[] lightSpotCutoff = "lights[_].spotCutoff\0".dup;
-			static char[] lightSpotExponent = "lights[_].spotExponent\0".dup;
+			char[] lightPosition = "lights[_].position\0".dup;
+			char[] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
+			char[] lightSpotDirection = "lights[_].spotDirection\0".dup;
+			char[] lightSpotCutoff = "lights[_].spotCutoff\0".dup;
+			char[] lightSpotExponent = "lights[_].spotExponent\0".dup;
 			
 			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
 			
