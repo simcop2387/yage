@@ -26,7 +26,32 @@ class Memory
 		private TypeInfo[] allocationTypes;
 		private int[] allocationSizes;
 	}
-	private mixin Singleton!(Memory);
+
+	// DMD 1.064 or linux cannot handle the Singleton mixin here for some reason
+	version (linux) {
+		private static uint tls_key=uint.max;
+	
+		/**
+		 * Get an instance unique to the calling thread.
+		 * Each thread can only have one instance. */
+		static Memory getInstance()
+		{	
+			if (tls_key==uint.max)
+				synchronized(Memory.classinfo)
+					tls_key = Thread.createLocal();
+			
+			Memory result = cast(Memory)Thread.getLocal(tls_key);		
+			if (!result)
+			{	result = new Memory();
+				Thread.setLocal(tls_key, cast(void*)result);
+			}
+			return result;
+		}
+	}
+	version (Windows) {
+		private mixin Singleton!(Memory);
+	}
+
 	
 	
 	/**
