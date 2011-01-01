@@ -6,6 +6,7 @@
 
 module yage.core.math.vector;
 
+import tango.core.Tuple;
 import tango.math.Math;
 import tango.math.IEEE;
 import yage.core.format;
@@ -16,6 +17,14 @@ import yage.core.math.quatrn;
 import yage.core.array : amax;
 
 import yage.system.log;
+
+// From http://dsource.org/projects/scrapple/browser/trunk/tools/tools/base.d
+template Repeat(T, int count) {
+	  static if (!count) alias Tuple!() Repeat;
+	  else static if (count == 1) alias Tuple!(T) Repeat;
+	  else static if ((count%2) == 1) alias Tuple!(Repeat!(T, count/2), Repeat!(T, count/2), T) Repeat;
+	  else alias Tuple!(Repeat!(T, count/2), Repeat!(T, count/2)) Repeat;
+}
 
 /**
  * This is a template to create a vector of any type with any number of elements.
@@ -39,7 +48,7 @@ struct Vec(int S, T : real)
 	/// Allow acessiong the vector as an array of values through field v, or via .x, .y, .z, etc. up to the number of components.
 	union
 	{	T v[S] = 0; ///
-	
+		Repeat!(T, S) tuple;
 		struct ///
 		{	union {T x; T r; } ///
 			static if (S>=2) ///
@@ -134,16 +143,23 @@ struct Vec(int S, T : real)
 	
 		/// Return the square of the distance from this Vec3f to another, interpreting each as 3D coordinates.
 		float distance2(VST s)
-		{	return (x-s.x)*(x-s.x) + (y-s.y)*(y-s.y) + (z-s.z)*(z-s.z);
+		{	VST temp = *this - s;
+			temp *= temp;
+			return temp.x + temp.y + temp.z;
 		}
 	}
 
 	/// Return the _dot product of this vector and s.
 	float dot(VST s)
-	{	float res=0;
-		for (int i=0; i<v.length; i++)
-			res += v[i]*s.v[i];
-		return res;
+	{	VST temp = opMul(s);		
+		float result=0;
+		foreach (elem; temp.tuple) // compile time expand 
+			result += elem;
+		return result;
+	}
+	unittest
+	{	assert(Vec3f.ZERO.dot(Vec3f.ZERO) == 0);
+		assert(Vec3f(0, 1, 0).dot(Vec3f(0, -1, 0)) == -1);
 	}
 
 	/// Is this Vector (as a point) inside a box/cube/etc. defined by topLeft and bottomRight
@@ -202,12 +218,19 @@ struct Vec(int S, T : real)
 	float length()
 	{	return sqrt(length2());
 	}
+	unittest
+	{	assert (Vec3f(0, 0, 0).length() == 0);
+		assert (Vec3f(1, 0, 0).length() == 1);
+		assert (Vec3f(-2, 0, 0).length() == 2);
+		assert (Vec3f(-3, 4, 0).length() == 5);
+		assert (Vec3f(-3, 4, 0).length() == Vec3f(0, 4, 3).length());
+	}
 
 	/// Return the length of the vector squared.  This is faster than length().
 	float length2()
 	{	T sum = 0;
 		foreach (T c; v)
-			sum += c*c;
+			sum += c*c; // TODO: optimize!
 		return sum;
 	}
 	
@@ -327,38 +350,18 @@ struct Vec(int S, T : real)
 	{	return v.ptr;		
 	}
 	
-	/// Scale (multiply) this vector.
+	/// Scale (multiply) this vector.  TODO: Replace this with opMul
 	VST scale(float s)
-	{	static if (is(T==float))
-		{	assert(s!=float.infinity);
-			assert(!isNaN(s));
-		}
-		VST result;
+	{	VST result = void;
 		result.v[] = v[]*cast(T)s; // TODO: wrong for ints!
 		return result;
 	}
 	/// ditto
 	VST scale(VST s)
-	{	VST res = *this;
-		for (int i=0; i<v.length; i++)
-			res.v[i] *= s.v[i];
-		return res;
-	}
-
-	/// Set the values of the Vector.
-	void set(T s)
-	{	foreach(inout T e; v)
-			e = s;
-	}
-	/// ditto
-	void set(VST s)
-	{	v[0..S] = s.v[0..S];
-	}
-
-	/// ditto
-	void set(T[S] s ...)
-	{	v[0..S] = s[0..S];
-	}
+	{	VST result = void;
+		result.v[] = v[]*s.v[];
+		return result;
+	}	
 
 	/// Transform this vector by a Matrix.
 	VST transform(Matrix m)
@@ -411,25 +414,16 @@ struct Vec(int S, T : real)
 	alias toVec!(2, int) vec2i; /// ditto
 	alias toVec!(3, int) vec3i; /// ditto
 	alias toVec!(4, int) vec4i; /// ditto
-	
-	import tango.core.Traits;
-	
+		
 	// Special operations for 3-component vectors
 	static if (S==3)
-	{
-		VST newVec()
-		{	return *this;
-		}
-		VST oldVec()
-		{	return VST(x, y, z);
-		}
-		
+	{		
 		/// Return the cross product of this vector with another vector.
 		VST cross(VST s)
 		{	return VST(y*s.z-z*s.y, z*s.x-x*s.z, x*s.y-y*s.x);
 		}
 
-		static if (is( T == float ))
+		static if (is( T == float))
 		{
 			///
 			static VST opCall(float angle, VST axis)
@@ -641,7 +635,7 @@ struct Vec3f
 
 		// Tests for each type of vector
 		foreach (Vec3f c; v)
-		{	test("toQuatrn", c.toQuatrn().toAxis().oldVec, c);
+		{	test("toQuatrn", c.toQuatrn().toAxis(), c);
 			// This fails on all dmd after 0.177
 			//test("toMatrix", c.toMatrix().toAxis(), c);
 			test("Length", c.length(c.length()), c);
@@ -742,7 +736,7 @@ struct Vec3f
 		result.v[8..11] = z.v[0..3];
 		
 		/// TODO: This is very inefficient and possibly incorrect
-		return result/*.transformAffine(toMatrix())*/.toAxis().oldVec;		
+		return result/*.transformAffine(toMatrix())*/.toAxis();		
 	}
 	
 	/// Return the average of the x, y, and z components.

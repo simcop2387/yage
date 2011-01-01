@@ -85,9 +85,9 @@ void addSorted(T,K)(ref ArrayBuilder!(T) array, T value, bool increasing, K dele
 
 
 /// Return the element with the minimum or maximum value from an unsorted array.
-T amax(T)(T[] array, )
+T amax(T)(T[] array)
 {	T m = array[0];
-	foreach (T a; array)
+	foreach (T a; array) // TODO: Start at index 1.
 		if (a>m)
 			m=a;	
 	return m;

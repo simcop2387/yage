@@ -51,19 +51,19 @@ struct Quatrn
 
 		// Quaternions used in testing
 		Quatrn[] q;
-		q~= Vec!(3, float)(0, 0, 0).toQuatrn();
-		q~= Vec!(3, float)(1, 0, 0).toQuatrn();
-		q~= Vec!(3, float)(0, 1, 0).toQuatrn();
-		q~= Vec!(3, float)(0, 0, 1).toQuatrn();
-		q~= Vec!(3, float)(.5, 0.0001, 2).toQuatrn();
-		q~= Vec!(3, float)(.5, 1, -2).toQuatrn();
-		q~= Vec!(3, float)(.5, -1, -2).toQuatrn();
-		q~= Vec!(3, float)(-.75, -1, -1.7).toQuatrn();
-		q~= Vec!(3, float)(-.65, -1, 2).toQuatrn();
-		q~= Vec!(3, float)(-.55, 0.005, 1).toQuatrn();
-		q~= Vec!(3, float)(-.371, .1, -1.570796).toQuatrn();
-		q~= Vec!(3, float)(1.971, -2, 1.2).toQuatrn();
-		q~= Vec!(3, float)(0.0001, 0.0001, 0.0001).toQuatrn();
+		q~= Vec3f(0, 0, 0).toQuatrn();
+		q~= Vec3f(1, 0, 0).toQuatrn();
+		q~= Vec3f(0, 1, 0).toQuatrn();
+		q~= Vec3f(0, 0, 1).toQuatrn();
+		q~= Vec3f(.5, 0.0001, 2).toQuatrn();
+		q~= Vec3f(.5, 1, -2).toQuatrn();
+		q~= Vec3f(.5, -1, -2).toQuatrn();
+		q~= Vec3f(-.75, -1, -1.7).toQuatrn();
+		q~= Vec3f(-.65, -1, 2).toQuatrn();
+		q~= Vec3f(-.55, 0.005, 1).toQuatrn();
+		q~= Vec3f(-.371, .1, -1.570796).toQuatrn();
+		q~= Vec3f(1.971, -2, 1.2).toQuatrn();
+		q~= Vec3f(0.0001, 0.0001, 0.0001).toQuatrn();
 
 		foreach (Quatrn c; q)
 		{
@@ -246,14 +246,14 @@ struct Quatrn
 		{	auto sin_a = sqrt(1 - w*w);
 			if (abs(sin_a) < 0.0005)	// arbitrary small number
 				sin_a = 1;
-			Vec!(3, float) axis;
+			Vec3f axis;
 			auto inv_sin_a = 1/sin_a;
 			axis.x = x*inv_sin_a;
 			axis.y = y*inv_sin_a;
 			axis.z = z*inv_sin_a;
 			return axis.length(angle);
 		}
-		return Vec!(3, float).ZERO;	// zero vector, no rotation
+		return Vec3f.ZERO;	// zero vector, no rotation
 	}
 
 	/// Create a rotation Matrix from this quaternion.

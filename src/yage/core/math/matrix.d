@@ -132,24 +132,24 @@ struct Matrix
 
 	/**
 	 * Convert a Matrix to and from position, axis/angle rotation, and scale vectors.*/
-	static Matrix compose(Vec!(3, float) position, Vec!(3, float) rotation, Vec!(3, float) scale)
+	static Matrix compose(Vec3f position, Vec3f rotation, Vec3f scale)
 	{			
 		Matrix result;
-		result.setPosition(position.oldVec);
-		result.setRotation(rotation.oldVec);
+		result.setPosition(position);
+		result.setRotation(rotation);
 		
 		Matrix mscale;
 		mscale.v[0] = scale.x;
 		mscale.v[5] = scale.y;
 		mscale.v[10]= scale.z;
 		
-		if (scale.almostEqual(Vec!(3, float).ONE))
+		if (scale.almostEqual(Vec3f.ONE))
 			return result;
 		return result.transformAffine(mscale);
 	}
 	
 	
-	void decompose(out Vec!(3, float) position, out Vec!(3, float) rotation, out Vec!(3, float) scale) /// ditto
+	void decompose(out Vec3f position, out Vec3f rotation, out Vec3f scale) /// ditto
 	{		
 		// Extract the translation directly
 		position.x = c3r0;
@@ -157,32 +157,32 @@ struct Matrix
 		position.z = c3r2;
 		
 		// Take the lengths of the basis vectors to find the scale factors.
-		scale.x = (cast(Vec!(3, float)*)v[0..3]).length();
-		scale.y = (cast(Vec!(3, float)*)v[4..7]).length();
-		scale.z = (cast(Vec!(3, float)*)v[8..11]).length();
+		scale.x = (cast(Vec3f*)v[0..3]).length();
+		scale.y = (cast(Vec3f*)v[4..7]).length();
+		scale.z = (cast(Vec3f*)v[8..11]).length();
 		
 		// Undo the scale before getting the rotation.
-		if (scale.almostEqual(Vec!(3, float)(1)))
-			rotation = toAxis().newVec;
+		if (scale.almostEqual(Vec3f(1)))
+			rotation = toAxis();
 		else {
 			Matrix m = *this;		
-			m.v[0..3] = (cast(Vec!(3, float)*)v[0..3]).scale(1/scale.x).v[];
-			m.v[4..7] = (cast(Vec!(3, float)*)v[4..7]).scale(1/scale.y).v[];
-			m.v[8..11] = (cast(Vec!(3, float)*)v[8..11]).scale(1/scale.z).v[];
-			rotation = m.toAxis().newVec;
+			m.v[0..3] = (cast(Vec3f*)v[0..3]).scale(1/scale.x).v[];
+			m.v[4..7] = (cast(Vec3f*)v[4..7]).scale(1/scale.y).v[];
+			m.v[8..11] = (cast(Vec3f*)v[8..11]).scale(1/scale.z).v[];
+			rotation = m.toAxis();
 		}
 	}
 	unittest
-	{	auto p = Vec!(3, float)(1, 2, 3);
-		auto r = Vec!(3, float)(-1, .5, 1);
-		auto s = Vec!(3, float)(4, 4, 4);
-		Matrix m = Matrix.compose(p.newVec, r.newVec, s.newVec);
-		Vec!(3, float) p2, r2, s2;
+	{	auto p = Vec3f(1, 2, 3);
+		auto r = Vec3f(-1, .5, 1);
+		auto s = Vec3f(4, 4, 4);
+		Matrix m = Matrix.compose(p, r, s);
+		Vec3f p2, r2, s2;
 		m.decompose(p2, r2, s2);
 		assert(p.almostEqual(p2));
 		assert(r.almostEqual(r2));
 		assert(s.almostEqual(s2));		
-		assert(Matrix.compose(Vec!(3, float)(0), Vec!(3, float)(0), Vec!(3, float)(1)) == Matrix.IDENTITY);
+		assert(Matrix.compose(Vec3f(0), Vec3f(0), Vec3f(1)) == Matrix.IDENTITY);
 	}	
 	
 	/**
@@ -508,16 +508,16 @@ struct Matrix
 		}
 	}
 	unittest {
-		auto rotation = (Vec!(3, float)(1, 2, -1));
+		auto rotation = (Vec3f(1, 2, -1));
 		Matrix a;
-		a.setRotation(rotation.oldVec);
+		a.setRotation(rotation);
 		assert(a.toAxis().almostEqual(rotation));
 	}
 
 	/**
 	 * Return an axis vector of the rotation values of this Matrix.
 	 * Note that the non-rotation values of the Matrix are lost. */
-	Vec!(3, float) toAxis()
+	Vec3f toAxis()
 	{	return toQuatrn().toAxis(); /// TODO: replace with setRotation worked out in reverse.
 	}
 
@@ -552,12 +552,12 @@ struct Matrix
 	/** 
 	 * Convert the rotation part of the Matrix to Euler angles.
 	 * This may be inaccurate and perhaps suffers from other faults. */
-	Vec!(3, float) toEuler()
+	Vec3f toEuler()
 	{	float y = asin(v[2]); // Y axis-angle
 		float c = cos(y);
 		if (abs(c) > 0.00005)  // If Gimball Lock?
-			return Vec!(3, float)(-atan2(-v[6]/c, v[10]/c), -y, -atan2(-v[1]/c, v[0]/c));
-		return Vec!(3, float)(0, -y, -atan2(v[4], v[5]));
+			return Vec3f(-atan2(-v[6]/c, v[10]/c), -y, -atan2(-v[1]/c, v[0]/c));
+		return Vec3f(0, -y, -atan2(v[4], v[5]));
 	}
 	
 	/**

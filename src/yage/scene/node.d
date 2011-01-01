@@ -240,14 +240,14 @@ class Node : Tree!(Node), IDisposable
 	
 	///
 	Matrix getTransform()
-	{	return Matrix.compose(position.newVec, rotation.newVec, scale.newVec);
+	{	return Matrix.compose(position, rotation, scale);
 	}
 	
 	///
 	Matrix getWorldTransform()
 	{	mixin(Sync!("scene"));
 		calcWorld();
-		return Matrix.compose(worldPosition.newVec, worldRotation.newVec, worldScale.newVec);
+		return Matrix.compose(worldPosition, worldRotation, worldScale);
 	}
 
 	///
@@ -260,7 +260,7 @@ class Node : Tree!(Node), IDisposable
 	///
 	void rotate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
-		rotation = rotation.combineRotation(axisAngle).oldVec;
+		rotation = rotation.combineRotation(axisAngle);
 		setWorldDirty();
 	}
 
@@ -273,7 +273,7 @@ class Node : Tree!(Node), IDisposable
 	///
 	void angularAccelerate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
-		angularVelocity = angularVelocity.combineRotation(axisAngle).oldVec;; // TODO: Is this clamped to -PI to PI?
+		angularVelocity = angularVelocity.combineRotation(axisAngle);; // TODO: Is this clamped to -PI to PI?
 	}
 
 	///
@@ -329,9 +329,9 @@ class Node : Tree!(Node), IDisposable
 				
 				Vec!(3, float) wp, wr, ws;
 				matrix.decompose(wp, wr, ws);
-				worldPosition = wp.oldVec;
-				worldRotation = wr.oldVec;
-				worldScale = ws.oldVec;
+				worldPosition = wp;
+				worldRotation = wr;
+				worldScale = ws;
 				
 				worldVelocity = velocity + parent.worldVelocity; // TODO: This doesn't even take rotation into account!
 			} else
