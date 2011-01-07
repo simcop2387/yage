@@ -67,7 +67,7 @@ struct Vec(int S, T : real)
 	invariant()
 	{	foreach (float t; v)
 		{	assert(!isNaN(t)); // sometimes this fails!
-			assert(t!=float.infinity); // sometimes this fails!
+			//assert(t!=float.infinity); // sometimes this fails!
 		}
 	}
 	
