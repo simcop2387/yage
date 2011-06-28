@@ -76,7 +76,7 @@ class Geometry
 	
 
 	/*protected*/ VertexBuffer[char[]] attributes;
-	/*protected*/ Mesh[] meshes;	
+	/*protected*/ Mesh[] meshes;
 	
 	bool drawNormals = false;
 	bool drawTangents = false;
@@ -360,13 +360,13 @@ class Geometry
 	{
 		// Get a maping of all types to their vertex buffer info.
 		VertexBuffer[char[]] types;
-		foreach (geometry; geometries)
+		foreach (ref geometry; geometries)
 			foreach(char[] type, vb; geometry.getVertexBuffers())
 				types[type] = vb;
 		
 		Geometry result = new Geometry();
 		
-		foreach (geometry; geometries)
+		foreach (ref geometry; geometries)
 		{	auto vb = result.getVertexBuffer(Geometry.VERTICES);
 			int offset = vb ? vb.length() : 0;
 			int length = geometry.getVertexBuffer(Geometry.VERTICES).length();
@@ -387,7 +387,7 @@ class Geometry
 			}
 			
 			// Meshes
-			foreach (mesh; geometry.meshes)
+			foreach (ref mesh; geometry.meshes)
 			{	// vertices are now all merged into the same aray, so we need to upate the triangle indices.
 				Vec3i[] triangles = new Vec3i[mesh.getTriangles().length];
 				foreach (i, triangle; mesh.getTriangles()) 
