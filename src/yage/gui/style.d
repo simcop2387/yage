@@ -268,14 +268,32 @@ struct Style
 	Material cursor; /// TODO: Unimplemented
 	float cursorSize=float.nan; /// in pixels, float.nan to default to size of image.
 	
-	/// Font properties
-	Font fontFamily; // TODO: Convert to string so FreeType doesn't have to be loaded in order to make Surfaces.
+	/**
+	 * Font properties
+	 * fontFamily = path or (soon) css name of the font to use.  */	
+	char[] fontFamily = Resource.DEFAULT_FONT;
 	CSSValue fontSize; /// ditto
 	FontStyle fontStyle; /// ditto
 	FontWeight fontWeight; /// ditto
 	
-	/// Text properties
-	Nullable!(Color) color = Nullable!(Color)(Color.BLACK); //{r:0, g:0, b:0, a:255}; // TODO: How to have a value for AUTO?
+	private char[] lastFontFamily;
+	private Font internalFont;
+	
+	/**
+	 * Get a font resource from the font name.
+	 * Can use better caching than ResourceManager.font() due to more information stored in the style and is therefore faster. */
+	Font getFont()
+	{	if (!internalFont || lastFontFamily != fontFamily)
+		{	lastFontFamily = fontFamily;
+			internalFont = ResourceManager.font(fontFamily);
+		}
+		return internalFont;
+	}
+	
+	/**
+	 * Text properties
+	 * color = If null, inherits the value from the parent Surface. */
+	Nullable!(Color) color = Nullable!(Color)(Color.BLACK); //{r:0, g:0, b:0, a:255};
 	TextAlign textAlign = TextAlign.LEFT; /// ditto
 	TextDecoration textDecoration = TextDecoration.NONE; /// ditto
 	CSSValue lineHeight; /// ditto
@@ -349,11 +367,11 @@ struct Style
 							} else
 								fontSize = token;
 						} else if (i>0)
-							fontFamily = ResourceManager.font(removeUrl(token));
+							fontFamily = removeUrl(token);
 					}
 					break;
 				case "font-size":			fontSize = tokens[0];  break;
-				case "font-family":			fontFamily = ResourceManager.font(removeUrl(tokens[0]));  break;
+				case "font-family":			fontFamily = removeUrl(tokens[0]);  break;
 				case "font-style":			fontStyle = Style.stringToEnum!(FontStyle)(tokens[0]);  break;
 				case "font-weight":			fontWeight = Style.stringToEnum!(FontWeight)(tokens[0]);  break;
 			

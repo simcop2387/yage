@@ -44,8 +44,8 @@ class Ship : GameObject
 		pitch = addChild(new Node());
 
 		ship = pitch.addChild(new ModelNode());
-		ship.setModel("space/fighter.dae");
-		ship.setSize(Vec3f(.25));
+		auto shipModel = new ModelNode("space/fighter.dae", ship);
+		shipModel.setScale(Vec3f(.25));
 
 		spring = new Spring(ship, new Node());
 		spring.setDistance(Vec3f(0, 4, 12));

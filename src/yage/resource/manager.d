@@ -58,6 +58,8 @@ struct ResourceManager
 		}
 	}
 	
+	static const DEFAULT_FONT = "__DEFAULT_FONT__"; // Used to specify the default font that's embedded as a resource in the yage executable.
+	
 	private static char[][] paths = [""];		// paths to look for resources
 	private static Collada[char[]]	colladas;
 	private static Font[char[]]		fonts;
@@ -160,9 +162,12 @@ struct ResourceManager
 	 * Acquire and return a requested Font.
 	 * If it has already been loaded, the in-memory copy will be returned.
 	 * If not, it will be loaded and then returned.
-	 * Params: filename = The Font file that will be loaded. */
+	 * Params: filename = The Font file that will be loaded, or Resource.DEFAULT_FONT */
 	static Font font(char[] filename)
 	{
+		if (filename==DEFAULT_FONT)
+			return getDefaultFont();
+		
 		filename = resolvePath(filename);
 		if (filename in fonts)
 			return fonts[filename];

@@ -50,13 +50,13 @@ class VBox : Box
 
 /**
  * This class is unimplemented. 
- * A class that can be dragged horizontally or vertically and resized at its edges. */
-class Resizer: Surface
+ * A class that can optionally be dragged horizontally or vertically and resized at its edges. */
+class Draggable: Surface
 {	
 	enum Region
 	{	TOP=1,
 		LEFT=2,
-		CENTER=4,
+		CENTER=4, // dragging area.  Is this redundant with moveHorizontal/moveVertical?
 		RIGHT=8,
 		BOTTOM=16
 	};
@@ -66,9 +66,9 @@ class Resizer: Surface
 	bool moveHorizontal;	/// Allow dragging in the horizontal direction
 	bool moveVertical;		/// Allow dragging in the vertical direction.
 	
-	protected int regions;		// Stores the regions was the mouse over during the last mouse press.
+	protected int regions;		// Stores the regions the mouse was over during the last mouse press.
 	protected Vec2i mouseStart;
-	protected Vec4i geometryStart;
+	protected Vec4i geometryStart; // Rectangle that stores the x/y/width/height before the mouse started dragging.
 }
 
 /**
@@ -85,7 +85,7 @@ class ScrollBar : Surface
 	int lineScrollSize; /// Amount scrolled when top or bottom arrow is clicked.
 	int pageScrollSize; /// Amount scrolled when scroll bar is clicked.
 	
-	Resizer bar;
+	Draggable bar;
 	Surface upArrow, downArrow;
 	void delegate(ScrollBar self) onScrollChange; 
 	
@@ -93,7 +93,7 @@ class ScrollBar : Surface
 	
 	this(Surface parent=null)
 	{	style.width = style.height = 16; // px
-		bar = new Resizer();
+		bar = new Draggable();
 		super(parent);
 	}
 	

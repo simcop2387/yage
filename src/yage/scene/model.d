@@ -146,14 +146,6 @@ class ModelNode : VisibleNode
 	void setModel(char[] filename) /// ditto
 	{	setModel(ResourceManager.model(filename));
 	}
-
-	/// Overridden to cache the radius if changed by the scale.
-	override void setSize(Vec3f s) /// Ditto
-	{	
-		if (model)
-			radius = radius / size.max() * s.max();
-		super.setSize(s);
-	}	
 	
 	/**
 	 * Get the radius of the culling sphere used when rendering the 3D Model
@@ -173,7 +165,7 @@ class ModelNode : VisibleNode
 		if (camera.isVisible(wp, getRadius()))	
 		{	
 			RenderCommand rc;			
-			rc.transform = getWorldTransform().scale(getSize());
+			rc.transform = getWorldTransform();
 			rc.geometry = model;
 			rc.materialOverrides = materialOverrides;
 			auto l = getLights(lights, 8);

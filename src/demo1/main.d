@@ -72,11 +72,11 @@ class DemoScene : Scene
 
 		// Star
 		star = light.addChild(new SpriteNode("space/star.dae", "star-material"));
-		star.setSize(Vec3f(100000));
+		star.setScale(Vec3f(100000));
 
 		// Planet
 		planet = scene.addChild(new ModelNode("space/planet.dae"));
-		planet.setSize(Vec3f(200));
+		planet.setScale(Vec3f(200));
 		planet.setAngularVelocity(Vec3f(0, -0.05, 0));
 		
 		// Atmosphere
@@ -99,7 +99,7 @@ class DemoScene : Scene
 		pass.autoShader = MaterialPass.AutoShader.PHONG;
 		moon.materialOverrides ~= moonMaterial;
 		moon.setPosition(Vec3f(8000, 0, -1000));
-		moon.setSize(Vec3f(50));		
+		moon.setScale(Vec3f(50));		
 		moon.setAngularVelocity(Vec3f(0, 0.01, 0));
 		
 

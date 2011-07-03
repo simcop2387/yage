@@ -353,12 +353,12 @@ class Transparency : TestScene
 			auto plane = rotator.addChild(new ModelNode(i%2==0 ? geometry : geometry2));
 			plane.setPosition(Vec3f(cos(angle)*number, 0, sin(angle)*number));
 			plane.setRotation(Vec3f(0, PI-angle, 0));
-			plane.setSize(Vec3f(10));		
+			plane.setScale(Vec3f(10));		
 			
 			auto plane2 = rotator.addChild(new ModelNode(i%2==0 ? geometry : geometry2));
 			plane2.setPosition(Vec3f(cos(angle)*number, 0, sin(angle)*number));
 			plane2.setRotation(Vec3f(0, -angle, 0)); // back side
-			plane2.setSize(Vec3f(10));
+			plane2.setScale(Vec3f(10));
 		}
 		
 		// Lights

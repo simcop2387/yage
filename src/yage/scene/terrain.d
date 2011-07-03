@@ -8,6 +8,7 @@ module yage.scene.terrain;
 
 import yage.core.array;
 import yage.core.math.vector;
+import yage.core.math.matrix;
 
 import yage.resource.geometry;
 import yage.resource.image;
@@ -65,8 +66,12 @@ class TerrainNode : VisibleNode
 
 	Material material;
 
-	this(IHeightGenerator generator, TextureInstance[] textures=null)
-	{
+	this (IHeightGenerator generator, Node parent=null)
+	{	this(generator, null, parent);
+	}
+	
+	this(IHeightGenerator generator, TextureInstance[] textures=null, Node parent=null)
+	{	super(parent);
 		this.generator=generator;
 		Vec2i resolution = generator.getResolution();
 		//we will need to use the resolution divided / 2
@@ -100,34 +105,28 @@ class TerrainNode : VisibleNode
 	 */
 	override void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 	{
-		RenderCommand rc;
+		
 		Vec3f patchCenter;
-		Geometry[] renderGeometry;
 		static int counter = 0;
 		counter++;
-		//Log.info(counter);
+		Vec3f scale = getScale();
+		Matrix transform = getWorldTransform();
+		auto affectingLights = getLights(lights, 8); // TODO: getLights() for each individual patch.
 
 		/* Look if each patch is visible by the camera (fustrum culling) */
 		for (int i=0; i < patches.length; ++i)
 			for (int j=0; j < patches[0].length; ++j)
 			{
-  				if (camera.isVisible(patches[i][j].center, Patch.RADIUS/(2*halfRes.x)))
+  				if (camera.isVisible(patches[i][j].center.transform(transform), Patch.RADIUS))
   				{
-  					//renderGeometry ~= patches[i][j].geometry;
-  					if (counter == 100){
-  						Log.info("patch [", i, "][", j,"] is visible");
-  						counter = 0;
-					}
-					
+  					RenderCommand rc;
+  					rc.transform = transform;
+  					rc.geometry = patches[i][j].geometry;
+  					rc.materialOverrides = materialOverrides;
+  					rc.setLights(affectingLights);
+  					result.append(rc);
 				}
 			}
-
-		rc.transform = getWorldTransform().scale(getSize());
-		rc.geometry = Geometry.merge( renderGeometry );
-		rc.materialOverrides = materialOverrides;
-		auto l = getLights(lights, 8);
-		rc.setLights(l);
-		result.append(rc);
 	}
 
 
@@ -138,9 +137,9 @@ class TerrainNode : VisibleNode
 		Vec3f[] normals;
 		Vec2f[] texCoords;
 
-		/*
-		 * Set attributes retrieved with getTerrainPoint.
-		 * The use of halfRes comes to center the terrain in the scene world
+		/*
+		 * Set attributes retrieved with getTerrainPoint.
+		 * The use of halfRes comes to center the terrain in the scene world
 		 */
 		TerrainPoint terrainPoint;
 		for (int y = j * Patch.SIZE; y < (j+1) * Patch.SIZE; ++y)
@@ -156,8 +155,9 @@ class TerrainNode : VisibleNode
 						 terrainPoint.height);
 				normals   ~= terrainPoint.normal;
 				texCoords ~= terrainPoint.textureCoordinate;
-			}
-
+			}
+		
+		assert(vertices.length);
 		patchGeometry.setAttribute(Geometry.VERTICES, vertices);
 		patchGeometry.setAttribute(Geometry.NORMALS, normals);
 		patchGeometry.setAttribute(Geometry.TEXCOORDS0, texCoords);

@@ -65,8 +65,7 @@ private class ResourceInfo
  * The OpenGL class provides a higher level of abstraction over OpenGL, 
  * without limiting what can be done with low-level OpenGL calls.
  * By inherting GraphicsAPI, it can be used interchangeably with other graphics apis, 
- * should they ever be implemented.
- */
+ * should they ever be implemented. */
 class OpenGL : GraphicsAPI 
 {
 	///

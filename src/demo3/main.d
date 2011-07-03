@@ -46,7 +46,7 @@ class TerrainDemo : Scene
 
 		// Terrain
 		auto terrainGenerator = new HmapHeightGenerator( "terrain/Heightmap2.png", Vec2i(256), HmapHeightGenerator.Scaling.REPEAT);
-		auto terrain = addChild(new TerrainNode(terrainGenerator));
+		auto terrain = new TerrainNode(terrainGenerator,  this);
 
 		auto terrainMaterial = new Material(true);
 			auto passTerrain = terrainMaterial.getPass();
@@ -61,7 +61,7 @@ class TerrainDemo : Scene
 		terrain.setPosition(Vec3f(0, 0, -1000));
 		
 		// Lights
-		light = scene.addChild(new LightNode());
+		light = new LightNode(this);
 		light.diffuse = "#fed";
 		light.ambient = "#555";
 		//light.type = LightNode.Type.DIRECTIONAL;

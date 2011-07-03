@@ -1,0 +1,3 @@
+glob:.classpath
+glob:.project
+glob:current.txt

@@ -605,7 +605,7 @@ private struct InlineStyle
 	static InlineStyle opCall(Style style)
 	{	
 		InlineStyle result;
-		result.fontFamily = style.fontFamily ? style.fontFamily : ResourceManager.getDefaultFont();
+		result.fontFamily = style.getFont();
 		
 		float fontSizePx = style.fontSize.toPx(0); // incorrect, should inherit from parent font size
 		result.fontSize = isNaN(fontSizePx) ? cast(int)Style().fontSize.toPx(0): cast(int)fontSizePx;
@@ -626,7 +626,7 @@ private struct InlineStyle
 	 * Create a Style from this InlineStyle */
 	Style toStyle()
 	{	Style result;
-		result.fontFamily = fontFamily;
+		result.fontFamily = fontFamily.toString();
 		result.fontSize = fontSize;
 		result.color = color;
 		result.textDecoration = textDecoration;

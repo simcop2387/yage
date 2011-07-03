@@ -76,7 +76,7 @@ class SpriteNode : VisibleNode
 			Vec3f rotation = spriteNormal.lookAt(cameraPosition - wp, Vec3f(0, 1, 0));
 			
 			RenderCommand rc;			
-			rc.transform = getWorldTransform().scale(getSize()).rotate(rotation);
+			rc.transform = getWorldTransform().rotate(rotation);
 			rc.geometry = spriteQuad;
 			temp[0] = material;
 			//spriteQuad.getMeshes()[0].setMaterial(ResourceManager.material("space/star.dae", "star-material"));

@@ -50,24 +50,9 @@ abstract class VisibleNode : Node
 	}
 
 	/**
-	 * deprecated.  getRenderCommands(camera) makes this no longer needed.
-	 * Get the radius of this VisibleNode's culling sphere.  Includes both size and scale.
-	 * Classes that inherit VisibleNode must provide this function to specify their radius, or they will not be rendered. */ 
+	 * This is used to calculate intersectons of light spheres with this Node. */ 
 	float getRadius()
 	{	return 0;
-	}
-	
-	/**
-	 * Get / set the scale of this VisibleNode in the x, y, and z directions.
-	 * The default is (1, 1, 1).  Unlike position and rotation, scale is not inherited. */	
-	void setSize(Vec3f size)
-	{	this.size = size;
-	}
-	void setSize(float size) /// ditto
-	{	this.size.x = this.size.y = this.size.z = size;
-	} 
-	Vec3f getSize() /// ditto
-	{	return size; 
 	}
 
 	/** 

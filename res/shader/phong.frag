@@ -5,10 +5,10 @@
  * See documentation for diffuse.vert
  */
  
-// Values greater than 1 allow things to be brighter under bright lights
+// Values greater than 1 allow things to be brighterthan their material color
 #define MAX_ATTENUATION 12.0
 
-// properties not send by all video cards (buggy drivers?)
+// Light properties not send by all video cards (buggy drivers?)
 // We still rely on default values for light's diffuse and ambient
 struct LightInput 
 {	vec4 position; // w==0 for directional, w==1 for point light	

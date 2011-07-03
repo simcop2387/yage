@@ -123,28 +123,28 @@ void main()
 
 #if NUM_LIGHTS>0
 
-#ifdef HAS_BUMP
-	vec4 bumpNormal = texture2D(texture1, gl_TexCoord[0].st);
-	bumpNormal.xyz = 2.0 * bumpNormal.xyz - 1.0;
-	normal2 = normalize(bumpNormal.xyz); // since the lights are in tangent space, we can use this directly.
-#else
-	normal2 = normalize(normal);
-#endif
+	#ifdef HAS_BUMP
+		vec4 bumpNormal = texture2D(texture1, gl_TexCoord[0].st);
+		bumpNormal.xyz = 2.0 * bumpNormal.xyz - 1.0;
+		normal2 = normalize(bumpNormal.xyz); // since the lights are in tangent space, we can use this directly.
+	#else
+		normal2 = normalize(normal);
+	#endif
 
-#ifdef HAS_SPECULAR	
-	eye_direction_normalized = normalize(eye_direction);
-#endif	
-	lighting = applyLight(gl_LightSource[0], lights[0], light_directions[0]);
-	
-	for (int i=1; i<NUM_LIGHTS; i++)
-	{	LightResult result = applyLight(gl_LightSource[i], lights[i], light_directions[i]);
-		lighting.ambient += result.ambient;
-		lighting.diffuse += result.diffuse;
-		#ifdef HAS_SPECULAR	
-			lighting.specular += result.specular;
-		#endif
-	}
-#endif
+	#ifdef HAS_SPECULAR	
+		eye_direction_normalized = normalize(eye_direction);
+	#endif	
+		lighting = applyLight(gl_LightSource[0], lights[0], light_directions[0]);
+		
+		for (int i=1; i<NUM_LIGHTS; i++) // compile-time loop
+		{	LightResult result = applyLight(gl_LightSource[i], lights[i], light_directions[i]);
+			lighting.ambient += result.ambient;
+			lighting.diffuse += result.diffuse;
+			#ifdef HAS_SPECULAR	
+				lighting.specular += result.specular;
+			#endif
+		}
+#endif // NUM_LIGHTS > 0
 	
 	// Combine lighting and material components
 	vec4 ambient = lighting.ambient * gl_FrontMaterial.ambient;
