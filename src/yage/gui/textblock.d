@@ -613,7 +613,13 @@ private struct InlineStyle
 		result.fontWeight = style.fontWeight;
 		result.fontStyle = style.fontStyle;
 		
-		result.color = *style.color.get();
+		// This should not be needed.  The style should get its inherited color before this is called.
+		// Oddly, it wasn't needed until I changed
+		// char[] fontFamily; to
+		// char[] fontFamily = ResourceManager.DEFAULT_FONT; in Style.  These should be unrelated!  
+		if (style.color.get())
+			result.color = *(style.color.get());
+		
 		result.textDecoration = style.textDecoration;
 		
 		result.letterSpacing = style.letterSpacing.toPx(0);
