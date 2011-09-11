@@ -20,7 +20,7 @@ void main()
 		{	
 			int[] b = new int[1024];
 		}
-		Log.trace("%ss, new int[1024] 10k times", a.tell());
+		Log.write("%ss, new int[1024] 10k times", a.tell());
 	}
 	{
 		Timer a = new Timer(true);
@@ -29,7 +29,7 @@ void main()
 			int[] b = new int[1024];
 			delete b;
 		}
-		Log.trace("%ss, new int[1024] 10k, followed by delete", a.tell());
+		Log.write("%ss, new int[1024] 10k, followed by delete", a.tell());
 	}
 	{
 		Timer a = new Timer(true);
@@ -38,6 +38,6 @@ void main()
 			int[] b = Memory.allocate!(int)(1024);
 			Memory.free(b);
 		}
-		Log.trace("%ss, Memory.allocate() int[1024] 10k times followed by Memory.free().", a.tell());
+		Log.write("%ss, Memory.allocate() int[1024] 10k times followed by Memory.free().", a.tell());
 	}
 }

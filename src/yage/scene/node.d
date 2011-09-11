@@ -324,11 +324,11 @@ class Node : Tree!(Node), IDisposable
 		{			
 			if (parent && parent !is scene)
 			{	parent.calcWorld(); // TODO: optimize this!
-				Matrix matrix = parent.getWorldTransform().transformAffine(getTransform());	
+				Matrix worldTransform = parent.getWorldTransform().transformAffine(getTransform());	
 				//matrix.decompose(worldPosition, worldRotation, worldScale);
 				
-				Vec!(3, float) wp, wr, ws;
-				matrix.decompose(wp, wr, ws);
+				Vec3f wp, wr, ws;
+				worldTransform.decompose(wp, wr, ws);
 				worldPosition = wp;
 				worldRotation = wr;
 				worldScale = ws;

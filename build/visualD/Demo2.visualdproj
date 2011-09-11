@@ -5,6 +5,7 @@
   <link>0</link>
   <lib>0</lib>
   <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
   <trace>0</trace>
   <quiet>0</quiet>
@@ -44,12 +45,13 @@
   <imppath>../../src</imppath>
   <fileImppath />
   <outdir>../../bin</outdir>
-  <objdir>../../bin/trash/$(ProjectName)</objdir>
+  <objdir>$(OutDir)/trash/$(ProjectName)</objdir>
   <objname />
   <libname />
   <doDocComments>0</doDocComments>
   <docdir />
   <docname />
+  <modules_ddoc />
   <ddocfiles />
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
@@ -80,19 +82,20 @@
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand>move $(ProjectName).exe ../bin/$(ProjectName).exe</postBuildCommand>
-  <debugtarget>../../bin/$(ProjectName).exe</debugtarget>
+  <debugtarget>$(TARGETPATH)</debugtarget>
   <debugarguments />
-  <debugworkingdir>../../bin</debugworkingdir>
+  <debugworkingdir>$(OutDir)</debugworkingdir>
   <debugattach>0</debugattach>
   <debugremote />
   <debugEngine>0</debugEngine>
-  <filesToClean>*.obj</filesToClean>
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Config name="Release">
   <obj>0</obj>
   <link>0</link>
   <lib>0</lib>
   <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
   <trace>0</trace>
   <quiet>0</quiet>
@@ -132,12 +135,13 @@
   <imppath>../../src</imppath>
   <fileImppath />
   <outdir>../../bin</outdir>
-  <objdir>$(OutDir)/bin/trash/$(ProjectName)</objdir>
+  <objdir>$(OutDir)/trash/$(ProjectName)</objdir>
   <objname />
   <libname />
   <doDocComments>0</doDocComments>
   <docdir />
   <docname />
+  <modules_ddoc />
   <ddocfiles />
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
@@ -170,11 +174,11 @@
   <postBuildCommand />
   <debugtarget>$(TARGETPATH)</debugtarget>
   <debugarguments />
-  <debugworkingdir />
+  <debugworkingdir>$(OutDir)</debugworkingdir>
   <debugattach>0</debugattach>
   <debugremote />
   <debugEngine>0</debugEngine>
-  <filesToClean>*.obj</filesToClean>
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="Demo2">
   <File path="../../src/demo2\main.d" />

@@ -1,10 +1,11 @@
 <DProject>
- <ProjectGuid>{0AF88A0E-BCBC-449A-A122-EDAD41CB0010}</ProjectGuid>
+ <ProjectGuid>{D00FD5ED-6654-43EA-80B5-B131B7E697DF}</ProjectGuid>
  <Config name="Debug">
   <obj>0</obj>
   <link>0</link>
   <lib>0</lib>
   <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
   <trace>0</trace>
   <quiet>0</quiet>
@@ -44,18 +45,19 @@
   <imppath>../../src</imppath>
   <fileImppath />
   <outdir>../../bin</outdir>
-  <objdir>../../bin/trash/$(ProjectName)</objdir>
+  <objdir>$(OutDir)/trash/$(ProjectName)</objdir>
   <objname />
   <libname />
   <doDocComments>0</doDocComments>
   <docdir />
   <docname />
+  <modules_ddoc />
   <ddocfiles />
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
   <hdrname />
   <doXGeneration>1</doXGeneration>
-  <xfilename>$(IntDir)\$(ProjectName).json</xfilename>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
@@ -79,20 +81,21 @@
   <exefile>../../bin/$(ProjectName).exe</exefile>
   <additionalOptions />
   <preBuildCommand />
-  <postBuildCommand>move $(ProjectName).exe ../bin/$(ProjectName).exe</postBuildCommand>
-  <debugtarget>../../bin/$(ProjectName).exe</debugtarget>
+  <postBuildCommand />
+  <debugtarget>$(TARGETPATH)</debugtarget>
   <debugarguments />
-  <debugworkingdir>../../bin</debugworkingdir>
+  <debugworkingdir>$(OutDir)</debugworkingdir>
   <debugattach>0</debugattach>
   <debugremote />
   <debugEngine>0</debugEngine>
-  <filesToClean>*.obj</filesToClean>
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Config name="Release">
   <obj>0</obj>
   <link>0</link>
   <lib>0</lib>
   <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
   <trace>0</trace>
   <quiet>0</quiet>
@@ -114,7 +117,7 @@
   <useIn>0</useIn>
   <useOut>0</useOut>
   <useArrayBounds>0</useArrayBounds>
-  <noboundscheck>1</noboundscheck>
+  <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
   <useUnitTests>0</useUnitTests>
   <useInline>1</useInline>
@@ -132,18 +135,19 @@
   <imppath>../../src</imppath>
   <fileImppath />
   <outdir>../../bin</outdir>
-  <objdir>$(OutDir)/bin/trash/$(ProjectName)</objdir>
+  <objdir>$(OutDir)/trash/$(ProjectName)</objdir>
   <objname />
   <libname />
   <doDocComments>0</doDocComments>
   <docdir />
   <docname />
+  <modules_ddoc />
   <ddocfiles />
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
   <hdrname />
   <doXGeneration>1</doXGeneration>
-  <xfilename>$(IntDir)\$(ProjectName).json</xfilename>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
@@ -170,16 +174,16 @@
   <postBuildCommand />
   <debugtarget>$(TARGETPATH)</debugtarget>
   <debugarguments />
-  <debugworkingdir />
+  <debugworkingdir>$(OutDir)</debugworkingdir>
   <debugattach>0</debugattach>
   <debugremote />
   <debugEngine>0</debugEngine>
-  <filesToClean>*.obj</filesToClean>
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="Demo1">
-  <File path="../../src/demo1\ship.d" />
-  <File path="../../src/demo1\spring.d" />
-  <File path="../../src/demo1\gameobj.d" />
-  <File path="../../src/demo1\main.d" />
+  <File path="..\..\src\demo1\gameobj.d" />
+  <File path="..\..\src\demo1\main.d" />
+  <File path="..\..\src\demo1\ship.d" />
+  <File path="..\..\src\demo1\spring.d" />
  </Folder>
 </DProject>

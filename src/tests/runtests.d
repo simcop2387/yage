@@ -157,6 +157,7 @@ version(Tango)
 	import tango.io.FileSystem;
 	import tango.io.Stdout;
 	import tango.sys.Environment;
+	import tango.text.convert.Format;
 	import tango.text.Regex;
 	import tango.text.Util;
 	import tango.text.Ascii;
@@ -166,7 +167,10 @@ version(Tango)
 	//import tango.core.tools.TraceExceptions; // enable to get stack trace in buildyage.d on internal failure
 } else
 {	import std.date;
-	import std.string : join, find, replace, tolower;
+	version (D_Version2)
+		import std.string : join, indexOf, replace, tolower;
+	else
+		import std.string : join, find, replace, tolower;
 	import std.stdio : writefln;
 	import std.path : sep, getDirName, getName, addExt;
 	import std.file : chdir, copy, isdir, isfile, listdir, mkdir, exists, getcwd, remove, write;
@@ -174,37 +178,37 @@ version(Tango)
 	import std.regexp;
 	import std.traits;
 	import std.c.process;
-	import std.c.time : sleep, usleep;
+	import std.c.time;
 }
 
 /// This is always set to the name of the default compiler, which is the compiler used to build cdc.
 version (DigitalMars)
-	char[] compiler = "dmd";
+	string compiler = "dmd";
 version (GNU)
-	char[] compiler = "gdc"; /// ditto
+	string compiler = "gdc"; /// ditto
 version (LDC)
-	char[] compiler = "ldmd";  /// ditto
+	string compiler = "ldmd";  /// ditto
 
 version (Windows)
-{	const char[][] obj_ext = [".obj", ".o"]; /// An array of valid object file extensions for the current.
-	const char[] lib_ext = ".lib"; /// Library extension for the current platform.
-	const char[] bin_ext = ".exe"; /// executable file extension for the current platform.
+{	const string[] obj_ext = [".obj", ".o"]; /// An array of valid object file extensions for the current.
+	const string lib_ext = ".lib"; /// Library extension for the current platform.
+	const string bin_ext = ".exe"; /// executable file extension for the current platform.
 }
 else
-{	const char[][] obj_ext = [".o"]; /// An array of valid object file extensions for the current.
-	const char[] lib_ext = ".a"; /// Library extension for the current platform.
-	const char[] bin_ext = ""; /// Executable file extension for the current platform.
+{	const string[] obj_ext = [".o"]; /// An array of valid object file extensions for the current.
+	const string lib_ext = ".a"; /// Library extension for the current platform.
+	const string bin_ext = ""; /// Executable file extension for the current platform.
 }
 
 /**
  * Program entry point.  Parse args and run the compiler.*/
-int defaultBuild(char[][] args)
+int defaultBuild(string[] args)
 {	args = args[1..$];// remove self-name from args
 
-	char[] root;
-	char[][] options;
-	char[][] paths;
-	char[][] run_args;
+	string root;
+	string[] options;
+	string[] paths;
+	string[] run_args;
 	bool verbose;
 
 	// Populate options, paths, and run_args from args
@@ -248,7 +252,7 @@ int defaultBuild(char[][] args)
 struct CDC
 {
 	/**
-	 * Compile d code using the current compiler.
+	 * Compile d code using same compiler that compiled CDC.
 	 * Params:
 	 *     paths = Array of source and library files and folders.  Folders are recursively searched.
 	 *     options = Compiler options.
@@ -258,12 +262,12 @@ struct CDC
 	 * Returns:
 	 *     Array of commands that were executed.
 	 * TODO: Add a dry run option to just return an array of commands to execute. */
-	static char[][] compile(char[][] paths, char[][] options=null, char[][] run_args=null, char[] root=null, bool verbose=false)
+	static string[] compile(string[] paths, string[] options=null, string[] run_args=null, string root=null, bool verbose=false)
 	{	Log.operations = null;
 		Log.verbose = verbose;
 
 		// Change to root directory and back again when done.
-		char[] cwd = FS.getDir();
+		string cwd = FS.getDir();
 		if (root.length)
 		{	if (!FS.exists(root))
 				throw new Exception(`Directory specified for -root "` ~ root ~ `" doesn't exist.`);
@@ -274,9 +278,9 @@ struct CDC
 				FS.chDir(cwd);
 
 		// Convert src and lib paths to files
-		char[][] sources;
-		char[][] libs;
-		char[][] ddocs;
+		string[] sources;
+		string[] libs;
+		string[] ddocs;
 		foreach (src; paths)
 			if (src.length)
 			{	if (!FS.exists(src))
@@ -303,17 +307,17 @@ struct CDC
 		CompileOptions co = CompileOptions(options, sources);
 		options = co.getOptions(compiler);
 		if (compiler=="gdc")
-			foreach (inout d; ddocs)
+			foreach (ref d; ddocs)
 				d = "-fdoc-inc="~d;
-		else foreach (inout l; libs)
+		else foreach (ref l; libs)
 			version (GNU) // or should this only be version(!Windows)
 				l = `-L`~l; // TODO: Check in dmd and gdc
 
 		// Create modules.ddoc and add it to array of ddoc's
 		if (co.D)
-		{	char[] modules = "MODULES = \r\n";
+		{	string modules = "MODULES = \r\n";
 			sources.sort;
-			foreach(char[] src; sources)
+			foreach(string src; sources)
 			{	src = String.split(src, "\\.")[0]; // get filename
 				src = String.replace(String.replace(src, "/", "."), "\\", ".");
 				modules ~= "\t$(MODULE "~src~")\r\n";
@@ -323,7 +327,7 @@ struct CDC
 			scope(failure) FS.remove("modules.ddoc");
 		}
 		
-		char[][] arguments = options ~ sources ~ ddocs ~ libs;
+		string[] arguments = options ~ sources ~ ddocs ~ libs;
 
 		// Compile
 		if (compiler=="gdc")
@@ -332,20 +336,20 @@ struct CDC
 			if (co.lib || co.D || co.c) // GDC must build incrementally if creating documentation or a lib.
 			{
 				// Remove options that we don't want to pass to gcd when building files incrementally.
-				char[][] incremental_options;
+				string[] incremental_options;
 				foreach (option; options)
 					if (option!="-lib" && !String.starts(option, "-o"))
 						incremental_options ~= option;
 
 				// Compile files individually, outputting full path names
-				char[][] obj_files;
+				string[] obj_files;
 				foreach(source; sources)
-				{	char[] obj = String.replace(source, "/", ".")[0..$-2]~".o";
-					char[] ddoc = obj[0..$-2];
+				{	string obj = String.replace(source, "/", ".")[0..$-2]~".o";
+					string ddoc = obj[0..$-2];
 					if (co.od)
 						obj = co.od ~ FS.sep ~ obj;
 					obj_files ~= obj;
-					char[][] exec = incremental_options ~ ["-o"~obj, "-c"] ~ [source];
+					string[] exec = incremental_options ~ ["-o"~obj, "-c"] ~ [source];
 					if (co.D) // ensure doc files are always fully qualified.
 						exec ~= ddocs ~ ["-fdoc-file="~ddoc~".html"];
 					System.execute(compiler, exec); // throws ProcessException on compile failure
@@ -366,7 +370,7 @@ struct CDC
 			if (!co.lib && !co.c)
 			{
 				// Remove documentation arguments since they were handled above
-				char[][] nondoc_args;
+				string[] nondoc_args;
 				foreach (arg; arguments)
 					if (!String.starts(arg, "-fdoc") && !String.starts(arg, "-od"))
 						nondoc_args ~= arg;
@@ -379,13 +383,13 @@ struct CDC
 			executeCompiler(compiler, arguments);		
 			// Move all html files in doc_path to the doc output folder and rename with the "package.module" naming convention.
 			if (co.D)
-			{	foreach (char[] src; sources)
+			{	foreach (string src; sources)
 				{	
 					if (src[$-2..$] != ".d")
 						continue;
 
-					char[] html = src[0..$-2] ~ ".html";
-					char[] dest = String.replace(String.replace(html, "/", "."), "\\", ".");
+					string html = src[0..$-2] ~ ".html";
+					string dest = String.replace(String.replace(html, "/", "."), "\\", ".");
 					if (co.Dd.length)
 					{	
 						dest = co.Dd ~ FS.sep ~ dest;
@@ -398,7 +402,7 @@ struct CDC
 		}
 
 		// Remove extra files
-		char[] basename = co.of[String.rfind(co.of, "/")+1..$];
+		string basename = co.of[String.rfind(co.of, "/")+1..$];
 		FS.remove(String.changeExt(basename, ".map"));
 		if (co.D)
 			FS.remove("modules.ddoc");
@@ -409,7 +413,7 @@ struct CDC
 		// If -run is set.
 		if (co.run)
 		{	System.execute("./" ~ co.of, run_args);
-			version(Windows) // give dmd windows time to release the lock.
+			version(Windows) // Hack: give dmd windows time to release the lock.
 				if (compiler=="dmd")
 					System.sleep(.1);
 			FS.remove(co.of); // just like dmd
@@ -419,7 +423,7 @@ struct CDC
 	}
 
 	// A wrapper around execute to write compile options to a file, to get around max arg lenghts on Windows.
-	private static void executeCompiler(char[] compiler, char[][] arguments)
+	private static void executeCompiler(string compiler, string[] arguments)
 	{	try {
 			version (Windows)
 			{	FS.write("compile", String.join(arguments, " "));
@@ -440,20 +444,20 @@ struct CDC
 	{
 		bool c;				// do not link
 		bool D;				// generate documentation
-		char[] Dd;			// write documentation file to this directory
-		char[] Df;			// write documentation file to this filename
+		string Dd;			// write documentation file to this directory
+		string Df;			// write documentation file to this filename
 		bool lib;			// generate library rather than object files
 		bool o;				// do not write object file
-		char[] od;			// write object & library files to this directory
-		char[] of;			// name of output file.
+		string od;			// write object & library files to this directory
+		string of;			// name of output file.
 		bool run;
-		char[][] run_args;	// run immediately afterward with these arguments.
+		string[] run_args;	// run immediately afterward with these arguments.
 
-		private char[][] options; // stores modified options.
+		private string[] options; // stores modified options.
 
 		/*
 		 * Constructor */
-		static CompileOptions opCall(char[][] options, char[][] sources)
+		static CompileOptions opCall(string[] options, string[] sources)
 		{	CompileOptions result;
 			foreach (i, option; options)
 			{
@@ -487,7 +491,7 @@ struct CDC
 			}
 
 			// Set the -o (output filename) flag to the first source file, if not already set.
-			char[] ext = result.lib ? lib_ext : bin_ext; // This matches the default behavior of dmd.
+			string ext = result.lib ? lib_ext : bin_ext; // This matches the default behavior of dmd.
 			if (!result.of.length && !result.c && !result.o && sources.length)
 			{	result.of = String.split(String.split(sources[0], "/")[$-1], "\\.")[0] ~ ext;
 				result.options ~= ("-of" ~ result.of);
@@ -508,13 +512,13 @@ struct CDC
 		/*
 		* Translate DMD/LDC compiler options to GDC options.
 		* This function is incomplete. (what about -L? )*/
-		char[][] getOptions(char[] compiler)
-		{	char[][] result = options.dup;
+		string[] getOptions(string compiler)
+		{	string[] result = options.dup;
 
 			if (compiler != "gdc")
 			{
 				version(Windows)
-					foreach (inout option; result)
+					foreach (ref option; result)
 						if (String.starts(option, "-of")) // fix -of with / on Windows
 							option = String.replace(option, "/", "\\");
 
@@ -524,7 +528,7 @@ struct CDC
 			}
 
 			// is gdc
-			char[][char[]] translate;
+			string[string] translate;
 			translate["-Dd"] = "-fdoc-dir=";
 			translate["-Df"] = "-fdoc-file=";
 			translate["-debug="] = "-fdebug=";
@@ -540,7 +544,7 @@ struct CDC
 			translate["-w"] = "-wall";
 
 			// Perform option translation
-			foreach (inout option; result)
+			foreach (ref option; result)
 			{	if (String.starts(option, "-od")) // remove unsupported -od
 					option = "";
 				if (option =="-D")
@@ -555,10 +559,10 @@ struct CDC
 			return result;
 		}
 		unittest {
-			char[][] sources = [cast(char[])"foo.d"];
-			char[][] options = [cast(char[])"-D", "-inline", "-offoo"];
+			string[] sources = [cast(string)"foo.d"];
+			string[] options = [cast(string)"-D", "-inline", "-offoo"];
 			scope result = CompileOptions(options, sources).getOptions("gdc");
-			assert(result[0..3] == [cast(char[])"-fdoc", "-finline-functions", "-o foo"]);
+			assert(result[0..3] == [cast(string)"-fdoc", "-finline-functions", "-o foo"]);
 		}
 	}
 }
@@ -567,9 +571,9 @@ struct CDC
 private struct Log
 {
 	static bool verbose;
-	static char[][] operations;
+	static string[] operations;
 
-	static void add(char[] operation)
+	static void add(string operation)
 	{	if (verbose)
 			System.trace("CDC:  " ~ operation);
 		operations ~= operation;
@@ -586,7 +590,7 @@ struct System
 	 *     args = Array of string arguments to pass to this command.
 	 * Throws: ProcessException on failure or status code 1.
 	 * TODO: Return output (stdout/stderr) instead of directly printing it. */
-	static void execute(char[] command, char[][] args=null)
+	static void execute(string command, string[] args=null)
 	{	Log.add(command~` `~String.join(args, ` `));
 		version (Windows)
 			if (String.starts(command, "./"))
@@ -606,7 +610,7 @@ struct System
 				throw new ProcessException(result.toString());
 			+/
 
-			char[] execute = command ~ " " ~ String.join(args, " ") ~ "\0";
+			string execute = command ~ " " ~ String.join(args, " ") ~ "\0";
 			int status = system(execute.ptr);
 			if (status != 0)
 				throw new ProcessException(String.format("Process '%s' exited with status %s", command, status));
@@ -628,7 +632,7 @@ struct System
 	}
 
 	/// Print output to the console.  Uses String.format internally and therefor accepts the same arguments.
-	static void trace(T...)(char[] message, T args)
+	static void trace(T...)(string message, T args)
 	{	version (Tango)
 			Stdout(String.format(message, args)).newline;
 		else
@@ -642,6 +646,8 @@ struct System
 		else
 		{	version (GNU)
 				sleep(cast(int)seconds);
+			version (D_Version2)
+				sleep(cast(int)(seconds/1_000));
 			else
 				usleep(cast(int)(seconds/1_000_000));
 		}
@@ -653,35 +659,35 @@ struct FS
 {
 	/// Path separator character of the current platform
 	version (Windows)
-		static char[] sep ="\\";
+		static const string sep ="\\";
 	else
-		static char[] sep ="/";
+		static const string sep ="/";
 
 	/// Convert a relative path to an absolute path.
-	static char[] abs(char[] rel_path)
+	static string abs(string rel_path)
 	{	version (Tango)
 			return (new FilePath).absolute(rel_path).toString();
 		else
 		{	// Remove filename
-			char[] filename;
+			string filename;
 			int index = rfind(rel_path, FS.sep);
 			if (index != -1)
-			{   filename = rel_path[index..length];
+			{   filename = rel_path[index..$];
 				rel_path = replace(rel_path, filename, "");
 			}
 
-			char[] cur_path = getcwd();
+			string cur_path = getcwd();
 			try {   // if can't chdir, rel_path is current path.
 				chdir(rel_path);
 			} catch {};
-			char[] result = getcwd();
+			string result = getcwd();
 			chdir(cur_path);
 			return result~filename;
 		}
 	}
 
 	/// Set the current working directory.
-	static void chDir(char[] path)
+	static void chDir(string path)
 	{	Log.add(`cd "`~path~`"`);
 		version (Tango)
 			Environment.cwd(path);
@@ -689,7 +695,7 @@ struct FS
 	}
 
 	/// Copy a file from source to destination
-	static void copy(char[] source, char[] destination)
+	static void copy(string source, string destination)
 	{	Log.add(`copy "`~source~`" "`~destination~`"`);
 		version (Tango)
 		{	scope from = new File(source);
@@ -703,28 +709,28 @@ struct FS
 	}
 
 	/// Does a file exist?
-	static bool exists(char[] path)
+	static bool exists(string path)
 	{	version (Tango)
 			return FilePath(path).exists();
 		else return !!.exists(path);
 	}
 
 	/// Get the current working directory.
-	static char[] getDir()
+	static string getDir()
 	{	version (Tango)
 			return Environment.cwd();
 		else return getcwd();
 	}
 
 	/// Is a path a directory?
-	static bool isDir(char[] path)
+	static bool isDir(string path)
 	{	version (Tango)
 			return FilePath(path).isFolder();
 		else return !!.isdir(path);
 	}
 
 	/// Is a path a file?
-	static bool isFile(char[] path)
+	static bool isFile(string path)
 	{	version (Tango)
 			return FilePath(path).isFile();
 		else return !!.isfile(path);
@@ -732,9 +738,9 @@ struct FS
 
 	/// Get an array of all files/folders in a path.
 	/// TODO: Fix with LDC + Tango
-	static char[][] listDir(char[] path)
+	static string[] listDir(string path)
 	{	version (Tango)
-		{	char[][] result;
+		{	string[] result;
 			foreach (dir; FilePath(path).toList())
 				result ~= FilePath(dir.toString()).file();
 			return result;
@@ -743,7 +749,7 @@ struct FS
 	}
 
 	/// Create a directory.  Returns false if the directory already exists.
-	static bool mkDir(char[] path)
+	static bool mkDir(string path)
 	{	if (!FS.exists(path))
 		{	version(Tango)
 				FilePath(path).create();
@@ -770,18 +776,18 @@ struct FS
 	 *     mode = files, folders, or both
 	 * Returns: An array of paths (including filename) relative to directory.
 	 * BUGS: LDC fails to return any results. */
-	static char[][] scan(char[] folder, char[][] exts=null, ScanMode mode=ScanMode.FILES)
-	{	char[][] result;
+	static string[] scan(string folder, string[] exts=null, ScanMode mode=ScanMode.FILES)
+	{	string[] result;
 		if (exts is null)
 			exts = [""];
-		foreach(char[] filename; FS.listDir(folder))
-		{	char[] name = folder~"/"~filename; // FS.sep breaks gdc windows.
+		foreach(string filename; FS.listDir(folder))
+		{	string name = folder~"/"~filename; // FS.sep breaks gdc windows.
 			if(FS.isDir(name))
 				result ~= scan(name, exts, mode);
 			if (((mode & ScanMode.FILES) && FS.isFile(name)) || ((mode & ScanMode.FOLDERS) && FS.isDir(name)))
 			{	// if filename is longer than ext and filename's extention is ext.
-				foreach (char[] ext; exts)
-					if (filename.length>=ext.length && filename[(length-ext.length)..length]==ext)
+				foreach (string ext; exts)
+					if (filename.length>=ext.length && filename[($-ext.length)..$]==ext)
 						result ~= name;
 		}	}
 		return result;
@@ -791,7 +797,7 @@ struct FS
 	 * Remove a file or a folder along with all files/folders in it.
 	 * Params: path = Path to remove, can be a file or folder.
 	 * Return: true on success, or false if the path didn't exist. */
-	static bool remove(char[] path)
+	static bool remove(string path)
 	{
 		Log.add(`remove "`~path~`"`);
 		if (!FS.exists(path))
@@ -807,15 +813,15 @@ struct FS
 		Log.operations = null;
 	}
 	
-	static ubyte[] read(char[] filename)
+	static ubyte[] read(string filename)
 	{	version (Tango)
 			return cast(ubyte[])File.get(filename);
 		else
-			return .read(filename); // wonder if this works
+			return cast(ubyte[])std.file.read(filename); // wonder if this works
 	}
 
 	/// Write a file to disk
-	static void write(T)(char[] filename, T[] data)
+	static void write(T)(string filename, T[] data)
 	{	scope data2 = String.replace(String.replace(String.replace(data, "\n", "\\n"), "\r", "\\r"), "\t", "\\t");
 		Log.add(`write "` ~ filename ~ `" "` ~ data2 ~ `"`);
 		version (Tango)
@@ -825,7 +831,7 @@ struct FS
 
 	// test path functions
 	unittest
-	{	char[] path = "_random_path_ZZZZZ";
+	{	string path = "_random_path_ZZZZZ";
 		if (!FS.exists(path))
 		{	assert(FS.mkDir(path));
 			assert(FS.exists(path));
@@ -839,7 +845,7 @@ struct FS
 /// This is a brief, tango/phobos neutral string library.
 struct String
 {
-	static char[] changeExt(char[] filename, char[] ext)
+	static string changeExt(string filename, string ext)
 	{	version(Tango)
 			return FilePath(filename).folder() ~ FilePath(filename).name() ~ ext;
 		else
@@ -894,13 +900,13 @@ struct String
 	 * String.format("%s World %s", "Hello", 23); // returns "Hello World 23"
 	 * --------
 	 */
-	static char[] format(T...)(char[] message, T args)
+	static string format(T...)(string message, T args)
 	{	version (Tango)
 		{	message = substitute(message, "%s", "{}");
 			return Format.convert(message, args);
 		} else
-		{	char[] swritef(...) // wrapper to convert varargs
-			{	char[] res;
+		{	string swritef(...) // wrapper to convert varargs
+			{	string res;
 				void putchar(dchar c)
 				{   res~= c;
 				}
@@ -915,31 +921,31 @@ struct String
 	}
 
 	/// Join an array of strings using glue.
-	static char[] join(char[][] array, char[] glue)
+	static string join(string[] array, string glue)
 	{	return .join(array, glue);
 	}
 
 	/// In source, repalce all instances of "find" with "repl".
-	static char[] replace(char[] source, char[] find, char[] repl)
+	static string replace(string source, string find, string repl)
 	{	version (Tango)
 			return substitute(source, find, repl);
 		else return .replace(source, find, repl);
 	}
 
 	/// Split an array by the regex pattern.
-	static char[][] split(char[] source, char[] pattern)
+	static string[] split(string source, string pattern)
 	{	version (Tango)
 			return Regex(pattern).split(source);
 		else return .split(source, pattern);
 	}
 
 	/// Does "source" begin with "beginning" ?
-	static bool starts(char[] source, char[] beginning)
+	static bool starts(string source, string beginning)
 	{	return source.length >= beginning.length && source[0..beginning.length] == beginning;
 	}
 
 	/// Get the ascii lower-case version of a string.
-	static char[] toLower(char[] input)
+	static string toLower(string input)
 	{	version (Tango)
 			return .toLower(input);
 		else return tolower(input);
@@ -951,6 +957,6 @@ struct String
 version(Tango) {}
 else
 {	class ProcessException : Exception {
-		this(char[] message) { super(message); }
+		this(string message) { super(message); }
 	};
 }

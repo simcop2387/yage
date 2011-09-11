@@ -1,3 +1,9 @@
 glob:.classpath
 glob:.project
 glob:current.txt
+glob:build/visualD/Yage.suo
+glob:bin/trash
+glob:lib/derelict-dmd-win32-d.lib
+glob:lib/derelict-dmd-win32.lib
+glob:lib/yage-dmd-win32-d.lib
+glob:lib/yage-dmd-win32.lib

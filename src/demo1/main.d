@@ -77,7 +77,7 @@ class DemoScene : Scene
 		// Planet
 		planet = scene.addChild(new ModelNode("space/planet.dae"));
 		planet.setScale(Vec3f(200));
-		planet.setAngularVelocity(Vec3f(0, -0.05, 0));
+		planet.setAngularVelocity(Vec3f(0, -0.01 , 0));
 		
 		// Atmosphere
 		/*

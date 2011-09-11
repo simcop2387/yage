@@ -165,7 +165,7 @@ struct ResourceManager
 	 * Params: filename = The Font file that will be loaded, or Resource.DEFAULT_FONT */
 	static Font font(char[] filename)
 	{
-		if (filename==DEFAULT_FONT)
+		if (filename=="__DEFAULT_FONT__") // dmd 1.066, __DEFAULT_FONT__ becomes garbage when yage.lib and demo1 are compiled separately.  So much for const protection!
 			return getDefaultFont();
 		
 		filename = resolvePath(filename);

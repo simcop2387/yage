@@ -34,7 +34,7 @@ void main()
 			count++;
 		}		
 	}
-	Log.trace("%ss, regular (non-parallel) foreach, 1000 elements with 100 sqrt's per iteration, 10 times.", t1.tell());
+	Log.write("%ss, regular (non-parallel) foreach, 1000 elements with 100 sqrt's per iteration, 10 times.", t1.tell());
 
 	
 	Timer t2 = new Timer(true);
@@ -50,5 +50,5 @@ void main()
 			count++;
 		}
 	}
-	Log.trace("%ss, parallel foreach, 100 elements with 1000 sqrt's per iteration, 10 times.", t2.tell());
+	Log.write("%ss, parallel foreach, 100 elements with 1000 sqrt's per iteration, 10 times.", t2.tell());
 }

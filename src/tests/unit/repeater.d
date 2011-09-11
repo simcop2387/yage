@@ -13,7 +13,7 @@ import yage.core.repeater;
 /**
  * Repeaters have previously caused a crash when compiled in debug mode */
 void main () {	
-	auto r = new Repeater();
-	r.dispose();
-	Log.trace("Creating and disposing of a Repeater didn't crash.  Test passed.");
+	auto r = new Repeater(() {});
+	r.dispose(); 
+	Log.write("Creating and disposing of a Repeater didn't crash.  Test passed.");
 }

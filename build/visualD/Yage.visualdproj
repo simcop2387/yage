@@ -5,6 +5,7 @@
   <link>0</link>
   <lib>1</lib>
   <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
   <trace>0</trace>
   <quiet>0</quiet>
@@ -50,6 +51,7 @@
   <doDocComments>0</doDocComments>
   <docdir />
   <docname />
+  <modules_ddoc />
   <ddocfiles />
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
@@ -72,7 +74,7 @@
   <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
   <objfiles />
   <linkswitches />
-  <libfiles>..\lib\derelict-dmd-win32-d.lib</libfiles>
+  <libfiles />
   <libpaths />
   <deffile />
   <resfile />
@@ -93,12 +95,13 @@
   <link>0</link>
   <lib>1</lib>
   <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
   <vtls>0</vtls>
-  <symdebug>1</symdebug>
+  <symdebug>0</symdebug>
   <optimize>1</optimize>
   <cpu>0</cpu>
   <isX86_64>0</isX86_64>
@@ -118,7 +121,7 @@
   <useSwitchError>0</useSwitchError>
   <useUnitTests>0</useUnitTests>
   <useInline>1</useInline>
-  <release>0</release>
+  <release>1</release>
   <preservePaths>1</preservePaths>
   <warnings>0</warnings>
   <infowarnings>0</infowarnings>
@@ -138,6 +141,7 @@
   <doDocComments>0</doDocComments>
   <docdir />
   <docname />
+  <modules_ddoc />
   <ddocfiles />
   <doHdrGeneration>0</doHdrGeneration>
   <hdrdir />
@@ -156,11 +160,11 @@
   <moduleDepsFile />
   <run>0</run>
   <runargs />
-  <runCv2pdb>1</runCv2pdb>
+  <runCv2pdb>0</runCv2pdb>
   <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
   <objfiles />
   <linkswitches />
-  <libfiles>..\lib\derelict-dmd-win32.lib</libfiles>
+  <libfiles />
   <libpaths />
   <deffile />
   <resfile />
@@ -203,6 +207,15 @@
     <File path="..\..\src\yage\core\tree.d" />
     <File path="..\..\src\yage\core\types.d" />
    </Folder>
+   <Folder name="gui">
+    <File path="..\..\src\yage\gui\all.d" />
+    <File path="..\..\src\yage\gui\controls.d" />
+    <File path="..\..\src\yage\gui\exceptions.d" />
+    <File path="..\..\src\yage\gui\style.d" />
+    <File path="..\..\src\yage\gui\surface.d" />
+    <File path="..\..\src\yage\gui\surfacegeometry.d" />
+    <File path="..\..\src\yage\gui\textblock.d" />
+   </Folder>
    <Folder name="resource">
     <Folder name="embed">
      <File path="..\..\src\yage\resource\embed\embed.d" />
@@ -236,10 +249,10 @@
    <Folder name="system">
     <Folder name="graphics">
      <File path="..\..\src\yage\system\graphics\all.d" />
-     <File path="..\..\src\yage\system\graphics\probe.d" />
-     <File path="..\..\src\yage\system\graphics\render.d" />
      <File path="..\..\src\yage\system\graphics\api.d" />
      <File path="..\..\src\yage\system\graphics\opengl.d" />
+     <File path="..\..\src\yage\system\graphics\probe.d" />
+     <File path="..\..\src\yage\system\graphics\render.d" />
     </Folder>
     <Folder name="sound">
      <File path="..\..\src\yage\system\sound\all.d" />
@@ -252,15 +265,6 @@
     <File path="..\..\src\yage\system\log.d" />
     <File path="..\..\src\yage\system\system.d" />
     <File path="..\..\src\yage\system\window.d" />
-   </Folder>
-   <Folder name="gui">
-    <File path="..\..\src\yage\gui\all.d" />
-    <File path="..\..\src\yage\gui\controls.d" />
-    <File path="..\..\src\yage\gui\exceptions.d" />
-    <File path="..\..\src\yage\gui\style.d" />
-    <File path="..\..\src\yage\gui\surface.d" />
-    <File path="..\..\src\yage\gui\surfacegeometry.d" />
-    <File path="..\..\src\yage\gui\textblock.d" />
    </Folder>
    <File path="..\..\src\yage\all.d" />
    <File path="..\..\src\yage\candy.ddoc" />

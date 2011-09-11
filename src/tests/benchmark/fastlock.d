@@ -93,7 +93,7 @@ void test(void function() func)
 	
 	
 	thread2.join();
-	Log.trace(array, " ", a.tell());
+	Log.write(array, " ", a.tell());
 	array[] = 0;
 }
 

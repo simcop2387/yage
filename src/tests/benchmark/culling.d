@@ -23,11 +23,11 @@ void main()
 	
 	Timer a = new Timer(true);
 	cull!(0)(1_000_000);
-	Log.trace(a.tell());
+	Log.write(a.tell());
 	
 	Timer b = new Timer(true);
 	cull!(128)(1_000_000);
-	Log.trace(b.tell());
+	Log.write(b.tell());
 
 }
 
