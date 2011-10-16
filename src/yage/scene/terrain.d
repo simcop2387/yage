@@ -1,6 +1,5 @@
 /**
- * Copyright:  (c) 2010 Brandon Lyons
- * Authors:    Brandon Lyons, Eric Poggel
+ * Authors:    Ludovic Angot, Eric Poggel
  * License:    Boost 1.0
  */
  
@@ -136,11 +135,13 @@ class TerrainNode : VisibleNode
 		Vec3f[] vertices;
 		Vec3f[] normals;
 		Vec2f[] texCoords;
-
+
+
 		/*
 		 * Set attributes retrieved with getTerrainPoint.
 		 * The use of halfRes comes to center the terrain in the scene world
-		 */
+		 */
+
 		TerrainPoint terrainPoint;
 		for (int y = j * Patch.SIZE; y < (j+1) * Patch.SIZE; ++y)
 			for (int x = i * Patch.SIZE; x < (i+1) * Patch.SIZE; ++x)
@@ -157,11 +158,13 @@ class TerrainNode : VisibleNode
 				texCoords ~= terrainPoint.textureCoordinate;
 			}
 		
-		assert(vertices.length);
+		assert(vertices.length);
+
 		patchGeometry.setAttribute(Geometry.VERTICES, vertices);
 		patchGeometry.setAttribute(Geometry.NORMALS, normals);
 		patchGeometry.setAttribute(Geometry.TEXCOORDS0, texCoords);
-
+
+
 		/* Construct the array of triangles */
 		Vec3i[] triangles;
 		int cornerCurrent, cornerUp;
@@ -172,163 +175,18 @@ class TerrainNode : VisibleNode
 				cornerUp = (y+1)*(Patch.SIZE)+x;
 				triangles ~= Vec3i(cornerCurrent, cornerCurrent+1, cornerUp);
 				triangles ~= Vec3i(cornerUp, cornerCurrent+1, cornerUp+1);
-			}
-
+			}
+
+
+
 		patchGeometry.setMeshes([new Mesh(material, triangles)]);
 		patchGeometry.setAttribute(Geometry.TEXCOORDS1, patchGeometry.createTangentVectors());
-		
+		
+
 		return patchGeometry;
 	}
 
 
-/+
-	/**
-	 * The terrain geometry is divided into blocks, each at multiple levels of detail.
-	 * This function is used by the renderer to get a set of Geometry visible by the specified camera.
-	 * Params:
-	 *     camera = Only blocks inside the Camera's view frustum will be returned.
-	 *     pixelsPerPolygon = Blocks closer to the camera will provide higher resolution Geometry.
-	 *         Every block returned will have its polygons smaller than pixelsPerPolygon.
-	 *         Smaller values for pixelsPerPolygon will yield blocks with more polygons and a better rendering.
-	 */
-	Geometry getVisibleGeometry(CameraNode camera)
-	{
-		/// TODO
-		// This Geometry can be passed directly to the render system.
-		// We should probably generate geometry lazily--this will allow for ginormous terrains too big to fit in memory.
-		// And also free mipmaps that haven't been used in a while--a complete paging system.
-		
-		struct TerrainPatch {
-			const int SIZE = 16;
-			const int MAXHEIGHT = 255;
-
-			int index;
-			short lod;
-		}
-
-		/* culling of patches using the Radar algorithm
-		 * http://www.lighthouse3d.com/opengl/viewfrustum/index.php?camspace3
-		 */
-		//origin point of the terrain
-		Vec3f originTerrain = this.getWorldPosition();
-
-		// For each patch and its bounding cube
-
-			// 1. find the coordinates of the 8 vertices of the bounding cube in the camera coordinates
-			Vec3f cameraPosition = camera.getWorldPosition();
-			Vec3f bc0 = cameraPosition - originTerrain;
-			Vec3f bc1 = cameraPosition - originTerrain + Vec3f(TerrainPatch.SIZE, 0, 0);
-			Vec3f bc2 = cameraPosition - originTerrain + Vec3f(TerrainPatch.SIZE, TerrainPatch.SIZE, 0);
-			Vec3f bc3 = cameraPosition - originTerrain + Vec3f(0, TerrainPatch.SIZE, 0);
-	
-			Vec3f bc4 = cameraPosition - originTerrain + Vec3f(0, 0, TerrainPatch.MAXHEIGHT);
-			Vec3f bc5 = cameraPosition - originTerrain + Vec3f(TerrainPatch.SIZE, 0, TerrainPatch.MAXHEIGHT);
-			Vec3f bc6 = cameraPosition - originTerrain + Vec3f(TerrainPatch.SIZE, TerrainPatch.SIZE, TerrainPatch.MAXHEIGHT);
-			Vec3f bc7 = cameraPosition - originTerrain + Vec3f(0, TerrainPatch.SIZE, TerrainPatch.MAXHEIGHT);
-			// 2. verify that at least one z coordinates is inside the frustum
-		
-		
-		//1 locate if the camera is close enough in absolute coordinates, otherwise minimize LOD everywhere
-		
-		//2 If close enough, project its coordinates in the plane of the terrain, then transform this coordinate in the system of coordinates where the center of the terrain is 0. It means:
-		//applying backward the setposition of the Terrain to the camera, then using the rotation vector of the terrain as a basis.
-		
-		//3 determine the range impacted around the camera projection xmin xmax, ymin ymax
-		
-		//4 for the entire terrain, calculate vertices, normals and texcoords in minimum LOD. Store in a linear array.
-		//The resolution of this grid is maybe 4 times smaller.
-		
-		//5 In range xmin xmax ymin ymax, calculate extra vertices
-		// take border cases separately (where cracking can happen)
-		
-		//triangle problem...
-		
-		return null;
-	}
-+/
-
-
-/+ test area ################################### */
-	protected Geometry testGeom;
-	protected float radius;
-
-	this(HeightGenerator generator, TextureInstance[] textures=null)
-	{
-		Vec2i resolution = generator.getResolution();
-		//Initialize geometry
-		this.testGeom = new Geometry();
-		if (resolution.x > resolution.y)
-			//0.75 = sqrt(2)/2, because the grid is not a circle!
-			this.radius = resolution.x*0.75;
-		else
-			this.radius = resolution.y*0.75;
-
-		//we will need to use the resolution divided / 2
-		Vec2i halfRes = { resolution.x / 2, resolution.y / 2 };
-		Vec3f[] vertices;
-		Vec3f[] normals;
-		Vec2f[] texCoords;
-
-		/* Set attributes retrieved with getTerrainPoint.
-		 * The divisions by 2 comes to center the terrain in the scene worlde
-		 */
-		TerrainPoint terrainPoint;
-		for (int y = -halfRes.y; y < halfRes.y; ++y)
-			for (int x= -halfRes.x; x < halfRes.x; ++x)
-			{
-				terrainPoint = generator.getTerrainPoint(Vec2i(x,y));
-
-				vertices  ~= Vec3f(x/cast(float)(halfRes.x), y/cast(float)(halfRes.y), terrainPoint.height);
-				normals   ~= terrainPoint.normal;
-				texCoords ~= terrainPoint.textureCoordinate;
-			}
-
-		testGeom.setAttribute(Geometry.VERTICES, vertices);
-		testGeom.setAttribute(Geometry.NORMALS, normals);
-		testGeom.setAttribute(Geometry.TEXCOORDS0, texCoords);
-
-		/* Construct the array of triangles */
-		Vec3i[] triangles;
-		int cornerCurrent, cornerUp;
-		for (int y=0; y < resolution.y-1; ++y)// -1 because the last vertices are included in the previous last triangles.
-			for (int x=0; x < resolution.x-1; ++x)//ditto
-			{	cornerCurrent = y*(resolution.x)+x;
-				cornerUp = (y+1)*(resolution.x)+x;
-				triangles ~= Vec3i(cornerCurrent, cornerCurrent+1, cornerUp);
-				triangles ~= Vec3i(cornerUp, cornerCurrent+1, cornerUp+1);
-			}
-
-		Material material = new Material();
-		material.setPass(new MaterialPass());
-		testGeom.setMeshes([new Mesh(material, triangles)]);
-
-		testGeom.setAttribute(Geometry.TEXCOORDS1, testGeom.createTangentVectors());
-		//testGeom.drawNormals=true;
-	}
-	
-	override void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
-	{
-		Vec3f wp = getWorldPosition();
-		if (camera.scene !is scene)
-			wp += camera.getWorldPosition();
-
-		if (camera.isVisible(wp, getRadius()))
-		{
-			RenderCommand rc;
-			rc.transform = getWorldTransform().scale(getSize());
-			rc.geometry = this.testGeom;
-			rc.materialOverrides = materialOverrides;
-			auto l = getLights(lights, 8);
-			rc.setLights(l);
-			result.append(rc);
-		}
-	}
-
-	public	float getRadius()
-	{	//Log.info(radius*getScale().max());
-		return radius*getScale().max();
-	}
-+/
 }
 
 /**
@@ -358,6 +216,7 @@ interface IHeightGenerator
 	 * Returns: An RGB texture to use as a baked light-map.  It's color values will be modulated with the terrain. */
 	public TextureInstance getLightmap(Vec2f min, Vec2f max);	
 }
+
 
 /**
  * A sample TerrainGenerator that uses a heightmap image to specify elevation and a color texture

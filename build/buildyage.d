@@ -9,8 +9,10 @@
  * See: <a href="http://dsource.org/projects/cdc/">The CDC Project</a>
  */
 
-const char[] app = "demo1"; // set which program to build against yage.
+ /* set which program to build against yage.*/
+//const char[] app = "demo1";
 //const char[] app = "demo2";
+const char[] app = "demo3";
 //const char[] app = "tests/integration/main.d";
 
 /**
@@ -35,41 +37,49 @@ int main(char[][] args)
 	}
 	
 	// Parse Options
-	char[][] options1;	// options for both derelict and yage
+	char[][] options1;  // options for both derelict and yage
 	char[][] options2;  // options for only yage
-	bool silent, ddoc, verbose, run, debug_, lib;
+	bool help, ddoc, verbose, startyage, debug_, lib;
 	foreach (char[] arg; args)
 	{	switch(String.toLower(arg))
-		{	case "-ddoc": 		ddoc = true; options2 ~= ["-D", "-Dd../doc"]; break;
-			case "-debug": 		debug_=true; options1 ~= ["-debug", "-g"]; break;
-			case "-lib": 		lib=true; break;
-			case "-profile": 	options1 ~= ["-profile"]; break;
-			case "-run": 		run=true; break;
-			case "-silent": 	silent=true; break;
-			case "-verbose": 	verbose=true; break;
-			case ".\\buildyage.exe": break;
+		{	case "-ddoc": 			ddoc = true; options2 ~= ["-D", "-Dd../doc"]; break;
+			case "-debug": 			debug_=true; options1 ~= ["-debug", "-g"]; break;
+			case "-lib": 			lib=true; break;
+			case "-profile": 		options1 ~= ["-profile"]; break;
+			case "-startyage": 		startyage=true; break;
+			case "-help":	 		help=true; break;
+			case "-verbose": 		verbose=true; break;
+			case ".\\buildyage.exe": 	break;
+			/* for linux execution */
+			case "./buildyage":		break;
+			case "buildyage":		break;
+			case "-release":		break;
 			default: System.trace(arg ~ " is not a supported argument.");
 	}	}
 	if (debug_)
 		options1 ~= ["-unittest"];
 	else
 		options1 ~= ["-O", "-inline", "-release"];
-	//options2 ~= "-d"; // allow deprecated items
 
 	// Show Options
-	if (!silent)
-	{	System.trace("Building Yage...");
-		System.trace("If you're curious, the options are:");
-		System.trace("   -ddoc    Generate documentation in the doc folder");
-		System.trace("   -debug   Include debugging symbols and enable stack tracing on Windows.");
-		System.trace("            Otherwise optimize, inline functions, and remove unittests/asserts.");
-		System.trace("   -lib     Create a yage lib file in the lib folder.");
-		System.trace("   -profile Compile in profiling code.");
-		System.trace("   -run     Run when finished.");
-		System.trace("   -silent  Don't print this message.");
-		System.trace("   -verbose Print all commands as they're being executed.");
-		System.trace("Example:  dmd -run buildyage.d -release -run\n...");
+	if (help)
+	{
+		System.trace("   -ddoc        Generate documentation in the doc folder");
+		System.trace("   -debug       Include debugging symbols and enable stack tracing");
+		System.trace("                on Windows. Otherwise optimize, inline functions, ");
+		System.trace("                and remove unittests/asserts.");
+		System.trace("   -help        Print this message.");
+		//System.trace("   -lib         Create a yage lib file in the lib folder.");
+		System.trace("   -profile     Compile in profiling code.");
+		System.trace("   -startyage   Run when finished.");
+		System.trace("   -verbose     Print all commands as they're being executed.");
+		System.trace("");
+		System.trace("Example:  dmd -run buildyage.d -release -startyage");
+		return 0;
 	}
+	System.trace("");
+	System.trace("Use '-help' to get the complete list of options.");
+	System.trace("Building Yage...");
 
 	long startTime = System.time();
 	
@@ -102,12 +112,12 @@ int main(char[][] args)
 	if (ddoc)
 		System.trace(`Documentation files have been placed in ../doc`, bin_ext);
 	
-	if (run)
+	if (startyage)
 	{	FS.chDir("../bin"); // TODO: allow System.execute to accept relative path
 		version(Windows)
 			System.execute("yage3d.exe");
 		else
-			System.execute("yage3d");
+			System.execute("./yage3d");
 	}
 	return 0; // success
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright:  Public Domain
- * Authors:    Eric Poggel
+ * Authors:    Eric Poggel, Ludovic Angot
  * Warranty:   none
  *
  * This module is not technically part of the engine, but merely uses it.
