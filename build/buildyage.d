@@ -9,8 +9,8 @@
  * See: <a href="http://dsource.org/projects/cdc/">The CDC Project</a>
  */
 
-const char[] app = "demo1"; // set which program to build against yage.
-//const char[] app = "demo2";
+//const char[] app = "demo1"; // set which program to build against yage.
+const char[] app = "demo1";
 //const char[] app = "tests/integration/main.d";
 
 /**
@@ -38,6 +38,7 @@ int main(char[][] args)
 	char[][] options1;	// options for both derelict and yage
 	char[][] options2;  // options for only yage
 	bool silent, ddoc, verbose, run, debug_, lib;
+	bool badArg = false;
 	foreach (char[] arg; args)
 	{	switch(String.toLower(arg))
 		{	case "-ddoc": 		ddoc = true; options2 ~= ["-D", "-Dd../doc"]; break;
@@ -48,7 +49,7 @@ int main(char[][] args)
 			case "-silent": 	silent=true; break;
 			case "-verbose": 	verbose=true; break;
 			case ".\\buildyage.exe": break;
-			default: System.trace(arg ~ " is not a supported argument.");
+			default: System.trace("\n" ~ arg ~ " is not a supported argument.\n"); badArg=true;
 	}	}
 	if (debug_)
 		options1 ~= ["-unittest"];
@@ -57,7 +58,7 @@ int main(char[][] args)
 	//options2 ~= "-d"; // allow deprecated items
 
 	// Show Options
-	if (!silent)
+	if (!silent || badArg)
 	{	System.trace("Building Yage...");
 		System.trace("If you're curious, the options are:");
 		System.trace("   -ddoc    Generate documentation in the doc folder");
@@ -70,6 +71,8 @@ int main(char[][] args)
 		System.trace("   -verbose Print all commands as they're being executed.");
 		System.trace("Example:  dmd -run buildyage.d -release -run\n...");
 	}
+	if (badArg)
+		return 0;
 
 	long startTime = System.time();
 	

@@ -9,6 +9,7 @@ module yage.core.math.matrix;
 import tango.math.IEEE;
 import tango.math.Math;
 import tango.text.convert.Format;
+import yage.core.format;
 import yage.core.math.plane;
 import yage.core.math.vector;
 import yage.core.math.quatrn;
@@ -46,8 +47,8 @@ struct Matrix
 	
 	invariant()
 	{	foreach (float t; v)
-		{	assert(!isNaN(t)); // sometimes this fails!
-			assert(t!=float.infinity); // sometimes this fails!
+		{	assert(!isNaN(t), format("[%s]", v)); // sometimes this fails!
+			assert(t!=float.infinity, format("[%s]", v)); // sometimes this fails!
 		}
 	}
 	
@@ -148,6 +149,22 @@ struct Matrix
 		return result.transformAffine(mscale);
 	}
 	
+	static Matrix compose(Vec3f position, Quatrn rotation, Vec3f scale)
+	{			
+		Matrix result;
+		result.setPosition(position);
+		result.setRotation(rotation);
+		
+		Matrix mscale;
+		mscale.v[0] = scale.x;
+		mscale.v[5] = scale.y;
+		mscale.v[10]= scale.z;
+		
+		if (scale.almostEqual(Vec3f.ONE))
+			return result;
+		return result.transformAffine(mscale);
+	}
+	
 	
 	void decompose(out Vec3f position, out Vec3f rotation, out Vec3f scale) /// ditto
 	{		
@@ -183,7 +200,31 @@ struct Matrix
 		assert(r.almostEqual(r2));
 		assert(s.almostEqual(s2));		
 		assert(Matrix.compose(Vec3f(0), Vec3f(0), Vec3f(1)) == Matrix.IDENTITY);
-	}	
+	}
+	
+	void decompose(out Vec3f position, out Quatrn rotation, out Vec3f scale) /// ditto
+	{		
+		// Extract the translation directly
+		position.x = c3r0;
+		position.y = c3r1;
+		position.z = c3r2;
+		
+		// Take the lengths of the basis vectors to find the scale factors.
+		scale.x = (cast(Vec3f*)v[0..3]).length();
+		scale.y = (cast(Vec3f*)v[4..7]).length();
+		scale.z = (cast(Vec3f*)v[8..11]).length();
+		
+		// Undo the scale before getting the rotation.
+		if (scale.almostEqual(Vec3f(1)))
+			rotation = toQuatrn();
+		else {
+			Matrix m = *this;		
+			m.v[0..3] = (cast(Vec3f*)v[0..3]).scale(1/scale.x).v[];
+			m.v[4..7] = (cast(Vec3f*)v[4..7]).scale(1/scale.y).v[];
+			m.v[8..11] = (cast(Vec3f*)v[8..11]).scale(1/scale.z).v[];
+			rotation = m.toQuatrn();
+		}
+	}
 	
 	/**
 	 * Decompose this Matrix into a position, rotation, and scaling Matrix. */
@@ -243,17 +284,17 @@ struct Matrix
 	/**
 	 * If this is a clip matrix (projection*modelView), get a 6-plane view frustum from it.
 	 * Params:
-	 *     lookAside = If set and of length=6, use this to store the result. */
-	Plane[] getFrustum(Plane[] lookAside=null)
-	{	if (lookAside.length < 6)
-			lookAside.length = 6;		
-		lookAside[0] = Plane(v[3]-v[0], v[7]-v[4], v[11]-v[ 8], v[15]-v[12]).normalize();
-		lookAside[1] = Plane(v[3]+v[0], v[7]+v[4], v[11]+v[ 8], v[15]+v[12]).normalize();
-		lookAside[2] = Plane(v[3]+v[1], v[7]+v[5], v[11]+v[ 9], v[15]+v[13]).normalize();
-		lookAside[3] = Plane(v[3]-v[1], v[7]-v[5], v[11]-v[ 9], v[15]-v[13]).normalize();
-		lookAside[4] = Plane(v[3]-v[2], v[7]-v[6], v[11]-v[10], v[15]-v[14]).normalize();
-		lookAside[5] = Plane(v[3]+v[2], v[7]+v[6], v[11]+v[10], v[15]+v[14]).normalize();
-		return lookAside;
+	 *     result = If set and of length=6, use this to store the result. */
+	Plane[] getFrustum(Plane[] result=null)
+	{	if (result.length < 6)
+			result.length = 6;		
+		result[0] = Plane(v[3]-v[0], v[7]-v[4], v[11]-v[ 8], v[15]-v[12]).normalize(); // left?
+		result[1] = Plane(v[3]+v[0], v[7]+v[4], v[11]+v[ 8], v[15]+v[12]).normalize(); // right?
+		result[2] = Plane(v[3]+v[1], v[7]+v[5], v[11]+v[ 9], v[15]+v[13]).normalize(); // top?
+		result[3] = Plane(v[3]-v[1], v[7]-v[5], v[11]-v[ 9], v[15]-v[13]).normalize(); // bottom?
+		result[4] = Plane(v[3]-v[2], v[7]-v[6], v[11]-v[10], v[15]-v[14]).normalize(); // near?
+		result[5] = Plane(v[3]+v[2], v[7]+v[6], v[11]+v[10], v[15]+v[14]).normalize(); // far?
+		return result;
 	}
 	
 	/**

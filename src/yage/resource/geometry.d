@@ -242,7 +242,7 @@ class Geometry
 	{	this.meshes = meshes;		
 	}
 	
-	/// Calculate the radius of a sphere, centered at the model's origin, that can contain this Model.
+	/// Calculate the radius of a sphere, centered at thegeometry's origin, that can contain this Geometry.
 	float getRadius()
 	{	float result=0;
 		if (VERTICES in attributes)

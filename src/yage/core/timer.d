@@ -27,7 +27,7 @@ class Timer
 	protected double	min		= 0;
 	protected double 	max		= double.infinity;
 	//protected double	speed	= 1.0;
-	protected ulong		us		= 0;		// microsecond counter
+	protected ulong		us		= 0;		// microsecond counter.  TODO: it's possible to have this store the start time while the timer is running and the accumulated time while it is paused.  Then it is no longer necessary to store a reference to StopWatch.  Maybe I should abstract this to use a single getMicroSeconds() function that can wrap whatever?
 	protected StopWatch hpc;
 	
 	protected Timer source; // TODO:	 allow using one timer as the souce of another, so pausing a scene could pause all timers in that scene.
@@ -118,9 +118,8 @@ class Timer
 	/** 
 	 * Set the Timer. */
 	void seek(double seconds)
-	in { assert(seconds>=0); }
-	body
-	{	us = cast(ulong)(seconds*1_000_000);
+	{	assert(seconds>=0); 	
+		us = cast(ulong)(seconds*1_000_000);
 	}
 	
 	/**

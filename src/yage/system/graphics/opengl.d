@@ -316,7 +316,7 @@ class OpenGL : GraphicsAPI
 		return result;
 	}
 
-	// Part of a test to gt renderTargt to work with fbo's.
+	// Part of a test to get renderTargt to work with fbo's.
 	uint fbo;
 	uint renderBuffer;
 	
@@ -526,7 +526,7 @@ class OpenGL : GraphicsAPI
 		
 		foreach (i, texture; textures)
 		{
-			// Skip if this texture is already bound
+			// Skip if this texture is already bound to this unit.
 			if (current.textures.length > i && *current.textures[i] == texture)
 				continue;
 			
@@ -694,7 +694,7 @@ class OpenGL : GraphicsAPI
 						texture.texture.getSource(), time, min);
 			}
 			
-			// Filtering
+			// Set filtering parameters
 			if (texture.filter == TextureInstance.Filter.DEFAULT)
 				texture.filter = TextureInstance.Filter.TRILINEAR;	// Create option to set this later
 			switch(texture.filter)

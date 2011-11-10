@@ -6,26 +6,30 @@
 
 module yage.core.math.plane;
 
+import tango.math.IEEE;
 import tango.math.Math;
 import tango.text.convert.Format;
+import yage.core.format;
 import yage.core.math.vector;
 import yage.core.misc;
 
 /**
- * A class representing a plane in 3D space.  This is defined as a struct instead of a
- * class so it can be created and destroyed without any dynamic memory allocation.*/
+ * A class representing a plane in 3D space */
 struct Plane
 {
 	union
 	{	float v[4] = [0, 0, 0, 0]; // same as x, y, z, d
 		struct
 		{	float x, y, z, d;
+		}
+		Vec3f normal;
+	}
 
-	}	}
-
-	invariant
+	invariant()
 	{	foreach (float t; v)
-			assert(t != float.nan);
+		{	assert(!isNaN(t), format("<%s>", v));
+			assert(t!=float.infinity, format("<%s>", v));
+		}
 	}
 
 	/// Return a Plane with all values at zero.
@@ -53,8 +57,24 @@ struct Plane
 	float getDistance(Vec3f point)
 	{	return v[0]*point.v[0] + v[1]*point.v[1] + v[2]*point.v[2] + v[3];
 	}
+	
+	// Untested, doesn't deal with parallel planes (no instersection)
+	Vec3f intersect(Plane plane1, Plane plane2)
+	{
+		Vec3f cp01 = normal.cross(plane1.normal);
+		float det = cp01.dot(plane2.normal);
+		
+		// Parallel planes, no intersection
+		//if (det < 0.0001)
+		//	return false;
+		
+		Vec3f cp12 = plane1.normal.cross(plane1.normal) * d;
+		Vec3f cp20 = plane2.normal.cross(normal) * plane1.d;
+		
+		return cp12 + cp20 + (cp01*plane2.d) / det;
+	}
 
-	/// Normalize the plane.  This should be tested for accuracy.
+	/// Normalize the plane.  TODO:  This should be tested for accuracy.
 	Plane normalize()
 	{	Plane res;
 		float l = 1.0/sqrt(x*x + y*y + z*z);

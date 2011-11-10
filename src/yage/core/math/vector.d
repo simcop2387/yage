@@ -30,15 +30,16 @@ template Repeat(T, int count) {
  * This is a template to create a vector of any type with any number of elements.
  * Use Vec.v[0..n] to access the vector's elements directly, or x,y,z,w to access
  * elements of vector's of size less than or equal to four.
+ * N = Allow NaN and inf.  If false, add a class invariant to ensure the values of the Vector are never NaN or infinity.
  * Example:
  * --------------------------------
  * Vec!(4, real) a; // a is a four-component real vector.
  * --------------------------------
  * TODO: Convert looping code to static if's to improve performance.
  */
-struct Vec(int S, T : real)
+struct Vec(int S, T : real, bool N=false)
 {
-	alias Vec!(S, T) VST;
+	alias Vec!(S, T, N) VST;
 	static const byte components = S; ///
 	
 	static const VST ZERO; ///
@@ -64,10 +65,19 @@ struct Vec(int S, T : real)
 			struct {T top; T right; T bottom; T left; } ////
 	}
 	
-	invariant()
+	static if (!N)
+		invariant()
+		{	foreach (float t; v)
+			{	assert(!isNaN(t), format("<%s>", v));
+				assert(t!=float.infinity, format("<%s>", v));
+			}
+		}
+	
+	// temporary
+	void check()
 	{	foreach (float t; v)
-		{	assert(!isNaN(t)); // sometimes this fails!
-			//assert(t!=float.infinity); // sometimes this fails!
+		{	assert(!isNaN(t), format("<%s>", v));
+			assert(t!=float.infinity);
 		}
 	}
 	
@@ -99,6 +109,15 @@ struct Vec(int S, T : real)
 		res.v[] = s[0..S];
 		return res;
 	}
+	/*
+	/// Convert from other vector types to this type.
+	static VST opCall(int S2, T2 : real, bool N2)(Vec!(S2, T2, N2) s)
+	{	VST result;
+		const size = S>S2?S:S2;
+		for (int i=0; i<size;i++)
+			result.v[i] = cast(T)s.v[i];
+		return result;
+	}*/							
 
 	/// Is this vector equal to vector s, discarding relative error fudge.
 	bool almostEqual(VST s, float fudge=0.0001)
@@ -401,23 +420,31 @@ struct Vec(int S, T : real)
 	 * Params:
 	 *     S2 = Size (number of components) of new Vec.
 	 *     T2 = type of new Vec. */
-	Vec!(S2, T2) toVec(int S2, T2 : real)()
-	{	Vec!(S2, T2) result = Vec!(S2, T2)();
+	Vec!(S2, T2, N2) toVec(int S2, T2 : real, bool N2=false)()
+	{	auto result = Vec!(S2, T2, N2)();
 		for (int i=0; i<min(S, S2); i++)
 			result.v[i] = cast(T2)v[i];
 		return result;
 	}
 	
+	alias toVec!(2, int) vec2i; /// ditto
+	alias toVec!(3, int) vec3i; /// ditto
+	alias toVec!(4, int) vec4i; /// ditto	
 	alias toVec!(2, float) vec2f; /// Convert to these types of vectors
 	alias toVec!(3, float) vec3f; /// ditto
 	alias toVec!(4, float) vec4f; /// ditto
-	alias toVec!(2, int) vec2i; /// ditto
-	alias toVec!(3, int) vec3i; /// ditto
-	alias toVec!(4, int) vec4i; /// ditto
+	alias toVec!(2, float, true) vec2fn; /// ditto
+	alias toVec!(3, float, true) vec3fn; /// ditto
+	alias toVec!(4, float, true) vec4fn; /// ditto
 		
-	// Special operations for 3-component vectors
-	static if (S==3)
+	// Special operations for 3-component vectors that can't be NaN or inf
+	static if (S==3 && !N)
 	{		
+		/// Temporary for easily switching between Vec3f and quaternions
+		VST toAxis()
+		{	return *this;
+		}
+		
 		/// Return the cross product of this vector with another vector.
 		VST cross(VST s)
 		{	return VST(y*s.z-z*s.y, z*s.x-x*s.z, x*s.y-y*s.x);
@@ -436,10 +463,16 @@ struct Vec(int S, T : real)
 			 * Treat this Vector as an axis-angle and combine the rotation of another axis-angle. */
 			VST combineRotation(VST axis)
 			{	
-				// Shortcut!
-				if (cross(axis).length2() < .01) // If they point in almost the same or opposite directions
-					return *this+axis;
+				// Old way
+				return toQuatrn().rotate(axis);
 				
+				
+				
+				// Shortcut!
+				//if (cross(axis).length2() < .01) // If they point in almost the same or opposite directions
+				//	return *this+axis;
+				
+				// Convert to quaternions
 				Quatrn q1;
 				if (*this!=ZERO) // no rotation for zero-vector
 				{	float angle = length();
@@ -458,12 +491,14 @@ struct Vec(int S, T : real)
 					q2.v[0..3] = axis.v[0..3] * (s/angle);
 				}
 				
+				// Multiply the quaternions
 				Quatrn res;
 				res.w = q2.w*q1.w - q2.x*q1.x - q2.y*q1.y - q2.z*q1.z;
 				res.x = q2.w*q1.x + q2.x*q1.w + q2.y*q1.z - q2.z*q1.y;
 				res.y = q2.w*q1.y - q2.x*q1.z + q2.y*q1.w + q2.z*q1.x;
 				res.z = q2.w*q1.z + q2.x*q1.y - q2.y*q1.x + q2.z*q1.w;
 				
+				// Convert back to axis-angle.
 				VST result;
 				auto angle = acos(res.w)*2;
 				if (angle != 0)
@@ -492,11 +527,12 @@ struct Vec(int S, T : real)
 				result.v[8..11] = z.v[0..3];
 				
 				/// TODO: This is very inefficient and possibly incorrect
-				return result/*.transformAffine(toMatrix())*/.toAxis();		
+				return result/*.transformAffine(toMatrix())*/.toAxis();
 			}
 			
 			/**
-			 * Return a copy of this vector rotated by axis. */
+			 * Return a copy of this vector rotated by axis. 
+			 * TODO: Rodriguez formula should be more efficient:  http://en.wikipedia.org/wiki/Axis-angle_representation#Rotating_a_vector*/
 			VST rotate(VST axis)
 			{	return rotate(axis.toMatrix());
 				/+// TODO Inline simplifcation and optimization
@@ -588,6 +624,10 @@ alias Vec!(4, int) Vec4i;		/// A four-component int Vec
 alias Vec!(2, float) Vec2f;		/// A two-component float Vec
 alias Vec!(3, float) Vec3f;	
 alias Vec!(4, float) Vec4f;		/// A four-component float Vec
+
+alias Vec!(2, float, true) Vec2fn;		/// A two-component float Vec
+alias Vec!(3, float, true) Vec3fn;	
+alias Vec!(4, float, true) Vec4fn;		/// A four-component float Vec
 
 /+
 /**

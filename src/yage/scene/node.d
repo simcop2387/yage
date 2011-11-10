@@ -46,13 +46,16 @@ class Node : Tree!(Node), IDisposable
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
 
 	package Vec3f position;
+	//package Quatrn rotation;
 	package Vec3f rotation;
 	package Vec3f scale = Vec3f.ONE;
 	
 	package Vec3f velocity;
-	package Vec3f angularVelocity;
+	private Vec3f angularVelocity;
+	package Quatrn angularVelocityDelta;
 	
 	package Vec3f worldPosition;
+	//package Quatrn worldRotation;
 	package Vec3f worldRotation;
 	package Vec3f worldScale = Vec3f.ONE;
 	
@@ -61,6 +64,10 @@ class Node : Tree!(Node), IDisposable
 	package bool worldDirty;
 		
 	package Scene scene;			// The Scene that this node belongs to.
+	
+	invariant()
+	{	assert(parent !is this);
+	}
 	
 	/**
 	 * Construct and optionally add as a child of another Node. */
@@ -166,12 +173,12 @@ class Node : Tree!(Node), IDisposable
 	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
 	Vec3f getRotation()
 	{	mixin(Sync!("scene"));
-		return rotation;
+		return rotation.toAxis();
 	}	
 	void setRotation(Vec3f axisAngle) /// ditto
 	{	mixin(Sync!("scene"));
 		setWorldDirty();
-		this.rotation = axisAngle;
+		this.rotation = axisAngle;//.toQuatrn();
 	}
 	
 	/**
@@ -198,6 +205,7 @@ class Node : Tree!(Node), IDisposable
 		this.velocity = velocity;
 	}
 	
+		import tango.math.IEEE;
 	/**
 	 * Get / set the angular (rotation) velocity this Node relative to its parent's velocity. */
 	Vec3f getAngularVelocity()
@@ -206,7 +214,12 @@ class Node : Tree!(Node), IDisposable
 	}	
 	void setAngularVelocity(Vec3f axisAngle) /// ditto
 	{	mixin(Sync!("scene"));
+		//Log.write(axisAngle.v);
+		
+		debug axisAngle.check();
+		
 		this.angularVelocity = axisAngle;
+		this.angularVelocityDelta = (axisAngle*(1/60f)).toQuatrn();
 	}
 	
 	/**
@@ -221,7 +234,7 @@ class Node : Tree!(Node), IDisposable
 	Vec3f getWorldRotation() /// ditto
 	{	mixin(Sync!("scene"));
 		calcWorld();
-		return worldRotation;
+		return worldRotation.toAxis();
 	}
 	Vec3f getWorldScale() /// ditto
 	{	mixin(Sync!("scene"));
@@ -260,6 +273,7 @@ class Node : Tree!(Node), IDisposable
 	///
 	void rotate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
+		//rotation = rotation*axisAngle.toQuatrn(); 
 		rotation = rotation.combineRotation(axisAngle);
 		setWorldDirty();
 	}
@@ -269,11 +283,16 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		velocity += amount;
 	}
-
+	
 	///
 	void angularAccelerate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
+		
+		debug axisAngle.check();
+		
 		angularVelocity = angularVelocity.combineRotation(axisAngle);; // TODO: Is this clamped to -PI to PI?
+		
+		debug angularVelocity.check();
 	}
 
 	///
@@ -289,6 +308,9 @@ class Node : Tree!(Node), IDisposable
 		// Rotate if angular velocity is not zero.
 		if (angularVelocity != Vec3f.ZERO)
 		{	rotation = rotation.combineRotation(angularVelocity*delta);
+			debug angularVelocity.check();
+			//rotation = (angularVelocity*delta).toQuatrn();
+			//rotation += angularVelocity*delta;
 			dirty = true;
 		}
 		if (dirty)
@@ -321,7 +343,7 @@ class Node : Tree!(Node), IDisposable
 	protected void calcWorld()
 	{	
 		if (worldDirty)
-		{			
+		{		
 			if (parent && parent !is scene)
 			{	parent.calcWorld(); // TODO: optimize this!
 				Matrix worldTransform = parent.getWorldTransform().transformAffine(getTransform());	
@@ -330,12 +352,13 @@ class Node : Tree!(Node), IDisposable
 				Vec3f wp, wr, ws;
 				worldTransform.decompose(wp, wr, ws);
 				worldPosition = wp;
-				worldRotation = wr;
+				worldRotation = wr; //.toQuatrn();
 				worldScale = ws;
 				
 				worldVelocity = velocity + parent.worldVelocity; // TODO: This doesn't even take rotation into account!
 			} else
-			{	worldPosition = position;
+			{	
+				worldPosition = position;
 				worldRotation = rotation;
 				worldScale = scale;
 				worldVelocity = velocity;

@@ -206,21 +206,21 @@ class Scene : Node//, ITemporal, IDisposable
 	{
 		mixin(Sync!("this"));
 		
-		Timer a = new Timer(true);
+		scope a = new Timer(true);
 	
 		// Update all nodes recursively
 		super.update(delta); 
 		
 		//Log.write("move ", a.tell());
 		
-		Timer b = new Timer(true);
+		//scope b = new Timer(true);
 		
 		// Cull and create render commands for each camera
 		camerasMutex.lock();
 		foreach (camera; cameras) 
 		{	camera.updateRenderCommands();
-			if (CameraNode.getListener() is camera)
-				camera.updateSoundCommands();
+			//if (CameraNode.getListener() is camera)
+			//	camera.updateSoundCommands();
 		}
 		//Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
 		

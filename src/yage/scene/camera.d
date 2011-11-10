@@ -94,7 +94,8 @@ struct SoundList
 }
 
 /**
- * TODO: Document me. */
+ * Without any rotation, the Camera looks in the direction of the -z axis.
+ * TODO: More documentation. */
 class CameraNode : Node
 {
 	float near = 1;			/// The camera's near plane.  Nothing closer than this will be rendered.  The default is 1.
@@ -107,6 +108,9 @@ class CameraNode : Node
 	package int currentYres;
 	
 	protected Plane[6] frustum;
+	protected Vec3f frustumSphereCenter;
+	protected float frustumSphereRadiusSquared;
+	
 	protected Plane[6] skyboxFrustum; // a special frustum with the camera centered at the origin of worldspace.	
 	protected static CameraNode listener; // Camera that plays audio.
 
@@ -364,10 +368,18 @@ class CameraNode : Node
 	bool isVisible(Vec3f point, float radius, bool skybox=false)
 	{	mixin(Sync!("scene"));
 		Plane[] frustum = skybox ? skyboxFrustum : this.frustum;
+		/*
+		// See if it's inside the sphere.  Doesn't provide any benefit.
+		if (!skybox)
+			if ((point - frustumSphereCenter).length2() > frustumSphereRadiusSquared)
+			{	//Log.write("early escape!");
+				return false;
+			}
+		*/
 		
 		// See if it's inside the frustum
 		float nr = -radius;
-		foreach (f; frustum)
+		foreach_reverse (f; frustum)
 			if (f.x*point.x +f.y*point.y + f.z*point.z + f.d < nr) // plane distance-to-point function, expanded in-line.
 				return false;
 		
@@ -403,14 +415,55 @@ class CameraNode : Node
 	/*
 	 * Update the frustums when the camera moves. */
 	override protected void calcWorld()
-	{	super.calcWorld();
+	{	//Log.write(rotation);
+		//Log.write(worldRotation);
+		super.calcWorld();
 		
 		// Create the clipping matrix from the modelview and projection matrices
-		Matrix projection = Matrix.createProjection(fov*3.1415927f/180f, aspectRatio, near, far);
+		Matrix projection = Matrix.createProjection(fov*3.1415927/180f, aspectRatio, near, far);
+		//Log.write("camera ", worldRotation);
 		Matrix model = Matrix.compose(worldPosition, worldRotation, worldScale).inverse();
 		(model*projection).getFrustum(frustum);
 		
 		model = worldRotation.toMatrix().inverse(); // shed all but the rotation values
 		(model*projection).getFrustum(skyboxFrustum);
+		
+		/*
+		// TODO: Use frustum optimizations from: http://www.flipcode.com/archives/Frustum_Culling.shtml		
+		
+		// calculate the radius of the frustum sphere
+		float fViewLen = far - near;
+
+		// use some trig to find the height of the frustum at the far plane
+		float fHeight = fViewLen * tan(fov*3.1415927/180 * 0.5f);
+
+		// with an aspect ratio of 1, the width will be the same
+		float fWidth = fHeight;
+
+		// halfway point between near/far planes starting at the origin and extending along the z axis
+		Vec3f P = Vec3f(0.0f, 0.0f, near + fViewLen * 0.5f);
+
+		// the calculate far corner of the frustum
+		Vec3f Q = Vec3f(fWidth, fHeight, fViewLen);
+
+		// the vector between P and Q
+		Vec3f vDiff = P - Q;
+
+		// the radius becomes the length of this vector
+		frustumSphereRadiusSquared = vDiff.length() * .5;
+		frustumSphereRadiusSquared *= frustumSphereRadiusSquared;
+
+		// get the look vector of the camera from the view matrix
+		Vec3f vLookVector = Vec3f(0, 0, -1);
+				
+		auto worldTransform = Matrix.compose(worldPosition, worldRotation, worldScale);
+		vLookVector = vLookVector.rotate(worldTransform);
+		
+		//m_mxView.LookVector(&vLookVector);
+
+		// calculate the center of the sphere
+		frustumSphereCenter = worldPosition + (vLookVector * (fViewLen * 0.5f) + near);
+		//Log.write(frustumSphereCenter, frustumSphereRadiusSquared);
+		*/
 	}
 }

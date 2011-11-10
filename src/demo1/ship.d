@@ -155,10 +155,12 @@ class Ship : GameObject
 			pitch.angularAccelerate(Vec3f(input.mouseDelta.y/24.0, 0, 0));
 			input.mouseDelta.x = input.mouseDelta.y = 0;
 		}
-
+		
+		
 		// Bank on turn
 		float turn = getAngularVelocity().y;
 		float cur = ship.getRotation().z;
+		
 		if (cur > 1 || cur < -1)	// Prevent banking too far
 			ship.setAngularVelocity(Vec3f(0, 0, -cur/32));
 		else
@@ -172,7 +174,8 @@ class Ship : GameObject
 		setVelocity(getVelocity().scale(max(1-delta*ldamp, 0.0f)));
 		pitch.setAngularVelocity(pitch.getAngularVelocity().scale(max(1-delta*xdamp, 0.0f)));
 		setAngularVelocity(getAngularVelocity().scale(max(1-delta*ydamp, 0.0f)));
-
+		
+		
 		// Update the spring
 		if (spring.getStiffness()<50)
 			spring.setStiffness(spring.getStiffness*(delta+1));

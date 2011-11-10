@@ -524,10 +524,10 @@ class Surface : Tree!(Surface)
 		Vec4f dimension = Vec4f(top(), right(), bottom(), left());
 		
 		// Get a bounding box that surrounds the transformed surface
-		Vec4f bounds = Vec4f(float.infinity, -float.infinity, -float.infinity, float.infinity);
+		Vec4fn bounds = Vec4fn(float.infinity, -float.infinity, -float.infinity, float.infinity);
 		if (constrain)
 		{
-			Vec2f[4] polygon;
+			Vec!(2, float, false)[4] polygon;
 			getPolygon(polygon);
 
 			for (int i=0; i<4; i++)

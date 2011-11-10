@@ -52,7 +52,7 @@ class DemoScene : Scene
 		ship.getCameraSpot().setPosition(Vec3f(1000, 4000, 10000));
 
 		// Camera
-		camera = ship.getCameraSpot().addChild(new CameraNode());
+		camera = new CameraNode(ship.getCameraSpot());
 		ship.getCameraSpot().addChild(camera);
 		camera.near = 2;
 		camera.far = 2000000;
@@ -60,35 +60,28 @@ class DemoScene : Scene
 		camera.threshold = 1; 
 		
 		// Music
-		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
-		music.looping = true;
+		//music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
+		//music.looping = true;
 		//music.play();
 
 		// Lights
-		light = scene.addChild(new LightNode());
+		light = new LightNode(scene);
 		light.diffuse = "#fed";
 		light.setLightRadius(1000000);
 		light.setPosition(Vec3f(0, 0, -600000));
-
+		
+		
 		// Star
-		star = light.addChild(new SpriteNode("space/star.dae", "star-material"));
+		star = new SpriteNode("space/star.dae", "star-material", light);
 		star.setScale(Vec3f(100000));
-
+		
 		// Planet
 		planet = scene.addChild(new ModelNode("space/planet.dae"));
 		planet.setScale(Vec3f(200));
 		planet.setAngularVelocity(Vec3f(0, -0.01 , 0));
-		
-		// Atmosphere
-		/*
-		auto atmosphere = planet.addChild(new SpriteNode());
-		atmosphere.setMaterial("space/star2.dae", "star-material");
-		atmosphere.getMaterial().getPass().blend = MaterialPass.Blend.AVERAGE;
-		atmosphere.setSize(Vec3f(3000));
-		*/
-		
+
 		// Moon
-		auto moon = scene.addChild(new ModelNode("space/planet.dae"));
+		auto moon = new ModelNode("space/planet.dae", scene);
 		auto moonMaterial = new Material(true);
 		auto pass = moonMaterial.getPass();
 		pass.ambient = "#fff";
@@ -101,7 +94,6 @@ class DemoScene : Scene
 		moon.setPosition(Vec3f(8000, 0, -1000));
 		moon.setScale(Vec3f(50));		
 		moon.setAngularVelocity(Vec3f(0, 0.01, 0));
-		
 
 		// Asteroids
 		asteroidBelt(4000, 5000, scene);
@@ -187,7 +179,7 @@ int main()
 	
 	// Make a draggable window to show some useful info.
 	auto info = new Surface(view);
-	info.style.set("top: 5px; right: 12px; width: 115px; height: 115px; color: white; " ~
+	info.style.set("top: 5px; right: 12px; width: 115px; height: 130px; color: white; " ~
 		"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 11px");
 
 	//window.style.backgroundImage = scene.camera.getTexture();
@@ -240,12 +232,13 @@ int main()
 			window.setCaption(format("Yage Demo | %.2f fps\0", framerate));
 			info.setHtml(format(
 				`%.2f <b>fps</span><br/>`
-				`%.1f%% <b>physics cpu</span><br/>`
+				`%.1fms <b>render</span><br/>`
+				`%.1fms <b>physics</span><br/>`
 				`%d <b>objects</b><br/>`
 				`%d <b>polygons</b><br/>`
 				`%d <b>vertices</b><br/>`
 				`%d <b>lights</b><br/><br/> wasd to move<br/> +q for hyperdrive<br/>space to shoot`,
-					framerate, scene.updateTime*60*100, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ 
+					framerate, 1/framerate*1000, scene.updateTime*1000, stats.nodeCount, stats.triangleCount, stats.vertexCount, stats.lightCount) ~ 
 					Profile.getTimesAndClear());
 			frame.seek(0);
 			fps = 0;

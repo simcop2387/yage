@@ -9,6 +9,7 @@ module yage.core.math.quatrn;
 import tango.math.Math;
 import tango.math.IEEE;
 import tango.text.convert.Format;
+import yage.core.format;
 import yage.core.math.vector;
 import yage.core.math.matrix;
 import yage.core.misc;
@@ -33,7 +34,9 @@ struct Quatrn
 
 	invariant()
 	{	foreach (float t; v)
-			assert(!isNaN(t));
+		{	assert(!isNaN(t), format("<%s>", v));
+			assert(t!=float.infinity, format("<%s>", v));
+		}
 	}
 
 	unittest
@@ -241,7 +244,7 @@ struct Quatrn
 	/// Create a Vec3f rotation axis from this Quaternion
 	Vec!(3, float) toAxis()
 	{	double angle = acos(w)*2;
-		assert(!isNaN(angle));
+		assert(!isNaN(angle), Format.convert("{}", w));
 		if (angle != 0)
 		{	auto sin_a = sqrt(1 - w*w);
 			if (abs(sin_a) < 0.0005)	// arbitrary small number
