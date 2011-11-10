@@ -1,3 +1,9 @@
+/**
+ * Authors:    Ludovic Angot, Eric Poggel
+ * License:    Boost 1.0
+ */
+
+
 module demo3.rtscamera;
 
 import tango.math.Math;
