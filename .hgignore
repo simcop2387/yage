@@ -7,3 +7,10 @@ glob:lib/derelict-dmd-win32-d.lib
 glob:lib/derelict-dmd-win32.lib
 glob:lib/yage-dmd-win32-d.lib
 glob:lib/yage-dmd-win32.lib
+glob:bin/*.exe
+glob:bin/*.job
+glob:bin/*.obj
+glob:bin/*.exe_cv
+glob:bin/*.pdb
+glob:build/buildyage.exe
+glob:bin/log.txt
