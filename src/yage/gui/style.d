@@ -272,7 +272,7 @@ struct Style
 	 * Font properties
 	 * fontFamily = path or (soon) css name of the font to use.  */	
 	char[] fontFamily = ResourceManager.DEFAULT_FONT;
-	CSSValue fontSize; /// ditto
+	CSSValue fontSize = CSSValue(12); /// ditto
 	FontStyle fontStyle; /// ditto
 	FontWeight fontWeight; /// ditto
 	
