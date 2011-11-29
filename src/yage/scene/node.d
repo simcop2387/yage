@@ -274,6 +274,7 @@ class Node : Tree!(Node), IDisposable
 	void rotate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
 		//rotation = rotation*axisAngle.toQuatrn(); 
+		//Log.write(rotation, axisAngle);
 		rotation = rotation.combineRotation(axisAngle);
 		setWorldDirty();
 	}

@@ -281,6 +281,16 @@ struct Vec(int S, T : real, bool N=false)
 		return scale(1/l);
 	}
 	
+	/// Perform a member-wise instead of a bitwise compare.  This way 0f == -0f.
+	int opEquals(VST rhs)
+	{	static if (S==3) // untested optimization
+			return x==rhs.x && y==rhs.y && z==rhs.z;		
+		for (int i=0; i<S; i++)
+			if (v[i] != rhs.v[i])
+				return false;
+		return true;
+	}
+	
 	/**
 	 * Allow for additions, subtractions, multiplcations, and divisions where a scalar or another vector's value is applied to each component. */
 	VST opAdd(T s)
@@ -408,7 +418,7 @@ struct Vec(int S, T : real, bool N=false)
 	{	char[] result = "<";
 		for (int i=0; i<S; i++)
 			static if (is(T : real))
-				result ~= format("%s ", v[i]);
+				result ~= format("%.12f ", v[i]);
 			else
 				result ~= format("%d ", v[i]);
 		result ~= ">";
@@ -463,15 +473,14 @@ struct Vec(int S, T : real, bool N=false)
 			 * Treat this Vector as an axis-angle and combine the rotation of another axis-angle. */
 			VST combineRotation(VST axis)
 			{	
-				// Old way
-				return toQuatrn().rotate(axis);
-				
-				
 				
 				// Shortcut!
 				//if (cross(axis).length2() < .01) // If they point in almost the same or opposite directions
 				//	return *this+axis;
 				
+				// Non inlined way.  Inlining below was to try to combine operations (unsuccessfully)
+				//return toQuatrn().rotate(axis).toAxis();
+								
 				// Convert to quaternions
 				Quatrn q1;
 				if (*this!=ZERO) // no rotation for zero-vector
@@ -483,7 +492,7 @@ struct Vec(int S, T : real, bool N=false)
 				}
 				
 				Quatrn q2;
-				if (axis!=ZERO) // no rotation for zero-vector
+				if (axis.x!=0 || axis.y!=0 || axis.z!=0) // no rotation for zero-vector
 				{	float angle = axis.length();
 					float hangle = angle * .5;
 					float s = sin(hangle); // / sqrt(angle);
@@ -497,7 +506,7 @@ struct Vec(int S, T : real, bool N=false)
 				res.x = q2.w*q1.x + q2.x*q1.w + q2.y*q1.z - q2.z*q1.y;
 				res.y = q2.w*q1.y - q2.x*q1.z + q2.y*q1.w + q2.z*q1.x;
 				res.z = q2.w*q1.z + q2.x*q1.y - q2.y*q1.x + q2.z*q1.w;
-				
+								
 				// Convert back to axis-angle.
 				VST result;
 				auto angle = acos(res.w)*2;
@@ -511,7 +520,7 @@ struct Vec(int S, T : real, bool N=false)
 					result.z = res.z*inv_sin_a;		
 					result = result.length(angle);
 				}
-				return result;
+				return result;				
 			}			
 
 			///
@@ -604,14 +613,16 @@ struct Vec(int S, T : real, bool N=false)
 			/**
 			 * Interpret the values of this vector as a rotation axis/angle and convert to a Quatrn.*/
 			Quatrn toQuatrn()
-			{	Quatrn res = void;
-				if (*this!=ZERO) // no rotation for zero-vector
-				{	float angle = length();
-					float hangle = angle * .5;
-					float s = sin(hangle); // / sqrt(angle);
-					res.w = cos(hangle);
-					res.v[0..3] = v[0..3] * (s/angle);
-				}
+			{	
+				if (*this==ZERO) // no rotation for zero-vector
+					return Quatrn();
+				
+				Quatrn res = void;
+				float angle = length();
+				float hangle = angle * .5;
+				float s = sin(hangle); // / sqrt(angle);
+				res.w = cos(hangle);
+				res.v[0..3] = v[0..3] * (s/angle);				
 				return res;
 			}
 		}

@@ -14,3 +14,4 @@ glob:bin/*.exe_cv
 glob:bin/*.pdb
 glob:build/buildyage.exe
 glob:bin/log.txt
+glob:bin/TEMPORARY~FONT

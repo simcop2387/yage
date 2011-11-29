@@ -48,11 +48,11 @@ int main(char[][] args)
 			case "-startyage": 		startyage=true; break;
 			case "-help":	 		help=true; break;
 			case "-verbose": 		verbose=true; break;
-			case ".\\buildyage.exe": 	break;
+			
 			/* for linux execution */
-			case "./buildyage":		break;
-			case "buildyage":		break;
-			case "-release":		break;
+			case ".\\buildyage.exe":			
+			case "./buildyage":
+			case "buildyage":		break;  // These areguments are passed in by default on linux
 			default: System.trace("\n" ~ arg ~ " is not a supported argument.\n"); badArg=true;
 	}	}
 	if (debug_)
@@ -61,12 +61,12 @@ int main(char[][] args)
 		options1 ~= ["-O", "-inline", "-release"];
 
 	// Show Options
-	if (!silent)
+	if (help)
 	{
 		System.trace("   -ddoc        Generate documentation in the doc folder");
 		System.trace("   -debug       Include debugging symbols and enable stack tracing");
 		System.trace("                on Windows. Otherwise optimize, inline functions, ");
-		System.trace("                and remove unittests/asserts.");
+		System.trace("                and remove unittests/asserts (a release build).");
 		System.trace("   -help        Print this message.");
 		//System.trace("   -lib         Create a yage lib file in the lib folder.");
 		System.trace("   -profile     Compile in profiling code.");
@@ -76,6 +76,8 @@ int main(char[][] args)
 		System.trace("Example:  dmd -run buildyage.d -release -startyage");
 		return 0;
 	}
+	System.trace("");
+	System.trace("Use '-help' to get the complete list of options.");
 	System.trace("Building Yage...");
 
 	long startTime = System.time();

@@ -60,9 +60,9 @@ class DemoScene : Scene
 		camera.threshold = 1; 
 		
 		// Music
-		//music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
-		//music.looping = true;
-		//music.play();
+		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
+		music.looping = true;
+		music.play();
 
 		// Lights
 		light = new LightNode(scene);
@@ -110,8 +110,7 @@ bool running = true;
 
 // Current program entry point.  This may change in the future.
 int main()
-{		
-	
+{	
 	// Init and create window
 	System.init(); 
 	auto window = Window.getInstance();
