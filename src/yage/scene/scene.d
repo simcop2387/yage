@@ -215,12 +215,12 @@ class Scene : Node//, ITemporal, IDisposable
 		
 		//scope b = new Timer(true);
 		
-		// Cull and create render commands for each camera
+		// Cull and create render and sound commands for each camera
 		camerasMutex.lock();
 		foreach (camera; cameras) 
 		{	camera.updateRenderCommands();
-			//if (CameraNode.getListener() is camera)
-			//	camera.updateSoundCommands();
+			if (CameraNode.getListener() is camera)
+				camera.updateSoundCommands();
 		}
 		//Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
 		
