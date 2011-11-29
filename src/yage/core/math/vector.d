@@ -474,9 +474,9 @@ struct Vec(int S, T : real, bool N=false)
 			VST combineRotation(VST axis)
 			{	
 				
-				// Shortcut!
-				//if (cross(axis).length2() < .01) // If they point in almost the same or opposite directions
-				//	return *this+axis;
+				// This is a required shortcut to handle corner cases.
+				if (cross(axis).length2() < .0001) // If they point in almost the same or opposite directions
+					return *this+axis;
 				
 				// Non inlined way.  Inlining below was to try to combine operations (unsuccessfully)
 				//return toQuatrn().rotate(axis).toAxis();
