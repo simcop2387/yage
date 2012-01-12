@@ -211,80 +211,75 @@ class LightsAndFog : TestScene
 		float PI = 3.1415927f;
 		
 		// Bottom/Top
-		plane = scene.addChild(new ModelNode(geometry));
+		plane = new ModelNode(geometry, this);
 		plane.setPosition(Vec3f(0, -50, 0));
 		plane.setRotation(Vec3f(-PI/2, 0, 0));
 		plane.setScale(Vec3f(50));
 
-		plane = scene.addChild(new ModelNode(geometry));
+		plane = new ModelNode(geometry, this);
 		plane.setPosition(Vec3f(0, 50, 0));
 		plane.setRotation(Vec3f(PI/2, 0, 0));
 		plane.setScale(Vec3f(50));
 		
 		// Left/Right
-		plane = scene.addChild(new ModelNode(geometry));
+		plane = new ModelNode(geometry, this);
 		plane.setPosition(Vec3f(0, 0, -50));
 		plane.setRotation(Vec3f(0, 0, 0));
 		plane.setScale(Vec3f(50));
 		
-		plane = scene.addChild(new ModelNode(geometry));
+		plane = new ModelNode(geometry, this);
 		plane.setPosition(Vec3f(0, 0, 50));
 		plane.setRotation(Vec3f(0, PI, 0));
 		plane.setScale(Vec3f(50));
 		
 		// Front/Back
-		plane = scene.addChild(new ModelNode(geometry));
+		plane = new ModelNode(geometry, this);
 		plane.setPosition(Vec3f(-50, 0, 0));
 		plane.setRotation(Vec3f(0, PI/2, 0));
 		plane.setScale(Vec3f(50));
 		
-		plane = scene.addChild(new ModelNode(geometry));
+		plane = new ModelNode(geometry, this);
 		plane.setPosition(Vec3f(50, 0, 0));
 		plane.setRotation(Vec3f(0, -PI/2, 0));
 		plane.setScale(Vec3f(50));
 		
 		
 		// A critter
-		auto beast = new ModelNode("character/beast.dae");
-		scene.addChild(beast);
+		auto beast = new ModelNode("character/beast.dae", this);
 		beast.setScale(Vec3f(.3));
 		beast.setPosition(Vec3f(0, -20, -20));
-		beast.rotate(Vec3f(1.507, 0, 0));
 		beast.setAngularVelocity(Vec3f(0, .5, 0));
 		beast.getModel().drawJoints = true;
-		
-		/*
-		auto terrorist = scene.addChild(new ModelNode("character/terrorist/terrorist.dae"));
-		terrorist.setPosition(Vec3f(20, -40, -20));
-		terrorist.getModel().drawJoints = true;
-		*/
+
 		// Lights
-		auto rotater = addChild(new ModelNode());
-		//rotater.setAngularVelocity(Vec3f(0, 0.5, 0));
-		auto light1 = rotater.addChild(new LightNode());
+		auto rotater = new ModelNode(this);
+		rotater.setAngularVelocity(Vec3f(0, 0.5, 0));
+
+		auto light1 = new LightNode(this);
 		light1.setPosition(Vec3f(10, 0, 0));
-		//light1.setAngularVelocity(Vec3f(0, 10, 0));
+		//light1.setAngularVelocity(Vec3f(0, 1, 0)); // Rotation is currently broken for spotlights!
 		light1.diffuse = "white";
 		light1.setLightRadius(80);		
-		//light1.spotExponent = 3;
-		//light1.spotAngle = 80 * 3.1415/180;
-		//light1.type = LightNode.Type.SPOT;
+		light1.spotExponent = 3;
+		light1.spotAngle = 80 * 3.1415/180;
+		light1.type = LightNode.Type.SPOT;
 		
-		
+		/*
 		light2 = addChild(new LightNode());
-		light2.setAngularVelocity(Vec3f(.1, .1, 0));
+		light2.rotate(Vec3f(0, 1, 0));
+		//light2.setAngularVelocity(Vec3f(.1, .1, 0));
 		light2.diffuse = "red";
 		light2.setLightRadius(100);
 		light2.spotExponent = 1;
 		light2.spotAngle = 20 * 3.1415/180;
 		light2.type = LightNode.Type.SPOT;
-
-		light3 = light1.addChild(new LightNode());
+		*/
+		light3 = new LightNode(rotater);
 		light3.setPosition(Vec3f(0, 0, -49));
 		light3.setAngularVelocity(Vec3f(1, 1, 0));
 		light3.diffuse = "blue";
 		light3.setLightRadius(20);
-
+		
 		// Enable fog
 		//this.fogEnabled = true;
 		this.fogDensity = 0.01;	

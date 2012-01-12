@@ -82,7 +82,7 @@ abstract class VisibleNode : Node
 	 *     so this array must remain unmodified for the duration of this function.
 	 *     number = maximum number of lights to return.
 	 *
-	 * Also perhaps use axis sorting for faster calculations. */
+	 * Also perhaps use axis sorting for faster calculations. 
 	LightNode[] getLights(LightNode[] allLights, ubyte number=8)
 	{	
 		// Calculate the intensity of all lights on this node
@@ -114,5 +114,30 @@ abstract class VisibleNode : Node
 			if (!lights.data[i])
 				break;
 		return lights.data[0..i]; // fail, replaced is called
+	}*/
+
+	LightNode[] getLights(LightNode[] allLights, ubyte number=8, ArrayBuilder!(LightNode) lookAside=ArrayBuilder!(LightNode)())
+	{	
+		// Calculate the intensity of all lights on this node
+		
+		lights.length = 0;
+		Vec3f position;
+		position.v[0..3] = getWorldTransform().v[12..15];
+
+		foreach (l; allLights)
+		{	
+			float lr = l.getLightRadius(); // [below] distance is greater than 8*radius.  At 8*radius, we have 1/256th brightness.
+			if (l.getWorldPosition().distance2(position) < 256 * lr*lr)
+			{
+				Color br = l.getBrightness(position, getRadius());
+			
+				l.intensity = br.r + cast(int)br.g + cast(int)br.b;
+				if (l.intensity >= 3) // smallest noticeable brightness for 8-bit per channel color (1/256f).
+					addSorted!(LightNode, int)(lights, l, false, (LightNode a){return a.intensity;}, number ); // not very efficient
+			}
+		}
+
+		lights.reserve = lights.length; // prevent growing smaller to reduce allocations
+		return lights.data;
 	}
 }
