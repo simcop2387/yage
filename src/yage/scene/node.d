@@ -46,8 +46,8 @@ class Node : Tree!(Node), IDisposable
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
 
 	package Vec3f position;
-	//package Quatrn rotation;
-	package Vec3f rotation;
+	package Quatrn rotation;
+	//package Vec3f rotation;
 	package Vec3f scale = Vec3f.ONE;
 	
 	package Vec3f velocity;
@@ -55,8 +55,8 @@ class Node : Tree!(Node), IDisposable
 	package Quatrn angularVelocityDelta;
 	
 	package Vec3f worldPosition;
-	//package Quatrn worldRotation;
-	package Vec3f worldRotation;
+	package Quatrn worldRotation;
+	//package Vec3f worldRotation;
 	package Vec3f worldScale = Vec3f.ONE;
 	
 	package Vec3f worldVelocity;
@@ -178,7 +178,7 @@ class Node : Tree!(Node), IDisposable
 	void setRotation(Vec3f axisAngle) /// ditto
 	{	mixin(Sync!("scene"));
 		setWorldDirty();
-		this.rotation = axisAngle;//.toQuatrn();
+		this.rotation = axisAngle.toQuatrn();
 	}
 	
 	/**
@@ -273,9 +273,9 @@ class Node : Tree!(Node), IDisposable
 	///
 	void rotate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
-		//rotation = rotation*axisAngle.toQuatrn(); 
+		rotation = rotation*axisAngle.toQuatrn(); 
 		//Log.write(rotation, axisAngle);
-		rotation = rotation.combineRotation(axisAngle);
+		//rotation = rotation.combineRotation(axisAngle);
 		setWorldDirty();
 	}
 
@@ -308,9 +308,9 @@ class Node : Tree!(Node), IDisposable
 	
 		// Rotate if angular velocity is not zero.
 		if (angularVelocity != Vec3f.ZERO)
-		{	rotation = rotation.combineRotation(angularVelocity*delta);
-			debug angularVelocity.check();
-			//rotation = (angularVelocity*delta).toQuatrn();
+		{	//rotation = rotation.combineRotation(angularVelocity*delta);
+			//debug angularVelocity.check();
+			rotation = rotation * (angularVelocity*delta).toQuatrn();
 			//rotation += angularVelocity*delta;
 			dirty = true;
 		}
@@ -353,7 +353,7 @@ class Node : Tree!(Node), IDisposable
 				Vec3f wp, wr, ws;
 				worldTransform.decompose(wp, wr, ws);
 				worldPosition = wp;
-				worldRotation = wr; //.toQuatrn();
+				worldRotation = wr.toQuatrn();
 				worldScale = ws;
 				
 				worldVelocity = velocity + parent.worldVelocity; // TODO: This doesn't even take rotation into account!
