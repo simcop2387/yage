@@ -134,7 +134,7 @@ struct Matrix
 	/**
 	 * Convert a Matrix to and from position, axis/angle rotation, and scale vectors.*/
 	static Matrix compose(Vec3f position, Vec3f rotation, Vec3f scale)
-	{			
+	{	
 		Matrix result;
 		result.setPosition(position);
 		result.setRotation(rotation);
@@ -150,7 +150,9 @@ struct Matrix
 	}
 	
 	static Matrix compose(Vec3f position, Quatrn rotation, Vec3f scale)
-	{			
+	{	
+		debug rotation.__invariant();
+
 		Matrix result;
 		result.setPosition(position);
 		result.setRotation(rotation);
@@ -223,6 +225,8 @@ struct Matrix
 			m.v[4..7] = (cast(Vec3f*)v[4..7]).scale(1/scale.y).v[];
 			m.v[8..11] = (cast(Vec3f*)v[8..11]).scale(1/scale.z).v[];
 			rotation = m.toQuatrn();
+
+			debug rotation.__invariant();
 		}
 	}
 	

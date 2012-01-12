@@ -46,13 +46,13 @@ class Node : Tree!(Node), IDisposable
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
 
 	package Vec3f position;
-	package Quatrn rotation;
+	private Quatrn rotation;
 	//package Vec3f rotation;
 	package Vec3f scale = Vec3f.ONE;
 	
 	package Vec3f velocity;
 	private Vec3f angularVelocity;
-	package Quatrn angularVelocityDelta;
+	private Quatrn angularVelocityDelta;
 	
 	package Vec3f worldPosition;
 	package Quatrn worldRotation;
@@ -214,9 +214,6 @@ class Node : Tree!(Node), IDisposable
 	}	
 	void setAngularVelocity(Vec3f axisAngle) /// ditto
 	{	mixin(Sync!("scene"));
-		//Log.write(axisAngle.v);
-		
-		debug axisAngle.check();
 		
 		this.angularVelocity = axisAngle;
 		this.angularVelocityDelta = (axisAngle*(1/60f)).toQuatrn();
@@ -253,8 +250,10 @@ class Node : Tree!(Node), IDisposable
 	
 	///
 	Matrix getTransform()
-	{	return Matrix.compose(position, rotation, scale);
+	{	//Log.write(rotation.v);
+		return Matrix.compose(position, rotation, scale);
 	}
+
 	
 	///
 	Matrix getWorldTransform()
@@ -287,13 +286,8 @@ class Node : Tree!(Node), IDisposable
 	
 	///
 	void angularAccelerate(Vec3f axisAngle)
-	{	mixin(Sync!("scene"));
-		
-		debug axisAngle.check();
-		
+	{	mixin(Sync!("scene"));		
 		angularVelocity = angularVelocity.combineRotation(axisAngle);; // TODO: Is this clamped to -PI to PI?
-		
-		debug angularVelocity.check();
 	}
 
 	///
@@ -309,9 +303,8 @@ class Node : Tree!(Node), IDisposable
 		// Rotate if angular velocity is not zero.
 		if (angularVelocity != Vec3f.ZERO)
 		{	//rotation = rotation.combineRotation(angularVelocity*delta);
-			//debug angularVelocity.check();
-			rotation = rotation * (angularVelocity*delta).toQuatrn();
-			//rotation += angularVelocity*delta;
+			
+			rotation = rotation * angularVelocityDelta; // (angularVelocity*delta).toQuatrn();
 			dirty = true;
 		}
 		if (dirty)

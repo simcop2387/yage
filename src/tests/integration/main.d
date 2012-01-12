@@ -278,7 +278,7 @@ class LightsAndFog : TestScene
 		light3.setPosition(Vec3f(0, 0, -49));
 		light3.setAngularVelocity(Vec3f(1, 1, 0));
 		light3.diffuse = "blue";
-		light3.setLightRadius(20);
+		light3.setLightRadius(35);
 		
 		// Enable fog
 		//this.fogEnabled = true;

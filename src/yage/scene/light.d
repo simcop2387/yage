@@ -137,7 +137,7 @@ class LightNode : Node
 			// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
 			// rotated by the node's rotation.  This is opposite the default direction of cameras
 			//float spotDot = Vec3f(transform_abs.v[8..11]).normalize().dot(light_direction/d);
-			float spotDot = rotation.toAxis().normalize().dot(light_direction/d);
+			float spotDot = getRotation().toAxis().normalize().dot(light_direction/d);
 			
 			// Extra spotlight angle (in radians) to satisfy margin distance
 			float extraAngle = margin>0 ? atan2(margin, d) : 0;			

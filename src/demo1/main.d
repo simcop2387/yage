@@ -31,7 +31,8 @@ class DemoScene : Scene
 	
 	LightNode light;
 	SpriteNode star;
-	ModelNode planet;
+	Node planet;
+	ModelNode moon;
 	
 	// Create the scene and all elements in it
 	this()
@@ -62,6 +63,7 @@ class DemoScene : Scene
 		// Music
 		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
 		music.looping = true;
+		music.volume = .4;
 		music.play();
 
 		// Lights
@@ -76,12 +78,12 @@ class DemoScene : Scene
 		star.setScale(Vec3f(100000));
 		
 		// Planet
-		planet = scene.addChild(new ModelNode("space/planet.dae"));
-		planet.setScale(Vec3f(200));
+		planet = new Node(scene);
+		planet.addChild(new ModelNode("space/planet.dae")).setScale(Vec3f(200));
 		planet.setAngularVelocity(Vec3f(0, -0.01 , 0));
 
 		// Moon
-		auto moon = new ModelNode("space/planet.dae", scene);
+		moon = new ModelNode("space/planet.dae", planet);
 		auto moonMaterial = new Material(true);
 		auto pass = moonMaterial.getPass();
 		pass.ambient = "#fff";
@@ -96,12 +98,12 @@ class DemoScene : Scene
 		moon.setAngularVelocity(Vec3f(0, 0.01, 0));
 
 		// Asteroids
-		asteroidBelt(4000, 5000, scene);
+		asteroidBelt(4000, 5000, planet);
 	}
 	
 	override void update(float delta)
 	{	super.update(delta);
-		ship.getSpring().update(1/60.0f);
+		ship.getSpring().update(delta);
 	}
 }
 

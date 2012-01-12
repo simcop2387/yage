@@ -73,14 +73,6 @@ struct Vec(int S, T : real, bool N=false)
 			}
 		}
 	
-	// temporary
-	void check()
-	{	foreach (float t; v)
-		{	assert(!isNaN(t), format("<%s>", v));
-			assert(t!=float.infinity);
-		}
-	}
-	
 	/// Create a zero vector
 	static VST opCall()
 	{	VST res;
@@ -622,7 +614,10 @@ struct Vec(int S, T : real, bool N=false)
 				float hangle = angle * .5;
 				float s = sin(hangle); // / sqrt(angle);
 				res.w = cos(hangle);
-				res.v[0..3] = v[0..3] * (s/angle);				
+				if (angle != 0)
+					res.v[0..3] = v[0..3] * (s/angle);
+				
+				debug res.__invariant();
 				return res;
 			}
 		}
