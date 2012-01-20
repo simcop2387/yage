@@ -442,11 +442,6 @@ struct Vec(int S, T : real, bool N=false)
 	// Special operations for 3-component vectors that can't be NaN or inf
 	static if (S==3 && !N)
 	{		
-		/// Temporary for easily switching between Vec3f and quaternions
-		VST toAxis()
-		{	return *this;
-		}
-		
 		/// Return the cross product of this vector with another vector.
 		VST cross(VST s)
 		{	return VST(y*s.z-z*s.y, z*s.x-x*s.z, x*s.y-y*s.x);
@@ -565,9 +560,32 @@ struct Vec(int S, T : real, bool N=false)
 
 			/**
 			 * Return a copy of this Vec3f rotated by the Quatrn q.
-			 * Note that this is curently slower than rotate(Matrix m).*/
+			 * From:  http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation */
 			VST rotate(Quatrn q)
-			{	return rotate(q.toMatrix());
+			{	
+				VST normalized = *this; //normalize();
+				Quatrn vecQuat = Quatrn(normalized.x, normalized.y, normalized.z, 0);
+
+				// TODO: May be able to expand this and simplify further.
+				Quatrn result = vecQuat * q.conjugate();
+				result = q * result;
+				return result.vector;
+			}
+			unittest {
+				Vec3f a1 = Vec3f(0, 5, 0);
+				Quatrn rx = Vec3f(3.141592/2, 0, 0).toQuatrn();
+				Vec3f a2 = a1.rotate(rx);
+				assert(a2.almostEqual(Vec3f(0, 0, 5)), format("%s", a2.v));
+				Vec3f a3 = a2.rotate(rx);
+				assert(a3.almostEqual(Vec3f(0, -5, 0)), format("%s", a3.v));
+
+				Quatrn ry = Vec3f(0, 3.141592/2, 0).toQuatrn();
+				Vec3f a4 = a3.rotate(ry); // y rotation of y vector should do nothing
+				assert(a4.almostEqual(a3), format("%s", a4.v));
+
+				Quatrn rz = Vec3f(0, 0, 3.141592*3/2).toQuatrn();
+				Vec3f a5 = a1.rotate(rz);
+				assert(a5.almostEqual(Vec3f(5, 0, 0)), format("%s", a5.v));
 			}
 
 			/// Return a copy of this vector rotated by the rotation values of Matrix m.

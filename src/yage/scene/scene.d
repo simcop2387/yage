@@ -19,6 +19,21 @@ import yage.scene.node;
 import yage.scene.sound;
 import yage.scene.visible;
 
+struct NodeUpdateProperties
+{
+	Vec3f position;
+	Quatrn rotation;
+
+	Vec3f veclocity;
+	Vec3f angularVelocity;
+}
+
+struct NodeCullProperties
+{
+	Vec3f worldPosition;
+	float radius;
+}
+
 /**
  * A Scene is the root of a tree of Nodes, and threfore never has a parent.
  * Certain "global" variables are stored per Scene and affect all Nodes in that Scene. 
@@ -68,6 +83,8 @@ class Scene : Node//, ITemporal, IDisposable
 	float updateTime;
 	
 	protected static Scene[Scene] all_scenes; // TODO: Prevents old scenes from being removed!
+
+	
 
 	/// Construct an empty Scene.
 	this(float frequency = 60)

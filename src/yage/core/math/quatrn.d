@@ -27,9 +27,14 @@ import yage.system.log;
 struct Quatrn
 {	union
 	{	float v[4] = [0, 0, 0, 1]; // same as x, y, z, w
-		struct
-		{	float x, y, z, w;
-	}	}
+		struct {
+			float x, y, z, w;
+		}
+		struct {
+			Vec3f vector;
+			float scalar;
+		}
+	}
 
 	invariant()
 	{	foreach (float t; v)
@@ -150,9 +155,10 @@ struct Quatrn
 	 * Return the inverse of the Quaternion.
 	 * This is the equivalent of the Quaternion's rotation in reverse. */
 	Quatrn inverse()
-	{	float l = length();
-		if (l==0)
+	{	float l2 = (w*w + x*x + y*y + z*z);
+		if (l2==0)
 			return *this;
+		float l = sqrt(l2);
 		return Quatrn(-x/l, -y/l, -z/l, w/l);
 	}
 

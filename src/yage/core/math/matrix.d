@@ -138,14 +138,15 @@ struct Matrix
 		Matrix result;
 		result.setPosition(position);
 		result.setRotation(rotation);
+
+		if (scale.almostEqual(Vec3f.ONE))
+			return result;
 		
 		Matrix mscale;
 		mscale.v[0] = scale.x;
 		mscale.v[5] = scale.y;
 		mscale.v[10]= scale.z;
-		
-		if (scale.almostEqual(Vec3f.ONE))
-			return result;
+
 		return result.transformAffine(mscale);
 	}
 	
@@ -156,14 +157,15 @@ struct Matrix
 		Matrix result;
 		result.setPosition(position);
 		result.setRotation(rotation);
+
+		if (scale.almostEqual(Vec3f.ONE))
+			return result;
 		
 		Matrix mscale;
 		mscale.v[0] = scale.x;
 		mscale.v[5] = scale.y;
 		mscale.v[10]= scale.z;
-		
-		if (scale.almostEqual(Vec3f.ONE))
-			return result;
+
 		return result.transformAffine(mscale);
 	}
 	
@@ -528,7 +530,7 @@ struct Matrix
 		v[6] =   2*(rot.y*rot.z + rot.x*rot.w);
 		v[8] =   2*(rot.x*rot.z + rot.y*rot.w);
 		v[9] =   2*(rot.y*rot.z - rot.x*rot.w);
-		v[10] = 1-2*(rot.x*rot.x + rot.y*rot.y);
+		v[10]= 1-2*(rot.x*rot.x + rot.y*rot.y);
 	}
 	void setRotation(Vec3f axis) /// ditto
 	{	float phi = axis.length();
