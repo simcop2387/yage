@@ -372,7 +372,7 @@ class Node : Tree!(Node), IDisposable
 			if (parent && parent !is scene)
 			{	parent.calcWorld();
 
-				worldPosition = ((position*scale).rotate(parent.worldRotation) + parent.worldPosition); // ;
+				worldPosition = ((position*parent.worldScale).rotate(parent.worldRotation) + parent.worldPosition);
 				worldRotation = parent.worldRotation * rotation;
 				worldScale =  parent.worldScale * scale;
 
@@ -393,7 +393,12 @@ class Node : Tree!(Node), IDisposable
 		
 		Node b = new Node(a);
 		b.setPosition(Vec3f(5, 0, 0));
-		assert(b.getWorldPosition().almostEqual(Vec3f(-2, 0, 0)));
+		auto bw = b.getWorldPosition();
+		assert(bw.almostEqual(Vec3f(-2, 0, 0)), format("%s", bw.v));
+
+		a.setScale(Vec3f(2, 2, 2));
+		bw = b.getWorldPosition();
+		assert(bw.almostEqual(Vec3f(-7, 0, 0)), format("%s", bw.v));
 	}
 	
 	/*
