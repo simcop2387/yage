@@ -167,9 +167,9 @@ class Node : Tree!(Node), IDisposable
 	
 	/**
 	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
-	Quatrn getRotation()
+	Vec3f getRotation()
 	{	mixin(Sync!("scene"));
-		return rotation;
+		return rotation.toAxis();
 	}
 	void setRotation(Vec3f axisAngle) /// ditto
 	{	mixin(Sync!("scene"));

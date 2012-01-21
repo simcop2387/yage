@@ -441,7 +441,12 @@ struct Vec(int S, T : real, bool N=false)
 		
 	// Special operations for 3-component vectors that can't be NaN or inf
 	static if (S==3 && !N)
-	{		
+	{			
+		// Temporary
+		VST toAxis()
+		{	return *this;
+		}
+
 		/// Return the cross product of this vector with another vector.
 		VST cross(VST s)
 		{	return VST(y*s.z-z*s.y, z*s.x-x*s.z, x*s.y-y*s.x);
@@ -530,7 +535,7 @@ struct Vec(int S, T : real, bool N=false)
 			 * Return a copy of this vector rotated by axis. 
 			 * TODO: Rodriguez formula should be more efficient:  http://en.wikipedia.org/wiki/Axis-angle_representation#Rotating_a_vector*/
 			VST rotate(VST axis)
-			{	return rotate(axis.toMatrix()); // TODO: use toQuatrn() instead for performance?
+			{	return rotate(axis.toMatrix());
 				/+// TODO Inline simplifcation and optimization
 				float phi = axis.length();
 				if (phi==0) // no rotation for zero-vector
@@ -559,14 +564,14 @@ struct Vec(int S, T : real, bool N=false)
 			}
 
 			/**
-			 * Return a copy of this Vec3f rotated by the Quatrn q.
-			 * From:  http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation */
+			* Return a copy of this Vec3f rotated by the Quatrn q.
+			* From:  http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation */
 			VST rotate(Quatrn q)
 			{	
 				VST normalized = *this; //normalize();
 				Quatrn vecQuat = Quatrn(normalized.x, normalized.y, normalized.z, 0);
 
-				// TODO: Expand this and remove the z calculation, since it's not used.
+				// TODO: May be able to expand this and simplify further.
 				Quatrn result = vecQuat * q.conjugate();
 				result = q * result;
 				return result.vector;
