@@ -78,13 +78,13 @@ class Scene : Node//, ITemporal, IDisposable
 	protected Mutex lightsMutex; // Having a separate mutex prevents render from watiing for the start of the next update loop.
 	protected Object soundsMutex;	
 
-	protected Repeater updateThread;
+	protected Repeater updateThread; // deprecated
 
 	float updateTime;
 	
 	protected static Scene[Scene] all_scenes; // TODO: Prevents old scenes from being removed!
 
-	
+	package float increment;
 
 	/**
 	 * Construct an empty Scene.
@@ -101,6 +101,7 @@ class Scene : Node//, ITemporal, IDisposable
 		
 		updateThread = new Repeater(&internalUpdate);
 		updateThread.frequency = frequency;
+		this.increment = 1/frequency;
 	
 		camerasMutex = new Mutex();
 		lightsMutex = new Mutex();

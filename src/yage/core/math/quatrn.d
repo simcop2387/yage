@@ -36,6 +36,8 @@ struct Quatrn
 		}
 	}
 
+	static const Quatrn IDENTITY;
+
 	invariant()
 	{	foreach (float t; v)
 		{	assert(!isNaN(t), format("<%s>", v));

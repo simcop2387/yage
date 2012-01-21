@@ -47,8 +47,10 @@ class Node : Tree!(Node), IDisposable
 	package Quatrn rotation;
 	package Vec3f scale = Vec3f.ONE;
 	
-	package Vec3f velocity;
+	//package Vec3f velocity;
 	package Vec3f angularVelocity;
+
+	private Vec3f velocityDelta;
 	private Quatrn angularVelocityDelta;
 	
 	package Vec3f worldPosition;
@@ -120,7 +122,7 @@ class Node : Tree!(Node), IDisposable
 		destination.position = position;
 		destination.rotation = rotation;
 		destination.scale = scale;
-		destination.velocity = velocity;
+		destination.velocityDelta = velocityDelta;
 		destination.angularVelocity = angularVelocity;				
 		destination.onUpdate = onUpdate;
 		
@@ -200,11 +202,12 @@ class Node : Tree!(Node), IDisposable
 	 * Get / set the linear velocity this Node relative to its parent's velocity. */
 	Vec3f getVelocity()
 	{	mixin(Sync!("scene"));
-		return velocity;
+		return velocityDelta/scene.increment;
 	}	
 	void setVelocity(Vec3f velocity) /// ditto
 	{	mixin(Sync!("scene"));
-		this.velocity = velocity;
+		//this.velocity = velocity;
+		velocityDelta = velocity*scene.increment;
 	}
 	
 	/**
@@ -217,7 +220,7 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		
 		this.angularVelocity = axisAngle;
-		this.angularVelocityDelta = (axisAngle*(1/60f)).toQuatrn();
+		this.angularVelocityDelta = (axisAngle*scene.increment).toQuatrn();
 	}
 	
 	/**
@@ -245,8 +248,8 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		calcWorld();
 		if (parent)
-			return velocity + parent.getWorldVelocity(); 
-		return velocity;
+			return velocityDelta/scene.increment + parent.getWorldVelocity(); 
+		return velocityDelta/scene.increment;
 	}
 	
 	// Convenience functions:
@@ -289,7 +292,7 @@ class Node : Tree!(Node), IDisposable
 	///
 	void accelerate(Vec3f amount)
 	{	mixin(Sync!("scene"));
-		velocity += amount;
+		velocityDelta += amount*scene.increment;
 	}
 	
 	///
@@ -303,14 +306,14 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 	
 		bool dirty = false;
-		if (velocity != Vec3f.ZERO)
-		{	position += velocity*delta; // TODO: store cached version?
+		if (velocityDelta != Vec3f.ZERO)
+		{	position += velocityDelta; // TODO: store cached version?
 			dirty = true;
 		}
 	
 		// Rotate if angular velocity is not zero.
 		if (angularVelocity != Vec3f.ZERO)
-		{	rotation = rotation * angularVelocityDelta; // (angularVelocity*delta).toQuatrn();
+		{	rotation = rotation * angularVelocityDelta;
 			dirty = true;
 		}
 		if (dirty)
@@ -339,30 +342,6 @@ class Node : Tree!(Node), IDisposable
 			foreach(c; children)
 				c.setWorldDirty();
 	}	}
-	/*
-	protected void calcWorld()
-	{	
-		if (worldDirty)
-		{		
-			if (parent && parent !is scene)
-			{	Matrix worldTransform = parent.getWorldTransform().transformAffine(getTransform());	
-				
-				Vec3f wp, ws;
-				Quatrn wr;
-				worldTransform.decompose(wp, wr, ws);
-				worldPosition = wp;
-				worldRotation = wr;
-				worldScale = ws;
-			} else
-			{	
-				worldPosition = position;
-				worldRotation = rotation;
-				worldScale = scale;
-			}
-			worldDirty = false;
-		}
-	}
-	*/
 
 	/*
 	 * Calculate the value of the worldPosition, worldRotation, and worldScale. */
@@ -373,8 +352,14 @@ class Node : Tree!(Node), IDisposable
 			if (parent && parent !is scene)
 			{	parent.calcWorld();
 
-				worldPosition = ((position*parent.worldScale).rotate(parent.worldRotation) + parent.worldPosition);
-				worldRotation = parent.worldRotation * rotation;
+				worldPosition = position * parent.worldScale;
+				if (parent.worldRotation != Quatrn.IDENTITY) // Because rotation is more expensive
+				{	worldPosition = worldPosition.rotate(parent.worldRotation);
+					worldRotation = parent.worldRotation * rotation;
+				} else
+					worldRotation = rotation;
+
+				worldPosition += parent.worldPosition;				
 				worldScale =  parent.worldScale * scale;
 
 			} else

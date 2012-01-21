@@ -570,6 +570,7 @@ struct Vec(int S, T : real, bool N=false)
 			{	
 				// Inline quaternion multiplication and conjugation, expanded to eliminate terms we don't need.
 				// This reduces it from 56 multiplies and adds, to 41.
+				// A single quaternion multiplication is 28 operations
 				Quatrn result1;
 				result1.w = x*q.x + y*q.y + z*q.z;
 				result1.x = x*q.w - y*q.z + z*q.y;
