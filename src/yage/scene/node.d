@@ -304,15 +304,13 @@ class Node : Tree!(Node), IDisposable
 	
 		bool dirty = false;
 		if (velocity != Vec3f.ZERO)
-		{	position += velocity*delta;
+		{	position += velocity*delta; // TODO: store cached version?
 			dirty = true;
 		}
 	
 		// Rotate if angular velocity is not zero.
 		if (angularVelocity != Vec3f.ZERO)
-		{	//rotation = rotation.combineRotation(angularVelocity*delta);
-			
-			rotation = rotation * angularVelocityDelta; // (angularVelocity*delta).toQuatrn();
+		{	rotation = rotation * angularVelocityDelta; // (angularVelocity*delta).toQuatrn();
 			dirty = true;
 		}
 		if (dirty)
@@ -365,6 +363,9 @@ class Node : Tree!(Node), IDisposable
 		}
 	}
 	*/
+
+	/*
+	 * Calculate the value of the worldPosition, worldRotation, and worldScale. */
 	protected void calcWorld()
 	{	
 		if (worldDirty)

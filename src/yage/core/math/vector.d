@@ -530,7 +530,7 @@ struct Vec(int S, T : real, bool N=false)
 			 * Return a copy of this vector rotated by axis. 
 			 * TODO: Rodriguez formula should be more efficient:  http://en.wikipedia.org/wiki/Axis-angle_representation#Rotating_a_vector*/
 			VST rotate(VST axis)
-			{	return rotate(axis.toMatrix());
+			{	return rotate(axis.toMatrix()); // TODO: use toQuatrn() instead for performance?
 				/+// TODO Inline simplifcation and optimization
 				float phi = axis.length();
 				if (phi==0) // no rotation for zero-vector
@@ -566,7 +566,7 @@ struct Vec(int S, T : real, bool N=false)
 				VST normalized = *this; //normalize();
 				Quatrn vecQuat = Quatrn(normalized.x, normalized.y, normalized.z, 0);
 
-				// TODO: May be able to expand this and simplify further.
+				// TODO: Expand this and remove the z calculation, since it's not used.
 				Quatrn result = vecQuat * q.conjugate();
 				result = q * result;
 				return result.vector;

@@ -96,7 +96,7 @@ struct Quatrn
 
 	/// Create a Quaternion from four values.
 	static Quatrn opCall(float x, float y, float z, float w)
-	{	Quatrn res;
+	{	Quatrn res = void;
 		res.x=x;
 		res.y=y;
 		res.z=z;
@@ -119,7 +119,7 @@ struct Quatrn
 	 * The result is the sum of both quaternion rotations.
 	 * Note that quaternion multiplication is not cumulative. */
 	Quatrn opMul(Quatrn b)
-	{	Quatrn res;
+	{	Quatrn res = void;
 		res.w = w*b.w - x*b.x - y*b.y - z*b.z;
 		res.x = w*b.x + x*b.w + y*b.z - z*b.y;
 		res.y = w*b.y - x*b.z + y*b.w + z*b.x;

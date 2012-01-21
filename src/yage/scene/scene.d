@@ -86,7 +86,9 @@ class Scene : Node//, ITemporal, IDisposable
 
 	
 
-	/// Construct an empty Scene.
+	/**
+	 * Construct an empty Scene.
+	 * The update frequency cannot be changed after the scene is started. */
 	this(float frequency = 60)
 	{	mutex = new FastLock();
 		
