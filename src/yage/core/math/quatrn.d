@@ -52,7 +52,7 @@ struct Quatrn
 		void test(char[] name, Quatrn[] args ...)
 		{	char[] report = "\nFailed on test '"~name~"' With Quaternions:\n";
 			foreach(Quatrn a; args)
-				report ~= a.toString()~"\n";
+				report ~= format("%s", a.v)~"\n";
 			assert(args[0].almostEqual(args[1]), report);
 		}
 
@@ -248,7 +248,14 @@ struct Quatrn
 
 	/// Create a Vec3f rotation axis from this Quaternion
 	Vec!(3, float) toAxis()
-	{	double angle = acos(w)*2;
+	{	
+		double angle;
+		if (1 <= w && w < 1.0001)
+		{	angle = 0;
+			w = 1; // correct floating point rounding
+		}
+		else
+			angle = acos(w)*2;
 		assert(!isNaN(angle), format("%f", w));
 		if (angle != 0)
 		{	auto sin_a = sqrt(1 - w*w);
