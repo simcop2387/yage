@@ -7,6 +7,7 @@
 module yage.scene.node;
 
 import tango.core.Thread;
+import tango.math.Math;
 import yage.core.all;
 import yage.core.tree;
 import yage.scene.scene;
@@ -47,8 +48,7 @@ class Node : Tree!(Node), IDisposable
 	package Quatrn rotation;
 	package Vec3f scale = Vec3f.ONE;
 	
-	//package Vec3f velocity;
-	package Vec3f angularVelocity;
+	private Vec3f angularVelocity;
 
 	private Vec3f velocityDelta;
 	private Quatrn angularVelocityDelta;
@@ -70,7 +70,7 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Construct and optionally add as a child of another Node. */
 	this()
-	{	// default constructor required for clone.
+	{
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
@@ -123,7 +123,12 @@ class Node : Tree!(Node), IDisposable
 		destination.rotation = rotation;
 		destination.scale = scale;
 		destination.velocityDelta = velocityDelta;
-		destination.angularVelocity = angularVelocity;				
+		destination.angularVelocity = angularVelocity;	
+		destination.angularVelocityDelta = angularVelocityDelta;	
+		if (scene)
+		{	destination.velocityDelta /= scene.increment;
+			destination.angularVelocityDelta.multiplyAngle(1/scene.increment);
+		}
 		destination.onUpdate = onUpdate;
 		
 		if (children)
@@ -202,12 +207,17 @@ class Node : Tree!(Node), IDisposable
 	 * Get / set the linear velocity this Node relative to its parent's velocity. */
 	Vec3f getVelocity()
 	{	mixin(Sync!("scene"));
-		return velocityDelta/scene.increment;
+		if (scene)
+			return velocityDelta/scene.increment;
+		else
+			return velocityDelta;
 	}	
 	void setVelocity(Vec3f velocity) /// ditto
 	{	mixin(Sync!("scene"));
-		//this.velocity = velocity;
-		velocityDelta = velocity*scene.increment;
+		if (scene)		
+			velocityDelta = velocity*scene.increment;
+		else
+			velocityDelta = velocity;
 	}
 	
 	/**
@@ -220,7 +230,10 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		
 		this.angularVelocity = axisAngle;
-		this.angularVelocityDelta = (axisAngle*scene.increment).toQuatrn();
+		if (scene)
+			angularVelocityDelta = (axisAngle*scene.increment).toQuatrn();
+		else
+			angularVelocityDelta = axisAngle.toQuatrn();
 	}
 	
 	/**
@@ -248,8 +261,13 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		calcWorld();
 		if (parent)
-			return velocityDelta/scene.increment + parent.getWorldVelocity(); 
-		return velocityDelta/scene.increment;
+		{	if (scene)
+				return velocityDelta/scene.increment + parent.getWorldVelocity();
+			return velocityDelta + parent.getWorldVelocity();
+		}
+		if (scene)
+			return velocityDelta/scene.increment;
+		return velocityDelta;
 	}
 	
 	// Convenience functions:
@@ -292,7 +310,10 @@ class Node : Tree!(Node), IDisposable
 	///
 	void accelerate(Vec3f amount)
 	{	mixin(Sync!("scene"));
-		velocityDelta += amount*scene.increment;
+		if (scene)
+			velocityDelta += amount*scene.increment;
+		else
+			velocityDelta += amount;
 	}
 	
 	///
@@ -395,9 +416,12 @@ class Node : Tree!(Node), IDisposable
 	 * @param old_ancestor The ancestor that was previously one above the top node of the tree that had its parent changed. */
 	protected void ancestorChange(Node old_ancestor)
 	{	worldDirty = true;
+		Scene oldScene = this.scene;
 		scene = parent ? parent.scene : null;
+		float incrementChange = (scene ? scene.increment : 1f) / (oldScene ? oldScene.increment : 1f);
+		velocityDelta *= incrementChange;
+		angularVelocityDelta.multiplyAngle(incrementChange);
 		foreach(c; children)
 			c.ancestorChange(old_ancestor);
-		
 	}
 }

@@ -169,6 +169,11 @@ struct Quatrn
 	{	return sqrt(w*w + x*x + y*y + z*z);
 	}
 
+	/// Multiply the angle of the quaternion by this amount.
+	void multiplyAngle(float amount)
+	{	w =cos(acos(w)*amount);
+	}
+
 	/// Return a normalized version of the Quaternion.
 	Quatrn normalize()
 	{	float s = 1/sqrt(w*w + x*x + y*y + z*z);

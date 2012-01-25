@@ -122,6 +122,10 @@ class Ship : GameObject
 			
 			void fade(GameObject node, float delta)
 			{	node.update(delta);
+				
+				//if (node.scene is null)
+				//	return; // The call to update removed it from the scene.				
+				
 				auto sprite = (cast(SpriteNode)(node.getChildren[0]));
 				sprite.material.getPass().diffuse.a = cast(ubyte)(node.lifetime * 51);
 				node.setScale(Vec3f(5-node.lifetime + .3));
@@ -158,13 +162,9 @@ class Ship : GameObject
 		
 		
 		// Bank on turn
-		float turn = getAngularVelocity().y;
+		float target = clamp(getAngularVelocity().y/1.5f, -1.2f, 1.2f);
 		float cur = ship.getRotation().z;
-		
-		if (cur > 1 || cur < -1)	// Prevent banking too far
-			ship.setAngularVelocity(Vec3f(0, 0, -cur/32));
-		else
-			ship.setAngularVelocity(Vec3f(0, 0, (turn-cur)));
+		ship.setAngularVelocity(Vec3f(0, 0, (target-cur)*2));
 
 		// Clamp turning speed
 		setAngularVelocity(getAngularVelocity().clamp(-3, 3));
@@ -185,8 +185,6 @@ class Ship : GameObject
 			Flare flare = ship.getScene().addChild(new Flare());
 			flare.setPosition(ship.getWorldPosition());
 			flare.setVelocity(Vec3f(0, 0, -600).rotate(ship.getWorldTransform())+getVelocity());
-			
-			//input.shoot = false;
 		}
 	}
 }
