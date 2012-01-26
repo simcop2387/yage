@@ -45,6 +45,7 @@ int main(char[][] args)
 			case "-debug": 			debug_=true; options1 ~= ["-debug", "-g"]; break;
 			case "-lib": 			lib=true; break;
 			case "-profile": 		options1 ~= ["-profile"]; break;
+			case "-run": 		
 			case "-startyage": 		startyage=true; break;
 			case "-help":	 		help=true; break;
 			case "-verbose": 		verbose=true; break;
@@ -70,7 +71,7 @@ int main(char[][] args)
 		System.trace("   -help        Print this message.");
 		//System.trace("   -lib         Create a yage lib file in the lib folder.");
 		System.trace("   -profile     Compile in profiling code.");
-		System.trace("   -startyage   Run when finished.");
+		System.trace("   -run         Run when finished.");
 		System.trace("   -verbose     Print all commands as they're being executed.");
 		System.trace("");
 		System.trace("Example:  dmd -run buildyage.d -release -startyage");

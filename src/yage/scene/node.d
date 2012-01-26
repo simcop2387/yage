@@ -44,11 +44,40 @@ import yage.system.log;
  */
 class Node : Tree!(Node), IDisposable
 {
+
+	struct Transform
+	{	Vec3f position;
+		Quatrn rotation;
+		Vec3f scale;
+
+		Vec3f veclocityDelta;
+		Vec3f angularVelocityDelta;
+
+		Vec3f worldPosition;
+		Quatrn worldRotation;
+		Vec3f worldScale = Vec3f.ONE;
+
+		float radius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
+		bool worldDirty=true;
+		Node.Transform* parent;
+		Node* node;
+
+		static Transform opCall()
+		{	Transform result;
+			return result;
+		}
+	}
+	package Transform* transform;
+	package int sceneIndex=-1;
+
+	//alias transform this;
+
 	package Vec3f position;
 	package Quatrn rotation;
 	package Vec3f scale = Vec3f.ONE;
 	
-	private Vec3f angularVelocity;
+	protected Vec3f velocity;
+	protected Vec3f angularVelocity;
 
 	private Vec3f velocityDelta;
 	private Quatrn angularVelocityDelta;
@@ -57,8 +86,11 @@ class Node : Tree!(Node), IDisposable
 	package Quatrn worldRotation;
 	package Vec3f worldScale = Vec3f.ONE;
 
-	package bool worldDirty;		
+	package bool worldDirty=true;		
 	package Scene scene;			// The Scene that this node belongs to.
+
+	
+
 
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
 
@@ -70,13 +102,14 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Construct and optionally add as a child of another Node. */
 	this()
-	{
+	{	transform = new Transform();
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
 		{	mixin(Sync!("scene"));
 			parent.addChild(this);
-		}
+		} else
+			transform = new Transform();
 	}
 	
 	/**
@@ -214,6 +247,7 @@ class Node : Tree!(Node), IDisposable
 	}	
 	void setVelocity(Vec3f velocity) /// ditto
 	{	mixin(Sync!("scene"));
+		this.velocity = velocity;
 		if (scene)		
 			velocityDelta = velocity*scene.increment;
 		else
@@ -416,11 +450,37 @@ class Node : Tree!(Node), IDisposable
 	 * @param old_ancestor The ancestor that was previously one above the top node of the tree that had its parent changed. */
 	protected void ancestorChange(Node old_ancestor)
 	{	worldDirty = true;
+
 		Scene oldScene = this.scene;
 		scene = parent ? parent.scene : null;
+
+		if (scene)
+		{	
+			if (!transform)				
+				transform = scene.nodeTransforms.append(Transform());
+			else
+			{	Transform* old = transform;					
+				transform = scene.nodeTransforms.append(*transform);
+				if (oldScene)
+					oldScene.nodeTransforms.remove(sceneIndex);
+				else
+					delete old; // they were on the heap
+			}
+			sceneIndex = scene.nodeTransforms.length-1;
+		} 
+		else if (oldScene)
+		{	transform = new Transform(); // move them onto the stack
+			transform = oldScene.nodeTransforms[sceneIndex];
+			sceneIndex = -1;
+		} 
+		else if (!transform)
+			transform = new Transform();
+
+
 		float incrementChange = (scene ? scene.increment : 1f) / (oldScene ? oldScene.increment : 1f);
 		velocityDelta *= incrementChange;
 		angularVelocityDelta.multiplyAngle(incrementChange);
+
 		foreach(c; children)
 			c.ancestorChange(old_ancestor);
 	}

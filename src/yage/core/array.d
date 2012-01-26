@@ -447,10 +447,11 @@ struct ArrayBuilder(T)
 	}
 	
 	/// temporary until opCatAssign always works
-	void append(T elem)
+	T* append(T elem)
 	{	size++;
 		grow();
 		array[size-1] = elem;
+		return &array[size-1];
 	}
 	
 	void opCatAssign(T[] elem) /// ditto
@@ -508,6 +509,12 @@ struct ArrayBuilder(T)
 	T* ptr()
 	{	return array.ptr;		
 	}
+
+	/// Remove an element, replacing it with one from the end.
+	void remove(size_t index)
+	{	array[index] = array[size-1];
+		size--;
+	}
 	
 	///
 	AT reverse()
@@ -516,7 +523,7 @@ struct ArrayBuilder(T)
 	}
 	
 	/**
-	 * Add and remove elements from the array, in-place
+	 * Add and remove elements from the array, in-place.
 	 * Params:
 	 *     index = 
 	 *     remove = Number of elements to remove, including and after index
