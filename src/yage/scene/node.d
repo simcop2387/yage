@@ -264,6 +264,13 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		transform.angularVelocityDelta = (axisAngle * (scene?scene.increment:DEFAULT_INCREMENT)).toQuatrn();
 	}
+	unittest
+	{	Node a = new Node();
+		Vec3f av1 = Vec3f(1, 2, 3);
+		a.setAngularVelocity(av1);
+		Vec3f av2 = a.getAngularVelocity();
+		assert(av1.almostEqual(av2), format("%s", av2.v));
+	}
 	
 	/**
 	 * Get the position, axis-angle rotation, or scale in world coordinates, 
@@ -342,6 +349,14 @@ class Node : Tree!(Node), IDisposable
 	void angularAccelerate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));		
 		transform.angularVelocityDelta = transform.angularVelocityDelta.rotate(axisAngle.scale(scene?scene.increment:DEFAULT_INCREMENT).toQuatrn()); // TODO: Is this clamped to -PI to PI?
+	}
+	unittest
+	{	Node n = new Node();
+		Vec3f av = Vec3f(-.5, .5, 1);
+		n.setAngularVelocity(av);
+		n.angularAccelerate(av);
+		Vec3f av2 = n.getAngularVelocity();
+		assert(av2.almostEqual(av*2), format("%s", av2.v));
 	}
 
 	///
