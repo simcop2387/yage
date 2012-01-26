@@ -273,7 +273,7 @@ class CameraNode : Node
 				rs.lights.data[j].cameraSpacePosition = light.getWorldPosition().transform(list.cameraInverse); 
 				if (light.type == LightNode.Type.SPOT)
 					rs.lights.data[j].setRotation(light.getWorldRotation());
-				rs.lights.data[j].transform.worldPosition = rs.lights.data[j].position;
+				rs.lights.data[j].transform.worldPosition = rs.lights.data[j].transform.position;
 				rs.lights.data[j].transform.worldDirty = false; // hack to prevent it from being recalculated.
 				j++;
 			}

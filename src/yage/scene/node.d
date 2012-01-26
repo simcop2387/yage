@@ -48,7 +48,7 @@ class Node : Tree!(Node), IDisposable
 	struct Transform
 	{	Vec3f position;
 		Quatrn rotation;
-		Vec3f scale;
+		Vec3f scale = Vec3f.ONE;
 
 		Vec3f velocityDelta;
 		Quatrn angularVelocityDelta;
@@ -72,9 +72,9 @@ class Node : Tree!(Node), IDisposable
 
 	//alias transform this;
 
-	package Vec3f position;
-	package Quatrn rotation;
-	package Vec3f scale = Vec3f.ONE;
+	//package Vec3f position;
+	//package Quatrn rotation;
+	//package Vec3f scale = Vec3f.ONE;
 	
 	//protected Vec3f velocity;	// deprecated?
 	//protected Vec3f angularVelocity; // deprecated?
@@ -155,9 +155,9 @@ class Node : Tree!(Node), IDisposable
 		
 		*destination.transform = *transform;
 
-		destination.position = position;
-		destination.rotation = rotation;
-		destination.scale = scale;
+		//destination.position = position;
+		//destination.rotation = rotation;
+		//destination.scale = scale;
 		//destination.velocityDelta = velocityDelta;
 		//destination.angularVelocity = angularVelocity;	
 		//destination.angularVelocityDelta = angularVelocityDelta;
@@ -202,42 +202,42 @@ class Node : Tree!(Node), IDisposable
 	 * Get / set the xyz position of this Node relative to its parent's position. */
 	Vec3f getPosition()
 	{	mixin(Sync!("scene"));
-		return position;
+		return transform.position;
 	}	
 	void setPosition(Vec3f position) /// ditto
 	{	mixin(Sync!("scene"));
 		setWorldDirty();
-		this.position = position;
+		transform.position = position;
 	}
 	
 	/**
 	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
 	Vec3f getRotation()
 	{	mixin(Sync!("scene"));
-		return rotation.toAxis();
+		return transform.rotation.toAxis();
 	}
 	void setRotation(Vec3f axisAngle) /// ditto
 	{	mixin(Sync!("scene"));
 		setWorldDirty();
-		this.rotation = axisAngle.toQuatrn();
+		transform.rotation = axisAngle.toQuatrn();
 	}
 
 	void setRotation(Quatrn quaternion) /// ditto
 	{	mixin(Sync!("scene"));
 		setWorldDirty();
-		this.rotation = quaternion;
+		transform.rotation = quaternion;
 	}
 	
 	/**
 	 * Get / set the xyz scale of this Node relative to its parent's scale. */
 	Vec3f getScale()
 	{	mixin(Sync!("scene"));
-		return scale;
+		return transform.scale;
 	}	
 	void setScale(Vec3f scale) /// ditto
 	{	mixin(Sync!("scene"));
 		setWorldDirty();
-		this.scale = scale;
+		transform.scale = scale;
 	}
 
 	
@@ -300,7 +300,7 @@ class Node : Tree!(Node), IDisposable
 	///
 	Matrix getTransform()
 	{	//Log.write(rotation.v);
-		return Matrix.compose(position, rotation, scale);
+		return Matrix.compose(transform.position, transform.rotation, transform.scale);
 	}
 
 	
@@ -314,21 +314,21 @@ class Node : Tree!(Node), IDisposable
 	///
 	void move(Vec3f amount)
 	{	mixin(Sync!("scene"));
-		position += amount;
+		transform.position += amount;
 		setWorldDirty();
 	}
 
 	///
 	void rotate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));
-		rotation = rotation*axisAngle.toQuatrn(); 
+		transform.rotation = transform.rotation*axisAngle.toQuatrn(); 
 		setWorldDirty();
 	}
 
 	///
 	void rotate(Quatrn quaternion)
 	{	mixin(Sync!("scene"));
-		rotation = rotation*quaternion; 
+		transform.rotation = transform.rotation*quaternion; 
 		setWorldDirty();
 	}
 
@@ -350,14 +350,14 @@ class Node : Tree!(Node), IDisposable
 	
 		bool dirty = false;
 		if (transform.velocityDelta != Vec3f.ZERO)
-		{	position += transform.velocityDelta; // TODO: store cached version?
+		{	transform.position += transform.velocityDelta; // TODO: store cached version?
 			dirty = true;
 		}
 	
 		// Rotate if angular velocity is not zero.
 		float angle = transform.angularVelocityDelta.w - 3.1415927/4;
 		if (angle < -0.0001 || angle > 0.001)
-		{	rotation = rotation * transform.angularVelocityDelta;
+		{	transform.rotation = transform.rotation * transform.angularVelocityDelta;
 			dirty = true;
 		}
 		if (dirty)
@@ -396,21 +396,21 @@ class Node : Tree!(Node), IDisposable
 			if (parent && parent !is scene)
 			{	parent.calcWorld();
 
-				transform.worldPosition = position * parent.transform.worldScale;
+				transform.worldPosition = transform.position * parent.transform.worldScale;
 				if (parent.transform.worldRotation != Quatrn.IDENTITY) // Because rotation is more expensive
 				{	transform.worldPosition = transform.worldPosition.rotate(parent.transform.worldRotation);
-					transform.worldRotation = parent.transform.worldRotation * rotation;
+					transform.worldRotation = parent.transform.worldRotation * transform.rotation;
 				} else
-					transform.worldRotation = rotation;
+					transform.worldRotation = transform.rotation;
 
 				transform.worldPosition += parent.transform.worldPosition;				
-				transform.worldScale =  parent.transform.worldScale * scale;
+				transform.worldScale =  parent.transform.worldScale * transform.scale;
 
 			} else
 			{	
-				transform.worldPosition = position;
-				transform.worldRotation = rotation;
-				transform.worldScale = scale;
+				transform.worldPosition = transform.position;
+				transform.worldRotation = transform.rotation;
+				transform.worldScale = transform.scale;
 			}
 			transform.worldDirty = false;
 		}
