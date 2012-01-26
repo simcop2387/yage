@@ -169,7 +169,7 @@ struct Quatrn
 	{	return sqrt(w*w + x*x + y*y + z*z);
 	}
 
-	/// Multiply the angle of the quaternion by this amount.
+	/// Multiply the angle of the quaternion by this amount.  This is an in-place operation.
 	void multiplyAngle(float amount)
 	{	w =cos(acos(w)*amount);
 	}
