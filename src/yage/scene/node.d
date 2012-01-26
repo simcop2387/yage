@@ -76,15 +76,15 @@ class Node : Tree!(Node), IDisposable
 	package Quatrn rotation;
 	package Vec3f scale = Vec3f.ONE;
 	
-	protected Vec3f velocity;
-	protected Vec3f angularVelocity;
+	protected Vec3f velocity;	// deprecated?
+	protected Vec3f angularVelocity; // deprecated?
 
 	private Vec3f velocityDelta;
 	private Quatrn angularVelocityDelta;
 	
-	package Vec3f worldPosition;
-	package Quatrn worldRotation;
-	package Vec3f worldScale = Vec3f.ONE;
+	//package Vec3f worldPosition;
+	//package Quatrn worldRotation;
+	//package Vec3f worldScale = Vec3f.ONE;
 
 	package bool worldDirty=true;		
 	package Scene scene;			// The Scene that this node belongs to.
@@ -97,6 +97,7 @@ class Node : Tree!(Node), IDisposable
 	
 	invariant()
 	{	assert(parent !is this);
+	//	assert(transform !is null);
 	}
 	
 	/**
@@ -277,17 +278,17 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		if (worldDirty) // makes it faster.
 			calcWorld();
-		return worldPosition; // TODO: optimize
+		return transform.worldPosition; // TODO: optimize
 	}
 	Vec3f getWorldRotation() /// ditto
 	{	mixin(Sync!("scene"));
 		calcWorld();
-		return worldRotation.toAxis();
+		return transform.worldRotation.toAxis();
 	}
 	Vec3f getWorldScale() /// ditto
 	{	mixin(Sync!("scene"));
 		calcWorld();
-		return worldScale;
+		return transform.worldScale;
 	}
 	
 	/// Bug:  Doesn't take parent's rotation or scale into account
@@ -317,7 +318,7 @@ class Node : Tree!(Node), IDisposable
 	Matrix getWorldTransform()
 	{	mixin(Sync!("scene"));
 		calcWorld();
-		return Matrix.compose(worldPosition, worldRotation, worldScale);
+		return Matrix.compose(transform.worldPosition, transform.worldRotation, transform.worldScale);
 	}
 
 	///
@@ -407,21 +408,21 @@ class Node : Tree!(Node), IDisposable
 			if (parent && parent !is scene)
 			{	parent.calcWorld();
 
-				worldPosition = position * parent.worldScale;
-				if (parent.worldRotation != Quatrn.IDENTITY) // Because rotation is more expensive
-				{	worldPosition = worldPosition.rotate(parent.worldRotation);
-					worldRotation = parent.worldRotation * rotation;
+				transform.worldPosition = position * parent.transform.worldScale;
+				if (parent.transform.worldRotation != Quatrn.IDENTITY) // Because rotation is more expensive
+				{	transform.worldPosition = transform.worldPosition.rotate(parent.transform.worldRotation);
+					transform.worldRotation = parent.transform.worldRotation * rotation;
 				} else
-					worldRotation = rotation;
+					transform.worldRotation = rotation;
 
-				worldPosition += parent.worldPosition;				
-				worldScale =  parent.worldScale * scale;
+				transform.worldPosition += parent.transform.worldPosition;				
+				transform.worldScale =  parent.transform.worldScale * scale;
 
 			} else
 			{	
-				worldPosition = position;
-				worldRotation = rotation;
-				worldScale = scale;
+				transform.worldPosition = position;
+				transform.worldRotation = rotation;
+				transform.worldScale = scale;
 			}
 			worldDirty = false;
 		}
@@ -454,32 +455,36 @@ class Node : Tree!(Node), IDisposable
 		Scene oldScene = this.scene;
 		scene = parent ? parent.scene : null;
 
-		if (scene)
-		{	
-			if (!transform)				
-				transform = scene.nodeTransforms.append(Transform());
-			else
-			{	Transform* old = transform;					
-				transform = scene.nodeTransforms.append(*transform);
-				if (oldScene)
-					oldScene.nodeTransforms.remove(sceneIndex);
+		if (scene !is oldScene)
+		{	if (scene)
+			{	
+				if (!transform)				
+					transform = scene.nodeTransforms.append(Transform());
 				else
-					delete old; // they were on the heap
-			}
-			sceneIndex = scene.nodeTransforms.length-1;
-		} 
-		else if (oldScene)
-		{	transform = new Transform(); // move them onto the stack
-			transform = oldScene.nodeTransforms[sceneIndex];
-			sceneIndex = -1;
+				{	Transform* old = transform;					
+					transform = scene.nodeTransforms.append(*transform);
+					if (oldScene)
+						oldScene.nodeTransforms.remove(sceneIndex);
+					else
+						delete old; // they were on the heap
+				}
+				sceneIndex = scene.nodeTransforms.length-1;
+			} 
+			else if (oldScene)
+			{	transform = new Transform(); // move them onto the stack
+				transform = oldScene.nodeTransforms[sceneIndex];
+				sceneIndex = -1;
+			} 
+			else if (!transform)
+				transform = new Transform();
+
+			// Deprecated?
+			float incrementChange = (scene ? scene.increment : 1f) / (oldScene ? oldScene.increment : 1f);
+			velocityDelta *= incrementChange;
+			angularVelocityDelta.multiplyAngle(incrementChange);
 		} 
 		else if (!transform)
 			transform = new Transform();
-
-
-		float incrementChange = (scene ? scene.increment : 1f) / (oldScene ? oldScene.increment : 1f);
-		velocityDelta *= incrementChange;
-		angularVelocityDelta.multiplyAngle(incrementChange);
 
 		foreach(c; children)
 			c.ancestorChange(old_ancestor);

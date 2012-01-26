@@ -273,7 +273,7 @@ class CameraNode : Node
 				rs.lights.data[j].cameraSpacePosition = light.getWorldPosition().transform(list.cameraInverse); 
 				if (light.type == LightNode.Type.SPOT)
 					rs.lights.data[j].setRotation(light.getWorldRotation());
-				rs.lights.data[j].worldPosition = rs.lights.data[j].position;
+				rs.lights.data[j].transform.worldPosition = rs.lights.data[j].position;
 				rs.lights.data[j].worldDirty = false; // hack to prevent it from being recalculated.
 				j++;
 			}
@@ -415,17 +415,16 @@ class CameraNode : Node
 	/*
 	 * Update the frustums when the camera moves. */
 	override protected void calcWorld()
-	{	//Log.write(rotation);
-		//Log.write(worldRotation);
+	{	
 		super.calcWorld();
 		
 		// Create the clipping matrix from the modelview and projection matrices
 		Matrix projection = Matrix.createProjection(fov*3.1415927/180f, aspectRatio, near, far);
 		//Log.write("camera ", worldRotation);
-		Matrix model = Matrix.compose(worldPosition, worldRotation, worldScale).inverse();
+		Matrix model = Matrix.compose(transform.worldPosition, transform.worldRotation, transform.worldScale).inverse();
 		(model*projection).getFrustum(frustum);
 		
-		model = worldRotation.toMatrix().inverse(); // shed all but the rotation values
+		model = transform.worldRotation.toMatrix().inverse(); // shed all but the rotation values
 		(model*projection).getFrustum(skyboxFrustum);
 		
 		/*
