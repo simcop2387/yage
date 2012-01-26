@@ -50,8 +50,8 @@ class Node : Tree!(Node), IDisposable
 		Quatrn rotation;
 		Vec3f scale;
 
-		Vec3f veclocityDelta;
-		Vec3f angularVelocityDelta;
+		Vec3f velocityDelta;
+		Quatrn angularVelocityDelta;
 
 		Vec3f worldPosition;
 		Quatrn worldRotation;
@@ -79,14 +79,14 @@ class Node : Tree!(Node), IDisposable
 	protected Vec3f velocity;	// deprecated?
 	protected Vec3f angularVelocity; // deprecated?
 
-	private Vec3f velocityDelta;
-	private Quatrn angularVelocityDelta;
+	//private Vec3f velocityDelta;
+	//private Quatrn angularVelocityDelta;
 	
 	//package Vec3f worldPosition;
 	//package Quatrn worldRotation;
 	//package Vec3f worldScale = Vec3f.ONE;
 
-	package bool worldDirty=true;		
+	//package bool worldDirty=true;		
 	package Scene scene;			// The Scene that this node belongs to.
 
 	
@@ -153,15 +153,18 @@ class Node : Tree!(Node), IDisposable
 			destination = cast(Node)this.classinfo.create(); // why does new typeof(this) fail?
 		assert(destination);
 		
+		*destination.transform = *transform;
+
 		destination.position = position;
 		destination.rotation = rotation;
 		destination.scale = scale;
-		destination.velocityDelta = velocityDelta;
-		destination.angularVelocity = angularVelocity;	
-		destination.angularVelocityDelta = angularVelocityDelta;	
+		//destination.velocityDelta = velocityDelta;
+		//destination.angularVelocity = angularVelocity;	
+		//destination.angularVelocityDelta = angularVelocityDelta;
+
 		if (scene)
-		{	destination.velocityDelta /= scene.increment;
-			destination.angularVelocityDelta.multiplyAngle(1/scene.increment);
+		{	destination.transform.velocityDelta /= scene.increment;
+			destination.transform.angularVelocityDelta.multiplyAngle(1/scene.increment);
 		}
 		destination.onUpdate = onUpdate;
 		
@@ -242,17 +245,17 @@ class Node : Tree!(Node), IDisposable
 	Vec3f getVelocity()
 	{	mixin(Sync!("scene"));
 		if (scene)
-			return velocityDelta/scene.increment;
+			return transform.velocityDelta/scene.increment;
 		else
-			return velocityDelta;
+			return transform.velocityDelta;
 	}	
 	void setVelocity(Vec3f velocity) /// ditto
 	{	mixin(Sync!("scene"));
 		this.velocity = velocity;
 		if (scene)		
-			velocityDelta = velocity*scene.increment;
+			transform.velocityDelta = velocity*scene.increment;
 		else
-			velocityDelta = velocity;
+			transform.velocityDelta = velocity;
 	}
 	
 	/**
@@ -266,9 +269,9 @@ class Node : Tree!(Node), IDisposable
 		
 		this.angularVelocity = axisAngle;
 		if (scene)
-			angularVelocityDelta = (axisAngle*scene.increment).toQuatrn();
+			transform.angularVelocityDelta = (axisAngle*scene.increment).toQuatrn();
 		else
-			angularVelocityDelta = axisAngle.toQuatrn();
+			transform.angularVelocityDelta = axisAngle.toQuatrn();
 	}
 	
 	/**
@@ -276,7 +279,7 @@ class Node : Tree!(Node), IDisposable
 	 * instead of relative to the parent Node. */
 	Vec3f getWorldPosition()
 	{	mixin(Sync!("scene"));
-		if (worldDirty) // makes it faster.
+		if (transform.worldDirty) // makes it faster.
 			calcWorld();
 		return transform.worldPosition; // TODO: optimize
 	}
@@ -297,12 +300,12 @@ class Node : Tree!(Node), IDisposable
 		calcWorld();
 		if (parent)
 		{	if (scene)
-				return velocityDelta/scene.increment + parent.getWorldVelocity();
-			return velocityDelta + parent.getWorldVelocity();
+				return transform.velocityDelta/scene.increment + parent.getWorldVelocity();
+			return transform.velocityDelta + parent.getWorldVelocity();
 		}
 		if (scene)
-			return velocityDelta/scene.increment;
-		return velocityDelta;
+			return transform.velocityDelta/scene.increment;
+		return transform.velocityDelta;
 	}
 	
 	// Convenience functions:
@@ -346,9 +349,9 @@ class Node : Tree!(Node), IDisposable
 	void accelerate(Vec3f amount)
 	{	mixin(Sync!("scene"));
 		if (scene)
-			velocityDelta += amount*scene.increment;
+			transform.velocityDelta += amount*scene.increment;
 		else
-			velocityDelta += amount;
+			transform.velocityDelta += amount;
 	}
 	
 	///
@@ -362,14 +365,15 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 	
 		bool dirty = false;
-		if (velocityDelta != Vec3f.ZERO)
-		{	position += velocityDelta; // TODO: store cached version?
+		if (transform.velocityDelta != Vec3f.ZERO)
+		{	position += transform.velocityDelta; // TODO: store cached version?
 			dirty = true;
 		}
 	
 		// Rotate if angular velocity is not zero.
-		if (angularVelocity != Vec3f.ZERO)
-		{	rotation = rotation * angularVelocityDelta;
+		float angle = transform.angularVelocityDelta.w - 3.1415927/4;
+		if (angle < -0.0001 || angle > 0.001)
+		{	rotation = rotation * transform.angularVelocityDelta;
 			dirty = true;
 		}
 		if (dirty)
@@ -393,8 +397,8 @@ class Node : Tree!(Node), IDisposable
 	 * This should be called whenever a Node has its transformation matrix changed.
 	 * This function is used internally by the engine usually doesn't need to be called manually. */
 	protected void setWorldDirty()
-	{	if (!worldDirty)
-		{	worldDirty=true;
+	{	if (!transform.worldDirty)
+		{	transform.worldDirty=true;
 			foreach(c; children)
 				c.setWorldDirty();
 	}	}
@@ -403,7 +407,7 @@ class Node : Tree!(Node), IDisposable
 	 * Calculate the value of the worldPosition, worldRotation, and worldScale. */
 	protected void calcWorld()
 	{	
-		if (worldDirty)
+		if (transform.worldDirty)
 		{		
 			if (parent && parent !is scene)
 			{	parent.calcWorld();
@@ -424,7 +428,7 @@ class Node : Tree!(Node), IDisposable
 				transform.worldRotation = rotation;
 				transform.worldScale = scale;
 			}
-			worldDirty = false;
+			transform.worldDirty = false;
 		}
 	}
 	unittest
@@ -445,16 +449,15 @@ class Node : Tree!(Node), IDisposable
 	
 	/*
 	 * Called after any of a node's ancestors have their parent changed. 
-	 * This function also sets transform_dirty.  
-	 * Yes, this is a side-effect,  but it increases performance in cases where both need to be called, 
-	 * since the transformation matrix should always be dirty after an ancestor change. 
-	 * @param old_ancestor The ancestor that was previously one above the top node of the tree that had its parent changed. */
-	protected void ancestorChange(Node old_ancestor)
-	{	worldDirty = true;
-
+	 * This function also sets worldDirty=true
+	 * since the world transformation values should always be dirty after an ancestor change. 
+	 * @param oldAncestor The ancestor that was previously one above the top node of the tree that had its parent changed. */
+	protected void ancestorChange(Node oldAncestor)
+	{	
 		Scene oldScene = this.scene;
 		scene = parent ? parent.scene : null;
 
+		// Allocate, deallocate, and move transform data from one scene to another.
 		if (scene !is oldScene)
 		{	if (scene)
 			{	
@@ -466,7 +469,7 @@ class Node : Tree!(Node), IDisposable
 					if (oldScene)
 						oldScene.nodeTransforms.remove(sceneIndex);
 					else
-						delete old; // they were on the heap
+						delete old; // transform was previously on the heap
 				}
 				sceneIndex = scene.nodeTransforms.length-1;
 			} 
@@ -478,15 +481,17 @@ class Node : Tree!(Node), IDisposable
 			else if (!transform)
 				transform = new Transform();
 
-			// Deprecated?
+			// Update the incrementing values to match the scene increment.
 			float incrementChange = (scene ? scene.increment : 1f) / (oldScene ? oldScene.increment : 1f);
-			velocityDelta *= incrementChange;
-			angularVelocityDelta.multiplyAngle(incrementChange);
+			transform.velocityDelta *= incrementChange;
+			transform.angularVelocityDelta.multiplyAngle(incrementChange);
 		} 
 		else if (!transform)
 			transform = new Transform();
 
+		transform.worldDirty = true;
+
 		foreach(c; children)
-			c.ancestorChange(old_ancestor);
+			c.ancestorChange(oldAncestor);
 	}
 }
