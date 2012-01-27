@@ -76,8 +76,8 @@ class Node : Tree!(Node), IDisposable
 	//package Quatrn rotation;
 	//package Vec3f scale = Vec3f.ONE;
 	
-	//protected Vec3f velocity;	// deprecated?
-	//protected Vec3f angularVelocity; // deprecated?
+	protected Vec3f velocity;	// deprecated?
+	protected Vec3f angularVelocity; // deprecated?
 
 	//private Vec3f velocityDelta;
 	//private Quatrn angularVelocityDelta;
@@ -89,7 +89,7 @@ class Node : Tree!(Node), IDisposable
 	//package bool worldDirty=true;		
 	package Scene scene;			// The Scene that this node belongs to.
 
-	static const float DEFAULT_INCREMENT = 1f/60f;
+	
 
 
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
@@ -162,10 +162,9 @@ class Node : Tree!(Node), IDisposable
 		//destination.angularVelocity = angularVelocity;	
 		//destination.angularVelocityDelta = angularVelocityDelta;
 
-		if (scene && scene.increment != DEFAULT_INCREMENT)
-		{	float change = scene.increment/DEFAULT_INCREMENT;
-			destination.transform.velocityDelta *= change;
-			destination.transform.angularVelocityDelta.multiplyAngle(change);
+		if (scene)
+		{	destination.transform.velocityDelta /= scene.increment;
+			destination.transform.angularVelocityDelta.multiplyAngle(1/scene.increment);
 		}
 		destination.onUpdate = onUpdate;
 		
@@ -245,30 +244,36 @@ class Node : Tree!(Node), IDisposable
 	 * Get / set the linear velocity this Node relative to its parent's velocity. */
 	Vec3f getVelocity()
 	{	mixin(Sync!("scene"));
-		return transform.velocityDelta/(scene?scene.increment:DEFAULT_INCREMENT);
+		if (scene)
+			return transform.velocityDelta/scene.increment;
+		else
+			return transform.velocityDelta;
 	}	
 	void setVelocity(Vec3f velocity) /// ditto
 	{	mixin(Sync!("scene"));
-		transform.velocityDelta = velocity*(scene?scene.increment:DEFAULT_INCREMENT);
+		this.velocity = velocity;
+		if (scene)		
+			transform.velocityDelta = velocity*scene.increment;
+		else
+			transform.velocityDelta = velocity;
 	}
 	
 	/**
 	 * Get / set the angular (rotation) velocity this Node relative to its parent's velocity. */
 	Vec3f getAngularVelocity()
 	{	mixin(Sync!("scene"));
-		Quatrn result = transform.angularVelocityDelta;
-		result.multiplyAngle(1/(scene?scene.increment:DEFAULT_INCREMENT));
-		return result.toAxis();		
+		return angularVelocity;
 	}	
 	void setAngularVelocity(Vec3f axisAngle) /// ditto
 	{	mixin(Sync!("scene"));
-		transform.angularVelocityDelta = (axisAngle * (scene?scene.increment:DEFAULT_INCREMENT)).toQuatrn();
-	}
+		
+		this.angularVelocity = axisAngle;
+		if (scene)
+			transform.angularVelocityDelta = (axisAngle*scene.increment).toQuatrn();
 	unittest
 	{	Node a = new Node();
 		Vec3f av1 = Vec3f(1, 2, 3);
 		a.setAngularVelocity(av1);
-		Vec3f av2 = a.getAngularVelocity();
 		assert(av1.almostEqual(av2), format("%s", av2.v));
 	}
 	
@@ -297,9 +302,13 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		calcWorld();
 		if (parent)
-			return transform.velocityDelta/(scene?scene.increment:DEFAULT_INCREMENT) + parent.getWorldVelocity();
-		
-		return transform.velocityDelta/(scene?scene.increment:DEFAULT_INCREMENT);
+		{	if (scene)
+				return transform.velocityDelta/scene.increment + parent.getWorldVelocity();
+			return transform.velocityDelta + parent.getWorldVelocity();
+		}
+		if (scene)
+			return transform.velocityDelta/scene.increment;
+		return transform.velocityDelta;
 	}
 	
 	// Convenience functions:
@@ -342,13 +351,16 @@ class Node : Tree!(Node), IDisposable
 	///
 	void accelerate(Vec3f amount)
 	{	mixin(Sync!("scene"));
-		transform.velocityDelta += amount*(scene?scene.increment:DEFAULT_INCREMENT);
+		if (scene)
+			transform.velocityDelta += amount*scene.increment;
+		else
+			transform.velocityDelta += amount;
 	}
 	
 	///
 	void angularAccelerate(Vec3f axisAngle)
 	{	mixin(Sync!("scene"));		
-		transform.angularVelocityDelta = transform.angularVelocityDelta.rotate(axisAngle.scale(scene?scene.increment:DEFAULT_INCREMENT).toQuatrn()); // TODO: Is this clamped to -PI to PI?
+		angularVelocity = angularVelocity.combineRotation(axisAngle);; // TODO: Is this clamped to -PI to PI?
 	}
 	unittest
 	{	Node n = new Node();
@@ -481,11 +493,9 @@ class Node : Tree!(Node), IDisposable
 				transform = new Transform();
 
 			// Update the incrementing values to match the scene increment.
-			float incrementChange = (scene?scene.increment:DEFAULT_INCREMENT) / (oldScene?oldScene.increment:DEFAULT_INCREMENT);
-			if (incrementChange != 1f)
-			{	transform.velocityDelta *= incrementChange;
-				transform.angularVelocityDelta.multiplyAngle(incrementChange);
-			}
+			float incrementChange = (scene ? scene.increment : 1f) / (oldScene ? oldScene.increment : 1f);
+			transform.velocityDelta *= incrementChange;
+			transform.angularVelocityDelta.multiplyAngle(incrementChange);
 		} 
 		else if (!transform)
 			transform = new Transform();
