@@ -218,6 +218,36 @@ class Scene : Node//, ITemporal, IDisposable
 	
 		// Update all nodes recursively
 		super.update(delta); 
+
+		/*
+		//foreach (inout Transform t; nodeTransforms.data)
+		for (int i=0; i<nodeTransforms.length; i++)
+		{
+			Transform* t = nodeTransforms[i];
+
+			bool dirty = false;
+			if (t.velocityDelta != Vec3f.ZERO)
+			{	t.position += t.velocityDelta; // TODO: store cached version?
+				dirty = true;
+			}
+
+			// Rotate if angular velocity is not zero.
+			float angle = t.angularVelocityDelta.w - 3.1415927/4;
+			if (angle < -0.0001 || angle > 0.001)
+			{	t.rotation = t.rotation * t.angularVelocityDelta;
+				dirty = true;
+			}
+			if (dirty)
+				t.node.setWorldDirty();
+
+			foreach (node; t.node.getChildren())
+			{	if (node.onUpdate)
+					node.onUpdate();
+				else
+					node.update(delta);
+			}
+		}
+		*/
 		
 		//Log.write("move ", a.tell());
 		

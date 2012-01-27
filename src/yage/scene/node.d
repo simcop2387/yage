@@ -44,23 +44,27 @@ import yage.system.log;
  */
 class Node : Tree!(Node), IDisposable
 {
-
+	/*
+	 * A node's transformation values are stored in a consecutive array in its scene, for better cache performance
+	 * Or if, it has no scene, this structure is allocated on the heap. */
 	struct Transform
-	{	Vec3f position;
-		Quatrn rotation;
-		Vec3f scale = Vec3f.ONE;
+	{	package Vec3f position;
+		package Quatrn rotation;
+		package Vec3f scale = Vec3f.ONE;
 
-		Vec3f velocityDelta;
-		Quatrn angularVelocityDelta;
+		package Vec3f velocityDelta;	// Velocity times the scene increment, for faster updating.
+		package Vec3f angularVelocity;	// Stored as a vector to allow storing rotations beyond -PI to PI
+		package Quatrn angularVelocityDelta; // Stored as a quaternion for faster updating.
 
-		Vec3f worldPosition;
-		Quatrn worldRotation;
-		Vec3f worldScale = Vec3f.ONE;
+		package Vec3f worldPosition;
+		package Quatrn worldRotation;
+		package Vec3f worldScale = Vec3f.ONE;
 
-		float radius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
-		bool worldDirty=true;
-		Node.Transform* parent;
-		Node* node;
+		package float radius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
+		package bool worldDirty=true;
+
+		package Node.Transform* parent; // For fast lookups when calculating world transforms
+		package Node node;				// Pointer back to the node.
 
 		static Transform opCall()
 		{	Transform result;
@@ -68,29 +72,8 @@ class Node : Tree!(Node), IDisposable
 		}
 	}
 	package Transform* transform;
-	package int sceneIndex=-1;
-
-	//alias transform this;
-
-	//package Vec3f position;
-	//package Quatrn rotation;
-	//package Vec3f scale = Vec3f.ONE;
-	
-	protected Vec3f velocity;	// deprecated?
-	protected Vec3f angularVelocity; // deprecated?
-
-	//private Vec3f velocityDelta;
-	//private Quatrn angularVelocityDelta;
-	
-	//package Vec3f worldPosition;
-	//package Quatrn worldRotation;
-	//package Vec3f worldScale = Vec3f.ONE;
-
-	//package bool worldDirty=true;		
-	package Scene scene;			// The Scene that this node belongs to.
-
-	
-
+	package int sceneIndex=-1;			// Index of the transform structure in the scene's nodeTransforms array.
+	package Scene scene;				// The Scene that this node belongs to.
 
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
 
@@ -104,6 +87,7 @@ class Node : Tree!(Node), IDisposable
 	 * Construct and optionally add as a child of another Node. */
 	this()
 	{	transform = new Transform();
+		transform.node = this;
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
@@ -111,6 +95,7 @@ class Node : Tree!(Node), IDisposable
 			parent.addChild(this);
 		} else
 			transform = new Transform();
+		transform.node = this;
 	}
 	
 	/**
@@ -123,7 +108,11 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		auto old_parent = child.getParent();
 		super.addChild(child);
-		child.ancestorChange(old_parent); // handles 
+		child.ancestorChange(old_parent);
+
+
+		debug if (scene)
+			assert(scene.nodeTransforms[child.sceneIndex] == child.transform, child.classinfo.name);
 		return child;
 	}
 	
@@ -154,14 +143,6 @@ class Node : Tree!(Node), IDisposable
 		assert(destination);
 		
 		*destination.transform = *transform;
-
-		//destination.position = position;
-		//destination.rotation = rotation;
-		//destination.scale = scale;
-		//destination.velocityDelta = velocityDelta;
-		//destination.angularVelocity = angularVelocity;	
-		//destination.angularVelocityDelta = angularVelocityDelta;
-
 		if (scene)
 		{	destination.transform.velocityDelta /= scene.increment;
 			destination.transform.angularVelocityDelta.multiplyAngle(1/scene.increment);
@@ -251,7 +232,6 @@ class Node : Tree!(Node), IDisposable
 	}	
 	void setVelocity(Vec3f velocity) /// ditto
 	{	mixin(Sync!("scene"));
-		this.velocity = velocity;
 		if (scene)		
 			transform.velocityDelta = velocity*scene.increment;
 		else
@@ -262,18 +242,21 @@ class Node : Tree!(Node), IDisposable
 	 * Get / set the angular (rotation) velocity this Node relative to its parent's velocity. */
 	Vec3f getAngularVelocity()
 	{	mixin(Sync!("scene"));
-		return angularVelocity;
+		return transform.angularVelocity;
 	}	
 	void setAngularVelocity(Vec3f axisAngle) /// ditto
-	{	mixin(Sync!("scene"));
-		
-		this.angularVelocity = axisAngle;
+	{	mixin(Sync!("scene"));		
+		transform.angularVelocity = axisAngle;
 		if (scene)
 			transform.angularVelocityDelta = (axisAngle*scene.increment).toQuatrn();
+		else
+			transform.angularVelocityDelta = axisAngle.toQuatrn();
+	}
 	unittest
-	{	Node a = new Node();
-		Vec3f av1 = Vec3f(1, 2, 3);
-		a.setAngularVelocity(av1);
+	{	Node n = new Node();
+		Vec3f av1 = Vec3f(-.5, .5, 1);
+		n.setAngularVelocity(av1);
+		Vec3f av2 = n.getAngularVelocity();
 		assert(av1.almostEqual(av2), format("%s", av2.v));
 	}
 	
@@ -315,10 +298,8 @@ class Node : Tree!(Node), IDisposable
 	
 	///
 	Matrix getTransform()
-	{	//Log.write(rotation.v);
-		return Matrix.compose(transform.position, transform.rotation, transform.scale);
+	{	return Matrix.compose(transform.position, transform.rotation, transform.scale);
 	}
-
 	
 	///
 	Matrix getWorldTransform()
@@ -359,8 +340,8 @@ class Node : Tree!(Node), IDisposable
 	
 	///
 	void angularAccelerate(Vec3f axisAngle)
-	{	mixin(Sync!("scene"));		
-		angularVelocity = angularVelocity.combineRotation(axisAngle);; // TODO: Is this clamped to -PI to PI?
+	{	//mixin(Sync!("scene")); // already present in called function
+		setAngularVelocity(transform.angularVelocity.combineRotation(axisAngle)); // TODO: Is this clamped to -PI to PI?
 	}
 	unittest
 	{	Node n = new Node();
@@ -373,22 +354,28 @@ class Node : Tree!(Node), IDisposable
 
 	///
 	void update(float delta)
-	{	mixin(Sync!("scene"));
+	{	
+		mixin(Sync!("scene"));
+
+		if (scene !is this)
+		{	
+			assert(scene.nodeTransforms[sceneIndex] == transform, this.classinfo.name);
+
+			bool dirty = false;
+			if (scene.nodeTransforms[sceneIndex].velocityDelta != Vec3f.ZERO)
+			{	scene.nodeTransforms[sceneIndex].position += scene.nodeTransforms[sceneIndex].velocityDelta; // TODO: store cached version?
+				dirty = true;
+			}
 	
-		bool dirty = false;
-		if (transform.velocityDelta != Vec3f.ZERO)
-		{	transform.position += transform.velocityDelta; // TODO: store cached version?
-			dirty = true;
+			// Rotate if angular velocity is not zero.
+			float angle = scene.nodeTransforms[sceneIndex].angularVelocityDelta.w - 3.1415927/4;
+			if (angle < -0.0001 || angle > 0.001)
+			{	scene.nodeTransforms[sceneIndex].rotation = scene.nodeTransforms[sceneIndex].rotation * scene.nodeTransforms[sceneIndex].angularVelocityDelta;
+				dirty = true;
+			}
+			if (dirty)
+				setWorldDirty();
 		}
-	
-		// Rotate if angular velocity is not zero.
-		float angle = transform.angularVelocityDelta.w - 3.1415927/4;
-		if (angle < -0.0001 || angle > 0.001)
-		{	transform.rotation = transform.rotation * transform.angularVelocityDelta;
-			dirty = true;
-		}
-		if (dirty)
-			setWorldDirty();
 		
 		foreach (node; children)
 		{	if (node.onUpdate)
@@ -396,6 +383,7 @@ class Node : Tree!(Node), IDisposable
 			else
 				node.update(delta);
 		}
+		
 	}
 	
 	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a scene-less node tree.
@@ -407,7 +395,7 @@ class Node : Tree!(Node), IDisposable
 	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
 	 * This should be called whenever a Node has its transformation matrix changed.
 	 * This function is used internally by the engine usually doesn't need to be called manually. */
-	protected void setWorldDirty()
+	package void setWorldDirty()
 	{	if (!transform.worldDirty)
 		{	transform.worldDirty=true;
 			foreach(c; children)
@@ -473,20 +461,25 @@ class Node : Tree!(Node), IDisposable
 		{	if (scene)
 			{	
 				if (!transform)				
-					transform = scene.nodeTransforms.append(Transform());
+				{	transform = scene.nodeTransforms.append(Transform());
+					Log.write(1);
+				}
 				else
 				{	Transform* old = transform;					
 					transform = scene.nodeTransforms.append(*transform);
 					if (oldScene)
-						oldScene.nodeTransforms.remove(sceneIndex);
+					{	Log.write(2);
+						oldScene.nodeTransforms.remove(sceneIndex);}
 					else
-						delete old; // transform was previously on the heap
+					{	delete old; // transform was previously on the heap
+						Log.write(3);}
 				}
 				sceneIndex = scene.nodeTransforms.length-1;
 			} 
 			else if (oldScene)
-			{	transform = new Transform(); // move them onto the stack
-				transform = oldScene.nodeTransforms[sceneIndex];
+			{	transform = new Transform(); // Make it standalone outside the scene's array
+				*transform = *oldScene.nodeTransforms[sceneIndex];
+				oldScene.nodeTransforms.remove(sceneIndex);
 				sceneIndex = -1;
 			} 
 			else if (!transform)
@@ -500,9 +493,17 @@ class Node : Tree!(Node), IDisposable
 		else if (!transform)
 			transform = new Transform();
 
+		transform.parent = parent ? parent.transform : null;
 		transform.worldDirty = true;
 
 		foreach(c; children)
-			c.ancestorChange(oldAncestor);
+			c.ancestorChange(oldAncestor); // breaks the assertions below!  But how?
+
+		debug if (scene)
+		{	assert(0<=sceneIndex && sceneIndex < scene.nodeTransforms.length);
+			assert(scene.nodeTransforms[sceneIndex] == transform, format("%s", transform-scene.nodeTransforms[sceneIndex]));
+		}
+		else
+			assert(sceneIndex==-1);
 	}
 }

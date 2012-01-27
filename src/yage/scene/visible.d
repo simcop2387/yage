@@ -29,7 +29,7 @@ abstract class VisibleNode : Node
 	Material[] materialOverrides;	/// Use thes materials instead of the model's meshes' or sprite's materials.
 
 	this()
-	{
+	{	super();
 	}
 	this (Node parent)
 	{	super(parent);
