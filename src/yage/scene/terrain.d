@@ -143,8 +143,8 @@ class TerrainNode : VisibleNode
 		 */
 
 		TerrainPoint terrainPoint;
-		for (int y = j * Patch.SIZE; y < (j+1) * Patch.SIZE; ++y)
-			for (int x = i * Patch.SIZE; x < (i+1) * Patch.SIZE; ++x)
+		for (int y = j * Patch.SIZE; y <= (j+1) * Patch.SIZE; ++y)
+			for (int x = i * Patch.SIZE; x <= (i+1) * Patch.SIZE; ++x)
 			{
 				terrainPoint = generator.getTerrainPoint(Vec2i(x,y));
 				/* 
@@ -168,11 +168,10 @@ class TerrainNode : VisibleNode
 		/* Construct the array of triangles */
 		Vec3i[] triangles;
 		int cornerCurrent, cornerUp;
-		for (int y=0; y < Patch.SIZE-1; ++y)
-		// -1 because the last vertices are included in the previous last triangles.
-			for (int x=0; x < Patch.SIZE-1; ++x)
-			{	cornerCurrent = y*(Patch.SIZE)+x;
-				cornerUp = (y+1)*(Patch.SIZE)+x;
+		for (int y=0; y < Patch.SIZE; ++y)
+			for (int x=0; x < Patch.SIZE; ++x)
+			{	cornerCurrent = y*(Patch.SIZE+1)+x;
+				cornerUp = (y+1)*(Patch.SIZE+1)+x;
 				triangles ~= Vec3i(cornerCurrent, cornerCurrent+1, cornerUp);
 				triangles ~= Vec3i(cornerUp, cornerCurrent+1, cornerUp+1);
 			}
@@ -253,10 +252,10 @@ class HmapHeightGenerator : IHeightGenerator
 			this.imageTexturesBlend = new Image(ResourceManager.resolvePath(texturesBlendPath));
 
 		/* initialize the matrix array of terrain points */
-		terrainPoints.length = gridResolution.x;
+		terrainPoints.length = gridResolution.x+1;
 		foreach (ref e; terrainPoints)
 		{
-			e.length = gridResolution.y;
+			e.length = gridResolution.y+1;
 		}
 
 		computeTerrainPoints();
@@ -299,9 +298,9 @@ class HmapHeightGenerator : IHeightGenerator
 	{
 		int x, y, z;
 
-		for(x = 0; x < gridResolution.x; x++)
+		for(x = 0; x <= gridResolution.x; x++)
 		{
-			for(y = 0; y < gridResolution.y; y++)
+			for(y = 0; y <= gridResolution.y; y++)
 			{
 				/* compute height */
 				if (scaling == Scaling.INTERPOLATE)
@@ -350,9 +349,9 @@ class HmapHeightGenerator : IHeightGenerator
 		 * ie the normals of AH, BG, CF and DE. We then sum them and normalize them to obtain
 		 * the normal of vertex (x,y).
 		 */
-		for(x = 1; x < gridResolution.x - 1; ++x)
+		for(x = 1; x < gridResolution.x; ++x)
 		{
-			for(y = 1; y < gridResolution.y - 1; ++y)
+			for(y = 1; y < gridResolution.y; ++y)
 			{
 				//normal to AH
 				//heightDiff = terrainPoints[x-1][y+1].height-terrainPoints[x+1][y-1].height;
@@ -379,13 +378,13 @@ class HmapHeightGenerator : IHeightGenerator
 			}
 		}
 		/* special border cases for the normals, left at (0,0,1) for now */
-		for(x = 0; x < gridResolution.x; ++x)
+		for(x = 0; x <= gridResolution.x; ++x)
 			terrainPoints[x][0].normal = Vec3f(0,0,1);
-		for(x = 0; x < gridResolution.x; ++x)
+		for(x = 0; x <= gridResolution.x; ++x)
 			terrainPoints[x][gridResolution.y-1].normal = Vec3f(0,0,1);
-		for(y = 0; y < gridResolution.y; ++y)
+		for(y = 0; y <= gridResolution.y; ++y)
 			terrainPoints[0][y].normal = Vec3f(0,0,1);
-		for(y = 0; y < gridResolution.y; ++y)
+		for(y = 0; y <= gridResolution.y; ++y)
 			terrainPoints[gridResolution.x-1][y].normal = Vec3f(0,0,1);
 	}
 
