@@ -1,0 +1,28 @@
+All Yage contributors must agree to the terms outlined in HA-CLA-I-ANY.html
+
+
+=================================================
+H ow to Sign
+=================================================
+
+Print the HA-CLA-I-ANY.html document, sign your name and write the date and your
+address at the bottom of the form.  Then scan and email it to Eric Poggel.
+
+
+=================================================
+ If you don't own the CopyRight of work submitted
+=================================================
+
+Please only submit work you do not own if it is in the public domain, or 
+released under one of these licenses:
+ - Apache License, 2.0
+ - Boost Software License 1.0
+ - MIT License
+ - zlib/libpng license
+ 
+Specifically, do not contribute code that you do not own that is released under 
+any of these licenses:
+ - GPL or any variants.
+
+If you wish to contribute code that you do not own that is released under
+a license not mentioned here, please contact Eric Poggel to discuss.
