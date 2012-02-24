@@ -55,8 +55,8 @@ class Scene : Node//, ITemporal, IDisposable
 	Scene skyBox;				/// A Scene can have another heirarchy of nodes that will be rendered as a skybox by any camera. 
 
 
-	ArrayBuilder!(Node.Transform) nodeTransforms;
-
+	//ArrayBuilder!(Node.Transform) nodeTransforms;
+	Node.Transform[] nodeTransforms;
 	
 	protected CameraNode[CameraNode] cameras;	
 	protected LightNode[LightNode] lights;
@@ -74,15 +74,24 @@ class Scene : Node//, ITemporal, IDisposable
 
 	package float increment;
 
+
+
 	/**
 	 * Construct an empty Scene.
 	 * The update frequency cannot be changed after the scene is started. */
 	this(float frequency = 60)
 	{	mutex = new FastLock();
 		
+		// TODO: How to remove implicit call to super constructor?
 		super();
-	
+
 		scene = this;
+		nodeTransforms ~= *internalTransform;
+		delete internalTransform;
+		sceneIndex = 0;
+	
+		
+
 		ambient	= Color("#333"); // OpenGL default global ambient light.
 		backgroundColor = Color("black");	// OpenGL default clear color
 		fogColor = Color("gray");
@@ -210,20 +219,20 @@ class Scene : Node//, ITemporal, IDisposable
 	 * This function is typically called automatically at a set interval from the scene's updateThread once scene.play() is called.
 	 * Params:
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
-	override void update(float delta)
+	void update(float delta)
 	{
 		mixin(Sync!("this"));
 		
 		scope a = new Timer(true);
 	
 		// Update all nodes recursively
-		super.update(delta); 
+		//super.update(delta); 
 
-		/*
+		
 		//foreach (inout Transform t; nodeTransforms.data)
 		for (int i=0; i<nodeTransforms.length; i++)
 		{
-			Transform* t = nodeTransforms[i];
+			Transform* t = &nodeTransforms[i];
 
 			bool dirty = false;
 			if (t.velocityDelta != Vec3f.ZERO)
@@ -239,19 +248,19 @@ class Scene : Node//, ITemporal, IDisposable
 			}
 			if (dirty)
 				t.node.setWorldDirty();
-
+			/*
 			foreach (node; t.node.getChildren())
 			{	if (node.onUpdate)
 					node.onUpdate();
 				else
 					node.update(delta);
-			}
+			}*/
 		}
-		*/
 		
-		//Log.write("move ", a.tell());
 		
-		//scope b = new Timer(true);
+		Log.write("move ", a.tell());
+		
+		scope b = new Timer(true);
 		
 		// Cull and create render and sound commands for each camera
 		camerasMutex.lock();
@@ -260,7 +269,7 @@ class Scene : Node//, ITemporal, IDisposable
 			if (CameraNode.getListener() is camera)
 				camera.updateSoundCommands();
 		}
-		//Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
+		Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
 		
 		camerasMutex.unlock();
 		updateTime = a.tell();

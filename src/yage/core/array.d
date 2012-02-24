@@ -184,7 +184,7 @@ void remove(T)(inout T[] array, int index, bool ordered=true)
 {	if (ordered)
 		for (size_t i=index; i<array.length-1; i++)
 			array[i]=array[i+1];
-	else
+	else if (index != array.length-1)
 		array[index] = array[length-1];
 	array.length=array.length-1;
 }

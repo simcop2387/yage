@@ -24,8 +24,8 @@ class GameObject : VisibleNode
 	{	super();		
 	}
 	
-	override void update(float delta)
-	{	super.update(delta);
+	void update(float delta)
+	{	//super.update(delta);
 		lifetime-= delta;
 		if (lifetime <= 0)
 		{	if (parent)

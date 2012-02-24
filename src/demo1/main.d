@@ -98,7 +98,7 @@ class DemoScene : Scene
 		moon.setAngularVelocity(Vec3f(0, 0.01, 0));
 
 		// Asteroids
-		asteroidBelt(4000, 5000, planet);
+		asteroidBelt(4000, 5000, this);
 	}
 	
 	override void update(float delta)
@@ -113,6 +113,7 @@ bool running = true;
 // Current program entry point.  This may change in the future.
 int main()
 {	
+
 	// Init and create window
 	System.init(); 
 	auto window = Window.getInstance();

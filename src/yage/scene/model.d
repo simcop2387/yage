@@ -191,7 +191,7 @@ class ModelNode : VisibleNode
 		}
 
 		// Recurse through children
-		super.update(delta);
+		//super.update(delta);
 	}
 
 }

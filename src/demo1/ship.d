@@ -63,9 +63,9 @@ class Ship : GameObject
 
 	Node getCameraSpot()
 	{	if (!(spring.getTail().getScene()))
+		{	assert(getScene() !is null);
 			getScene().addChild(spring.getTail());
-		
-		
+		}
 		
 		return spring.getTail();
 	}

@@ -67,9 +67,13 @@ struct Vec(int S, T : real, bool N=false)
 	
 	static if (!N)
 		invariant()
-		{	foreach (float t; v)
-			{	assert(!isNaN(t), format("<%s>", v));
-				assert(t!=float.infinity, format("<%s>", v));
+		{	try { 
+				foreach (float t; v)
+				{	assert(!isNaN(t), format("<%s>", v));
+					assert(t!=float.infinity, format("<%s>", v));
+				}
+			} catch (Exception e)
+			{	Log.write("failed");
 			}
 		}
 	

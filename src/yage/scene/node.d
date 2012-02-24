@@ -71,8 +71,16 @@ class Node : Tree!(Node), IDisposable
 			return result;
 		}
 	}
-	package Transform* transform;
-	package int sceneIndex=-1;			// Index of the transform structure in the scene's nodeTransforms array.
+	union {
+		protected int sceneIndex=-1;			// Index of the transform structure in the scene's nodeTransforms array.
+		protected Transform* internalTransform;
+	}
+	package Node.Transform* transform() { 
+		assert (!scene || (sceneIndex>=0 && sceneIndex<scene.nodeTransforms.length), format("%s", sceneIndex));
+		return scene ? &scene.nodeTransforms[sceneIndex] : internalTransform; 
+	}
+
+
 	package Scene scene;				// The Scene that this node belongs to.
 
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
@@ -86,15 +94,15 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Construct and optionally add as a child of another Node. */
 	this()
-	{	transform = new Transform();
-		transform.node = this;
+	{	internalTransform = new Transform();
+		internalTransform.node = this;
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
 		{	mixin(Sync!("scene"));
 			parent.addChild(this);
 		} else
-			transform = new Transform();
+			internalTransform = new Transform();
 		transform.node = this;
 	}
 	
@@ -110,9 +118,8 @@ class Node : Tree!(Node), IDisposable
 		super.addChild(child);
 		child.ancestorChange(old_parent);
 
-
 		debug if (scene)
-			assert(scene.nodeTransforms[child.sceneIndex] == child.transform, child.classinfo.name);
+			assert(&scene.nodeTransforms[child.sceneIndex] == child.transform, child.classinfo.name);
 		return child;
 	}
 	
@@ -124,9 +131,9 @@ class Node : Tree!(Node), IDisposable
 	 * Returns: The child Node that was removed.  Templating is used to ensure the return type is exactly the same.*/
 	T removeChild(T : Node)(T child)
 	{	mixin(Sync!("scene"));
-		auto old_parent = child.getParent();
+		auto oldParent = child.getParent();
 		super.removeChild(child);
-		child.ancestorChange(old_parent); // sets transform dirty also
+		child.ancestorChange(oldParent); // sets worldDirty also
 		return child;
 	}
 	
@@ -352,25 +359,24 @@ class Node : Tree!(Node), IDisposable
 		assert(av2.almostEqual(av*2), format("%s", av2.v));
 	}
 
+	/*
 	///
 	void update(float delta)
 	{	
 		mixin(Sync!("scene"));
 
 		if (scene !is this)
-		{	
-			assert(scene.nodeTransforms[sceneIndex] == transform, this.classinfo.name);
-
+		{
 			bool dirty = false;
-			if (scene.nodeTransforms[sceneIndex].velocityDelta != Vec3f.ZERO)
-			{	scene.nodeTransforms[sceneIndex].position += scene.nodeTransforms[sceneIndex].velocityDelta; // TODO: store cached version?
+			if (transform.velocityDelta != Vec3f.ZERO)
+			{	transform.position += transform.velocityDelta; // TODO: store cached version?
 				dirty = true;
 			}
 	
 			// Rotate if angular velocity is not zero.
-			float angle = scene.nodeTransforms[sceneIndex].angularVelocityDelta.w - 3.1415927/4;
+			float angle = transform.angularVelocityDelta.w - 3.1415927/4;
 			if (angle < -0.0001 || angle > 0.001)
-			{	scene.nodeTransforms[sceneIndex].rotation = scene.nodeTransforms[sceneIndex].rotation * scene.nodeTransforms[sceneIndex].angularVelocityDelta;
+			{	transform.rotation = transform.rotation * transform.angularVelocityDelta;
 				dirty = true;
 			}
 			if (dirty)
@@ -382,9 +388,8 @@ class Node : Tree!(Node), IDisposable
 				node.onUpdate();
 			else
 				node.update(delta);
-		}
-		
-	}
+		}	
+	}*/	
 	
 	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a scene-less node tree.
 	Scene getScene()
@@ -392,7 +397,7 @@ class Node : Tree!(Node), IDisposable
 	}
 	
 	/*
-	 * Set the transform_dirty flag on this Node and all of its children, if they're not dirty already.
+	 * Set the worldDirty flag on this Node and all of its children, if they're not dirty already.
 	 * This should be called whenever a Node has its transformation matrix changed.
 	 * This function is used internally by the engine usually doesn't need to be called manually. */
 	package void setWorldDirty()
@@ -456,54 +461,69 @@ class Node : Tree!(Node), IDisposable
 		Scene oldScene = this.scene;
 		scene = parent ? parent.scene : null;
 
-		// Allocate, deallocate, and move transform data from one scene to another.
-		if (scene !is oldScene)
-		{	if (scene)
+		void removeFromNodeTransforms(inout Node.Transform[] transforms, int index)
+		{	if (index != transforms.length-1)
+			{	transforms[index] = transforms[length-1];
+				transforms[index].node.sceneIndex = index;
+			}
+			transforms.length = transforms.length-1;
+		}
+
+		// Allocate, deallocate, and/or move transform data from one scene to another.
+		if (scene !is oldScene) // if scene isn't changing
+		{	
+			if (scene)
 			{	
-				if (!transform)				
-				{	transform = scene.nodeTransforms.append(Transform());
-					Log.write(1);
+				if (sceneIndex==-1) // previously no transform anywhere
+				{	
+					scene.nodeTransforms ~= (Transform());		
+				}
+				else if (oldScene)
+				{	
+					scene.nodeTransforms ~= oldScene.nodeTransforms[sceneIndex];
+					removeFromNodeTransforms(oldScene.nodeTransforms, sceneIndex);
 				}
 				else
-				{	Transform* old = transform;					
-					transform = scene.nodeTransforms.append(*transform);
-					if (oldScene)
-					{	Log.write(2);
-						oldScene.nodeTransforms.remove(sceneIndex);}
-					else
-					{	delete old; // transform was previously on the heap
-						Log.write(3);}
+				{	
+					scene.nodeTransforms ~= *internalTransform;
+					delete internalTransform; // transform was previously on the heap
 				}
+				
 				sceneIndex = scene.nodeTransforms.length-1;
+				Log.write(1);
 			} 
-			else if (oldScene)
-			{	transform = new Transform(); // Make it standalone outside the scene's array
-				*transform = *oldScene.nodeTransforms[sceneIndex];
-				oldScene.nodeTransforms.remove(sceneIndex);
-				sceneIndex = -1;
+			else // if being removed from a scene
+			{	
+				int oldSceneIndex = sceneIndex; // because it's a union with internalTransform
+				internalTransform = new Transform(); // Make it standalone outside the scene's array
+				*internalTransform = oldScene.nodeTransforms[oldSceneIndex];
+				removeFromNodeTransforms(oldScene.nodeTransforms, oldSceneIndex);
+				Log.write(2);
 			} 
-			else if (!transform)
-				transform = new Transform();
 
 			// Update the incrementing values to match the scene increment.
 			float incrementChange = (scene ? scene.increment : 1f) / (oldScene ? oldScene.increment : 1f);
+
+			auto t = transform;
+			//Log.write(t);
 			transform.velocityDelta *= incrementChange;
 			transform.angularVelocityDelta.multiplyAngle(incrementChange);
 		} 
-		else if (!transform)
-			transform = new Transform();
+		else if (sceneIndex==-1) // if creating for the first time, and not part of a scene.
+			internalTransform = new Transform();		
 
-		transform.parent = parent ? parent.transform : null;
+		transform.parent = (parent && parent !is scene) ? parent.transform : null;
 		transform.worldDirty = true;
 
 		foreach(c; children)
 			c.ancestorChange(oldAncestor); // breaks the assertions below!  But how?
 
 		debug if (scene)
-		{	assert(0<=sceneIndex && sceneIndex < scene.nodeTransforms.length);
-			assert(scene.nodeTransforms[sceneIndex] == transform, format("%s", transform-scene.nodeTransforms[sceneIndex]));
-		}
+			assert(0<=sceneIndex && sceneIndex < scene.nodeTransforms.length);
 		else
-			assert(sceneIndex==-1);
+			assert(sceneIndex != -1);
+		assert(transform); // assert it is accessible
+		assert(transform.worldDirty || !transform.worldDirty);
+		
 	}
 }
