@@ -71,13 +71,14 @@ class Node : Tree!(Node), IDisposable
 			return result;
 		}
 	}
-	union {
-		protected int sceneIndex=-1;			// Index of the transform structure in the scene's nodeTransforms array.
-		protected Transform* internalTransform;
-	}
+	
+	package int sceneIndex=-1;			// Index of the transform structure in the scene's nodeTransforms array.
+	
 	package Node.Transform* transform() { 
 		assert (!scene || (sceneIndex>=0 && sceneIndex<scene.nodeTransforms.length), format("%s", sceneIndex));
-		return scene ? &scene.nodeTransforms[sceneIndex] : internalTransform; 
+		return scene ? 
+			&scene.nodeTransforms.transforms[sceneIndex] : 
+			&Scene.orphanNodeTransforms.transforms[sceneIndex]; 
 	}
 
 
@@ -88,21 +89,20 @@ class Node : Tree!(Node), IDisposable
 	
 	invariant()
 	{	assert(parent !is this);
-	//	assert(transform !is null);
 	}
 	
 	/**
 	 * Construct and optionally add as a child of another Node. */
 	this()
-	{	internalTransform = new Transform();
-		internalTransform.node = this;
+	{	ancestorChange(null);
+		transform().node = this;
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
 		{	mixin(Sync!("scene"));
-			parent.addChild(this);
+			parent.addChild(this); // calls ancestorChange()
 		} else
-			internalTransform = new Transform();
+			ancestorChange(null);
 		transform.node = this;
 	}
 	
@@ -113,13 +113,14 @@ class Node : Tree!(Node), IDisposable
 	 *     child = The Node to add.
 	 * Returns: The child Node that was added.  Templating is used to ensure the return type is exactly the same.*/
 	T addChild(T : Node)(T child)
-	{	mixin(Sync!("scene"));
+	{	assert(child !is this);
+		assert(child !is parent);
+		
+		mixin(Sync!("scene"));
 		auto old_parent = child.getParent();
 		super.addChild(child);
 		child.ancestorChange(old_parent);
 
-		debug if (scene)
-			assert(&scene.nodeTransforms[child.sceneIndex] == child.transform, child.classinfo.name);
 		return child;
 	}
 	
@@ -440,7 +441,7 @@ class Node : Tree!(Node), IDisposable
 		Node a = new Node();
 		a.setPosition(Vec3f(3, 0, 0));
 		a.setRotation(Vec3f(0, 3.1415927, 0));
-		
+
 		Node b = new Node(a);
 		b.setPosition(Vec3f(5, 0, 0));
 		auto bw = b.getWorldPosition();
@@ -455,75 +456,55 @@ class Node : Tree!(Node), IDisposable
 	 * Called after any of a node's ancestors have their parent changed. 
 	 * This function also sets worldDirty=true
 	 * since the world transformation values should always be dirty after an ancestor change. 
-	 * @param oldAncestor The ancestor that was previously one above the top node of the tree that had its parent changed. */
+	 * Params:
+	 *    oldAncestor = The ancestor that was previously one above the top node of the tree that had its parent changed. */
 	protected void ancestorChange(Node oldAncestor)
 	{	
-		Scene oldScene = this.scene;
-		scene = parent ? parent.scene : null;
+		Scene newScene = parent ? parent.scene : null;		
+		auto transforms = newScene ? &newScene.nodeTransforms : &Scene.orphanNodeTransforms;
+		auto oldTransforms = scene ? &scene.nodeTransforms : &Scene.orphanNodeTransforms;
 
-		void removeFromNodeTransforms(inout Node.Transform[] transforms, int index)
-		{	if (index != transforms.length-1)
-			{	transforms[index] = transforms[length-1];
-				transforms[index].node.sceneIndex = index;
-			}
-			transforms.length = transforms.length-1;
-		}
-
-		// Allocate, deallocate, and/or move transform data from one scene to another.
-		if (scene !is oldScene) // if scene isn't changing
+		if (transforms !is oldTransforms) // changing scene of existing node
 		{	
-			if (scene)
-			{	
-				if (sceneIndex==-1) // previously no transform anywhere
-				{	
-					scene.nodeTransforms ~= (Transform());		
-				}
-				else if (oldScene)
-				{	
-					scene.nodeTransforms ~= oldScene.nodeTransforms[sceneIndex];
-					removeFromNodeTransforms(oldScene.nodeTransforms, sceneIndex);
-				}
-				else
-				{	
-					scene.nodeTransforms ~= *internalTransform;
-					delete internalTransform; // transform was previously on the heap
-				}
-				
-				sceneIndex = scene.nodeTransforms.length-1;
-				Log.write(1);
-			} 
-			else // if being removed from a scene
-			{	
-				int oldSceneIndex = sceneIndex; // because it's a union with internalTransform
-				internalTransform = new Transform(); // Make it standalone outside the scene's array
-				*internalTransform = oldScene.nodeTransforms[oldSceneIndex];
-				removeFromNodeTransforms(oldScene.nodeTransforms, oldSceneIndex);
-				Log.write(2);
-			} 
+			if (sceneIndex==-1)
+				sceneIndex = transforms.addNew(this);
+			else
+			{	int newIndex = transforms.add(transform());		
+				oldTransforms.remove(sceneIndex);
+				sceneIndex = newIndex;
+			}
+			scene = newScene;
 
 			// Update the incrementing values to match the scene increment.
-			float incrementChange = (scene ? scene.increment : 1f) / (oldScene ? oldScene.increment : 1f);
-
-			auto t = transform;
-			//Log.write(t);
+			float incrementChange = (scene ? scene.increment : 1f) / (scene ? scene.increment : 1f);
 			transform.velocityDelta *= incrementChange;
 			transform.angularVelocityDelta.multiplyAngle(incrementChange);
 		} 
-		else if (sceneIndex==-1) // if creating for the first time, and not part of a scene.
-			internalTransform = new Transform();		
+		else if (sceneIndex==-1) // a brand new node
+			sceneIndex = transforms.addNew(this);
 
-		transform.parent = (parent && parent !is scene) ? parent.transform : null;
-		transform.worldDirty = true;
+		transform().parent = (parent && parent !is scene) ? parent.transform() : null;
+		transform().worldDirty = true;
 
 		foreach(c; children)
 			c.ancestorChange(oldAncestor); // breaks the assertions below!  But how?
 
 		debug if (scene)
-			assert(0<=sceneIndex && sceneIndex < scene.nodeTransforms.length);
+			assert(0<=sceneIndex && sceneIndex < transforms.length);
 		else
 			assert(sceneIndex != -1);
 		assert(transform); // assert it is accessible
-		assert(transform.worldDirty || !transform.worldDirty);
-		
+		assert(transform.worldDirty || !transform.worldDirty);		
+	}
+	unittest
+	{	Node a = new Node();
+		Node b = new Node(a);
+		Node c = new Node(a);		
+		b.addChild(c);
+		a.addChild(c);
+
+		Scene s = new Scene();
+		Node d = new Node();
+		s.addChild(d);
 	}
 }

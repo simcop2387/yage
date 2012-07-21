@@ -408,8 +408,8 @@ class CameraNode : Node
 		}
 	
 		// no scene or scene didn't change			
-		if (!scene && listener == this)
-				listener = null;	
+		if (!scene && listener is this)
+			listener = null;	
 	}
 	
 	/*

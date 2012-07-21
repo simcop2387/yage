@@ -42,6 +42,7 @@ import yage.scene.visible;
  */
 class Scene : Node//, ITemporal, IDisposable
 {
+	// TODO: move these to a struct
 	Color ambient;				/// The color of the scene's global ambient light; defaults to black.
 	Color backgroundColor;		/// Background color rendered for this Scene when no skybox is specified.  TODO: allow transparency.
 	Color fogColor;				/// Color of global scene fog, when fog is enabled.
@@ -54,9 +55,39 @@ class Scene : Node//, ITemporal, IDisposable
 	
 	Scene skyBox;				/// A Scene can have another heirarchy of nodes that will be rendered as a skybox by any camera. 
 
+	struct ContiguousTransforms
+	{
+		Node.Transform[] transforms;
+
+		int add(Node.Transform* transform)
+		{	transforms ~= *transform;
+			return transforms.length - 1;
+		}
+
+		int addNew(Node n)
+		{	transforms ~= Transform();
+			transforms[length-1].node = n;
+			return transforms.length - 1;
+		}
+
+		void remove(int index)
+		{	assert(transforms[index].node.sceneIndex == index, format("%d, %d, %s", transforms[index].node.sceneIndex, index, transforms[index].node.classinfo.name));
+			if (index != transforms.length-1)
+			{	transforms[index] = transforms[length-1];
+				transforms.length = transforms.length - 1;
+				transforms[index].node.sceneIndex = index;
+			} else
+				transforms.length = transforms.length - 1;
+		}
+
+		int length()
+		{	return transforms.length;
+		}
+	}
 
 	//ArrayBuilder!(Node.Transform) nodeTransforms;
-	Node.Transform[] nodeTransforms;
+	package ContiguousTransforms nodeTransforms;
+	package static ContiguousTransforms orphanNodeTransforms; // stores transforms for nodes that don't belong to any scene
 	
 	protected CameraNode[CameraNode] cameras;	
 	protected LightNode[LightNode] lights;
@@ -84,13 +115,7 @@ class Scene : Node//, ITemporal, IDisposable
 		
 		// TODO: How to remove implicit call to super constructor?
 		super();
-
 		scene = this;
-		nodeTransforms ~= *internalTransform;
-		delete internalTransform;
-		sceneIndex = 0;
-	
-		
 
 		ambient	= Color("#333"); // OpenGL default global ambient light.
 		backgroundColor = Color("black");	// OpenGL default clear color
@@ -232,7 +257,7 @@ class Scene : Node//, ITemporal, IDisposable
 		//foreach (inout Transform t; nodeTransforms.data)
 		for (int i=0; i<nodeTransforms.length; i++)
 		{
-			Transform* t = &nodeTransforms[i];
+			Transform* t = &nodeTransforms.transforms[i];
 
 			bool dirty = false;
 			if (t.velocityDelta != Vec3f.ZERO)
