@@ -205,18 +205,19 @@ struct Render
 		
 		// Set uniform values
 		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{	/* static char[] is a problem on Linux, it causes a segfault */
-			// Static makes .dup only occur once.
-			char[] lightPosition = "lights[_].position\0".dup;
-			char[] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
-			char[] lightSpotDirection = "lights[_].spotDirection\0".dup;
-			char[] lightSpotCutoff = "lights[_].spotCutoff\0".dup;
-			char[] lightSpotExponent = "lights[_].spotExponent\0".dup;
+		{	// Create mutable stack strings.
+			// This is necessary because modifying the data segment segfaults on Linux.
+			char[19] lightPosition = "lights[_].position\0"[0..19];
+			char[31] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0"[0..31];
+			char[24] lightSpotDirection = "lights[_].spotDirection\0"[0..24];
+			char[21] lightSpotCutoff = "lights[_].spotCutoff\0"[0..21];
+			char[23] lightSpotExponent = "lights[_].spotExponent\0"[0..23];
 			
 			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
 			
 			int idx=0;
 			assert(lights.length < 10);
+			
 			foreach (i, light; lights)
 			{	
 				char[] makeName(char[] name, int i)
@@ -237,9 +238,9 @@ struct Render
 				name = makeName(lightQuadraticAttenuation, i);
 				su.name[0..name.length] = name[0..$];
 				su.type = ShaderUniform.Type.F1;
-				su.floatValues[0] =light.getQuadraticAttenuation();
+				su.floatValues[0] = 0; //light.getQuadraticAttenuation();
 				idx++;
-							
+				
 				if (params.hasSpotlight)
 				{	Matrix camInverse = graphics.cameraInverse;
 					
@@ -254,7 +255,7 @@ struct Render
 					uniforms[idx++] = 
 						ShaderUniform(makeName("lights[_].spotExponent", i), ShaderUniform.Type.F1, light.spotExponent);
 				}
-			}			
+			}		
 		}
 		
 		return result;
@@ -302,7 +303,7 @@ struct Render
 	{	RenderStatistics result;
 	
 		Geometry geometry = command.geometry;
-		auto lights = command.getLights();
+		LightNode[] lights = command.getLights();
 		assert(geometry.getAttribute(Geometry.VERTICES));
 		
 		// Bind each vertex buffer
@@ -567,7 +568,7 @@ struct Render
 		graphics.cameraInverse = renderList.cameraInverse;
 		graphics.bindCamera(camera);
 		foreach_reverse (i, renderScene; renderList.scenes)
-		{			
+		{		
 			// Bind matrices for camera position
 			graphics.matrix.loadIdentity();			
 			if (i==0) // base scene
@@ -599,6 +600,7 @@ struct Render
 			
 			// Take care of special rendering jobs that must occur last (like translucent polygons)
 			postRender();
+			
 		}		
 		
 		graphics.bindRenderTarget(null);

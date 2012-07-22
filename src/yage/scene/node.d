@@ -360,29 +360,10 @@ class Node : Tree!(Node), IDisposable
 		assert(av2.almostEqual(av*2), format("%s", av2.v));
 	}
 
-	/*
+	
 	///
 	void update(float delta)
-	{	
-		mixin(Sync!("scene"));
-
-		if (scene !is this)
-		{
-			bool dirty = false;
-			if (transform.velocityDelta != Vec3f.ZERO)
-			{	transform.position += transform.velocityDelta; // TODO: store cached version?
-				dirty = true;
-			}
-	
-			// Rotate if angular velocity is not zero.
-			float angle = transform.angularVelocityDelta.w - 3.1415927/4;
-			if (angle < -0.0001 || angle > 0.001)
-			{	transform.rotation = transform.rotation * transform.angularVelocityDelta;
-				dirty = true;
-			}
-			if (dirty)
-				setWorldDirty();
-		}
+	{	mixin(Sync!("scene"));
 		
 		foreach (node; children)
 		{	if (node.onUpdate)
@@ -390,7 +371,7 @@ class Node : Tree!(Node), IDisposable
 			else
 				node.update(delta);
 		}	
-	}*/	
+	}
 	
 	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a scene-less node tree.
 	Scene getScene()

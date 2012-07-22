@@ -273,15 +273,15 @@ class Scene : Node//, ITemporal, IDisposable
 			}
 			if (dirty)
 				t.node.setWorldDirty();
-			/*
-			foreach (node; t.node.getChildren())
-			{	if (node.onUpdate)
-					node.onUpdate();
-				else
-					node.update(delta);
-			}*/
 		}
-		
+
+		// Old update path
+		foreach (node; getChildren())
+		{	if (node.onUpdate)
+				node.onUpdate();
+			else
+				node.update(delta);
+		}
 		
 		Log.write("move ", a.tell());
 		
