@@ -55,6 +55,8 @@ class Ship : GameObject
 		sound.setSound("sound/ship-engine.ogg");
 		sound.volume = .3;
 		sound.looping = true;
+
+		onUpdate.addListener(&update);
 	}
 
 	ModelNode getShip()
@@ -97,8 +99,8 @@ class Ship : GameObject
 			input.hyper = on;
 	}
 	
-	void update(float delta)
-	{	super.update(delta);
+	private void update()
+	{	float delta = 1/60f;
 
 		// Set the acceleration speed
 		float speed = 50*delta;
@@ -128,23 +130,19 @@ class Ship : GameObject
 			puff.setPosition(ship.getWorldPosition()+Vec3f(.8, 0, 2.5).rotate(ship.getWorldTransform()));
 			
 			void fade(GameObject node, float delta)
-			{	node.update(delta);
-				
-				//if (node.scene is null)
-				//	return; // The call to update removed it from the scene.				
-				
+			{	
 				auto sprite = (cast(SpriteNode)(node.getChildren[0]));
 				sprite.material.getPass().diffuse.a = cast(ubyte)(node.lifetime * 51);
 				node.setScale(Vec3f(5-node.lifetime + .3));
 				node.setVelocity(node.getVelocity().scale(1-1/30f));
 			}
-			puff.onUpdate = curry(&fade, puff, delta);
+			puff.onUpdate.addListener(curry(&fade, puff, delta));
 		
 			
 			puff = cast(GameObject)puff.clone();
 			getScene().addChild(puff);
 			puff.setPosition(ship.getWorldPosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getWorldTransform()));
-			puff.onUpdate = curry(&fade, puff, delta);
+			puff.onUpdate.addListener(curry(&fade, puff, delta));
 			
 			if (sound.paused())
 				sound.play();

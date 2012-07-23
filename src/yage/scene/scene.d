@@ -28,6 +28,10 @@ import yage.scene.visible;
  * Each Scene updates its nodes in its own thread at a fixed frequencty, 
  * controlled by play(), pause() and other ITemporal methods.
  *
+ * For best performance:
+ * 1.  Minimize the number of cameras in the scene, since each always generate render commands for the render thread.
+ * 2.  Nodes without onUpdate set can be processed much faster, since otherwise all updates are in contiguous cache-friendly memory.
+ *
  * Example:
  * --------------------------------
  * Scene scene = new Scene();
@@ -84,15 +88,18 @@ class Scene : Node//, ITemporal, IDisposable
 	 * The update frequency cannot be changed after the scene is started. */
 	this(float frequency = 60)
 	{	mutex = new FastLock();
-		
-		// TODO: How to remove implicit call to super constructor?
+
 		super();
 		scene = this;
+		transformIndex = nodeTransforms.addNew(this);
+		
+		assert(transform().node.transformIndex == transformIndex);
 
 		ambient	= Color("#333"); // OpenGL default global ambient light.
 		backgroundColor = Color("black");	// OpenGL default clear color
 		fogColor = Color("gray");
 		
+		// TODO: move threading control to main.
 		updateThread = new Repeater(&internalUpdate);
 		updateThread.frequency = frequency;
 		this.increment = 1/frequency;
@@ -233,7 +240,7 @@ class Scene : Node//, ITemporal, IDisposable
 
 			bool dirty = false;
 			if (t.velocityDelta != Vec3f.ZERO)
-			{	t.position += t.velocityDelta; // TODO: store cached version?
+			{	t.position += t.velocityDelta;
 				dirty = true;
 			}
 
@@ -243,16 +250,12 @@ class Scene : Node//, ITemporal, IDisposable
 			{	t.rotation = t.rotation * t.angularVelocityDelta;
 				dirty = true;
 			}
+
+			if (t.onUpdateSet)
+				t.node.onUpdate();
+
 			if (dirty)
 				t.node.setWorldDirty();
-		}
-
-		// Old update path
-		foreach (node; getChildren())
-		{	if (node.onUpdate)
-				node.onUpdate();
-			else
-				node.update(delta);
 		}
 		
 		//Log.write("move ", a.tell());

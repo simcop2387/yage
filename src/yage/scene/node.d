@@ -45,10 +45,10 @@ import yage.system.log;
 class Node : Tree!(Node), IDisposable
 {
 	package static ContiguousTransforms orphanTransforms; // stores transforms for nodes that don't belong to any scene
-	package int transformIndex=-1;		// Index of the transform structure in the scene's nodeTransforms array.
-	package Scene scene;				// The Scene that this node belongs to.
+	package int transformIndex=-1;	// Index of the transform structure in the scene's nodeTransforms array.
+	package Scene scene;			// The Scene that this node belongs to.
 	
-	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
+	Event!() onUpdate;	/// If set, call this function instead of the standard update function.
 
 	invariant()
 	{	assert(parent !is this);
@@ -56,8 +56,10 @@ class Node : Tree!(Node), IDisposable
 	
 	/**
 	 * Construct and optionally add as a child of another Node. */
-	this()
-	{	ancestorChange(null);
+	this() // duplicate constructor required for classinfo.create
+	{	if (this is scene) // don't do anything for scenes.
+			return;
+		this(null);
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
@@ -65,6 +67,10 @@ class Node : Tree!(Node), IDisposable
 			parent.addChild(this); // calls ancestorChange()
 		} else
 			ancestorChange(null);
+
+		onUpdate.listenersChanged = curry(delegate void(Node n) {			
+			n.transform().onUpdateSet = n.onUpdate.length > 0;
+		}, this);
 	}
 	
 	/**
@@ -118,7 +124,7 @@ class Node : Tree!(Node), IDisposable
 		destination.transform.parent = destination.parent ? destination.parent.transform() : null;
 		destination.transform.worldDirty = true;
 
-		destination.onUpdate = onUpdate;
+		//destination.onUpdate = onUpdate; // TODO: Events aren't cloned.
 		
 		if (cloneChildren)
 			foreach (c; this.children)
@@ -322,19 +328,6 @@ class Node : Tree!(Node), IDisposable
 		Vec3f av2 = n.getAngularVelocity();
 		assert(av2.almostEqual(av*2), format("%s", av2.v));
 	}
-
-	
-	///
-	void update(float delta)
-	{	mixin(Sync!("scene"));
-		
-		foreach (node; children)
-		{	if (node.onUpdate)
-				node.onUpdate();
-			else
-				node.update(delta);
-		}	
-	}
 	
 	/// Get the Scene at the top of the tree that this node belongs to, or null if this is part of a scene-less node tree.
 	Scene getScene()
@@ -355,7 +348,7 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Get the struct containing this Node's transformation data. */
 	package Node.Transform* transform() { 
-		assert (!scene || (transformIndex>=0 && transformIndex<scene.nodeTransforms.length), format("%s", transformIndex));
+		assert (!scene || (transformIndex>=0 && transformIndex<scene.nodeTransforms.length), format("%d", transformIndex));
 		return scene ? 
 			&scene.nodeTransforms.transforms[transformIndex] : 
 		&orphanTransforms.transforms[transformIndex]; 
@@ -465,11 +458,9 @@ class Node : Tree!(Node), IDisposable
 	}
 
 
-
-
 	/*
-	* A node's transformation values are stored in a consecutive array in its scene, for better cache performance
-	* Or if, it has no scene, this structure is allocated on the heap. */
+	 * A node's transformation values are stored in a consecutive array in its scene, for better cache performance
+	 * Or if, it has no scene, this structure is allocated on the heap. */
 	struct Transform
 	{	Vec3f position;
 		Quatrn rotation;
@@ -484,7 +475,8 @@ class Node : Tree!(Node), IDisposable
 		Vec3f worldScale = Vec3f.ONE;
 
 		float radius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
-		bool worldDirty=true;
+		bool worldDirty = true;
+		bool onUpdateSet = false;
 
 		Node.Transform* parent; // For fast lookups when calculating world transforms
 		Node node;				// Pointer back to the node.
@@ -496,8 +488,8 @@ class Node : Tree!(Node), IDisposable
 	}
 
 	/**
-	* Stores an array of Node transform data contiguously in memory. 
-	* This is more cache friendly and testing shows this greatly increases performance. */
+	 * Stores an array of Node transform data contiguously in memory. 
+	 * This is more cache friendly and testing shows this greatly increases performance. */
 	struct ContiguousTransforms
 	{
 		Node.Transform[] transforms; // TODO: Make ArrayBuilder or equivalent after migrating to D2.

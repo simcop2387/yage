@@ -112,7 +112,7 @@ class CameraNode : Node
 	protected float frustumSphereRadiusSquared;
 	
 	protected Plane[6] skyboxFrustum; // a special frustum with the camera centered at the origin of worldspace.	
-	protected static CameraNode listener; // Camera that plays audio.
+	protected static CameraNode listener; // Camera that plays audio.  TODO: Deprecate this and have a thread in main for the sound loop that gets the passed camera's SoundCommands and plays them.
 
 	struct TripleBuffer(T)
 	{	T[3] lists;
@@ -147,7 +147,6 @@ class CameraNode : Node
 	
 	TripleBuffer!(SoundList) soundLists;
 	TripleBuffer!(RenderList) renderLists;
-	
 	
 	/**
 	 * Get a render list for the scene and each of the skyboxes this camera sees. */
@@ -200,7 +199,7 @@ class CameraNode : Node
 		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
 		list.cameraPosition = getWorldPosition();
 		list.cameraRotation = getWorldRotation();
-		list.cameraVelocity = getWorldVelocity();
+		//list.cameraVelocity = getWorldVelocity();
 	}
 	
 	/*
@@ -286,13 +285,14 @@ class CameraNode : Node
 	/**
 	 * Construct */
 	this()
-	{	renderLists.mutex = new Object();
+	{	this(null);		
+	}
+	this(Node parent)
+	{	super(parent);
+		renderLists.mutex = new Object();
 		soundLists.mutex = new Object();
 		if (!listener)
 			listener = this;
-	}
-	this(Node parent)
-	{	this();
 		if (parent)
 		{	mixin(Sync!("scene"));
 			parent.addChild(this);

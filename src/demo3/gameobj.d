@@ -20,17 +20,16 @@ class GameObject : VisibleNode
 	float mass=0;
 
 	this()
-	{	super();		
-	}
-	
-	override void update(float delta)
-	{	super.update(delta);
-		lifetime-= delta;
-		if (lifetime <= 0)
-		{	if (parent)
-				parent.removeChild(this);
-			lifetime = float.infinity;
+	{	super();
+		onUpdate.addListener(curry(delegate void(GameObject n) {
+		float delta = 1/60f;
+		n.lifetime-= delta;
+		if (n.lifetime <= 0)
+		{	if (n.parent)
+			n.parent.removeChild(n);
+			n.lifetime = float.infinity;
 		}
+	}, this));
 	}
 	
 	/**

@@ -173,25 +173,5 @@ class ModelNode : VisibleNode
 			result.append(rc);
 		}
 	}
-	
-	/*
-	 * This function is called automatically as a Scene's update() function recurses through Nodes.
-	 * It normally doesn't need to be called manually.*/
-	void update(float delta)
-	{	
-		// Call animationComplete if an animation has completed.
-		if (onAnimationComplete && animation_timer)
-		{	last_time = animation_timer.tell();
-			double time = animation_timer.tell();
-			if (time == animation_timer.getPauseAfter() || last_time > time)
-			{	onAnimationComplete(this);
-				//onAnimationComplete = null;
-				// TODO: Prevent onAnimationComplete from playing over and over again.
-			}
-		}
-
-		// Recurse through children
-		//super.update(delta);
-	}
 
 }

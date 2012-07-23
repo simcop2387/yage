@@ -112,6 +112,44 @@ unittest {
 }
 
 /**
+ * Implements the event pattern.
+ * TODO: Make this templated so that arguments can be passed to the functions. */
+struct Event(T...)
+{
+	void delegate() listenersChanged; // Called after the listeners are changed.
+	protected bool[void delegate(T)] listeners; // A set.  Associative arrays are copied by ref, so when one event is assigned to another, they will both point ot the same listeners.
+
+	void addListener(void delegate(T) listener)
+	{	listeners[listener] = true;
+		if (listenersChanged)
+			listenersChanged();
+	}
+
+	/// Call all the functions in the listeners list.
+	void opCall(T args)
+	{	foreach (func, unused; listeners)
+		func(args);
+	}
+
+	int length()
+	{	return listeners.length;
+	}
+
+	void removeListener(void delegate(T) listener)
+	{	listeners.remove(listener);
+		if (listenersChanged)
+			listenersChanged();
+	}
+
+	void removeAll()
+	{	foreach (key; listeners.keys)
+		listeners.remove(key);
+		if (listenersChanged)
+			listenersChanged();
+	}
+}
+
+/**
  * Convert any function pointer to a delegate.
  * _ From: http://www.digitalmars.com/d/archives/digitalmars/D/easily_convert_any_method_function_to_a_delegate_55827.html */
 R delegate(P) toDelegate(R, P...)(R function(P) fp)

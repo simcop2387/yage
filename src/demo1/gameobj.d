@@ -18,16 +18,17 @@ import yage.system.log;
 
 class GameObject : VisibleNode
 {	float lifetime = float.infinity;
-	float mass=0;
 	
-	void update(float delta)
-	{	//super.update(delta);
-		lifetime-= delta;
-		if (lifetime <= 0)
-		{	if (parent)
-				parent.removeChild(this);
-			lifetime = float.infinity;
-		}
+	this()
+	{	onUpdate.addListener(curry(delegate void(GameObject n) {
+			float delta = 1/60f;
+			n.lifetime-= delta;
+			if (n.lifetime <= 0)
+			{	if (n.parent)
+				n.parent.removeChild(n);
+				n.lifetime = float.infinity;
+			}
+		}, this));
 	}
 	
 	/**
@@ -46,16 +47,15 @@ class GameObject : VisibleNode
 }
 
 
-class Asteroid : GameObject
-{
-	ModelNode rock;
+class Asteroid : ModelNode
+{	
 	
 	float radius; // cached
+	float mass=0;
 	
 	this()
 	{	super();
-		rock = addChild(new ModelNode());
-		rock.setModel(ResourceManager.model("space/asteroid1.dae"));
+		setModel(ResourceManager.model("space/asteroid1.dae"));
 	}
 
 	float getRadius()
@@ -64,7 +64,7 @@ class Asteroid : GameObject
 
 	void setMass(float mass)
 	{	this.mass = mass;
-		rock.setScale(Vec3f(pow(mass, .33333)/2));
+		setScale(Vec3f(pow(mass, .33333)/2));
 		radius = pow(mass, .3333)*.75*4;
 	}
 }
