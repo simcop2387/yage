@@ -44,49 +44,12 @@ import yage.system.log;
  */
 class Node : Tree!(Node), IDisposable
 {
-	/*
-	 * A node's transformation values are stored in a consecutive array in its scene, for better cache performance
-	 * Or if, it has no scene, this structure is allocated on the heap. */
-	struct Transform
-	{	Vec3f position;
-		Quatrn rotation;
-		Vec3f scale = Vec3f.ONE;
-
-		Vec3f velocityDelta;	// Velocity times the scene increment, for faster updating.
-		Vec3f angularVelocity;	// Stored as a vector to allow storing rotations beyond -PI to PI
-		Quatrn angularVelocityDelta; // Stored as a quaternion for faster updating.
-
-		Vec3f worldPosition;
-		Quatrn worldRotation;
-		Vec3f worldScale = Vec3f.ONE;
-
-		float radius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
-		bool worldDirty=true;
-
-		Node.Transform* parent; // For fast lookups when calculating world transforms
-		Node node;				// Pointer back to the node.
-
-		static Transform opCall()
-		{	Transform result;
-			return result;
-		}
-	}
-	
-	/*package*/ int sceneIndex=-1;			// Index of the transform structure in the scene's nodeTransforms array.
-	
-	/*package*/ Node.Transform* transform() { 
-		assert (!scene || (sceneIndex>=0 && sceneIndex<scene.nodeTransforms.length), format("%s", sceneIndex));
-		return scene ? 
-			&scene.nodeTransforms.transforms[sceneIndex] : 
-			&Scene.orphanNodeTransforms.transforms[sceneIndex]; 
-	}
-
-
+	package static ContiguousTransforms orphanTransforms; // stores transforms for nodes that don't belong to any scene
+	package int transformIndex=-1;		// Index of the transform structure in the scene's nodeTransforms array.
 	package Scene scene;				// The Scene that this node belongs to.
-
+	
 	void delegate() onUpdate = null;	/// If set, call this function instead of the standard update function.
 
-	
 	invariant()
 	{	assert(parent !is this);
 	}
@@ -114,7 +77,7 @@ class Node : Tree!(Node), IDisposable
 	T addChild(T : Node)(T child)
 	{	assert(child !is this);
 		assert(child !is parent);
-		assert(child.sceneIndex==-1 || child.transform().node is child);
+		assert(child.transformIndex==-1 || child.transform().node is child);
 
 		mixin(Sync!("scene"));	
 		auto oldParent = child.getParent();
@@ -389,6 +352,15 @@ class Node : Tree!(Node), IDisposable
 				c.setWorldDirty();
 	}	}
 
+	/**
+	 * Get the struct containing this Node's transformation data. */
+	package Node.Transform* transform() { 
+		assert (!scene || (transformIndex>=0 && transformIndex<scene.nodeTransforms.length), format("%s", transformIndex));
+		return scene ? 
+			&scene.nodeTransforms.transforms[transformIndex] : 
+		&orphanTransforms.transforms[transformIndex]; 
+	}
+
 	/*
 	 * Calculate the value of the worldPosition, worldRotation, and worldScale. */
 	protected void calcWorld()
@@ -442,18 +414,18 @@ class Node : Tree!(Node), IDisposable
 	protected void ancestorChange(Node oldAncestor)
 	{	
 		Scene newScene = parent ? parent.scene : null;		
-		auto transforms = newScene ? &newScene.nodeTransforms : &Scene.orphanNodeTransforms;
-		auto oldTransforms = scene ? &scene.nodeTransforms : &Scene.orphanNodeTransforms;
+		auto transforms = newScene ? &newScene.nodeTransforms : &orphanTransforms;
+		auto oldTransforms = scene ? &scene.nodeTransforms : &orphanTransforms;
 
 		if (transforms !is oldTransforms) // changing scene of existing node
 		{	
-			if (sceneIndex==-1) // previously didn't belong to a scene
-				sceneIndex = transforms.addNew(this);
+			if (transformIndex==-1) // previously didn't belong to a scene
+				transformIndex = transforms.addNew(this);
 			else
-			{	assert(oldTransforms.transforms[sceneIndex].node is this);
+			{	assert(oldTransforms.transforms[transformIndex].node is this);
 				int newIndex = transforms.add(transform(), this);
-				oldTransforms.remove(sceneIndex);
-				sceneIndex = newIndex;
+				oldTransforms.remove(transformIndex);
+				transformIndex = newIndex;
 			}
 			scene = newScene;
 
@@ -462,10 +434,10 @@ class Node : Tree!(Node), IDisposable
 			transform.velocityDelta *= incrementChange;
 			transform.angularVelocityDelta.multiplyAngle(incrementChange);
 		} 
-		else if (sceneIndex==-1) // a brand new node
-			sceneIndex = transforms.addNew(this);
+		else if (transformIndex==-1) // a brand new node
+			transformIndex = transforms.addNew(this);
 
-		assert(transforms.transforms[sceneIndex].node is this);		
+		assert(transforms.transforms[transformIndex].node is this);		
 
 		transform().parent = (parent && parent !is scene) ? parent.transform() : null;
 		transform().worldDirty = true;
@@ -474,9 +446,9 @@ class Node : Tree!(Node), IDisposable
 			c.ancestorChange(oldAncestor); // breaks the assertions below!  But how?
 
 		debug if (scene)
-			assert(0<=sceneIndex && sceneIndex < transforms.length);
+			assert(0<=transformIndex && transformIndex < transforms.length);
 		else
-			assert(sceneIndex != -1);
+			assert(transformIndex != -1);
 		assert(transform); // assert it is accessible
 		assert(transform.worldDirty || !transform.worldDirty);		
 	}
@@ -491,4 +463,70 @@ class Node : Tree!(Node), IDisposable
 		Node d = new Node();
 		s.addChild(d);
 	}
+
+
+
+
+	/*
+	* A node's transformation values are stored in a consecutive array in its scene, for better cache performance
+	* Or if, it has no scene, this structure is allocated on the heap. */
+	struct Transform
+	{	Vec3f position;
+		Quatrn rotation;
+		Vec3f scale = Vec3f.ONE;
+
+		Vec3f velocityDelta;	// Velocity times the scene increment, for faster updating.
+		Vec3f angularVelocity;	// Stored as a vector to allow storing rotations beyond -PI to PI
+		Quatrn angularVelocityDelta; // Stored as a quaternion for faster updating.
+
+		Vec3f worldPosition;
+		Quatrn worldRotation;
+		Vec3f worldScale = Vec3f.ONE;
+
+		float radius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
+		bool worldDirty=true;
+
+		Node.Transform* parent; // For fast lookups when calculating world transforms
+		Node node;				// Pointer back to the node.
+
+		static Transform opCall()
+		{	Transform result;
+			return result;
+		}
+	}
+
+	/**
+	* Stores an array of Node transform data contiguously in memory. 
+	* This is more cache friendly and testing shows this greatly increases performance. */
+	struct ContiguousTransforms
+	{
+		Node.Transform[] transforms; // TODO: Make ArrayBuilder or equivalent after migrating to D2.
+
+		int add(Node.Transform* transform, Node n)
+		{	transforms ~= *transform;
+			transforms[length-1].node = n;
+			return transforms.length - 1;
+		}
+
+		int addNew(Node n)
+		{	transforms ~= Transform();
+			transforms[length-1].node = n;
+			return transforms.length - 1;
+		}
+
+		void remove(int index)
+		{	assert(transforms[index].node.transformIndex == index, format("%d, %d, %s", transforms[index].node.transformIndex, index, transforms[index].node.classinfo.name));
+			if (index != transforms.length-1)
+			{	transforms[index] = transforms[length-1]; // move another node no top of the one removed				
+				transforms[index].node.transformIndex = index;  // update the index of the moved node.
+			}
+			transforms.length = transforms.length - 1;			
+		}
+
+		int length()
+		{	return transforms.length;
+		}
+	}
 }
+
+

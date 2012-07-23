@@ -19,23 +19,6 @@ import yage.system.log;
 class GameObject : VisibleNode
 {	float lifetime = float.infinity;
 	float mass=0;
-
-	this()
-	{	super();		
-	}
-
-	unittest {
-		Log.write("GameObject");
-		auto a = new GameObject();
-		Log.write("GameObject2");
-		assert(a.transform().node is a);
-		assert(a.transform().node.sceneIndex is a.sceneIndex);
-
-		auto s = new Scene();
-		s.addChild(a);
-
-	//	assert(false);
-	}
 	
 	void update(float delta)
 	{	//super.update(delta);
