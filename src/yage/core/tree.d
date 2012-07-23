@@ -33,6 +33,9 @@ class Tree(T) : YageObject
 	{	
 		assert(child);
 		assert(child != this);
+
+		if (child.parent is this)
+			return child;
 		
 		// If child has an existing parent.
 		if (child.parent)

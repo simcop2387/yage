@@ -283,7 +283,7 @@ class Scene : Node//, ITemporal, IDisposable
 				node.update(delta);
 		}
 		
-		Log.write("move ", a.tell());
+		//Log.write("move ", a.tell());
 		
 		scope b = new Timer(true);
 		
@@ -294,7 +294,7 @@ class Scene : Node//, ITemporal, IDisposable
 			if (CameraNode.getListener() is camera)
 				camera.updateSoundCommands();
 		}
-		Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
+		//Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
 		
 		camerasMutex.unlock();
 		updateTime = a.tell();

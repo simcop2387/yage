@@ -120,6 +120,13 @@ struct Render
 		cleared = false;
 	}
 
+	// Used by generateShader
+	private static char[] lightPosition = "lights[_].position\0".dup;
+	private static char[] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
+	private static char[] lightSpotDirection = "lights[_].spotDirection\0".dup;
+	private static char[] lightSpotCutoff = "lights[_].spotCutoff\0".dup;
+	private static char[] lightSpotExponent = "lights[_].spotExponent\0".dup;
+
 	/**
 	 * Generate a phong/normal map shader for the pass.
 	 * Params:
@@ -205,19 +212,13 @@ struct Render
 		
 		// Set uniform values
 		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{	// Create mutable stack strings.
-			// This is necessary because modifying the data segment segfaults on Linux.
-			char[19] lightPosition = "lights[_].position\0"[0..19];
-			char[31] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0"[0..31];
-			char[24] lightSpotDirection = "lights[_].spotDirection\0"[0..24];
-			char[21] lightSpotCutoff = "lights[_].spotCutoff\0"[0..21];
-			char[23] lightSpotExponent = "lights[_].spotExponent\0"[0..23];
+		{	/* static char[] is a problem on Linux, it causes a segfault */
+			// Static makes .dup only occur once.
 			
 			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
 			
 			int idx=0;
 			assert(lights.length < 10);
-			
 			foreach (i, light; lights)
 			{	
 				char[] makeName(char[] name, int i)
@@ -238,24 +239,24 @@ struct Render
 				name = makeName(lightQuadraticAttenuation, i);
 				su.name[0..name.length] = name[0..$];
 				su.type = ShaderUniform.Type.F1;
-				su.floatValues[0] = 0; //light.getQuadraticAttenuation();
+				su.floatValues[0] =light.getQuadraticAttenuation();
 				idx++;
-				
+							
 				if (params.hasSpotlight)
 				{	Matrix camInverse = graphics.cameraInverse;
 					
 					Vec3f lightDirection = Vec3f(0, 0, 1).rotate(light.getWorldTransform()).rotate(camInverse); 
 					uniforms[idx++] = 
-						ShaderUniform(makeName("lights[_].spotDirection", i), ShaderUniform.Type.F3, lightDirection.v);
+						ShaderUniform(makeName(lightSpotDirection, i), ShaderUniform.Type.F3, lightDirection.v);
 					
 					float angle = light.type == LightNode.Type.SPOT ? light.spotAngle : 2*PI;
 					uniforms[idx++] =
-						ShaderUniform(makeName("lights[_].spotCutoff", i), ShaderUniform.Type.F1, angle);
+						ShaderUniform(makeName(lightSpotCutoff, i), ShaderUniform.Type.F1, angle);
 											
 					uniforms[idx++] = 
-						ShaderUniform(makeName("lights[_].spotExponent", i), ShaderUniform.Type.F1, light.spotExponent);
+						ShaderUniform(makeName(lightSpotExponent, i), ShaderUniform.Type.F1, light.spotExponent);
 				}
-			}		
+			}			
 		}
 		
 		return result;

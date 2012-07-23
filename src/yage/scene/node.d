@@ -117,10 +117,10 @@ class Node : Tree!(Node), IDisposable
 		assert(child.sceneIndex==-1 || child.transform().node is child);
 
 		mixin(Sync!("scene"));	
-		auto old_parent = child.getParent();
+		auto oldParent = child.getParent();
 		super.addChild(child);
 		if (oldParent !is this)
-			child.ancestorChange(old_parent);
+			child.ancestorChange(oldParent);
 		return child;
 	}
 	
@@ -141,9 +141,9 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Make a duplicate of this node, unattached to any parent Node.
 	 * Params:
-	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
+	 *     cloneChildren = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	Node clone(bool children=true, Node destination=null) /// ditto
+	Node clone(bool cloneChildren=true, Node destination=null) /// ditto
 	{	mixin(Sync!("scene"));
 		
 		if (!destination)
@@ -152,19 +152,16 @@ class Node : Tree!(Node), IDisposable
 		
 		*destination.transform = *transform;
 		destination.transform.node = destination;
+		destination.transform.parent = destination.parent ? destination.parent.transform() : null;
+		destination.transform.worldDirty = true;
 
-		if (scene)
-		{	destination.transform.velocityDelta /= scene.increment;
-			destination.transform.angularVelocityDelta.multiplyAngle(1/scene.increment);
-		}
 		destination.onUpdate = onUpdate;
 		
-		if (children)
+		if (cloneChildren)
 			foreach (c; this.children)
 			{	auto copy = cast(Node)c.classinfo.create();
 				destination.addChild(c.clone(true, copy));
-			}
-		destination.setWorldDirty();		
+			}		
 
 		assert(destination.transform.node is destination);
 		return destination;
@@ -451,19 +448,12 @@ class Node : Tree!(Node), IDisposable
 		if (transforms !is oldTransforms) // changing scene of existing node
 		{	
 			if (sceneIndex==-1) // previously didn't belong to a scene
-			{	sceneIndex = transforms.addNew(this);
-				assert(transforms.transforms[sceneIndex].node is this);
-				assert(transforms.transforms[sceneIndex].node.sceneIndex == sceneIndex);
-			}
+				sceneIndex = transforms.addNew(this);
 			else
-			{	
-				assert(oldTransforms.transforms[sceneIndex].node is this);
-				
+			{	assert(oldTransforms.transforms[sceneIndex].node is this);
 				int newIndex = transforms.add(transform(), this);
 				oldTransforms.remove(sceneIndex);
 				sceneIndex = newIndex;
-				assert(transforms.transforms[sceneIndex].node is this);
-				assert(transforms.transforms[sceneIndex].node.sceneIndex == sceneIndex);
 			}
 			scene = newScene;
 
@@ -473,11 +463,9 @@ class Node : Tree!(Node), IDisposable
 			transform.angularVelocityDelta.multiplyAngle(incrementChange);
 		} 
 		else if (sceneIndex==-1) // a brand new node
-		{	sceneIndex = transforms.addNew(this);
+			sceneIndex = transforms.addNew(this);
 
-			assert(transforms.transforms[sceneIndex].node is this);
-			assert(transforms.transforms[sceneIndex].node.sceneIndex == sceneIndex);
-		}
+		assert(transforms.transforms[sceneIndex].node is this);		
 
 		transform().parent = (parent && parent !is scene) ? parent.transform() : null;
 		transform().worldDirty = true;

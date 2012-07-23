@@ -140,6 +140,7 @@ class Ship : GameObject
 			}
 			puff.onUpdate = curry(&fade, puff, delta);
 		
+			
 			puff = cast(GameObject)puff.clone();
 			getScene().addChild(puff);
 			puff.setPosition(ship.getWorldPosition()+Vec3f(-.8, 0, 2.5).rotate(ship.getWorldTransform()));
