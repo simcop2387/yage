@@ -59,8 +59,9 @@ class Scene : Node//, ITemporal, IDisposable
 	{
 		Node.Transform[] transforms;
 
-		int add(Node.Transform* transform)
+		int add(Node.Transform* transform, Node n)
 		{	transforms ~= *transform;
+			transforms[length-1].node = n;
 			return transforms.length - 1;
 		}
 
@@ -73,11 +74,10 @@ class Scene : Node//, ITemporal, IDisposable
 		void remove(int index)
 		{	assert(transforms[index].node.sceneIndex == index, format("%d, %d, %s", transforms[index].node.sceneIndex, index, transforms[index].node.classinfo.name));
 			if (index != transforms.length-1)
-			{	transforms[index] = transforms[length-1];
-				transforms.length = transforms.length - 1;
-				transforms[index].node.sceneIndex = index;
-			} else
-				transforms.length = transforms.length - 1;
+			{	transforms[index] = transforms[length-1]; // move another node no top of the one removed				
+				transforms[index].node.sceneIndex = index;  // update the index of the moved node.
+			}
+			transforms.length = transforms.length - 1;			
 		}
 
 		int length()

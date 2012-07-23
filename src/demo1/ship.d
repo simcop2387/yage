@@ -105,13 +105,20 @@ class Ship : GameObject
 		if (input.hyper)
 			speed *= 40; // Hyperdrive
 
+
+
+
 		// Accelerate forward
 		if (input.up)
-		{
+		{	
+			auto a = new GameObject();
+			
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
-
+			
 			// Engine smoke
-			GameObject puff = getScene().addChild(new GameObject());
+			
+
+			GameObject puff = getScene().addChild(a);
 			SpriteNode puffSprite = puff.addChild(new SpriteNode());
 			Material smoke = ResourceManager.material("fx/smoke.dae", "smoke-material");
 			puffSprite.material = smoke.dup();

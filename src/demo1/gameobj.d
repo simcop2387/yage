@@ -14,7 +14,7 @@ import yage.core.all;
 import yage.resource.manager;
 import yage.resource.model;
 import yage.scene.all;
-
+import yage.system.log;
 
 class GameObject : VisibleNode
 {	float lifetime = float.infinity;
@@ -22,6 +22,19 @@ class GameObject : VisibleNode
 
 	this()
 	{	super();		
+	}
+
+	unittest {
+		Log.write("GameObject");
+		auto a = new GameObject();
+		Log.write("GameObject2");
+		assert(a.transform().node is a);
+		assert(a.transform().node.sceneIndex is a.sceneIndex);
+
+		auto s = new Scene();
+		s.addChild(a);
+
+	//	assert(false);
 	}
 	
 	void update(float delta)
