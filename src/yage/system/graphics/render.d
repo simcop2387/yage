@@ -568,41 +568,35 @@ struct Render
 		auto renderList = camera.getRenderList();
 		graphics.cameraInverse = renderList.cameraInverse;
 		graphics.bindCamera(camera);
-		foreach_reverse (i, renderScene; renderList.scenes)
-		{		
-			// Bind matrices for camera position
-			graphics.matrix.loadIdentity();			
-			if (i==0) // base scene
-				glMultMatrixf(renderList.cameraInverse.v.ptr);
-			else // only rotate by the camera's matrix if in a skybox.
-			{	Vec3f axis = renderList.cameraInverse.toAxis();
-				glRotatef(axis.length()*57.295779513, axis.x, axis.y, axis.z);
-			}
+				
+		// Bind matrices for camera position
+		graphics.matrix.loadIdentity();
+		glMultMatrixf(renderList.cameraInverse.v.ptr);
 			
-			// Clear buffers
-			graphics.bindScene(renderScene.scene);
-			if (!cleared) // reset everyting the first time.
-			{	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // is stencil necessary?
-				cleared = true;
-			} else
-				glClear(GL_DEPTH_BUFFER_BIT);
+		// Clear buffers
+		graphics.bindScene(renderList.scene);
+		if (!cleared) // reset everyting the first time.
+		{	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // is stencil necessary?
+			cleared = true;
+		} else
+			glClear(GL_DEPTH_BUFFER_BIT);
 			
-			result.lightCount += renderScene.lights.length;
+		result.lightCount += renderList.lights.length;
 						
-			// Process all render commands in the set
-			result.nodeCount += renderScene.commands.length;
-			foreach (ref RenderCommand command; renderScene.commands.data)
-			{	graphics.matrix.push();
-				graphics.matrix.multiply(command.transform);
-				graphics.bindLights(command.getLights()); 
-				result += geometry(command);
-				graphics.matrix.pop();
-			}
+		// Process all render commands in the set
+		result.nodeCount += renderList.commands.length;
+		foreach (ref RenderCommand command; renderList.commands.data)
+		{	graphics.matrix.push();
+			graphics.matrix.multiply(command.transform);
+			graphics.bindLights(command.getLights()); 
+			result += geometry(command);
+			graphics.matrix.pop();
+		}
 			
-			// Take care of special rendering jobs that must occur last (like translucent polygons)
-			postRender();
+		// Take care of special rendering jobs that must occur last (like translucent polygons)
+		postRender();
 			
-		}		
+				
 		
 		graphics.bindRenderTarget(null);
 		graphics.bindPass(null);

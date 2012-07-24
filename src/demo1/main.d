@@ -25,6 +25,8 @@ import yage.resource.material;
 class DemoScene : Scene
 {
 	Scene skybox;
+	CameraNode skyboxCamera;
+
 	Ship ship;
 	CameraNode camera;
 	SoundNode music;
@@ -41,11 +43,10 @@ class DemoScene : Scene
 		ambient = "#102733"; // global ambient
 		
 		// Skybox
-		skyBox = new Scene();
-		auto sky = new ModelNode("sky/blue-nebula.dae");
+		skybox = new Scene();
+		auto sky = new ModelNode("sky/blue-nebula.dae", skybox);
 		sky.setScale(Vec3f(1000));
-		skyBox.addChild(sky);
-		
+		skyboxCamera = new CameraNode(skybox);
 		
 		// Ship
 		ship = addChild(new Ship());	
@@ -57,8 +58,9 @@ class DemoScene : Scene
 		ship.getCameraSpot().addChild(camera);
 		camera.near = 2;
 		camera.far = 2000000;
-		camera.fov = 60;
+		camera.fov = skyboxCamera.fov = 60;
 		camera.threshold = 1; 
+		camera.setListener();
 		
 		// Music
 		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
@@ -104,6 +106,8 @@ class DemoScene : Scene
 	override void update(float delta)
 	{	super.update(delta);
 		ship.getSpring().update(delta);
+		skyboxCamera.setRotation(camera.getWorldRotationQuatrn());
+		skybox.update(delta); // TODO, being out of sync causes jittering asteroids
 	}
 }
 
@@ -223,6 +227,7 @@ int main()
 		delta.seek(0);
 
 		Input.processAndSendTo(view);
+		Render.scene(scene.skyboxCamera, window);
 		auto stats = Render.scene(scene.camera, window);
 		Render.surface(view, window);
 		Render.complete(); // swap buffers

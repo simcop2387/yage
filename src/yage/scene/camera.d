@@ -58,13 +58,9 @@ struct RenderCommand
 
 // Everything in a scene seen by the Camera.
 struct RenderScene
-{	Scene scene; // Is this used?
+{	Scene scene;
 	ArrayBuilder!(RenderCommand) commands;
 	ArrayBuilder!(LightNode) lights;
-}
-
-struct RenderList
-{	RenderScene[] scenes; // one ArrayBuilder of commands for each scene to render.
 	long timestamp;
 	Matrix cameraInverse;
 }
@@ -104,8 +100,7 @@ class CameraNode : Node
 	float threshold = 1;	/// Nodes must be at least this diameter in pixels or they won't be rendered.
 	float aspectRatio = 1.25;  /// The aspect ratio of the camera.  This is normally set automatically in Render.scene() based on the size of the Render Target.
 
-	package int currentXres;	// Used internally for determining visibility
-	package int currentYres;
+	package int currentYres; // Used internally for determining visibility
 	
 	protected Plane[6] frustum;
 	protected Vec3f frustumSphereCenter;
@@ -142,15 +137,14 @@ class CameraNode : Node
 				return &lists[write];
 			}
 		}
-			
 	}
 	
 	TripleBuffer!(SoundList) soundLists;
-	TripleBuffer!(RenderList) renderLists;
+	TripleBuffer!(RenderScene) renderLists;
 	
 	/**
 	 * Get a render list for the scene and each of the skyboxes this camera sees. */
-	RenderList getRenderList()
+	RenderScene getRenderList()
 	{	return renderLists.getNextRead();
 	}
 	
@@ -207,10 +201,9 @@ class CameraNode : Node
 	 * This is typically one Scene and its Skybox. */
 	package void updateRenderCommands()
 	{
-		assert(Thread.getThis() == scene.getUpdateThread());
+		//assert(Thread.getThis() == scene.getUpdateThread());
 		
-		currentXres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
-		currentYres = Window.getInstance().getHeight();
+		currentYres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
 		
 		void writeCommands(Node root, Plane[] frustum, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 		{
@@ -250,36 +243,33 @@ class CameraNode : Node
 		
 		// Iterate through skyboxes, clearing out the RenderList commands and refilling them
 		Scene currentScene = scene;
-		int i=0;
 		list.cameraInverse = getWorldTransform().inverse(); // must occur before the loop below
 		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
-		do {
-			// Ensure we have a command set for this scene
-			if (list.scenes.length <= i)
-				list.scenes.length = i+1;
-			else // clear out previous commands
-				list.scenes[i].commands.reserveAndClear(); // reset content
-			RenderScene* rs = &list.scenes[i];
-			rs.scene = currentScene;
-
-			// Add lights that affect what this camera can see.			
-			int j;
-			scope allLights = currentScene.getAllLights();
-			rs.lights.length = allLights.length;
-			foreach (ref light; allLights) // Make a deep copy of the scene's lights 
-			{	rs.lights.data[j] = light.clone(false, rs.lights.data[j]); // to prevent locking when the render thread uses them.
-				rs.lights.data[j].setPosition(light.getWorldPosition());
-				rs.lights.data[j].cameraSpacePosition = light.getWorldPosition().transform(list.cameraInverse); 
-				if (light.type == LightNode.Type.SPOT)
-					rs.lights.data[j].setRotation(light.getWorldRotation());
-				rs.lights.data[j].transform.worldPosition = rs.lights.data[j].transform.position;
-				rs.lights.data[j].transform.worldDirty = false; // hack to prevent it from being recalculated.
-				j++;
-			}
+		
+		// Ensure we have a command set for this scene
 			
-			writeCommands(currentScene, frustum, rs.lights.data, list.scenes[i].commands);
-			i++;
-		} while ((currentScene = currentScene.skyBox) !is null); // iterate through skyboxes
+		list.commands.reserveAndClear(); // reset content
+		RenderScene* rs = list;
+		rs.scene = currentScene;
+
+		// Add lights that affect what this camera can see.			
+		int j;
+		scope allLights = currentScene.getAllLights();
+		rs.lights.length = allLights.length;
+		foreach (ref light; allLights) // Make a deep copy of the scene's lights 
+		{	rs.lights.data[j] = light.clone(false, rs.lights.data[j]); // to prevent locking when the render thread uses them.
+			rs.lights.data[j].setPosition(light.getWorldPosition());
+			rs.lights.data[j].cameraSpacePosition = light.getWorldPosition().transform(list.cameraInverse); 
+			if (light.type == LightNode.Type.SPOT)
+				rs.lights.data[j].setRotation(light.getWorldRotation());
+			rs.lights.data[j].transform.worldPosition = rs.lights.data[j].transform.position;
+			rs.lights.data[j].transform.worldDirty = false; // hack to prevent it from being recalculated.
+			j++;
+		}
+			
+		writeCommands(currentScene, frustum, rs.lights.data, list.commands);
+			
+		
 	}
 
 	/**

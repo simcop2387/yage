@@ -57,9 +57,6 @@ class Scene : Node//, ITemporal, IDisposable
 								/// where objects become completely obscured by the fog. */
 	float speedOfSound = 343f;	/// Speed of sound in units/second
 	
-	Scene skyBox;				/// A Scene can have another heirarchy of nodes that will be rendered as a skybox by any camera. 
-
-
 
 	//ArrayBuilder!(Node.Transform) nodeTransforms;
 	package ContiguousTransforms nodeTransforms;
@@ -138,7 +135,6 @@ class Scene : Node//, ITemporal, IDisposable
 		result.fogColor = fogColor;
 		result.fogDensity = fogDensity;
 		result.fogEnabled = fogEnabled;
-		result.skyBox = skyBox;
 		
 		return result;
 	}
@@ -253,6 +249,14 @@ class Scene : Node//, ITemporal, IDisposable
 
 			if (t.onUpdateSet)
 				t.node.onUpdate();
+
+
+			// Add render commands from node, if it's on screen.
+			foreach (camera; cameras)
+			{
+
+
+			}
 
 			if (dirty)
 				t.node.setWorldDirty();

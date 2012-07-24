@@ -173,6 +173,10 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		return transform.rotation.toAxis();
 	}
+	Quatrn getRotationQuatrn()
+	{	mixin(Sync!("scene"));
+		return transform.rotation;
+	}
 	void setRotation(Vec3f axisAngle) /// ditto
 	{	mixin(Sync!("scene"));
 		setWorldDirty();
@@ -250,6 +254,11 @@ class Node : Tree!(Node), IDisposable
 	{	mixin(Sync!("scene"));
 		calcWorld();
 		return transform.worldRotation.toAxis();
+	}
+	Quatrn getWorldRotationQuatrn() /// ditto
+	{	mixin(Sync!("scene"));
+		calcWorld();
+		return transform.worldRotation;
 	}
 	Vec3f getWorldScale() /// ditto
 	{	mixin(Sync!("scene"));
