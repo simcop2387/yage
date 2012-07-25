@@ -34,6 +34,7 @@ class SpriteNode : VisibleNode
 	 * Create a SpriteNode and optinally set the material from an already loaded material or a material filename. */
 	this()
 	{	super();  // default constructor required for clone.
+		transform().cullRadius = 1.414213562f;
 	}
 	this(Node parent) /// ditto
 	{	super(parent);
@@ -88,7 +89,7 @@ class SpriteNode : VisibleNode
 
 	/// Return the distance to the furthest point of the SpriteNode, including size but not scale.
 	float getRadius()
-	{	return 1.414213562*size.max()*getScale().max();
+	{	return 1.414213562*getWorldScale().max();
 	}
 
 }

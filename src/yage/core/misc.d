@@ -113,10 +113,15 @@ unittest {
 
 /**
  * Implements the event pattern.
- * TODO: Make this templated so that arguments can be passed to the functions. */
+ * Params:
+ *     T = Every listener of this event should accept these arguments
+ * Example:
+ * Event!(int) event;
+ * event.addListener(delegate void(int a) { ... });
+ * event(); // calls all listeners. */
 struct Event(T...)
 {
-	void delegate() listenersChanged; // Called after the listeners are changed.
+	void delegate() listenersChanged; /// Called after the listeners are added or removed.
 	protected bool[void delegate(T)] listeners; // A set.  Associative arrays are copied by ref, so when one event is assigned to another, they will both point ot the same listeners.
 
 	void addListener(void delegate(T) listener)

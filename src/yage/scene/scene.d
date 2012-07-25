@@ -222,12 +222,15 @@ class Scene : Node//, ITemporal, IDisposable
 	void update(float delta)
 	{
 		mixin(Sync!("this"));
-		
-		scope a = new Timer(true);
 	
 		// Update all nodes recursively
 		//super.update(delta); 
 
+		foreach (camera; cameras)
+			camera.beginUpdateRenderCommands();
+		scope camerasArray = cameras.values; // because looping through an aa inside another loop is much slower
+
+		camerasMutex.lock();
 		
 		//foreach (inout Transform t; nodeTransforms.data)
 		for (int i=0; i<nodeTransforms.length; i++)
@@ -250,24 +253,29 @@ class Scene : Node//, ITemporal, IDisposable
 			if (t.onUpdateSet)
 				t.node.onUpdate();
 
-
-			// Add render commands from node, if it's on screen.
-			foreach (camera; cameras)
-			{
-
-
-			}
-
 			if (dirty)
 				t.node.setWorldDirty();
+
+			// Add render commands from node, if it's on screen.
+			foreach (camera; camerasArray)
+			{	
+				// only calculate the world position if the node has a parent
+				Vec3f worldPosition = t.parent is null ? t.position : t.node.getWorldPosition(); // also calc's worldScale used below.
+				if (camera.isVisible(worldPosition, t.cullRadius * t.worldScale.max()))
+				{	VisibleNode vnode = cast(VisibleNode)t.node;					
+					if (vnode)
+						vnode.getRenderCommands(camera, camera.currentRenderList.lights.data, camera.currentRenderList.commands);	
+				}
+			}
 		}
+		camerasMutex.unlock();
 		
-		//Log.write("move ", a.tell());
 		
-		scope b = new Timer(true);
 		
+		
+		/*
 		// Cull and create render and sound commands for each camera
-		camerasMutex.lock();
+		
 		foreach (camera; cameras) 
 		{	camera.updateRenderCommands();
 			if (CameraNode.getListener() is camera)
@@ -275,7 +283,8 @@ class Scene : Node//, ITemporal, IDisposable
 		}
 		//Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
 		
-		camerasMutex.unlock();
+		
+		*/
 		updateTime = a.tell();
 	}
 

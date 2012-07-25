@@ -59,7 +59,7 @@ class DemoScene : Scene
 		camera.near = 2;
 		camera.far = 2000000;
 		camera.fov = skyboxCamera.fov = 60;
-		camera.threshold = 1; 
+		camera.threshhold = 1; 
 		camera.setListener();
 		
 		// Music
@@ -100,14 +100,14 @@ class DemoScene : Scene
 		moon.setAngularVelocity(Vec3f(0, 0.01, 0));
 
 		// Asteroids
-		asteroidBelt(4000, 5000, this);
+		asteroidBelt(100000, 12000, this);
 	}
 	
 	override void update(float delta)
 	{	super.update(delta);
 		ship.getSpring().update(delta);
 		skyboxCamera.setRotation(camera.getWorldRotationQuatrn());
-		skybox.update(delta); // TODO, being out of sync causes jittering asteroids
+		skybox.update(delta); // TODO, being out of sync causes jittering asteroids.  Moving threads out of scenes should fix it.
 	}
 }
 

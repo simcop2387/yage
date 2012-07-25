@@ -139,7 +139,7 @@ class ModelNode : VisibleNode
 		else
 			this.model = new Model(model);
 		if (model)
-			radius = model.getRadius()*size.max();
+			transform().cullRadius = model.getRadius();
 		else
 			radius = 0;
 	}	
@@ -152,7 +152,7 @@ class ModelNode : VisibleNode
 	 * This is usually the distance from the center of its coordinate plane to
 	 * the most distant vertex.  There is no setRadius() */
 	float getRadius()
-	{	return radius * getScale().max();
+	{	return transform().cullRadius * getWorldScale().max();
 	}
 	
 	

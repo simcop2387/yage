@@ -24,7 +24,6 @@ import yage.system.log;
 abstract class VisibleNode : Node
 {	
 	protected bool visible = true;
-	protected Vec3f	size = Vec3f.ONE; // TODO: Deprecate this to make things more light-weight
 	protected ArrayBuilder!(LightNode) lights;	// Lights that affect this VisibleNode
 	Material[] materialOverrides;	/// Use thes materials instead of the model's meshes' or sprite's materials.
 
@@ -44,7 +43,6 @@ abstract class VisibleNode : Node
 	{	assert (!destination || cast(VisibleNode)destination);
 		auto result = cast(VisibleNode)super.clone(children, destination);
 		result.visible = visible;
-		result.size = size;
 		result.materialOverrides = materialOverrides;
 		return result;
 	}

@@ -342,6 +342,15 @@ class Node : Tree!(Node), IDisposable
 	Scene getScene()
 	{	return scene;
 	}
+
+	/**
+	* Get the struct containing this Node's transformation data. */
+	package Node.Transform* transform() { 
+		assert (!scene || (transformIndex>=0 && transformIndex<scene.nodeTransforms.length), format("%d", transformIndex));
+		return scene ? 
+			&scene.nodeTransforms.transforms[transformIndex] : 
+		&orphanTransforms.transforms[transformIndex]; 
+	}
 	
 	/*
 	 * Set the worldDirty flag on this Node and all of its children, if they're not dirty already.
@@ -353,15 +362,6 @@ class Node : Tree!(Node), IDisposable
 			foreach(c; children)
 				c.setWorldDirty();
 	}	}
-
-	/**
-	 * Get the struct containing this Node's transformation data. */
-	package Node.Transform* transform() { 
-		assert (!scene || (transformIndex>=0 && transformIndex<scene.nodeTransforms.length), format("%d", transformIndex));
-		return scene ? 
-			&scene.nodeTransforms.transforms[transformIndex] : 
-		&orphanTransforms.transforms[transformIndex]; 
-	}
 
 	/*
 	 * Calculate the value of the worldPosition, worldRotation, and worldScale. */
@@ -483,7 +483,7 @@ class Node : Tree!(Node), IDisposable
 		Quatrn worldRotation;
 		Vec3f worldScale = Vec3f.ONE;
 
-		float radius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
+		float cullRadius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
 		bool worldDirty = true;
 		bool onUpdateSet = false;
 

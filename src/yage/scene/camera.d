@@ -97,16 +97,15 @@ class CameraNode : Node
 	float near = 1;			/// The camera's near plane.  Nothing closer than this will be rendered.  The default is 1.
 	float far = 100000;		/// The camera's far plane.  Nothing further away than this will be rendered.  The default is 100,000.
 	float fov = 45;			/// The field of view of the camera, in degrees.  The default is 45.
-	float threshold = 1;	/// Nodes must be at least this diameter in pixels or they won't be rendered.
+	float threshhold = 1;	/// Nodes must be at least this diameter in pixels or they won't be rendered.
 	float aspectRatio = 1.25;  /// The aspect ratio of the camera.  This is normally set automatically in Render.scene() based on the size of the Render Target.
 
 	package int currentYres; // Used internally for determining visibility
 	
-	protected Plane[6] frustum;
+	/*protected*/ Plane[6] frustum;
 	protected Vec3f frustumSphereCenter;
 	protected float frustumSphereRadiusSquared;
 	
-	protected Plane[6] skyboxFrustum; // a special frustum with the camera centered at the origin of worldspace.	
 	protected static CameraNode listener; // Camera that plays audio.  TODO: Deprecate this and have a thread in main for the sound loop that gets the passed camera's SoundCommands and plays them.
 
 	struct TripleBuffer(T)
@@ -201,9 +200,6 @@ class CameraNode : Node
 	 * This is typically one Scene and its Skybox. */
 	package void updateRenderCommands()
 	{
-		//assert(Thread.getThis() == scene.getUpdateThread());
-		
-		currentYres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
 		
 		void writeCommands(Node root, Plane[] frustum, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 		{
@@ -235,6 +231,11 @@ class CameraNode : Node
 			foreach (Node c;  root.getChildren())
 				writeCommands(c, frustum, lights, result);
 		}
+
+		
+		//assert(Thread.getThis() == scene.getUpdateThread());
+		
+		currentYres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
 		
 		// TODO: If this takes 1ms, it's still 15ms longer until this is called a second time that the renderer
 		// can use this info!  Maybe we need a way to say we're done writing?
@@ -242,34 +243,57 @@ class CameraNode : Node
 		auto list = renderLists.getNextWrite();
 		
 		// Iterate through skyboxes, clearing out the RenderList commands and refilling them
-		Scene currentScene = scene;
 		list.cameraInverse = getWorldTransform().inverse(); // must occur before the loop below
 		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
 		
 		// Ensure we have a command set for this scene
 			
 		list.commands.reserveAndClear(); // reset content
-		RenderScene* rs = list;
-		rs.scene = currentScene;
+		list.scene = scene;
 
 		// Add lights that affect what this camera can see.			
 		int j;
-		scope allLights = currentScene.getAllLights();
-		rs.lights.length = allLights.length;
+		scope allLights = scene.getAllLights();
+		list.lights.length = allLights.length;
 		foreach (ref light; allLights) // Make a deep copy of the scene's lights 
-		{	rs.lights.data[j] = light.clone(false, rs.lights.data[j]); // to prevent locking when the render thread uses them.
-			rs.lights.data[j].setPosition(light.getWorldPosition());
-			rs.lights.data[j].cameraSpacePosition = light.getWorldPosition().transform(list.cameraInverse); 
+		{	list.lights.data[j] = light.clone(false, list.lights.data[j]); // to prevent locking when the render thread uses them.
+			list.lights.data[j].setPosition(light.getWorldPosition());
+			list.lights.data[j].cameraSpacePosition = light.getWorldPosition().transform(list.cameraInverse); 
 			if (light.type == LightNode.Type.SPOT)
-				rs.lights.data[j].setRotation(light.getWorldRotation());
-			rs.lights.data[j].transform.worldPosition = rs.lights.data[j].transform.position;
-			rs.lights.data[j].transform.worldDirty = false; // hack to prevent it from being recalculated.
+				list.lights.data[j].setRotation(light.getWorldRotation());
+			list.lights.data[j].transform.worldPosition = list.lights.data[j].transform.position;
+			list.lights.data[j].transform.worldDirty = false; // hack to prevent it from being recalculated.
 			j++;
 		}
 			
-		writeCommands(currentScene, frustum, rs.lights.data, list.commands);
-			
-		
+		writeCommands(scene, frustum, list.lights.data, list.commands);
+	}
+
+	static RenderScene* currentRenderList;
+
+	void beginUpdateRenderCommands()
+	{
+		currentYres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
+
+		auto list = currentRenderList = renderLists.getNextWrite();
+		list.cameraInverse = getWorldTransform().inverse(); // must occur before the loop below
+		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
+		list.commands.reserveAndClear(); // reset content
+		list.scene = scene;
+
+		scope allLights = scene.getAllLights();
+		list.lights.length = allLights.length;
+		int j;
+		foreach (ref light; allLights) // Make a deep copy of the scene's lights 
+		{	list.lights.data[j] = light.clone(false, list.lights.data[j]); // to prevent locking when the render thread uses them.
+			list.lights.data[j].setPosition(light.getWorldPosition());
+			list.lights.data[j].cameraSpacePosition = light.getWorldPosition().transform(list.cameraInverse); 
+			if (light.type == LightNode.Type.SPOT)
+				list.lights.data[j].setRotation(light.getWorldRotation());
+			list.lights.data[j].transform.worldPosition = list.lights.data[j].transform.position;
+			list.lights.data[j].transform.worldDirty = false; // hack to prevent it from being recalculated.
+			j++;
+		}
 	}
 
 	/**
@@ -314,7 +338,6 @@ class CameraNode : Node
 	 * Unfinished!
 	 * This function casts a ray from the Camera's view into the scene
 	 * and returns all Nodes that it collides with.
-	 * This will not return any Nodes from the Scene's skybox.
 	 * Params:
 	 *     position = Coordinates between 0 and 1 in the camera's near view frustum.
 	 *     includeBoundingSphere = If true, collision tests will only be performed against Object's bounding
@@ -344,41 +367,26 @@ class CameraNode : Node
 
 	/*
 	 * Calculate a 6-plane view frutum based on the orientation of the camera.*/
-	Plane[] getFrustum(bool skybox=false)
+	Plane[] getFrustum()
 	{	mixin(Sync!("scene"));
-		return skybox ? skyboxFrustum : frustum;
+		return frustum;
 	}
-	
-	/**
-	 * Is this point/sphere within the view area of the camera and large enough to be drawn?
-	 * Params:
-	 *     point = Point in 3d space, in world coordinates
-	 *     radius = Radius of this point (sphere).
-	 *     frustum = Use this array of 6 planes as the view frustum instead of recalculating it.*/
-	bool isVisible(Vec3f point, float radius, bool skybox=false)
-	{	mixin(Sync!("scene"));
-		Plane[] frustum = skybox ? skyboxFrustum : this.frustum;
-		/*
-		// See if it's inside the sphere.  Doesn't provide any benefit.
-		if (!skybox)
-			if ((point - frustumSphereCenter).length2() > frustumSphereRadiusSquared)
-			{	//Log.write("early escape!");
-				return false;
-			}
-		*/
-		
+
+	bool isVisible(Vec3f point, float radius)
+	{	
+		// TODO: Cone test as a first pass.
+
 		// See if it's inside the frustum
 		float nr = -radius;
 		foreach_reverse (f; frustum)
 			if (f.x*point.x +f.y*point.y + f.z*point.z + f.d < nr) // plane distance-to-point function, expanded in-line.
 				return false;
-		
+
 		// See if it's large enough to be drawn
-		//Vec3f* cameraPosition = cast(Vec3f*)transform_abs.v[12..15].ptr;
 		float distance2 = (getWorldPosition() - point).length2();
-		return radius*radius*currentYres*currentYres > distance2*threshold*threshold;
+		return distance2*threshhold*threshhold < radius*radius*currentYres*currentYres;
 	}
-	
+
 	/*
 	 * Update the scene's list of cameras and add/remove listener reference to this CameraNode
 	 * This should be protected, but making it anything but public causes it not to be called.
@@ -413,9 +421,6 @@ class CameraNode : Node
 		//Log.write("camera ", worldRotation);
 		Matrix model = Matrix.compose(transform.worldPosition, transform.worldRotation, transform.worldScale).inverse();
 		(model*projection).getFrustum(frustum);
-		
-		model = transform.worldRotation.toMatrix().inverse(); // shed all but the rotation values
-		(model*projection).getFrustum(skyboxFrustum);
 		
 		/*
 		// TODO: Use frustum optimizations from: http://www.flipcode.com/archives/Frustum_Culling.shtml		
