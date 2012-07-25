@@ -221,10 +221,10 @@ class Scene : Node//, ITemporal, IDisposable
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
 	void update(float delta)
 	{
+		scope a = new Timer(true);
+
 		mixin(Sync!("this"));
 	
-		// Update all nodes recursively
-		//super.update(delta); 
 
 		foreach (camera; cameras)
 			camera.beginUpdateRenderCommands();
