@@ -9,7 +9,6 @@ import yage.core.array;
 import yage.core.math.vector;
 import yage.core.math.matrix;
 
-import yage.resource.geometry;
 import yage.resource.image;
 
 import yage.scene.light;
@@ -17,8 +16,7 @@ import yage.scene.camera;
 import yage.scene.node;
 import yage.scene.visible;
 
-import yage.resource.material;
-import yage.resource.texture;
+import yage.resource.graphics.all;
 import yage.resource.manager;
 
 import yage.system.log;

@@ -20,7 +20,7 @@ import yage.core.json;
 import demo1.ship;
 import demo1.gameobj;
 import yage.system.graphics.all;
-import yage.resource.material;
+import yage.resource.graphics.material;
 
 class DemoScene : Scene
 {
@@ -101,6 +101,8 @@ class DemoScene : Scene
 
 		// Asteroids
 		asteroidBelt(4000, 5000, this);
+
+		camera.setListener();
 	}
 	
 	override void update(float delta)
@@ -240,7 +242,7 @@ int main()
 			info.setHtml(format(
 				`%.2f <b>fps</span><br/>`
 				`%.1fms <b>render</span><br/>`
-				`%.1fms <b>physics</span><br/>`
+				`%.1fms <b>physics/cull</span><br/>`
 				`%d <b>objects</b><br/>`
 				`%d <b>polygons</b><br/>`
 				`%d <b>vertices</b><br/>`

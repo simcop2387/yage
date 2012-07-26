@@ -15,8 +15,8 @@ import yage.core.math.vector;
 import yage.core.object2;
 import yage.core.tree;
 import yage.resource.collada;
-import yage.resource.geometry;
-import yage.resource.material;
+import yage.resource.graphics.geometry;
+import yage.resource.graphics.material;
 import yage.resource.manager;
 import yage.system.log;
 

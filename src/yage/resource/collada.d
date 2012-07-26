@@ -23,12 +23,12 @@ import yage.core.math.vector;
 import yage.core.misc : clone;
 import yage.core.object2;
 import yage.core.timer;
-import yage.resource.geometry;
+import yage.resource.graphics.geometry;
 import yage.resource.image;
-import yage.resource.material;
+import yage.resource.graphics.material;
 import yage.resource.manager;
 import yage.resource.model;
-import yage.resource.texture;
+import yage.resource.graphics.texture;
 import yage.system.log;
 
 /**

@@ -9,8 +9,7 @@ module yage.scene.sprite;
 import yage.core.array;
 import yage.core.math.all;
 import yage.resource.manager;
-import yage.resource.material;
-import yage.resource.geometry;
+import yage.resource.graphics.all;
 import yage.scene.camera;
 import yage.scene.light;
 import yage.scene.node;
@@ -69,7 +68,7 @@ class SpriteNode : VisibleNode
 		//Vec3f position = cast(Vec3f*)transform.v[12..15].ptr; // speed hack
 		Vec3f wp = getWorldPosition();
 		
-		if (camera.isVisible(wp, getRadius()))	
+		//if (camera.isVisible(wp, getRadius()))	
 		{	
 			Vec3f cameraPosition = camera.getWorldPosition();	
 			Vec3f spriteNormal = Vec3f(0, 0, -1);		

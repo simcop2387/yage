@@ -9,7 +9,7 @@ module yage.scene.light;
 import tango.math.Math;
 
 import yage.core.all;
-import yage.resource.material;
+import yage.resource.graphics.material;
 import yage.scene.node;
 import yage.scene.scene;
 import yage.system.graphics.probe;

@@ -18,8 +18,8 @@ import yage.core.math.vector;
 import yage.core.types;
 import yage.resource.font;
 import yage.resource.manager;
-import yage.resource.material;
-import yage.resource.texture;
+import yage.resource.graphics.material;
+import yage.resource.graphics.texture;
 import yage.gui.exceptions;
 import yage.system.log;
 

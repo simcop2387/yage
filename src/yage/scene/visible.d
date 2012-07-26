@@ -8,8 +8,7 @@ module yage.scene.visible;
 
 import tango.math.Math;
 import yage.core.all;
-import yage.resource.geometry;
-import yage.resource.material;
+import yage.resource.graphics.all;
 import yage.scene.camera;
 import yage.scene.scene;
 import yage.scene.light;

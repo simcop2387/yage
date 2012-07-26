@@ -11,7 +11,7 @@ module yage.gui.scrolling;
 import yage.core.math.vector;
 import yage.gui.style;
 import yage.gui.surface;
-import yage.resource.texture;
+import yage.resource.graphics.texture;
 
 ///
 enum Layout

@@ -20,7 +20,7 @@ import yage.core.types;
 import yage.core.object2;
 import yage.resource.image;
 import yage.resource.manager;
-import yage.resource.texture;
+import yage.resource.graphics.texture;
 import yage.system.libraries;
 import yage.system.log;
 

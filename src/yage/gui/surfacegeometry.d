@@ -7,9 +7,9 @@
 module yage.gui.surfacegeometry;
 
 import yage.core.all;
-import yage.resource.texture;
-import yage.resource.geometry;
-import yage.resource.material;
+import yage.resource.graphics.texture;
+import yage.resource.graphics.geometry;
+import yage.resource.graphics.material;
 import yage.system.log;
 
 /**

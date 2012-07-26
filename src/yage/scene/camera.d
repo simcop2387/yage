@@ -9,6 +9,7 @@ module yage.scene.camera;
 import tango.math.Math;
 import tango.core.Thread;
 import tango.core.WeakRef;
+import tango.time.Clock;
 import yage.core.array;
 import yage.core.color;
 import yage.core.math.matrix;
@@ -21,11 +22,7 @@ import yage.scene.visible;
 import yage.system.log;
 import yage.system.system;
 import yage.system.window;
-
-//  new:
-import tango.time.Clock;
-import yage.resource.geometry;
-import yage.resource.material;
+import yage.resource.graphics.all;
 import yage.scene.light;
 import yage.system.graphics.probe;
 
@@ -35,35 +32,6 @@ import yage.resource.sound;
 
 import yage.scene.model; // temporary
 
-// TODO: Move these to Render?
-struct RenderCommand
-{	
-	Matrix transform;
-	Geometry geometry;
-	Material[] materialOverrides;
-	
-	private ubyte lightsLength;
-	private LightNode[8] lights; // indices in the RenderScene's array of RenderLights
-	
-	LightNode[] getLights()
-	{	return lights[0..lightsLength];		 	              
-	}
-	
-	void setLights(LightNode[] lights)
-	{	lightsLength = lights.length;
-		for (int i=0; i<lights.length; i++)
-			this.lights[i] = lights[i];
-	}
-}
-
-// Everything in a scene seen by the Camera.
-struct RenderScene
-{	Scene scene;
-	ArrayBuilder!(RenderCommand) commands;
-	ArrayBuilder!(LightNode) lights;
-	long timestamp;
-	Matrix cameraInverse;
-}
 
 // Copies of SoundNode properties to provide lock-free access.
 struct SoundCommand
@@ -102,7 +70,7 @@ class CameraNode : Node
 
 	package int currentYres; // Used internally for determining visibility
 	
-	/*protected*/ Plane[6] frustum;
+	protected Plane[6] frustum;
 	protected Vec3f frustumSphereCenter;
 	protected float frustumSphereRadiusSquared;
 	
@@ -139,11 +107,11 @@ class CameraNode : Node
 	}
 	
 	TripleBuffer!(SoundList) soundLists;
-	TripleBuffer!(RenderScene) renderLists;
+	TripleBuffer!(RenderList) renderLists;
 	
 	/**
 	 * Get a render list for the scene and each of the skyboxes this camera sees. */
-	RenderScene getRenderList()
+	RenderList getRenderList()
 	{	return renderLists.getNextRead();
 	}
 	
@@ -195,7 +163,7 @@ class CameraNode : Node
 		list.cameraVelocity = getWorldVelocity();
 	}
 
-	static RenderScene* currentRenderList;
+	static RenderList* currentRenderList;
 
 	void beginUpdateRenderCommands()
 	{
