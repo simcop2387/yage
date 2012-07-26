@@ -5,6 +5,9 @@ import yage.resource.graphics.all;
 import yage.scene.scene; // bad!
 import yage.scene.light; // bad!
 
+
+// TODO: Make primitives module only for the raw primitives like Texture, Shader and VertexBuffer that are used by the GPU?
+
 struct RenderCommand
 {	
 	Matrix transform;

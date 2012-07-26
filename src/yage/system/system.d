@@ -122,8 +122,6 @@ abstract class System
 		foreach (scene; Scene.getAllScenes())
 			if (scene.getUpdateThread().error)
 				return scene.getUpdateThread().error;
-		if (SoundContext.sound_thread.error)
-			return SoundContext.sound_thread.error;	
 		
 		return null;
 	}

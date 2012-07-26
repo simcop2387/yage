@@ -45,7 +45,8 @@ class Shader
 		return fragmentSource[0..$-1];
 	}
 	
-	/// TODO, this should get the uniform variable names and types
+	/// TODO, this should get the uniform variable names and types.
+	// The uniform data should be separate from the Shader.
 	ShaderUniform[] getUniforms()
 	{
 		ShaderUniform[] result;

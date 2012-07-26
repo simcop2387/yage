@@ -36,15 +36,16 @@ class Repeater : Thread, IDisposable
 	 * 
 	 * Params:
 	 *     start = start the Timer immediately. */
-	this(void delegate() func, bool start=false)
+	this(void delegate() func, bool start=false, double frequency=60f)
 	{	this.func = func;
+		this.frequency = frequency;
 		timer = new Timer(start);
 		isDaemon(true); // if the application stops, this thread will stop also.
 		super(&run);		
 		super.start();
 	}
-	this(void function() func, bool start=false)
-	{	this(toDelegate(func), start);
+	this(void function() func, bool start=false, double frequency=60f)
+	{	this(toDelegate(func), start, frequency);
 	}
 	
 	/**

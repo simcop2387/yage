@@ -42,7 +42,7 @@ private class SoundSource : IDisposable
 {
 	package uint al_source;
 	
-	protected SoundNode soundNode;	// It would be good if this became unnecessary
+	protected SoundNode soundNode;	// It would be good if this became unnecessary.  It's currently required to set the playback timer.
 	
 	protected Sound sound;
 	protected float	pitch;
@@ -299,9 +299,7 @@ class SoundContext
 	protected static SoundSource[] sources;
 	
 	protected static ALCdevice* device = null;
-	protected static ALCcontext* context = null;	
-	
-	public static Repeater sound_thread = null;
+	protected static ALCcontext* context = null;
 	
 	/**
 	 * Create a device, a context, and start a thread that automatically updates all sound buffers.
@@ -336,10 +334,6 @@ class SoundContext
 			{	break;				
 			}
 		}
-		
-		// Start a thread to perform sound updates.
-		sound_thread = new Repeater(&updateSounds, true);
-		sound_thread.frequency = UPDATE_FREQUENCY;
 	}
 
 	/**
@@ -348,8 +342,7 @@ class SoundContext
 	static void deInit()
 	{
 		if (context)
-		{	sound_thread.dispose();
-			synchronized(OpenAL.getMutex())
+		{	synchronized(OpenAL.getMutex())
 			{	foreach (source; sources)
 					if (source) // in case of the unpredictible order of the gc.
 						source.dispose();
@@ -371,61 +364,55 @@ class SoundContext
 	
 	/*
 	 * Called by the sound thread to update all active source's sound buffers. */
-	/*protected*/ static void updateSounds()
-	{	
-		auto listener = CameraNode.getListener();
-		if (listener)
+	/*protected*/ static void updateSounds(SoundList list)
+	{				
+		union Orientation {
+			struct { Vec3f look, up; }
+			float[6] values;				
+		}
+		Orientation orientation;
+		orientation.look = Vec3f(0, 0, -1).rotate(list.cameraRotation);
+		orientation.up = Vec3f(0, 1, 0).rotate(list.cameraRotation);
+			
+		synchronized (OpenAL.getMutex())
 		{	
-			auto list = listener.getSoundList();
-			
-			union Orientation {
-				struct { Vec3f look, up; }
-				float[6] values;				
-			}
-			Orientation orientation;
-			orientation.look = Vec3f(0, 0, -1).rotate(list.cameraRotation);
-			orientation.up = Vec3f(0, 1, 0).rotate(list.cameraRotation);
-			
-			synchronized (OpenAL.getMutex())
-			{	
-				// Set the listener position, velocity, and orientation
-				OpenAL.listenerfv(AL_POSITION, list.cameraPosition.ptr);
-				OpenAL.listenerfv(AL_ORIENTATION, orientation.values.ptr);
-				OpenAL.listenerfv(AL_VELOCITY, list.cameraVelocity.ptr);
+			// Set the listener position, velocity, and orientation
+			OpenAL.listenerfv(AL_POSITION, list.cameraPosition.ptr);
+			OpenAL.listenerfv(AL_ORIENTATION, orientation.values.ptr);
+			OpenAL.listenerfv(AL_VELOCITY, list.cameraVelocity.ptr);
 				
-				// Unbind sources that no longer have a command.
-				foreach (i, source; sources)
-				{	
-					bool unbind = true;
-					foreach (command; list.commands)
-						if (source.soundNode is command.soundNode) // already bound here, change nothing.
-						{	//Log.write("rebinding %s to source %d", command.sound.getSource(), i);
-							source.bind(command); // update the source with the new command variables
-							unbind = false;
-							break;					
-						}
-					if (unbind)
-						source.unbind();
-				}
+			// Unbind sources that no longer have a command.
+			foreach (i, source; sources)
+			{	
+				bool unbind = true;
+				foreach (command; list.commands)
+					if (source.soundNode is command.soundNode) // already bound here, change nothing.
+					{	//Log.write("rebinding %s to source %d", command.sound.getSource(), i);
+						source.bind(command); // update the source with the new command variables
+						unbind = false;
+						break;					
+					}
+				if (unbind)
+					source.unbind();
+			}
 								
-				// Bind commands to empty sources.
-				foreach (command; list.commands)			
-				{	bool unbound = true;
-					foreach (source; sources)
-						if (source.soundNode is command.soundNode)
-						{	unbound = false;
+			// Bind commands to empty sources.
+			foreach (command; list.commands)			
+			{	bool unbound = true;
+				foreach (source; sources)
+					if (source.soundNode is command.soundNode)
+					{	unbound = false;
+						break;
+					}
+					
+				// if this command is not bould to any source
+				if (unbound)
+				{	foreach (i, source; sources) // find a source to bind to.
+						if (!source.soundNode)
+						{	//Log.write("binding %s to source %d, intensity=%f", command.sound.getSource(), i, command. intensity);
+							source.bind(command);
 							break;
 						}
-					
-					// if this command is not bould to any source
-					if (unbound)
-					{	foreach (i, source; sources) // find a source to bind to.
-							if (!source.soundNode)
-							{	//Log.write("binding %s to source %d, intensity=%f", command.sound.getSource(), i, command. intensity);
-								source.bind(command);
-								break;
-							}
-					}
 				}
 			}
 		}

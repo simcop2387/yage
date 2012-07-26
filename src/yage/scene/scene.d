@@ -138,23 +138,12 @@ class Scene : Node//, ITemporal, IDisposable
 		
 		return result;
 	}
-	unittest
-	{	// Test duplication of a running scene.
-		// this no longer works since the scene constructor now requires the openAl .dll/.so
-		/*
-		Scene a = new Scene();
-		a.play();
-		a.addChild(new VisibleNode());
-		Scene b = a.clone(true);
-		a.pause();
-		*/
-	}
 	
 	/**
 	 * Overridden to pause the scene update and sound threads and to remove this instance from the array of all scenes. */
 	override void dispose()
 	{	if (this in all_scenes) // repeater will be null if dispose has already been called.
-		{	super.dispose(); // needs to occur before sound_thread dispose to free sound nodes.
+		{	super.dispose();
 			
 			if (updateThread)
 			{	updateThread.dispose();
@@ -227,7 +216,7 @@ class Scene : Node//, ITemporal, IDisposable
 	
 
 		foreach (camera; cameras)
-		{	camera.beginUpdateRenderCommands();
+		{	camera.resetRenderCommands();
 			if (CameraNode.getListener() is camera)
 				camera.updateSoundCommands();
 		}
@@ -272,23 +261,7 @@ class Scene : Node//, ITemporal, IDisposable
 				}
 			}
 		}
-		camerasMutex.unlock();
-		
-		
-		
-		
-		/*
-		// Cull and create render and sound commands for each camera
-		
-		foreach (camera; cameras) 
-		{	camera.updateRenderCommands();
-			if (CameraNode.getListener() is camera)
-				camera.updateSoundCommands();
-		}
-		//Log.write("cull ", b.tell()); // Culling is 5x slower than updating!!!
-		
-		
-		*/
+		camerasMutex.unlock();		
 		updateTime = a.tell();
 	}
 

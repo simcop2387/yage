@@ -7,11 +7,8 @@
 module yage.scene.camera;
 
 import tango.math.Math;
-import tango.core.Thread;
-import tango.core.WeakRef;
 import tango.time.Clock;
 import yage.core.array;
-import yage.core.color;
 import yage.core.math.matrix;
 import yage.core.math.plane;
 import yage.core.math.vector;
@@ -29,39 +26,16 @@ import yage.system.graphics.probe;
 import yage.scene.sound;
 import yage.resource.sound;
 
-
 import yage.scene.model; // temporary
 
 
-// Copies of SoundNode properties to provide lock-free access.
-struct SoundCommand
-{	Sound sound;
-	Vec3f worldPosition;
-	Vec3f worldVelocity;
-	float pitch;
-	float volume;
-	float radius;
-	float intensity; // used internally for sorting
-	float position; // playback position
-	size_t id;
-	SoundNode soundNode; // original SoundNode.  Must be used behind lock!
-	bool looping;
-	bool reseek;
-}
-
-struct SoundList
-{	ArrayBuilder!(SoundCommand) commands;
-	long timestamp;
-	Vec3f cameraPosition;
-	Vec3f cameraRotation;
-	Vec3f cameraVelocity;
-}
 
 /**
  * Without any rotation, the Camera looks in the direction of the -z axis.
  * TODO: More documentation. */
 class CameraNode : Node
 {
+	// TODO: Replace with projection matrix:
 	float near = 1;			/// The camera's near plane.  Nothing closer than this will be rendered.  The default is 1.
 	float far = 100000;		/// The camera's far plane.  Nothing further away than this will be rendered.  The default is 100,000.
 	float fov = 45;			/// The field of view of the camera, in degrees.  The default is 45.
@@ -123,9 +97,6 @@ class CameraNode : Node
 	
 	package void updateSoundCommands()
 	{	
-		assert(Thread.getThis() == scene.getUpdateThread());
-		assert(getListener() is this);
-	
 		SoundList* list = soundLists.getNextWrite();
 		list.commands.reserveAndClear(); // reset content
 		
@@ -156,7 +127,6 @@ class CameraNode : Node
 			}
 			i++;
 		}
-		//Log.write("camera ", list.commands.length, " ", allSounds.length);
 		list.timestamp = Clock.now().ticks(); // 100-nanosecond precision
 		list.cameraPosition = getWorldPosition();
 		list.cameraRotation = getWorldRotation();
@@ -165,7 +135,7 @@ class CameraNode : Node
 
 	static RenderList* currentRenderList;
 
-	void beginUpdateRenderCommands()
+	void resetRenderCommands()
 	{
 		currentYres = Window.getInstance().getHeight(); // TODO Break dependance on Window.
 

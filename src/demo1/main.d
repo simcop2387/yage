@@ -20,6 +20,7 @@ import yage.core.json;
 import demo1.ship;
 import demo1.gameobj;
 import yage.system.graphics.all;
+import yage.system.sound.soundsystem;
 import yage.resource.graphics.material;
 
 class DemoScene : Scene
@@ -218,10 +219,17 @@ int main()
 	GC.collect();
 	GC.disable();
 	initialized = true;
+
+	// TODO: Update loop thread
+
+	// Sound loop thread
+	auto soundThread = new Repeater(curry(delegate void(DemoScene scene) {
+		SoundContext.updateSounds(scene.camera.getSoundList());
+	}, scene), true, 30);
 	
-	// Rendering loop
+	// Rendering loop in main thread
 	float dtime=0, ltime=0;
-	while(running && !System.getThreadExceptions())
+	while(running && !System.getThreadExceptions() && !soundThread.error)
 	{
 		ltime = dtime;
 		dtime = delta.tell();
@@ -257,6 +265,11 @@ int main()
 		//if (dtime < 1/60.0)
 		//	Thread.sleep(1/60.0f-dtime);
 	}
+
+	if (soundThread.error)
+
+
+	soundThread.dispose();
 	
 	System.deInit();
 	return 0;

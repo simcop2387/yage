@@ -228,18 +228,22 @@
     <Folder name="embed">
      <File path="..\..\src\yage\resource\embed\embed.d" />
     </Folder>
+    <Folder name="graphics">
+     <File path="..\..\src\yage\resource\graphics\all.d" />
+     <File path="..\..\src\yage\resource\graphics\geometry.d" />
+     <File path="..\..\src\yage\resource\graphics\material.d" />
+     <File path="..\..\src\yage\resource\graphics\primitives.d" />
+     <File path="..\..\src\yage\resource\graphics\shader.d" />
+     <File path="..\..\src\yage\resource\graphics\texture.d" />
+    </Folder>
     <File path="..\..\src\yage\resource\all.d" />
     <File path="..\..\src\yage\resource\collada.d" />
     <File path="..\..\src\yage\resource\dds.d" />
     <File path="..\..\src\yage\resource\font.d" />
-    <File path="..\..\src\yage\resource\geometry.d" />
     <File path="..\..\src\yage\resource\image.d" />
     <File path="..\..\src\yage\resource\manager.d" />
-    <File path="..\..\src\yage\resource\material.d" />
     <File path="..\..\src\yage\resource\model.d" />
-    <File path="..\..\src\yage\resource\shader.d" />
     <File path="..\..\src\yage\resource\sound.d" />
-    <File path="..\..\src\yage\resource\texture.d" />
    </Folder>
    <Folder name="scene">
     <File path="..\..\src\yage\scene\all.d" />

@@ -14,17 +14,22 @@ import tango.stdc.stringz;
 import derelict.openal.al;
 import derelict.ogg.vorbistypes;
 import derelict.ogg.vorbisfile;
+import yage.core.array;
 import yage.core.timer;
-import yage.core.object2;;
+import yage.core.object2;
+import yage.core.math.vector;
 import yage.resource.manager;
 import yage.system.log;
 import yage.system.sound.all;
 
+import yage.scene.sound;
 
-/** A Sound is a represenation of sound data in system memory.
- *  Sounds use a SoundFile as a member variable, which abstracts away the differences between different sound formats.
- *  During initialization, a Sound loads the sound data from a file and
- *  passes it on to OpenAL for playback, as it's needed. */
+
+/** 
+ * A Sound is a represenation of sound data in system memory.
+ * Sounds use a SoundFile as a member variable, which abstracts away the differences between different sound formats.
+ * During initialization, a Sound loads the sound data from a file and
+ * passes it on to OpenAL for playback, as it's needed. */
 class Sound
 {	
 	protected ubyte		format;  		// wav, ogg, etc.
@@ -327,4 +332,33 @@ private class VorbisFile : SoundFile
 			ret += ov_read(&vf, cast(byte*)buffer[ret..length], _size-ret, 0, 2, 1, &current_section);
 		return buffer;
 	}
+}
+
+// ----------
+
+
+// Copies of SoundNode properties to provide lock-free access.
+struct SoundCommand
+{	Sound sound;
+	Vec3f worldPosition;
+	Vec3f worldVelocity;
+	float pitch;
+	float volume;
+	float radius;
+	float intensity; // used internally for sorting
+	float position; // playback position
+	size_t id;
+	SoundNode soundNode; // original SoundNode.  Must be used behind lock!
+	bool looping;
+	bool reseek;
+}
+
+/**
+ * Struct to send to the sound engine for processing. */
+struct SoundList
+{	ArrayBuilder!(SoundCommand) commands;
+	long timestamp;
+	Vec3f cameraPosition;
+	Vec3f cameraRotation;
+	Vec3f cameraVelocity;
 }
