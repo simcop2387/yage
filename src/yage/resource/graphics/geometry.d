@@ -4,7 +4,7 @@
  * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 
-module yage.resource.geometry;
+module yage.resource.graphics.geometry;
 
 import tango.math.Math;
 import yage.core.array;
@@ -12,39 +12,10 @@ import yage.core.format;
 import yage.core.math.vector;
 import yage.core.object2;
 import yage.resource.manager;
-import yage.resource.material;
+import yage.resource.graphics.material;
+import yage.resource.graphics.primitives;
 import yage.system.system;
 import yage.system.log;
-
-/*
- * A VertexBuffer wraps around a Geometry attribute, adding a dirty flag and other info. 
- * This is only needed inside the engine. */
-class VertexBuffer
-{
-	bool dirty = true;
-	void[] data;
-	TypeInfo type;
-	ubyte components; /// Number of floats for each vertex
-	bool cache = true; /// If true the Vertex Buffer will be cached in video memory.  // TODO: Setting this back to false keeps it in video memory but unused.
-
-	/// 
-	void setData(T)(T[] data)
-	{	dirty = true;
-		this.data = data;
-		type = typeid(T);
-		if (data.length)
-			components = data[0].components;
-	}
-
-	/// Get the number of vertices for this data.
-	int length()
-	{	return data.length/type.tsize();		
-	}	
-	
-	void* ptr()
-	{	return data.ptr;
-	}
-}
 
 /**
  * Each Geometry has arrays of vertex data and one or more Meshes; each Mesh has its own material

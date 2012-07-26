@@ -4,7 +4,7 @@
  * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 
-module yage.resource.material;
+module yage.resource.graphics.material;
 
 import tango.util.Convert;
 import tango.text.convert.Format;
@@ -12,9 +12,9 @@ import tango.io.device.File;
 import yage.core.all;
 import yage.core.object2;
 import yage.core.misc;
-import yage.resource.texture;
+import yage.resource.graphics.texture;
 import yage.resource.manager;
-import yage.resource.shader;
+import yage.resource.graphics.shader;
 import yage.scene.light;
 import yage.system.system;
 import yage.system.graphics.probe;

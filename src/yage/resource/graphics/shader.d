@@ -4,7 +4,7 @@
  * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 
-module yage.resource.shader;
+module yage.resource.graphics.shader;
 
 import yage.system.log;
 

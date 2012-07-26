@@ -4,7 +4,7 @@
  * License:    <a href="lgpl3.txt">LGPL v3</a>
  */
 
-module yage.resource.texture;
+module yage.resource.graphics.texture;
 
 import tango.math.Math;
 import yage.core.format;
@@ -23,11 +23,10 @@ import yage.system.log;
  * This allows many options to be set per instance of a Texture instead of
  * creating multiple copies of the Texture (and consuming valuable memory)
  * just to change filtering, clamping, or relative scale. */
-struct TextureInstance
+struct TextureInstance  // TODO: Rename to TextureProperties
 {
 	enum Filter ///
-	{
-		DEFAULT,	///
+	{	DEFAULT,	///
 		NONE,		///
 		BILINEAR,	///
 		TRILINEAR	///
@@ -38,8 +37,7 @@ struct TextureInstance
 	//int magFilter;
 	
 	enum Blend
-	{
-		NONE,
+	{	NONE,
 		ADD,
 		AVERAGE,
 		MULTIPLY
@@ -79,7 +77,6 @@ struct TextureInstance
 
 	/// Create a new TextureInstance with the parameters specified.
 	static TextureInstance opCall(Texture texture, bool clamp=false, int filter=TextureInstance.Filter.DEFAULT)
-
 	{
 		TextureInstance result;
 		result.texture = texture;
