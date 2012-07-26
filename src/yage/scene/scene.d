@@ -227,7 +227,10 @@ class Scene : Node//, ITemporal, IDisposable
 	
 
 		foreach (camera; cameras)
-			camera.beginUpdateRenderCommands();
+		{	camera.beginUpdateRenderCommands();
+			if (CameraNode.getListener() is camera)
+				camera.updateSoundCommands();
+		}
 		scope camerasArray = cameras.values; // because looping through an aa inside another loop is much slower
 
 		camerasMutex.lock();
@@ -261,6 +264,7 @@ class Scene : Node//, ITemporal, IDisposable
 			{	
 				// only calculate the world position if the node has a parent
 				Vec3f worldPosition = t.parent is null ? t.position : t.node.getWorldPosition(); // also calc's worldScale used below.
+
 				if (camera.isVisible(worldPosition, t.cullRadius * t.worldScale.max()))
 				{	VisibleNode vnode = cast(VisibleNode)t.node;					
 					if (vnode)

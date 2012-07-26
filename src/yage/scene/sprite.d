@@ -32,11 +32,11 @@ class SpriteNode : VisibleNode
 	/**
 	 * Create a SpriteNode and optinally set the material from an already loaded material or a material filename. */
 	this()
-	{	super();  // default constructor required for clone.
-		transform().cullRadius = 1.414213562f;
+	{	this(cast(Node)null);  // default constructor required for clone.
 	}
 	this(Node parent) /// ditto
 	{	super(parent);
+		transform().cullRadius = 1.414213562f;
 	}
 	this(Material material, Node parent=null) /// ditto
 	{	this(parent);
@@ -67,7 +67,7 @@ class SpriteNode : VisibleNode
 		//Matrix* transform = &transform_abs;
 		//Vec3f position = cast(Vec3f*)transform.v[12..15].ptr; // speed hack
 		Vec3f wp = getWorldPosition();
-		
+
 		//if (camera.isVisible(wp, getRadius()))	
 		{	
 			Vec3f cameraPosition = camera.getWorldPosition();	

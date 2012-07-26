@@ -24,7 +24,7 @@ abstract class VisibleNode : Node
 {	
 	protected bool visible = true;
 	protected ArrayBuilder!(LightNode) lights;	// Lights that affect this VisibleNode
-	Material[] materialOverrides;	/// Use thes materials instead of the model's meshes' or sprite's materials.
+	Material[] materialOverrides;	/// Use these materials instead of the model's meshes' or sprite's materials.
 
 	this()
 	{	super();
