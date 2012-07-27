@@ -109,8 +109,7 @@ class DemoScene : Scene
 	override void update(float delta)
 	{	super.update(delta);
 		ship.getSpring().update(delta);
-		skyboxCamera.setRotation(camera.getWorldRotationQuatrn());
-		skybox.update(delta); // TODO, being out of sync causes jittering asteroids.  Moving threads out of scenes should fix it.
+		skyboxCamera.setRotation(camera.getWorldRotationQuatrn());		
 	}
 }
 
@@ -135,7 +134,7 @@ int main()
 	// Create and start a Scene
 	Log.info("Starting update loop.");
 	auto scene = new DemoScene();
-	scene.play(); // update 60 times per second
+	//scene.play(); // update 60 times per second
 	
 	// Main surface that receives input.
 	Surface view = new Surface("width: 100%; height: 100%");
@@ -158,13 +157,10 @@ int main()
 		
 		// Reset the scene
 		if (key == SDLK_r)
-		{	scene.pause();
-			scene.dispose();
+		{	scene.dispose();
 			delete *scene;
 			GC.collect();
 			*scene = new DemoScene();
-			scene.camera.setListener();
-			scene.play();
 		}	
 		if (key == SDLK_x)
 		{	Render.reset();
@@ -220,7 +216,11 @@ int main()
 	GC.disable();
 	initialized = true;
 
-	// TODO: Update loop thread
+	// Physics loop thread
+	auto physicsThread = new Repeater(curry(delegate void(DemoScene scene) {
+		scene.update(1/60f);
+		scene.skybox.update(1/60f);
+	}, scene), true, 60);
 
 	// Sound loop thread
 	auto soundThread = new Repeater(curry(delegate void(DemoScene scene) {
@@ -229,7 +229,7 @@ int main()
 	
 	// Rendering loop in main thread
 	float dtime=0, ltime=0;
-	while(running && !System.getThreadExceptions() && !soundThread.error)
+	while(running && !physicsThread.error && !soundThread.error)
 	{
 		ltime = dtime;
 		dtime = delta.tell();
@@ -237,9 +237,9 @@ int main()
 		delta.seek(0);
 
 		Input.processAndSendTo(view);
-		Render.scene(scene.skyboxCamera, window);
-		auto stats = Render.scene(scene.camera, window);
-		Render.surface(view, window);
+		Render.scene(scene.skyboxCamera, window); // render the skybox first.
+		auto stats = Render.scene(scene.camera, window); // render the main scene
+		Render.surface(view, window); // render the ui
 		Render.complete(); // swap buffers
 		
 		// Print framerate
@@ -266,10 +266,13 @@ int main()
 		//	Thread.sleep(1/60.0f-dtime);
 	}
 
+	if (physicsThread.error)
+		Log.write(physicsThread.error);
 	if (soundThread.error)
-
+		Log.write(soundThread.error);
 
 	soundThread.dispose();
+	physicsThread.dispose();
 	
 	System.deInit();
 	return 0;

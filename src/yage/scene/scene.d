@@ -67,23 +67,21 @@ class Scene : Node//, ITemporal, IDisposable
 	protected SoundNode[SoundNode] sounds;
 	protected FastLock mutex;
 	protected Mutex camerasMutex;
-	protected Mutex lightsMutex; // Having a separate mutex prevents render from watiing for the start of the next update loop.
-	protected Object soundsMutex;	
-
-	protected Repeater updateThread; // deprecated
+	protected Mutex lightsMutex; // Having a separate mutex prevents render from waiting for the start of the next update loop.
+	protected Object soundsMutex;
 
 	float updateTime;
 	
 	protected static Scene[Scene] all_scenes; // TODO: Prevents old scenes from being removed!
 
-	package float increment;
+	package float increment= 1/60f;;
 
 
 
 	/**
 	 * Construct an empty Scene.
 	 * The update frequency cannot be changed after the scene is started. */
-	this(float frequency = 60)
+	this()
 	{	mutex = new FastLock();
 
 		super();
@@ -95,21 +93,12 @@ class Scene : Node//, ITemporal, IDisposable
 		ambient	= Color("#333"); // OpenGL default global ambient light.
 		backgroundColor = Color("black");	// OpenGL default clear color
 		fogColor = Color("gray");
-		
-		// TODO: move threading control to main.
-		updateThread = new Repeater(&internalUpdate);
-		updateThread.frequency = frequency;
-		this.increment = 1/frequency;
 	
 		camerasMutex = new Mutex();
 		lightsMutex = new Mutex();
 		soundsMutex = new Object();
 		
 		all_scenes[this] = this;
-	}
-	
-	private void internalUpdate() // release build fails to get frame pointer if this is nested.
-	{	update(1f/updateThread.frequency);
 	}
 	
 	/**
@@ -143,12 +132,7 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Overridden to pause the scene update and sound threads and to remove this instance from the array of all scenes. */
 	override void dispose()
 	{	if (this in all_scenes) // repeater will be null if dispose has already been called.
-		{	super.dispose();
-			
-			if (updateThread)
-			{	updateThread.dispose();
-				updateThread = null;
-			}
+		{	super.dispose();			
 			cameras = null;
 			lights = null;
 			sounds = null;
@@ -158,7 +142,7 @@ class Scene : Node//, ITemporal, IDisposable
 
 	/**
 	 * Scenes are often used by multiple threads at once.
-	 * When a thread users a scene, it will first call lock() to acquire ownership and then unlock() when finished.
+	 * When a thread uses a scene, it will first call lock() to acquire ownership and then unlock() when finished.
 	 * This is done automatically by Node member functions.  However, if several operations need to be performed,
 	 * an entire block of code can be nested between manual calls to lock() and unlock().  This will also perform
 	 * better than the otherwise fine-grained synchronization.
@@ -172,37 +156,6 @@ class Scene : Node//, ITemporal, IDisposable
 	{	mutex.unlock();
 	}
 	
-	/*
-	 * Get the Repeater that calls update() in its own thread.
-	 * This allows more advanced interaction than the shorthand functions implemented below.
-	 * See:  yage.core.repeater  */
-	Repeater getUpdateThread()
-	{	return updateThread;		
-	}
-	
-	/**
-	 * Implement the time control functions of ITemporal.
-	 * 
-	 * When the scene's timer (implementd as a Repeater) runs, it updates
-	 * the positions and rotations of all Nodes in this Scene.
-	 * Each Scene is updated in its own thread.  
-	 * If the updating thread gets behind, it will always attempt to catch up by updating more frequently.*/
-	void play()
-	{	updateThread.play();
-	}
-	void pause() /// ditto
-	{	updateThread.pause();
-	}	
-	bool paused() /// ditto
-	{	return updateThread.paused();
-	}	
-	void seek(double seconds) /// ditto
-	{	updateThread.seek(seconds);
-	}
-	double tell() /// ditto
-	{	return updateThread.tell();		
-	}
-
 	/**
 	 * Update all Nodes in the scene by delta seconds.
 	 * This function is typically called automatically at a set interval from the scene's updateThread once scene.play() is called.
@@ -210,6 +163,17 @@ class Scene : Node//, ITemporal, IDisposable
 	 *     delta = time in seconds.  If not set, defaults to the amount of time since the last time update() was called. */
 	void update(float delta)
 	{
+		// If delta has changed, we need to change the pre-multiplied velocity and rotation increments of every node.
+		if (delta != increment)
+		{	float incrementChange = delta/increment;
+			foreach (ref transform; nodeTransforms.transforms)
+			{	transform.velocityDelta *= incrementChange;
+				transform.angularVelocityDelta.multiplyAngle(incrementChange);
+		}	}
+		
+		increment = delta;
+
+
 		scope a = new Timer(true);
 
 		mixin(Sync!("this"));
@@ -308,12 +272,10 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Add/remove the sound from the scene's list of sounds.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	package void addSound(SoundNode sound)
-	{	synchronized (soundsMutex) // Why does this cause a deadlock?
-			sounds[sound] = sound;	
+	{	sounds[sound] = sound;	
 	}	
 	package void removeSound(SoundNode sound) // ditto
-	{	synchronized (soundsMutex) 
-			sounds.remove(sound);
+	{	sounds.remove(sound);
 	}	
 	
 	/**

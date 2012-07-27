@@ -432,7 +432,7 @@ class Node : Tree!(Node), IDisposable
 			scene = newScene;
 
 			// Update the incrementing values to match the scene increment.
-			float incrementChange = (scene ? scene.increment : 1f) / (scene ? scene.increment : 1f);
+			float incrementChange = (newScene ? newScene.increment : 1f) / (scene ? scene.increment : 1f);
 			transform.velocityDelta *= incrementChange;
 			transform.angularVelocityDelta.multiplyAngle(incrementChange);
 		} 
