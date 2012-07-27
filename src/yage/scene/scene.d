@@ -115,8 +115,6 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Returns: The cloned Node. */
 	/*override*/ Scene clone(bool children=false, Scene destination=null)
 	{	
-		mixin(Sync!("this"));
-		
 		auto result = cast(Scene)super.clone(children, destination);				
 		result.ambient = ambient;
 		result.speedOfSound = speedOfSound;
@@ -176,9 +174,6 @@ class Scene : Node//, ITemporal, IDisposable
 
 		scope a = new Timer(true);
 
-		mixin(Sync!("this"));
-	
-
 		foreach (camera; cameras)
 		{	
 			if (camera.createRenderCommands)
@@ -235,18 +230,18 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Add/remove the light from the scene's list of lights.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	package void addLight(LightNode light)
-	{	mixin(Sync!("lightsMutex"));
+	{	
 		lights[light] = light;
 	}
 	package void removeLight(LightNode light) // ditto
-	{	mixin(Sync!("lightsMutex"));
+	{	
 		lights.remove(light); 
 	}
 	
 	/**
 	 * Get all LightNodes that are currently a part of this scene. */
 	LightNode[LightNode] getAllLights()
-	{	mixin(Sync!("lightsMutex"));
+	{	
 		return lights;
 	}
 	
@@ -254,11 +249,11 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Add/remove the camera from the scene's list of cameras.
 	 * This function is used internally by the engine and doesn't normally need to be called.*/
 	package void addCamera(CameraNode camera)
-	{	mixin(Sync!("camerasMutex"));
+	{	
 		cameras[camera] = camera;
 	}
 	package void removeCamera(CameraNode camera) // ditto
-	{	mixin(Sync!("camerasMutex"));
+	{	
 		cameras.remove(camera);
 	}
 
@@ -266,7 +261,7 @@ class Scene : Node//, ITemporal, IDisposable
 	 * Get all CameraNodes that are currently a part of this scene.
 	 * Returns: a self indexed array. */
 	CameraNode[CameraNode] getAllCameras()
-	{	mixin(Sync!("camerasMutex"));
+	{
 		return cameras;		
 	}
 	
@@ -298,18 +293,4 @@ class Scene : Node//, ITemporal, IDisposable
 	static Scene[Scene] getAllScenes()
 	{	return all_scenes;		
 	}
-}
-
-
-/// Add this as the first line of a function to synchronize the entire body using the name of a Tango mutex.
-template Sync(char[] T)
-{	const char[] Sync = 
-		"typeof("~T~") tempT;" ~
-		"if ("~T~")" ~
-		"{	tempT = "~T~";" ~
-		"	tempT.lock();" ~
-		"}"~
-		"scope(exit)" ~
-		"	if (tempT)" ~
-		" 		tempT.unlock();";	
 }

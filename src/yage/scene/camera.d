@@ -171,7 +171,7 @@ class CameraNode : Node
 		renderLists.mutex = new Object();
 		soundLists.mutex = new Object();
 		if (parent)
-		{	mixin(Sync!("scene"));
+		{	
 			parent.addChild(this);
 		}
 	}
@@ -186,7 +186,7 @@ class CameraNode : Node
 	 *     sphere and not on a per-polygon basis.  The bounding sphere is determined by VisibleNode.getRadius().
 	 * Returns:  An unsorted array of matching Nodes. */
 	VisibleNode[] getNodesAtCoordinate(Vec2f position, bool includeBoundingSphere=false)
-	{	mixin(Sync!("scene"));
+	{	
 		return null;
 	}
 
@@ -197,7 +197,7 @@ class CameraNode : Node
 	 *     x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.
 	 *     x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.  */ 
 	Vec3f getWorldCoordinate(Vec2f screenCoordinate, float z)
-	{	mixin(Sync!("scene"));
+	{	
 		Matrix clip;
 		Matrix modl;
 		
@@ -210,7 +210,7 @@ class CameraNode : Node
 	/*
 	 * Calculate a 6-plane view frutum based on the orientation of the camera.*/
 	Plane[] getFrustum()
-	{	mixin(Sync!("scene"));
+	{	
 		return frustum;
 	}
 

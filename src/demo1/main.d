@@ -100,7 +100,7 @@ class DemoScene : Scene
 		moon.setAngularVelocity(Vec3f(0, 0.01, 0));
 
 		// Asteroids
-		asteroidBelt(4000, 5000, this);
+		asteroidBelt(40000, 30000, this);
 	}
 	
 	override void update(float delta)

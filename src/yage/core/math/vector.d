@@ -67,15 +67,21 @@ struct Vec(int S, T : real, bool N=false)
 	
 	static if (!N)
 		invariant()
-		{	try { 
+		{	//try { 
 				foreach (float t; v)
 				{	assert(!isNaN(t), format("<%s>", v));
 					assert(t!=float.infinity, format("<%s>", v));
 				}
-			} catch (Exception e)
-			{	Log.write("failed");
-			}
+			//} catch (Exception e)
+			//{	Log.write("failed");
+			//}
 		}
+	void inv() {
+		foreach (float t; v)
+		{	assert(!isNaN(t), format("<%s>", v));
+			assert(t!=float.infinity, format("<%s>", v));
+		}
+	}
 	
 	/// Create a zero vector
 	static VST opCall()

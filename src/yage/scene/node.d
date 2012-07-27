@@ -63,7 +63,7 @@ class Node : Tree!(Node), IDisposable
 	}	
 	this(Node parent) /// ditto
 	{	if (parent)
-		{	mixin(Sync!("scene"));
+		{	
 			parent.addChild(this); // calls ancestorChange()
 		} else
 			ancestorChange(null);
@@ -85,7 +85,7 @@ class Node : Tree!(Node), IDisposable
 		assert(child !is parent);
 		assert(child.transformIndex==-1 || child.transform().node is child);
 
-		mixin(Sync!("scene"));	
+			
 		auto oldParent = child.getParent();
 		super.addChild(child);
 		if (oldParent !is this)
@@ -100,7 +100,7 @@ class Node : Tree!(Node), IDisposable
 	 *     child = The Node to remove.
 	 * Returns: The child Node that was removed.  Templating is used to ensure the return type is exactly the same.*/
 	T removeChild(T : Node)(T child)
-	{	mixin(Sync!("scene"));
+	{	
 		auto oldParent = child.getParent();
 		super.removeChild(child);
 		child.ancestorChange(oldParent); // sets worldDirty also
@@ -113,7 +113,7 @@ class Node : Tree!(Node), IDisposable
 	 *     cloneChildren = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
 	Node clone(bool cloneChildren=true, Node destination=null) /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		
 		if (!destination)
 			destination = cast(Node)this.classinfo.create(); // why does new typeof(this) fail?
@@ -147,7 +147,7 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Some types of Nodes may need to free resources before being destructed. */
 	override void dispose()
-	{	mixin(Sync!("scene"));
+	{	
 		if (children.length)
 		{	foreach_reverse (c; children)
 				c.dispose();
@@ -158,11 +158,11 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Get / set the xyz position of this Node relative to its parent's position. */
 	Vec3f getPosition()
-	{	mixin(Sync!("scene"));
+	{	
 		return transform.position;
 	}	
 	void setPosition(Vec3f position) /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		setWorldDirty();
 		transform.position = position;
 	}
@@ -170,21 +170,21 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
 	Vec3f getRotation()
-	{	mixin(Sync!("scene"));
+	{	
 		return transform.rotation.toAxis();
 	}
 	Quatrn getRotationQuatrn()
-	{	mixin(Sync!("scene"));
+	{	
 		return transform.rotation;
 	}
 	void setRotation(Vec3f axisAngle) /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		setWorldDirty();
 		transform.rotation = axisAngle.toQuatrn();
 	}
 
 	void setRotation(Quatrn quaternion) /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		setWorldDirty();
 		transform.rotation = quaternion;
 	}
@@ -192,11 +192,11 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Get / set the xyz scale of this Node relative to its parent's scale. */
 	Vec3f getScale()
-	{	mixin(Sync!("scene"));
+	{	
 		return transform.scale;
 	}	
 	void setScale(Vec3f scale) /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		setWorldDirty();
 		transform.scale = scale;
 	}
@@ -205,14 +205,14 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Get / set the linear velocity this Node relative to its parent's velocity. */
 	Vec3f getVelocity()
-	{	mixin(Sync!("scene"));
+	{	
 		if (scene)
 			return transform.velocityDelta/scene.increment;
 		else
 			return transform.velocityDelta;
 	}	
 	void setVelocity(Vec3f velocity) /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		if (scene)		
 			transform.velocityDelta = velocity*scene.increment;
 		else
@@ -222,11 +222,11 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Get / set the angular (rotation) velocity this Node relative to its parent's velocity. */
 	Vec3f getAngularVelocity()
-	{	mixin(Sync!("scene"));
+	{	
 		return transform.angularVelocity;
 	}	
 	void setAngularVelocity(Vec3f axisAngle) /// ditto
-	{	mixin(Sync!("scene"));		
+	{			
 		transform.angularVelocity = axisAngle;
 		if (scene)
 			transform.angularVelocityDelta = (axisAngle*scene.increment).toQuatrn();
@@ -245,30 +245,30 @@ class Node : Tree!(Node), IDisposable
 	 * Get the position, axis-angle rotation, or scale in world coordinates, 
 	 * instead of relative to the parent Node. */
 	Vec3f getWorldPosition()
-	{	mixin(Sync!("scene"));
+	{	
 		if (transform.worldDirty) // makes it faster.
 			calcWorld();
 		return transform.worldPosition; // TODO: optimize
 	}
 	Vec3f getWorldRotation() /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		calcWorld();
 		return transform.worldRotation.toAxis();
 	}
 	Quatrn getWorldRotationQuatrn() /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		calcWorld();
 		return transform.worldRotation;
 	}
 	Vec3f getWorldScale() /// ditto
-	{	mixin(Sync!("scene"));
+	{	
 		calcWorld();
 		return transform.worldScale;
 	}
 	
 	/// Bug:  Doesn't take parent's rotation or scale into account
 	Vec3f getWorldVelocity()
-	{	mixin(Sync!("scene"));
+	{	
 		calcWorld();
 		if (parent)
 		{	if (scene)
@@ -289,35 +289,35 @@ class Node : Tree!(Node), IDisposable
 	
 	///
 	Matrix getWorldTransform()
-	{	mixin(Sync!("scene"));
+	{	
 		calcWorld();
 		return Matrix.compose(transform.worldPosition, transform.worldRotation, transform.worldScale);
 	}
 
 	///
 	void move(Vec3f amount)
-	{	mixin(Sync!("scene"));
+	{	
 		transform.position += amount;
 		setWorldDirty();
 	}
 
 	///
 	void rotate(Vec3f axisAngle)
-	{	mixin(Sync!("scene"));
+	{	
 		transform.rotation = transform.rotation*axisAngle.toQuatrn(); 
 		setWorldDirty();
 	}
 
 	///
 	void rotate(Quatrn quaternion)
-	{	mixin(Sync!("scene"));
+	{	
 		transform.rotation = transform.rotation*quaternion; 
 		setWorldDirty();
 	}
 
 	///
 	void accelerate(Vec3f amount)
-	{	mixin(Sync!("scene"));
+	{	
 		if (scene)
 			transform.velocityDelta += amount*scene.increment;
 		else
@@ -326,7 +326,7 @@ class Node : Tree!(Node), IDisposable
 	
 	///
 	void angularAccelerate(Vec3f axisAngle)
-	{	//mixin(Sync!("scene")); // already present in called function
+	{	// // already present in called function
 		setAngularVelocity(transform.angularVelocity.combineRotation(axisAngle)); // TODO: Is this clamped to -PI to PI?
 	}
 	unittest
@@ -379,7 +379,7 @@ class Node : Tree!(Node), IDisposable
 				} else
 					transform.worldRotation = transform.rotation;
 
-				transform.worldPosition += parent.transform.worldPosition;				
+				transform.worldPosition += parent.transform.worldPosition;
 				transform.worldScale =  parent.transform.worldScale * transform.scale;
 
 			} else

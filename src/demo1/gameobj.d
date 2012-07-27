@@ -40,7 +40,6 @@ class GameObject : VisibleNode
 	{	assert (!destination || cast(GameObject)destination);
 		auto result = cast(GameObject)super.clone(children, destination);
 		result.lifetime = lifetime;
-		//Log.write("sprite clone");
 		return result;
 	}
 

@@ -133,7 +133,8 @@ class Ship : GameObject
 			{	
 				auto sprite = (cast(SpriteNode)(node.getChildren[0]));
 				sprite.material.getPass().diffuse.a = cast(ubyte)(node.lifetime * 51);
-				node.setScale(Vec3f(5-node.lifetime + .3));
+				if (node.lifetime < float.infinity)
+					node.setScale(Vec3f(5-node.lifetime + .3));
 				node.setVelocity(node.getVelocity().scale(1-1/30f));
 			}
 			puff.onUpdate.addListener(curry(&fade, puff, delta));
