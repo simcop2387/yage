@@ -60,8 +60,7 @@ class DemoScene : Scene
 		camera.near = 2;
 		camera.far = 2000000;
 		camera.fov = skyboxCamera.fov = 60;
-		camera.threshhold = 1; 
-		camera.setListener();
+		camera.threshhold = 1;
 		
 		// Music
 		music = camera.addChild(new SoundNode("music/celery - pages.ogg"));
@@ -102,8 +101,6 @@ class DemoScene : Scene
 
 		// Asteroids
 		asteroidBelt(4000, 5000, this);
-
-		camera.setListener();
 	}
 	
 	override void update(float delta)
@@ -134,7 +131,7 @@ int main()
 	// Create and start a Scene
 	Log.info("Starting update loop.");
 	auto scene = new DemoScene();
-	//scene.play(); // update 60 times per second
+	Repeater physicsThread, soundThread;
 	
 	// Main surface that receives input.
 	Surface view = new Surface("width: 100%; height: 100%");
@@ -157,10 +154,16 @@ int main()
 		
 		// Reset the scene
 		if (key == SDLK_r)
-		{	scene.dispose();
+		{	physicsThread.pause();
+			soundThread.pause();
+			scene.dispose();
 			delete *scene;
 			GC.collect();
 			*scene = new DemoScene();
+			physicsThread.play();
+			soundThread.play();
+
+			// TODO: Need to curry a new scene variable to the Repeater before this will work.
 		}	
 		if (key == SDLK_x)
 		{	Render.reset();
@@ -217,13 +220,13 @@ int main()
 	initialized = true;
 
 	// Physics loop thread
-	auto physicsThread = new Repeater(curry(delegate void(DemoScene scene) {
+	physicsThread = new Repeater(curry(delegate void(DemoScene scene) {
 		scene.update(1/60f);
 		scene.skybox.update(1/60f);
 	}, scene), true, 60);
 
 	// Sound loop thread
-	auto soundThread = new Repeater(curry(delegate void(DemoScene scene) {
+	soundThread = new Repeater(curry(delegate void(DemoScene scene) {
 		SoundContext.updateSounds(scene.camera.getSoundList());
 	}, scene), true, 30);
 	

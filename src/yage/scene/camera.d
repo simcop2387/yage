@@ -42,13 +42,14 @@ class CameraNode : Node
 	float threshhold = 1;	/// Nodes must be at least this diameter in pixels or they won't be rendered.
 	float aspectRatio = 1.25;  /// The aspect ratio of the camera.  This is normally set automatically in Render.scene() based on the size of the Render Target.
 
+	bool createRenderCommands = true; /// Create render and sound commands when update() is called on this Camera's scene.
+	bool createSoundCommands = true; /// ditto
+
 	package int currentYres; // Used internally for determining visibility
 	
 	protected Plane[6] frustum;
 	protected Vec3f frustumSphereCenter;
 	protected float frustumSphereRadiusSquared;
-	
-	protected static CameraNode listener; // Camera that plays audio.  TODO: Deprecate this and have a thread in main for the sound loop that gets the passed camera's SoundCommands and plays them.
 
 	struct TripleBuffer(T)
 	{	T[3] lists;
@@ -169,35 +170,12 @@ class CameraNode : Node
 	{	super(parent);
 		renderLists.mutex = new Object();
 		soundLists.mutex = new Object();
-		if (!listener)
-			listener = this;
 		if (parent)
 		{	mixin(Sync!("scene"));
 			parent.addChild(this);
 		}
 	}
 
-	/**
-	 * Set the current listener to null if the listener is this CameraNode. */
-	override void dispose()
-	{	if (listener && listener == this)
-			listener = null;
-	}
-
-	/**
-	 * Sound playback can occur from only one camera at a time.
-	 * setListener() can be used to make this CameraNode the listener.
-	 * getListener() will return, from all CameraNodes, the CameraNode that is the current listener.
-	 * When there is no listener (listener is null), the first camera 
-	 * added to a scene becomes the listener (not the first CameraNode created).
-	 * The listener is set to null when the current listener is removed from its scene. */
-	static CameraNode getListener()
-	{	return listener;		
-	}
-	void setListener() /// ditto
-	{	listener = this;		
-	}
-	
 	/*
 	 * Unfinished!
 	 * This function casts a ray from the Camera's view into the scene
@@ -252,9 +230,9 @@ class CameraNode : Node
 	}
 
 	/*
-	 * Update the scene's list of cameras and add/remove listener reference to this CameraNode
+	 * Update the scene's list of cameras.
 	 * This should be protected, but making it anything but public causes it not to be called.
-	 * Most likely a D bug. */
+	 * Most likely a D bug? */
 	override public void ancestorChange(Node old_ancestor)
 	{	super.ancestorChange(old_ancestor); // must be called first so scene is set.
 		
@@ -263,15 +241,8 @@ class CameraNode : Node
 		{	if (old_scene)
 				old_scene.removeCamera(this);		
 			if (scene) // if scene changed.
-			{	scene.addCamera(this);
-				if (!listener)
-					listener = this;
-			}
-		}
-	
-		// no scene or scene didn't change			
-		if (!scene && listener is this)
-			listener = null;	
+				scene.addCamera(this);			
+		}	
 	}
 	
 	/*

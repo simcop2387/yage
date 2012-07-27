@@ -180,19 +180,18 @@ class Scene : Node//, ITemporal, IDisposable
 	
 
 		foreach (camera; cameras)
-		{	camera.resetRenderCommands();
-			if (CameraNode.getListener() is camera)
+		{	
+			if (camera.createRenderCommands)
+				camera.resetRenderCommands();
+			if (camera.createSoundCommands)
 				camera.updateSoundCommands();
 		}
 		scope camerasArray = cameras.values; // because looping through an aa inside another loop is much slower
 
 		camerasMutex.lock();
 		
-		//foreach (inout Transform t; nodeTransforms.data)
-		for (int i=0; i<nodeTransforms.length; i++)
+		foreach (ref Transform t; nodeTransforms.transforms)
 		{
-			Transform* t = &nodeTransforms.transforms[i];
-
 			bool dirty = false;
 			if (t.velocityDelta != Vec3f.ZERO)
 			{	t.position += t.velocityDelta;
@@ -215,6 +214,9 @@ class Scene : Node//, ITemporal, IDisposable
 			// Add render commands from node, if it's on screen.
 			foreach (camera; camerasArray)
 			{	
+				if (!camera.createRenderCommands)
+					continue;
+
 				// only calculate the world position if the node has a parent
 				Vec3f worldPosition = t.parent is null ? t.position : t.node.getWorldPosition(); // also calc's worldScale used below.
 
