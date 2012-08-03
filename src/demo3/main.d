@@ -18,14 +18,13 @@ import derelict.sdl.sdl;
 import yage.all;
 import yage.core.json;
 import yage.system.graphics.all;
-import yage.resource.material;
+import yage.resource.graphics.material;
 
 import demo3.gameobj;
 import demo3.rtscamera;
 
 class TerrainDemo : Scene
 {
-	Scene skybox;
 	RTSCamera rtsCamera;
 
 	SoundNode music;
@@ -37,28 +36,26 @@ class TerrainDemo : Scene
 	{		
 		super();
 		ambient = "#102733"; // global ambient
-		
-		// Skybox
-		skyBox = new Scene();
-		auto sky = new ModelNode("sky/blue-nebula.dae");
-		sky.setScale(Vec3f(1000));
-		skyBox.addChild(sky);
+		backgroundColor = "#ffffff";
 
 		// Terrain
-		auto terrainGenerator = new HmapHeightGenerator( "terrain/Heightmap2.png", Vec2i(256), HmapHeightGenerator.Scaling.REPEAT);
+		auto terrainGenerator = new HmapHeightGenerator( "terrain/badlandsHeight.png", Vec2i(256), HmapHeightGenerator.Scaling.REPEAT);
 		auto terrain = new TerrainNode(terrainGenerator,  this);
 
 		auto terrainMaterial = new Material(true);
 			auto passTerrain = terrainMaterial.getPass();
 			passTerrain.ambient = "#fff";
 			passTerrain.textures = [
-				TextureInstance(ResourceManager.texture("terrain/dirt.jpg"))
+				TextureInstance(ResourceManager.texture("terrain/badlands.jpg"))
 				];
 			//passTerrain.autoShader = MaterialPass.AutoShader.PHONG;
 		terrain.materialOverrides ~= terrainMaterial;
 		//terrain.setScale(Vec3f(2400, 2400, 2200));
 		terrain.setScale(Vec3f(1000, 1000, 1000));
 		terrain.setPosition(Vec3f(0, 0, -1000));
+		// Camera
+		rtsCamera = scene.addChild(new RTSCamera());
+		rtsCamera.setPosition(Vec3f(0, 0, 0));
 		
 		// Lights
 		light = new LightNode(this);
@@ -67,10 +64,10 @@ class TerrainDemo : Scene
 		//light.type = LightNode.Type.DIRECTIONAL;
 		light.setLightRadius(10000);
 		light.setPosition(Vec3f(10000, 10000, 0));
-		
-		// Camera
-		rtsCamera = scene.addChild(new RTSCamera());
-		rtsCamera.setPosition(Vec3f(0, 0, 0));
+	}
+
+	override void update(float delta)
+	{	super.update(delta);	
 	}
 }
 
@@ -78,6 +75,8 @@ class TerrainDemo : Scene
 // Current program entry point.  This may change in the future.
 int main()
 {
+	Repeater physicsThread;
+
 	// The engine is running as long as something happens
 	bool running = true;
 
@@ -96,14 +95,12 @@ int main()
 	// Create and start a Scene
 	Log.info("Starting update loop.");
 	auto scene = new TerrainDemo();
-	scene.play(); // update 60 times per second
 
-	// Main surface
+	// Main surface that receives input.
 	Surface view = new Surface("width: 100%; height: 100%");
-
-	/* Events for main surface.*/
-	view.onKeyDown = curry(
-	delegate void (int key, int modifier, TerrainDemo* scene){
+	
+	// Events for main surface.
+	view.onKeyDown = curry(delegate void (int key, int modifier, TerrainDemo* scene) {
 		if (key == SDLK_ESCAPE)
 		{	running = false;
 			Log.info("Yage aborted by esc key press.");
@@ -117,13 +114,12 @@ int main()
 		
 		// Reset the scene
 		if (key == SDLK_r)
-		{	scene.pause();
-			scene.dispose();
+		{	physicsThread.pause();
+			physicsThread.dispose();
 			delete *scene;
 			GC.collect();
 			*scene = new TerrainDemo();
-			scene.rtsCamera.camera.setListener();
-			scene.play();
+			physicsThread.play();
 		}
 		if (key == SDLK_x)
 		{	Render.reset();
@@ -132,13 +128,11 @@ int main()
 		scene.rtsCamera.keyDown(key);
 	}, &scene);
 	
-	view.onKeyUp = curry(
-	delegate void(int key, int modifier, TerrainDemo* scene){
+	view.onKeyUp = curry(delegate void(int key, int modifier, TerrainDemo* scene){
 		scene.rtsCamera.keyUp(key);
 	}, &scene);
 	
-	view.onMouseDown = curry(
-	delegate void(Input.MouseButton button, Vec2f coordinates, Surface self, TerrainDemo* scene){
+	view.onMouseDown = curry(delegate void(Input.MouseButton button, Vec2f coordinates, Surface self, TerrainDemo* scene){
 		/* Check which mouse button is activated */
 		switch (button)
 		{	case Input.MouseButton.LEFT:
@@ -157,8 +151,7 @@ int main()
 		}
 	}, view, &scene);
 
-	view.onMouseUp = curry(
-	delegate void(Input.MouseButton button, Vec2f coordinates, Surface self, TerrainDemo* scene){
+	view.onMouseUp = curry(delegate void(Input.MouseButton button, Vec2f coordinates, Surface self, TerrainDemo* scene){
 		/* Check which mouse button is released */
 		switch (button)
 		{	case Input.MouseButton.CENTER:
@@ -172,8 +165,7 @@ int main()
 		}
 	}, view, &scene);
 
-	view.onMouseMove = curry(
-	delegate void(Vec2f amount, TerrainDemo* scene) {
+	view.onMouseMove = curry(delegate void(Vec2f amount, TerrainDemo* scene) {
 		if(scene.rtsCamera.hasMouse)
 			scene.rtsCamera.input.mouseDelta += amount.vec2f;
 	}, &scene);
@@ -220,9 +212,14 @@ int main()
 		"border-width: 12px; border-image: url('gui/skin/panel1.png'); font-size: 11px");
 	settings.setHtml("arrows to move | mouse C to rotate | mouse R to change altitude | space for flares");
 
+	// Physics loop thread
+	physicsThread = new Repeater(curry(delegate void(TerrainDemo scene) {
+		scene.update(1/60f);
+	}, scene), true, 60);
+
 	// Rendering loop
 	float dtime=0, ltime=0;
-	while(running && !System.getThreadExceptions())
+	while(running && !physicsThread.error)
 	{
 		ltime = dtime;
 		dtime = delta.tell();
@@ -253,6 +250,11 @@ int main()
 			fps = 0;
 		}
 	}
+
+	// Stop the threads and report any errors
+	if (physicsThread.error)
+		Log.write(physicsThread.error);
+	physicsThread.dispose();
 	
 	System.deInit();
 	return 0;

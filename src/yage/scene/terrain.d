@@ -8,7 +8,10 @@ module yage.scene.terrain;
 import yage.core.array;
 import yage.core.math.vector;
 import yage.core.math.matrix;
+import tango.math.Math;
+import tango.math.IEEE;
 
+import yage.resource.graphics.geometry;
 import yage.resource.image;
 
 import yage.scene.light;
@@ -16,7 +19,9 @@ import yage.scene.camera;
 import yage.scene.node;
 import yage.scene.visible;
 
-import yage.resource.graphics.all;
+import yage.resource.graphics.material;
+import yage.resource.graphics.texture;
+import yage.resource.graphics.primitives;
 import yage.resource.manager;
 
 import yage.system.log;
@@ -32,11 +37,26 @@ import yage.system.log;
  * Data structure for a single vertex in the Terrain Grid.
  */
 struct TerrainPoint
-{	float height;		/// z position of the terrain point
+{	float height=0;		/// z position of the terrain point
 	Vec3f normal;		/// Normal vector for this point on the terrain, used for lighting
 	Vec2f textureCoordinate;/// Texture coordinates for this point on the terrain
 	float[] texturesBlend;	/// Normalized vector of arbitrary length specifying the amount of each texture to use at this point.
 }
+
+
+	struct Patch {
+		static const int SIZE = 16;
+		//static float RADIUS = (cast(float)(SIZE)/256)*1.414*1000; //longueur REELLE d'un demi-cote d'un patch*racineDeDeux*echelle (car transform)=>pb: ok si terrain plat ET carre seulement.
+		float radius = 0; //radius value, in the world scale
+        float maxHeight;
+		float minHeight;
+        Vec3f minPoint;
+        Vec3f maxPoint;
+		short lod;
+		Vec3f center;
+		Geometry geometry;
+	}
+
 
 /**
  * Construct a terrain Geometry based on the data produced by a terrainGenerator.
@@ -48,15 +68,8 @@ struct TerrainPoint
  */
 class TerrainNode : VisibleNode
 {
-	struct Patch {
-		static const int SIZE = 16;
-		static const float RADIUS = SIZE*1.5;
 
-		short lod;
-		Vec3f center;
-		Geometry geometry;
-	}
-
+	private terrain_tree tree;
 	private IHeightGenerator generator;
 	private Patch patches[][]; //terrain is an array of patches
 	private Vec2i halfRes;
@@ -70,7 +83,8 @@ class TerrainNode : VisibleNode
 	this(IHeightGenerator generator, TextureInstance[] textures=null, Node parent=null)
 	{	super(parent);
 		this.generator=generator;
-		Vec2i resolution = generator.getResolution();
+		Vec2i resolution = generator.getResolution();		
+		Log.info("x: ",resolution.x,", y: ",resolution.y);
 		//we will need to use the resolution divided / 2
 		halfRes = Vec2i(resolution.x / 2, resolution.y / 2);
 
@@ -80,21 +94,41 @@ class TerrainNode : VisibleNode
 		{
 			p.length = resolution.y / Patch.SIZE;
 		}
-
+		
 		for (int i=0; i < patches.length; ++i)
 			for (int j=0; j < patches[0].length; ++j)
 			{
+				//TerrainPoint terrainPoint;
+				//terrainPoint = generator.getTerrainPoint(Vec2i(i*Patch.SIZE+Patch.SIZE/2,j*Patch.SIZE+Patch.SIZE/2)); //renvoie le point du centre afin de determiner sa hauteur
 				patches[i][j].geometry = createPatchGeometry(i, j);
-				patches[i][j].center = Vec3f(i*Patch.SIZE + Patch.SIZE/2 - halfRes.x,
+                //
+				/*patches[i][j].center = Vec3f(i*Patch.SIZE + Patch.SIZE/2 - halfRes.x,
 							j*Patch.SIZE + Patch.SIZE/2 - halfRes.y,
-							0);
-				patches[i][j].center /= Vec3f(cast(float)(halfRes.x), cast(float)(halfRes.y), 1);
+							0);*/
+				/*patches[i][j].center = Vec3f(i*Patch.SIZE + Patch.SIZE/2 - halfRes.x,
+							j*Patch.SIZE + Patch.SIZE/2 - halfRes.y,
+							terrainPoint.height);*/
+				/*patches[i][j].center /= Vec3f(cast(float)(halfRes.x), cast(float)(halfRes.y), 1);*/
 			}
-
+			
+		/**/
+			
+		tree = new terrain_tree(resolution.x,Patch.SIZE);
+		tree.generate_patch(patches);
+		tree.getRoot().compute_data();
+		tree.getRoot().afficheDescendants();
+		
+		
+		
+		/**/
+		
 		material = new Material();
 		material.setPass(new MaterialPass());
 
 		//terrainGeometry.drawNormals=true;
+
+		// TODO: Set this to the proper amount
+		transform().cullRadius = 100000;
 	}
 
 	/**
@@ -102,19 +136,62 @@ class TerrainNode : VisibleNode
 	 */
 	override void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 	{
-		
 		Vec3f patchCenter;
-		static int counter = 0;
-		counter++;
-		Vec3f scale = getScale();
 		Matrix transform = getWorldTransform();
 		auto affectingLights = getLights(lights, 8); // TODO: getLights() for each individual patch.
-
-		/* Look if each patch is visible by the camera (fustrum culling) */
+		static int k=0;
+		
+		void renderNode(QuadTreeNode* node){					
+			if(node.sons[0] is null) {
+				RenderCommand rc;
+  				rc.transform = transform;
+  				rc.geometry = node.associatedPatch.geometry;
+  				rc.materialOverrides = materialOverrides;
+  				rc.setLights(affectingLights);
+  				result.append(rc);	
+			}			
+			else {
+				foreach(s;node.sons){
+					renderNode(&s);
+				}
+			}			
+		}
+        
+		void recursiveCull(QuadTreeNode* node){
+			int ans = -1;
+			ans=camera.isCulled(node.minPoint.transform(transform),node.maxPoint.transform(transform));
+			switch (ans){
+				case true:
+                    //Log.info(node.getNodeName()," visible");
+					renderNode(node);                
+				break;
+				case false:
+                    //Log.info(node.getNodeName()," not visible");
+					break;                 
+				case 2:
+                    //Log.info(node.getNodeName()," intersection");
+					if(node.sons[0] !is null){
+						foreach(s;node.sons){
+							recursiveCull(&s);
+						}
+					}
+					else {
+						renderNode(node);
+					}
+					break;
+				default:
+			}					
+		}
+		recursiveCull(tree.getRoot());		
+		
+        /+
 		for (int i=0; i < patches.length; ++i)
-			for (int j=0; j < patches[0].length; ++j)
-			{
-  				if (camera.isVisible(patches[i][j].center.transform(transform), Patch.RADIUS))
+			for (int j=0; j < patches[0].length; ++j)				
+			{    
+                //Log.info("avant: ",patches[i][j].minPoint.z," ",patches[i][j].maxPoint.z);
+                //Log.info("apres: ",patches[i][j].minPoint.transform(transform).z," ",patches[i][j].maxPoint.transform(transform).z);
+            
+  				if (!camera.isCulled(patches[i][j].minPoint.transform(transform),patches[i][j].maxPoint.transform(transform)))
   				{
   					RenderCommand rc;
   					rc.transform = transform;
@@ -123,12 +200,39 @@ class TerrainNode : VisibleNode
   					rc.setLights(affectingLights);
   					result.append(rc);
 				}
-			}
+                
+                
+                //ancienne methode, corrigee, A optimiser (si possible):
+                        
+                /+if(k==0){				
+                    Vec3f center = patches[i][j].center.transform(transform);
+                    float dist1 = (patches[i][j].minPoint.transform(transform)-center).length();
+                    float dist2 = (center-patches[i][j].maxPoint.transform(transform)).length();
+                    patches[i][j].radius = max(dist1,dist2);
+                    //Log.info(patches[i][j].radius);										
+                } 
+                //Log.info("avant transform ",patches[i][j].center.x," ",patches[i][j].center.y," ",patches[i][j].center.z);
+                //Log.info("apres transform ",patches[i][j].center.transform(transform).x," ",patches[i][j].center.transform(transform).y," ",patches[i][j].center.transform(transform).z);
+                //if (camera.isVisible(patches[i][j].center.transform(transform),Patch.RADIUS))
+				//if (camera.isVisible(patches[i][j].center.transform(transform),patches[i][j].radius))
+                if (camera.isVisible(patches[i][j].center.transform(transform),patches[i][j].radius))
+  				{
+  					RenderCommand rc;
+  					rc.transform = transform;
+  					rc.geometry = patches[i][j].geometry;
+  					rc.materialOverrides = materialOverrides;
+  					rc.setLights(affectingLights);
+  					result.append(rc);
+				}+/
+			}+/
+		if(k==0){
+			tree.generate_radius(patches,transform);
+			k++;
+		}				
 	}
 
-
 	private Geometry createPatchGeometry(int i, int j)
-	{	Log.info("creating ", i, j, " geos.");
+	{	//Log.info("creating ", i, j, " geos.");
 		Geometry patchGeometry = new Geometry();
 		Vec3f[] vertices;
 		Vec3f[] normals;
@@ -141,21 +245,51 @@ class TerrainNode : VisibleNode
 		 */
 
 		TerrainPoint terrainPoint;
-		for (int y = j * Patch.SIZE; y < (j+1) * Patch.SIZE; ++y)
-			for (int x = i * Patch.SIZE; x < (i+1) * Patch.SIZE; ++x)
+		/*initialisation des hauteurs*/
+		patches[i][j].minHeight=patches[i][j].maxHeight=generator.getTerrainPoint(Vec2i(i * Patch.SIZE,j * Patch.SIZE)).height;
+		for (int y = j * Patch.SIZE; y <= (j+1) * Patch.SIZE; ++y)
+			for (int x = i * Patch.SIZE; x <= (i+1) * Patch.SIZE; ++x)
 			{
 				terrainPoint = generator.getTerrainPoint(Vec2i(x,y));
 				/* 
 				 * At this point x is between 0 and 'resolution'.
 				 * So a "- halfRes" is necessary to center the terrain.
 				 */
+				if(terrainPoint.height>patches[i][j].maxHeight){
+					patches[i][j].maxHeight=terrainPoint.height;
+				}
+				if(terrainPoint.height<patches[i][j].minHeight){
+					patches[i][j].minHeight=terrainPoint.height;
+				}
 				vertices  ~= Vec3f((x-halfRes.x)/cast(float)(halfRes.x),
 						(y-halfRes.y)/cast(float)(halfRes.y),
 						 terrainPoint.height);
 				normals   ~= terrainPoint.normal;
 				texCoords ~= terrainPoint.textureCoordinate;
 			}
+        /*the AAB bounding box for each patch varies between xmin,xmax;ymin,ymax;
+        zmin,zmax, so we defines minPoint(xmin,ymin,zmin) and maxPoint(xmax,ymax,zmax)*/    
+        patches[i][j].minPoint = Vec3f(i*Patch.SIZE - halfRes.x,
+							j*Patch.SIZE - halfRes.y,
+							patches[i][j].minHeight);
+		patches[i][j].maxPoint = Vec3f((i+1)*Patch.SIZE - halfRes.x,
+							(j+1)*Patch.SIZE - halfRes.y,
+							patches[i][j].maxHeight);
+        patches[i][j].center = Vec3f(i*Patch.SIZE + Patch.SIZE/2 - halfRes.x,
+                                    j*Patch.SIZE + Patch.SIZE/2 - halfRes.y,
+                                    terrainPoint.height);                    
+       
 		
+		patches[i][j].maxPoint /= Vec3f(cast(float)halfRes.x, cast(float)halfRes.y, 1);
+		patches[i][j].minPoint /= Vec3f(cast(float)halfRes.x, cast(float)halfRes.y, 1);
+		patches[i][j].center /= Vec3f(cast(float)halfRes.x, cast(float)halfRes.y, 1);
+		       
+		/**/
+      
+		
+	  
+        /**/
+
 		assert(vertices.length);
 
 		patchGeometry.setAttribute(Geometry.VERTICES, vertices);
@@ -166,11 +300,11 @@ class TerrainNode : VisibleNode
 		/* Construct the array of triangles */
 		Vec3i[] triangles;
 		int cornerCurrent, cornerUp;
-		for (int y=0; y < Patch.SIZE-1; ++y)
+		for (int y=0; y < Patch.SIZE; ++y)
 		// -1 because the last vertices are included in the previous last triangles.
-			for (int x=0; x < Patch.SIZE-1; ++x)
-			{	cornerCurrent = y*(Patch.SIZE)+x;
-				cornerUp = (y+1)*(Patch.SIZE)+x;
+			for (int x=0; x < Patch.SIZE; ++x)
+			{	cornerCurrent = y*(Patch.SIZE+1)+x;
+				cornerUp = (y+1)*(Patch.SIZE+1)+x;
 				triangles ~= Vec3i(cornerCurrent, cornerCurrent+1, cornerUp);
 				triangles ~= Vec3i(cornerUp, cornerCurrent+1, cornerUp+1);
 			}
@@ -251,10 +385,10 @@ class HmapHeightGenerator : IHeightGenerator
 			this.imageTexturesBlend = new Image(ResourceManager.resolvePath(texturesBlendPath));
 
 		/* initialize the matrix array of terrain points */
-		terrainPoints.length = gridResolution.x;
+		terrainPoints.length = gridResolution.x+1;
 		foreach (ref e; terrainPoints)
 		{
-			e.length = gridResolution.y;
+			e.length = gridResolution.y+1;
 		}
 
 		computeTerrainPoints();
@@ -348,9 +482,9 @@ class HmapHeightGenerator : IHeightGenerator
 		 * ie the normals of AH, BG, CF and DE. We then sum them and normalize them to obtain
 		 * the normal of vertex (x,y).
 		 */
-		for(x = 1; x < gridResolution.x - 1; ++x)
+		for(x = 1; x < gridResolution.x-1; ++x)
 		{
-			for(y = 1; y < gridResolution.y - 1; ++y)
+			for(y = 1; y < gridResolution.y-1; ++y)
 			{
 				//normal to AH
 				//heightDiff = terrainPoints[x-1][y+1].height-terrainPoints[x+1][y-1].height;
@@ -377,13 +511,13 @@ class HmapHeightGenerator : IHeightGenerator
 			}
 		}
 		/* special border cases for the normals, left at (0,0,1) for now */
-		for(x = 0; x < gridResolution.x; ++x)
+		for(x = 0; x <= gridResolution.x; ++x)
 			terrainPoints[x][0].normal = Vec3f(0,0,1);
-		for(x = 0; x < gridResolution.x; ++x)
+		for(x = 0; x <= gridResolution.x; ++x)
 			terrainPoints[x][gridResolution.y-1].normal = Vec3f(0,0,1);
-		for(y = 0; y < gridResolution.y; ++y)
+		for(y = 0; y <= gridResolution.y; ++y)
 			terrainPoints[0][y].normal = Vec3f(0,0,1);
-		for(y = 0; y < gridResolution.y; ++y)
+		for(y = 0; y <= gridResolution.y; ++y)
 			terrainPoints[gridResolution.x-1][y].normal = Vec3f(0,0,1);
 	}
 
@@ -424,4 +558,236 @@ class HmapHeightGenerator : IHeightGenerator
 			return heightmap[x, y][0] / 255f;
 		}
 	}
+}
+
+class terrain_tree {
+	private QuadTreeNode root;
+	//private QuadTreeNode* patches[][]; /*pointers to the leaves representing patches*/
+	
+	this(int resolution, int patchsize){
+		root = new QuadTreeNode;	
+		int log2=0;
+		int init=resolution/patchsize;
+		while (init!=1){
+			init/=2;
+			log2++;
+		}		
+		root.patches.length = resolution / patchsize;
+		foreach (ref p; root.patches)
+		{
+			p.length = resolution / patchsize;
+		}
+		root.expand_tree(log2);	
+	}	
+	public void generate_patch( Patch p[][] ) {
+		for( uint i=0; i < p.length; ++i ) {
+			for ( uint j=0 ; j < p[0].length; ++j ) {
+				QuadTreeNode.patches[i][j].set_patch(p[i][j]);
+			}
+		}
+	}
+	
+	public void generate_radius( Patch p[][], Matrix transform) {
+		for( uint i=0; i < p.length; ++i ) {
+			for ( uint j=0; j < p[0].length; ++j ) {
+				root.patches[i][j].set_radius( p[i][j] );
+			}
+		}
+		root.compute_radius(transform);
+	}
+	
+	public QuadTreeNode* getRoot(){
+		return &root;
+	}
+}
+
+class QuadTreeNode {
+	public QuadTreeNode sons[4];
+	public Patch associatedPatch; /*associated Patch (for leaves)*/
+	public float radius = 0; /*radius of the bounding sphere*/
+    public float maxHeight; /*maximum height of the AABB*/
+	public float minHeight; /*minimum height of the AABB*/
+    public Vec3f minPoint; /*minimum point of the AABB*/
+    public Vec3f maxPoint; /*maximum point of the AABB*/
+	public Vec3f center; /*center point of the AABB*/
+	static public QuadTreeNode patches[][]; //leaves
+	static private int number=0;
+    private char[] nodeName = "[Root]";
+	
+    /*
+    * Displays information about each node, considering the current QuadTreeNode instance as the root of the tree.
+    *
+    */
+    import tango.text.convert.Integer;
+    
+	public void afficheDescendants(char[] nodename="[Root]"){
+        Log.info("nodename: ",nodename);
+		Log.info("max point x y z: ",maxPoint.x," ",maxPoint.y," ",maxPoint.z);
+		Log.info("min point x y z: ",minPoint.x," ",minPoint.y," ",minPoint.z);
+		if(sons[0] !is null){          
+			foreach(i,s;sons){
+                Log.info(nodename,"[",toString(i),"]");
+				s.afficheDescendants(nodename~"["~toString(i)~"]");
+			}
+		}
+	}	
+    
+    public char[] getNodeName(){
+        return nodeName;
+    }
+			
+	this() {
+		foreach(ref s; sons){           
+			s = null;
+		}
+	}
+	
+	/*
+    * Subdivides a node of the tree.
+    *
+    */
+    
+	public void QuadTreeNode_subdivide() {
+		foreach(i,ref s;sons){
+			s = new QuadTreeNode;
+            s.nodeName = nodeName~"["~toString(i)~"]";
+		}
+	}
+	
+    /*
+    * Generates a complete quadtree of the given depth.
+    *
+    */
+    
+	public void expand_tree(uint depth) {
+		if(depth==0){
+			//Log.info(number);
+			patches[number/patches.length][number%patches.length]=this;
+			Log.info("feuille: adresse:",&this," contenu:",this);
+			number++;
+			return;
+		}	
+		QuadTreeNode_subdivide();
+		foreach(ref s;sons){
+			s.expand_tree(depth-1);
+		}
+	}
+	
+    /*
+    * Copy Patch information to the node. (used for the leaves of the tree)
+    * 
+    * patch = Patch containing data to be copied in the node.
+    */
+    
+	public void set_patch( Patch patch ) {
+		radius = patch.radius;
+        maxHeight = patch.maxHeight;
+		minHeight = patch.minHeight;
+        minPoint = patch.minPoint;
+        maxPoint = patch.maxPoint;
+		center = patch.center;
+		associatedPatch = patch;
+	}
+	
+    /*
+    * Copy a patch radius information (bounding sphere radius) to a node.
+    * (used for the leaves of the tree)
+    *
+    * patch = Patch which radius value is to be copied in the node.
+    */
+    
+	public void set_radius(Patch patch){
+		radius = patch.radius;
+	}
+	
+    /*
+    * Compute the data to assign data to each node of the tree, assuming that the leaves
+    * have been assigned.
+    */
+    
+	public void compute_data(){
+		if(sons[0] is null){
+			return;
+		}
+    
+    if(sons[0].maxPoint.x == 0){
+        foreach(ref s;sons){
+			s.compute_data();
+		}    
+    }
+    
+	radius = 0;
+    maxHeight = sons[0].maxHeight;
+	minHeight = sons[0].minHeight;
+    float Xmin = sons[0].minPoint.x;
+	float Ymin = sons[0].minPoint.y;
+	float Zmin = sons[0].minPoint.z;
+    float Xmax = sons[0].maxPoint.x;
+	float Ymax = sons[0].maxPoint.y;
+	float Zmax = sons[0].maxPoint.z;
+		for(int i=1; i<4; i++){
+			if (sons[i].minPoint.x<=Xmin){
+				Xmin= sons[i].minPoint.x;
+			}
+			if (sons[i].minPoint.y<=Ymin){
+				Ymin = sons[i].minPoint.y;
+			}
+			if (sons[i].minPoint.z<=Zmin){
+				Zmin = sons[i].minPoint.z;
+			}
+			if (sons[i].maxPoint.x>=Xmax){
+				Xmax= sons[i].maxPoint.x;
+			}
+			if (sons[i].maxPoint.y>=Ymax){
+				Ymax = sons[i].maxPoint.y;
+			}
+			if (sons[i].maxPoint.z>=Zmax){
+				Zmax = sons[i].maxPoint.z;
+			}
+		}
+		minPoint=Vec3f(Xmin,Ymin,Zmin);
+		maxPoint=Vec3f(Xmax,Ymax,Zmax);
+		maxHeight = Zmax;
+		minHeight = Zmin;
+		center = Vec3f((Xmin+Xmax)/2,(Ymin+Ymax)/2,(Zmin+Zmax)/2);
+    }
+
+	
+	public void compute_radius(Matrix transform){
+		if(sons[0] is null){
+			return;
+		}		
+		Vec3f trueCenter = center.transform(transform);
+        float dist1 = (minPoint.transform(transform)-trueCenter).length();
+        float dist2 = (trueCenter-maxPoint.transform(transform)).length();
+        radius = max(dist1,dist2);
+		foreach(ref s;sons){
+			s.compute_radius(transform);
+		}					
+	}		
+    
+	/+quadtree split_terrain(terrain ter, double seuil){
+		quadtree tree = create_quadtree();
+		int xmin      = 0;
+		int ymin      = 0;
+		int xmax      = terrain_give_largeur(ter)-1; // recuperer via getter ou sinon plaquer le quadtree directement dans terrain.d
+		int ymax      = terrain_give_hauteur(ter)-1; // ditto
+		
+		recur_split(tree,ter,xmin,xmax,ymin,ymax,seuil);
+		
+		return tree;
+	}
+	
+	void recur_split(quadtree tree,terrain ter,int x_min,int x_max,int y_min,int y_max,double seuil) {
+		int x_avg     = (x_min + x_max)/2;
+		int y_avg     = (y_min + y_max)/2;
+	    
+		if(quadratic(ter,x_min,x_max,y_min,y_max) > seuil){ // Caser la condition sur la visibilite
+			quadtree_subdivide(tree);
+			recur_split(tree->sons[0],picture,x_min  ,x_avg,y_min  ,y_avg);
+			recur_split(tree->sons[1],picture,x_avg+1,x_max,y_min  ,y_avg);
+			recur_split(tree->sons[2],picture,x_avg+1,x_max,y_avg+1,y_max);
+			recur_split(tree->sons[3],picture,x_min  ,x_avg,y_avg+1,y_max);
+		}
+	}+/
 }

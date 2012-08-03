@@ -100,7 +100,7 @@ class DemoScene : Scene
 		moon.setAngularVelocity(Vec3f(0, 0.01, 0));
 
 		// Asteroids
-		asteroidBelt(40000, 30000, this);
+		asteroidBelt(4000, 5000, this);
 	}
 	
 	override void update(float delta)
@@ -116,6 +116,7 @@ bool running = true;
 // Current program entry point.  This may change in the future.
 int main()
 {	
+	Repeater physicsThread, soundThread;
 
 	// Init and create window
 	System.init(); 
@@ -131,8 +132,7 @@ int main()
 	// Create and start a Scene
 	Log.info("Starting update loop.");
 	auto scene = new DemoScene();
-	Repeater physicsThread, soundThread;
-	
+
 	// Main surface that receives input.
 	Surface view = new Surface("width: 100%; height: 100%");
 	
@@ -220,15 +220,15 @@ int main()
 	initialized = true;
 
 	// Physics loop thread
-	physicsThread = new Repeater(curry(delegate void(DemoScene scene) {
+	physicsThread = new Repeater(curry(delegate void(DemoScene* scene) {
 		scene.update(1/60f);
 		scene.skybox.update(1/60f);
-	}, scene), true, 60);
+	}, &scene), true, 60);
 
 	// Sound loop thread
-	soundThread = new Repeater(curry(delegate void(DemoScene scene) {
+	soundThread = new Repeater(curry(delegate void(DemoScene* scene) {
 		SoundContext.updateSounds(scene.camera.getSoundList());
-	}, scene), true, 30);
+	}, &scene), true, 30);
 	
 	// Rendering loop in main thread
 	float dtime=0, ltime=0;
@@ -239,7 +239,7 @@ int main()
 		//Log.trace(dtime-ltime);
 		delta.seek(0);
 
-		Input.processAndSendTo(view);
+		Input.processAndSendTo(view); // TODO: Move this to the physics thread--but SDL req's it to be in the main thread!
 		Render.scene(scene.skyboxCamera, window); // render the skybox first.
 		auto stats = Render.scene(scene.camera, window); // render the main scene
 		Render.surface(view, window); // render the ui
@@ -269,13 +269,14 @@ int main()
 		//	Thread.sleep(1/60.0f-dtime);
 	}
 
+	// Stop the threads and report any errors
 	if (physicsThread.error)
 		Log.write(physicsThread.error);
+	physicsThread.dispose();
 	if (soundThread.error)
 		Log.write(soundThread.error);
-
 	soundThread.dispose();
-	physicsThread.dispose();
+	
 	
 	System.deInit();
 	return 0;

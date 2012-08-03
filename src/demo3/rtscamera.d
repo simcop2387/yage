@@ -38,7 +38,9 @@ class RTSCamera : Node
 		camera.near = 2;
 		camera.far = 2000000;
 		camera.fov = 60;
-		camera.threshold = 1;
+		camera.threshhold = 1;
+
+		onUpdate.addListener(&update);
 		
 		this.addChild(camera);
 	}
@@ -67,8 +69,9 @@ class RTSCamera : Node
 	}
 
 	/* The "action" function called in the engine loop */
-	override void update(float delta)
-	{	super.update(delta);
+	private void update()
+	{	
+		float delta = 1/60f;
 
 		// Set the acceleration speed
 		float speed = 500*delta;

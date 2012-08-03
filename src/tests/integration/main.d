@@ -28,6 +28,7 @@ class FPSCamera : Node
 	
 	this()
 	{	camera = addChild(new CameraNode());
+		onUpdate.addListener(&update);
 	}
 	
 	Vec2f getOrientation()
@@ -39,8 +40,10 @@ class FPSCamera : Node
 		camera.setRotation(Vec3f(orientation.y, 0, 0));
 	}
 	
-	override void update(float delta)
+	void update()
 	{	
+		float delta = 1/60f;
+
 		// Dampen and accelerate linear velocity
 		float speed = this.speed*delta;
 		setVelocity(getVelocity().scale(max(1-delta*dampen, 0.0f)));
@@ -53,8 +56,6 @@ class FPSCamera : Node
 		angularAccelerate(Vec3f(0, -rotation.x*angularSpeed, 0));
 		camera.angularAccelerate(Vec3f(rotation.y*angularSpeed, 0, 0));
 		rotation = Vec2f(0);
-		
-		super.update(delta);
 	}
 }
 
@@ -502,14 +503,15 @@ class App
 {	static Window window;
 	static TestScene scene;
 	static UI ui;
+
+	static Repeater physicsThread, soundThread;
 	
 	static void setScene(TestScene scene)
-	{
-		if (this.scene)
-			this.scene.pause();
+	{	App.physicsThread.pause();
+		App.soundThread.pause();
 		this.scene = scene;
-		scene.camera.camera.setListener();
-		scene.play();
+		App.physicsThread.play();
+		App.soundThread.play();
 	}	
 }
 
@@ -528,16 +530,28 @@ void main()
 	};
 	ResourceManager.addPath(["../res/", "../res/shader", "../res/gui/font"]);
 	
+
+	// Physics loop thread
+	App.physicsThread = new Repeater(curry(delegate void(TestScene* scene) {
+		scene.update(1/60f);
+	}, &App.scene), false, 60);
+
+	// Sound loop thread
+	App.soundThread = new Repeater(curry(delegate void(TestScene* scene) {
+		SoundContext.updateSounds(scene.camera.camera.getSoundList());
+	}, &App.scene), false, 30);
+
 	TestScene[] scenes = [cast(TestScene)new Transparency(), new SoundsAndPicking(), new LightsAndFog(), new LotsOfObjects];
 	App.setScene(scenes[2]);
-	
+
+
 	// User interface
 	App.ui = new UI(scenes);
 	
 	// Rendering loop
 	int fps = 0;
 	Timer frame = new Timer(true);
-	while(running && !System.getThreadExceptions())
+	while(running && !App.physicsThread.error && !App.soundThread.error)
 	{
 		Input.processAndSendTo(App.ui);
 		auto stats = Render.scene(App.scene.getCamera().camera, App.window);
@@ -562,9 +576,15 @@ void main()
 			fps = 0;
 		}
 		Profile.clear();
-		
-		//Thread.getThis().sleep(0.01);
-		//Thread.getThis().yield();
 	}
+
+	// Stop the threads and report any errors
+	if (App.physicsThread.error)
+		Log.write(App.physicsThread.error);
+	App.physicsThread.dispose();
+	if (App.soundThread.error)
+		Log.write(App.soundThread.error);
+	App.soundThread.dispose();
+
 	System.deInit();
 }

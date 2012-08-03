@@ -107,9 +107,6 @@ class Ship : GameObject
 		if (input.hyper)
 			speed *= 40; // Hyperdrive
 
-
-
-
 		// Accelerate forward
 		if (input.up)
 		{	
@@ -118,13 +115,11 @@ class Ship : GameObject
 			accelerate(Vec3f(0, 0, -speed).rotate(pitch.getTransform()).rotate(getTransform()));
 			
 			// Engine smoke
-			
-
 			GameObject puff = getScene().addChild(a);
 			SpriteNode puffSprite = puff.addChild(new SpriteNode());
 			Material smoke = ResourceManager.material("fx/smoke.dae", "smoke-material");
 			puffSprite.material = smoke.dup();
-			puff.lifetime = 5;
+			puff.lifetime = 12;
 			puff.setScale(Vec3f(.3));
 			puff.setVelocity(getVelocity() - Vec3f(0, 0, -10).rotate(ship.getWorldTransform()));
 			puff.setPosition(ship.getWorldPosition()+Vec3f(.8, 0, 2.5).rotate(ship.getWorldTransform()));
@@ -132,9 +127,9 @@ class Ship : GameObject
 			void fade(GameObject node, float delta)
 			{	
 				auto sprite = (cast(SpriteNode)(node.getChildren[0]));
-				sprite.material.getPass().diffuse.a = cast(ubyte)(node.lifetime * 51);
+				sprite.material.getPass().diffuse.a = cast(ubyte)(node.lifetime * 255/12);
 				if (node.lifetime < float.infinity)
-					node.setScale(Vec3f(5-node.lifetime + .3));
+					node.setScale(Vec3f((12-node.lifetime)/2 + .3));
 				node.setVelocity(node.getVelocity().scale(1-1/30f));
 			}
 			puff.onUpdate.addListener(curry(&fade, puff, delta));

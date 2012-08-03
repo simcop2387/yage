@@ -23,6 +23,8 @@ bool running = true;
 // program entry point.
 int main()
 {
+	Repeater physicsThread;
+
 	// Init and create window
 	System.init(); 
 	auto window = Window.getInstance();
@@ -36,7 +38,6 @@ int main()
 
 	// Create and start a Scene
 	Scene scene = new Scene();
-	scene.play();
 	scene.backgroundColor = "gray";
 	
 	// Ship	
@@ -101,13 +102,19 @@ int main()
 	auto clip3 = new Surface(info);
 	clip3.style.set("width: 60px; height: 60px; background-color: orange; top: -30px; right: -30px");
 	*/
-	
+
+
+
+	// Physics loop thread
+	physicsThread = new Repeater(curry(delegate void(Scene scene) {
+		scene.update(1/60f);
+	}, scene), true, 60);
 	
 	// Rendering / Input Loop
 	int fps = 0;
 	Timer total = new Timer(true);
 	Timer frame = new Timer(true);
-	while(running && !System.getThreadExceptions())
+	while(running && !physicsThread.error)
 	{	
 		Input.processAndSendTo(view);
 		auto stats = Render.scene(camera, window);
@@ -133,6 +140,10 @@ int main()
 			fps = 0;
 		}
 	}
+
+	if (physicsThread.error)
+		Log.write(physicsThread.error);
+	physicsThread.dispose();
 	
 	// Free resources that can't be freed by the garbage collector.
 	System.deInit();

@@ -1,7 +1,7 @@
 /**
  * Copyright:  (c) 2005-2009 Eric Poggel
- * Authors:    Eric Poggel
- * License:    <a href="lgpl3.txt">LGPL v3</a>
+ * Authors:	Eric Poggel
+ * License:	<a href="lgpl3.txt">LGPL v3</a>
  */
 
 module yage.scene.camera;
@@ -181,9 +181,9 @@ class CameraNode : Node
 	 * This function casts a ray from the Camera's view into the scene
 	 * and returns all Nodes that it collides with.
 	 * Params:
-	 *     position = Coordinates between 0 and 1 in the camera's near view frustum.
-	 *     includeBoundingSphere = If true, collision tests will only be performed against Object's bounding
-	 *     sphere and not on a per-polygon basis.  The bounding sphere is determined by VisibleNode.getRadius().
+	 *	 position = Coordinates between 0 and 1 in the camera's near view frustum.
+	 *	 includeBoundingSphere = If true, collision tests will only be performed against Object's bounding
+	 *	 sphere and not on a per-polygon basis.  The bounding sphere is determined by VisibleNode.getRadius().
 	 * Returns:  An unsorted array of matching Nodes. */
 	VisibleNode[] getNodesAtCoordinate(Vec2f position, bool includeBoundingSphere=false)
 	{	
@@ -194,8 +194,8 @@ class CameraNode : Node
 	 * Unfinished!
 	 * Get the 3d coordinate at the 2d screen coordinate at a distance of z from the camera.
 	 * Params:
-	 *     x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.
-	 *     x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.  */ 
+	 *	 x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.
+	 *	 x = screen coordinate between 0 and 1, where 0 is the left side of the camrea's view, and 1 is the right.  */ 
 	Vec3f getWorldCoordinate(Vec2f screenCoordinate, float z)
 	{	
 		Matrix clip;
@@ -229,6 +229,40 @@ class CameraNode : Node
 		return distance2*threshhold*threshhold < radius*radius*currentYres*currentYres;
 	}
 
+	/**
+	 * Will the Axis-aligned bounding box be in the field of view of the camera?
+	 * the box is supposed to have its components x,y and z varying between xmin,xmax; ymin,ymax; zmin,zmax
+	 * Params:
+	 * minPoint =  Point in 3d space, in world coordinates, describing the point of the box with minimum 
+	 * coordinates values (xmin,ymin,zmin)
+	 * maxPoint =  Point in 3d space, in world coordinates, describing the point of the box with maximum
+	 * coordinates values (xmax,ymax,zmax) 
+	 * TODO: Make this an override for isVisible() */	
+	int isCulled(Vec3f minPoint, Vec3f maxPoint)
+	{	
+		foreach_reverse (int j,f; frustum) {
+			Vec3f p_vertex=minPoint;
+			Vec3f n_vertex=maxPoint;
+			if (f.x >= 0) {
+				p_vertex.x = maxPoint.x;
+				n_vertex.x = minPoint.x;
+			}
+			if (f.y >= 0) {
+				p_vertex.y = maxPoint.y;
+				n_vertex.y = minPoint.y;
+			}
+			if (f.z >= 0) {
+				p_vertex.z = maxPoint.z;
+				n_vertex.z = minPoint.z;
+			}
+			if(f.x*p_vertex.x +f.y*p_vertex.y + f.z*p_vertex.z + f.d < 0)
+				return 0; //not visible			
+			
+			if(f.x*n_vertex.x +f.y*n_vertex.y + f.z*n_vertex.z + f.d < 0)
+				return 2; // intersects the view frustum, partially visible
+		}
+		return 1; // completely inside the view frustum
+	}
 	/*
 	 * Update the scene's list of cameras.
 	 * This should be protected, but making it anything but public causes it not to be called.

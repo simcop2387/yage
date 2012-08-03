@@ -94,6 +94,7 @@ struct Vec(int S, T : real, bool N=false)
 	{	VST res;
 		foreach(inout T e; res.v)
 			e = s;
+		debug res.inv(); // why isn't this called anyway?
 		return res;
 	}
 
@@ -101,6 +102,7 @@ struct Vec(int S, T : real, bool N=false)
 	static VST opCall(T[S] s ...)
 	{	VST res;
 		res.v[0..S] = s[0..S];
+		debug res.inv();
 		return res;
 	}
 
@@ -109,6 +111,7 @@ struct Vec(int S, T : real, bool N=false)
 	{	assert(s.length >= S);
 		VST res;
 		res.v[] = s[0..S];
+		debug res.inv();
 		return res;
 	}
 	/*
