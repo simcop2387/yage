@@ -11,6 +11,7 @@
 
 const char[] app = "demo1"; // set which program to build against yage.
 //const char[] app = "demo2";
+//const char[] app = "demo3";
 //const char[] app = "tests/integration/main.d";
 
 /**
