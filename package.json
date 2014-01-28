@@ -1,0 +1,14 @@
+{
+	"name": "yage",
+	"description": "A D2 port of the Yage game engine.",
+	"copyright": "Copyright © 2014 Various",
+	"authors": ["ryan", "various"],
+	"dependencies": {
+	   "derelict-ft": "~master",
+	   "derelict-ogg": "~master",
+	   "derelict-gl3": "~master",
+	   "derelict-sdl2": "~master",
+	   "derelict-util": ">=1.0.0"
+	},
+	"todo-find": {"derelict-openal": "~master"}
+}
