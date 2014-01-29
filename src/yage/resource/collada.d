@@ -835,11 +835,11 @@ class Collada
 			throw new XMLException("Node '%s' doesn't have a parent.", node.name());
 		}
 		
-		bool hasAttribute(char[] name)
+		bool hasAttribute(string name)
 		{	return cast(bool)(node.attributes().name(null, name));			
 		}	
 		
-		bool hasChild(char[] name="")
+		bool hasChild(string name="")
 		{	return (node.query.child(name).nodes.length > 0);
 		}
 		
@@ -854,7 +854,7 @@ class Collada
 	protected static struct Xml
 	{	
 		// Get all nodes in the document that have the matching id.
-		static Node getNodeById(Document!(char) doc, char[] id, char[] attributeName="id", char[] type="")
+		static Node getNodeById(Document!(char) doc, string id, string attributeName="id", string type="")
 		{	assert(doc);
 			id = makeId(id);
 			auto result = doc.query.descendant.filter((Document!(char).Node n) {

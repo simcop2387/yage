@@ -118,7 +118,7 @@ class Font
 	 * Params:
 	 *     data = 
 	 *     resourceName = */
-	this(ubyte[] data, char[] resourceName="")
+	this(ubyte[] data, string resourceName="")
 	{
 		// Initialize Freetype library if not initialized
 		uint error;

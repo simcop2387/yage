@@ -317,7 +317,7 @@ struct Style
 
 	/**
 	 * Constructor, returns a new Style with all properties set to their defaults. */
-	static Style opCall(char[] style="")
+	static Style opCall(string style="")
 	{	Style result;
 		result.set(style);
 		return result;

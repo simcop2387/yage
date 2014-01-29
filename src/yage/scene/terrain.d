@@ -620,7 +620,7 @@ class QuadTreeNode {
     */
     import tango.text.convert.Integer;
     
-	public void afficheDescendants(char[] nodename="[Root]"){
+	public void afficheDescendants(string nodename="[Root]"){
         Log.info("nodename: ",nodename);
 		Log.info("max point x y z: ",maxPoint.x," ",maxPoint.y," ",maxPoint.z);
 		Log.info("min point x y z: ",minPoint.x," ",minPoint.y," ",minPoint.z);

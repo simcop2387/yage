@@ -169,7 +169,7 @@ class Texture : IRenderTarget
 	}
 	
 	///
-	this(Image image, Format format=Texture.Format.AUTO, bool mipmap=true, char[] source="", bool padding=false)
+	this(Image image, Format format=Texture.Format.AUTO, bool mipmap=true, string source="", bool padding=false)
 	{	this.format = format;
 		this.mipmap = mipmap;
 		setImage(image, format, mipmap, source, padding);
@@ -197,7 +197,7 @@ class Texture : IRenderTarget
 	{	setImage(image, format, mipmap, source, padding.length2() != 0);
 	}	
 	/// ditto
-	void setImage(Image image, Format format, bool mipmap=true, char[] source="", bool pad=false) /// ditto
+	void setImage(Image image, Format format, bool mipmap=true, string source="", bool pad=false) /// ditto
 	{	assert(image !is null);
 		assert(image.getData() !is null);
 		ddsImageData = null;

@@ -97,7 +97,7 @@ abstract class Input
 	
 	protected static Surface currentSurface;	// Surface that the mouse is currently over
 
-	protected static SDL_keysym lastKeyDown; // Used for manual key-repeat.
+	protected static SDL_Keysym lastKeyDown; // Used for manual key-repeat.
 	protected static uint lastKeyDownTime = uint.max;
 	
 	/** 

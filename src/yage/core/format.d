@@ -60,9 +60,10 @@ alias swritef format;
 private import tango.stdc.stdlib;
 private import tango.stdc.string;
 private import  Utf = tango.text.convert.Utf;
-private alias char[] string;
+// TODO research this change
+/*private alias char[] string;
 private alias wchar[] wstring;
-private alias dchar[] dstring;
+private alias dchar[] dstring;*/
 
 import tango.core.Exception;
 

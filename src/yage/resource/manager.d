@@ -105,7 +105,7 @@ struct ResourceManager
 	 *     current_dir = Optional.  A directory relative to the working directory to search for the file pointed to by path.
 	 * Returns: The resolved path.
 	 * Throws: A ResourceException if the path could not be resolved. */
-	static char[] resolvePath(char[] path, char[] current_dir="")
+	static char[] resolvePath(string path, string current_dir="")
 	{	
 		// TODO: Quick return if it starts with / or _:/
 		version (Windows)
