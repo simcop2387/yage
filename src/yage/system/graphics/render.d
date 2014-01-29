@@ -119,11 +119,11 @@ struct Render
 	}
 
 	// Used by generateShader
-	private static string lightPosition = "lights[_].position\0".dup;
-	private static string lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
-	private static string lightSpotDirection = "lights[_].spotDirection\0".dup;
-	private static string lightSpotCutoff = "lights[_].spotCutoff\0".dup;
-	private static string lightSpotExponent = "lights[_].spotExponent\0".dup;
+	private static char[] lightPosition = "lights[_].position\0".dup;
+	private static char[] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
+	private static char[] lightSpotDirection = "lights[_].spotDirection\0".dup;
+	private static char[] lightSpotCutoff = "lights[_].spotCutoff\0".dup;
+	private static char[] lightSpotExponent = "lights[_].spotExponent\0".dup;
 
 	/**
 	 * Generate a phong/normal map shader for the pass.
