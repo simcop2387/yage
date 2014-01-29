@@ -6,7 +6,7 @@
 module yage.core.parallel;
 
 import tango.core.tools.Cpuid;
-import yage.core.ThreadPool;
+import tango.core.ThreadPool;
 import yage.core.timer;
 
 

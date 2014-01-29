@@ -8,7 +8,8 @@ module yage.system.libraries;
 
 import derelict.freetype.ft;
 
-import derelict.ogg.vorbis;
+// TODO redo all code calling into this API
+// import derelict.ogg.vorbis;
 import yage.system.log;
 import yage.core.object2;
 

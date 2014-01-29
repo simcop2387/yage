@@ -16,7 +16,7 @@ import tango.text.convert.Utf;
 import tango.text.Unicode;
 import tango.text.Util;
 
-import derelict.sdl.sdl;
+import derelict.sdl2.sdl;
 
 import yage.core.array;
 import yage.core.cache;

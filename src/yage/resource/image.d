@@ -10,8 +10,8 @@ import tango.io.Stdout;
 import tango.math.Math;
 import tango.text.Unicode;
 import tango.stdc.stringz;
-import derelict.sdl.sdl;
-import derelict.sdl.image;
+import derelict.sdl2.sdl;
+import derelict.sdl2.image;
 import yage.core.object2;
 import yage.core.color;
 

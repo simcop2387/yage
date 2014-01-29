@@ -11,11 +11,11 @@ module demo2.main;
 
 import tango.math.Math;
 import tango.io.device.File;
-import derelict.sdl.sdl;
+import derelict.sdl2.sdl;
 import yage.all;
 
-import derelict.opengl.gl;
-import derelict.opengl.glext;
+import derelict.opengl3.gl;
+import derelict.opengl3.ext;
 
 bool dragging;
 bool running = true;

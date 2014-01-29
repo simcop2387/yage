@@ -13,7 +13,7 @@ module demo3.main;
 import tango.core.Memory;
 import tango.core.Thread;
 
-import derelict.sdl.sdl;
+import derelict.sdl2.sdl;
 
 import yage.all;
 import yage.core.json;

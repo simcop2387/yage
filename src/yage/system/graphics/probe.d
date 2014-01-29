@@ -10,8 +10,8 @@ import tango.util.Convert;
 import tango.stdc.stringz;
 import tango.text.Unicode;
 import tango.text.Util;
-import derelict.opengl.gl;
-import derelict.opengl.glext;
+import derelict.opengl3.gl;
+import derelict.opengl3.ext;
 import yage.system.system;
 
 /**

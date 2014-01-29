@@ -6,7 +6,7 @@
 
 module yage.system.input;
 
-public import derelict.sdl.sdl;
+public import derelict.sdl2.sdl;
 import tango.stdc.time;
 import yage.core.math.vector;
 import yage.system.log;

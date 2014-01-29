@@ -8,12 +8,13 @@ module yage.system.window;
 
 import tango.stdc.stringz;
 import tango.io.Stdout;
-import derelict.opengl.gl;
-import derelict.opengl.glu;
-import derelict.opengl.glext;
+import derelict.opengl3.gl;
+// TODO find a replacement for this, probably in SDL2
+// import derelict.opengl.glu;
+import derelict.opengl3.ext;
 import derelict.util.exception;
-import derelict.sdl.sdl;
-import derelict.sdl.image;
+import derelict.sdl2.sdl;
+import derelict.sdl2.image;
 import yage.gui.surface;
 
 import yage.core.all;

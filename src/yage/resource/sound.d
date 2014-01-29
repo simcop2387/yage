@@ -12,8 +12,9 @@ import tango.stdc.stdio : FILE, fopen;
 import tango.text.convert.Format;
 import tango.stdc.stringz;
 import derelict.openal.al;
-import derelict.ogg.vorbistypes;
-import derelict.ogg.vorbisfile;
+// TODO find which modules these really need
+// import derelict.ogg.vorbistypes;
+// import derelict.ogg.vorbisfile;
 import yage.core.array;
 import yage.core.timer;
 import yage.core.object2;

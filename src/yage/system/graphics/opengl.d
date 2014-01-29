@@ -8,13 +8,15 @@ module yage.system.graphics.opengl;
 
 import tango.stdc.time : time;
 import tango.core.Traits;
-import tango.core.WeakRef;
+// TODO this needs to be removed/reimplemented
+// import tango.core.WeakRef;
 import tango.math.Math;
 import tango.stdc.stringz;
 import tango.util.container.HashMap;
-import derelict.opengl.gl;
-import derelict.opengl.glu;
-import derelict.opengl.glext;
+import derelict.opengl3.gl;
+// TODO reaplce all glu code
+//import derelict.opengl.glu;
+import derelict.opengl3.ext;
 
 import yage.core.all;
 import yage.gui.surface;

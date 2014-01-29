@@ -29,12 +29,15 @@ module yage.resource.dds;
 
 import tango.stdc.stdio;
 import tango.stdc.string;
-import std.intrinsic: bswap;
+import core.bitop;
 import tango.stdc.stringz;
-import derelict.opengl.gl;
-import derelict.opengl.extension.arb.texture_compression;
-import derelict.opengl.extension.ext.texture_compression_dxt1;
-import derelict.opengl.extension.ext.texture_compression_s3tc;
+
+import derelict.opengl3.gl3;
+// TODO Older declarations that I'm still looking into
+/*import derelict.gl3;
+import derelict.gl3.extension.arb.texture_compression;
+import derelict.gl3.extension.ext.texture_compression_dxt1;
+import derelict.gl3.extension.ext.texture_compression_s3tc;*/
 
 import yage.core.format;
 import yage.core.object2;

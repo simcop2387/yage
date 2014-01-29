@@ -6,7 +6,7 @@
 
 module yage.gui.surface;
 
-public import derelict.sdl.sdl;
+public import derelict.sdl2.sdl;
 
 import tango.math.IEEE;
 import tango.math.Math;

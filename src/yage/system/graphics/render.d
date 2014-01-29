@@ -8,8 +8,8 @@ module yage.system.graphics.render;
 
 import tango.math.Math;
 
-import derelict.opengl.gl;
-import derelict.sdl.sdl;
+import derelict.opengl3.gl;
+import derelict.sdl2.sdl;
 
 import yage.core.all;
 import yage.gui.surface;

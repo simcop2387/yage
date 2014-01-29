@@ -10,12 +10,13 @@ import tango.stdc.stringz;
 import tango.core.Memory;
 import tango.core.Thread;
 import derelict.openal.al;
-import derelict.opengl.gl;
-import derelict.opengl.glu;
-import derelict.opengl.glext;
+import derelict.opengl3.gl;
+// TODO replace this module
+// import derelict.opengl.glu;
+import derelict.opengl3.ext;
 import derelict.util.exception;
-import derelict.sdl.sdl;
-import derelict.sdl.image;
+import derelict.sdl2.sdl;
+import derelict.sdl2.image;
 import derelict.freetype.ft;
 import yage.core.all;
 import yage.gui.surface;
