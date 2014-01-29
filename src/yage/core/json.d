@@ -144,8 +144,8 @@ struct Json
 		return false;
 	}
 
-	private static string shortName(char[] fullyQualifiedName) {
-		for (int i = fullyQualifiedName.length-1; i >= 0; i--)     
+	private static string shortName(string fullyQualifiedName) {
+		for (ulong i = fullyQualifiedName.length-1; i >= 0; i--)     
 			if (fullyQualifiedName[i] == '.')
 				return fullyQualifiedName[i+1..$];
 		return "enum_"~fullyQualifiedName;

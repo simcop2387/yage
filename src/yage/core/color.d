@@ -157,7 +157,7 @@ struct Color
 		
 		//	Allow hex colors to start with hash.
 		if (string[0] == '#')
-			string = string[1..length];
+			string = string[1..6];
 		
 		// handle 3 and 4-digit color codes
 		char[8] color;
@@ -207,11 +207,11 @@ struct Color
 	 * See: <a href="http://www.w3schools.com/css/css_colornames.asp">CSS color names</a>*/
 	Color opAssign(string string)
 	{	ui = Color(string).ui;
-		return *this;
+		return this;
 	}
 	Color opAssign(uint value) /// ditto
 	{	ui = value;
-		return *this;
+		return this;
 	}
 
 	/// Allow casting color to a uint.
