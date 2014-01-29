@@ -42,7 +42,8 @@ import yage.resource.manager; // temporary for generateShader
 private class ResourceInfo
 {	uint id;   // OpenGL's handle
 	uint time; // seconds from 1970, watch out for 2038!
-	WeakReference!(Object) resource; // A weak reference, so when the resource is deleted, we know to delete this item also
+	// WeakReference!(Object) resource; // A weak reference, so when the resource is deleted, we know to delete this item also
+	Object resource;
 	
 	// Create ResourceInfo for a resource in map if it doesn't exist, or return it if it does
 	static ResourceInfo getOrCreate(Object resource, HashMap!(uint, ResourceInfo) map)

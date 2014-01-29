@@ -250,7 +250,7 @@ class Model : Geometry
 		return remap;		
 	}
 	
-	override static Model merge(Model[] models)
+	static Model merge(Model[] models)
 	{	Geometry geometryResult = Geometry.merge(models);
 	
 		Model result = new Model(geometryResult);

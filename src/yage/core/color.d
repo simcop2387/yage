@@ -35,7 +35,7 @@ import yage.core.object2;
  */
 struct Color
 {
-	private const real frac = 1.0f/255;
+	private static const real frac = 1.0f/255;
 	
 	static const Color BLACK = {0, 0, 0, 255};
 	static const Color BLUE = {0, 0, 255, 255};

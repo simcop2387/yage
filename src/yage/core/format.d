@@ -1534,7 +1534,7 @@ unittest
 	r = swritef("%.*d", -3, 7);
 	assert(r == "7");
 
-	typedef int myint;
+	alias int myint;
 	myint m = -7;
 	r = swritef(m);
 	assert(r == "-7");
@@ -1555,7 +1555,7 @@ unittest
 	r = swritef("%#X", 0xABCD);
 	assert(r == "0XABCD");
 
-	r = swritef("%#o", 012345);
+	r = swritef("%#o", std.conv.octal!12345);
 	assert(r == "012345");
 	r = swritef("%o", 9);
 	assert(r == "11");

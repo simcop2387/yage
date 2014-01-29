@@ -150,7 +150,7 @@ class ModelNode : VisibleNode
 	 * Get the radius of the culling sphere used when rendering the 3D Model
 	 * This is usually the distance from the center of its coordinate plane to
 	 * the most distant vertex.  There is no setRadius() */
-	float getRadius()
+	override float getRadius()
 	{	return transform().cullRadius * getWorldScale().max();
 	}
 	

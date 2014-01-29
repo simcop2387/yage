@@ -62,7 +62,7 @@ class SpriteNode : VisibleNode
 
 	private Material[1] temp; // hack to return single member array w/o static allocation.
 		
-	void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
+	override void getRenderCommands(CameraNode camera, LightNode[] lights, ref ArrayBuilder!(RenderCommand) result)
 	{	
 		//Matrix* transform = &transform_abs;
 		//Vec3f position = cast(Vec3f*)transform.v[12..15].ptr; // speed hack
@@ -87,7 +87,7 @@ class SpriteNode : VisibleNode
 	}
 
 	/// Return the distance to the furthest point of the SpriteNode, including size but not scale.
-	float getRadius()
+	override float getRadius()
 	{	return 1.414213562*getWorldScale().max();
 	}
 

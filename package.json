@@ -8,23 +8,22 @@
                 {
                         "name": "tests",
                         "targetType": "executable",
-                        "sourcePaths": ["src/tests"],
-                        "excludedSourceFiles": ["src/tests"]
+                        "sourcePaths": ["tests"]
                 },
                 {
                         "name": "demo1",
                         "targetType": "executable",
-                        "sourcePaths": ["src/demo1"]
+                        "sourcePaths": ["demo1"]
                 },
                 {
                         "name": "demo2",
                         "targetType": "executable",
-                        "sourcePaths": ["src/demo2"]
+                        "sourcePaths": ["demo2"]
                 },
                 {
                         "name": "demo3",
                         "targetType": "executable",
-                        "sourcePaths": ["src/demo3"]
+                        "sourcePaths": ["demo3"]
                 }
         ],
 	"dependencies": {
