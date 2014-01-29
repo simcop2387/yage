@@ -178,7 +178,7 @@ private TypeInfo primitiveTypeInfo(Mangle m)
 		case Mangle.Tcreal:		ti = typeid(creal);break;
 		case Mangle.Tchar:		ti = typeid(char);break;
 		case Mangle.Twchar:		ti = typeid(wchar);break;
-		case Mangle.Tdchar:		ti = typeid(dchar);
+		case Mangle.Tdchar:		ti = typeid(dchar);break;
 		default:				ti = null;
 	}
 	return ti;
@@ -216,16 +216,18 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 		int signed = 0;
 		uint base = 10;
 		int uc;
-		char[ulong.sizeof * 8] tmpbuf;	// long enough to print long in binary
-		char* prefix = "";
+		// Old size char[ulong.sizeof * 8]
+		string tmpbuf;	// long enough to print long in binary
+		char *prefix = "".dup.ptr;
 		string s;
 	
 		void putstr(string s)
 		{
 			//printf("flags = x%x\n", flags);
-			int prepad = 0;
-			int postpad = 0;
-			int padding = field_width - (strlen(prefix) + s.length);
+			long prepad = 0;
+			long postpad = 0;
+			// TODO make this not oveflow possibly
+			long padding = field_width - cast(long)(strlen(prefix) + s.length);
 			if (padding > 0)
 			{
 				if (flags & FLdash)
@@ -299,7 +301,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			}
 			else
 			{
-				int sl;
+				ulong sl;
 				string fbuf = tmpbuf;
 				char[12] format;
 				format[0] = '%';
