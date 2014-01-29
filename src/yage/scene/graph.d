@@ -95,7 +95,7 @@ class GraphNode : VisibleNode
 	 * Set the Material of the GraphNode, using the ResourceManager Manager
 	 * to ensure that no Material is loaded twice.
 	 * Equivalent of setMaterial(ResourceManager.material(filename)); */
-	void setMaterial(char[] material_file)
+	void setMaterial(string material_file)
 	{	model.getMeshes()[0].setMaterial(ResourceManager.material(material_file));
 	}
 

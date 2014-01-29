@@ -59,7 +59,7 @@ class Window : IRenderTarget
 	protected Vec2i	size; // size of the window
 	protected Vec2i viewportPosition;
 	protected Vec2i viewportSize;
-	protected char[] title, taskbarName;
+	protected string title, taskbarName;
 
 	protected static Window instance;	
 
@@ -121,7 +121,7 @@ class Window : IRenderTarget
 	 * Params:
 	 *     title = The caption shown on top of the window
 	 *     taskbarName = The caption shown on the window's taskbar entry.  Defaults to title. */
-	void setCaption(char[] title, char[] taskbarName=null)
+	void setCaption(string title, char[] taskbarName=null)
 	{	if (!taskbarName)
 			taskbarName = title;		
 		SDL_WM_SetCaption(toStringz(title), toStringz(taskbarName));

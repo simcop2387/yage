@@ -119,11 +119,11 @@ struct Render
 	}
 
 	// Used by generateShader
-	private static char[] lightPosition = "lights[_].position\0".dup;
-	private static char[] lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
-	private static char[] lightSpotDirection = "lights[_].spotDirection\0".dup;
-	private static char[] lightSpotCutoff = "lights[_].spotCutoff\0".dup;
-	private static char[] lightSpotExponent = "lights[_].spotExponent\0".dup;
+	private static string lightPosition = "lights[_].position\0".dup;
+	private static string lightQuadraticAttenuation = "lights[_].quadraticAttenuation\0".dup;
+	private static string lightSpotDirection = "lights[_].spotDirection\0".dup;
+	private static string lightSpotCutoff = "lights[_].spotCutoff\0".dup;
+	private static string lightSpotExponent = "lights[_].spotExponent\0".dup;
 
 	/**
 	 * Generate a phong/normal map shader for the pass.
@@ -165,7 +165,7 @@ struct Render
 		{
 			if (pass.autoShader == MaterialPass.AutoShader.PHONG)
 			{				
-				char[] defines = format("#version 110\n#define NUM_LIGHTS %s\n", params.numLights);
+				string defines = format("#version 110\n#define NUM_LIGHTS %s\n", params.numLights);
 				if (params.hasFog)
 					defines ~= "#define HAS_FOG\n";
 				if (params.hasSpecular)
@@ -180,8 +180,8 @@ struct Render
 					defines ~= "#define HAS_BUMP\n";
 		
 				// Shader source code.
-				char[] vertex   = defines ~ cast(char[])Embed.phong_vert;
-				char[] fragment = defines ~ cast(char[])Embed.phong_frag;
+				string vertex   = defines ~ cast(char[])Embed.phong_vert;
+				string fragment = defines ~ cast(char[])Embed.phong_frag;
 				result = new Shader(vertex, fragment);
 				try {					
 					graphics.bindShader(result);
@@ -210,7 +210,7 @@ struct Render
 		
 		// Set uniform values
 		if (pass.autoShader == MaterialPass.AutoShader.PHONG)
-		{	/* static char[] is a problem on Linux, it causes a segfault */
+		{	/* static string is a problem on Linux, it causes a segfault */
 			// Static makes .dup only occur once.
 			
 			uniforms.length = lights.length * (params.hasSpotlight ? 5 : 2);			
@@ -219,14 +219,14 @@ struct Render
 			assert(lights.length < 10);
 			foreach (i, light; lights)
 			{	
-				char[] makeName(char[] name, int i)
+				string makeName(char[] name, int i)
 				{	name[7] = i + '0'; // convert int to single digit ascii.
 					return name;
 				}
 				
 				// Doing it inline seems to make things slightly faster
 				ShaderUniform* su = &uniforms.data[idx];
-				char[] name = makeName(lightPosition, i);
+				string name = makeName(lightPosition, i);
 				su.name[0..name.length] = name[0..$];
 				su.type = ShaderUniform.Type.F4;
 				su.floatValues[0..3] = light.cameraSpacePosition.v[0..3];
@@ -306,7 +306,7 @@ struct Render
 		assert(geometry.getAttribute(Geometry.VERTICES));
 		
 		// Bind each vertex buffer
-		VertexBuffer[char[]] vertexBuffers = geometry.getVertexBuffers();
+		VertexBuffer[string] vertexBuffers = geometry.getVertexBuffers();
 		if (geometry !is currentGeometry) // benchmarks show this makes things a little faster
 		{	
 			foreach (name, vb; vertexBuffers)

@@ -81,7 +81,7 @@ class Memory
 	{	int bytes = data.length*T.sizeof; // in bytes
 		auto instance = getInstance();
 		debug {
-			char[] error = "Memory must be freed in the reverse order it was allocated.";
+			string error = "Memory must be freed in the reverse order it was allocated.";
 			assert(bytes == instance.allocationSizes[$-1], error);
 			assert(typeid(T) == instance.allocationTypes[$-1], error);
 			instance.allocationSizes.length = instance.allocationSizes.length-1;

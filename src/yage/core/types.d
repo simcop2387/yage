@@ -171,7 +171,7 @@ struct Nullable(T)
 	}
 	
 	///
-	char[] toString()
+	string toString()
 	{	if (_isNull)
 			return "null";
 		return format("%s", _value);

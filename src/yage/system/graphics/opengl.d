@@ -462,7 +462,7 @@ class OpenGL : GraphicsAPI
 			{	glUseProgramObjectARB(info.id);
 			
 				// Bind textures to "texture0", "texture1", etc. in the shader.
-				char[] glslTextureName = "texture0\0".dup;
+				string glslTextureName = "texture0\0".dup;
 				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 				for (int i=0; i<maxTextures; i++)
 				{	
@@ -795,7 +795,7 @@ class OpenGL : GraphicsAPI
 	 * Bind (and if necessary upload to video memory) a vertex buffer
 	 * Params:
 	 *   type = A vertex buffer type constant defined in Geometry or Mesh. */
-	bool bindVertexBuffer(VertexBuffer vb, char[] type)
+	bool bindVertexBuffer(VertexBuffer vb, string type)
 	{	if (vb)
 			assert(type.length);
 	
@@ -929,7 +929,7 @@ class OpenGL : GraphicsAPI
 	/**
 	 * Draw the contents of a vertex buffer, such as a buffer of triangle indices.
 	 * @param triangles If not null, this array of triangle indices will be used for drawing the mesh*/
-	void drawPolygons(VertexBuffer polygons, char[] type, bool indexed=true)
+	void drawPolygons(VertexBuffer polygons, string type, bool indexed=true)
 	{	
 		// Draw the polygons
 		int useVbo = Probe.feature(Probe.Feature.VBO) && polygons.cache;
@@ -999,7 +999,7 @@ class OpenGL : GraphicsAPI
 				glDeleteObjectARB(result);
 		
 		// Get OpenGL's log for a shader object.
-		char[] getLog(uint id)
+		string getLog(uint id)
 		{	int len;  char *log;
 			glGetObjectParameterivARB(id, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
 			if (len > 0)
@@ -1010,7 +1010,7 @@ class OpenGL : GraphicsAPI
 		}
 		
 		// Compile a shader into object code.
-		uint compile(char[] source, uint type)
+		uint compile(string source, uint type)
 		{
 			// Compile this shader into a binary object					
 			char* sourceZ = source.ptr;
@@ -1019,7 +1019,7 @@ class OpenGL : GraphicsAPI
 			glCompileShaderARB(shaderObj);
 			
 			// Get the compile log and check for errors
-			char[] compileLog = getLog(shaderObj);
+			string compileLog = getLog(shaderObj);
 			shader.compileLog ~= compileLog;
 			int status;
 			glGetObjectParameterivARB(shaderObj, GL_OBJECT_COMPILE_STATUS_ARB, &status);
@@ -1043,7 +1043,7 @@ class OpenGL : GraphicsAPI
 		glLinkProgramARB(result); // common failure point
 		
 		// Check for errors
-		char[] linkLog = getLog(result);
+		string linkLog = getLog(result);
 		shader.compileLog ~= "\n"~linkLog;
 		int status;
 		glGetObjectParameterivARB(result, GL_OBJECT_LINK_STATUS_ARB, &status);
@@ -1052,7 +1052,7 @@ class OpenGL : GraphicsAPI
 		
 		// Validate
 		glValidateProgramARB(result);
-		char[] validateLog = getLog(result);
+		string validateLog = getLog(result);
 		shader.compileLog ~= validateLog;
 		int isValid;				
 		glGetObjectParameterivARB(result, GL_VALIDATE_STATUS, &isValid);

@@ -17,29 +17,29 @@ class Shader
 {
 	//bool failed = false;
 	
-	char[] compileLog;		///
+	string compileLog;		///
 	
-	protected char[] vertexSource;
-	protected char[] fragmentSource;
+	protected string vertexSource;
+	protected string fragmentSource;
 	
 	/**
 	 * Params:
 	 *     vertexSource = Source code of a vertex shader.
 	 *     fragmentSource = Source code of a fragment shader. */
-	this(char[] vertexSource, char[] fragmentSource)
+	this(string vertexSource, char[] fragmentSource)
 	{	this.vertexSource = vertexSource~"\0";
 		this.fragmentSource = fragmentSource~"\0";
 	}
 	
 	///
-	char[] getVertexSource(bool nullTerminated=false)
+	string getVertexSource(bool nullTerminated=false)
 	{	if (nullTerminated)		
 			return vertexSource;
 		return vertexSource[0..$-1];
 	}
 	
 	///
-	char[] getFragmentSource(bool nullTerminated=false)
+	string getFragmentSource(bool nullTerminated=false)
 	{	if (nullTerminated)		
 			return fragmentSource;	
 		return fragmentSource[0..$-1];
@@ -75,14 +75,14 @@ struct ShaderUniform
 	}
 	
 	/// Constructors
-	static ShaderUniform opCall(char[] name, Type type, float[] values...)
+	static ShaderUniform opCall(string name, Type type, float[] values...)
 	{	ShaderUniform result;
 		result.name[0..name.length] = name[0..$];		
 		result.floatValues[0..values.length] = values[0..$];
 		result.type = type;
 		return result;
 	}	
-	static ShaderUniform opCall(char[] name, Type type, int[] values...) /// ditto
+	static ShaderUniform opCall(string name, Type type, int[] values...) /// ditto
 	{	ShaderUniform result;
 		result.name[0..name.length] = name[0..$];
 		result.intValues[0..values.length] = values[0..$];

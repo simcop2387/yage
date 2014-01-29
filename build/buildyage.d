@@ -9,15 +9,15 @@
  * See: <a href="http://dsource.org/projects/cdc/">The CDC Project</a>
  */
 
-const char[] app = "demo1"; // set which program to build against yage.
-//const char[] app = "demo2";
-//const char[] app = "demo3";
-//const char[] app = "tests/integration/main.d";
+const string app = "demo1"; // set which program to build against yage.
+//const string app = "demo2";
+//const string app = "demo3";
+//const string app = "tests/integration/main.d";
 
 /**
  * Use to implement your own custom build script, or pass args on to defaultBuild() 
  * to use this file as a generic build script like bud or rebuild. */
-int main(char[][] args)
+int main(string[] args)
 {	
 	// Operate cdc as a generic build script
 	//return defaultBuild(args);
@@ -25,22 +25,22 @@ int main(char[][] args)
 	
 	// Get platform
 	version (Win32)
-		char[] platform = "win32";
+		string platform = "win32";
 	version (Win64)
-		char[] platform = "win64";
+		string platform = "win64";
 	version (linux)
 	{	version (X86)
-			char[] platform = "linux32";
+			string platform = "linux32";
 		version (X86_64)
-			char[] platform = "linux64";
+			string platform = "linux64";
 	}
 	
 	// Parse Options
-	char[][] options1;  // options for both derelict and yage
-	char[][] options2;  // options for only yage
+	string[] options1;  // options for both derelict and yage
+	string[] options2;  // options for only yage
 	bool help, ddoc, verbose, startyage, debug_, lib;
 	bool badArg = false;
-	foreach (char[] arg; args)
+	foreach (string arg; args)
 	{	switch(String.toLower(arg))
 		{	case "-ddoc": 			ddoc = true; options2 ~= ["-D", "-Dd../doc"]; break;
 			case "-debug": 			debug_=true; options1 ~= ["-debug", "-g"]; break;
@@ -85,15 +85,15 @@ int main(char[][] args)
 	long startTime = System.time();
 	
 	// Build derelict into a lib if not built.
-	char[] debugstr = debug_ ? "-d" : "";
-	char[] derelictLib = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;
+	string debugstr = debug_ ? "-d" : "";
+	string derelictLib = "../lib/derelict-"~compiler~"-"~platform~debugstr~lib_ext;
 	if (!FS.exists(derelictLib))
 		CDC.compile(["derelict"], ["-of"~derelictLib, "-lib"] ~ options1, null, "../src", verbose);
 	
 	// Build derelict.lib and yage source into yage.lib if not built.  Unlike Derelict, this lib is deleted and recreated every build since Yage changes frequently.	
 	createEmbeddedResources();
 	
-	char[] yageLib;
+	string yageLib;
 	if (lib) // Compiling yage into a separate lib adds about 40% to the build time
 	{	yageLib = "yage-"~compiler~"-"~platform~debugstr~lib_ext;
 		CDC.compile(["yage"], ["-of../lib/"~yageLib, "-lib"] ~ options1, null, "../src", verbose);
@@ -127,9 +127,9 @@ int main(char[][] args)
 void createEmbeddedResources()
 {
 	// TODO: Only re-embed files if the date changes?
-	char[] path = "../src/yage/resource/embed";
+	string path = "../src/yage/resource/embed";
 	
-	char[] source = 
+	string source = 
 		"module yage.resource.embed.embed;\r\n\r\n"
 		"/// Yage's build script generates this struct automatically from the other files in the resource/embed folder."
 		"\r\nstruct Embed {\r\n";
@@ -140,8 +140,8 @@ void createEmbeddedResources()
 		if (file=="embed.d")
 			continue;
 		
-		char[] contents = cast(char[])FS.read(path~"/"~file);
-		char[] encodedContents = "";
+		string contents = cast(char[])FS.read(path~"/"~file);
+		string encodedContents = "";
 		foreach (c; contents)
 		{	// Encode as a binary-safe D string
 			if (c =='\t')
@@ -153,7 +153,7 @@ void createEmbeddedResources()
 			else if (c=='"' || c=='\\')
 				encodedContents ~= "\\"~c;
 			else if (c < 32 || 126 < c) // embed invalid utf-8 characters as hex
-			{	char[] encode = "0123456789ABCDEF";
+			{	string encode = "0123456789ABCDEF";
 				encodedContents ~= "\\x"~encode[c/16]~encode[c%16];
 			}
 			else
@@ -161,7 +161,7 @@ void createEmbeddedResources()
 		}
 		
 		// Add to the struct as a static member.p
-		source ~= "\tstatic char[] " ~ String.replace(String.replace(file, " ", "_"), ".", "_") ~ " = \"" ~
+		source ~= "\tstatic string " ~ String.replace(String.replace(file, " ", "_"), ".", "_") ~ " = \"" ~
 			encodedContents ~ "\"; /// embedded version of "~file~"\r\n";		
 	}
 	source ~= "}";

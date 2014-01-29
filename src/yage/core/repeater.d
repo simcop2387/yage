@@ -98,8 +98,8 @@ class Repeater : Thread, IDisposable
 	}
 	
 	private void onError(Exception e)
-	{	char[] msg;
-		e.writeOut(delegate void(char[] a) {
+	{	string msg;
+		e.writeOut(delegate void(string a) {
 			msg ~= a;
 		});
 	};

@@ -119,11 +119,11 @@ abstract class System
 	}
 	
 	struct Credit
-	{	char[] name;
-		char[] handle;
-		char[] code;
-		char[] license;
-		static Credit opCall(char[] name, char[] handle, char[] code, char[] license)
+	{	string name;
+		string handle;
+		string code;
+		string license;
+		static Credit opCall(string name, char[] handle, char[] code, char[] license)
 		{	Credit result;
 			result.name=name;
 			result.handle=handle;

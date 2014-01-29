@@ -56,7 +56,7 @@ struct CSSValue
 		unit = Unit.PX;
 		return *this;
 	}
-	CSSValue opAssign(char[] v) /// ditto
+	CSSValue opAssign(string v) /// ditto
 	{	if (v[length-1] == '%')
 		{	value = to!(float)(v[0..length-1]);
 			unit = Unit.PERCENT;
@@ -91,7 +91,7 @@ struct CSSValue
 		result.unit = isPercent;
 		return result;
 	}
-	static CSSValue opCall(char[] v) /// ditto
+	static CSSValue opCall(string v) /// ditto
 	{	CSSValue result;
 		result = v;
 		return result;
@@ -119,10 +119,10 @@ struct CSSValue
 
 	/**
 	 * Returns: The value as it would be printed in a CSS string. */
-	char[] toString()
+	string toString()
 	{	if (isNaN(value))
 			return "auto";
-		return to!(char[])(value) ~ (unit==Unit.PX ? "px" : "%");
+		return to!(string)(value) ~ (unit==Unit.PX ? "px" : "%");
 	}
 }
 
@@ -271,12 +271,12 @@ struct Style
 	/**
 	 * Font properties
 	 * fontFamily = path or (soon) css name of the font to use.  */	
-	char[] fontFamily = ResourceManager.DEFAULT_FONT;
+	string fontFamily = ResourceManager.DEFAULT_FONT;
 	CSSValue fontSize = CSSValue(12); /// ditto
 	FontStyle fontStyle; /// ditto
 	FontWeight fontWeight; /// ditto
 	
-	private char[] lastFontFamily;
+	private string lastFontFamily;
 	private Font internalFont;
 	
 	/**
@@ -328,7 +328,7 @@ struct Style
 	 * TODO: Fix this function so it cleans up its garbage.
 	 * Example:
 	 * style.set("border: 2px solid black; font-family: arial.ttf; color: white");*/
-	void set(char[] style)
+	void set(string style)
 	{	
 		if (!style.length)
 			return;
@@ -338,10 +338,10 @@ struct Style
 		foreach (expr; patterns(style, ";"))
 		{	
 			expr = trim(expr);
-			scope char[][] tokens = split(expr, ":");
+			scope string[] tokens = split(expr, ":");
 			if (tokens.length<2)
 				throw new CSSException("CSS Property: '%s' has no value", expr);
-			char[] property = trim(tokens[0]);
+			string property = trim(tokens[0]);
 			property = toLower(property);
 			tokens = delimit(trim(tokens[1]), " \r\n\t");
 			
@@ -361,7 +361,7 @@ struct Style
 							fontWeight = Style.stringToEnum!(FontWeight)(token);
 						else if (!containsPattern(token, "url(") && (token.containsPattern("%") || token.containsPattern("px")))
 						{	if (token.containsPattern("/"))
-							{	char[][] temp =  token.split("/");
+							{	string[] temp =  token.split("/");
 								fontSize = temp[0];
 								lineHeight = temp[1];
 							} else
@@ -433,9 +433,9 @@ struct Style
 	 * Get string of css text storing the values of this style.
 	 * Only the properties that differ from the defaults will be returned.
 	 * TODO: Finish this function. */
-	char[] toString()
+	string toString()
 	{	Style def; // default style, req'd by styleCompare
-		char[][] result;
+		string[] result;
 		
 		mixin(styleCompare!("top"));
 		mixin(styleCompare!("right"));
@@ -477,29 +477,29 @@ struct Style
 	
 	/**
 	 * Convert the various Style enumerations to their css string format. */
-	static char[] enumToString(Style.BorderImageStyle style)
+	static string enumToString(Style.BorderImageStyle style)
 	{	switch(style)
 		{	case Style.BorderImageStyle.STRETCH: return "stretch";
 			case Style.BorderImageStyle.ROUND: return "round";
 			case Style.BorderImageStyle.REPEAT: return "repeat";
 	}	}
-	static char[] enumToString(Style.FontStyle style) /// ditto
+	static string enumToString(Style.FontStyle style) /// ditto
 	{	switch(style)
 		{	case Style.FontStyle.AUTO: return "auto";
 			case Style.FontStyle.NORMAL: return "normal";
 			case Style.FontStyle.ITALIC: return "italic";
 	}	}
 	
-	static char[] enumToString(Style.FontWeight style) /// ditto
+	static string enumToString(Style.FontWeight style) /// ditto
 	{	switch(style)
 		{	case Style.FontWeight.AUTO: return "auto";
 			case Style.FontWeight.NORMAL: return "normal";
 			case Style.FontWeight.BOLD: return "bold";
 	}	}
-	static char[] enumToString(Style.Overflow style) /// ditto
+	static string enumToString(Style.Overflow style) /// ditto
 	{	return style==Style.Overflow.VISIBLE ? "visible" : "hidden";
 	}
-	static char[] enumToString(Style.TextAlign style) /// ditto
+	static string enumToString(Style.TextAlign style) /// ditto
 	{	switch(style)
 		{	case Style.TextAlign.AUTO: return "auto";
 			case Style.TextAlign.LEFT: return "left";
@@ -507,7 +507,7 @@ struct Style
 			case Style.TextAlign.RIGHT: return "right";
 			case Style.TextAlign.JUSTIFY: return "justify";
 	}	}
-	static char[] enumToString(Style.TextDecoration style) /// ditto
+	static string enumToString(Style.TextDecoration style) /// ditto
 	{	switch(style)
 		{	case Style.TextDecoration.AUTO: return "auto";
 			case Style.TextDecoration.NONE: return "none";
@@ -517,7 +517,7 @@ struct Style
 		}
 	}
 	
-	private static T stringToEnum(T)(char[] string)
+	private static T stringToEnum(T)(string string)
 	{	static if (is (T==Style.TextAlign))
 			switch (string)
 			{	case "auto": return TextAlign.AUTO; 
@@ -556,7 +556,7 @@ struct Style
 	/* Helper for set)
 	 * Remove the url('...') from a css path, if it's present.
 	 * Returns: A slice of the original url to avoid creating garbage.*/ 
-	private char[] removeUrl(char[] url)
+	private string removeUrl(char[] url)
 	{	if (url.length>5 && (url[0..5] == "url('" || url[0..5] == "url(\""))
 			return url[5..$-2];
 		if (url.length>4 && (url[0..4] == "url(" || url[0..4] == "url("))
@@ -567,7 +567,7 @@ struct Style
 	/*
 	 * Helper for set()
 	 * Set up to values of any type from an array of tokens, using T's static opCall. */
-	private void setEdge(T)(T[] edge, char[][] tokens)
+	private void setEdge(T)(T[] edge, string[] tokens)
 	{	if (tokens.length > 0)					
 		{	edge[0..3] = edge[3] = (tokens[0]);  
 			if (tokens.length > 1)
@@ -585,17 +585,17 @@ struct Style
 
 /*
  * Helper for toString() */
-private template styleCompare(char[] name="")
-{     const char[] styleCompare =
+private template styleCompare(string name="")
+{     const string styleCompare =
     	 `if (`~name~`!=def.`~name~`) result ~= "`~toCSSName(name)~`: "~format("%s", `~name~`);`;
 }
 
 /*
  * Convert from a property name to a css name.
  * For example, "fontSize" to "font-size". */
-private char[] toCSSName(char[] name)
+private string toCSSName(char[] name)
 {
-	char[] result;
+	string result;
 	foreach(c; name)
 	{	if (c>64 && c<=90) // if capital letter
 			result ~= '-';

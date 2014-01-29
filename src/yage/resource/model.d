@@ -29,8 +29,8 @@ struct KeyFrame
 
 ///
 class Joint
-{	char[]	name;
-	char[]	parentName;
+{	string	name;
+	string	parentName;
 	Joint	parent;				// pointer to parent bone (or null)
 	Joint[] children;
 	Vec3f	startPosition;
@@ -46,8 +46,8 @@ class Joint
 class Joint : Tree!(Joint)
 {
 	int number;
-	char[] sid;
-	char[] name;
+	string sid;
+	string name;
 	
 	Matrix relative;	///
 	Matrix absolute;	///
@@ -66,7 +66,7 @@ struct JointInfluence
  * ModelNodes can be used to create 3D models in a scene. */
 class Model : Geometry
 {	
-	private char[] source;
+	private string source;
 
 	// Old:
 	protected float fps=24;
@@ -90,7 +90,7 @@ class Model : Geometry
 	}
 
 	/// Instantiate and and load the given model file.
-	this (char[] filename)
+	this (string filename)
 	{	this();		
 		source = ResourceManager.resolvePath(filename);
 		auto c = new Collada(filename);
@@ -228,7 +228,7 @@ class Model : Geometry
 	}
 	
 	/// Get the path to the file where the model was loaded.
-	char[] getSource()
+	string getSource()
 	{	return source;
 	}
 

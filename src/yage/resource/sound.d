@@ -48,18 +48,18 @@ class Sound
 	 * Load a sound from a file.
 	 * Note that the file is not closed until the destructor is called.
 	 * Params: source=Filename of the sound to load.*/
-	this(char[] filename)
+	this(string filename)
 	{
-		char[] source = ResourceManager.resolvePath(filename);
+		string source = ResourceManager.resolvePath(filename);
 
 		// Get first four bytes of sound file to determine type
 		// And then load the file.  sound_file will have all of our important info
 		MappedFile file = new MappedFile(source, File.ReadShared); // TODO it's surely faster to just get the first 4 bytes w/o a mapped file.
-		if (cast(char[])file.map()[0..4]=="RIFF")
+		if (cast(string)file.map()[0..4]=="RIFF")
 			sound_file = new WaveFile(source);
-		else if (cast(char[])file.map[0..4]=="OggS")
+		else if (cast(string)file.map[0..4]=="OggS")
 			sound_file = new VorbisFile(source);
-		else throw new ResourceException("Unrecognized sound format '"~cast(char[])file.map[0..4]~"' for file '"~source~"'.");
+		else throw new ResourceException("Unrecognized sound format '"~cast(string)file.map[0..4]~"' for file '"~source~"'.");
 		delete file;
 
 		// Determine OpenAL format
@@ -84,7 +84,7 @@ class Sound
 	{	dispose();
 	}	
 	
-	override void dispose() /// ditto
+	void dispose() /// ditto
 	{	freeBuffers(0, buffer_num);	// ensure every buffer is released
 		buffer_num = 0;
 		delete sound_file;
@@ -123,7 +123,7 @@ class Sound
 	}
 
 	/// Get the filename this Sound was loaded from.
-	char[] getSource()
+	string getSource()
 	{	return sound_file.source;
 	}
 
@@ -197,7 +197,7 @@ class Sound
 	}
 
 	/// Print useful information about the loaded sound file.
-	override char[] toString()
+	override string toString()
 	{	return Format.convert(
 			"size of buffer: {} bytes\nsize of buffer: {} bytes\nbuffers per second: {} bytes\n", 
 			buffer_size, buffer_num, buffers_per_sec
@@ -216,11 +216,11 @@ private abstract class SoundFile
 	int		frequency;	// 22050hz, 44100hz?
 	int		bits;		// 8bit, 16bit?
 	int		size;		// in bytes
-	char[]	source;
-	char[][]comments;	// Header info from audio file (not used yet)
+	string	source;
+	string[]comments;	// Header info from audio file (not used yet)
 
 	/// Load the given file and parse its headers
-	this(char[] filename)
+	this(string filename)
 	{	source = filename;
 		Log.info("Loading sound '" ~ source ~ "'.");
 	}
@@ -232,7 +232,7 @@ private abstract class SoundFile
 	}
 
 	/// Print useful information about the loaded sound file.
-	override char[] toString()
+	override string toString()
 	{	return (
 			Format.convert("Sound: '{}'\n", source) ~
 			Format.convert("channels: {}\n", channels) ~
@@ -251,15 +251,15 @@ private class WaveFile : SoundFile
 	MappedFile file;
 
 	/// Open a wave file and store attributes from its headers
-	this(char[] filename)
+	this(string filename)
 	{	super(filename);
 		file = new MappedFile(filename, File.ReadShared);
 
 		// First 4 bytes of Wave file should be "RIFF"
-		if (cast(char[])file.map[0..4] != "RIFF")
+		if (cast(string)file.map[0..4] != "RIFF")
 			throw new ResourceException("'"~filename~"' is not a RIFF file.");
 		// Skip size value (4 bytes)
-		if (cast(char[])file.map[8..12] != "WAVE")
+		if (cast(string)file.map[8..12] != "WAVE")
 			throw new ResourceException("'"~filename~"' is not a WAVE file.");
 		// Skip "fmt ", format length, format tag (10 bytes)
 		channels 	= (cast(ushort[])file.map[22..24])[0];
@@ -277,7 +277,7 @@ private class WaveFile : SoundFile
 
 	/** Return a buffer of uncompressed sound data.
 	 *  Both parameters are measured in bytes. */
-	override ubyte[] getBuffer(int offset, int _size)
+	ubyte[] getBuffer(int offset, int _size)
 	{	if (offset+_size > size)
 			return null;
 		return cast(ubyte[])file.map[(44+offset)..(44+offset+_size)];
@@ -288,13 +288,15 @@ private class WaveFile : SoundFile
 /// An Ogg Vorbis implementation of SoundFile
 private class VorbisFile : SoundFile
 {
-	OggVorbis_File vf;		// struct for our open ov file.
+        // TODO fix this!
+	//OggVorbis_File vf;		// struct for our open ov file.
+
 	int current_section;	// used interally by ogg vorbis
 	FILE *file;
 	ubyte[] buffer;			// used for returning data
 
 	/// Open an ogg vorbis file and store attributes from its headers
-	this(char[] filename)
+	this(string filename)
 	{	super(filename);
 
 		// Open the file

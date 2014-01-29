@@ -419,8 +419,8 @@ struct Vec(int S, T : real, bool N=false)
 	}
 	
 	/// Return a string representation of this vector for human reading.
-	char[] toString()
-	{	char[] result = "<";
+	string toString()
+	{	string result = "<";
 		for (int i=0; i<S; i++)
 			static if (is(T : real))
 				result ~= format("%.12f ", v[i]);

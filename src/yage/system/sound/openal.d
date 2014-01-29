@@ -19,7 +19,7 @@ import yage.system.sound.soundsystem;
  * On error, an exception is thrown with the OpenAL error code translated to a meaningful string. */
 class OpenAL
 {
-	static char[][int] ALErrorLookup;
+	static string[int] ALErrorLookup;
 	static Object mutex;
 	
 	// Initialize static variables

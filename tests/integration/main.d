@@ -64,10 +64,10 @@ class FPSCamera : Node
  * Other test Scenes typically inherit from this. */
 class TestScene : Scene
 {
-	char[] name = "Unnamed Scene";
+	string name = "Unnamed Scene";
 	protected FPSCamera camera;
 	
-	this(char[] name)
+	this(string name)
 	{	this.name = name;
 		camera = scene.addChild(new FPSCamera());
 	}
@@ -88,8 +88,8 @@ class TestScene : Scene
 		
 		if (key == SDLK_x) // reset shaders
 		{
-			Embed.phong_vert = cast(char[])ResourceManager.getFile("../src/yage/resource/embed/phong.vert");
-			Embed.phong_frag = cast(char[])ResourceManager.getFile("../src/yage/resource/embed/phong.frag");
+			Embed.phong_vert = cast(string)ResourceManager.getFile("../src/yage/resource/embed/phong.vert");
+			Embed.phong_frag = cast(string)ResourceManager.getFile("../src/yage/resource/embed/phong.frag");
 			
 			Render.reset();
 		}
@@ -389,7 +389,7 @@ class UI : Surface
 	 * A tab on the Panel */
 	class Tab : Surface
 	{	
-		this(char[] name, Surface parent, Panel info, Surface show)
+		this(string name, Surface parent, Panel info, Surface show)
 		{	super("width: 58px; height: 20px; background-color: black", name, parent);
 			onMouseOver = curry((Tab self)
 			{	self.style.set("background-color: gray");
@@ -424,7 +424,7 @@ class UI : Surface
 			// Content
 			Surface content = new Surface("width: 100%; height: 100%; top: 25px", this); // container for content pages
 			
-			char[] contentStyle = "width: 100%; height: 100%; display: none";
+			string contentStyle = "width: 100%; height: 100%; display: none";
 			stats = new Surface(contentStyle, "Stats", content);
 			scene = new Surface(contentStyle, "Scene", content);
 			controls = new Surface(contentStyle, "", content);

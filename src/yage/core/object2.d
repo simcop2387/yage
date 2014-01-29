@@ -19,8 +19,8 @@ debug {
 class YageObject
 {
 	// These maps prevent the id system from adding any additional weight per object.
-	static YageObject[char[]] objects;
-	static char[][YageObject] objectsReverse;
+	static YageObject[string] objects;
+	static string[YageObject] objectsReverse;
 	
 	~this()
 	{	if (this in objectsReverse)
@@ -32,13 +32,13 @@ class YageObject
 	/**
 	 * Get or set a unique identifier string associated with this object.
 	 * Later, if another object is assigned the same id, this object will no longer be associated with it. */
-	char[] getId()
+	string getId()
 	{	auto ptr = this in objectsReverse;
 		if (ptr)
 			return *ptr;
 		return "";
 	}	
-	void setId(char[] id) /// ditto
+	void setId(string id) /// ditto
 	{	if (id.length)
 		{	
 			// If id already exists on another object
@@ -47,7 +47,7 @@ class YageObject
 				objectsReverse.remove(*ptr);
 			
 			// If this object previously had another id
-			char[] oldId = getId();
+			string oldId = getId();
 			if (oldId.length)
 				objects.remove(oldId);
 		
@@ -63,7 +63,7 @@ class YageObject
 	/**
 	 * Get the object previously assigned to the unique id string.
 	 * If no object exists, null will be returned. */
-	static YageObject getById(char[] id)
+	static YageObject getById(string id)
 	{	auto ptr = id in objects;
 		if (ptr)
 			return *ptr;
@@ -113,9 +113,9 @@ class YageException : Exception
 	}
 	
 	///
-	static char[] getStackTrace(Exception e)
-	{	char[] result;
-		e.writeOut(delegate void(char[] a) {
+	static string getStackTrace(Exception e)
+	{	string result;
+		e.writeOut(delegate void(string a) {
 			result ~= a;
 		});
 		return result;

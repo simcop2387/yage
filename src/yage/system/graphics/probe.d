@@ -18,7 +18,7 @@ import yage.system.system;
  * Provides hardware probing capabilities for Yage. */
 abstract class Probe
 {
-	private static char[] extensions; // return value from glGetString(GL_EXTENSIONS)
+	private static string extensions; // return value from glGetString(GL_EXTENSIONS)
 	private static int fbo=-1, shader=-1, vbo=-1, mt=-1, np2=-1, textureCompression=-1;	// so lookup only has to occur once.
 	
 	/**
@@ -100,7 +100,7 @@ abstract class Probe
 	 * Searches to see if the given extension is supported in hardware.
 	 * Use feature() for a much faster cached version.
 	 * Due to the nature of sdl, a window must first be created before calling this function. */
-	static bool checkExtension(char[] name)
+	static bool checkExtension(string name)
 	{	if (!extensions.length)
 			extensions = toLower(fromStringz(cast(char*)glGetString(GL_EXTENSIONS)));
 	    int result = containsPattern(extensions, toLower(name.dup)~" "); 
@@ -112,8 +112,8 @@ abstract class Probe
 	/**
 	 * Return an array of all supported OpenGL extensions.
 	 * Due to the nature of sdl, a window must first be created before calling this function. */ 
-	static char[][] getExtensions()
-	{	char[] exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
+	static string[] getExtensions()
+	{	string exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
 		return split(exts, " ");
 	}
 }

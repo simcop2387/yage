@@ -127,7 +127,7 @@ struct Color
 		res.ui = ui;
 		return res;
 	}
-	static Color opCall(char[] string)
+	static Color opCall(string string)
 	{	
 		// An english color name
 		if (string.length <= 20)
@@ -205,7 +205,7 @@ struct Color
 	 * Black, blue, brown, cyan, gold, gray/grey, green, indigo, magenta, orange, 
 	 * pink, purple, red, transparent, violet, white, and yellow are supported.
 	 * See: <a href="http://www.w3schools.com/css/css_colornames.asp">CSS color names</a>*/
-	Color opAssign(char[] string)
+	Color opAssign(string string)
 	{	ui = Color(string).ui;
 		return *this;
 	}
@@ -256,13 +256,13 @@ struct Color
 	 * Get the color as a string.
 	 * Params:
 	 * lower = return lower case hexadecimal digits*/ 
-	char[] hex(bool lower=false, char[] lookaside=null)
+	string hex(bool lower=false, char[] lookaside=null)
 	{	if (lower)
 			return swritef("%.8x", bswap(ui));
 		return swritef("%.8X", bswap(ui));
 	}
 	/// ditto
-	char[] toString()
+	string toString()
 	{	return "#"~hex();
 	}
 

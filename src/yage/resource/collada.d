@@ -50,19 +50,19 @@ import yage.system.log;
  */
 class Collada
 {
-	private char[] resourcePath; // Absolute path to the collada file, or empty string if created from memory.			
+	private string resourcePath; // Absolute path to the collada file, or empty string if created from memory.			
 	private Document!(char) doc;		
-	private Geometry[char[]] geometries; // indexed by id
-	private Material[char[]] materials;
-	private Image[char[]] images;
-	private Texture[char[]] textures;
+	private Geometry[string] geometries; // indexed by id
+	private Material[string] materials;
+	private Image[string] images;
+	private Texture[string] textures;
 	
 	/**
 	 * Params:
 	 *     filename = path to the collada file to load */
-	this(char[] filename)
-	{	char[] absPath = ResourceManager.resolvePath(filename);
-		char[] xml = cast(char[])File.get(absPath);
+	this(string filename)
+	{	string absPath = ResourceManager.resolvePath(filename);
+		string xml = cast(char[])File.get(absPath);
 		try {
 			doc = new Document!(char)();			
 			doc.parse(xml);
@@ -78,7 +78,7 @@ class Collada
 	 * Params:
 	 *     xml = Contents of a collada file.
 	 *     path = Look for resources relative to this path. */
-	this(char[] xml, char[] path)
+	this(string xml, char[] path)
 	{	assert(xml.length);
 		try {
 			doc = new Document!(char)();			
@@ -97,11 +97,11 @@ class Collada
 	 *     vertexRemap = Vertex indices are changed during loading.  This is a map of their new indices back to their old ones.
 	 * Returns:
 	 */
-	Geometry getGeometryById(char[] id)
+	Geometry getGeometryById(string id)
 	{	scope int[] unused;
 		return getGeometryById(id, false, unused);
 	}	
-	Geometry getGeometryById(char[] id, bool calledByGetMerged, out int[] vertexRemap) /// ditto
+	Geometry getGeometryById(string id, bool calledByGetMerged, out int[] vertexRemap) /// ditto
 	{	id = Xml.makeId(id);
 		
 		// Check cache
@@ -114,7 +114,7 @@ class Collada
 		scope Node[] meshNodes = geometryNode.getChildren("mesh");
 		foreach (mesh; meshNodes)
 		{	
-			char[][] types = [cast(char[])"polylist", "triangles", "polygons"];
+			string[] types = [cast(char[])"polylist", "triangles", "polygons"];
 			foreach (type; types) // loop through the different names of the polygon indices
 				foreach (Node polyList; mesh.getChildren(type))
 				{			
@@ -123,7 +123,7 @@ class Collada
 					{	float[] data;
 						ushort components = 3;
 						ushort offset;
-						char[] name;					
+						string name;					
 					}				
 					
 					// Build inputs from xml
@@ -132,7 +132,7 @@ class Collada
 					foreach (i, inputNode; inputNodes)
 					{					
 						inputs[i].name = inputNode.getAttribute("semantic");
-						char[] offset = inputNode.hasAttribute("offset") ? inputNode.getAttribute("offset") : inputNode.getAttribute("idx");				
+						string offset = inputNode.hasAttribute("offset") ? inputNode.getAttribute("offset") : inputNode.getAttribute("idx");				
 						try {
 							inputs[i].offset = Xml.parseNumber!(int)(offset);
 						} catch (ConversionException e)
@@ -140,13 +140,13 @@ class Collada
 						}
 							
 						if (inputs[i].name=="VERTEX") // VERTEX type requires another level of indirection to get to proper node.
-						{	char[] verticesId = inputNode.getAttribute("source");				
+						{	string verticesId = inputNode.getAttribute("source");				
 							Node verticesNode = Xml.getNodeById(doc, verticesId);
 							inputNode = verticesNode.getChild("input");
 						}
 						
 						// Get values
-						char[] sourceId = inputNode.getAttribute("source"); 
+						string sourceId = inputNode.getAttribute("source"); 
 						inputs[i].data = getDataFromSourceId!(float)(sourceId, inputs[i].components);
 					}
 					int[] indices;
@@ -167,8 +167,8 @@ class Collada
 								indicesPerVertex = input.offset;
 						indicesPerVertex++;
 						
-						char[][char[]] translate = [
-							cast(char[])"VERTEX": cast(char[])Geometry.VERTICES,
+						string[char[]] translate = [
+							cast(string)"VERTEX": cast(char[])Geometry.VERTICES,
 							"NORMAL": Geometry.NORMALS,
 							"TEXCOORD": Geometry.TEXCOORDS0, 
 							"TEXCOORD0": Geometry.TEXCOORDS0 // TODO: append set attribute for multi-texturing
@@ -190,7 +190,7 @@ class Collada
 								int j = i/indicesPerVertex*c;
 								data[j..j+c] = input.data[index..index+c];
 							}
-							char[] name = translate[input.name];
+							string name = translate[input.name];
 							
 							// Flip the y texture coordinate for OpenGL.
 							if (name.length >= 16 && name[0..16]== "gl_MultiTexCoord")
@@ -304,7 +304,7 @@ class Collada
 	 *     A specular map will be used from the alpha channel, if present.  
 	 *     See http://www.feelingsoftware.com/uploads/documents/ColladaMax.pdf, section 6.</li>
 	 * <ul>*/
-	Material getMaterialById(char[] id)
+	Material getMaterialById(string id)
 	{	id = Xml.makeId(id);
 		if (id in materials)
 			return materials[id];
@@ -337,7 +337,7 @@ class Collada
 		
 		// Helper function for loading material data.
 		void getColorOrTexture(Node n, inout Color color, inout Texture texture)
-		{	char[] name = n.name();
+		{	string name = n.name();
 			switch (name)
 			{	case "param":
 					n = Xml.getNodeById(doc, n.getAttribute("ref"), "sid").getChild("float3");	
@@ -459,7 +459,7 @@ class Collada
 				matrix = matrix.transformAffine(getSceneNodeTransform(node));
 					
 				Node skin;
-				char[] geometryId, controllerId, skeletonId;
+				string geometryId, controllerId, skeletonId;
 				if (node.hasChild("instance_geometry")) // Collada 1.4+
 					geometryId = node.getChild("instance_geometry").getAttribute("url");
 				else if (node.hasChild("instance")) // Collada 1.3
@@ -535,7 +535,7 @@ class Collada
 	}
 
 	///
-	Joint[] getJointsById(char[] id)
+	Joint[] getJointsById(string id)
 	{     
 		// Get the up direction (unfinished)
 		Matrix upTransform = getBaseTransform();
@@ -582,7 +582,7 @@ class Collada
 	 *     id = 
 	 *     model = A model with the joints and vertex arrays previously populated. 
 	 * Returns: An array the same length as the model's vertices, with each sub array a list of the joints that influence that vertex. */
-	JointInfluence[][] getJointInfluencesByControllerId(char[] id, Model model, int[] vertexRemap)
+	JointInfluence[][] getJointInfluencesByControllerId(string id, Model model, int[] vertexRemap)
 	{	
 		assert(!vertexRemap.length || vertexRemap.length == model.getVertexBuffer(Geometry.VERTICES).length);
 		
@@ -600,13 +600,13 @@ class Collada
 					// Load data from the joints node
 			Node jointsNode = skin.getChild("joints");							
 			foreach (input; jointsNode.getChildren("input"))
-			{	char[] semantic = input.getAttribute("semantic");
+			{	string semantic = input.getAttribute("semantic");
 				if (semantic == "JOINT")
 				{
 					// Create a map of joint names to joints.  
 					ushort unused;
-					scope char[][] jointNames = getDataFromSourceId!(char[])(input.getAttribute("source"), unused);
-					scope Joint[char[]] sidToJoint;
+					scope string[] jointNames = getDataFromSourceId!(char[])(input.getAttribute("source"), unused);
+					scope Joint[string] sidToJoint;
 					foreach (joint; model.joints) // TODO: Maybe it would be good to have one of these in Model, so a gun can be attached to an arm joint.
 						sidToJoint[joint.sid] = joint;
 					foreach (i, name; jointNames)
@@ -682,16 +682,16 @@ class Collada
 	 *     MID: 8 byte channels, no compression
 	 *     HIGH: 16 bit float (not supported yet)
 	 *     MAX: 32 bit float (not supported yet)</li> */
-	Texture getTextureById(char[] id)
+	Texture getTextureById(string id)
 	{	id = Xml.makeId(id);		
 		if (id in textures)
 			return textures[id];
 		
-		char[] imageNewParamSid = Xml.getNodeById(doc, id, "sid").getChild("sampler2D").getChild("source").value;			
-		char[] imageNodeId = Xml.getNodeById(doc, imageNewParamSid, "sid").getChild("surface").getChild("init_from").value;
+		string imageNewParamSid = Xml.getNodeById(doc, id, "sid").getChild("sampler2D").getChild("source").value;			
+		string imageNodeId = Xml.getNodeById(doc, imageNewParamSid, "sid").getChild("surface").getChild("init_from").value;
 		Node imageNode = Xml.getNodeById(doc, imageNodeId);
 		
-		char[] precision = "LOW";
+		string precision = "LOW";
 		if (imageNode.hasChild("create_2d")) // change from Collada 1.4 to 1.5, one level deeper
 		{	imageNode = imageNode.getChild("create_2d");
 			if (imageNode.hasChild("hint"))
@@ -704,7 +704,7 @@ class Collada
 		if (initFrom.hasChild("ref")) // new in Collada 1.5
 			initFrom = initFrom.getChild("ref");
 		
-		char[] imagePath = initFrom.value;
+		string imagePath = initFrom.value;
 		imagePath = ResourceManager.resolvePath(imagePath, resourcePath);		
 		
 		// Load texture
@@ -720,7 +720,7 @@ class Collada
 	// All geometry will be rotated by this Matrix.  
 	protected Matrix getBaseTransform()
 	{	return Matrix.IDENTITY;
-		char[] upAxis = Node(doc.elements).getChild("asset").getChild("up_axis").value();
+		string upAxis = Node(doc.elements).getChild("asset").getChild("up_axis").value();
 		if (upAxis == "X_UP") // Y is already up
 			return Vec3f(0, -3.141527/2, 0).toMatrix();
 		if (upAxis == "Z_UP")
@@ -729,7 +729,7 @@ class Collada
 	}
 	
 	// See: https://collada.org/mediawiki/index.php/Using_accessors
-	protected T[] getDataFromSourceId(T)(char[] id, out ushort components)
+	protected T[] getDataFromSourceId(T)(string id, out ushort components)
 	{	
 		Node source = Xml.getNodeById(doc, id);		
 		Node sourceAccessor;
@@ -739,7 +739,7 @@ class Collada
 			sourceAccessor = source.getChild("technique").getChild("accessor"); // TODO: Read stride, offset, etc.
 		scope Node[] params = sourceAccessor.getChildren("param");
 		components = params.length;
-		char[] sourceFloatArrayId = sourceAccessor.getAttribute("source");
+		string sourceFloatArrayId = sourceAccessor.getAttribute("source");
 		Node sourceFloatArray = Xml.getNodeById(doc, sourceFloatArrayId);
 		return Xml.parseNumberList!(T)(sourceFloatArray.value);
 	}
@@ -800,15 +800,15 @@ class Collada
 		}
 		
 		// Expose node properties.
-		char[] name()
+		string name()
 		{	return node.name;
 		}
-		char[] value() // ditto
+		string value() // ditto
 		{	return node.value;
 		}
 		
 		// Get the value of an attribute by its name, or throw XMLException if not found
-		char[] getAttribute(char[] name)
+		string getAttribute(char[] name)
 		{	auto attr = node.attributes().name(null, name);
 			if (attr)
 				return attr.value();
@@ -816,7 +816,7 @@ class Collada
 		}
 		
 		// Get the child named name (or first child if no name), or throw XMLException if not found.
-		Node getChild(char[] name=null)
+		Node getChild(string name=null)
 		{	auto result = node.query.child(name).nodes;
 			if (result.length)
 				return Node(result[0]);
@@ -824,7 +824,7 @@ class Collada
 		}
 		
 		// Get children that match name, or return an empty array
-		Node[] getChildren(char[] name=null)
+		Node[] getChildren(string name=null)
 		{	return Node(node.query.child(name).nodes);
 		}
 
@@ -871,14 +871,14 @@ class Collada
 			throw new XMLException("The document does not have an element with %s='%s'", attributeName, id);
 		}
 		
-		static char[] makeId(char[] id)
+		static string makeId(char[] id)
 		{	assert(id.length);
 			if (id[0]=='#' && id.length>1) // id's are sometimes prefixed with #
 				id = id[1..$];
 			return id;
 		}
 		
-		static T parseNumber(T)(char[] number)
+		static T parseNumber(T)(string number)
 		{	try {
 				return to!(T)(number);
 			} catch (ConversionException e)
@@ -887,8 +887,8 @@ class Collada
 		}
 		
 		// Convert a space separated string of numbers to an array of type T.
-		static T[] parseNumberList(T)(char[] list) // TODO: lookaside buffer?
-		{	scope char[][] pieces = delimit(trim(list), " \r\n\t");
+		static T[] parseNumberList(T)(string list) // TODO: lookaside buffer?
+		{	scope string[] pieces = delimit(trim(list), " \r\n\t");
 			T[] result = new T[pieces.length];
 			int i;
 			try {

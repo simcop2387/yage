@@ -8,12 +8,12 @@ import tango.core.Vararg;
  * This behaves exactly the same as writef, but returns a string instead of printing it. 
  * It can also accept the _arguments, and _argptr directly from another var arg function.
  * It would be nice to have this functionality in less than 1300 lines of code. */
-char[] swritef(...)
+string swritef(...)
 {	
 	// If called with _arguments and _argptr from another vararg function.
 	if (_arguments.length==2 && _arguments[0] == typeid(TypeInfo[]) && _arguments[1] == typeid(void*))
 	{
-		char[] result;
+		string result;
 		void putc(dchar c)
 		{	dchar[1] temp;
 			temp[0] = c;
@@ -61,9 +61,9 @@ private import tango.stdc.stdlib;
 private import tango.stdc.string;
 private import  Utf = tango.text.convert.Utf;
 // TODO research this change
-/*private alias char[] string;
-private alias wchar[] wstring;
-private alias dchar[] dstring;*/
+/*private alias string string;
+private alias wstring wstring;
+private alias dstring dstring;*/
 
 import tango.core.Exception;
 
@@ -101,7 +101,7 @@ class FormatError : Exception
 	{  	super("yage.core.format");
 	}
 
-	this(char[] msg)
+	this(string msg)
 	{	super("yage.core.format " ~ msg);
 	}
 }
@@ -220,7 +220,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 		char* prefix = "";
 		string s;
 	
-		void putstr(char[] s)
+		void putstr(string s)
 		{
 			//printf("flags = x%x\n", flags);
 			int prepad = 0;
@@ -282,7 +282,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			version (DigitalMarsC)
 			{
 				int sl;
-				char[] fbuf = tmpbuf;
+				string fbuf = tmpbuf;
 				if (!(flags & FLprecision))
 					precision = 6;
 				while (1)
@@ -300,7 +300,7 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			else
 			{
 				int sl;
-				char[] fbuf = tmpbuf;
+				string fbuf = tmpbuf;
 				char[12] format;
 				format[0] = '%';
 				int i = 1;
@@ -638,18 +638,18 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 				{
 				case Mangle.Tchar:
 				LarrayChar:
-					s = va_arg!(char[])(argptr);
+					s = va_arg!(string)(argptr);
 					goto Lputstr;
 	
 				case Mangle.Twchar:
 				LarrayWchar:
-					wchar[] sw = va_arg!(wchar[])(argptr);
+					wstring sw = va_arg!(wchar[])(argptr);
 					s = .toString(sw);
 					goto Lputstr;
 	
 				case Mangle.Tdchar:
 				LarrayDchar:
-					dchar[] sd = va_arg!(dchar[])(argptr);
+					dstring sd = va_arg!(dchar[])(argptr);
 					s = .toString(sd);
 				Lputstr:
 					if (fc != 's')
@@ -689,9 +689,9 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			{	TypeInfo_Struct tis = cast(TypeInfo_Struct)ti;
 				version(DigitalMars){
 					if (!(tis.xtoString is null))
-					{	char[] delegate() toString;
+					{	string delegate() toString;
 						toString.ptr = argptr;
-						toString.funcptr = cast(char[] function())tis.xtoString; 
+						toString.funcptr = cast(string function())tis.xtoString; 
 						s = Utf.fromString8 (toString(), s);
 					} else
 						s =  tis.toString(); // use typename as tostring.
@@ -908,18 +908,18 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 				{
 					case Mangle.Tchar:
 					LarrayChar_p:
-					s = *cast(char[]*)p_args; p_args += array_t.sizeof;
+					s = *cast(string*)p_args; p_args += array_t.sizeof;
 					goto PLputstr;
 	
 					case Mangle.Twchar:
 					LarrayWchar_p:
-					wchar[] sw = *cast(wchar[]*)p_args; p_args += array_t.sizeof;
+					wstring sw = *cast(wchar[]*)p_args; p_args += array_t.sizeof;
 					s = .toString(sw);
 					goto PLputstr;
 	
 					case Mangle.Tdchar:
 					LarrayDchar_p:
-					dchar[] sd = *cast(dchar[]*)p_args; p_args += array_t.sizeof;
+					dstring sd = *cast(dchar[]*)p_args; p_args += array_t.sizeof;
 					s = .toString(sd);
 					PLputstr:
 					if (fc != 's')
@@ -962,9 +962,9 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 				throw new FormatError("Can't convert " ~ tis.toString() ~ " to string: \"string toString()\" not defined");
 				
 				
-				char[] delegate() toString;
+				string delegate() toString;
 				toString.ptr = argptr;
-				toString.funcptr = cast(char[] function())tis.xtoString; 
+				toString.funcptr = cast(string function())tis.xtoString; 
 				s = Utf.fromString8 (toString(), s);
 				// s = tis.xtoString(p_args);
 				
@@ -1154,16 +1154,16 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 			switch (m2)
 			{
 				case Mangle.Tchar:
-					fmt = va_arg!(char[])(argptr);
+					fmt = va_arg!(string)(argptr);
 					break;
 		
 				case Mangle.Twchar:
-					wfmt = va_arg!(wchar[])(argptr);
+					wfmt = va_arg!(wstring)(argptr);
 					fmt = .toString(wfmt);
 					break;
 		
 				case Mangle.Tdchar:
-					dfmt = va_arg!(dchar[])(argptr);
+					dfmt = va_arg!(dstring)(argptr);
 					fmt = .toString(dfmt);
 					break;
 		
@@ -1183,16 +1183,16 @@ private void doFormatPtr(void delegate(dchar) putc, TypeInfo[] arguments,  void*
 				switch (m2)
 				{
 					case Mangle.Tchar:
-					fmt = *cast(char[]*)p_args; p_args += array_t.sizeof;
+					fmt = *cast(string*)p_args; p_args += array_t.sizeof;
 					break;
 		
 					case Mangle.Twchar:
-					wfmt = *cast(wchar[]*)p_args; p_args += array_t.sizeof;
+					wfmt = *cast(wstring*)p_args; p_args += array_t.sizeof;
 					fmt = .toString(wfmt);
 					break;
 		
 					case Mangle.Tdchar:
-					dfmt = *cast(dchar[]*)p_args; p_args += array_t.sizeof;
+					dfmt = *cast(dstring*)p_args; p_args += array_t.sizeof;
 					fmt = .toString(dfmt);
 					break;
 		
@@ -1636,7 +1636,7 @@ unittest
 	r = swritef("%s", aa);
 	assert(r == "[3:[h,e,l,l,o],4:[b,e,t,t,y]]");
 
-	static const dchar[] ds = ['a','b'];
+	static const dstring ds = ['a','b'];
 	for (int j = 0; j < ds.length; ++j)
 	{
 	r = swritef(" %d", ds[j]);

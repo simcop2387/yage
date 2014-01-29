@@ -31,22 +31,22 @@ class Geometry
 	 *     COLORS1: An optional secondary color value for each vertex.
 	 *     FOGCOORDS: Currently unused.
 	 */
-	static const char[] VERTICES   = "gl_Vertex";
-	static const char[] NORMALS    = "gl_Normal"; /// ditto
-	static const char[] TEXCOORDS0 = "gl_MultiTexCoord0"; /// ditto
-	static const char[] TEXCOORDS1 = "gl_MultiTexCoord1"; /// ditto
-	static const char[] TEXCOORDS2 = "gl_MultiTexCoord2"; /// ditto
-	static const char[] TEXCOORDS3 = "gl_MultiTexCoord3"; /// ditto
-	static const char[] TEXCOORDS4 = "gl_MultiTexCoord4"; /// ditto
-	static const char[] TEXCOORDS5 = "gl_MultiTexCoord5"; /// ditto
-	static const char[] TEXCOORDS6 = "gl_MultiTexCoord6"; /// ditto
-	static const char[] TEXCOORDS7 = "gl_MultiTexCoord7"; /// ditto
-	static const char[] COLORS0    = "gl_Color"; /// ditto
-	static const char[] COLORS1    = "gl_SecondaryColor"; /// ditto
-	static const char[] FOGCOORDS  = "gl_FogCood"; /// ditto
+	static const string VERTICES   = "gl_Vertex";
+	static const string NORMALS    = "gl_Normal"; /// ditto
+	static const string TEXCOORDS0 = "gl_MultiTexCoord0"; /// ditto
+	static const string TEXCOORDS1 = "gl_MultiTexCoord1"; /// ditto
+	static const string TEXCOORDS2 = "gl_MultiTexCoord2"; /// ditto
+	static const string TEXCOORDS3 = "gl_MultiTexCoord3"; /// ditto
+	static const string TEXCOORDS4 = "gl_MultiTexCoord4"; /// ditto
+	static const string TEXCOORDS5 = "gl_MultiTexCoord5"; /// ditto
+	static const string TEXCOORDS6 = "gl_MultiTexCoord6"; /// ditto
+	static const string TEXCOORDS7 = "gl_MultiTexCoord7"; /// ditto
+	static const string COLORS0    = "gl_Color"; /// ditto
+	static const string COLORS1    = "gl_SecondaryColor"; /// ditto
+	static const string FOGCOORDS  = "gl_FogCood"; /// ditto
 	
 
-	/*protected*/ VertexBuffer[char[]] attributes;
+	/*protected*/ VertexBuffer[string] attributes;
 	/*protected*/ Mesh[] meshes;
 	
 	bool drawNormals = false;
@@ -156,11 +156,11 @@ class Geometry
 	 *     geom.setAttribute(Geometry.VERTICES, vertices);
 	 * --------
 	 */
-	public void[] getAttribute(char[] name)
+	public void[] getAttribute(string name)
 	{	int components;
 		return getAttribute(name, components);
 	}
-	public void[] getAttribute(char[] name, out int components) /// ditto
+	public void[] getAttribute(string name, out int components) /// ditto
 	{	auto result = name in attributes;
 		if (result)
 		{	components = (*result).components;
@@ -168,7 +168,7 @@ class Geometry
 		}
 		return null;
 	}
-	public void setAttribute(T)(char[] name, T[] values) /// ditto
+	public void setAttribute(T)(string name, T[] values) /// ditto
 	{	
 		// Prevent creation of a new VBO if one exists
 		VertexBuffer vb = getVertexBuffer(name);
@@ -183,19 +183,19 @@ class Geometry
 	}
 	
 	///
-	public void removeAttribute(char[] name)
+	public void removeAttribute(string name)
 	{	attributes.remove(name);		
 	}
 	
 	/**
 	 * Get the vertex buffers used for rendering.  Vertex buffers wrap attributes. */
-	public VertexBuffer[char[]] getVertexBuffers()
+	public VertexBuffer[string] getVertexBuffers()
 	{	return attributes;
 	}
 	
 	/**
 	 * Get a single VertexBuffer by name rendering. */
-	public VertexBuffer getVertexBuffer(char[] name) 
+	public VertexBuffer getVertexBuffer(string name) 
 	{	auto result = name in attributes;
 		if (result)
 			return *result;
@@ -330,9 +330,9 @@ class Geometry
 	static Geometry merge(Geometry[] geometries)
 	{
 		// Get a maping of all types to their vertex buffer info.
-		VertexBuffer[char[]] types;
+		VertexBuffer[string] types;
 		foreach (ref geometry; geometries)
-			foreach(char[] type, vb; geometry.getVertexBuffers())
+			foreach(string type, vb; geometry.getVertexBuffers())
 				types[type] = vb;
 		
 		Geometry result = new Geometry();
@@ -420,9 +420,9 @@ class Geometry
  * The Geometry class groups a Mesh with vertex buffers referenced by the traingle indices */
 class Mesh
 {
-	static const char[] TRIANGLES = "GL_TRIANGLES"; /// Constants used to specify various built-in polgyon attribute type names.
-	static const char[] LINES = "GL_LINES"; /// ditto
-	static const char[] POINTS = "GL_POINTS"; /// ditto
+	static const string TRIANGLES = "GL_TRIANGLES"; /// Constants used to specify various built-in polgyon attribute type names.
+	static const string LINES = "GL_LINES"; /// ditto
+	static const string POINTS = "GL_POINTS"; /// ditto
 	
 	protected VertexBuffer triangles;
 	public Material material;
@@ -447,7 +447,7 @@ class Mesh
 	void setMaterial(Material material) /// ditto
 	{	this.material = material;
 	}
-	void setMaterial(char[] filename, char[] id) /// ditto
+	void setMaterial(string filename, char[] id) /// ditto
 	{	this.material = ResourceManager.material(filename, id);
 	}
 

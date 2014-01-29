@@ -40,7 +40,7 @@ struct Letter
 	 * Get the utf8 representation of this letter. 
 	 * Params:
 	 *     lookaside = If specified, fill and return this buffer instead of allocating new memory on the heap. */
-	char[] toString(char[] lookaside=null)
+	string toString(char[] lookaside=null)
 	{	dchar[1] temp;
 		temp[0] = letter;
 		return .toString(temp, lookaside);
@@ -82,14 +82,14 @@ class Font
 	protected static FT_Library library;
 	
 	protected FT_Face face;
-	protected char[] resourceName;
+	protected string resourceName;
 	protected Letter[Key] cache; // Using this cache of rendered character images increases performance by about 5x.
 	
 	/**
 	 * Construct and load the font file specified by filename.
 	 * Params:
 	 *     filename = Any font file supported by Freetype that exists in ResourceManager.paths. */
-	this(char[] filename)
+	this(string filename)
 	{
 		// Initialize Freetype library if not initialized
 		uint error;
@@ -132,7 +132,7 @@ class Font
 		
 		// HACK: write a temporary file and then read it. Not possible to use TempFile because
 		//       that returns an absolute path and the constructor expects a relative path.
-		char[] tempFilePath = "TEMPORARY~FONT";
+		string tempFilePath = "TEMPORARY~FONT";
 		File.set(tempFilePath, data);
 		
 		this(tempFilePath);
@@ -173,7 +173,7 @@ class Font
 	 * 
 	 Get a Letter struct containing info and an image for a single letter.
 	 * Params:
-	 *     text = A string of text to render, must be unencoded unicode (dchar[]).
+	 *     text = A string of text to render, must be unencoded unicode (dstring).
 	 *     width = The horizontal pixel size of the font to render.
 	 *     height = The vertical pixel size of the font to render, if 0 it will be the same as the width.
 	 *     bold = Get a bold version of the letter.  This is performed by compositing the same glyph multiple times 
@@ -232,7 +232,7 @@ class Font
 	}
 
 	/// Return the font filename.
-	char[] toString()
+	string toString()
 	{	return resourceName;
 	}
 }

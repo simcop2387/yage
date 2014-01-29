@@ -559,7 +559,7 @@ struct ArrayBuilder(T)
 	}
 	
 	///
-	char[] toString()
+	string toString()
 	{	return swritef(data);
 	}
 	

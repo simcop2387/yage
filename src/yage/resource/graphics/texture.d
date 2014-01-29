@@ -71,7 +71,7 @@ struct TextureInstance  // TODO: Rename to TextureProperties
 	Texture texture;
 	
 	///
-	char[] toString()
+	string toString()
 	{	return format(`TextureInstance {source: "%s"}`, texture ? texture.source : "null");
 	}
 
@@ -130,15 +130,15 @@ class Texture : IRenderTarget
 	int width = 0;
 	int height = 0;	
 	
-	protected char[] source;	
+	protected string source;	
 	protected Image image; // if not null, the texture will be updated with this image the next time it is used.
 	//protected ubyte[] ddsImageData;
 	protected DDSImageData* ddsImageData;
 	
 	
-	public char[] ddsFile;
+	public string ddsFile;
 	
-	//public char[] ddsFile; // if not null, a dds texture will be loaded from this file the next time the texture is used.
+	//public string ddsFile; // if not null, a dds texture will be loaded from this file the next time the texture is used.
 	Vec2i padding;	// padding stores how many pixels of the original texture are unused.
 					// e.g. getWidth() returns the used texture + the padding.  
 					// Padding is applied to the top and the right, and can be negative.
@@ -154,7 +154,7 @@ class Texture : IRenderTarget
 	/**
 	 * Create a Texture from an image.
 	 * The image will be uploaded to memory when the Texture is first bound. */
-	this(char[] filename, Format format=Texture.Format.AUTO, bool mipmap=true)
+	this(string filename, Format format=Texture.Format.AUTO, bool mipmap=true)
 	{	source = ResourceManager.resolvePath(filename);
 		this.format = format;
 		this.mipmap = mipmap;
@@ -248,7 +248,7 @@ class Texture : IRenderTarget
 	}
 	
 	///
-	char[] getSource()
+	string getSource()
 	{	return source;
 	}
 }

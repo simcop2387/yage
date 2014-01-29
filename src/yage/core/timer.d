@@ -157,7 +157,7 @@ class Timer
 	}
 	
 	///
-	char[] toString()
+	string toString()
 	{	return Format.convert("{:d8}", tell());
 	}
 }

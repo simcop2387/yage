@@ -18,8 +18,8 @@ struct Json
 	///
 	static struct Options
 	{
-		char[] tab = "    ";       ///
-		char[] lineReturn = "\n";  ///
+		string tab = "    ";       ///
+		string lineReturn = "\n";  ///
 		int maxDepth = 16;         ///
 		int maxArrayLength = 64;   ///
 		int floatPrecision = 6;    /// TODO
@@ -34,23 +34,23 @@ struct Json
 		}
 	}
 	
-	private char[][Object] references;
-	private char[][void*] pointers;
+	private string[Object] references;
+	private string[void*] pointers;
 	
 	/**
 	 * Convert a primitive, object, or array to a Json string */
-	static char[] encode(T)(T object, Options options=Options())
+	static string encode(T)(T object, Options options=Options())
 	{	Json json; // makes instance of references on the stack, keeps things thread-sate
 		return json.internalEncode(object, options);
 	}
 	
-	private char[] internalEncode(T)(T object, Options options=Options(), char[] path="this")
+	private string internalEncode(T)(T object, Options options=Options(), string path="this")
 	{
 		static if (is(T : bool)) // bool
 			return object ? "true" : "false";			
 		else if (is(T : real))  // byte-ulong, float-real, and enum
 			return Format("{}", object);
-		else static if (isCharType!(T) || isStringType!(T)) // char-dchar, char[]-dchar[]
+		else static if (isCharType!(T) || isStringType!(T)) // char-dchar, string-dchar[]
 			return "\"" ~ object ~ '"';
 		else  static if (isArrayType!(T) || isAssocArrayType!(T) || is(T : Object) || is(T==struct)) // aggregate type, recurse
 		{	
@@ -59,10 +59,10 @@ struct Json
 			options.currentDepth++;
 			
 			// Repeat tabs to indentation level
-			char[] tab = "";
+			string tab = "";
 			for (int i=0; i<options.currentDepth; i++)
 				tab ~= options.tab;
-			char[] tab2 = tab[0..$-options.tab.length]; // one tab less			
+			string tab2 = tab[0..$-options.tab.length]; // one tab less			
 			
 			static if (isArrayType!(T))
 			{	// Show arrays inline?
@@ -71,14 +71,14 @@ struct Json
 				// dynamic array from object
 				T array = (object.length > options.maxArrayLength) ? object[0..options.maxArrayLength] : object;
 			
-				char[] result = "[";
+				string result = "[";
 				if (!inl)
 					result ~= options.lineReturn;
 				
 				//static if (!is(ElementTypeOfArray!(T) : void))				
 					foreach (int index, ElementTypeOfArray!(T) value; array) 
-					{	char[] newPath = Format("%s [{}]", path, index);
-						char[] comma = index<object.length-1 ? "," : "";
+					{	string newPath = Format("%s [{}]", path, index);
+						string comma = index<object.length-1 ? "," : "";
 						result ~= (inl ? " " : tab) ~ internalEncode(value, options, newPath) ~ comma ~ (inl ? "" : options.lineReturn);		
 					}
 				
@@ -89,12 +89,12 @@ struct Json
 				if (keys.length > options.maxArrayLength)
 					keys = keys[0..options.maxArrayLength];
 			
-				char[] result = "{" ~ options.lineReturn;
+				string result = "{" ~ options.lineReturn;
 				
 				foreach (int index, KeyTypeOfAA!(T) name; keys) 
 				{	ValTypeOfAA!(T) value = object[name];
-					char[] newPath = Format("%s [{}]", path, name);
-					char[] comma = index<keys.length-1 ? "," : "";
+					string newPath = Format("%s [{}]", path, name);
+					string comma = index<keys.length-1 ? "," : "";
 					result ~= tab ~ Format("{}: ", name) ~ internalEncode(value, options, newPath) ~ comma ~ options.lineReturn;		
 				}
 				return result ~ tab2 ~ "}";
@@ -110,10 +110,10 @@ struct Json
 						references[object] = path; // store new reference
 				}	}
 					
-				char[] result = "{" ~ options.lineReturn;
+				string result = "{" ~ options.lineReturn;
 				foreach (int index, _; object.tupleof) 
-				{	char[] name = shortName(object.tupleof[index].stringof);
-					char[] comma = index<object.tupleof.length-1 ? "," : "";
+				{	string name = shortName(object.tupleof[index].stringof);
+					string comma = index<object.tupleof.length-1 ? "," : "";
 					result ~= tab ~ name ~ ": " ~ internalEncode(object.tupleof[index], options, path~"."~name) ~ comma ~ options.lineReturn;
 				}
 				
@@ -144,7 +144,7 @@ struct Json
 		return false;
 	}
 
-	private static char[] shortName(char[] fullyQualifiedName) {
+	private static string shortName(char[] fullyQualifiedName) {
 		for (int i = fullyQualifiedName.length-1; i >= 0; i--)     
 			if (fullyQualifiedName[i] == '.')
 				return fullyQualifiedName[i+1..$];
@@ -187,9 +187,9 @@ struct Json
 			}
 			StructType Struct;
 			
-			char[] String = "Hello World";
-			char[] wString = "Hello World";
-			char[] dString = "Hello World";
+			string String = "Hello World";
+			string wString = "Hello World";
+			string dString = "Hello World";
 			float[] floatArray;
 			int[int] aa;
 			

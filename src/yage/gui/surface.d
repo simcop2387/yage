@@ -98,11 +98,11 @@ class Surface : Tree!(Surface)
 		if (parent)
 			parent.addChild(this);
 	}	
-	this (char[] style, Surface parent=null) /// ditto
+	this (string style, Surface parent=null) /// ditto
 	{	this(parent);
 		this.style.set(style);
 	}
-	this (char[] style, char[] html, Surface parent=null) /// ditto
+	this (string style, char[] html, Surface parent=null) /// ditto
 	{	this(parent);
 		this.style.set(style);
 		setHtml(html);
@@ -421,10 +421,10 @@ class Surface : Tree!(Surface)
 	
 	/**
 	 * Get and set the html text displayed inside this Surface. */
-	char[] getHtml()
+	string getHtml()
 	{	return textBlock.getHtml();
 	}
-	void setHtml(char[] html) /// ditto
+	void setHtml(string html) /// ditto
 	{	textDirty = true;
 		textBlock.setHtml(html);
 	}

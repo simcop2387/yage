@@ -38,12 +38,12 @@ struct ResourceManager
 {
 
 	private struct TextureKey
-	{	char[] source;
+	{	string source;
 		Texture.Format format;
 		bool mipmap;
 		
 		hash_t toHash()
-		{	return typeid(char[]).getHash(&source) ^ format ^ mipmap;
+		{	return typeid(string).getHash(&source) ^ format ^ mipmap;
 		}
 		int opEquals(TextureKey* rhs) // seems to go unused
 		{	return source == rhs.source && format == rhs.format && mipmap == rhs.mipmap;
@@ -60,20 +60,20 @@ struct ResourceManager
 	
 	static const DEFAULT_FONT = "__DEFAULT_FONT__"; // Used to specify the default font that's embedded as a resource in the yage executable.
 	
-	private static char[][] paths = [""];		// paths to look for resources
-	private static Collada[char[]]	colladas;
-	private static Font[char[]]		fonts;
-	private static Material[char[]] materials;
-	private static Model[char[]]	models;	
-	private static Shader[char[]]	shaders;
-	private static Sound[char[]]	sounds;
+	private static string[] paths = [""];		// paths to look for resources
+	private static Collada[string]	colladas;
+	private static Font[string]		fonts;
+	private static Material[string] materials;
+	private static Model[string]	models;	
+	private static Shader[string]	shaders;
+	private static Sound[string]	sounds;
 	private static Texture[TextureKey] textures;
 	
 	
 	private static Font defaultFont;
 	
 	/// Get the array of path strings
-	static char[][] getPaths()
+	static string[] getPaths()
 	{	return paths;
 	}
 
@@ -82,7 +82,7 @@ struct ResourceManager
 	 * Paths are relative to the location of the executable.
 	 * Returns:
 	 * The number of paths defined after adding the path.*/
-	static int addPath(char[] path)
+	static int addPath(string path)
 	{	version (Windows)
 			path = toLower(path);
 		if (path[length-1] != FileConst.PathSeparatorChar)
@@ -91,7 +91,7 @@ struct ResourceManager
 		return paths.length;
 	}
 
-	static int addPath(char[][] paths)	// ditto
+	static int addPath(string[] paths)	// ditto
 	{	foreach (p; paths)
 			addPath(p);
 		return paths.length;		
@@ -105,17 +105,17 @@ struct ResourceManager
 	 *     current_dir = Optional.  A directory relative to the working directory to search for the file pointed to by path.
 	 * Returns: The resolved path.
 	 * Throws: A ResourceException if the path could not be resolved. */
-	static char[] resolvePath(string path, string current_dir="")
+	static string resolvePath(string path, string current_dir="")
 	{	
 		// TODO: Quick return if it starts with / or _:/
 		version (Windows)
 		{	path = toLower(path);
 			current_dir = toLower(current_dir);
 		}
-		char[] result = cleanPath(FS.join(current_dir, path));
+		string result = cleanPath(FS.join(current_dir, path));
 		if (FilePath(result).exists)
 			return result;
-		foreach(char[] p; paths)
+		foreach(string p; paths)
 		{	result = cleanPath(FS.join(p, path));
 			if (FilePath(result).exists)
 				return result;
@@ -124,7 +124,7 @@ struct ResourceManager
 	}
 
 	/// Remove a path from the array of resource search paths.
-	static bool removePath(char[] path)
+	static bool removePath(string path)
 	{	version (Windows)
 			path = toLower(path);
 		for (int i=0; i<paths.length; i++)
@@ -136,19 +136,19 @@ struct ResourceManager
 	}
 
 	/// Simply load a file, using ResourceManager's paths to resolve relative paths.
-	static ubyte[] getFile(char[] filename)
-	{	char[] absPath = ResourceManager.resolvePath(filename);
+	static ubyte[] getFile(string filename)
+	{	string absPath = ResourceManager.resolvePath(filename);
 		return cast(ubyte[])File.get(absPath);
 	}
 	
 	/// Return an associative array (indexed by filename) of a resource type.
-	static Shader[char[]] getShaders() /// ditto
+	static Shader[string] getShaders() /// ditto
 	{	return shaders;
 	}
-	static Model[char[]] getModels() /// ditto
+	static Model[string] getModels() /// ditto
 	{	return models;
 	}
-	static Sound[char[]] getSounds() /// ditto
+	static Sound[string] getSounds() /// ditto
 	{	return sounds;
 	}
 	
@@ -163,7 +163,7 @@ struct ResourceManager
 	 * If it has already been loaded, the in-memory copy will be returned.
 	 * If not, it will be loaded and then returned.
 	 * Params: filename = The Font file that will be loaded, or Resource.DEFAULT_FONT */
-	static Font font(char[] filename)
+	static Font font(string filename)
 	{
 		if (filename=="__DEFAULT_FONT__") // dmd 1.066, __DEFAULT_FONT__ becomes garbage when yage.lib and demo1 are compiled separately.  So much for const protection!
 			return getDefaultFont();
@@ -184,8 +184,8 @@ struct ResourceManager
 	 * All associated Materials, Textures, and Shaders will be loaded into
 	 * the resource pool as well.
 	 * Params: filename = The 3D Model file that will be loaded. */
-	static Model model(char[] filename)
-	{	char[] absPath = resolvePath(filename);		
+	static Model model(string filename)
+	{	string absPath = resolvePath(filename);		
 		if (absPath in models)
 			return models[absPath];
 		
@@ -199,10 +199,10 @@ struct ResourceManager
 	 * 
 	 * Params:
 	 *     filename = Path and id to collada file.  e.g. foo/bar.dae#IdForMaterial3 */
-	static Material material(char[] filename, char[] id)
+	static Material material(string filename, char[] id)
 	{	
 		filename = resolvePath(filename);
-		char[] path = filename~"#"~id;
+		string path = filename~"#"~id;
 		auto result = path in materials;
 		if (result)
 			return *result;
@@ -223,7 +223,7 @@ struct ResourceManager
 	 *  If not, it will be loaded and stored in the resource pool.  This function
 	 *  is called automatically for each of a Material's Shaders when loading a Material.
 	 *  Params: type = set to 0 for vertex shader or 1 for fragment shader.
-	static Shader shader(char[] source, bool type)
+	static Shader shader(string source, bool type)
 	{	if (source in shaders)
 			return shaders[source];
 		Timer t = new Timer(true);
@@ -237,7 +237,7 @@ struct ResourceManager
 	 *  If the Sound has already been loaded, the in-memory copy will be returned.
 	 *  If not, it will be loaded and stored in the resource pool.
 	 *  Params: filename = The path to the sound file that will be loaded. */
-	static Sound sound(char[] filename)
+	static Sound sound(string filename)
 	{	filename = resolvePath(filename);
 		if (filename in sounds)
 			return sounds[filename];
@@ -255,7 +255,7 @@ struct ResourceManager
 	 * This function is called automatically for each of a material's textures when loading a material.
 	 * Keep in mind that multiple requested textures may use the same Texture.
 	 * Params: filename = The Texture image file that will be loaded. */	
-	static Texture texture(char[] filename, Texture.Format format=Texture.Format.AUTO, bool mipmap=true)
+	static Texture texture(string filename, Texture.Format format=Texture.Format.AUTO, bool mipmap=true)
 	{	filename = resolvePath(filename);
 		TextureKey key;
 		key.source = filename;		

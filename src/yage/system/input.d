@@ -73,7 +73,7 @@ abstract class Input
 		bool eight; /// ditto
 
 		///
-		char[] toString()
+		string toString()
 		{	return position.toString() ~ (left?"L":"") ~ (center?"C":"") ~ (right?"R":"") ~ (four?"4":"") ~ 
 				(five?"5":"") ~ (six?"6":"") ~ (seven?"7":"") ~ (eight?"8":"");
 		}

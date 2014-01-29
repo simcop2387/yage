@@ -46,7 +46,7 @@ class SoundNode : Node, ITemporal
 	{	this(parent);
 		setSound(sound);
 	}	
-	this(char[] filename, Node parent=null) /// ditto
+	this(string filename, Node parent=null) /// ditto
 	{	this(parent);
 		setSound(filename);
 	}
@@ -76,7 +76,7 @@ class SoundNode : Node, ITemporal
 	void setSound(Sound sound) /// ditto
 	{	this.sound = sound;
 	}
-	void setSound(char[] filename) /// ditto
+	void setSound(string filename) /// ditto
 	{	setSound(ResourceManager.sound(filename));
 	}
 

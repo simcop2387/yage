@@ -374,7 +374,7 @@ class HmapHeightGenerator : IHeightGenerator
 	 * TODO: replace Image with Image2
 	 * TODO: use an array of texturesBlendPaths to allow blending of more than 4 textures
 	 */
-	this(char[] heightmapPath, Vec2i gridResolution=Vec2i(256), Scaling scaling=Scaling.REPEAT, char[] lightmapPath=null, char[] texturesBlendPath=null)
+	this(string heightmapPath, Vec2i gridResolution=Vec2i(256), Scaling scaling=Scaling.REPEAT, char[] lightmapPath=null, char[] texturesBlendPath=null)
 	{
 		assert(heightmapPath.length != 0);
 
@@ -612,7 +612,7 @@ class QuadTreeNode {
 	public Vec3f center; /*center point of the AABB*/
 	static public QuadTreeNode patches[][]; //leaves
 	static private int number=0;
-    private char[] nodeName = "[Root]";
+    private string nodeName = "[Root]";
 	
     /*
     * Displays information about each node, considering the current QuadTreeNode instance as the root of the tree.
@@ -632,7 +632,7 @@ class QuadTreeNode {
 		}
 	}	
     
-    public char[] getNodeName(){
+    public string getNodeName(){
         return nodeName;
     }
 			

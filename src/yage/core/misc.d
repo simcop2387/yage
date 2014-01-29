@@ -20,16 +20,16 @@ import yage.core.timer;
 /**
  * Resolve "../", "./", "//" and other redirections from any path.
  * This function also ensures correct use of path separators for the current platform.*/
-char[] cleanPath(char[] path)
-{	char[] sep = "/";
+string cleanPath(char[] path)
+{	string sep = "/";
 
 	path = substitute(path, "\\", sep);
 	path = substitute(path, sep~"."~sep, sep);		// remove "./"
 
-	scope char[][] paths = split(path, sep);
-	scope char[][] result;
+	scope string[] paths = split(path, sep);
+	scope string[] result;
 
-	foreach (char[] token; paths)
+	foreach (string token; paths)
 	{	switch (token)
 		{	case "":
 				break;
@@ -71,7 +71,7 @@ ReturnTypeOf!(F) delegate(ParameterTupleOf!(F)[0..$-Args.length]) curry(F, Args.
 	return &context.call;
 }
 unittest
-{	auto f1 = (char[] a, char[] b, char[] c) { return a~b~c; };
+{	auto f1 = (string a, char[] b, char[] c) { return a~b~c; };
 	auto f2 = curry(f1, "3");
 	auto f3 = curry(f2, "2");
 	

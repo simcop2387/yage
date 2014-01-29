@@ -98,7 +98,7 @@ struct Plane
 	}
 
 	/// Return a string representation of this Plane for human reading.
-	char[] toString()
+	string toString()
 	{	return "{" ~ Format.convert("x: {}, y: {}, z: {}, d: {}", x, y, z, d) ~ "}";
 	}
 	unittest

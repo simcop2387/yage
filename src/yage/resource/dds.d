@@ -107,7 +107,7 @@ struct DDSImageData {
 	int numMipMaps;
 	ubyte[] pixels;
 
-	char[] toString() {
+	string toString() {
 		return yage.core.format.format("{
 			 width = %s;
 			 height = %s;
@@ -133,7 +133,7 @@ DDSImageData* loadDDSTextureFile(ubyte[] fileContents) {
 	int bufferSize;
 	
 	// Verify the file is a true .dds file
-	if(cast(char[])fileContents[0..4] != "DDS ") 
+	if(cast(string)fileContents[0..4] != "DDS ") 
 		throw new ResourceException("The file doesn't appear to be a valid .dds file!");
 	
 	// Get the surface descriptor

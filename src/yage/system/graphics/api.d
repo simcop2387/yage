@@ -27,7 +27,7 @@ abstract class GraphicsAPI
 		static IRenderTarget renderTarget; ///
 		static Scene scene; ///
 		static Shader shader; ///
-		static VertexBuffer[char[]] vertexBuffers; ///
+		static VertexBuffer[string] vertexBuffers; ///
 		static LightNode[8] lights;	///
 		static MaterialPass pass; ///
 		static ArrayBuilder!(TextureInstance) textures;

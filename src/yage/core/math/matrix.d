@@ -62,8 +62,8 @@ struct Matrix
 		 * Testing and reporting in one function
 		 * Asserts that the first two matrices are almost equal, and prints
 		 * The test name and all givem matrices used in the test if not.*/
-		void test(char[] name, Matrix[] args ...)
-		{	char[] report = "\nFailed on test '"~name~"' With Matrices:\n\n";
+		void test(string name, Matrix[] args ...)
+		{	string report = "\nFailed on test '"~name~"' With Matrices:\n\n";
 			foreach(Matrix a; args)
 				report ~= a.toString()~"\n";
 			assert(args[0].almostEqual(args[1], 0.0005), report);
@@ -665,7 +665,7 @@ struct Matrix
 	}
 
 	/// Create a string representation of this Matrix for human reading.
-	char[] toString()
+	string toString()
 	{	return
 		Format.convert("[{} {} {} {}]\n", v[0], v[4], v[8], v[12])  ~
 		Format.convert("[{} {} {} {}]\n", v[1], v[5], v[9], v[13])  ~

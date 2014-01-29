@@ -47,12 +47,12 @@ struct TextCursor
  * This class is used internally by the engine.  In most cases it shouldn't need to be called externally. */
 struct TextBlock
 {
-	private static const dchar[] whitespace = " \t\r\n"d;
-	private static const dchar[] breaks = " *()-+=/\\,.;:|()[]{}<>\t\r\n"d; // breaking characters
+	private static const dstring whitespace = " \t\r\n"d;
+	private static const dstring breaks = " *()-+=/\\,.;:|()[]{}<>\t\r\n"d; // breaking characters
 	
 	private ubyte[] imageLookaside; // TODO: Have the lookaside passed into Render
 	
-	private char[] html;
+	private string html;
 	private bool htmlDirty = true;		// html has changed, letters may be out of date
 	private bool lettersDirty = false;	// letters have chagned via input, html may be out of date
 	package InlineStyle style; // base style of entire text block
@@ -154,7 +154,7 @@ struct TextBlock
 	 * Reverse the normal function of TextLayout and convert letters[] back to a string of html text.
 	 * The text may use different tags than the original html, (since some information is lost) 
 	 * but will be functionally the same.  */
-	public char[] getHtml()
+	public string getHtml()
 	{
 		if (!lettersDirty)
 			return html;
@@ -169,7 +169,7 @@ struct TextBlock
 			InlineStyle* newStyle = cast(InlineStyle*) l.extra;
 			if (currentStyle != *newStyle) // if style has changed since last letter
 			{	
-				char[][] styleString;			
+				string[] styleString;			
 				
 				// TODO: Would it be better to create arrays to group sequential letters of the same style?
 				// then we could make a single xml node to contain those that have similar styles.
@@ -447,7 +447,7 @@ struct TextBlock
 	 *         color, font-family, font-size[%|px], font-style[normal|italic|oblique], font-weight[normal|bold],
 	 *         letter-spacing[%|px], line-height[%|px], 
 	 *         text-align[left|center|right] text-decoration[none|underline|overline|line-through] */
-	void setHtml(char[] html)
+	void setHtml(string html)
 	{	this.html = html;
 		htmlDirty = true;
 		lettersDirty = false;
@@ -615,8 +615,8 @@ private struct InlineStyle
 		
 		// This should not be needed.  The style should get its inherited color before this is called.
 		// Oddly, it wasn't needed until I changed
-		// char[] fontFamily; to
-		// char[] fontFamily = ResourceManager.DEFAULT_FONT; in Style.  These should be unrelated!  
+		// string fontFamily; to
+		// string fontFamily = ResourceManager.DEFAULT_FONT; in Style.  These should be unrelated!  
 		if (style.color.get())
 			result.color = *(style.color.get());
 		
@@ -675,9 +675,9 @@ private struct HtmlParser
 	 *     styles = Style results will be appended to this array.
 	 * Returns:
 	 */
-	static void htmlToLetters(char[] htmlText, InlineStyle style, inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
+	static void htmlToLetters(string htmlText, InlineStyle style, inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
 	{
-		char[] lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
+		string lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
 		htmlText = htmlToAscii(htmlText, lookaside);
 		
 		// Convert xml document to an array of zero-deth nodes.
@@ -704,7 +704,7 @@ private struct HtmlParser
 		inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
 	{	
 		// Apply additional styles based on a tag name.
-		void styleByTagName(inout InlineStyle style, char[] tagName)
+		void styleByTagName(inout InlineStyle style, string tagName)
 		{	if (tagName=="u")
 				style.textDecoration = Style.TextDecoration.UNDERLINE;
 			if (tagName=="b")
@@ -717,7 +717,7 @@ private struct HtmlParser
 		
 		// Set the style from the parent and style attribute
 		InlineStyle style;
-		char[] tagName = toLower(input.name, input.name);
+		string tagName = toLower(input.name, input.name);
 		if (input.query.attribute("style").count) // if has style attribute
 		{	styleByTagName(parentStyle, tagName);
 			Style temp = parentStyle.toStyle(); // convert to Style so we can call .set on it.			
@@ -731,7 +731,7 @@ private struct HtmlParser
 		// Get any text from in the node.
 		styles ~= style;
 		if (input.value.length)
-		{	char[] text = entityDecode(input.value);
+		{	string text = entityDecode(input.value);
 			foreach (dchar c; text) // dchar to iterate over each utf-8 char group
 			{	if (style.fontFamily)
 				{	int size = style.fontSize;
@@ -755,7 +755,7 @@ private struct HtmlParser
 	 * Condense whitespace in html text.
 	 * Multiple whitespace characters are reduced to a single one.
 	 * <br/> is converted to \n. */ 
-	private static char[] htmlToAscii(char[] input, char[] lookaside)
+	private static string htmlToAscii(char[] input, char[] lookaside)
 	{	lookaside.length = input.length+13;
 		lookaside[0..6] = "<span>";
 		
@@ -793,7 +793,7 @@ private struct HtmlParser
 	 * For speed, only xml entities are replaced for now (not html entities).
 	 * Note that this could avoid heap activity altogether with lookaside buffers.
 	 * See: http://en.wikipedia.org/wiki/Character_encodings_in_HTML#XML_character_entity_references */ 
-	private static char[] entityDecode(char[] text)
+	private static string entityDecode(char[] text)
 	{	// TODO: Perform this in one pass
 		text = text.substitute("&amp;", "&"); // TODO: fix garbage created by this function.
 		text = text.substitute("&lt;", "<");
@@ -804,8 +804,8 @@ private struct HtmlParser
 		return text;
 	}
 	unittest
-	{	char[] test = "<>Hello Goodbye&nbsp; &amp;&quot;&apos;&lt;&gt;";
-		char[] result="<>Hello Goodbye\&nbsp; &\"'<>";
+	{	string test = "<>Hello Goodbye&nbsp; &amp;&quot;&apos;&lt;&gt;";
+		string result="<>Hello Goodbye\&nbsp; &\"'<>";
 		assert (entityDecode(test) == result);
 	}
 }

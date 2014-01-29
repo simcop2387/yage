@@ -18,7 +18,7 @@ class RegexCache
 	static Regex[string] regexes;
 	
 	///
-	static Regex getRegex(char[] exp)
+	static Regex getRegex(string exp)
 	{	synchronized(RegexCache.classinfo)
 		{	if (exp in regexes)
 				return regexes[exp];
@@ -90,7 +90,7 @@ struct Cache(alias func)
 
 unittest
 {	int count = 0;
-	static int getLength(char[] input, char[] input2=null)
+	static int getLength(string input, char[] input2=null)
 	{	return input.length + input2.length; 
 	}
 	

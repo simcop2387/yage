@@ -46,7 +46,7 @@ class ModelNode : VisibleNode
 		else
 			setModel(new Model(geometry));
 	}	
-	this(char[] filename, Node parent=null) /// ditto
+	this(string filename, Node parent=null) /// ditto
 	{	this(parent);
 		setModel(filename);
 	}
@@ -142,7 +142,7 @@ class ModelNode : VisibleNode
 		else
 			radius = 0;
 	}	
-	void setModel(char[] filename) /// ditto
+	void setModel(string filename) /// ditto
 	{	setModel(ResourceManager.model(filename));
 	}
 	

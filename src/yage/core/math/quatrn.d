@@ -51,8 +51,8 @@ struct Quatrn
 		 * Testing and reporting in one function
 		 * Asserts that the first two matrices are almost equal, and prints
 		 * The test name and all givem matrices used in the test if not.*/
-		void test(char[] name, Quatrn[] args ...)
-		{	char[] report = "\nFailed on test '"~name~"' With Quaternions:\n";
+		void test(string name, Quatrn[] args ...)
+		{	string report = "\nFailed on test '"~name~"' With Quaternions:\n";
 			foreach(Quatrn a; args)
 				report ~= format("%s", a.v)~"\n";
 			assert(args[0].almostEqual(args[1]), report);
@@ -298,7 +298,7 @@ struct Quatrn
 	}
 
 	/// Return a string representation of this quaternion for human reading.
-	char[] toString()
+	string toString()
 	{	return format("<%f %f %f %f>", x, y, z, w);
 	}
 }

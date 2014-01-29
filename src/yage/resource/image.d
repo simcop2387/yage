@@ -46,7 +46,7 @@ class Image
 	ubyte[] data;
 	protected int width, height;
 	protected byte channels;
-	char[] source;
+	string source;
 	
 	// Empty Constructor, used internally
 	protected this()
@@ -95,7 +95,7 @@ class Image
 	 * Params:
 	 *     filename = absolute or relative path of an image file supported by sdl_image.
 	 * Returns: An image with the number of channels of the source image.  Paletted images are converted to nonpaletted.*/
-	this(char[] filename) 
+	this(string filename) 
 	{			
 		SDL_Surface *sdl_image;
 		char* source = toStringz(filename); // garbage

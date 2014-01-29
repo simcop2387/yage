@@ -33,7 +33,7 @@ struct Log
 	
 	static Level level = Level.INFO; /// Only logs of this level or greater will be written.
 	static uint output = Output.CONSOLE | Output.FILE; /// Specify where to log.
-	static char[] file = "log.txt"; /// If output includes File, write to this file.
+	static string file = "log.txt"; /// If output includes File, write to this file.
 	private static bool firstRun = true;
 
 	/**
@@ -68,7 +68,7 @@ struct Log
 	{
 		if ((level >= this.level) && output)
 		{	
-			char[] msg = swritef(_arguments, _argptr);
+			string msg = swritef(_arguments, _argptr);
 			synchronized(typeid(Log))
 			{	
 				if (output & Output.CONSOLE)				
@@ -101,11 +101,11 @@ import tango.util.container.HashMap;
 
 struct Profile
 {
-	static Timer[char[]] timers;
+	static Timer[string] timers;
 	static bool enabled = true;
 	
 	// TODO: Each call to these adds a few microseconds of time and makes the timings off.
-	static void start(char[] timerName)
+	static void start(string timerName)
 	{	if (!enabled)
 			return;
 		
@@ -122,7 +122,7 @@ struct Profile
 		}
 	}
 	
-	static void stop(char[] timerName)
+	static void stop(string timerName)
 	{	if (!enabled)
 			return;
 		
@@ -131,8 +131,8 @@ struct Profile
 		timer.pause();
 	}
 	
-	static char[] getTimesAndClear()
-	{	char[] result;
+	static string getTimesAndClear()
+	{	string result;
 		foreach (name, timer; timers)
 			result ~= format("%.5fs %s\n", timer.tell(), name);
 		clear();
