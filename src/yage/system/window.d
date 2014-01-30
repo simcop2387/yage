@@ -9,8 +9,6 @@ module yage.system.window;
 import tango.stdc.stringz;
 import tango.io.Stdout;
 import derelict.opengl3.gl;
-// TODO find a replacement for this, probably in SDL2
-// import derelict.opengl.glu;
 import derelict.opengl3.ext;
 import derelict.util.exception;
 import derelict.sdl2.sdl;
@@ -48,20 +46,20 @@ const int SEPARATE_SPECULAR_COLOR_EXT	= 0x81FA;
 class Window : IRenderTarget
 {
 	void delegate() onExit;
-	
+
 	enum Buffer // ?
 	{	COLOR,
 		DEPTH,
 		STENCIL
 	}
-	
-	protected SDL_Surface* sdlSurface;	
+
+	protected SDL_Surface* sdlSurface;
 	protected Vec2i	size; // size of the window
 	protected Vec2i viewportPosition;
 	protected Vec2i viewportSize;
 	protected string title, taskbarName;
 
-	protected static Window instance;	
+	protected static Window instance;
 
 	version (linux)
 	{
@@ -70,33 +68,31 @@ class Window : IRenderTarget
 	}
 
 	private this()
-	{	
+	{
 		DerelictGL.load();
-		DerelictGLU.load();
-		
+
 		// Initialize SDL video
 		if(SDL_Init(SDL_INIT_VIDEO) < 0)
 			throw new YageException ("Unable to initialize SDL: "~ fromStringz(SDL_GetError()));
 	}
 
-	
+
 	void dispose()
 	{	if (instance)
 		{	SDL_FreeSurface(sdlSurface);
 			DerelictGL.unload();
-			DerelictGLU.unload();
 			instance = null;
 		}
 	}
-	
+
 	/// Get the width/height of this Window's display area (not including title/borders) in pixels.
 	override int getWidth()
-	{	return size.x;		
+	{	return size.x;
 	}
 	override int getHeight() /// ditto
-	{	return size.y;		
+	{	return size.y;
 	}
-	
+
 	///
 	Vec2i getViewportPosition()
 	{	return viewportPosition;
@@ -105,17 +101,17 @@ class Window : IRenderTarget
 	Vec2i getViewportSize()
 	{	return viewportSize;
 	}
-	
+
 	static bool hasInstance()
 	{	return instance !is null;
 	}
-	
+
 	/**
 	 * Minimize the Window. */
 	void minimize()
 	{	SDL_WM_IconifyWindow();
 	}
-	
+
 	/**
 	 * Set the caption for the Window.
 	 * Params:
@@ -123,7 +119,7 @@ class Window : IRenderTarget
 	 *     taskbarName = The caption shown on the window's taskbar entry.  Defaults to title. */
 	void setCaption(string title, char[] taskbarName=null)
 	{	if (!taskbarName)
-			taskbarName = title;		
+			taskbarName = title;
 		SDL_WM_SetCaption(toStringz(title), toStringz(taskbarName));
 	}
 
@@ -158,7 +154,7 @@ class Window : IRenderTarget
 		else
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
-		
+
 		size.x = width;
 		size.y = height;
 
@@ -170,20 +166,20 @@ class Window : IRenderTarget
 		if(sdlSurface is null)
 			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
 		SDL_LockSurface(sdlSurface);
-		
+
 		// These have to be set after window creation.
 		SDL_EnableUNICODE(1);
 		//SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 		SDL_EnableKeyRepeat(0, 0); // disable, we handle it ourselves
-		
-		// Attempt to load multitexturing		
+
+		// Attempt to load multitexturing
 		if (Probe.feature(Probe.Feature.MULTITEXTURE))
 		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
 				throw new YageException("GL_ARB_multitexture extension detected but it could not be loaded.");
 			Log.info("GL_ARB_multitexture support enabled.");
 		}else
 			Log.info("GL_ARB_multitexture not supported.  This is ok, but graphical quality may be limited.");
-		
+
 		// Texture Compression
 		if (Probe.feature(Probe.Feature.TEXTURE_COMPRESSION))
 		{	if (!ARBTextureCompression.load("GL_ARB_texture_compression"))
@@ -209,7 +205,7 @@ class Window : IRenderTarget
 			Log.info("GL_ARB_vertex_buffer_object support enabled.");
 		}else
 			Log.info("GL_ARB_vertex_buffer_object not supported.  This is still ok.");
-		
+
 		// Frame Buffer Object
 		if (Probe.feature(Probe.Feature.FBO))
 		{	if (!EXTFramebufferObject.load("GL_EXT_framebuffer_object"))
@@ -217,9 +213,9 @@ class Window : IRenderTarget
 			Log.info("GL_EXT_framebuffer_object support enabled.");
 		}else
 			Log.info("GL_EXT_framebuffer_object not supported.  This is still ok.");
-		
-		
-				
+
+
+
 		// OpenGL options
 		// These are the engine defaults.  Any function that modifies these should reset them when done.
 		// TODO: Move these to OpenGL.reset()
@@ -228,7 +224,7 @@ class Window : IRenderTarget
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
-		glEnable(GL_CULL_FACE);		
+		glEnable(GL_CULL_FACE);
 		glEnable(GL_NORMALIZE);  // GL_RESCALE_NORMAL is faster but does not work for non-uniform scaling
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glHint(GL_FOG_HINT, GL_FASTEST); // per vertex fog
@@ -241,10 +237,10 @@ class Window : IRenderTarget
 		// Environment Mapping (disabled by default)
 		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-		
+
 		setViewport();
 	}
-	
+
 	/**
 	 * Set the viewport position and size
 	 * Params:
@@ -259,21 +255,21 @@ class Window : IRenderTarget
 		viewportPosition = topLeft;
 		viewportSize = widthHeight;
 	}
-	
-	/** 
+
+	/**
 	 * Stores the dimensions of the current window size.
 	 * This is called by a resize event in Input.checkInput(). */
 	void resizeWindow(int width, int height)
 	{	size.x = width;
 		size.y = height;
 		//Vec2f dsize = Vec2f(size.x, size.y);
-		
+
 		//System.surface.updateDimensions();
-		
+
 		// Seems to do nothing.
 		SDL_UpdateRect(sdlSurface, 0, 0, 0, 0);
 
-		
+
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, also try SDL lock surface)
 		// This same code would crash the engine on windows.
@@ -306,22 +302,22 @@ class Window : IRenderTarget
 	ImageBase toImage(Buffer buffer=Buffer.COLOR)
 	{
 		if (buffer==Buffer.STENCIL)		{
-			Image1ub result = new Image1ub(size.x, size.y);			
+			Image1ub result = new Image1ub(size.x, size.y);
 			glReadPixels(0, 0, size.x, size.y, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, result.data.ptr);
 			return result;
 		}
 		else if (buffer==Buffer.DEPTH)
-		{	Image2!(int, 1) result = new Image2!(int, 1)(size.x, size.y);			
+		{	Image2!(int, 1) result = new Image2!(int, 1)(size.x, size.y);
 			glReadPixels(0, 0, size.x, size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, result.data.ptr);
 			return result;
 		} else // color
-		{	Image3ub result = new Image3ub(size.x, size.y);			
+		{	Image3ub result = new Image3ub(size.x, size.y);
 			glReadPixels(0, 0, size.x, size.y, GL_RGB, GL_UNSIGNED_BYTE, result.data.ptr);
 			return result;
 		}
 	}
-	
-	
+
+
 	/**
 	 * Returns: The singleton Window instance. */
 	static Window getInstance()
@@ -340,7 +336,7 @@ class Window : IRenderTarget
 class Window2
 {
 	protected uint handle;
-	
+
 	struct Mode
 	{	ushort width;
 		ushort height;
@@ -348,33 +344,33 @@ class Window2
 		ubyte defaultFrequency;
 		ubyte[] frequencies;
 	}
-	
+
 	struct Screen
 	{	ushort number;
 		Mode currentMode;
-		Mode[] availableModes;		
+		Mode[] availableModes;
 	}
-	
-	this(uint handle) 
-	{		
+
+	this(uint handle)
+	{
 	}
-	
-	this(short width, short height, short x, short y, byte depth, bool fullscreen=false, ushort screen=0) 
-	{ 		
+
+	this(short width, short height, short x, short y, byte depth, bool fullscreen=false, ushort screen=0)
+	{
 	}
-	
+
 	bool resize(short width, short height, short x, short y, byte depth, bool fullscreen=false, ushort screen=0)
 	{	return true;
 	}
-	
+
 	uint getHandle()
 	{	return handle;
 	}
-	
-	void setVisible(bool visible) 
-	{		
+
+	void setVisible(bool visible)
+	{
 	}
-	
+
 	static Screen[] getScreens()
 	{	Screen[] result;
 		return result;
