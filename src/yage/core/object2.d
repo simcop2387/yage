@@ -8,6 +8,8 @@ module yage.core.object2;
 //import tango.math.random.Kiss;
 //import tango.util.Convert;
 import yage.core.format;
+import core.vararg;
+
 
 debug {
 	import tango.core.tools.TraceExceptions; // provide stack trace on error when compiled in debug mode.
@@ -115,9 +117,9 @@ class YageException : Exception
 	///
 	static string getStackTrace(Exception e)
 	{	string result;
-		e.writeOut(delegate void(string a) {
+/*		e.writeOut(delegate void(string a) {
 			result ~= a;
-		});
+		});*/
 		return result;
 	}
 }

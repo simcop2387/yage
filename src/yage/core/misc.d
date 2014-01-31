@@ -247,25 +247,18 @@ template SharedSingleton(T)
 
 /**
  * Unlike shared singleton, this mixin allows one unique instance per thread. */
+// In D 2.030 this became per thread? will need testing.
 template Singleton(T)
 {
-	private static uint tls_key=uint.max;
+        static T instance;
 	
-	/**
-	 * Get an instance unique to the calling thread.
-	 * Each thread can only have one instance. */
 	static T getInstance()
 	{	
-		if (tls_key==uint.max)
-			synchronized(T.classinfo)
-				tls_key = Thread.createLocal();
-		
-		T result = cast(T)Thread.getLocal(tls_key);		
-		if (!result)
-		{	result = new T();
-			Thread.setLocal(tls_key, cast(void*)result);
-		}
-		return result;
+                
+		if (!instance)
+                  instance = new T();
+
+		return instance;
 	}
 }
 /*

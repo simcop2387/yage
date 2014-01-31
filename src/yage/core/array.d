@@ -425,7 +425,7 @@ struct ArrayBuilder(T)
 	AT opAssign(T[] elem)
 	{	array = elem;
 		size = elem.length;
-		return *this;
+		return this;
 	}
 	
 	///
@@ -489,14 +489,14 @@ struct ArrayBuilder(T)
 	///
 	AT opSliceAssign(T v) // overloads a[] = v
 	{	array[0..size] = v;
-		return *this;
+		return this;
 	}
 	
 	///
 	AT opSliceAssign(T v, size_t start, size_t end)  // overloads a[i .. j] = v
 	{	assert(end <= size);
 		array[start..end] =	v;
-		return *this;
+		return this;
 	}
 	
 	void reserveAndClear()
@@ -519,7 +519,7 @@ struct ArrayBuilder(T)
 	///
 	AT reverse()
 	{	array.reverse;
-		return *this;
+		return this;
 	}
 	
 	/**
@@ -531,7 +531,8 @@ struct ArrayBuilder(T)
 	void splice(size_t index, size_t remove, T[] insert ...)
 	{	assert(index+remove <= size, format("%s index + %s remove is greater than %s size", index, remove, size));
 	
-		int difference = insert.length - remove;
+                // CHECK this might overflow on giant sizes, probably not an issue
+		long difference = cast(long)(insert.length) - cast(long)(remove);
 		if (difference > 0) // if array will be longer
 		{	length(size+difference); // grow to fit
 			long i = (cast(long)size)-difference-1;
@@ -542,7 +543,7 @@ struct ArrayBuilder(T)
 		}
 		
 		if (difference < 0) // if array will be shorter
-		{	for (int i=index; i<size+difference; i++) // shift elements
+		{	for (long i=index; i<size+difference; i++) // shift elements
 				data[i] = data[i - difference];			
 			length(size + difference); // shrink to fit
 		}
@@ -555,7 +556,7 @@ struct ArrayBuilder(T)
 	///
 	AT sort()
 	{	array.sort;
-		return *this;
+		return this;
 	}
 	
 	///
@@ -565,7 +566,7 @@ struct ArrayBuilder(T)
 	
 	private void grow()
 	{	if (array.length < size || size*4 < array.length)
-		{	int new_size = size*2+1;
+		{	ulong new_size = size*2+1;
 			if (new_size < reserve)
 				new_size = reserve;
 			array.length = new_size;

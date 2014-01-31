@@ -11,6 +11,7 @@ import tango.util.Convert;
 import tango.text.convert.Format;
 import tango.time.StopWatch;
 
+import std.string;
 
 /**
  * A cross-platform, high-performance (microsecond) timing class.
@@ -158,6 +159,6 @@ class Timer
 	
 	///
 	string toString()
-	{	return Format.convert("{:d8}", tell());
+	{	return std.string.format("%08d", tell());
 	}
 }
