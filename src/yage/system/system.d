@@ -11,8 +11,6 @@ import tango.core.Memory;
 import tango.core.Thread;
 import derelict.openal.al;
 import derelict.opengl3.gl;
-// TODO replace this module
-// import derelict.opengl.glu;
 import derelict.opengl3.ext;
 import derelict.util.exception;
 import derelict.sdl2.sdl;
@@ -34,13 +32,13 @@ import yage.system.libraries;
  * The System class exists to initilize/deinitialize Yage and provide a place for
  * common, lower-level, yage-specific functions. */
 abstract class System
-{	
+{
 	protected static bool active = false;		// true if between a call to init and deinit, inclusive
 	protected static bool initialized=false;	// true if between a call to init and deinit, exclusive
 	protected static bool aborted = false; 		// this flag is set when the engine is ready to exit.
-	
+
 	protected static Thread self_thread; 		// reference to thread that called init, typically the main thread
-	
+
 	/**
 	 * This function creates a window with the specified width and height in pixels.
 	 * It also initializes an OpenAL context so that audio playback can occur.
@@ -52,52 +50,52 @@ abstract class System
 	 * fullscreen = The window is fullscreen if true; windowed otherwise.
 	 * samples = The level of anti-aliasing. */
 	static void init()
-	{	
+	{
 		active = true;
 		this.self_thread = Thread.getThis();
 
 		// load shared libraries (should these be loaded lazily?)
-		// Currently DerelictGL and DerelcitGLU are loaded in Window's constructor.
+		// Currently DerelictGL is loaded in Window's constructor.
 		DerelictSDL.load();
 		DerelictSDLImage.load();
 		DerelictAL.load();
 		Libraries.loadVorbis();
 		Libraries.loadFreeType();
-		
+
 		// Create OpenAL device, context, and start sound processing thread.
 		SoundContext.init();
-				
+
 		initialized = true;
 		Log.info("Yage has been initialized successfully.");
 	}
-	
+
 	/**
-	 * Release all Yage Resources.  
+	 * Release all Yage Resources.
 	 * If System.init() is called, this must be called for cleanup before the program closes.
 	 * After calling this function, many Yage functions can no longer be called safely. */
 	static void deInit()
 	{	assert(isSystemThread());
-		
+
 		initialized = false;
-		
+
 		SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);
-		
+
 		SoundContext.deInit(); // stop the sound thread
-		
+
 		foreach_reverse (s; Scene.getAllScenes().values)
 			s.dispose();
-		
-		Render.cleanup(0); // textures, vbo's, and other OpenGL resources	
-		
+
+		Render.cleanup(0); // textures, vbo's, and other OpenGL resources
+
 		ResourceManager.dispose();
-		
+
 		if (Window.getInstance())
 			Window.getInstance().dispose();
-	
+
 		// TODO: This shouldn't be needed to force any calls to dispose.
 		//GC.collect(); // Crashes when called in debug mode
-		
+
 		SDL_Quit();
 		DerelictSDL.unload();
 		DerelictSDLImage.unload();
@@ -110,14 +108,14 @@ abstract class System
 
 	/**
 	 * Returns true if called from the same thread as what System.init() was called.
-	 * This is useful to ensure that rendering functions aren't called from other threads. 
+	 * This is useful to ensure that rendering functions aren't called from other threads.
 	 * Always returns false if called before System.init() */
 	static bool isSystemThread()
 	{	if (self_thread)
 			return !!(Thread.getThis() == self_thread);
 		return false;
 	}
-	
+
 	struct Credit
 	{	string name;
 		string handle;
@@ -132,7 +130,7 @@ abstract class System
 			return result;
 		}
 	}
-	
+
 	static Credit[] getCredits()
 	{
 		return [
