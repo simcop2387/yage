@@ -61,11 +61,13 @@ class Collada
 	 *     filename = path to the collada file to load */
 	this(string filename)
 	{	string absPath = ResourceManager.resolvePath(filename);
-		string xml = cast(char[])File.get(absPath);
+                // TODO check this, I don't understand what's up with void[] here
+		string xml = cast(string)(File.get(absPath));
 		try {
-			doc = new Document!(char)();			
+			doc = new Document!(char)();
 			doc.parse(xml);
-			resourcePath = FilePath(absPath).path();
+			// TODO check this cast from char[] to string
+			resourcePath = cast(string)(FilePath(absPath.dup).path());
 		} catch (Exception e) // TODO: Errors often don't occur until actually using the document.
 		{	throw new XMLException("Could not parse collada file '%s'.", absPath);
 		}
@@ -82,7 +84,7 @@ class Collada
 		try {
 			doc = new Document!(char)();			
 			doc.parse(xml);
-			resourcePath = FilePath(path).path();
+			resourcePath = cast(string)(FilePath(path.dup).path());
 		} catch (Exception e) // TODO: Errors often don't occur until actually using the document.
 		{	throw new XMLException("Could not parse xml document.");
 		}
@@ -113,15 +115,15 @@ class Collada
 		scope Node[] meshNodes = geometryNode.getChildren("mesh");
 		foreach (mesh; meshNodes)
 		{	
-			string[] types = [cast(char[])"polylist", "triangles", "polygons"];
+			string[] types = ["polylist", "triangles", "polygons"];
 			foreach (type; types) // loop through the different names of the polygon indices
 				foreach (Node polyList; mesh.getChildren(type))
 				{			
 					// Inputs are the cordinates that the triangles index into.
 					struct Input
 					{	float[] data;
-						ushort components = 3;
-						ushort offset;
+						ulong components = 3;
+						int offset;
 						string name;					
 					}				
 					
@@ -166,8 +168,8 @@ class Collada
 								indicesPerVertex = input.offset;
 						indicesPerVertex++;
 						
-						string[char[]] translate = [
-							cast(string)"VERTEX": cast(char[])Geometry.VERTICES,
+						string[string] translate = [
+							"VERTEX": Geometry.VERTICES,
 							"NORMAL": Geometry.NORMALS,
 							"TEXCOORD": Geometry.TEXCOORDS0, 
 							"TEXCOORD0": Geometry.TEXCOORDS0 // TODO: append set attribute for multi-texturing
@@ -181,12 +183,12 @@ class Collada
 						// So we create new vertex/normal/etc. arrays to allow for all indices to match.
 						foreach (input; inputs)
 						{
-							int c = input.components;
+							ulong c = input.components;
 							float[] data = new float[indices.length*c/indicesPerVertex];
 							
-							for (int i=0; i<indices.length; i+=indicesPerVertex)
-							{	int index = indices[i + input.offset]*c; // This creates duplicate vertices on shared triangle edges; Geometry.optimize takes care of it later
-								int j = i/indicesPerVertex*c;
+							for (uint i=0; i<indices.length; i+=indicesPerVertex)
+							{	ulong index = indices[i + input.offset]*c; // This creates duplicate vertices on shared triangle edges; Geometry.optimize takes care of it later
+								ulong j = i/indicesPerVertex*c;
 								data[j..j+c] = input.data[index..index+c];
 							}
 							string name = translate[input.name];
@@ -215,7 +217,7 @@ class Collada
 						}
 						
 						// Ensure all vertex buffers are the same length
-						{	int count = result.getVertexBuffer(Geometry.VERTICES).length;
+						{	ulong count = result.getVertexBuffer(Geometry.VERTICES).length;
 							foreach (name, vb; result.getVertexBuffers())
 								if (vb.length != count)
 									throw new XMLException("Geometry attribute %s has data for %d vertices, but %d vertices exist", name, vb.length, count);
@@ -225,7 +227,7 @@ class Collada
 						Vec3i[] triangles;
 						if (!vcounts.length)
 						{	triangles = new Vec3i[result.getVertexBuffer(Geometry.VERTICES).length()/3];
-							foreach (i, inout triangle; triangles)
+							foreach (i, ref triangle; triangles)
 								triangle = Vec3i(i*3, i*3+1, i*3+2);
 						} 
 						else // If n-sided polygons instead of all triangles
@@ -335,12 +337,13 @@ class Collada
 		
 		
 		// Helper function for loading material data.
-		void getColorOrTexture(Node n, inout Color color, inout Texture texture)
+		void getColorOrTexture(Node n, ref Color color, ref Texture texture)
 		{	string name = n.name();
 			switch (name)
 			{	case "param":
 					n = Xml.getNodeById(doc, n.getAttribute("ref"), "sid").getChild("float3");	
 					// deliberate fall-through
+					goto case;
 				case "color":
 					Color temp = Color(Xml.parseNumberList!(float)(n.value));
 					color = Color(cast(int)temp.r, cast(int)temp.g, cast(int)temp.b, ((color.a*cast(int)temp.a)/255));
@@ -507,11 +510,11 @@ class Collada
 			if (m.isIdentity())
 				continue;
 		
-			foreach(inout Vec3f vertex; cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES))
+			foreach(ref Vec3f vertex; cast(Vec3f[])geometry.getAttribute(Geometry.VERTICES))
 				vertex = vertex.transform(m); 
 			
 			// Transform normals and tangents by rotation only
-			foreach(inout Vec3f normal; cast(Vec3f[])geometry.getAttribute(Geometry.NORMALS))
+			foreach(ref Vec3f normal; cast(Vec3f[])geometry.getAttribute(Geometry.NORMALS))
 				normal = normal.rotate(m);
 		}
 		
@@ -547,7 +550,7 @@ class Collada
 			if (node.hasAttribute("sid")) // sometimes max exports don't.
 				joint.sid = node.getAttribute("sid").dup; // dup should reduce memory fragmentation and allow collada text to later be freed.
 			joint.name = node.getAttribute("name").dup;
-			joint.number = result.length;
+			joint.number = cast(int)(result.length);
 			result ~= joint;
 			
 			foreach (child; node.getChildren("node"))
@@ -728,7 +731,7 @@ class Collada
 	}
 	
 	// See: https://collada.org/mediawiki/index.php/Using_accessors
-	protected T[] getDataFromSourceId(T)(string id, out ushort components)
+	protected T[] getDataFromSourceId(T)(string id, out ulong components)
 	{	
 		Node source = Xml.getNodeById(doc, id);		
 		Node sourceAccessor;
@@ -807,7 +810,7 @@ class Collada
 		}
 		
 		// Get the value of an attribute by its name, or throw XMLException if not found
-		string getAttribute(char[] name)
+		string getAttribute(string name)
 		{	auto attr = node.attributes().name(null, name);
 			if (attr)
 				return attr.value();
@@ -870,7 +873,7 @@ class Collada
 			throw new XMLException("The document does not have an element with %s='%s'", attributeName, id);
 		}
 		
-		static string makeId(char[] id)
+		static string makeId(string id)
 		{	assert(id.length);
 			if (id[0]=='#' && id.length>1) // id's are sometimes prefixed with #
 				id = id[1..$];

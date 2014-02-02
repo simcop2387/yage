@@ -179,12 +179,12 @@ unittest
  *     array    = The array to use.
  *     index    = Index of the element to remove.
  *     ordered  = Keep all elements in the same order, at the cost of performance. */
-void remove(T)(inout T[] array, int index, bool ordered=true)
+void remove(T)(ref T[] array, int index, bool ordered=true)
 {	if (ordered)
 		for (size_t i=index; i<array.length-1; i++)
 			array[i]=array[i+1];
 	else if (index != array.length-1)
-		array[index] = array[length-1];
+		array[index] = array[array.length-1];
 	array.length=array.length-1;
 }
 

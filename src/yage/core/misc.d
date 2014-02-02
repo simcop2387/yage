@@ -26,7 +26,7 @@ string cleanPath(char[] path)
 	path = substitute(path, "\\", sep);
 	path = substitute(path, sep~"."~sep, sep);		// remove "./"
 
-	scope string[] paths = split(path, sep);
+	scope string[] paths = cast(string[])(split(path, sep));
 	scope string[] result;
 
 	foreach (string token; paths)
@@ -44,7 +44,7 @@ string cleanPath(char[] path)
 		}
 	}
 	path = join(result, sep);
-	return path;
+	return cast(string)(path);
 }
 
 

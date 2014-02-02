@@ -231,9 +231,9 @@ class Geometry
 	int[] optimize()
 	{
 		debug { // assertions
-			int length =  getVertexBuffer(Geometry.VERTICES).length;
+			ulong length =  getVertexBuffer(Geometry.VERTICES).length;
 			foreach (name, attribute; attributes)
-				assert(attribute.length == length, format("%s is only of length %s, but vertices are of length %s", name, attribute.length, length));
+				assert(attribute.length == length, std.string.format("%s is only of length %s, but vertices are of length %s", name, attribute.length, length));
 		}
 		
 		// Merge duplicate vertices
@@ -294,7 +294,7 @@ class Geometry
 		}
 		
 		// Move data
-		foreach (name, inout attribute; attributes)
+		foreach (name, ref attribute; attributes)
 		{
 			int c2 = attribute.components;
 			float[] oldData = cast(float[])attribute.data;
@@ -311,7 +311,8 @@ class Geometry
 		// Update triangle indices
 		foreach (mesh; meshes)
 		{	Vec3i[] triangles = mesh.getTriangles();
-			foreach (i, inout tri; triangles) // Shouldn't doing this in-place fail?
+		        // TODO this had an inout/ref here but i don't think it needs it?
+			foreach (i, /*ref*/ tri; triangles) // Shouldn't doing this in-place fail?
 			{	triangles[i].x = remap[tri.x];
 				triangles[i].y = remap[tri.y];
 				triangles[i].z = remap[tri.z];
@@ -338,8 +339,8 @@ class Geometry
 		
 		foreach (ref geometry; geometries)
 		{	auto vb = result.getVertexBuffer(Geometry.VERTICES);
-			int offset = vb ? vb.length() : 0;
-			int length = geometry.getVertexBuffer(Geometry.VERTICES).length();
+			ulong offset = vb ? vb.length() : 0;
+			ulong length = geometry.getVertexBuffer(Geometry.VERTICES).length();
 			
 			// Loop through each vertex attribute type
 			foreach(type, vbInfo; types)
@@ -361,7 +362,7 @@ class Geometry
 			{	// vertices are now all merged into the same aray, so we need to upate the triangle indices.
 				Vec3i[] triangles = new Vec3i[mesh.getTriangles().length];
 				foreach (i, triangle; mesh.getTriangles()) 
-					triangles[i] = triangle + Vec3i(offset); 
+					triangles[i] = triangle + Vec3i(offset);
 				result.meshes ~= new Mesh(mesh.material, triangles);
 			}
 		}

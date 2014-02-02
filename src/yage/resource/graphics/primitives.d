@@ -14,7 +14,7 @@ struct RenderCommand
 	Geometry geometry;
 	Material[] materialOverrides;
 
-	private ubyte lightsLength;
+	private ulong lightsLength;
 	private LightNode[8] lights; // indices in the RenderList's array of RenderLights
 
 	LightNode[] getLights()
@@ -61,7 +61,7 @@ class VertexBuffer
 	}
 
 	/// Get the number of vertices for this data.
-	int length()
+	ulong length()
 	{	return data.length/type.tsize();		
 	}	
 
