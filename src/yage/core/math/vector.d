@@ -69,8 +69,8 @@ struct Vec(int S, T : real, bool N=false)
 		invariant()
 		{	//try { 
 				foreach (float t; v)
-				{	assert(!isNaN(t), format("<%s>", v));
-					assert(t!=float.infinity, format("<%s>", v));
+				{	assert(!isNaN(t), "vector had NaN"); // TODO make this a better message, format("<%s>", v));
+					assert(t!=float.infinity, "vector had infinity"); // TODO make this a better message format("<%s>", v));
 				}
 			//} catch (Exception e)
 			//{	Log.write("failed");
@@ -78,8 +78,8 @@ struct Vec(int S, T : real, bool N=false)
 		}
 	void inv() {
 		foreach (float t; v)
-		{	assert(!isNaN(t), format("<%s>", v));
-			assert(t!=float.infinity, format("<%s>", v));
+		{	assert(!isNaN(t), "vector had NaN"); // TODO make this a better message format("<%s>", v));
+			assert(t!=float.infinity, "vector had infinity"); // format("<%s>", v));
 		}
 	}
 	
@@ -92,7 +92,7 @@ struct Vec(int S, T : real, bool N=false)
 	/// Create a vector with all values as s.
 	static VST opCall(T s)
 	{	VST res;
-		foreach(inout T e; res.v)
+		foreach(ref T e; res.v)
 			e = s;
 		debug res.inv(); // why isn't this called anyway?
 		return res;
@@ -169,7 +169,7 @@ struct Vec(int S, T : real, bool N=false)
 	
 		/// Return the square of the distance from this Vec3f to another, interpreting each as 3D coordinates.
 		float distance2(VST s)
-		{	VST temp = *this - s;
+		{	VST temp = this - s;
 			temp *= temp;
 			return temp.x + temp.y + temp.z;
 		}
@@ -279,12 +279,12 @@ struct Vec(int S, T : real, bool N=false)
 	
 	/// Return a normalized copy of this vector.
 	VST normalize()
-	{	if (*this==ZERO)
+	{	if (this==ZERO)
 			return ZERO;
 		
 		float l = length();
 		if (l==1)
-			return *this;
+			return this;
 		return scale(1/l);
 	}
 	
@@ -426,9 +426,9 @@ struct Vec(int S, T : real, bool N=false)
 	{	string result = "<";
 		for (int i=0; i<S; i++)
 			static if (is(T : real))
-				result ~= format("%.12f ", v[i]);
+				result ~= std.string.format("%.12f ", v[i]);
 			else
-				result ~= format("%d ", v[i]);
+				result ~= std.string.format("%d ", v[i]);
 		result ~= ">";
 		return result;
 	}
@@ -460,7 +460,7 @@ struct Vec(int S, T : real, bool N=false)
 	{			
 		// Temporary
 		VST toAxis()
-		{	return *this;
+		{	return this;
 		}
 
 		/// Return the cross product of this vector with another vector.
@@ -484,14 +484,14 @@ struct Vec(int S, T : real, bool N=false)
 				
 				// This is a required shortcut to handle corner cases.
 				if (cross(axis).length2() < .0001) // If they point in almost the same or opposite directions
-					return *this+axis;
+					return this+axis;
 				
 				// Non inlined way.  Inlining below was to try to combine operations (unsuccessfully)
 				//return toQuatrn().rotate(axis).toAxis();
 								
 				// Convert to quaternions
 				Quatrn q1;
-				if (*this!=ZERO) // no rotation for zero-vector
+				if (this!=ZERO) // no rotation for zero-vector
 				{	float angle = length();
 					float hangle = angle * .5;
 					float s = sin(hangle); // / sqrt(angle);

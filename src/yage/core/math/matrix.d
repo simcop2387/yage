@@ -667,11 +667,11 @@ struct Matrix
 
 	/// Create a string representation of this Matrix for human reading.
 	string toString()
-	{	return
-		Format.convert("[{} {} {} {}]\n", v[0], v[4], v[8], v[12])  ~
-		Format.convert("[{} {} {} {}]\n", v[1], v[5], v[9], v[13])  ~
-		Format.convert("[{} {} {} {}]\n", v[2], v[6], v[10], v[14]) ~
-		Format.convert("[{} {} {} {}]\n", v[3], v[7], v[11], v[15]);
+	{	return std.string.format("[%f %f %f %f]\n[%f %f %f %f]\n[%f %f %f %f]\n[%f %f %f %f]\n",
+	                                 v[0], v[4], v[8], v[12],
+	                                 v[1], v[5], v[9], v[13],
+	                                 v[2], v[6], v[10], v[14],
+	                                 v[3], v[7], v[11], v[15]);
 	}
 	
 
