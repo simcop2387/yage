@@ -21,7 +21,6 @@ import derelict.sdl2.sdl;
 import yage.core.array;
 import yage.core.cache;
 import yage.core.color;
-import yage.core.format;
 import yage.core.math.math;
 import yage.core.math.vector;
 import yage.core.memory;

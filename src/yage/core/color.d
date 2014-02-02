@@ -10,8 +10,8 @@ import tango.io.Stdout;
 import tango.core.BitManip;
 import tango.math.Math;
 import tango.text.Ascii;
+import std.string;
 
-import yage.core.format;
 import yage.core.math.math;
 import yage.core.math.vector;
 import yage.core.types;
@@ -258,8 +258,8 @@ struct Color
 	 * lower = return lower case hexadecimal digits*/ 
 	string hex(bool lower=false, char[] lookaside=null)
 	{	if (lower)
-			return swritef("%.8x", bswap(ui));
-		return swritef("%.8X", bswap(ui));
+			return std.string.format("%.8x", bswap(ui));
+		return std.string.format("%.8X", bswap(ui));
 	}
 	/// ditto
 	string toString()

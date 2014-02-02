@@ -9,7 +9,6 @@ module yage.core.math.plane;
 import tango.math.IEEE;
 import tango.math.Math;
 import tango.text.convert.Format;
-import yage.core.format;
 import yage.core.math.vector;
 import yage.core.misc;
 

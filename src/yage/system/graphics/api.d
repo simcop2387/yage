@@ -7,7 +7,6 @@
 module yage.system.graphics.api;
 
 import yage.core.array;
-import yage.core.format;
 import yage.core.object2;
 import yage.core.math.matrix;
 import yage.resource.graphics.all;

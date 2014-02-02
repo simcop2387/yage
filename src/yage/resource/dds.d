@@ -39,7 +39,6 @@ import derelict.gl3.extension.arb.texture_compression;
 import derelict.gl3.extension.ext.texture_compression_dxt1;
 import derelict.gl3.extension.ext.texture_compression_s3tc;*/
 
-import yage.core.format;
 import yage.core.object2;
 import yage.system.log;
 

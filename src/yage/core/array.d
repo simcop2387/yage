@@ -18,7 +18,6 @@ module yage.core.array;
 
 import tango.core.Traits;
 import tango.math.Math;
-import yage.core.format;
 import yage.core.math.math;
 import yage.core.memory;
 import yage.core.types;
@@ -469,11 +468,11 @@ struct ArrayBuilder(T)
 	
 	/// TODO: This returns a copy, so a[i].b = 3; doesn't work!!
 	T* opIndex(size_t i)
-	{	assert(i<size, format("array index %s out of bounds 0..%s", i, size));
+	{	assert(i<size, std.string.format("array index %s out of bounds 0..%s", i, size));
 		return &array[i];
 	}
 	T opIndexAssign(T val, size_t i) /// ditto
-	{	assert(i<size, format("array index %s out of bounds 0..%s", i, size));
+	{	assert(i<size, std.string.format("array index %s out of bounds 0..%s", i, size));
 		return array[i] = val;
 	}
 	
@@ -482,7 +481,7 @@ struct ArrayBuilder(T)
 	{	return AT(array[0..size]);		
 	}
 	AT opSlice(size_t start, size_t end) /// ditto
-	{	assert(end <= size, format("array index %s out of bounds 0..%s", end, size));
+	{	assert(end <= size, std.string.format("array index %s out of bounds 0..%s", end, size));
 		return AT(array[start..end]); // overloads a[i .. j]	
 	}
 	
@@ -529,7 +528,7 @@ struct ArrayBuilder(T)
 	 *     remove = Number of elements to remove, including and after index
 	 *     insert = Element to insert before index, after elements have been removed. */
 	void splice(size_t index, size_t remove, T[] insert ...)
-	{	assert(index+remove <= size, format("%s index + %s remove is greater than %s size", index, remove, size));
+	{	assert(index+remove <= size, std.string.format("%s index + %s remove is greater than %s size", index, remove, size));
 	
                 // CHECK this might overflow on giant sizes, probably not an issue
 		long difference = cast(long)(insert.length) - cast(long)(remove);
@@ -561,7 +560,7 @@ struct ArrayBuilder(T)
 	
 	///
 	string toString()
-	{	return swritef(data);
+	{	return ""; // TODO this needs to output the data. swritef(data);
 	}
 	
 	private void grow()

@@ -8,7 +8,6 @@ module yage.resource.graphics.geometry;
 
 import tango.math.Math;
 import yage.core.array;
-import yage.core.format;
 import yage.core.math.vector;
 import yage.core.object2;
 import yage.resource.manager;

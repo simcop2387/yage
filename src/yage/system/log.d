@@ -9,7 +9,6 @@ module yage.system.log;
 import tango.io.device.File;
 import tango.io.Console;
 
-import yage.core.format;
 import yage.core.json;
 import yage.core.timer;
 

@@ -9,7 +9,7 @@ module yage.core.math.vector;
 import tango.core.Tuple;
 import tango.math.Math;
 import tango.math.IEEE;
-import yage.core.format;
+// TODO remove this import yage.core.format;
 //import yage.core.math.line;
 import yage.core.math.matrix;
 import yage.core.math.math;
@@ -106,14 +106,16 @@ struct Vec(int S, T : real, bool N=false)
 		return res;
 	}
 
+	// TODO investigate this.  commented out because it conflicts with the above definition.  I suspect that it's a difference between
+	// D1 and D2.  They appear to be basically the same so I'm going ahead with the above implementation until i know otherwise.
 	/// Create a new vector with the values of s; If s is less than the size of the vector, remaining values are set to 0.
-	static VST opCall(T[] s)
+/*	static VST opCall(T[] s)
 	{	assert(s.length >= S);
 		VST res;
 		res.v[] = s[0..S];
 		debug res.inv();
 		return res;
-	}
+	}*/
 	/*
 	/// Convert from other vector types to this type.
 	static VST opCall(int S2, T2 : real, bool N2)(Vec!(S2, T2, N2) s)
@@ -260,7 +262,7 @@ struct Vec(int S, T : real, bool N=false)
 	
 	/// Return a copy of this vector scaled to length l.
 	VST length(float l)
-	{	if (l==0 || *this==VST.ZERO) // otherwise, setting the length of a zero vector to zero fails.
+	{	if (l==0 || this==VST.ZERO) // otherwise, setting the length of a zero vector to zero fails.
 			return VST.ZERO;
 		return scale(l/length());
 	}
@@ -288,8 +290,9 @@ struct Vec(int S, T : real, bool N=false)
 	
 	/// Perform a member-wise instead of a bitwise compare.  This way 0f == -0f.
 	int opEquals(VST rhs)
-	{	static if (S==3) // untested optimization
-			return x==rhs.x && y==rhs.y && z==rhs.z;		
+	{	static if (S==3) { // untested optimization
+			return x==rhs.x && y==rhs.y && z==rhs.z;
+		}
 		for (int i=0; i<S; i++)
 			if (v[i] != rhs.v[i])
 				return false;
@@ -650,7 +653,7 @@ struct Vec(int S, T : real, bool N=false)
 			 * Interpret the values of this vector as a rotation axis/angle and convert to a Quatrn.*/
 			Quatrn toQuatrn()
 			{	
-				if (*this==ZERO) // no rotation for zero-vector
+				if (this==ZERO) // no rotation for zero-vector
 					return Quatrn();
 				
 				Quatrn res = void;
@@ -661,7 +664,9 @@ struct Vec(int S, T : real, bool N=false)
 				if (angle != 0)
 					res.v[0..3] = v[0..3] * (s/angle);
 				
-				debug res.__invariant();
+				// TODO getting an error about __invariant not existing, since this is debug, i'm commenting it out
+				// will need to fix this later
+				// debug res.__invariant();
 				return res;
 			}
 		}

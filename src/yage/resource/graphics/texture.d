@@ -7,7 +7,6 @@
 module yage.resource.graphics.texture;
 
 import tango.math.Math;
-import yage.core.format;
 import yage.core.math.math;
 import yage.core.math.matrix;
 import yage.core.math.vector;

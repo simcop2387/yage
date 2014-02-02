@@ -17,7 +17,6 @@ import tango.util.Convert;
 
 import yage.core.array;
 import yage.core.color;
-import yage.core.format;
 import yage.core.math.matrix;
 import yage.core.math.vector;
 import yage.core.misc : clone;

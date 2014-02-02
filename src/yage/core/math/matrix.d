@@ -9,7 +9,6 @@ module yage.core.math.matrix;
 import tango.math.IEEE;
 import tango.math.Math;
 import tango.text.convert.Format;
-import yage.core.format;
 import yage.core.math.plane;
 import yage.core.math.vector;
 import yage.core.math.quatrn;
@@ -47,8 +46,8 @@ struct Matrix
 	
 	invariant()
 	{	foreach (float t; v)
-		{	assert(!isNaN(t), format("[%s]", v)); // sometimes this fails!
-			assert(t!=float.infinity, format("[%s]", v)); // sometimes this fails!
+		{	assert(!isNaN(t), std.string.format("[%s]", v)); // sometimes this fails!
+			assert(t!=float.infinity, std.string.format("[%s]", v)); // sometimes this fails!
 		}
 	}
 	
@@ -152,7 +151,8 @@ struct Matrix
 	
 	static Matrix compose(Vec3f position, Quatrn rotation, Vec3f scale)
 	{	
-		debug rotation.__invariant();
+        // TODO reenable this after learning if __invariant1 is what is wanted
+	//		debug rotation.__invariant();
 
 		Matrix result;
 		result.setPosition(position);
@@ -186,7 +186,7 @@ struct Matrix
 		if (scale.almostEqual(Vec3f(1)))
 			rotation = toAxis();
 		else {
-			Matrix m = *this;		
+			Matrix m = this;
 			m.v[0..3] = (cast(Vec3f*)v[0..3]).scale(1/scale.x).v[];
 			m.v[4..7] = (cast(Vec3f*)v[4..7]).scale(1/scale.y).v[];
 			m.v[8..11] = (cast(Vec3f*)v[8..11]).scale(1/scale.z).v[];
@@ -222,13 +222,14 @@ struct Matrix
 		if (scale.almostEqual(Vec3f(1)))
 			rotation = toQuatrn();
 		else {
-			Matrix m = *this;		
+			Matrix m = this;
 			m.v[0..3] = (cast(Vec3f*)v[0..3]).scale(1/scale.x).v[];
 			m.v[4..7] = (cast(Vec3f*)v[4..7]).scale(1/scale.y).v[];
 			m.v[8..11] = (cast(Vec3f*)v[8..11]).scale(1/scale.z).v[];
 			rotation = m.toQuatrn();
-
-			debug rotation.__invariant();
+			
+			// TODO re-enable this
+			// debug rotation.__invariant();
 		}
 	}
 	
@@ -306,7 +307,7 @@ struct Matrix
 	/**
 	 * Get the position component of the Matrix as a Vector. */
 	Vec3f getPosition()
-	{	return Vec3f(v[12..15]);		
+	{	return Vec3f(v[12 .. 15]);		
 	}
 	
 	/**
@@ -314,9 +315,9 @@ struct Matrix
 	 * Scale components will always be positive. */
 	Vec3f getScale()
 	{	return Vec3f(
-			Vec3f(v[0..3]).length(),
-			Vec3f(v[4..7]).length(),
-			Vec3f(v[8..11]).length());
+			Vec3f(v[0 .. 3]).length(),
+			Vec3f(v[4 .. 7]).length(),
+			Vec3f(v[8 .. 11]).length());
 	}
 	unittest
 	{	Matrix m;
@@ -381,7 +382,7 @@ struct Matrix
 	
 	/// Return a copy of this Matrix with its position values incremented by vec.
 	Matrix move(Vec3f vec)
-	{	Matrix res = *this;
+	{	Matrix res = this;
 		res.v[12] += vec.x;
 		res.v[13] += vec.y;
 		res.v[14] += vec.z;
@@ -447,8 +448,8 @@ struct Matrix
 
 	/// Multiply this Matrix by another matrix and store the result in this Matrix.
 	Matrix opMulAssign(Matrix b)
-	{	*this = ((*this) * b);
-		return *this;
+	{	this = ((this) * b);
+		return this;
 	}
 	unittest
 	{	Matrix a = Matrix.random();
@@ -491,7 +492,7 @@ struct Matrix
 
 	/// Return a copy of this Matrix scaled by s
 	Matrix scale(Vec3f s)
-	{	Matrix result = *this;
+	{	Matrix result = this;
 		Matrix position, rotation, mscale;
 		result.decompose(position, rotation, mscale);
 		mscale.v[0] *= s.x;
@@ -707,7 +708,7 @@ struct Matrix
 	// Get a random matrix, good for unit-testing.
 	protected static Matrix random()
 	{	Matrix result;
-		foreach (inout float t; result.v)
+		foreach (ref float t; result.v)
 			t = yage.core.math.math.random(0, 4);
 		return result;
 	}

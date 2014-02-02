@@ -7,8 +7,8 @@ module yage.core.object2;
 
 //import tango.math.random.Kiss;
 //import tango.util.Convert;
-import yage.core.format;
 import core.vararg;
+import std.string;
 
 
 debug {
@@ -111,7 +111,9 @@ class YageException : Exception
 	 */
 	this(...)
 	{	// TODO: Log.warn?
-		super(swritef(_arguments, _argptr));
+                // Let's just ignore this because I can't figure it out at the moment.
+		// TODO super(std.string.format(_arguments, _argptr));
+		super("Undocumented exception!");
 	}
 	
 	///
@@ -129,7 +131,8 @@ class OpenALException : YageException
 {
 	///
 	this(...)
-	{	super(swritef(_arguments, _argptr));
+	{	// TODO fix this super(swritef(_arguments, _argptr));
+                super("OpenALException");
 	}	
 }
 
@@ -138,7 +141,8 @@ class ResourceException : YageException
 {	
 	///
 	this(...)
-	{	super(swritef(_arguments, _argptr));
+	{	// TODO fix this super(swritef(_arguments, _argptr));
+	        super("ResourceException");
 	}	
 }
 

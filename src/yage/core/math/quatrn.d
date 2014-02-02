@@ -8,12 +8,12 @@ module yage.core.math.quatrn;
 
 import tango.math.Math;
 import tango.math.IEEE;
-import yage.core.format;
 import yage.core.math.vector;
 import yage.core.math.matrix;
 import yage.core.misc;
 
 import yage.system.log;
+import std.string;
 
 /**
  * A quaternion class.
@@ -40,8 +40,8 @@ struct Quatrn
 
 	invariant()
 	{	foreach (float t; v)
-		{	assert(!isNaN(t), format("<%s>", v));
-			assert(t!=float.infinity, format("<%s>", v));
+		{	assert(!isNaN(t), std.string.format("<%s>", v));
+			assert(t!=float.infinity, std.string.format("<%s>", v));
 		}
 	}
 
@@ -159,7 +159,7 @@ struct Quatrn
 	Quatrn inverse()
 	{	float l2 = (w*w + x*x + y*y + z*z);
 		if (l2==0)
-			return *this;
+			return this;
 		float l = sqrt(l2);
 		return Quatrn(-x/l, -y/l, -z/l, w/l);
 	}
@@ -179,7 +179,7 @@ struct Quatrn
 	{	float s = 1/sqrt(w*w + x*x + y*y + z*z);
 		if (s!=float.infinity)
 			return Quatrn(x*s, y*s, z*s, w*s);
-		else return *this;
+		else return this;
 	}
 
 	///
@@ -191,15 +191,15 @@ struct Quatrn
 	 * Return a new Quaternion that is the sum of the current rotation and the
 	 * new rotation of the parameter. */
 	Quatrn rotate(Quatrn q)
-	{	return (*this)*q;
+	{	return (this)*q;
 	}
 
 	Quatrn rotate(Vec!(3, float) axis)
-	{	return (*this)*axis.toQuatrn();
+	{	return (this)*axis.toQuatrn();
 	}
 
 	Quatrn rotate(Matrix rot)
-	{	return (*this)*rot.toQuatrn();
+	{	return (this)*rot.toQuatrn();
 	}
 
 
