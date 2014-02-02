@@ -30,6 +30,8 @@ import yage.resource.model;
 import yage.resource.graphics.texture;
 import yage.system.log;
 
+import core.vararg;
+
 /**
  * Collada loads and parses collada 3d model files and can convert their contents to 
  * the data structures used by Yage. 
@@ -606,17 +608,17 @@ class Collada
 				if (semantic == "JOINT")
 				{
 					// Create a map of joint names to joints.  
-					ushort unused;
-					scope string[] jointNames = getDataFromSourceId!(char[])(input.getAttribute("source"), unused);
+					ulong unused;
+					scope string[] jointNames = cast(string[])(getDataFromSourceId!(char[])(input.getAttribute("source"), unused));
 					scope Joint[string] sidToJoint;
 					foreach (joint; model.joints) // TODO: Maybe it would be good to have one of these in Model, so a gun can be attached to an arm joint.
 						sidToJoint[joint.sid] = joint;
 					foreach (i, name; jointNames)
-						jointMap[i] = sidToJoint[name];
+						jointMap[cast(int)(i)] = sidToJoint[name];
 					
 				}
 				else if (semantic == "INV_BIND_MATRIX") 
-				{	ushort unused;
+				{	ulong unused;
 					float[] matrixValues = getDataFromSourceId!(float)(input.getAttribute("source"), unused);
 					inverseBindMatrices = cast(Matrix[])matrixValues;
 				}
@@ -629,7 +631,7 @@ class Collada
 			scope float[] weights;
 			foreach (input; vertexWeightsNode.getChildren("input"))
 				if (input.getAttribute("semantic")=="WEIGHT")
-				{	ushort unused;
+				{	ulong unused;
 					weights = getDataFromSourceId!(float)(input.getAttribute("source"), unused);
 				}
 			
@@ -653,7 +655,7 @@ class Collada
 				
 				// Normalize influences
 				float scaleInfluence = 1/totalInfluence;
-				foreach (inout influence; influences)
+				foreach (ref influence; influences)
 					influence.influence *= scaleInfluence;
 				
 				result~= influences;
@@ -813,7 +815,8 @@ class Collada
 		string getAttribute(string name)
 		{	auto attr = node.attributes().name(null, name);
 			if (attr)
-				return attr.value();
+                                // TODO this one is suspicious casting, taking away a const.
+				return cast(string)(attr.value());
 			throw new XMLException("Attribute '%s' doesn't exist on node '%s'", name, node.name());
 		}
 		
@@ -912,7 +915,8 @@ class Collada
 	static class XMLException : ResourceException
 	{	///
 		this(...)
-		{	super(swritef(_arguments, _argptr));
+		{	//TODO port this from format.d super(swritef(_arguments, _argptr));
+                        super("XMLException");
 		}		
 	}	
 }

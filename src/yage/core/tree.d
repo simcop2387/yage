@@ -46,7 +46,7 @@ class Tree(T) : YageObject
 		// Add as a child.
 		child.parent = cast(T)this;
 		children ~= cast(T)child;
-		child.index = children.length-1;
+		child.index = cast(int)(children.length-1);
 		
 		return child;	
 	}
