@@ -38,6 +38,7 @@ string cleanPath(char[] path)
 				{	result.length = result.length-1;
 					break;
 				}
+				goto default;
 			default:
 				result~= token;
 		}

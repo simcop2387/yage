@@ -26,7 +26,7 @@ class Shader
 	 * Params:
 	 *     vertexSource = Source code of a vertex shader.
 	 *     fragmentSource = Source code of a fragment shader. */
-	this(string vertexSource, char[] fragmentSource)
+	this(string vertexSource, string fragmentSource)
 	{	this.vertexSource = vertexSource~"\0";
 		this.fragmentSource = fragmentSource~"\0";
 	}

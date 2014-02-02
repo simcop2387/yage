@@ -16,6 +16,7 @@ import yage.resource.image;
 import yage.resource.manager;
 import yage.system.system;
 import yage.system.log;
+import std.string;
 
 /**
  * An instance of a Texture.
@@ -71,7 +72,7 @@ struct TextureInstance  // TODO: Rename to TextureProperties
 	
 	///
 	string toString()
-	{	return format(`TextureInstance {source: "%s"}`, texture ? texture.source : "null");
+	{	return std.string.format(`TextureInstance {source: "%s"}`, texture ? texture.source : "null");
 	}
 
 	/// Create a new TextureInstance with the parameters specified.

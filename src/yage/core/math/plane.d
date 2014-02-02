@@ -11,6 +11,7 @@ import tango.math.Math;
 import tango.text.convert.Format;
 import yage.core.math.vector;
 import yage.core.misc;
+import std.string;
 
 /**
  * A class representing a plane in 3D space */
@@ -26,8 +27,8 @@ struct Plane
 
 	invariant()
 	{	foreach (float t; v)
-		{	assert(!isNaN(t), format("<%s>", v));
-			assert(t!=float.infinity, format("<%s>", v));
+		{	assert(!isNaN(t), "Plane has NaN"); // format("<%s>", v));
+			assert(t!=float.infinity, "Plane has infinity"); // format("<%s>", v));
 		}
 	}
 
@@ -98,7 +99,7 @@ struct Plane
 
 	/// Return a string representation of this Plane for human reading.
 	string toString()
-	{	return "{" ~ Format.convert("x: {}, y: {}, z: {}, d: {}", x, y, z, d) ~ "}";
+	{	return std.string.format("x: %f, y: %f, z: %f, d: %f", x, y, z, d); 
 	}
 	unittest
 	{	assert(Plane().toString() == "{x: 0.00, y: 0.00, z: 0.00, d: 0.00}");		

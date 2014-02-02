@@ -84,7 +84,8 @@ class Repeater : Thread, IDisposable
 		// Block until the repeater has paused().
 		// This is a primitive way to implement a sleep wait, but i'm not sure of a better way
 		while (calling)
-			Thread.sleep(.001/frequency); // sleep for 1 1000th of the frequency.
+                        // TODO check this, should likely reimplement this function
+			Thread.sleep(dur!("msecs")(cast(long)(1/frequency))); // sleep for 1 1000th of the frequency.
 	}
 	
 	///
@@ -99,9 +100,10 @@ class Repeater : Thread, IDisposable
 	
 	private void onError(Exception e)
 	{	string msg;
-		e.writeOut(delegate void(string a) {
+                // TODO make this give an actual error
+/*		e.writeOut(delegate void(string a) {
 			msg ~= a;
-		});
+		});*/
 	};
 	
 	private void run()
@@ -137,8 +139,9 @@ class Repeater : Thread, IDisposable
 			// Sleep for 1/frequency - (the time it took to make the calls).
 			if (active && !skipPause)
 			{	float sleep_time = 1/frequency - a.tell();
+                                // TODO check the math here
 				if (sleep_time > 0)
-					Thread.sleep(1/frequency - a.tell());
+					Thread.sleep(dur!("msecs")(cast(long)(1000/frequency - a.tell())));
 			}
 			skipPause = false;
 		}
