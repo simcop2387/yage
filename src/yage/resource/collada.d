@@ -230,7 +230,7 @@ class Collada
 						if (!vcounts.length)
 						{	triangles = new Vec3i[result.getVertexBuffer(Geometry.VERTICES).length()/3];
 							foreach (i, ref triangle; triangles)
-								triangle = Vec3i(i*3, i*3+1, i*3+2);
+								triangle = Vec3i(cast(int)(i*3), cast(int)(i*3+1), cast(int)(i*3+2));
 						} 
 						else // If n-sided polygons instead of all triangles
 						{
@@ -626,9 +626,10 @@ class Collada
 			
 			// Load data from the vertex_weights node
 			Node vertexWeightsNode = skin.getChild("vertex_weights");
+			// TODO get rid of scope on all of these
 			scope int[] vcounts = Xml.parseNumberList!(int)(vertexWeightsNode.getChild("vcount").value); // how many vertices per joint weight
 			scope int[] v = Xml.parseNumberList!(int)(vertexWeightsNode.getChild("v").value); // contains alternating jointMap and weight indices into the joints and weights arrays
-			scope float[] weights;
+			float[] weights;
 			foreach (input; vertexWeightsNode.getChildren("input"))
 				if (input.getAttribute("semantic")=="WEIGHT")
 				{	ulong unused;
@@ -733,7 +734,7 @@ class Collada
 	}
 	
 	// See: https://collada.org/mediawiki/index.php/Using_accessors
-	protected T[] getDataFromSourceId(T)(string id, out ulong components)
+	protected T[] getDataFromSourceId(T)(string id, ref ulong components)
 	{	
 		Node source = Xml.getNodeById(doc, id);		
 		Node sourceAccessor;
@@ -765,17 +766,23 @@ class Collada
 	{	
 		Matrix result;
 		foreach (transform; sceneNode.getChildren())
-		{	if (transform.name=="translate")
-				result = result.move(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+		{	
+                        if (transform.name=="translate") 
+                        {
+                                float[] values = Xml.parseNumberList!(float)(transform.value);
+                                result = result.move(Vec3f(values[0], values[1], values[2]));
+                        }
 			else if (transform.name=="rotate")
 			{	float[] values = Xml.parseNumberList!(float)(transform.value);
 				if (values.length!=4)
 					throw new XmlException("Expected four values for rotation.");
 				if (values[3] != 0) // if some rotation
-					result = result.rotate(Vec3f(values[3]*tango.math.Math.PI/180, Vec3f(values))); // load from axis-angle							
+					result = result.rotate(Vec3f(values[3]*tango.math.Math.PI/180, Vec3f(values[0], values[1], values[2]))); // load from axis-angle							
 			} 
-			else if (transform.name=="scale")						
-				result = result.scale(Vec3f(Xml.parseNumberList!(float)(transform.value)));
+			else if (transform.name=="scale") {
+                                float[] values = Xml.parseNumberList!(float)(transform.value);
+                                result = result.scale(Vec3f(values[0], values[1], values[2]));
+			}
 			else if (transform.name=="matrix") // collada 1.3
 				result = Matrix(Xml.parseNumberList!(float)(transform.value));
 		}
@@ -805,17 +812,17 @@ class Collada
 		
 		// Expose node properties.
 		string name()
-		{	return node.name;
+		{	return cast(string)(node.name);
 		}
 		string value() // ditto
-		{	return node.value;
+		{	return cast(string)(node.value);
 		}
 		
 		// Get the value of an attribute by its name, or throw XMLException if not found
 		string getAttribute(string name)
 		{	auto attr = node.attributes().name(null, name);
 			if (attr)
-                                // TODO this one is suspicious casting, taking away a const.
+                                // TODO this one is suspicious casting, taking away a const.rm t
 				return cast(string)(attr.value());
 			throw new XMLException("Attribute '%s' doesn't exist on node '%s'", name, node.name());
 		}

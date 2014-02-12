@@ -81,9 +81,9 @@ class Geometry
 					w2 = (cast(Vec2f[])texCoords)[tri.y];
 					w3 = (cast(Vec2f[])texCoords)[tri.z];
 				} else if (texCoordCount==3)
-				{	w1 = Vec2f((cast(Vec3f[])texCoords)[tri.x].v);
-					w2 = Vec2f((cast(Vec3f[])texCoords)[tri.y].v);
-					w3 = Vec2f((cast(Vec3f[])texCoords)[tri.z].v);
+				{	w1 = Vec2f((cast(Vec2f[])texCoords)[tri.x].v);
+					w2 = Vec2f((cast(Vec2f[])texCoords)[tri.y].v);
+					w3 = Vec2f((cast(Vec2f[])texCoords)[tri.z].v);
 				} else
 					throw new ResourceException("Texture coordinates must have 2 or 3 components to generate tangent vectors.");
 				
@@ -246,7 +246,7 @@ class Geometry
 		// Make a map of vertices x component to their index for fast lookups
 		int[][Vec2f] vertexMap;
 		for (int i=0; i<vb.length; i++)
-		{	Vec2f vertex = Vec2f(vertices[i*c..i*c+2]);
+		{	Vec2f vertex = Vec2f(vertices[i*c],vertices[i*c+1]);
 			vertexMap[vertex] ~= i;
 		}
 				
@@ -362,7 +362,7 @@ class Geometry
 			{	// vertices are now all merged into the same aray, so we need to upate the triangle indices.
 				Vec3i[] triangles = new Vec3i[mesh.getTriangles().length];
 				foreach (i, triangle; mesh.getTriangles()) 
-					triangles[i] = triangle + Vec3i(offset);
+					triangles[i] = triangle + Vec3i(cast(int)(offset), 0, 0); // TODO is this the right thing to do? probably not!
 				result.meshes ~= new Mesh(mesh.material, triangles);
 			}
 		}
