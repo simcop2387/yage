@@ -82,16 +82,16 @@ struct ResourceManager
 	 * Paths are relative to the location of the executable.
 	 * Returns:
 	 * The number of paths defined after adding the path.*/
-	static int addPath(string path)
+	static ulong addPath(string path)
 	{	version (Windows)
 			path = toLower(path);
-		if (path[length-1] != FileConst.PathSeparatorChar)
+		if (path[path.length-1] != FileConst.PathSeparatorChar)
 			path ~= FileConst.PathSeparatorChar;
 		paths ~= path;
 		return paths.length;
 	}
 
-	static int addPath(string[] paths)	// ditto
+	static ulong addPath(string[] paths)	// ditto
 	{	foreach (p; paths)
 			addPath(p);
 		return paths.length;		
@@ -113,11 +113,13 @@ struct ResourceManager
 			current_dir = toLower(current_dir);
 		}
 		string result = cleanPath(FS.join(current_dir, path));
-		if (FilePath(result).exists)
+		// TODO this can probably be done differently!
+		if (FilePath(result.dup).exists)
 			return result;
 		foreach(string p; paths)
 		{	result = cleanPath(FS.join(p, path));
-			if (FilePath(result).exists)
+                        // TODO this can probably be done differently!
+			if (FilePath(result.dup).exists)
 				return result;
 		}
 		throw new ResourceException("The path '%s' could not be resolved.", path);
@@ -199,7 +201,7 @@ struct ResourceManager
 	 * 
 	 * Params:
 	 *     filename = Path and id to collada file.  e.g. foo/bar.dae#IdForMaterial3 */
-	static Material material(string filename, char[] id)
+	static Material material(string filename, string id)
 	{	
 		filename = resolvePath(filename);
 		string path = filename~"#"~id;

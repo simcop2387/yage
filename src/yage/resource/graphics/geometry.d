@@ -447,7 +447,7 @@ class Mesh
 	void setMaterial(Material material) /// ditto
 	{	this.material = material;
 	}
-	void setMaterial(string filename, char[] id) /// ditto
+	void setMaterial(string filename, string id) /// ditto
 	{	this.material = ResourceManager.material(filename, id);
 	}
 

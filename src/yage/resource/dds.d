@@ -107,7 +107,7 @@ struct DDSImageData {
 	ubyte[] pixels;
 
 	string toString() {
-		return yage.core.format.format("{
+		return std.string.format("{
 			 width = %s;
 			 height = %s;
 			 components = %s;
@@ -129,7 +129,7 @@ DDSImageData* loadDDSTextureFile(ubyte[] fileContents) {
 		return v;
 	}
 	int factor;
-	int bufferSize;
+	ulong bufferSize;
 	
 	// Verify the file is a true .dds file
 	if(cast(string)fileContents[0..4] != "DDS ") 
@@ -153,11 +153,12 @@ DDSImageData* loadDDSTextureFile(ubyte[] fileContents) {
 		ddsinfo.depth = 1;
 	uint block_size = ((ddsinfo.width + 3) / 4) * ((ddsinfo.height + 3) / 4) * ddsinfo.depth;
 	switch(ddsinfo.fourCC) {
-		case "DXT1":
+	// TODO re-enable these packed formats
+/*		case "DXT1":
 			pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 			factor = 2;
 			block_size *= 8;
-			break;
+			break;*/
 			/*
 			 case "DXT2":
 			 pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT2_EXT;
@@ -165,11 +166,11 @@ DDSImageData* loadDDSTextureFile(ubyte[] fileContents) {
 			 block_size *= 16;
 			 break;
 			 */
-		case "DXT3":
+/*		case "DXT3":
 			pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 			factor = 4;
 			block_size *= 16;
-			break;
+			break;*/
 			/*
 			 case "DXT4":
 			 pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT4_EXT;
@@ -177,11 +178,11 @@ DDSImageData* loadDDSTextureFile(ubyte[] fileContents) {
 			 block_size *= 16;
 			 break;
 			 */
-		case "DXT5":
+/*		case "DXT5":
 			pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 			factor = 4;
 			block_size *= 16;
-			break;
+			break;*/
 		default:
 			throw new ResourceException("Cannot parse DXT texture since it's not DXT1, DXT3, or DXT5.");
 	}

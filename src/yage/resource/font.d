@@ -28,10 +28,10 @@ import yage.system.log;
  * Stores a single rendered letter. */ 
 struct Letter
 {	dchar letter;	/// unicode letter
-	short top;		/// image top offset
-	short left;		/// image left offset
-	short advanceX;	/// x and y distance in pixels required to move to the next letter after this one
-	short advanceY;	/// ditto
+	int top;		/// image top offset
+	int left;		/// image left offset
+	int advanceX;	/// x and y distance in pixels required to move to the next letter after this one
+	int advanceY;	/// ditto
 	Image image; 	/// rendered image of this letter
 	
 	void* extra;	// used internally
@@ -40,7 +40,7 @@ struct Letter
 	 * Get the utf8 representation of this letter. 
 	 * Params:
 	 *     lookaside = If specified, fill and return this buffer instead of allocating new memory on the heap. */
-	string toString(char[] lookaside=null)
+	char[] toString(char[] lookaside=null)
 	{	dchar[1] temp;
 		temp[0] = letter;
 		return .toString(temp, lookaside);
@@ -55,8 +55,8 @@ class Font
 	// Used as a key to lookup cached letters.
 	protected struct Key
 	{	dchar letter;
-		short width;
-		short height;
+		int width;
+		int height;
 		bool bold;
 		bool italic;
 		
@@ -75,7 +75,7 @@ class Font
 	    {  	return letter==s.letter && width==s.width && height==s.height && s.bold==bold && s.italic==italic;
 	    }
 	    int opCmp(Key s)
-	    {  	 return toHash() - s.toHash();
+	    {  	 return cast(int)(toHash()) - cast(int)(s.toHash());
 	    }
 	}
 	
@@ -139,7 +139,7 @@ class Font
 		//FilePath(tempFile).remove(); // freetype maintains lock, can't delete.
 		this.resourceName = resourceName;
 		
-		(new FilePath(tempFilePath)).remove();
+		(new FilePath(tempFilePath.dup)).remove();
 
 		/*
 		// Use freetype's API to load the font directly from memory.  This breaks for unknown reasons.
@@ -181,6 +181,7 @@ class Font
 	 *     italic = Get an italicized version of the letter.  This is performed by an image skew and then cached. */
 	Letter getLetter(dchar letter, int width, int height=0, bool bold=false, bool italic=false)
 	{
+                // TODO fix this to not need castings!
 		Key key = Key(letter, width, height, bold, italic);
 		if (key in cache)
 			return cache[key];
@@ -194,7 +195,7 @@ class Font
 			FT_Set_Transform(face, &matrix, null);
 			
 			// Give our font size to freetype.
-			scope error = FT_Set_Pixel_Sizes(face, width, height); // face, pixel width, pixel height
+			auto error = FT_Set_Pixel_Sizes(face, width, height); // face, pixel width, pixel height
 			if (error)
 				throw new ResourceException("Font '%s' does not support pixel sizes of %sx%s.  Freetype2 error %s", resourceName, width, height, error);
 		
@@ -203,7 +204,7 @@ class Font
 			if (error)
 				throw new ResourceException("Font '%s' cannot render the character '%s', Freetype2 error %s", resourceName, letter, error);			
 			
-			scope bitmap = face.glyph.bitmap;
+			auto bitmap = face.glyph.bitmap;
 			ubyte[] data = (cast(ubyte*)bitmap.buffer)[0..(bitmap.width*bitmap.rows)];				
 					
 			// Set the values of the letter.
@@ -223,8 +224,8 @@ class Font
 			
 			result.top = face.glyph.bitmap_top;
 			result.left = face.glyph.bitmap_left;
-			result.advanceX = face.glyph.advance.x>>6; // fast divide by 64
-			result.advanceY = -face.glyph.advance.y>>6;
+			result.advanceX = cast(int)(face.glyph.advance.x>>6); // fast divide by 64
+			result.advanceY = cast(int)(-face.glyph.advance.y>>6);
 			result.letter = letter;
 			
 			return cache[key] = result;
