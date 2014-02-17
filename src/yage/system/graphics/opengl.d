@@ -53,19 +53,20 @@ void gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFa
 
 private class ResourceInfo
 {	uint id;   // OpenGL's handle
-	uint time; // seconds from 1970, watch out for 2038!
+	long time; // seconds from 1970, watch out for 2038!
 	// WeakReference!(Object) resource; // A weak reference, so when the resource is deleted, we know to delete this item also
 	Object resource;
 
 	// Create ResourceInfo for a resource in map if it doesn't exist, or return it if it does
 	static ResourceInfo getOrCreate(Object resource, HashMap!(uint, ResourceInfo) map)
-	{	uint hash = resource.toHash();
+	{	uint hash = cast(uint) resource.toHash();
 		ResourceInfo* temp = (hash in map);
 		ResourceInfo info;
 		if (!temp)
 		{	info = new ResourceInfo();
 			map[hash] = info;
-			info.resource = new WeakReference!(Object)(resource);
+			// MASSIVE TODO this needs to be a weak reference but that seems to be difficult to do right now?
+			info.resource = resource; //new WeakReference!(Object)(resource);
 		} else
 			info = *temp;
 		info.time = tango.stdc.time.time(null);
@@ -130,45 +131,45 @@ class OpenGL : GraphicsAPI
 			glLoadMatrixf(cameraInverse.v.ptr); // required for spotlights.
 
 			// Set position and direction
-			glEnable(GL_LIGHT0+num);
+			glEnable(cast(uint)(GL_LIGHT0+num));
 			auto type = light.type;
 			Matrix transform_abs = light.getWorldTransform();
 
 			Vec4f pos;
 			pos.v[0..3] = transform_abs.v[12..15];
 			pos.v[3] = type==LightNode.Type.DIRECTIONAL ? 0 : 1;
-			glLightfv(GL_LIGHT0+num, GL_POSITION, pos.v.ptr);
+			glLightfv(cast(uint)(GL_LIGHT0+num), GL_POSITION, pos.v.ptr);
 
 			// Spotlight settings
 			float angleDegrees = type == LightNode.Type.SPOT ? light.spotAngle*180/PI : 180;
-			glLightf(GL_LIGHT0+num, GL_SPOT_CUTOFF, angleDegrees);
+			glLightf(cast(uint)(GL_LIGHT0+num), GL_SPOT_CUTOFF, angleDegrees);
 			if (type==LightNode.Type.SPOT)
-			{	glLightf(GL_LIGHT0+num, GL_SPOT_EXPONENT, light.spotExponent);
+			{	glLightf(cast(uint)(GL_LIGHT0+num), GL_SPOT_EXPONENT, light.spotExponent);
 				// transform_abs.v[8..11] is the opengl default spotlight direction (0, 0, 1),
 				// rotated by the node's rotation.  This is opposite the default direction of cameras
-				glLightfv(GL_LIGHT0+num, GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
+				glLightfv(cast(uint)(GL_LIGHT0+num), GL_SPOT_DIRECTION, transform_abs.v[8..11].ptr);
 			}
 			glPopMatrix();
 
 			// Light material properties
 			if (currentLight.ambient != light.ambient)
-				glLightfv(GL_LIGHT0+num, GL_AMBIENT, light.ambient.vec4f.ptr);
+				glLightfv(cast(uint)(GL_LIGHT0+num), GL_AMBIENT, light.ambient.vec4f.ptr);
 			if (currentLight.diffuse != light.diffuse)
-				glLightfv(GL_LIGHT0+num, GL_DIFFUSE, light.diffuse.vec4f.ptr);
+				glLightfv(cast(uint)(GL_LIGHT0+num), GL_DIFFUSE, light.diffuse.vec4f.ptr);
 			if (currentLight.specular != light.specular)
-				glLightfv(GL_LIGHT0+num, GL_SPECULAR, light.specular.vec4f.ptr);
+				glLightfv(cast(uint)(GL_LIGHT0+num), GL_SPECULAR, light.specular.vec4f.ptr);
 
 			// Attenuation properties TODO: only need to do this once per light
 			if (currentLight.quadAttenuation != light.quadAttenuation)
-			{	glLightf(GL_LIGHT0+num, GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
-				glLightf(GL_LIGHT0+num, GL_LINEAR_ATTENUATION, 0);
-				glLightf(GL_LIGHT0+num, GL_QUADRATIC_ATTENUATION, light.quadAttenuation);
+			{	glLightf(cast(uint)(GL_LIGHT0+num), GL_CONSTANT_ATTENUATION, 0); // requires a 1 but should be zero?
+				glLightf(cast(uint)(GL_LIGHT0+num), GL_LINEAR_ATTENUATION, 0);
+				glLightf(cast(uint)(GL_LIGHT0+num), GL_QUADRATIC_ATTENUATION, light.quadAttenuation);
 			}
 
 			current.lights[num] = light;
 		}
-		for (int i=lights.length; i<maxLights; i++)
-			glDisable(GL_LIGHT0+i);
+		for (ulong i=lights.length; i<maxLights; i++)
+			glDisable(cast(uint)(GL_LIGHT0+i));
 
 	}
 
@@ -362,7 +363,7 @@ class OpenGL : GraphicsAPI
 					glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, renderBuffer);
 
 					/// TODO: textures[texture].id will fail if Texture isn't bound.
-					glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, textures[texture.toHash()].id, 0);
+					glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, textures[cast(uint)(texture.toHash())].id, 0);
 
 					auto status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 				} else
@@ -399,7 +400,7 @@ class OpenGL : GraphicsAPI
 					}
 
 					// TODO: textures[texture].id will fail if Texture isn't created.
-					glBindTexture(GL_TEXTURE_2D, textures[texture.toHash()].id);
+					glBindTexture(GL_TEXTURE_2D, textures[cast(uint)(texture.toHash())].id);
 					glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, texture.width, texture.height, 0);
 					texture.format = Texture.Format.RGB8;
 					texture.flipped = true;
@@ -474,11 +475,11 @@ class OpenGL : GraphicsAPI
 			{	glUseProgramObjectARB(info.id);
 
 				// Bind textures to "texture0", "texture1", etc. in the shader.
-				string glslTextureName = "texture0\0".dup;
+				string glslTextureName = "texture";
 				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 				for (int i=0; i<maxTextures; i++)
 				{
-					glslTextureName[7] = cast(char)(i + '0');
+					glslTextureName ~= cast(char)(i + '0');
 					int location = glGetUniformLocationARB(info.id, glslTextureName.ptr);
 					if (location != -1)
 						glUniform1iARB(location, i);
