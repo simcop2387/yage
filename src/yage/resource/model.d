@@ -251,7 +251,7 @@ class Model : Geometry
 	}
 	
 	static Model merge(Model[] models)
-	{	Geometry geometryResult = Geometry.merge(models);
+	{	Geometry geometryResult = Geometry.merge(cast(Geometry[])(models));
 	
 		Model result = new Model(geometryResult);
 		

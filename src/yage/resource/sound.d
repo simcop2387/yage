@@ -103,7 +103,7 @@ class Sound
 	}
 
 	/// Get the number of buffers this sound was divided into
-	uint getBuffersLength()
+	ulong getBuffersLength()
 	{	return buffers.length;
 	}
 
@@ -128,13 +128,13 @@ class Sound
 	}
 
 	/// TODO: convert last to be number, to be consistent with alloBuffers and FreeBuffers?
-	uint[] getBuffers(int first, int last)
+	uint[] getBuffers(ulong first, ulong last)
 	{	first = first % buffers.length;
 		last = last % buffers.length;
 		
 		// If we're wrapping around
 		if (first > last)
-			return buffers[first..length]~buffers[0..last];
+			return buffers[first..buffers.length]~buffers[0..last];
 		else
 			return buffers[first..last];
 	}
@@ -148,7 +148,7 @@ class Sound
 	{	// Loop through each of the buffers that will be returned
 		for (int j=first; j<first+number; j++)
 		{	// Allow inputs that are out of range to loop around
-			int i = j % buffers.length;
+			ulong i = j % buffers.length;
 
 			// If this buffer hasn't yet been bound
 			if (buffers_ref[i]==0)
@@ -172,7 +172,7 @@ class Sound
 	{	
 		for (int j=first; j<first+number; j++)
 		{	// Allow inputs that are out of range to loop around
-			int i = j % buffers.length;
+			ulong i = j % buffers.length;
 
 			// Decrement reference count
 			if (buffers_ref[i]==0)
@@ -198,8 +198,7 @@ class Sound
 
 	/// Print useful information about the loaded sound file.
 	override string toString()
-	{	return Format.convert(
-			"size of buffer: {} bytes\nsize of buffer: {} bytes\nbuffers per second: {} bytes\n", 
+	{	return std.string.format("size of buffer: %l bytes\nsize of buffer: %l bytes\nbuffers per second: %l bytes\n", 
 			buffer_size, buffer_num, buffers_per_sec
 		);
 	}
@@ -212,7 +211,7 @@ class Sound
  *  that inherits from SoundFile and override its methods. */
 private abstract class SoundFile
 {
-	ubyte	channels;
+	ushort	channels;
 	int		frequency;	// 22050hz, 44100hz?
 	int		bits;		// 8bit, 16bit?
 	int		size;		// in bytes
@@ -227,20 +226,20 @@ private abstract class SoundFile
 
 	/** Return a buffer of uncompressed sound data.
 	 *  Both parameters are measured in bytes. */
-	ubyte[] getBuffer(int offset, int size)
+	ubyte[] getBuffer(ulong offset, uint size)
 	{	return null;
 	}
 
 	/// Print useful information about the loaded sound file.
 	override string toString()
-	{	return (
-			Format.convert("Sound: '{}'\n", source) ~
-			Format.convert("channels: {}\n", channels) ~
-			Format.convert("sample rate: {}hz\n", frequency) ~
-			Format.convert("sample bits: {}\n", bits) ~
-			Format.convert("sample length: {} bytes\n", size) ~
-			Format.convert("sample length: {} seconds\n", (8.0*size)/(bits*frequency*channels))
-		);
+	{	return  std.string.format("Sound: '%s'\n"~
+			                  "channels: %d\n"~
+			                  "sample rate: %d\n"~
+			                  "sample bits: %d\n"~
+			                  "sample length: %d bytes\n"~
+			                  "sample length: %f seconds\n",
+			                  source, channels, frequency, bits, size,
+			                  (8.0*size)/(bits*frequency*channels));
 	}
 }
 
@@ -325,7 +324,7 @@ private class VorbisFile : SoundFile
 
 	/** Return a buffer of uncompressed sound data.
 	 *  Both parameters are measured in bytes. */
-	override ubyte[] getBuffer(int offset, int _size)
+	override ubyte[] getBuffer(ulong offset, uint _size)
 	{	if (offset+_size > size)
 			return null;
 		ov_pcm_seek(&vf, offset/(bits/8)/channels);

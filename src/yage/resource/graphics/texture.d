@@ -209,10 +209,10 @@ class Texture : IRenderTarget
 		
 		if (pad) // if pad instead of resize.
 		{
-			int new_width = nextPow2(image.getWidth());
-			int new_height = nextPow2(image.getHeight());
-			padding.x = (new_width - image.getWidth());
-			padding.y = (new_height - image.getHeight());
+			int new_width = nextPow2(cast(uint)image.getWidth());
+			int new_height = nextPow2(cast(uint)image.getHeight());
+			padding.x = (new_width - cast(uint)image.getWidth());
+			padding.y = (new_height - cast(uint)image.getHeight());
 							
 			if (image.getWidth() != new_width || image.getHeight() != new_height)
 				image = image.crop(0, 0, new_width, new_height);

@@ -44,8 +44,8 @@ class Image
 
 	// Fields
 	ubyte[] data;
-	protected int width, height;
-	protected byte channels;
+	protected ulong width, height;
+	protected int channels;
 	string source;
 	
 	// Empty Constructor, used internally
@@ -59,8 +59,8 @@ class Image
 	 *     channels = number of color channels.
 	 *     width = width in pixels
 	 *     height = height in pixel */
-	this(int channels, int width, int height, ubyte[] lookaside = null)
-	{	int size = channels*width*height;
+	this(int channels, ulong width, ulong height, ubyte[] lookaside = null)
+	{	ulong size = channels*width*height;
 		if (lookaside.length < size)
 			lookaside.length = size;
 		data = lookaside;
@@ -98,12 +98,12 @@ class Image
 	this(string filename) 
 	{			
 		SDL_Surface *sdl_image;
-		char* source = toStringz(filename); // garbage
+		char[] source = filename.dup; //toStringz(filename); // garbage
 		scope(exit) delete source;
 		scope(exit) SDL_FreeSurface(sdl_image);
 		
 		// Attempt to load image
-		if ((sdl_image = IMG_Load(source)) is null)
+		if ((sdl_image = IMG_Load(&source[0])) is null)
 			throw new ResourceException("Could not open image file '%s'.", filename);		
 		width = sdl_image.w;
 		height = sdl_image.h;
@@ -160,13 +160,13 @@ class Image
 
 		// Loop through each channel.
 		for (int i=0; i<channels; i++)
-		{	int ywidthx = y*width+x;
-			int y1widthx = ywidthx + width;
+		{	ulong ywidthx = y*width+x;
+			ulong y1widthx = ywidthx + width;
 			if (x<width-1 && y<height-1)	// Different calculations depending on what's inside array bounds.
-			{	result.v[i] = cast(ubyte) ((
+			{	result.v[i] = cast(ubyte) (((
 					(data[ywidthx*channels + i] * u_opposite + data[(ywidthx+1)*channels + i] * u_ratio) * v_opposite + 						
 					(data[y1widthx*channels + i] * u_opposite + data[(y1widthx+1)*channels + i] * u_ratio) * v_ratio
-				)>> 16) + 2;
+				)>> 16) + 2);
 			}			
 			else if (x<width-1)
 				result.v[i] = cast(ubyte)((
@@ -209,8 +209,8 @@ class Image
 				if (0<=x && x<width && 0<=y && y<height) // if inside source image
 					if (0<=x && x<result.width && 0<=y && y<result.height) // if inside dest. image.
 					{	
-						int s = ((y-top)*width+(x-left))*channels;
-						int d = (y*result.width+x)*channels;
+						ulong s = ((y-top)*width+(x-left))*channels;
+						ulong d = (y*result.width+x)*channels;
 						result.data[d..d+channels] = data[s..s+channels];
 					}
 		return result;
@@ -237,10 +237,10 @@ class Image
 	}
 
 	/// Get the width or height of the image in pixels.
-	int getWidth()
+	ulong getWidth()
 	{	return width;		
 	}
-	int getHeight() /// ditto.
+	ulong getHeight() /// ditto.
 	{	return height;
 	}
 	
@@ -261,14 +261,14 @@ class Image
 		assert(0 <= x && x<width); 
 		assert(0 <= y && y<height);
 		
-		int i = (y*width+x)*channels;
+		ulong i = (y*width+x)*channels;
 		return data[i..(i+channels)];
 	}
 	ubyte[] opIndexAssign(ubyte[] val, int x, int y) /// ditto
 	{	assert(0 <= x && x<width); 
 		assert(0 <= y && y<height);
 		
-		int i = (y*width+x)*channels;
+		ulong i = (y*width+x)*channels;
 		return data[i..(i+channels)] = val[0..channels];
 	}
 
@@ -306,17 +306,17 @@ class Image
 		if (this == img)
 			img.data = img.data.dup; // TODO: Use a lookaside instead
 		
-		int ymax = max(min(img.height+yoffset, height), 0); 
+		ulong ymax = max(min(img.height+yoffset, height), 0); 
 		for (int y=max(yoffset, 0); y < ymax; y++)
 		{	assert(0 <= y && y<height);
-			int xmax = max(min(img.width+xoffset, width), 0);
+			ulong xmax = max(min(img.width+xoffset, width), 0);
 			for (int x=max(xoffset, 0); x<xmax; x++)
 			{	assert(0 <= x && x<width);
-				uint src = ((y-yoffset)*img.width + x - xoffset)*channels;
-				uint dest = (y*width+x)*channels;
+				ulong src = ((y-yoffset)*img.width + x - xoffset)*channels;
+				ulong dest = (y*width+x)*channels;
 				for (int c=0; c<channels; c++)
 				{	uint total = cast(int)data[dest+c] + img.data[src+c];
-					data[dest+c] = total > 255 ? 255 : total;
+					data[dest+c] = cast(ubyte)(total > 255 ? 255 : total);
 				}
 			}
 		}
@@ -337,12 +337,12 @@ class Image
 	{	assert(getChannels()==4);
 		assert(img.getChannels()==1);
 	
-		uint ymax = max(min(img.height+yoffset, height), 0); 
+		ulong ymax = max(min(img.height+yoffset, height), 0); 
 		for (uint y=max(yoffset, 0); y < ymax; y++)
 		{	assert(0 <= y && y<height);
 		
-			uint ywidth = y*width;
-			uint xmax = max(min(img.width+xoffset, width), 0);
+			ulong ywidth = y*width;
+			ulong xmax = max(min(img.width+xoffset, width), 0);
 			for (uint x=max(xoffset, 0); x<xmax; x++)
 			{	assert(0 <= x && x<width);
 				
@@ -351,17 +351,17 @@ class Image
 				src_alpha = (src_alpha * 257)>>16; // fast divide by 255
 				if (src_alpha > 0)
 				{	
-					uint dest = (ywidth+x)*channels;
+					ulong dest = (ywidth+x)*channels;
 					uint dst_alpha = data[dest+3];
 					uint dst_ratio = (((255-src_alpha) * dst_alpha) * 257)>>16; // hack for faster divide by ~255
 					
 					// This is my own blending algorithm, can it be further optimized?
 					uint reciprocal = 0x10001 / (src_alpha + dst_ratio); // calculate reciprocal for fast integer division.
-					data[dest  ] = ((color.r*src_alpha + data[dest  ]*dst_ratio) * reciprocal)>>16; // colors
-					data[dest+1] = ((color.g*src_alpha + data[dest+1]*dst_ratio) * reciprocal)>>16;
-					data[dest+2] = ((color.b*src_alpha + data[dest+2]*dst_ratio) * reciprocal)>>16;
+					data[dest  ] = cast(ubyte)(((color.r*src_alpha + data[dest  ]*dst_ratio) * reciprocal)>>16); // colors
+					data[dest+1] = cast(ubyte)(((color.g*src_alpha + data[dest+1]*dst_ratio) * reciprocal)>>16);
+					data[dest+2] = cast(ubyte)(((color.b*src_alpha + data[dest+2]*dst_ratio) * reciprocal)>>16);
 
-					data[dest+3] = src_alpha + dst_ratio;
+					data[dest+3] = cast(ubyte)(src_alpha + dst_ratio);
 				}
 		}	}
 	}
@@ -410,11 +410,11 @@ class Image
 				for (int x=0; x<width; x++)
 				{	int x2 = x*2;
 					int y2 = y*2;
-					int a = (y2*this.width+x2)*channels;
-					int b = a + channels;
-					int c = ((y2+1)*this.width+x2)*channels;
-					int d = c + channels;					
-					int dest = (y*width+x)*channels;					
+					ulong a = (y2*this.width+x2)*channels;
+					ulong b = a + channels;
+					ulong c = ((y2+1)*this.width+x2)*channels;
+					ulong d = c + channels;					
+					ulong dest = (y*width+x)*channels;					
 					for (int i=0; i<channels; i++)
 						result.data[dest+i] = (data[a+i] + data[b+i] + data[c+i] + data[d+i]+2) / 4; // +2 to correct rounding.		
 				}
@@ -431,7 +431,7 @@ class Image
 	}
 	
 	// Unfinished and untested.  TODO: modify this to return a new image in the given format, allow more than one byte per channel
-	Image setFormat(int channels)
+/*	Image setFormat(int channels)
 	{	if (channels == this.channels)
 			return this;
 
@@ -447,7 +447,8 @@ class Image
 						sum += data[i+j];
 					result.data[i/this.channels] = cast(ubyte)(sum / this.channels);
 				}
-				this = result;
+				this.data = result.data;
+				this.channels = result.channels;
 				break;
 			case 3:
 				// Copy gray channel into RGB
@@ -463,11 +464,12 @@ class Image
 					delete temp;
 				}
 				// Drop alpha channel (untested)
-				if (this.channels == 4)
+				if (this.channels == 4) {
 					for (int i=0; i<data.length; i+=4)
 					{	data[i*3/4] = data[i];
 						data.length = width*height*4;
 					}
+				}
 				break;
 			case 4:
 				if (this.channels == 1)
@@ -491,7 +493,7 @@ class Image
 		this.channels = channels;
 		
 		return this;
-	}
+	}*/
 
 	/**
 	 * Return a new image that is a sub-image of this image.
@@ -512,8 +514,8 @@ class Image
 
 		for (int y=top; y<bottom; y++)
 			for (int x=left; x<right; x++)
-			{	int src 	= (y*width+x)*channels;
-				int dest	= ((y-top)*res_width+(x-left))*channels;
+			{	ulong src 	= (y*width+x)*channels;
+				ulong dest	= ((y-top)*res_width+(x-left))*channels;
 				res_data[dest..dest+channels] = data[src..src+channels];
 			}
 		
