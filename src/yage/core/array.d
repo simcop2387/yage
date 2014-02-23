@@ -226,7 +226,7 @@ void radixSort(T, K)(T[] array, bool increasing, K delegate(T elem) getKey, bool
 	}	
 	
 	// Perform the radix sort.
-	int count = array.length;	
+	ulong count = array.length;	
 	Elem[] elem =  Memory.allocate!(Elem)(count);;
 	Elem[] elem_copy = Memory.allocate!(Elem)(count);
 

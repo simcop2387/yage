@@ -35,19 +35,19 @@ class Memory
 	 * Get a new array of type T. 
 	 * Params:
 	 *     length The number of array elements. */
-	static T[] allocate(T)(int length)
-	{	int bytes = length * T.sizeof; // in bytes
+	static T[] allocate(T)(ulong length)
+	{	ulong bytes = length * T.sizeof; // in bytes
 		auto instance = getInstance();
 		ArrayBuilder!(ubyte)* memory = &instance._memory; // get TLS version of _memory.
-		int l = memory.length;
+		ulong l = memory.length;
 		memory.length = l += bytes;
 		if (memory.reserve < l)
 			memory.reserve = l;
 		
-		debug {			
+/*		debug {			
 			instance.allocationTypes ~= typeid(T);
 			instance.allocationSizes ~= bytes;
-		}
+		}*/
 		
 		return cast(T[]) memory.data[$-bytes..$];
 	}
@@ -55,7 +55,7 @@ class Memory
 	/**
 	 * Free a previously allocated array. */
 	static void free(T)(T[] data)
-	{	int bytes = data.length*T.sizeof; // in bytes
+	{	ulong bytes = data.length*T.sizeof; // in bytes
 		auto instance = getInstance();
 		debug {
 			string error = "Memory must be freed in the reverse order it was allocated.";

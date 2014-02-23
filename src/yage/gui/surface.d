@@ -102,7 +102,7 @@ class Surface : Tree!(Surface)
 	{	this(parent);
 		this.style.set(style);
 	}
-	this (string style, char[] html, Surface parent=null) /// ditto
+	this (string style, string html, Surface parent=null) /// ditto
 	{	this(parent);
 		this.style.set(style);
 		setHtml(html);
