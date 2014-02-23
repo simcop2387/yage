@@ -6,17 +6,18 @@
 module yage.gui.exceptions;
 
 import yage.core.object2;
+import core.vararg;
 
 ///
 class CSSException : YageException
 {	this(...)
-	{	super(swritef(_arguments, _argptr));
+	{	super("CSS Exception"); // TODO make this actually use the vararg stuff
 	}	
 }
 
 ///
 class XHTMLException : YageException
 {	this(...)
-	{	super(swritef(_arguments, _argptr));
+	{	super("XHTML Exception"); // TODO make this actually use the vararg stuff
 	}	
 }

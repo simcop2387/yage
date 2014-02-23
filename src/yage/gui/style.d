@@ -8,7 +8,9 @@ module yage.gui.style;
 
 import tango.math.IEEE;
 import tango.text.Util;
-import tango.text.Unicode;
+alias std.array.split split; 
+alias std.array.join join; 
+//import tango.text.Unicode;
 import tango.util.Convert;
 
 import yage.core.color;
@@ -23,6 +25,8 @@ import yage.gui.exceptions;
 import yage.system.log;
 
 import yage.core.timer;
+import std.string;
+import std.typecons;
 
 /**
  * Represents a CSS value.  It can store pixels or precent. */
@@ -53,21 +57,21 @@ struct CSSValue
 	CSSValue opAssign(float v)
 	{	value = v>0 || isNaN(v) ? v : 0;
 		unit = Unit.PX;
-		return *this;
+		return this;
 	}
 	CSSValue opAssign(string v) /// ditto
-	{	if (v[length-1] == '%')
-		{	value = to!(float)(v[0..length-1]);
+	{	if (v[v.length-1] == '%')
+		{	value = to!(float)(v[0..v.length-1]);
 			unit = Unit.PERCENT;
 		}
 		else // to!(float) still works when v has trailing characters
-		{	if (v.length > 2 && v[length-2..length]=="px")
-				value = to!(float)(v[0..length-2]);
+		{	if (v.length > 2 && v[v.length-2..v.length]=="px")
+				value = to!(float)(v[0..v.length-2]);
 			else
-				value = to!(float)(v[0..length]);
+				value = to!(float)(v[0..v.length]);
 			unit = Unit.PX;
 		}
-		return *this;
+		return this;
 	}
 	unittest
 	{	CSSValue a;
@@ -337,11 +341,11 @@ struct Style
 		foreach (expr; patterns(style, ";"))
 		{	
 			expr = trim(expr);
-			scope string[] tokens = split(expr, ":");
+			string[] tokens = cast(string[]) split(expr, ":");
 			if (tokens.length<2)
 				throw new CSSException("CSS Property: '%s' has no value", expr);
 			string property = trim(tokens[0]);
-			property = toLower(property);
+			property = cast(string) toLower(property);
 			tokens = delimit(trim(tokens[1]), " \r\n\t");
 			
 			// TODO: account for parse errors.			
@@ -456,9 +460,9 @@ struct Style
 		//mixin(styleCompare!("cursorSize"));
 		
 		if (cursorSize!=def.cursorSize && (!isNaN(cursorSize) && !isNaN(def.cursorSize))) 
-			result ~= swritef("cursor-size: '%s'", cursorSize);
+			result ~= std.string.format("cursor-size: '%s'", cursorSize);
 		
-		if (fontFamily!=def.fontFamily) result ~= swritef("font-family: url('%s')", fontFamily);
+		if (fontFamily!=def.fontFamily) result ~= std.string.format("font-family: url('%s')", fontFamily);
 		mixin(styleCompare!("fontSize"));
 		mixin(styleCompare!("color"));
 		
@@ -471,7 +475,7 @@ struct Style
 		mixin(styleCompare!("visible"));		
 		mixin(styleCompare!("zIndex"));
 			
-		return join(result, "; ");
+		return cast(string) join(result, "; ");
 	}
 	
 	/**
@@ -555,7 +559,7 @@ struct Style
 	/* Helper for set)
 	 * Remove the url('...') from a css path, if it's present.
 	 * Returns: A slice of the original url to avoid creating garbage.*/ 
-	private string removeUrl(char[] url)
+	private string removeUrl(string url)
 	{	if (url.length>5 && (url[0..5] == "url('" || url[0..5] == "url(\""))
 			return url[5..$-2];
 		if (url.length>4 && (url[0..4] == "url(" || url[0..4] == "url("))
@@ -586,13 +590,13 @@ struct Style
  * Helper for toString() */
 private template styleCompare(string name="")
 {     const string styleCompare =
-    	 `if (`~name~`!=def.`~name~`) result ~= "`~toCSSName(name)~`: "~format("%s", `~name~`);`;
+    	 `if (`~name~`!=def.`~name~`) result ~= "`~toCSSName(name)~`: "~std.string.format("%s", `~name~`);`;
 }
 
 /*
  * Convert from a property name to a css name.
  * For example, "fontSize" to "font-size". */
-private string toCSSName(char[] name)
+private string toCSSName(string name)
 {
 	string result;
 	foreach(c; name)
