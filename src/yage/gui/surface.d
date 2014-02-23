@@ -335,7 +335,7 @@ class Surface : Tree!(Surface)
 		Style pcs = parent ? parent.getComputedStyle() : getDefaultStyle();
 		
 		// Font and text properties
-		cs.color = style.color.get() is null ? pcs.color : style.color;
+		cs.color = style.color.isNull ? pcs.color : style.color;
 		cs.fontFamily = style.fontFamily is null ? pcs.fontFamily : style.fontFamily;
 		cs.fontSize = style.fontSize == CSSValue.AUTO ? pcs.fontSize : style.fontSize;
 		cs.fontStyle = style.fontStyle == Style.FontStyle.AUTO ? pcs.fontStyle : style.fontStyle;
@@ -375,7 +375,7 @@ class Surface : Tree!(Surface)
 	 *         If null, new memory will be allocated. 
 	 * Returns:
 	 *     A polygon in the parent's coordinate system. */
-	Vec2f[] getPolygon(in Vec2f[] polygon=null)
+	Vec2f[] getPolygon(Vec2f[] polygon=null)
 	{	if (polygon.length < 4)
 			polygon = new Vec2f[4];
 	

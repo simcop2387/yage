@@ -15,6 +15,7 @@ import tango.text.xml.Document;
 import tango.text.convert.Utf;
 import tango.text.Unicode;
 import tango.text.Util;
+alias std.array.join join;
 
 import derelict.sdl2.sdl;
 
@@ -35,9 +36,9 @@ import yage.system.log;
 
 ///
 struct TextCursor
-{	uint position; ///
-	uint selectionStart; ///
-	uint selectionEnd; ///
+{	ulong position; ///
+	ulong selectionStart; ///
+	ulong selectionEnd; ///
 }
 
 /**
@@ -68,7 +69,7 @@ struct TextBlock
 		
 		/**
 		 * Get the xy pixel position of a cursor position. */
-		Vec2i cursorToXy(int position)
+		Vec2i cursorToXy(ulong position)
 		{
 			// Special case
 			if (!lines.length)
@@ -76,13 +77,13 @@ struct TextBlock
 			
 			// Get y value
 			Vec2i result;
-			int line = cursorToLine(position); // modifies position
+			ulong line = cursorToLine(position); // modifies position
 			for (int i=0; i<line; i++)
 				result.y += lines[i].height;
 			
 			// Get x value
-			int last = min(lines[line].letters.length, position);
-			for (int i=0; i<last; i++)
+			ulong last = cast(ulong) min(lines[line].letters.length, position);
+			for (ulong i=0; i<last; i++)
 				result.x += lines[line].letters[i].advanceX;
 			result.x += Line.getOffset(lines[line].width, width, alignment);
 			return result;
@@ -90,7 +91,7 @@ struct TextBlock
 		
 		/**
 		 * Get the cursor position from an xy pixel position. */
-		int xyToCursor(Vec2i xy)
+		ulong xyToCursor(Vec2i xy)
 		{	if (!lines.length)
 				return 0;
 			
@@ -122,7 +123,7 @@ struct TextBlock
 		 *     After the function executes, this will be the position on the line returned.
 		 * Returns:  The line number.  If position is after the last line, 
 		 *     then the number of the last line is returned and position is an offset from this.*/
-		int cursorToLine(inout int position)
+		ulong cursorToLine(ref ulong position)
 		{	if (!lines.length) // special case if no lines
 				return position = 0;
 			
@@ -141,8 +142,8 @@ struct TextBlock
 		 *     line = 
 		 *     position = Position from the beginning of the line, may be negative or exceed the line length.
 		 * Returns: The absolute position of the cursor from the beginning of the text block. */
-		int lineToCursor(int line, int position)
-		{	int m = min(line, lines.length);
+		ulong lineToCursor(ulong line, int position)
+		{	ulong m = min(line, lines.length);
 			for (int i=0; i<m; i++)
 				position += lines[i].letters.length;
 			return position;
@@ -177,23 +178,23 @@ struct TextBlock
 				
 				// Only print styles that don't match the Surface's style
 				if (style.fontFamily && style.fontFamily != newStyle.fontFamily)
-					styleString ~= swritef(`font-family: url('%s')`, newStyle.fontFamily);
+					styleString ~= std.string.format(`font-family: url('%s')`, newStyle.fontFamily);
 				if (dword(style.fontSize) != dword(newStyle.fontSize))
-					styleString ~= swritef(`font-size: %spx`, newStyle.fontSize);
+					styleString ~= std.string.format(`font-size: %spx`, newStyle.fontSize);
 				if (style.color != newStyle.color)
-					styleString ~= swritef(`color: %spx`, newStyle.color);
+					styleString ~= std.string.format(`color: %spx`, newStyle.color);
 				if (style.fontWeight != newStyle.fontWeight)
-					styleString ~= swritef(`font-weight: %s`, Style.enumToString(newStyle.fontWeight));
+					styleString ~= std.string.format(`font-weight: %s`, Style.enumToString(newStyle.fontWeight));
 				if (style.fontStyle != newStyle.fontStyle)
-					styleString ~= swritef(`font-style: %s`, Style.enumToString(newStyle.fontStyle));
+					styleString ~= std.string.format(`font-style: %s`, Style.enumToString(newStyle.fontStyle));
 				if (style.textDecoration != newStyle.textDecoration) 
-					styleString ~= swritef(`text-decoration: %s`, Style.enumToString(newStyle.textDecoration));
+					styleString ~= std.string.format(`text-decoration: %s`, Style.enumToString(newStyle.textDecoration));
 				if (dword(style.lineHeight) != dword(newStyle.lineHeight))
-					styleString ~= swritef(`lineHeight: %spx`, newStyle.lineHeight);
+					styleString ~= std.string.format(`lineHeight: %spx`, newStyle.lineHeight);
 				if (dword(style.letterSpacing) != dword(newStyle.letterSpacing)) 
-					styleString ~= swritef(`letterSpacing: %spx`, newStyle.letterSpacing);				
+					styleString ~= std.string.format(`letterSpacing: %spx`, newStyle.letterSpacing);				
 				
-				html ~= swritef(`</span><span style="%s">`, join(styleString, "; "));
+				html ~= std.string.format(`</span><span style="%s">`, join(styleString, "; "));
 				currentStyle = *newStyle;
 			}
 			switch (l.letter)
@@ -206,6 +207,7 @@ struct TextBlock
 					{	html ~= "\&nbsp;"; // encode multiple spaces as " &nbsp;" 
 						break;
 					} // fall through:
+                                        goto default;
 				default:
 					html ~= l.toString();
 			}
@@ -223,13 +225,13 @@ struct TextBlock
 	 *     mod = modifier key.
 	 *     unicode = Unicode value of the pressed key.
 	 *     cursor = The Surface's TextCursor. */
-	void input(int key, int mod, dchar unicode, inout TextCursor cursor)
+	void input(int key, int mod, dchar unicode, ref TextCursor cursor)
 	{			
 		// If the html has changed we need to update the lines before continuing.
 		if (htmlDirty)
 		{	letters.length = 0;			
 			styles.length = 0;
-			HtmlParser.htmlToLetters(html, style, letters, styles);	
+			HtmlParser.htmlToLetters(html.dup, style, letters, styles);	
 			lines = lettersToLines(letters.data, width, lines);
 			htmlDirty = false;
 		}
@@ -237,8 +239,8 @@ struct TextBlock
 		static int xPosition; // save the cursor's x position when moving from one line to the next.
 		
 		// Position cursor
-		int linePosition = cursor.position;
-		int currentLine = cursorToLine(linePosition);
+		ulong linePosition = cursor.position;
+		ulong currentLine = cursorToLine(linePosition);
 		if (key != SDLK_UP && key != SDLK_DOWN)
 			xPosition = 0; // clear stored x cursor position		
 		switch(key) 
@@ -282,7 +284,7 @@ struct TextBlock
 			case SDLK_END:
 				if (lines.length)
 				{	auto letters = lines[currentLine].letters;
-					int newPosition = (cast(int)letters.length) - linePosition;
+					long newPosition = (cast(long)letters.length) - cast(long)linePosition;
 					if (currentLine != lines.length-1) 
 						newPosition--; // if not the last line, go back one before the character that causes the new line.
 					cursor.position += newPosition;
@@ -420,8 +422,8 @@ struct TextBlock
 			{	Vec2i xy = cursorToXy(cursor.position);
 				int lineHeight = cast(int)style.lineHeight;
 				if (letters.length)
-				{	int position = cursor.position; // copy to prevent inout modification
-					int line = min(cursorToLine(position), lines.length-1);
+				{	ulong position = cursor.position; // copy to prevent ref modification
+					ulong line = min(cursorToLine(position), lines.length-1);
 					lineHeight = lines[line].height;
 				}
 				
@@ -471,7 +473,7 @@ struct TextBlock
 		if (newLetters)
 		{	letters.length = 0;
 			styles.length = 0;
-			HtmlParser.htmlToLetters(html, istyle, letters, styles);
+			HtmlParser.htmlToLetters(html.dup, istyle, letters, styles);
 			htmlDirty = false;
 		}
 		
@@ -563,7 +565,7 @@ struct TextBlock
 				//	line.letters.length = line.letters.length-1;
 
 				// Calculate line.width
-				int lastLetter = line.letters.length-1;
+				ulong lastLetter = line.letters.length-1;
 				while (lastLetter >=0 && whitespace.contains(line.letters[lastLetter].letter))
 					lastLetter--; // trim whitespace from end
 				
@@ -589,7 +591,7 @@ struct TextBlock
 private struct InlineStyle
 {	// Font
 	Font fontFamily;
-	ushort fontSize = 12; // default to 12px font size.
+	int fontSize = 12; // default to 12px font size.
 	Color color = {r:0, g:0, b:0, a:255};
 	Style.FontWeight fontWeight;
 	Style.FontStyle fontStyle;
@@ -616,8 +618,8 @@ private struct InlineStyle
 		// Oddly, it wasn't needed until I changed
 		// string fontFamily; to
 		// string fontFamily = ResourceManager.DEFAULT_FONT; in Style.  These should be unrelated!  
-		if (style.color.get())
-			result.color = *(style.color.get());
+		if (!style.color.isNull)
+			result.color = (style.color.get());
 		
 		result.textDecoration = style.textDecoration;
 		
@@ -674,16 +676,16 @@ private struct HtmlParser
 	 *     styles = Style results will be appended to this array.
 	 * Returns:
 	 */
-	static void htmlToLetters(string htmlText, InlineStyle style, inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
+	static void htmlToLetters(char[] htmlText, InlineStyle style, ref ArrayBuilder!(Letter) letters, ref ArrayBuilder!(InlineStyle) styles)
 	{
-		string lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
-		htmlText = htmlToAscii(htmlText, lookaside);
+		char[] lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
+		htmlText = htmlToAscii(htmlText, lookaside).dup;
 		
 		// Convert xml document to an array of zero-deth nodes.
-		scope doc = new Document!(char);
+		auto doc = new Document!(char);
 		try {
 			doc.parse(htmlText);
-		} catch (AssertException e)
+		} catch (Exception e)
 		{	throw new XHTMLException("Unable to parse xhtml:  {}", htmlText);
 		} finally {
 			Memory.free(lookaside);
