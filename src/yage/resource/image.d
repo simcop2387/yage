@@ -112,10 +112,10 @@ class Image
 		if (sdl_image.format.palette is null)
 		{	channels = sdl_image.format.BytesPerPixel;
 			data = new ubyte[channels*width*height]; // [below] make a copy because SDL_FreeSurface kills original data
-			data[0..length] = cast(ubyte[])sdl_image.pixels[0..data.length]; 
+			data[0 .. data.length] = cast(ubyte[])sdl_image.pixels[0 .. data.length]; 
 			
 			// Swap Red and Blue if RGB bitmap image
-			if(toLower(filename[length-4..length])==".bmp" && channels >= 3)
+			if(toLower(filename[filename.length-4..filename.length])==".bmp" && channels >= 3)
 				for (int i=0; i<data.length; i+=3)
 				{	ubyte swap = data[i];				
 					data[i] = data[i+2];

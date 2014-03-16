@@ -676,10 +676,10 @@ private struct HtmlParser
 	 *     styles = Style results will be appended to this array.
 	 * Returns:
 	 */
-	static void htmlToLetters(char[] htmlText, InlineStyle style, ref ArrayBuilder!(Letter) letters, ref ArrayBuilder!(InlineStyle) styles)
+	static void htmlToLetters(string htmlText, InlineStyle style, ref ArrayBuilder!(Letter) letters, ref ArrayBuilder!(InlineStyle) styles)
 	{
 		char[] lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
-		htmlText = htmlToAscii(htmlText, lookaside).dup;
+		htmlText = htmlToAscii(htmlText.dup, lookaside.dup).dup;
 		
 		// Convert xml document to an array of zero-deth nodes.
 		auto doc = new Document!(char);
@@ -702,10 +702,10 @@ private struct HtmlParser
 	 *     letters = 
 	 *     style s= */
 	private static void htmlNodeToLetters(T)(T input, InlineStyle parentStyle, 
-		inout ArrayBuilder!(Letter) letters, inout ArrayBuilder!(InlineStyle) styles)
+		ref ArrayBuilder!(Letter) letters, ref ArrayBuilder!(InlineStyle) styles)
 	{	
 		// Apply additional styles based on a tag name.
-		void styleByTagName(inout InlineStyle style, string tagName)
+		void styleByTagName(ref InlineStyle style, string tagName)
 		{	if (tagName=="u")
 				style.textDecoration = Style.TextDecoration.UNDERLINE;
 			if (tagName=="b")
@@ -794,14 +794,14 @@ private struct HtmlParser
 	 * For speed, only xml entities are replaced for now (not html entities).
 	 * Note that this could avoid heap activity altogether with lookaside buffers.
 	 * See: http://en.wikipedia.org/wiki/Character_encodings_in_HTML#XML_character_entity_references */ 
-	private static string entityDecode(char[] text)
+	private static string entityDecode(string text)
 	{	// TODO: Perform this in one pass
-		text = text.substitute("&amp;", "&"); // TODO: fix garbage created by this function.
+/*		text = text.substitute("&amp;", "&"); // TODO: fix garbage created by this function.
 		text = text.substitute("&lt;", "<");
 		text = text.substitute("&gt;", ">");
 		text = text.substitute("&quot;", `"`);
 		text = text.substitute("&apos;", "'");
-		text = text.substitute("&nbsp;", "\&nbsp;"); // unicode 160: non-breaking space
+		text = text.substitute("&nbsp;", "\&nbsp;"); // unicode 160: non-breaking space*/
 		return text;
 	}
 	unittest
