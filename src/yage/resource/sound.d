@@ -13,8 +13,9 @@ import tango.text.convert.Format;
 import tango.stdc.stringz;
 import derelict.openal.al;
 // TODO find which modules these really need
-// import derelict.ogg.vorbistypes;
-// import derelict.ogg.vorbisfile;
+import derelict.vorbis.vorbis;
+import derelict.vorbis.enc;
+import derelict.vorbis.file;
 import yage.core.array;
 import yage.core.timer;
 import yage.core.object2;
@@ -287,8 +288,7 @@ private class WaveFile : SoundFile
 /// An Ogg Vorbis implementation of SoundFile
 private class VorbisFile : SoundFile
 {
-        // TODO fix this!
-	//OggVorbis_File vf;		// struct for our open ov file.
+	OggVorbis_File vf;		// struct for our open ov file.
 
 	int current_section;	// used interally by ogg vorbis
 	FILE *file;
@@ -310,10 +310,10 @@ private class VorbisFile : SoundFile
 		vorbis_info *vi = ov_info(&vf, -1);
 
 		// Get relevant data from the file
-		channels = vi.channels;
+		channels = cast(ushort) vi.channels;
 		frequency = vi.rate;
 		bits = 16;	// always 16-bit for ov?
-		size = ov_pcm_total(&vf, -1)*(bits/8)*channels;
+		size = cast(int) ov_pcm_total(&vf, -1)*(bits/8)*channels;
 	}
 
 	/// Free memory and close file
@@ -331,7 +331,7 @@ private class VorbisFile : SoundFile
 		buffer.length = _size;
 		int ret = 0;
 		while (ret<_size)	// because it may take several requests to fill our buffer
-			ret += ov_read(&vf, cast(byte*)buffer[ret..length], _size-ret, 0, 2, 1, &current_section);
+			ret += ov_read(&vf, cast(byte*)buffer[ret..buffer.length], _size-ret, 0, 2, 1, &current_section);
 		return buffer;
 	}
 }
