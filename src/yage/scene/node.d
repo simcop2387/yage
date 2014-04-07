@@ -57,8 +57,10 @@ class Node : Tree!(Node), IDisposable
 	/**
 	 * Construct and optionally add as a child of another Node. */
 	this() // duplicate constructor required for classinfo.create
-	{	if (this is scene) // don't do anything for scenes.
+	{ // HACK this probably results in incorrect behavior
+	/*if (this is scene){ // don't do anything for scenes.
 			return;
+		}*/
 		this(null);
 	}	
 	this(Node parent) /// ditto
@@ -346,7 +348,7 @@ class Node : Tree!(Node), IDisposable
 	/**
 	* Get the struct containing this Node's transformation data. */
 	package Node.Transform* transform() { 
-		assert (!scene || (transformIndex>=0 && transformIndex<scene.nodeTransforms.length), format("%d", transformIndex));
+		assert (!scene || (transformIndex>=0 && transformIndex<scene.nodeTransforms.length), std.string.format("%d", transformIndex));
 		return scene ? 
 			&scene.nodeTransforms.transforms[transformIndex] : 
 		&orphanTransforms.transforms[transformIndex]; 
@@ -508,17 +510,17 @@ class Node : Tree!(Node), IDisposable
 		int add(Node.Transform* transform, Node n)
 		{	transforms ~= *transform;
 			transforms[length-1].node = n;
-			return transforms.length - 1;
+			return cast(int)(transforms.length) - 1;
 		}
 
 		int addNew(Node n)
 		{	transforms ~= Transform();
 			transforms[length-1].node = n;
-			return transforms.length - 1;
+			return cast(int)(transforms.length) - 1;
 		}
 
 		void remove(int index)
-		{	assert(transforms[index].node.transformIndex == index, format("%d, %d, %s", transforms[index].node.transformIndex, index, transforms[index].node.classinfo.name));
+		{	assert(transforms[index].node.transformIndex == index, std.string.format("%d, %d, %s", transforms[index].node.transformIndex, index, transforms[index].node.classinfo.name));
 			if (index != transforms.length-1)
 			{	transforms[index] = transforms[length-1]; // move another node no top of the one removed				
 				transforms[index].node.transformIndex = index;  // update the index of the moved node.
@@ -526,7 +528,7 @@ class Node : Tree!(Node), IDisposable
 			transforms.length = transforms.length - 1;			
 		}
 
-		int length()
+		ulong length()
 		{	return transforms.length;
 		}
 	}

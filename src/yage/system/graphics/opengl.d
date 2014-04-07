@@ -12,7 +12,7 @@ import tango.core.Traits;
 // import tango.core.WeakRef;
 import tango.math.Math;
 import tango.stdc.stringz;
-import tango.util.container.HashMap;
+//import tango.util.container.HashMap;
 import derelict.opengl3.gl;
 import derelict.opengl3.ext;
 
@@ -58,7 +58,7 @@ private class ResourceInfo
 	Object resource;
 
 	// Create ResourceInfo for a resource in map if it doesn't exist, or return it if it does
-	static ResourceInfo getOrCreate(Object resource, HashMap!(uint, ResourceInfo) map)
+	static ResourceInfo getOrCreate(Object resource, ResourceInfo[uint] map)
 	{	uint hash = cast(uint) resource.toHash();
 		ResourceInfo* temp = (hash in map);
 		ResourceInfo info;
@@ -90,9 +90,12 @@ class OpenGL : GraphicsAPI
 
 	// A map from a resource's hash to it's resource info
 	// Benchmarking shows this is slower than D's aa's, but using aa's here crashes for unknown reasons.
-	protected HashMap!(uint, ResourceInfo) textures;
-	protected HashMap!(uint, ResourceInfo) vbos;
-	protected HashMap!(uint, ResourceInfo) shaders;
+	//protected HashMap!(uint, ResourceInfo) textures;
+	//protected HashMap!(uint, ResourceInfo) vbos;
+	//protected HashMap!(uint, ResourceInfo) shaders;
+	ResourceInfo[uint] textures;
+	ResourceInfo[uint] vbos;
+	ResourceInfo[uint] shaders;
 
 	public Matrix cameraInverse;
 	protected Shader lastDrawnShader;
@@ -100,9 +103,9 @@ class OpenGL : GraphicsAPI
 
 	///
 	this()
-	{	textures = new HashMap!(uint, ResourceInfo);
+	{	/*textures = new HashMap!(uint, ResourceInfo);
 		vbos = new HashMap!(uint, ResourceInfo);
-		shaders = new HashMap!(uint, ResourceInfo);
+		shaders = new HashMap!(uint, ResourceInfo);*/
 	}
 
 	///
@@ -359,7 +362,7 @@ class OpenGL : GraphicsAPI
 					glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderBuffer);
 
 					// Currently testing rendering the depth component, since that's what the tutorial used.
-					glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, target.getWidth(), target.getHeight());
+					glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, cast(int)target.getWidth(), cast(int)target.getHeight());
 					glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, renderBuffer);
 
 					/// TODO: textures[texture].id will fail if Texture isn't bound.
@@ -367,7 +370,7 @@ class OpenGL : GraphicsAPI
 
 					auto status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 				} else
-					Window.getInstance().setViewport(Vec2i(0), Vec2i(target.getWidth(), target.getHeight()));
+					Window.getInstance().setViewport(Vec2i(0), Vec2i(cast(int)target.getWidth(), cast(int)target.getHeight()));
 			}
 		}
 		else if (current.renderTarget) // release
@@ -391,17 +394,17 @@ class OpenGL : GraphicsAPI
 					if (true)
 					{	texture.width = nextPow2(viewportSize.x);
 						texture.height= nextPow2(viewportSize.y);
-						texture.padding = Vec2i(texture.width-viewportSize.x, texture.height-viewportSize.y);
+						texture.padding = Vec2ul(texture.width-viewportSize.x, texture.height-viewportSize.y);
 
 					} else
 					{	texture.width = viewportSize.x;
 						texture.height = viewportSize.y;
-						texture.padding = Vec2i(0);
+						texture.padding = Vec2ul(0);
 					}
 
 					// TODO: textures[texture].id will fail if Texture isn't created.
 					glBindTexture(GL_TEXTURE_2D, textures[cast(uint)(texture.toHash())].id);
-					glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, texture.width, texture.height, 0);
+					glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, cast(int)texture.width, cast(int)texture.height, 0);
 					texture.format = Texture.Format.RGB8;
 					texture.flipped = true;
 				}
@@ -472,7 +475,7 @@ class OpenGL : GraphicsAPI
 			assert(info.id);
 
 			if (shader !is current.shader)
-			{	glUseProgramObjectARB(info.id);
+			{	glUseProgram(info.id);
 
 				// Bind textures to "texture0", "texture1", etc. in the shader.
 				string glslTextureName = "texture";
@@ -480,9 +483,9 @@ class OpenGL : GraphicsAPI
 				for (int i=0; i<maxTextures; i++)
 				{
 					glslTextureName ~= cast(char)(i + '0');
-					int location = glGetUniformLocationARB(info.id, glslTextureName.ptr);
+					int location = glGetUniformLocation(info.id, glslTextureName.ptr);
 					if (location != -1)
-						glUniform1iARB(location, i);
+						glUniform1i(location, i);
 				}
 			}
 
@@ -491,7 +494,7 @@ class OpenGL : GraphicsAPI
 			{
 				// Get the location of name.  TODO: Cache locations for names?  Profiling shows this is already fast?
 				// Wrapping it in cache!() didn't improve performance.
-				int location = glGetUniformLocationARB(info.id, uniform.name.ptr);
+				int location = glGetUniformLocation(info.id, uniform.name.ptr);
 
 				//int location = glGetUniformLocationARB(info.id, uniform.name.ptr);
 				if (location == -1)
@@ -499,23 +502,23 @@ class OpenGL : GraphicsAPI
 
 				// Send the uniform data
 				switch (uniform.type)
-				{	case ShaderUniform.Type.F1:  glUniform1fARB(location, uniform.floatValues[0]);  break;
-					case ShaderUniform.Type.F2:  glUniform2fvARB(location, 2, uniform.floatValues.ptr);  break;
-					case ShaderUniform.Type.F3:  glUniform3fvARB(location, 3, uniform.floatValues.ptr);  break;
-					case ShaderUniform.Type.F4:  glUniform4fvARB(location, 4, uniform.floatValues.ptr);  break;
-					case ShaderUniform.Type.I1:  glUniform1ivARB(location, 1, uniform.intValues.ptr);  break;
-					case ShaderUniform.Type.I2:  glUniform2ivARB(location, 2, uniform.intValues.ptr);  break;
-					case ShaderUniform.Type.I3:  glUniform3ivARB(location, 3, uniform.intValues.ptr);  break;
-					case ShaderUniform.Type.I4:  glUniform4ivARB(location, 4, uniform.intValues.ptr);  break;
+				{	case ShaderUniform.Type.F1:  glUniform1f(location, uniform.floatValues[0]);  break;
+					case ShaderUniform.Type.F2:  glUniform2fv(location, 2, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.F3:  glUniform3fv(location, 3, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.F4:  glUniform4fv(location, 4, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.I1:  glUniform1iv(location, 1, uniform.intValues.ptr);  break;
+					case ShaderUniform.Type.I2:  glUniform2iv(location, 2, uniform.intValues.ptr);  break;
+					case ShaderUniform.Type.I3:  glUniform3iv(location, 3, uniform.intValues.ptr);  break;
+					case ShaderUniform.Type.I4:  glUniform4iv(location, 4, uniform.intValues.ptr);  break;
 					// TODO Other Matrix types
-					case ShaderUniform.Type.M2x2: glUniformMatrix2fvARB(location, 4, false, uniform.floatValues.ptr);  break;
-					case ShaderUniform.Type.M3x3: glUniformMatrix3fvARB(location, 9, false, uniform.floatValues.ptr);  break;
-					case ShaderUniform.Type.M4x4: glUniformMatrix4fvARB(location, 16, false, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.M2x2: glUniformMatrix2fv(location, 4, false, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.M3x3: glUniformMatrix3fv(location, 9, false, uniform.floatValues.ptr);  break;
+					case ShaderUniform.Type.M4x4: glUniformMatrix4fv(location, 16, false, uniform.floatValues.ptr);  break;
 					default: break;
 				}
 			}
 		} else if (shader !is current.shader)
-			glUseProgramObjectARB(0); // no shader
+			glUseProgram(0); // no shader
 
 		current.shader = shader;
 	}
@@ -545,10 +548,10 @@ class OpenGL : GraphicsAPI
 
 			// if Multitexturing supported, switch which texture we work with
 			if (maxLength > 1)
-			{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
+			{	uint GL_TEXTUREI_ARB = cast(uint)(GL_TEXTURE0+i);
 
 				// Activate texture unit and enable texturing
-				glActiveTextureARB(GL_TEXTUREI_ARB);
+				glActiveTexture(GL_TEXTUREI_ARB);
 			}
 
 			glLoadIdentity();
@@ -632,8 +635,8 @@ class OpenGL : GraphicsAPI
 					gpuTexture.height = image.getHeight();
 
 					uint max = Probe.feature(Probe.Feature.MAX_TEXTURE_SIZE);
-					uint new_width = image.getWidth();
-					uint new_height= image.getHeight();
+					uint new_width = cast(uint) image.getWidth();
+					uint new_height= cast(uint) image.getHeight();
 
 					// Ensure power of two sized if required
 					if (!Probe.feature(Probe.Feature.NON_2_TEXTURE))
@@ -651,7 +654,7 @@ class OpenGL : GraphicsAPI
 					// Build mipmaps (doing it ourself is several times faster than gluBuild2DMipmaps,
 					int level = 0;
 					while(true) {
-						glTexImage2D(GL_TEXTURE_2D, level, glInternalFormat, image.getWidth(), image.getHeight(), 0, glFormat, GL_UNSIGNED_BYTE, image.getData().ptr);
+						glTexImage2D(GL_TEXTURE_2D, level, glInternalFormat, cast(int) image.getWidth(), cast(int)image.getHeight(), 0, glFormat, GL_UNSIGNED_BYTE, image.getData().ptr);
 						level++;
 
 						if (!gpuTexture.mipmap || image.getWidth() <= 4 || image.getHeight() <= 4)
@@ -671,9 +674,12 @@ class OpenGL : GraphicsAPI
 						int nWidth = ddsData.width;
 						int nNumMipMaps = ddsData.numMipMaps;
 						int nBlockSize;
-						if(ddsData.format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
+						
+						// TODO try to get this constant into Derelict GL3
+						assert(ddsData.format != 0x83F1); // Make sure that we NEVER have the compressed data since at the moment I'm not supporting it since the library doesn't either
+/*						if(ddsData.format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
 							nBlockSize = 8;
-						else
+						else*/
 							nBlockSize = 16;
 						glGenTextures(1, &info.id);
 						glBindTexture(GL_TEXTURE_2D, info.id);
@@ -688,7 +694,7 @@ class OpenGL : GraphicsAPI
 							if(nHeight == 0)
 								nHeight = 1;
 							nSize = ((nWidth + 3) / 4) * ((nHeight + 3) / 4) * nBlockSize;
-							glCompressedTexImage2DARB(GL_TEXTURE_2D, k, ddsData.format, nWidth, nHeight, 0, nSize, &ddsData.pixels[0] + nOffset);
+							glCompressedTexImage2D(GL_TEXTURE_2D, k, ddsData.format, nWidth, nHeight, 0, nSize, &ddsData.pixels[0] + nOffset);
 							nOffset += nSize;
 							// Half the image size for the next mip-map level...
 							nWidth = (nWidth / 2);
@@ -777,11 +783,11 @@ class OpenGL : GraphicsAPI
 		}
 
 		// Reset higher texture units
-		for (int i=textures.length; i<maxLength; i++)
+		for (ulong i=textures.length; i<maxLength; i++)
 		{
 			if (maxLength > 1) // if multitexturing is supported.
-			{	int GL_TEXTUREI_ARB = GL_TEXTURE0_ARB+i;
-				glActiveTextureARB(GL_TEXTUREI_ARB);
+			{	int GL_TEXTUREI_ARB = cast(int) (GL_TEXTURE0+i);
+				glActiveTexture(GL_TEXTUREI_ARB);
 			}
 
 			glDisable(GL_TEXTURE_GEN_S);
@@ -798,7 +804,7 @@ class OpenGL : GraphicsAPI
 		// Undo state changes
 		glMatrixMode(GL_MODELVIEW);
 		if (textures.length > 1)
-			glActiveTextureARB(GL_TEXTURE0_ARB);
+			glActiveTexture(cast(int)GL_TEXTURE0);
 
 		current.textures = textures;
 		return result;
@@ -820,8 +826,8 @@ class OpenGL : GraphicsAPI
 		}
 
 		uint vbo_type = type==Mesh.TRIANGLES ?
-			GL_ELEMENT_ARRAY_BUFFER_ARB :
-			GL_ARRAY_BUFFER_ARB;
+			GL_ELEMENT_ARRAY_BUFFER :
+			GL_ARRAY_BUFFER;
 
 		bool supportsVbo = cast(bool)Probe.feature(Probe.Feature.VBO);
 		bool useVbo;
@@ -834,17 +840,17 @@ class OpenGL : GraphicsAPI
 				// Get a new OpenGL buffer if there isn't one assigned yet.
 				ResourceInfo info = ResourceInfo.getOrCreate(vb, vbos);
 				if (!info.id)
-				{	glGenBuffersARB(1, &info.id);
+				{	glGenBuffers(1, &info.id);
 					vb.dirty = true;
 				}
 				// Bind buffer and update with new data if necessary.
-				glBindBufferARB(vbo_type, info.id);
+				glBindBuffer(vbo_type, info.id);
 				if (vb.dirty)
-				{	glBufferDataARB(vbo_type, vb.data.length, vb.ptr, GL_STATIC_DRAW_ARB);
+				{	glBufferData(vbo_type, vb.data.length, vb.ptr, GL_STATIC_DRAW);
 					vb.dirty = false;
 			}	}
 			else if (supportsVbo)
-				glBindBufferARB(vbo_type, 0);
+				glBindBuffer(vbo_type, 0);
 
 			// Bind the data
 			if (type==Geometry.VERTICES)
@@ -863,13 +869,13 @@ class OpenGL : GraphicsAPI
 					return false;
 				//	throw new GraphicsException("Cannot set texture coordinates for texture unit %s when only %s texture units are supported", i, maxTextures);
 				if (maxTextures > 1)
-				{	glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
+				{	glClientActiveTexture(cast(int)(GL_TEXTURE0 + i));
 
 				}
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				glTexCoordPointer(vb.components, GL_FLOAT, 0, useVbo ? null : vb.ptr);
 				if (maxTextures > 1)
-					glClientActiveTextureARB(GL_TEXTURE0_ARB);
+					glClientActiveTexture(cast(int)GL_TEXTURE0);
 			}
 			else if (type==Mesh.TRIANGLES || type==Mesh.LINES || type==Mesh.POINTS)
 			{	// glBindBuffer was called above, no other action necessary
@@ -879,7 +885,7 @@ class OpenGL : GraphicsAPI
 			}
 		} else // unbind
 		{	if (useVbo)
-				glBindBufferARB(vbo_type, 0);
+				glBindBuffer(vbo_type, 0);
 
 
 			if (type==Geometry.VERTICES)
@@ -891,9 +897,9 @@ class OpenGL : GraphicsAPI
 				int maxTextures = Probe.feature(Probe.Feature.MAX_TEXTURE_UNITS);
 				if (i > maxTextures)
 					return false;
-				glClientActiveTextureARB(GL_TEXTURE0_ARB + i);
+				glClientActiveTexture(cast(int)(GL_TEXTURE0 + i));
 				glDisable(GL_TEXTURE_COORD_ARRAY);
-				glClientActiveTextureARB(GL_TEXTURE0_ARB);
+				glClientActiveTexture(cast(int)GL_TEXTURE0);
 			}
 		}
 		current.vertexBuffers[type] = vb;
@@ -911,26 +917,29 @@ class OpenGL : GraphicsAPI
 	 */
 	void cleanup(uint age=3600)
 	{
-		foreach (key, info; textures)
-		{	if (info.resource.get() is null || info.time <= time(null)-age)
+		foreach (key; textures.byKey())
+		{       ResourceInfo info = textures[key];
+		        if (info.resource is null || info.time <= time(null)-age)
 			{	glDeleteTextures(1, &info.id);
-				textures.removeKey(key);
+				textures.remove(key);
 				delete info; // nothing else references it at this point.
 		}	}
-		foreach (key, info; vbos)
-		{	if (info.resource.get() is null || info.time <= time(null)-age)
-			{	glDeleteBuffersARB(1, &info.id);
-				vbos.removeKey(key);
+		foreach (key; vbos.byKey())
+		{	ResourceInfo info = vbos[key];
+		        if (info.resource is null || info.time <= time(null)-age)
+			{	glDeleteBuffers(1, &info.id);
+				vbos.remove(key);
 				delete info; // nothing else references it at this point.
 		}	}
 
-		foreach (key, info; shaders)
-		{	if (info.resource.get() is null || info.time <= time(null)-age)
-			{	glDeleteBuffersARB(1, &info.id);
-				assert((cast(Shader)info.resource.get()) !is null);
+		foreach (key; shaders.byKey())
+		{	ResourceInfo info = shaders[key];
+                        if (info.resource is null || info.time <= time(null)-age)
+			{	glDeleteBuffers(1, &info.id);
+				assert((cast(Shader)info.resource) !is null); // TODO This seems odd to me to be checking
 				//(cast(Shader)info.resource.get()).failed = false;
-				failedShaders.remove(cast(Shader)info.resource.get());
-				shaders.removeKey(key);
+				failedShaders.remove(cast(Shader)info.resource);
+				shaders.remove(key);
 				delete info; // nothing else references it at this point.
 		}	}
 
@@ -949,7 +958,7 @@ class OpenGL : GraphicsAPI
 		if (indexed)
 		{	bindVertexBuffer(polygons, type); // type is an indexed type
 			if (type==Mesh.TRIANGLES)
-				glDrawElements(GL_TRIANGLES, polygons.length()*3, GL_UNSIGNED_INT, useVbo ? null : polygons.ptr);
+				glDrawElements(GL_TRIANGLES, cast(int) (polygons.length()*3), GL_UNSIGNED_INT, useVbo ? null : polygons.ptr);
 			else
 				throw new GraphicsException("Unsupported polygon type %s", type);
 		}
@@ -957,13 +966,13 @@ class OpenGL : GraphicsAPI
 		{	bindVertexBuffer(polygons, Geometry.VERTICES);
 			switch (type)
 			{	case Mesh.TRIANGLES:
-					glDrawArrays(GL_TRIANGLES, 0, polygons.length()*3);
+					glDrawArrays(GL_TRIANGLES, 0, cast(int) (polygons.length()*3));
 					break;
 				case Mesh.LINES:
-					glDrawArrays(GL_LINES, 0, polygons.length());
+					glDrawArrays(GL_LINES, 0, cast(int)(polygons.length()));
 					break;
 				case Mesh.POINTS:
-					glDrawArrays(GL_POINTS, 0, polygons.length());
+					glDrawArrays(GL_POINTS, 0, cast(int)(polygons.length()));
 					break;
 				default:
 					throw new GraphicsException("Unsupported polygon type %s", type);
@@ -1003,18 +1012,18 @@ class OpenGL : GraphicsAPI
 		// Cleanup on exit
 		scope(exit)
 		{	if (vertexObj) // Mark shader objects for deletion
-				glDeleteObjectARB(vertexObj); // so they'll be deleted when the shader program is deleted.
+				glDeleteObject(vertexObj); // so they'll be deleted when the shader program is deleted.
 			if (fragmentObj)
-				glDeleteObjectARB(fragmentObj);
+				glDeleteObject(fragmentObj);
 		}
 		scope(failure)
 			if (result)
-				glDeleteObjectARB(result);
+				glDeleteObject(result);
 
 		// Get OpenGL's log for a shader object.
 		string getLog(uint id)
 		{	int len;  char *log;
-			glGetObjectParameterivARB(id, GL_OBJECT_INFO_LOG_LENGTH_ARB, &len);
+			glGetShaderiv(id, GL_OBJECT_INFO_LOG_LENGTH, &len);
 			if (len > 0)
 			{	log = (new char[len]).ptr;
 				glGetInfoLogARB(id, len, &len, log);

@@ -679,6 +679,7 @@ alias Vec!(4, int) Vec4i;		/// A four-component int Vec
 alias Vec!(2, float) Vec2f;		/// A two-component float Vec
 alias Vec!(3, float) Vec3f;	
 alias Vec!(4, float) Vec4f;		/// A four-component float Vec
+alias Vec!(2, ulong) Vec2ul;            /// A two component ulong Vec
 
 alias Vec!(2, float, true) Vec2fn;		/// A two-component float Vec
 alias Vec!(3, float, true) Vec3fn;	

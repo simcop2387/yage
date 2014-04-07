@@ -384,8 +384,8 @@ class Image
 	 *     width = The new width.
 	 *     height = The new height.  If 0, height will be calculated automatically with aspect ratio maintained.
 	 * Returns: A new image of the same type and of the new size, or an exact copy if the dimensions are the same. */
-	Image resize(int width, int height=0)
-	{	assert(this.width > 0);
+	Image resize(ulong width, ulong height=0)
+	{
 		
 		Image result = new Image();
 		result.width = width;

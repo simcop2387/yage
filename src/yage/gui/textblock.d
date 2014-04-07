@@ -718,11 +718,11 @@ private struct HtmlParser
 		
 		// Set the style from the parent and style attribute
 		InlineStyle style;
-		string tagName = toLower(input.name, input.name);
+		string tagName = std.string.toLower(cast(string) input.name);
 		if (input.query.attribute("style").count) // if has style attribute
 		{	styleByTagName(parentStyle, tagName);
 			Style temp = parentStyle.toStyle(); // convert to Style so we can call .set on it.			
-			temp.set(input.query.attribute("style").nodes[0].value);
+			temp.set(cast(string) input.query.attribute("style").nodes[0].value);
 			style = InlineStyle(temp);
 		} else
 		{	style = parentStyle;
@@ -732,7 +732,7 @@ private struct HtmlParser
 		// Get any text from in the node.
 		styles ~= style;
 		if (input.value.length)
-		{	string text = entityDecode(input.value);
+		{	string text = entityDecode(cast(string) input.value);
 			foreach (dchar c; text) // dchar to iterate over each utf-8 char group
 			{	if (style.fontFamily)
 				{	int size = style.fontSize;
@@ -787,7 +787,7 @@ private struct HtmlParser
 			r++; w++;
 		}
 		lookaside[w..w+7] = "</span>";
-		return lookaside[0..w+7];
+		return cast(string) lookaside[0..w+7];
 	}
 	
 	/*

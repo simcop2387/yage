@@ -127,8 +127,8 @@ class Texture : IRenderTarget
 	
 	Format format;
 	bool mipmap;	
-	int width = 0;
-	int height = 0;	
+	ulong width = 0;
+	ulong height = 0;	
 	
 	protected string source;	
 	protected Image image; // if not null, the texture will be updated with this image the next time it is used.
@@ -139,7 +139,7 @@ class Texture : IRenderTarget
 	public string ddsFile;
 	
 	//public string ddsFile; // if not null, a dds texture will be loaded from this file the next time the texture is used.
-	Vec2i padding;	// padding stores how many pixels of the original texture are unused.
+	Vec2ul padding;	// padding stores how many pixels of the original texture are unused.
 					// e.g. getWidth() returns the used texture + the padding.  
 					// Padding is applied to the top and the right, and can be negative.
 	
@@ -217,7 +217,7 @@ class Texture : IRenderTarget
 			if (image.getWidth() != new_width || image.getHeight() != new_height)
 				image = image.crop(0, 0, new_width, new_height);
 		} else
-			padding = Vec2i(0);
+			padding = Vec2ul(0);
 		dirty = true;
 	}
 
@@ -234,16 +234,16 @@ class Texture : IRenderTarget
 
 	/**
 	 * Returns: The width/height of the Texture in pixels. */
-	override int getHeight() 
+	override ulong getHeight() 
 	{	return height; 
 	}
-	override int getWidth() /// ditto
+	override ulong getWidth() /// ditto
 	{	return width; 
 	}
 
 	/**
 	 * Amount of padding to the top and right for non-power-of-two sized textures. */
-	Vec2i getPadding()
+	Vec2ul getPadding()
 	{	return padding;
 	}
 	

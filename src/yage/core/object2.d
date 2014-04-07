@@ -170,8 +170,8 @@ interface IDisposable
  * renders using OpenGL operations. */
 interface IRenderTarget
 {	
-	int getWidth();
-	int getHeight();
+	ulong getWidth();
+	ulong getHeight();
 }
 
 

@@ -14,6 +14,8 @@ import yage.scene.scene;
 import yage.scene.light;
 import yage.system.graphics.opengl;
 
+import core.vararg;
+
 /**
  * Base class of all Graphics API wrappers
  * TODO: Add more functions to this class. */
@@ -54,6 +56,7 @@ abstract class GraphicsAPI
 class GraphicsException : YageException
 {	///
 	this(...)
-	{	super(format(_arguments, _argptr));
+	{	super("GraphicsException");
+	        //TODO FIX THIS//format(_arguments, _argptr));
 	}	
 }

@@ -374,7 +374,7 @@ class HmapHeightGenerator : IHeightGenerator
 	 * TODO: replace Image with Image2
 	 * TODO: use an array of texturesBlendPaths to allow blending of more than 4 textures
 	 */
-	this(string heightmapPath, Vec2i gridResolution=Vec2i(256), Scaling scaling=Scaling.REPEAT, char[] lightmapPath=null, char[] texturesBlendPath=null)
+	this(string heightmapPath, Vec2i gridResolution=Vec2i(256), Scaling scaling=Scaling.REPEAT, string lightmapPath=null, string texturesBlendPath=null)
 	{
 		assert(heightmapPath.length != 0);
 
@@ -553,9 +553,9 @@ class HmapHeightGenerator : IHeightGenerator
 	{
 		float height;
 		with(gridCoordinate)
-		{	x = x % heightmap.getWidth();
-			y = y % heightmap.getHeight();
-			return heightmap[x, y][0] / 255f;
+		{	x = x % cast(int) heightmap.getWidth();
+			y = y % cast(int) heightmap.getHeight();
+			return heightmap[cast(ulong) x, cast(ulong) y][0] / 255f;
 		}
 	}
 }
@@ -627,7 +627,7 @@ class QuadTreeNode {
 		if(sons[0] !is null){          
 			foreach(i,s;sons){
                 Log.info(nodename,"[",toString(i),"]");
-				s.afficheDescendants(nodename~"["~toString(i)~"]");
+				s.afficheDescendants(cast(string)(nodename~"["~toString(i)~"]"));
 			}
 		}
 	}	
@@ -650,7 +650,7 @@ class QuadTreeNode {
 	public void QuadTreeNode_subdivide() {
 		foreach(i,ref s;sons){
 			s = new QuadTreeNode;
-            s.nodeName = nodeName~"["~toString(i)~"]";
+			s.nodeName = cast(string)(nodeName~"["~toString(i)~"]");
 		}
 	}
 	

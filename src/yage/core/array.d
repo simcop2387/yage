@@ -73,7 +73,7 @@ void addSorted(T,K)(ref ArrayBuilder!(T) array, T value, bool increasing, K dele
 	// Despite two loops, this still runs in worst-case O(n)
 	for (int i=0; i<array.length-1; i++) // TODO: Use a binary search instead of linear.
 	{	if (increasing ? key_value <= getKey(array.data[i]) : key_value >= getKey(array.data[i]))
-		{	for (int j=array.length-2; j>=i; j--) // Shift all elements forward
+		{	for (ulong j=array.length-2; j>=i; j--) // Shift all elements forward
 				array.data[j+1] = array.data[j];			
 			array.data[i] = value;
 			return;

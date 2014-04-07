@@ -42,7 +42,7 @@ class SpriteNode : VisibleNode
 	{	this(parent);
 		this.material = material;
 	}	
-	this(string filename, char[] id, Node parent=null) /// ditto
+	this(string filename, string id, Node parent=null) /// ditto
 	{	this(parent);
 		material = ResourceManager.material(filename, id);
 	}

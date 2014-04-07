@@ -45,7 +45,7 @@ class CameraNode : Node
 	bool createRenderCommands = true; /// Create render and sound commands when update() is called on this Camera's scene.
 	bool createSoundCommands = true; /// ditto
 
-	package int currentYres; // Used internally for determining visibility
+	package ulong currentYres; // Used internally for determining visibility
 	
 	protected Plane[6] frustum;
 	protected Vec3f frustumSphereCenter;
@@ -54,8 +54,8 @@ class CameraNode : Node
 	struct TripleBuffer(T)
 	{	T[3] lists;
 		Object mutex;
-		ubyte read=1;
-		ubyte write=0;
+		int read=1;
+		int write=0;
 		
 		// Get a buffer for reading that is guaranteed to not currently being written.
 		T getNextRead()
@@ -240,7 +240,7 @@ class CameraNode : Node
 	 * TODO: Make this an override for isVisible() */	
 	int isCulled(Vec3f minPoint, Vec3f maxPoint)
 	{	
-		foreach_reverse (int j,f; frustum) {
+		foreach_reverse (ulong j,f; frustum) {
 			Vec3f p_vertex=minPoint;
 			Vec3f n_vertex=maxPoint;
 			if (f.x >= 0) {

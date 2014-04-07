@@ -405,14 +405,16 @@ class Surface : Tree!(Surface)
 		SDL_ShowCursor(!grab);
 		if (grab)
 		{	focus();
-			SDL_WM_GrabInput(SDL_GRAB_ON);
+			// TODO reimplement this
+			// SDL_WM_GrabInput(SDL_GRAB_ON);
 			grabbedSurface = this;
 		}
 		else
-		{	SDL_WM_GrabInput(SDL_GRAB_OFF);			
+		{	// TODO reimplement this
+		        // SDL_WM_GrabInput(SDL_GRAB_OFF);			
 			grabbedSurface = null; // [below] Move mouse back to pre-grabbed position
 			Vec2i globalMouse = localToGlobal(Vec2f(mouseX, mouseY)).vec2i;
-			SDL_WarpMouse(globalMouse.x, globalMouse.y);
+			// SDL_WarpMouse(globalMouse.x, globalMouse.y);
 		}		
 	}
 	bool getGrabbedMouse() /// ditto
@@ -610,7 +612,7 @@ class Surface : Tree!(Surface)
 						textTexture = new Texture(textImage, Texture.Format.AUTO, false, "Surface Text", true);
 					else
 						textTexture.setImage(textImage);
-					textTexture.padding = Vec2i(nextPow2(width)-width, -(nextPow2(height)-height));
+					textTexture.padding = Vec2ul(nextPow2(width)-width, -(nextPow2(height)-height));
 				} else
 					textTexture = null;
 			}

@@ -137,7 +137,7 @@ struct Event(T...)
 		func(args);
 	}
 
-	int length()
+	ulong length()
 	{	return listeners.length;
 	}
 

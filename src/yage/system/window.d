@@ -54,7 +54,7 @@ class Window : IRenderTarget
 	}
 
 	protected SDL_Surface* sdlSurface;
-	protected Vec2i	size; // size of the window
+	protected Vec2ul size; // size of the window
 	protected Vec2i viewportPosition;
 	protected Vec2i viewportSize;
 	protected string title, taskbarName;
@@ -86,10 +86,10 @@ class Window : IRenderTarget
 	}
 
 	/// Get the width/height of this Window's display area (not including title/borders) in pixels.
-	override int getWidth()
+	override ulong getWidth()
 	{	return size.x;
 	}
-	override int getHeight() /// ditto
+	override ulong getHeight() /// ditto
 	{	return size.y;
 	}
 
@@ -133,7 +133,7 @@ class Window : IRenderTarget
 	 *     fullscreen = The window is fullscreen if true; windowed otherwise.
 	 *     samples = The number of samples to use for anti-aliasing (1 for no aa).
 	 */
-	void setResolution(int width, int height, ubyte depth=0, bool fullscreen_=false, ubyte samples=1)
+	void setResolution(ulong width, ulong height, ubyte depth=0, bool fullscreen_=false, ubyte samples=1)
 	{
 		assert(depth==0 || depth==16 || depth==24 || depth==32); // 0 for current screen depth
 		assert(width>0 && height>0);
