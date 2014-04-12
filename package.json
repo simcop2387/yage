@@ -3,29 +3,6 @@
 	"description": "A D2 port of the Yage game engine.",
 	"copyright": "Copyright © 2014 Various",
 	"authors": ["ryan", "various"],
-	"lflags": ["-omg-ibroke-you"],
-        "subPackages": [
-                {
-                        "name": "tests",
-                        "targetType": "executable",
-                        "sourcePaths": ["tests"]
-                },
-                {
-                        "name": "demo1",
-                        "targetType": "executable",
-                        "sourcePaths": ["demo1"]
-                },
-                {
-                        "name": "demo2",
-                        "targetType": "executable",
-                        "sourcePaths": ["demo2"]
-                },
-                {
-                        "name": "demo3",
-                        "targetType": "executable",
-                        "sourcePaths": ["demo3"]
-                }
-        ],
 	"dependencies": {
 	   "derelict-ft": "~master",
 	   "derelict-ogg": "~master",
@@ -36,5 +13,4 @@
 	   "derelict-vorbis": "~master",
 	   "tango": "~d2port"
 	},
-	"todo-find": {"derelict:openal": "~master"}
 }

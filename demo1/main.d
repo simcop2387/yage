@@ -249,8 +249,8 @@ int main()
 		fps++;
 		if (frame.tell()>=1f)
 		{	float framerate = fps/frame.tell();
-			window.setCaption(format("Yage Demo | %.2f fps\0", framerate));
-			info.setHtml(format(
+			window.setCaption(std.string.format("Yage Demo | %.2f fps\0", framerate));
+			info.setHtml(std.string.format(
 				`%.2f <b>fps</span><br/>`
 				`%.1fms <b>render</span><br/>`
 				`%.1fms <b>physics/cull</span><br/>`
