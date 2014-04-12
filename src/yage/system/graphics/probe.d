@@ -102,7 +102,7 @@ abstract class Probe
 	 * Due to the nature of sdl, a window must first be created before calling this function. */
 	static bool checkExtension(string name)
 	{	if (!extensions.length)
-			extensions = toLower(fromStringz(cast(char*)glGetString(GL_EXTENSIONS)));
+			extensions = to!string(toLower(fromStringz(cast(char*)glGetString(GL_EXTENSIONS))));
 	    int result = containsPattern(extensions, toLower(name.dup)~" "); 
 	    // [above] append space to ensure we're not matching part of another extension.
 		
@@ -113,7 +113,7 @@ abstract class Probe
 	 * Return an array of all supported OpenGL extensions.
 	 * Due to the nature of sdl, a window must first be created before calling this function. */ 
 	static string[] getExtensions()
-	{	string exts = fromStringz(cast(char*)glGetString(GL_EXTENSIONS));
+	{	string exts = to!string(fromStringz(cast(char*)glGetString(GL_EXTENSIONS)));
 		return split(exts, " ");
 	}
 }

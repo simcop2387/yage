@@ -56,8 +56,8 @@ abstract class System
 
 		// load shared libraries (should these be loaded lazily?)
 		// Currently DerelictGL is loaded in Window's constructor.
-		DerelictSDL.load();
-		DerelictSDLImage.load();
+		DerelictSDL2.load();
+		DerelictSDL2Image.load();
 		DerelictAL.load();
 		Libraries.loadVorbis();
 		Libraries.loadFreeType();
@@ -78,7 +78,8 @@ abstract class System
 
 		initialized = false;
 
-		SDL_WM_GrabInput(SDL_GRAB_OFF);
+		// TODO FIX THIS
+		//SDL_WM_GrabInput(SDL_GRAB_OFF);
 		SDL_ShowCursor(true);
 
 		SoundContext.deInit(); // stop the sound thread
@@ -97,8 +98,8 @@ abstract class System
 		//GC.collect(); // Crashes when called in debug mode
 
 		SDL_Quit();
-		DerelictSDL.unload();
-		DerelictSDLImage.unload();
+		DerelictSDL2.unload();
+		DerelictSDL2Image.unload();
 		DerelictAL.unload();
 		Libraries.loadVorbis(false);
 		Libraries.loadFreeType(false);
@@ -121,7 +122,7 @@ abstract class System
 		string handle;
 		string code;
 		string license;
-		static Credit opCall(string name, char[] handle, char[] code, char[] license)
+		static Credit opCall(string name, string handle, string code, string license)
 		{	Credit result;
 			result.name=name;
 			result.handle=handle;

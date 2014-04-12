@@ -141,9 +141,9 @@ class Sound
 	 * As sounds request buffers, a reference counters are incremented/decremented for each buffer, 
 	 * and the openAL buffers are destroyed when the reference counter reaches zero. 
 	 * This can accept buffers outside of the range of buffers and will wrap them around to support easy looping. */
-	void allocBuffers(int first, int number)
+	void allocBuffers(ulong first, ulong number)
 	{	// Loop through each of the buffers that will be returned
-		for (int j=first; j<first+number; j++)
+		for (ulong j=first; j<first+number; j++)
 		{	// Allow inputs that are out of range to loop around
 			ulong i = j % buffers.length;
 
@@ -165,9 +165,9 @@ class Sound
 	 * Mark the range of buffers for freeing.
 	 * This will decrement the reference count for each of the buffers
 	 * and will release it once it's at zero. */
-	void freeBuffers(int first, int number)
+	void freeBuffers(ulong first, int number)
 	{	
-		for (int j=first; j<first+number; j++)
+		for (ulong j=first; j<first+number; j++)
 		{	// Allow inputs that are out of range to loop around
 			ulong i = j % buffers.length;
 

@@ -98,7 +98,7 @@ abstract class Input
 	protected static Surface currentSurface;	// Surface that the mouse is currently over
 
 	protected static SDL_Keysym lastKeyDown; // Used for manual key-repeat.
-	protected static uint lastKeyDownTime = uint.max;
+	protected static long lastKeyDownTime = long.max;
 	
 	/** 
 	 * Process input, handle window resize and close events, and send the remaining events to surface,
@@ -109,6 +109,7 @@ abstract class Input
 		if (!currentSurface)
 			currentSurface = surface;
 		
+		// TODO http://wiki.libsdl.org/MigrationGuide#Input
 		SDL_EnableUNICODE(1); // TODO: Move this
 		auto focus = getFocusSurface(surface);
 				
@@ -207,9 +208,9 @@ abstract class Input
 				// System
 				//case SDL_ACTIVEEVENT:
 				//case SDL_VIDEOEXPOSE:
-				case SDL_VIDEORESIZE:
+				case SDL_WINDOWEVENT_RESIZED:
 					if (Window.getInstance())
-						Window.getInstance().resizeWindow(event.resize.w, event.resize.h);
+						Window.getInstance().resizeWindow(event.window.data1, event.window.data2);
 					break;
 				case SDL_QUIT:
 					if (Window.getInstance().onExit)
@@ -222,7 +223,7 @@ abstract class Input
 		
 		// Key repeat
 		if (focus)
-		{	uint now = clock()*1000/CLOCKS_PER_SEC; // time in milliseconds
+		{	long now = clock()*1000/CLOCKS_PER_SEC; // time in milliseconds
 			if (now - KEY_DELAY > lastKeyDownTime)
 			{	focus.keyPress(lastKeyDown.sym, lastKeyDown.mod, lastKeyDown.unicode);
 				lastKeyDownTime += KEY_REPEAT;

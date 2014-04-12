@@ -8,8 +8,10 @@ module yage.system.libraries;
 
 import derelict.freetype.ft;
 
-// TODO redo all code calling into this API
-// import derelict.ogg.vorbis;
+// TODO this needs to init every other derelict library too!
+
+import derelict.vorbis.vorbis;
+import derelict.vorbis.file;
 import yage.system.log;
 import yage.core.object2;
 
@@ -47,7 +49,7 @@ abstract class Libraries
 	static void loadVorbis(bool load=true)
 	{	if (load && !vorbisLoaded)
 		{	Log.info("Loading Vorbis and VorbisFile.");
-			DerelictVorbis.load();
+                        DerelictVorbis.load();
 			DerelictVorbisFile.load();
 			vorbisLoaded = true;
 		} else if (!load && vorbisLoaded)

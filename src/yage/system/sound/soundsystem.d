@@ -52,12 +52,12 @@ private class SoundSource : IDisposable
 	protected Vec3f position;
 	protected Vec3f velocity;
 	
-	protected int	size;			// number of buffers that we use at one time, either sounds' buffers per second, 
+	protected ulong	size;			// number of buffers that we use at one time, either sounds' buffers per second, 
 									// or less if the sound is less than one second long.
 	protected bool	enqueue = true;	// Keep enqueue'ing more buffers, false if no loop and at end of track.
-	protected uint	buffer_start;	// the first buffer in the array of currently enqueue'd buffers
-	protected uint	buffer_end;		// the last buffer in the array of currently enqueue'd buffers
-	protected uint	to_process;		// the number of buffers to queue next time.
+	protected ulong	buffer_start;	// the first buffer in the array of currently enqueue'd buffers
+	protected ulong	buffer_end;		// the last buffer in the array of currently enqueue'd buffers
+	protected ulong	to_process;		// the number of buffers to queue next time.
 	
 	/*
 	 * Create the OpenAL Source. */
@@ -96,8 +96,8 @@ private class SoundSource : IDisposable
 			{	sound = command.sound;
 			
 				// Ensure that our number of buffers isn't more than what exists in the sound file
-				int len = sound.getBuffersLength();
-				int sec = sound.getBuffersPerSecond();
+				ulong len = sound.getBuffersLength();
+				ulong sec = sound.getBuffersPerSecond();
 				size = len < sec ? len : sec;
 				
 				seek(command.position);
@@ -216,13 +216,13 @@ private class SoundSource : IDisposable
 				// Count buffers processed since last time we queue'd more
 				int processed;
 				OpenAL.getSourcei(al_source, AL_BUFFERS_PROCESSED, &processed);
-				to_process = max(processed, cast(int)(size-(buffer_end-buffer_start)));
+				to_process = max(processed, size-(buffer_end-buffer_start));
 	
 				// Update the buffers for this source if more than 1/4th have been used.
 				if (to_process > size/4)
 				{
 					// If looping and our buffer has reached the end of the track
-					int blength = sound.getBuffersLength();
+					ulong blength = sound.getBuffersLength();
 					if (!looping && buffer_end+to_process >= blength)
 						to_process = blength - buffer_end;
 	
@@ -231,7 +231,7 @@ private class SoundSource : IDisposable
 	
 					// Enqueue as many buffers as what are available
 					sound.allocBuffers(buffer_end, to_process);
-					OpenAL.sourceQueueBuffers(al_source, to_process, sound.getBuffers(buffer_end, buffer_end+to_process).ptr);
+					OpenAL.sourceQueueBuffers(al_source, to!(int)(to_process), sound.getBuffers(buffer_end, buffer_end+to_process).ptr);
 	
 					buffer_start+= processed;
 					buffer_end	+= to_process;

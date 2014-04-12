@@ -6,7 +6,8 @@
 
 module yage.system.graphics.render;
 
-import tango.math.Math;
+//import tango.math.Math;
+import std.string;
 
 import derelict.opengl3.gl;
 import derelict.sdl2.sdl;
@@ -36,10 +37,10 @@ private struct AlphaTriangle
 	Material material; // Sprites all share the same Mesh, but the material changes
 	Matrix matrix;
 	LightNode[] lights;	
-	int triangle;	
+	ulong triangle;	
 	Vec3f[3] vertices;	
 	
-	static AlphaTriangle opCall(Geometry geometry, Mesh mesh, Material material, Matrix matrix, LightNode[] lights, int triangle, Vec3f[3] vertices)
+	static AlphaTriangle opCall(Geometry geometry, Mesh mesh, Material material, Matrix matrix, LightNode[] lights, ulong triangle, Vec3f[3] vertices)
 	{	AlphaTriangle result = {geometry, mesh, material, matrix, lights, triangle, vertices};
 		return result;		
 	}
@@ -56,7 +57,7 @@ struct RenderStatistics
 	
 	///
 	RenderStatistics opAdd(RenderStatistics rhs)
-	{	RenderStatistics result = *this;
+	{	RenderStatistics result = this;
 		return result += rhs;
 	}
 	
@@ -66,7 +67,7 @@ struct RenderStatistics
 		vertexCount += rhs.vertexCount;
 		triangleCount += rhs.triangleCount;
 		lightCount += rhs.lightCount;
-		return *this;
+		return this;
 	}
 }
 
@@ -85,7 +86,7 @@ struct Render
 	protected static Geometry spriteQuad; // TODO: Move to SpriteNode
 	
 	protected struct ShaderParams
-	{	ushort numLights;
+	{	ulong numLights;
 		bool hasFog;
 		bool hasSpecular;
 		bool hasDirectional;
@@ -165,7 +166,7 @@ struct Render
 		{
 			if (pass.autoShader == MaterialPass.AutoShader.PHONG)
 			{				
-				string defines = format("#version 110\n#define NUM_LIGHTS %s\n", params.numLights);
+				string defines = std.string.format("#version 110\n#define NUM_LIGHTS %s\n", params.numLights);
 				if (params.hasFog)
 					defines ~= "#define HAS_FOG\n";
 				if (params.hasSpecular)
@@ -180,8 +181,8 @@ struct Render
 					defines ~= "#define HAS_BUMP\n";
 		
 				// Shader source code.
-				string vertex   = defines ~ cast(char[])Embed.phong_vert;
-				string fragment = defines ~ cast(char[])Embed.phong_frag;
+				string vertex   = defines ~ Embed.phong_vert;
+				string fragment = defines ~ Embed.phong_frag;
 				result = new Shader(vertex, fragment);
 				try {					
 					graphics.bindShader(result);
@@ -219,9 +220,9 @@ struct Render
 			assert(lights.length < 10);
 			foreach (i, light; lights)
 			{	
-				string makeName(char[] name, int i)
-				{	name[7] = i + '0'; // convert int to single digit ascii.
-					return name;
+				string makeName(char[] name, ulong i)
+				{	name[7] = cast(char)(i + '0'); // convert int to single digit ascii.
+					return cast(string)(name);
 				}
 				
 				// Doing it inline seems to make things slightly faster
@@ -612,7 +613,7 @@ struct Render
 		// Setup the viewport in orthogonal mode,
 		// with dimensions 0..width, 0..height
 		// with 0,0 being at the top left.
-		glViewport(0, 0, target.getWidth(), target.getHeight()); 
+		glViewport(0, 0, cast(int)target.getWidth(), cast(int)target.getHeight()); 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();  // [below] ortho perspective, near and far are arbitrary.
 		glOrtho(0, target.getWidth(), target.getHeight(), 0, -32768, 32768);

@@ -8,6 +8,7 @@ module yage.system.log;
 
 import tango.io.device.File;
 import tango.io.Console;
+import core.vararg;
 
 import yage.core.json;
 import yage.core.timer;
@@ -133,7 +134,7 @@ struct Profile
 	static string getTimesAndClear()
 	{	string result;
 		foreach (name, timer; timers)
-			result ~= format("%.5fs %s\n", timer.tell(), name);
+			result ~= std.string.format("%.5fs %s\n", timer.tell(), name);
 		clear();
 		return result;
 	}
