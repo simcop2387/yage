@@ -97,7 +97,7 @@ struct Render
 	protected static Shader[ShaderParams] generatedShaders;
 	protected static ArrayBuilder!(ShaderUniform) uniformsLookaside; // TODO: Can we use Memory.allocate instead?
 	protected static bool[MaterialTechnique] failedTechniques;
-	
+	protected static SDL_Window *sdlWindow;
 
 	/**
 	 * Generate built-in models (such as the sprite quad). */
@@ -115,7 +115,7 @@ struct Render
 	/**
 	 * Complete rendering and swap the back buffer to the front buffer. */
 	static void complete()
-	{	SDL_GL_SwapBuffers();
+	{	SDL_GL_SwapWindow(sdlWindow); // TODO HACK TEST BROKEN
 		cleared = false;
 	}
 

@@ -110,7 +110,7 @@ abstract class Input
 			currentSurface = surface;
 		
 		// TODO http://wiki.libsdl.org/MigrationGuide#Input
-		SDL_EnableUNICODE(1); // TODO: Move this
+		// SDL_EnableUNICODE(1); // TODO: Move this
 		auto focus = getFocusSurface(surface);
 				
 		SDL_Event event;

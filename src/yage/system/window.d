@@ -8,6 +8,8 @@ module yage.system.window;
 
 import tango.stdc.stringz;
 import tango.io.Stdout;
+import std.conv;
+
 import derelict.opengl3.gl;
 import derelict.opengl3.ext;
 import derelict.util.exception;
@@ -53,7 +55,8 @@ class Window : IRenderTarget
 		STENCIL
 	}
 
-	protected SDL_Surface* sdlSurface;
+	protected SDL_Window* sdlWindow;
+        protected SDL_Surface* sdlSurface;
 	protected Vec2ul size; // size of the window
 	protected Vec2i viewportPosition;
 	protected Vec2i viewportSize;
@@ -79,7 +82,7 @@ class Window : IRenderTarget
 
 	void dispose()
 	{	if (instance)
-		{	SDL_FreeSurface(sdlSurface);
+		{	SDL_FreeSurface(sdlSurface); // TODO I probably need a surface anyway for other things...
 			DerelictGL.unload();
 			instance = null;
 		}
@@ -109,18 +112,16 @@ class Window : IRenderTarget
 	/**
 	 * Minimize the Window. */
 	void minimize()
-	{	SDL_WM_IconifyWindow();
+	{ SDL_MinimizeWindow(sdlWindow);
 	}
 
 	/**
 	 * Set the caption for the Window.
 	 * Params:
-	 *     title = The caption shown on top of the window
-	 *     taskbarName = The caption shown on the window's taskbar entry.  Defaults to title. */
-	void setCaption(string title, char[] taskbarName=null)
-	{	if (!taskbarName)
-			taskbarName = title;
-		SDL_WM_SetCaption(toStringz(title), toStringz(taskbarName));
+	 *     title = The caption shown on top of the window */
+	void setCaption(string title)
+	{
+		SDL_SetWindowTitle(sdlWindow, title.ptr);
 	}
 
 	/**
@@ -158,22 +159,34 @@ class Window : IRenderTarget
 		size.x = width;
 		size.y = height;
 
+		
+		
 		// If SDL ever decouples window creation from initialization, we can move these to System.init().
 		// Create the screen surface (window)
-		uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
-		if (fullscreen_) flags |= SDL_FULLSCREEN;
-			sdlSurface = SDL_SetVideoMode(size.x, size.y, depth, flags);
+		uint flags = SDL_WINDOW_RESIZABLE | SDL_GL_DOUBLEBUFFER | SDL_WINDOW_OPENGL; // TODO these no longer matter? | SDL_HWPALETTE | SDL_HWACCEL;
+		if (fullscreen_) flags |= SDL_WINDOW_FULLSCREEN;
+			sdlWindow = SDL_CreateWindow("YAGE Window", 
+                                      cast(int) SDL_WINDOWPOS_UNDEFINED,
+                                      cast(int) SDL_WINDOWPOS_UNDEFINED,
+                                      cast(int) size.x, 
+                                      cast(int) size.y, 
+                                      flags); // TODO depth, is no longer an option.
+		
+		sdlSurface = SDL_GetWindowSurface(sdlWindow);
+		
 		if(sdlSurface is null)
 			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
 		SDL_LockSurface(sdlSurface);
 
+		// TODO these likely need to be completely redone for SDL2 anyway
 		// These have to be set after window creation.
-		SDL_EnableUNICODE(1);
+		// SDL_EnableUNICODE(1);
 		//SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-		SDL_EnableKeyRepeat(0, 0); // disable, we handle it ourselves
+		// SDL_EnableKeyRepeat(0, 0); // disable, we handle it ourselves
 
+		// TODO these are assumed once we move to full GL3
 		// Attempt to load multitexturing
-		if (Probe.feature(Probe.Feature.MULTITEXTURE))
+/*		if (Probe.feature(Probe.Feature.MULTITEXTURE))
 		{	if (!ARBMultitexture.load("GL_ARB_multitexture"))
 				throw new YageException("GL_ARB_multitexture extension detected but it could not be loaded.");
 			Log.info("GL_ARB_multitexture support enabled.");
@@ -213,7 +226,7 @@ class Window : IRenderTarget
 			Log.info("GL_EXT_framebuffer_object support enabled.");
 		}else
 			Log.info("GL_EXT_framebuffer_object not supported.  This is still ok.");
-
+                */
 
 
 		// OpenGL options
@@ -248,9 +261,9 @@ class Window : IRenderTarget
 	 *     widthHeight = Width and height of the viewport in pixels.  If zero, defaults to window width/height. */
 	void setViewport(Vec2i topLeft=Vec2i(0), Vec2i widthHeight=Vec2i(0))
 	{	if (widthHeight.x <= 0)
-			widthHeight.x = size.x;
+			widthHeight.x = to!int(size.x);
 		if (widthHeight.y <= 0)
-			widthHeight.y = size.y;
+			widthHeight.y = to!int(size.y);
 		glViewport(topLeft.x, topLeft.y, widthHeight.x, widthHeight.y);
 		viewportPosition = topLeft;
 		viewportSize = widthHeight;
@@ -267,22 +280,22 @@ class Window : IRenderTarget
 		//System.surface.updateDimensions();
 
 		// Seems to do nothing.
-		SDL_UpdateRect(sdlSurface, 0, 0, 0, 0);
+		//SDL_UpdateRect(sdlSurface, 0, 0, 0, 0);
 
-
+                // TODO this is likely never needed anymore?
 		// For some reason, SDL Linux requires a call to SDL_SetVideoMode for a screen resize that's
 		// larger than the current screen. (need to try this with latest version of SDL, also try SDL lock surface)
 		// This same code would crash the engine on windows.
 		// This code may now be un-needed and needs to be retested.
 		// See http://www.libsdl.org/cgi/docwiki.cgi/SDL_5fResizeEvent
-		version (linux)
+/*		version (linux)
 		{	uint flags = SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL | SDL_RESIZABLE | SDL_HWPALETTE | SDL_HWACCEL;
 			if (fullscreen)
 				flags |= SDL_FULLSCREEN;
 			sdlSurface = SDL_SetVideoMode(width, height, 0, flags);
 			if (sdlSurface is null)
 				throw new YageException("Failed to resize the window!");
-		}
+		} */
 	}
 
 	/**
@@ -293,7 +306,7 @@ class Window : IRenderTarget
 	 * Example:
 	 * --------
 	 * IImage image = Window.getInstance().toImage(Window.Buffer.DEPTH);
-	 * ubyte[] data = image.convert!(ubyte, 1).getBytes();  // convert image from 32-bit grayscale to 8-bit grayscale
+	 ................* ubyte[] data = image.convert!(ubyte, 1).getBytes();  // convert imagem,\ from 32-bit grayscale to 8-bit grayscale
 	 * File file = new File("depth.raw", File.WriteCreate); // Photoshop can open raw files
 	 * file.write(image.convert!(ubyte, 1).getBytes());
 	 * file.close();
@@ -302,17 +315,17 @@ class Window : IRenderTarget
 	ImageBase toImage(Buffer buffer=Buffer.COLOR)
 	{
 		if (buffer==Buffer.STENCIL)		{
-			Image1ub result = new Image1ub(size.x, size.y);
-			glReadPixels(0, 0, size.x, size.y, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, result.data.ptr);
+			Image1ub result = new Image1ub(to!ubyte(size.x), to!ubyte(size.y));
+			glReadPixels(0, 0, to!int(size.x), to!int(size.y), GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, result.data.ptr);
 			return result;
 		}
 		else if (buffer==Buffer.DEPTH)
-		{	Image2!(int, 1) result = new Image2!(int, 1)(size.x, size.y);
-			glReadPixels(0, 0, size.x, size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, result.data.ptr);
+		{	Image2!(int, 1) result = new Image2!(int, 1)(to!int(size.x), to!int(size.y));
+			glReadPixels(0, 0, to!int(size.x), to!int(size.y), GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, result.data.ptr);
 			return result;
 		} else // color
-		{	Image3ub result = new Image3ub(size.x, size.y);
-			glReadPixels(0, 0, size.x, size.y, GL_RGB, GL_UNSIGNED_BYTE, result.data.ptr);
+		{	Image3ub result = new Image3ub(to!ubyte(size.x), to!ubyte(size.y));
+			glReadPixels(0, 0, to!int(size.x), to!int(size.y), GL_RGB,GL_UNSIGNED_BYTE, result.data.ptr);
 			return result;
 		}
 	}

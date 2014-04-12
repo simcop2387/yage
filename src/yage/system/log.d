@@ -13,6 +13,21 @@ import core.vararg;
 import yage.core.json;
 import yage.core.timer;
 
+// TODO TEST THIS
+string swritef(...)  // or call it swritef; this name's from Python
+{
+        char[] result;
+
+        void putc(dchar c)
+        {
+                std.utf.encode(result, c);
+        }
+
+        std.format.doFormat(&putc, _arguments, _argptr);
+        return cast(string)(result);
+}
+
+
 /**
  * Log to a file or the console. */
 struct Log
