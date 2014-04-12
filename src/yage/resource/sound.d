@@ -6,13 +6,13 @@
 
 module yage.resource.sound;
 
-import tango.io.device.FileMap;
-import tango.io.device.File;
-import tango.stdc.stdio : FILE, fopen;
+import tango.io.device.FileMap; // TODO REMOVE THIS FROM WAVEFILE
+//import tango.io.device.File;
+//import tango.stdc.stdio : FILE, fopen;
+import std.stdio;
 import tango.text.convert.Format;
 import tango.stdc.stringz;
 import derelict.openal.al;
-// TODO find which modules these really need
 import derelict.vorbis.vorbis;
 import derelict.vorbis.enc;
 import derelict.vorbis.file;
@@ -52,16 +52,12 @@ class Sound
 	this(string filename)
 	{
 		string source = ResourceManager.resolvePath(filename);
-
-		// Get first four bytes of sound file to determine type
-		// And then load the file.  sound_file will have all of our important info
-		MappedFile file = new MappedFile(source, File.ReadShared); // TODO it's surely faster to just get the first 4 bytes w/o a mapped file.
-		if (cast(string)file.map()[0..4]=="RIFF")
-			sound_file = new WaveFile(source);
-		else if (cast(string)file.map[0..4]=="OggS")
-			sound_file = new VorbisFile(source);
-		else throw new ResourceException("Unrecognized sound format '"~cast(string)file.map[0..4]~"' for file '"~source~"'.");
-		delete file;
+		
+		if (filename[$-4..$] == ".wav") {
+		        sound_file = new WaveFile(source);
+		} else if (filename[$-4..$] == ".ogg") {
+                        sound_file = new VorbisFile(source);
+                } else throw new ResourceException("Unrecognized sound format '"~filename~"' for file '"~source~"'.");
 
 		// Determine OpenAL format
 		if (sound_file.channels==1 && sound_file.bits==8)  		al_format = AL_FORMAT_MONO8;
@@ -253,7 +249,7 @@ private class WaveFile : SoundFile
 	/// Open a wave file and store attributes from its headers
 	this(string filename)
 	{	super(filename);
-		file = new MappedFile(filename, File.ReadShared);
+		file = new MappedFile(filename);
 
 		// First 4 bytes of Wave file should be "RIFF"
 		if (cast(string)file.map[0..4] != "RIFF")
@@ -291,7 +287,7 @@ private class VorbisFile : SoundFile
 	OggVorbis_File vf;		// struct for our open ov file.
 
 	int current_section;	// used interally by ogg vorbis
-	FILE *file;
+	File file;
 	ubyte[] buffer;			// used for returning data
 
 	/// Open an ogg vorbis file and store attributes from its headers
@@ -299,8 +295,8 @@ private class VorbisFile : SoundFile
 	{	super(filename);
 
 		// Open the file
-		file = fopen(toStringz(filename), "rb");
-		int status = ov_open(file, &vf, null, 0);
+		file = File(filename, "rb");
+		int status = ov_open(file.getFP(), &vf, null, 0);
 
 		version(linux){}
 		else  // this returns false errors on linux?

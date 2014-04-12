@@ -964,14 +964,14 @@ class OpenGL : GraphicsAPI
 		}
 		else
 		{	bindVertexBuffer(polygons, Geometry.VERTICES);
-			switch (type)
-			{	case Mesh.TRIANGLES:
+			switch (type) // TODO MAKE THIS MORE UNDERSTANDABLE?
+			{	case "GL_TRIANGLES": //Mesh.TRIANGLES:
 					glDrawArrays(GL_TRIANGLES, 0, cast(int) (polygons.length()*3));
 					break;
-				case Mesh.LINES:
+				case "GL_LINES": //Mesh.LINES:
 					glDrawArrays(GL_LINES, 0, cast(int)(polygons.length()));
 					break;
-				case Mesh.POINTS:
+				case "GL_POINTS"://Mesh.POINTS:
 					glDrawArrays(GL_POINTS, 0, cast(int)(polygons.length()));
 					break;
 				default:
@@ -1012,72 +1012,72 @@ class OpenGL : GraphicsAPI
 		// Cleanup on exit
 		scope(exit)
 		{	if (vertexObj) // Mark shader objects for deletion
-				glDeleteObject(vertexObj); // so they'll be deleted when the shader program is deleted.
+				glDeleteShader(vertexObj); // so they'll be deleted when the shader program is deleted.
 			if (fragmentObj)
-				glDeleteObject(fragmentObj);
+				glDeleteShader(fragmentObj);
 		}
 		scope(failure)
 			if (result)
-				glDeleteObject(result);
+				glDeleteProgram(result);
 
 		// Get OpenGL's log for a shader object.
 		string getLog(uint id)
 		{	int len;  char *log;
-			glGetShaderiv(id, GL_OBJECT_INFO_LOG_LENGTH, &len);
+			glGetShaderiv(id, GL_INFO_LOG_LENGTH, &len);
 			if (len > 0)
 			{	log = (new char[len]).ptr;
-				glGetInfoLogARB(id, len, &len, log);
+				glGetShaderInfoLog(id, len, &len, log);
 			}
-			return log[0..len];
+			return cast(string)(log[0..len]);
 		}
 
 		// Compile a shader into object code.
 		uint compile(string source, uint type)
 		{
 			// Compile this shader into a binary object
-			char* sourceZ = source.ptr;
-			uint shaderObj = glCreateShaderObjectARB(type);
-			glShaderSourceARB(shaderObj, 1, &sourceZ, null);
-			glCompileShaderARB(shaderObj);
+			char* sourceZ = cast(char *)source.ptr;
+			uint shaderObj = glCreateShader(type);
+			glShaderSource(shaderObj, 1, &sourceZ, null);
+			glCompileShader(shaderObj);
 
 			// Get the compile log and check for errors
 			string compileLog = getLog(shaderObj);
 			shader.compileLog ~= compileLog;
 			int status;
-			glGetObjectParameterivARB(shaderObj, GL_OBJECT_COMPILE_STATUS_ARB, &status);
+			glGetShaderiv(shaderObj, GL_COMPILE_STATUS, &status);
 			if (!status)
 				throw new GraphicsException("Could not compile %s shader.\nReason:  %s",
-					type==GL_VERTEX_SHADER_ARB ? "vertex" : "fragment", compileLog);
+					type==GL_VERTEX_SHADER ? "vertex" : "fragment", compileLog);
 
 			return shaderObj;
 		}
 
 		// Compile
-		vertexObj = compile(shader.getVertexSource(true), GL_VERTEX_SHADER_ARB);
-		fragmentObj = compile(shader.getFragmentSource(true), GL_FRAGMENT_SHADER_ARB);
+		vertexObj = compile(shader.getVertexSource(true), GL_VERTEX_SHADER);
+		fragmentObj = compile(shader.getFragmentSource(true), GL_FRAGMENT_SHADER);
 		assert(vertexObj);
 		assert(fragmentObj);
 
 		// Link
-		result = glCreateProgramObjectARB();
-		glAttachObjectARB(result, vertexObj);
-		glAttachObjectARB(result, fragmentObj);
-		glLinkProgramARB(result); // common failure point
+		result = glCreateProgram();
+		glAttachShader(result, vertexObj);
+		glAttachShader(result, fragmentObj);
+		glLinkProgram(result); // common failure point
 
 		// Check for errors
-		string linkLog = getLog(result);
+		string linkLog = getLog(result); // TODO THIS WILL FAIL!
 		shader.compileLog ~= "\n"~linkLog;
 		int status;
-		glGetObjectParameterivARB(result, GL_OBJECT_LINK_STATUS_ARB, &status);
+		glGetProgramiv(result, GL_LINK_STATUS, &status);
 		if (!status)
 			throw new GraphicsException("Could not link the shaders.\nReason:  %s", linkLog);
 
 		// Validate
-		glValidateProgramARB(result);
-		string validateLog = getLog(result);
+		glValidateProgram(result);
+		string validateLog = getLog(result); // TODO THIS WILL FAIL!
 		shader.compileLog ~= validateLog;
 		int isValid;
-		glGetObjectParameterivARB(result, GL_VALIDATE_STATUS, &isValid);
+		glGetProgramiv(result, GL_VALIDATE_STATUS, &isValid);
 		if (!isValid)
 			throw new GraphicsException("Shader failed validation.\nReason:  %s", validateLog);
 
