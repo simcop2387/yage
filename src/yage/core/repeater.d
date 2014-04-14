@@ -11,6 +11,7 @@ import yage.core.object2;
 import yage.core.misc;
 import yage.core.timer;
 import yage.system.log;
+import std.functional;
 
 /**
  * A class to repeatedly call a function at a set inverval, in its own thread. */
@@ -45,7 +46,7 @@ class Repeater : Thread, IDisposable
 		super.start();
 	}
 	this(void function() func, bool start=false, double frequency=60f)
-	{	this(toDelegate(func), start, frequency);
+	{	this(std.functional.toDelegate(func), start, frequency);
 	}
 	
 	/**

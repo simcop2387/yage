@@ -158,14 +158,15 @@ struct Event(T...)
 /**
  * Convert any function pointer to a delegate.
  * _ From: http://www.digitalmars.com/d/archives/digitalmars/D/easily_convert_any_method_function_to_a_delegate_55827.html */
-R delegate(P) toDelegate(R, P...)(R function(P) fp)
-{	struct S
+/*R delegate(P) toDelegate(R, P...)(R function(P) fp)
+{ 
+        struct S
 	{	R Go(P p) // P is the function args.
 		{	return (cast(R function(P))(cast(void*)this))(p);
 		}
 	}
 	return &(cast(S*)(cast(void*)fp)).Go;
-}
+}*/
 
 /**
  * Get the base type of any chain of typedefs.
