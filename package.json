@@ -1,18 +1,71 @@
 {
-	"name": "yage",
-	"description": "A D2 port of the Yage game engine.",
-	"copyright": "Copyright © 2014 Various",
-	"authors": ["ryan", "various"],
-	"dependencies": {
-	   "derelict-ft": "~master",
-	   "derelict-ogg": "~master",
-	   "derelict-gl3": "~master",
-	   "derelict-sdl2": "~master",
-	   "derelict-util": ">=1.0.0",
-	   "derelict-al": "~master",
-	   "derelict-vorbis": "~master",
-	   "tango": "~d2port"
-	},
-    "targetName": "yage",
-    "targetPath": "lib",        
+  "name": "yage",
+  "description": "A D2 port of the Yage game engine.",
+  "copyright": "Copyright © 2014 Various",
+  "authors": ["ryan", "various"],
+  "dependencies": {
+    "derelict-ft": "~master",
+    "derelict-ogg": "~master",
+    "derelict-gl3": "~master",
+    "derelict-sdl2": "~master",
+    "derelict-util": ">=1.0.0",
+    "derelict-al": "~master",
+    "derelict-vorbis": "~master",
+    "tango": "~d2port"
+  },
+  "subPackages": [
+    {
+      "name": "demo1",
+      "targetType": "executable",
+      "sourcePaths": ["demo1/"],
+      "importPaths": ["demo1/"],
+      "dependencies": {
+        "derelict-ft": "~master",
+        "derelict-ogg": "~master",
+        "derelict-gl3": "~master",
+        "derelict-sdl2": "~master",
+        "derelict-util": ">=1.0.0",
+        "derelict-al": "~master",
+        "derelict-vorbis": "~master",
+        "tango": "~d2port",
+        "yage": "~master"
+      },
+    },
+    {
+      "name": "demo2",
+      "targetType": "executable",
+      "sourcePaths": ["demo2/"],
+      "importPaths": ["demo2/"],
+      "dependencies": {
+        "derelict-ft": "~master",
+        "derelict-ogg": "~master",
+        "derelict-gl3": "~master",
+        "derelict-sdl2": "~master",
+        "derelict-util": ">=1.0.0",
+        "derelict-al": "~master",
+        "derelict-vorbis": "~master",
+        "tango": "~d2port",
+        "yage": "~master"
+      },
+    },
+    {
+      "name": "demo3",
+      "targetType": "executable",
+      "sourcePaths": ["demo3/"],
+      "importPaths": ["demo3/"],
+      "dependencies": {
+        "derelict-ft": "~master",
+        "derelict-ogg": "~master",
+        "derelict-gl3": "~master",
+        "derelict-sdl2": "~master",
+        "derelict-util": ">=1.0.0",
+        "derelict-al": "~master",
+        "derelict-vorbis": "~master",
+        "tango": "~d2port",
+        "yage": "~master"
+      },
+    }
+  ],
+  "targetName": "yage",
+  "targetPath": "lib",
 }
