@@ -72,7 +72,8 @@ class LightNode : Node
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
-	/*override*/ LightNode clone(bool children=false, LightNode destination=null)
+	 alias Node.clone clone; // TODO learn why GDC said i needed this
+	 LightNode clone(bool children=false, LightNode destination=null)
 	{	auto result = cast(LightNode)super.clone(children, destination);
 		
 		result.quadAttenuation = quadAttenuation;

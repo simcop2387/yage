@@ -306,6 +306,7 @@ class OpenGL : GraphicsAPI
 						glPolygonMode(cullMode, GL_POINT);
 						glPointSize(pass.linePointSize);
 						break;
+					default: break; // do nothing in the default case
 				}
 			}
 

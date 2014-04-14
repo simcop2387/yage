@@ -273,7 +273,7 @@ private class WaveFile : SoundFile
 
 	/** Return a buffer of uncompressed sound data.
 	 *  Both parameters are measured in bytes. */
-	ubyte[] getBuffer(int offset, int _size)
+	override ubyte[] getBuffer(ulong offset, uint _size)
 	{	if (offset+_size > size)
 			return null;
 		return cast(ubyte[])file.map[(44+offset)..(44+offset+_size)];

@@ -56,6 +56,7 @@ class SoundNode : Node, ITemporal
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
+	 alias Node.clone clone;
 	/*override*/ SoundNode clone(bool children=false, SoundNode destination=null)
 	{	auto result = cast(SoundNode)super.clone(children, destination);
 		

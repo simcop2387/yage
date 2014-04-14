@@ -154,23 +154,21 @@ DDSImageData* loadDDSTextureFile(ubyte[] fileContents) {
 	uint block_size = ((ddsinfo.width + 3) / 4) * ((ddsinfo.height + 3) / 4) * ddsinfo.depth;
 	switch(ddsinfo.fourCC) {
 	// TODO re-enable these packed formats
-/*		case "DXT1":
-			pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		case "DXT1":
+			pDDSdata.format = 0x83F1; // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 			factor = 2;
 			block_size *= 8;
-			break;*/
-			/*
-			 case "DXT2":
-			 pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT2_EXT;
-			 factor = 4;
-			 block_size *= 16;
-			 break;
-			 */
-/*		case "DXT3":
-			pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			break;
+/*		case "DXT2":
+			pDDSdata.format = ;//GL_COMPRESSED_RGBA_S3TC_DXT2_EXT;
 			factor = 4;
 			block_size *= 16;
 			break;*/
+		case "DXT3":
+			pDDSdata.format = 0x83F2;//GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			factor = 4;
+			block_size *= 16;
+			break;
 			/*
 			 case "DXT4":
 			 pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT4_EXT;
@@ -178,11 +176,11 @@ DDSImageData* loadDDSTextureFile(ubyte[] fileContents) {
 			 block_size *= 16;
 			 break;
 			 */
-/*		case "DXT5":
-			pDDSdata.format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		case "DXT5":
+			pDDSdata.format = 0x83F3; //GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 			factor = 4;
 			block_size *= 16;
-			break;*/
+			break;
 		default:
 			throw new ResourceException("Cannot parse DXT texture since it's not DXT1, DXT3, or DXT5.");
 	}

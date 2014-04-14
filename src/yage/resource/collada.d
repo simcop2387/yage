@@ -573,7 +573,6 @@ class Collada
 					return getSceneNodeAbsoluteTransform(parentNode).transformAffine(result);
 				else
 					return upTransform.transformAffine(result);
-				return result;
 			}
 			
 			joint0.relative = getSceneNodeAbsoluteTransform(joint0Node); // by nature, transforming the first will rotate all.
@@ -724,12 +723,14 @@ class Collada
 
 	// All geometry will be rotated by this Matrix.  
 	protected Matrix getBaseTransform()
-	{	return Matrix.IDENTITY;
+	{
 		string upAxis = Node(doc.elements).getChild("asset").getChild("up_axis").value();
-		if (upAxis == "X_UP") // Y is already up
+		if (upAxis == "X_UP") {// Y is already up
 			return Vec3f(0, -3.141527/2, 0).toMatrix();
-		if (upAxis == "Z_UP")
+		}
+		if (upAxis == "Z_UP") {
 			return Vec3f(-3.141527/2, 0, 0).toMatrix();
+		}
 		return Matrix.IDENTITY;
 	}
 	

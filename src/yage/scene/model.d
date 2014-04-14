@@ -64,6 +64,7 @@ class ModelNode : VisibleNode
 	 * Params:
 	 *     children = recursively clone children (and descendants) and add them as children to the new Node.
 	 * Returns: The cloned Node. */
+	 alias VisibleNode.clone clone; // TODO learn why GDC says I need this.
 	/*override*/ ModelNode clone(bool children=false, ModelNode destination=null)
 	{	auto result = cast(ModelNode)super.clone(children, destination);
 		result.model = model; // atomic
