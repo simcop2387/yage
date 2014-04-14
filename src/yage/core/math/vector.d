@@ -290,9 +290,7 @@ struct Vec(int S, T : real, bool N=false)
 	
 	/// Perform a member-wise instead of a bitwise compare.  This way 0f == -0f.
 	int opEquals(VST rhs)
-	{	static if (S==3) { // untested optimization
-			return x==rhs.x && y==rhs.y && z==rhs.z;
-		}
+	{
 		for (int i=0; i<S; i++)
 			if (v[i] != rhs.v[i])
 				return false;

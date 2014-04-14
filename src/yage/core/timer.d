@@ -158,7 +158,7 @@ class Timer
 	}
 	
 	///
-	string toString()
+	override string toString()
 	{	return std.string.format("%08d", tell());
 	}
 }

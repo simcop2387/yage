@@ -449,12 +449,13 @@ class Node : Tree!(Node), IDisposable
 		foreach(c; children)
 			c.ancestorChange(oldAncestor); // breaks the assertions below!  But how?
 
-		debug if (scene) {
-			assert(0<=transformIndex && transformIndex < transforms.length);
-                } else {
-			assert(transformIndex != -1);
+		debug {
+                    if (scene) {
+                            assert(0<=transformIndex && transformIndex < transforms.length);
+                    } else {
+                            assert(transformIndex != -1);
+                    }
 		}
-		
 		assert(transform); // assert it is accessible
 		assert(transform.worldDirty || !transform.worldDirty);		
 	}

@@ -485,12 +485,14 @@ struct Style
 		{	case Style.BorderImageStyle.STRETCH: return "stretch";
 			case Style.BorderImageStyle.ROUND: return "round";
 			case Style.BorderImageStyle.REPEAT: return "repeat";
+			default: return "repeat";
 	}	}
 	static string enumToString(Style.FontStyle style) /// ditto
 	{	switch(style)
 		{	case Style.FontStyle.AUTO: return "auto";
 			case Style.FontStyle.NORMAL: return "normal";
 			case Style.FontStyle.ITALIC: return "italic";
+			default: return "auto";
 	}	}
 	
 	static string enumToString(Style.FontWeight style) /// ditto
@@ -498,6 +500,7 @@ struct Style
 		{	case Style.FontWeight.AUTO: return "auto";
 			case Style.FontWeight.NORMAL: return "normal";
 			case Style.FontWeight.BOLD: return "bold";
+			default: return "auto";
 	}	}
 	static string enumToString(Style.Overflow style) /// ditto
 	{	return style==Style.Overflow.VISIBLE ? "visible" : "hidden";
@@ -509,6 +512,7 @@ struct Style
 			case Style.TextAlign.CENTER: return "center";
 			case Style.TextAlign.RIGHT: return "right";
 			case Style.TextAlign.JUSTIFY: return "justify";
+			default: return "auto";
 	}	}
 	static string enumToString(Style.TextDecoration style) /// ditto
 	{	switch(style)
@@ -517,6 +521,7 @@ struct Style
 			case Style.TextDecoration.UNDERLINE: return "underline";
 			case Style.TextDecoration.OVERLINE: return "overline";
 			case Style.TextDecoration.LINETHROUGH: return "line-through";
+                        default: return "auto";
 		}
 	}
 	

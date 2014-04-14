@@ -13,4 +13,6 @@
 	   "derelict-vorbis": "~master",
 	   "tango": "~d2port"
 	},
+    "targetName": "yage",
+    "targetPath": "lib",        
 }

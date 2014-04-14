@@ -233,7 +233,7 @@ class Font
 	}
 
 	/// Return the font filename.
-	string toString()
+	override string toString()
 	{	return resourceName;
 	}
 }
