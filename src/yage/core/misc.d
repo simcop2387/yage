@@ -15,6 +15,7 @@ import tango.core.sync.Mutex;
 import tango.math.Math;
 import tango.text.Util;
 import core.vararg;
+import std.conv;
 
 import yage.core.array;
 import yage.core.timer;
@@ -158,20 +159,24 @@ struct Event(T...)
 }
 
 // TODO TEST THIS
-/**
- * A replacement for swritef from the old format.d
- */
-string swritef(...)  // or call it swritef; this name's from Python
-{
-        char[] result;
-
-        void putc(dchar c)
+string swritef(...)
+{       
+        // If called with _arguments and _argptr from another vararg function.
+        if (_arguments.length==2 && _arguments[0] == typeid(TypeInfo[]) && _arguments[1] == typeid(void*))
         {
-                std.utf.encode(result, c);
-        }
-
-        std.format.doFormat(&putc, _arguments, _argptr);
-        return cast(string)(result);
+                string result;
+                void putc(dchar c)
+                {       dchar[1] temp;
+                        temp[0] = c;
+                        char[4] lookaside;
+                        result ~= to!(string)(temp);
+                }
+                TypeInfo[] arguments = va_arg!(TypeInfo[])(_argptr);
+                void* argptr = va_arg!(void*)(_argptr);
+                std.format.doFormat(&putc, arguments, argptr);
+                return result;
+        } 
+        return swritef(_arguments, _argptr); // recurse to take first path.
 }
 
 /**
