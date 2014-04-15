@@ -90,7 +90,7 @@ class Scene : Node//, ITemporal, IDisposable
 		
 		assert(transform().node.transformIndex == transformIndex);
 
-		ambient	= Color("#333"); // OpenGL default global ambient light.
+		ambient	= Color("#333333"); // OpenGL default global ambient light.
 		backgroundColor = Color("black");	// OpenGL default clear color
 		fogColor = Color("gray");
 	

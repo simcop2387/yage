@@ -14,6 +14,8 @@ import tango.core.Traits;
 import tango.core.sync.Mutex;
 import tango.math.Math;
 import tango.text.Util;
+import core.vararg;
+
 import yage.core.array;
 import yage.core.timer;
 
@@ -155,18 +157,22 @@ struct Event(T...)
 	}
 }
 
+// TODO TEST THIS
 /**
- * Convert any function pointer to a delegate.
- * _ From: http://www.digitalmars.com/d/archives/digitalmars/D/easily_convert_any_method_function_to_a_delegate_55827.html */
-/*R delegate(P) toDelegate(R, P...)(R function(P) fp)
-{ 
-        struct S
-	{	R Go(P p) // P is the function args.
-		{	return (cast(R function(P))(cast(void*)this))(p);
-		}
-	}
-	return &(cast(S*)(cast(void*)fp)).Go;
-}*/
+ * A replacement for swritef from the old format.d
+ */
+string swritef(...)  // or call it swritef; this name's from Python
+{
+        char[] result;
+
+        void putc(dchar c)
+        {
+                std.utf.encode(result, c);
+        }
+
+        std.format.doFormat(&putc, _arguments, _argptr);
+        return cast(string)(result);
+}
 
 /**
  * Get the base type of any chain of typedefs.

@@ -155,6 +155,7 @@ struct Color
 				default: break;
 		}	}
 		
+		std.stdio.writeln(string);
 		//	Allow hex colors to start with hash.
 		if (string[0] == '#')
 			string = string[1..6];

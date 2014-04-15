@@ -9,6 +9,7 @@ module yage.core.object2;
 //import tango.util.Convert;
 import core.vararg;
 import std.string;
+import yage.core.misc;
 
 
 debug {
@@ -111,9 +112,7 @@ class YageException : Exception
 	 */
 	this(...)
 	{	// TODO: Log.warn?
-                // Let's just ignore this because I can't figure it out at the moment.
-		// TODO super(std.string.format(_arguments, _argptr));
-		super("Undocumented exception!");
+		super(swritef(_arguments, _argptr));
 	}
 	
 	///

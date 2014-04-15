@@ -57,7 +57,7 @@ class Asteroid : ModelNode
 		setModel(ResourceManager.model("space/asteroid1.dae"));
 	}
 
-	float getRadius()
+	override float getRadius()
 	{	return radius;
 	}
 
