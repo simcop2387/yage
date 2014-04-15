@@ -130,8 +130,7 @@ class OpenALException : YageException
 {
 	///
 	this(...)
-	{	// TODO fix this super(swritef(_arguments, _argptr));
-                super("OpenALException");
+	{	super(swritef(_arguments, _argptr));
 	}	
 }
 
@@ -140,8 +139,7 @@ class ResourceException : YageException
 {	
 	///
 	this(...)
-	{	// TODO fix this super(swritef(_arguments, _argptr));
-	        super("ResourceException");
+	{	super(swritef(_arguments, _argptr));
 	}	
 }
 

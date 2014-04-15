@@ -158,7 +158,7 @@ struct Color
 		std.stdio.writeln(string);
 		//	Allow hex colors to start with hash.
 		if (string[0] == '#')
-			string = string[1..6];
+			string = string[1..7];
 		
 		// handle 3 and 4-digit color codes
 		char[8] color;
