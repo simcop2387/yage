@@ -227,8 +227,8 @@ void radixSort(T, K)(T[] array, bool increasing, K delegate(T elem) getKey, bool
 	
 	// Perform the radix sort.
 	ulong count = array.length;	
-	Elem[] elem =  Memory.allocate!(Elem)(count);
-	Elem[] elem_copy = Memory.allocate!(Elem)(count);
+	Elem[] elem =  new Elem[count];
+	Elem[] elem_copy = new Elem[count];
 
 	// Move everything into an array of structs for faster sorting.
 	// This way we don't get all of the cache misses from using classes by reference.
@@ -305,10 +305,6 @@ void radixSort(T, K)(T[] array, bool increasing, K delegate(T elem) getKey, bool
 			for (size_t i=0; i<count; i++)
 				array[count-i-1] = elem[i].data;
 	}
-
-	// free memory
-	Memory.free(elem_copy);
-	Memory.free(elem);
 }
 
 unittest
