@@ -159,6 +159,6 @@ class Timer
 	
 	///
 	override string toString()
-	{	return std.string.format("%08d", tell());
+	{	return std.string.format("%08.8f", tell());
 	}
 }

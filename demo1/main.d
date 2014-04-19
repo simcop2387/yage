@@ -70,7 +70,7 @@ class DemoScene : Scene
 
 		// Lights
 		light = new LightNode(scene);
-		light.diffuse = "#fed";
+		light.diffuse = "#ffeedd";
 		light.setLightRadius(1000000);
 		light.setPosition(Vec3f(0, 0, -600000));
 		
@@ -88,7 +88,7 @@ class DemoScene : Scene
 		moon = new ModelNode("space/planet.dae", planet);
 		auto moonMaterial = new Material(true);
 		auto pass = moonMaterial.getPass();
-		pass.ambient = "#fff";
+		pass.ambient = "#ffffff";
 		pass.textures = [
 			TextureInstance(ResourceManager.texture("space/rocky2.jpg")),
 			TextureInstance(ResourceManager.texture("space/rocky2-normal.jpg", Texture.Format.AUTO_UNCOMPRESSED))
