@@ -14,6 +14,7 @@
  * int[] numbers = [0, 1, 2];
  * numbers.remove(0); // numbers is now [0, 1];
  */
+
 module yage.core.array;
 
 import tango.core.Traits;
