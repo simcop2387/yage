@@ -24,7 +24,6 @@ import yage.core.cache;
 import yage.core.color;
 import yage.core.math.math;
 import yage.core.math.vector;
-import yage.core.memory;
 import yage.core.object2;
 import yage.core.types;
 import yage.resource.font;
@@ -678,7 +677,7 @@ private struct HtmlParser
 	 */
 	static void htmlToLetters(string htmlText, InlineStyle style, ref ArrayBuilder!(Letter) letters, ref ArrayBuilder!(InlineStyle) styles)
 	{
-		char[] lookaside = Memory.allocate!(char)(htmlText.length+13); // +13 for <span></span> that surrounds it
+		char[] lookaside = new char[htmlText.length + 13]; // +13 for <span></span> that surrounds it
 		htmlText = htmlToAscii(htmlText.dup, lookaside.dup).dup;
 		
 		// Convert xml document to an array of zero-deth nodes.
@@ -688,7 +687,7 @@ private struct HtmlParser
 		} catch (Exception e)
 		{	throw new XHTMLException("Unable to parse xhtml:  {}", htmlText);
 		} finally {
-			Memory.free(lookaside);
+			delete lookaside;
 		}
 
 		htmlNodeToLetters(doc.query.nodes[0], style, letters, styles);

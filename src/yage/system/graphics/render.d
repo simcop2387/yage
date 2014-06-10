@@ -367,7 +367,7 @@ struct Render
 			Vec3f[] normals = cast(Vec3f[])geometry.getAttribute(Geometry.NORMALS);
 			Vec3f[] tangents = cast(Vec3f[])geometry.getAttribute(Geometry.TEXCOORDS1);
 			
-			Vec3f[] lines = Memory.allocate!(Vec3f)(vertices.length * 2);
+			Vec3f[] lines = new Vec3f[vertices.length * 2];
 			scope VertexBuffer vb = new VertexBuffer();
 			
 			if (tangents.length && geometry.drawTangents)
@@ -395,7 +395,7 @@ struct Render
 				graphics.drawPolygons(vb, Mesh.LINES, false);
 			}
 			
-			Memory.free(lines);
+			delete lines;
 		}
 		
 		return result;
@@ -447,8 +447,8 @@ struct Render
 				pass.lighting = false;
 				pass.depthRead = false;
 				
-				Vec3f[] points = Memory.allocate!(Vec3f)(model.joints.length);
-				Vec3f[] lines = Memory.allocate!(Vec3f)(model.joints.length*2);
+				Vec3f[] points = new Vec3f[model.joints.length];
+				Vec3f[] lines = new Vec3f[model.joints.length * 2];
 				int lineIndex;
 				foreach (i, joint; model.joints)			
 				{	points[i] = joint.absolute.getPosition();
@@ -478,8 +478,8 @@ struct Render
 				vb.setData(lines);
 				graphics.drawPolygons(vb, Mesh.LINES, false);
 
-				Memory.free(lines);
-				Memory.free(points);
+				delete lines;
+				delete points;
 			}
 		}
 	

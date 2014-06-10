@@ -552,7 +552,7 @@ class OpenGL : GraphicsAPI
 			{	uint GL_TEXTUREI_ARB = cast(uint)(GL_TEXTURE0+i);
 
 				// Activate texture unit and enable texturing
-				glActiveTexture(GL_TEXTUREI_ARB);
+				//glActiveTexture(GL_TEXTUREI_ARB); // FIXME this is crashing the program
 			}
 
 			glLoadIdentity();
@@ -788,7 +788,7 @@ class OpenGL : GraphicsAPI
 		{
 			if (maxLength > 1) // if multitexturing is supported.
 			{	int GL_TEXTUREI_ARB = cast(int) (GL_TEXTURE0+i);
-				glActiveTexture(GL_TEXTUREI_ARB);
+				//glActiveTexture(GL_TEXTUREI_ARB);
 			}
 
 			glDisable(GL_TEXTURE_GEN_S);

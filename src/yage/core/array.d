@@ -20,7 +20,6 @@ module yage.core.array;
 import tango.core.Traits;
 import tango.math.Math;
 import yage.core.math.math;
-import yage.core.memory;
 import yage.core.types;
 import yage.core.timer;
 
