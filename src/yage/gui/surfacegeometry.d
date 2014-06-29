@@ -12,6 +12,8 @@ import yage.resource.graphics.geometry;
 import yage.resource.graphics.material;
 import yage.system.log;
 
+import gfm.math.vector;
+
 /**
  * SurfaceGeometry defines vertices and meshes for drawing a surface, including borders/border textures.
  * The vertices and triangles are laid out in a 4x4 grid in column-major order, just like the 4x4 matrices.
@@ -47,8 +49,8 @@ import yage.system.log;
  */
 package class SurfaceGeometry : Geometry
 {
-	Vec2f[] vertices;
-	Vec2f[] texcoords;
+	vec2f[] vertices;
+	vec2f[] texcoords;
 	
 	private Geometry clipGeometry;
 	
@@ -184,8 +186,8 @@ package class SurfaceGeometry : Geometry
 	 *     dimensions = Used to set the width and the height in pixels
 	 *     borders = Used to set the size of each border in pixels (top, right, bottom, left) 
 	 *     padding = Used to se the size of teh padding in pixels (top, right, bottom, left)*/
-	void setDimensions(Vec2f dimensions, Vec4f borders, Vec4f padding /*, Vec2f backgroundPosition, ubyte backgroundRepeatX, ubyte backgroundRepeatY*/)
-	{	Vec2f[] vertices = cast(Vec2f[])(getAttribute(Geometry.VERTICES));
+	void setDimensions(vec2f dimensions, vec4f borders, vec4f padding /*, Vec2f backgroundPosition, ubyte backgroundRepeatX, ubyte backgroundRepeatY*/)
+	{	vec2f[] vertices = cast(vec2f[])(getAttribute(Geometry.VERTICES));
 		
 		// This also positions the quad for mesh backgroundColor.
 	

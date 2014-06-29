@@ -26,6 +26,8 @@ import yage.system.log;
 import yage.system.sound.openal;
 import yage.resource.sound;
 
+import gfm.math.vector;
+
 // Not defined in derelict yet
 private {
 	const int ALC_MONO_SOURCES   = 0x1010;
@@ -49,8 +51,8 @@ private class SoundSource : IDisposable
 	protected float	radius;			// The radius of the Sound that plays.
 	protected float	volume;	
 	protected bool	looping = false;
-	protected Vec3f position;
-	protected Vec3f velocity;
+	protected vec3f position;
+	protected vec3f velocity;
 	
 	protected ulong	size;			// number of buffers that we use at one time, either sounds' buffers per second, 
 									// or less if the sound is less than one second long.

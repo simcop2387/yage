@@ -13,6 +13,6 @@ public
 	import yage.core.math.matrix;
 	import yage.core.math.plane;
 	import yage.core.math.quatrn;
-	import yage.core.math.vector;
+//	import yage.core.math.vector;
 }
 

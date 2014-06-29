@@ -13,6 +13,7 @@ import yage.core.tree;
 import yage.scene.scene;
 import yage.scene.all;
 import yage.system.log;
+import gfm.math.vector;
 
 /**
  * Nodes are used for building scene graphs in Yage.
@@ -35,10 +36,10 @@ import yage.system.log;
  *
  * SpriteNode b = new SpriteNode(a); // b is a child of a, therefore,
  * b.setPosition(5, 0, 0);           // its positoin and rotation are relative to a's.
- * b.getWorldPosition();             // Returns Vec3f(-2, 5, 0), b's position relative to the origin.
+ * b.getWorldPosition();             // Returns vec3f(-2, 5, 0), b's position relative to the origin.
  *
  * s.addChild(b);                    // b is now a child of s.
- * b.getWorldPosition();             // Returns Vec3f(5, 0, 0), since it's position is relative
+ * b.getWorldPosition();             // Returns vec3f(5, 0, 0), since it's position is relative
  *                                   // to 0, 0, 0, instead of a.
  * --------
  */
@@ -159,11 +160,11 @@ class Node : Tree!(Node), IDisposable
 	
 	/**
 	 * Get / set the xyz position of this Node relative to its parent's position. */
-	Vec3f getPosition()
+	vec3f getPosition()
 	{	
 		return transform.position;
 	}	
-	void setPosition(Vec3f position) /// ditto
+	void setPosition(vec3f position) /// ditto
 	{	
 		setWorldDirty();
 		transform.position = position;
@@ -171,7 +172,7 @@ class Node : Tree!(Node), IDisposable
 	
 	/**
 	 * Get / set the rotation of this Node (as an axis-angle vector) relative to its parent's rotation. */
-	Vec3f getRotation()
+	vec3f getRotation()
 	{	
 		return transform.rotation.toAxis();
 	}
@@ -179,7 +180,7 @@ class Node : Tree!(Node), IDisposable
 	{	
 		return transform.rotation;
 	}
-	void setRotation(Vec3f axisAngle) /// ditto
+	void setRotation(vec3f axisAngle) /// ditto
 	{	
 		setWorldDirty();
 		transform.rotation = axisAngle.toQuatrn();
@@ -193,11 +194,11 @@ class Node : Tree!(Node), IDisposable
 	
 	/**
 	 * Get / set the xyz scale of this Node relative to its parent's scale. */
-	Vec3f getScale()
+	vec3f getScale()
 	{	
 		return transform.scale;
 	}	
-	void setScale(Vec3f scale) /// ditto
+	void setScale(vec3f scale) /// ditto
 	{	
 		setWorldDirty();
 		transform.scale = scale;
@@ -206,14 +207,14 @@ class Node : Tree!(Node), IDisposable
 	
 	/**
 	 * Get / set the linear velocity this Node relative to its parent's velocity. */
-	Vec3f getVelocity()
+	vec3f getVelocity()
 	{	
 		if (scene)
 			return transform.velocityDelta/scene.increment;
 		else
 			return transform.velocityDelta;
 	}	
-	void setVelocity(Vec3f velocity) /// ditto
+	void setVelocity(vec3f velocity) /// ditto
 	{	
 		if (scene)		
 			transform.velocityDelta = velocity*scene.increment;
@@ -223,11 +224,11 @@ class Node : Tree!(Node), IDisposable
 	
 	/**
 	 * Get / set the angular (rotation) velocity this Node relative to its parent's velocity. */
-	Vec3f getAngularVelocity()
+	vec3f getAngularVelocity()
 	{	
 		return transform.angularVelocity;
 	}	
-	void setAngularVelocity(Vec3f axisAngle) /// ditto
+	void setAngularVelocity(vec3f axisAngle) /// ditto
 	{			
 		transform.angularVelocity = axisAngle;
 		if (scene)
@@ -237,22 +238,22 @@ class Node : Tree!(Node), IDisposable
 	}
 	unittest
 	{	Node n = new Node();
-		Vec3f av1 = Vec3f(-.5, .5, 1);
+		vec3f av1 = vec3f(-.5, .5, 1);
 		n.setAngularVelocity(av1);
-		Vec3f av2 = n.getAngularVelocity();
+		vec3f av2 = n.getAngularVelocity();
 		assert(av1.almostEqual(av2), format("%s", av2.v));
 	}
 	
 	/**
 	 * Get the position, axis-angle rotation, or scale in world coordinates, 
 	 * instead of relative to the parent Node. */
-	Vec3f getWorldPosition()
+	vec3f getWorldPosition()
 	{	
 		if (transform.worldDirty) // makes it faster.
 			calcWorld();
 		return transform.worldPosition; // TODO: optimize
 	}
-	Vec3f getWorldRotation() /// ditto
+	vec3f getWorldRotation() /// ditto
 	{	
 		calcWorld();
 		return transform.worldRotation.toAxis();
@@ -262,14 +263,14 @@ class Node : Tree!(Node), IDisposable
 		calcWorld();
 		return transform.worldRotation;
 	}
-	Vec3f getWorldScale() /// ditto
+	vec3f getWorldScale() /// ditto
 	{	
 		calcWorld();
 		return transform.worldScale;
 	}
 	
 	/// Bug:  Doesn't take parent's rotation or scale into account
-	Vec3f getWorldVelocity()
+	vec3f getWorldVelocity()
 	{	
 		calcWorld();
 		if (parent)
@@ -297,14 +298,14 @@ class Node : Tree!(Node), IDisposable
 	}
 
 	///
-	void move(Vec3f amount)
+	void move(vec3f amount)
 	{	
 		transform.position += amount;
 		setWorldDirty();
 	}
 
 	///
-	void rotate(Vec3f axisAngle)
+	void rotate(vec3f axisAngle)
 	{	
 		transform.rotation = transform.rotation*axisAngle.toQuatrn(); 
 		setWorldDirty();
@@ -318,7 +319,7 @@ class Node : Tree!(Node), IDisposable
 	}
 
 	///
-	void accelerate(Vec3f amount)
+	void accelerate(vec3f amount)
 	{	
 		if (scene)
 			transform.velocityDelta += amount*scene.increment;
@@ -327,16 +328,16 @@ class Node : Tree!(Node), IDisposable
 	}
 	
 	///
-	void angularAccelerate(Vec3f axisAngle)
+	void angularAccelerate(vec3f axisAngle)
 	{	// // already present in called function
 		setAngularVelocity(transform.angularVelocity.combineRotation(axisAngle)); // TODO: Is this clamped to -PI to PI?
 	}
 	unittest
 	{	Node n = new Node();
-		Vec3f av = Vec3f(-.5, .5, 1);
+		vec3f av = vec3f(-.5, .5, 1);
 		n.setAngularVelocity(av);
 		n.angularAccelerate(av);
-		Vec3f av2 = n.getAngularVelocity();
+		vec3f av2 = n.getAngularVelocity();
 		assert(av2.almostEqual(av*2), format("%s", av2.v));
 	}
 	
@@ -396,17 +397,17 @@ class Node : Tree!(Node), IDisposable
 	unittest
 	{
 		Node a = new Node();
-		a.setPosition(Vec3f(3, 0, 0));
-		a.setRotation(Vec3f(0, 3.1415927, 0));
+		a.setPosition(vec3f(3, 0, 0));
+		a.setRotation(vec3f(0, 3.1415927, 0));
 
 		Node b = new Node(a);
-		b.setPosition(Vec3f(5, 0, 0));
+		b.setPosition(vec3f(5, 0, 0));
 		auto bw = b.getWorldPosition();
-		assert(bw.almostEqual(Vec3f(-2, 0, 0)), format("%s", bw.v));
+		assert(bw.almostEqual(vec3f(-2, 0, 0)), format("%s", bw.v));
 
-		a.setScale(Vec3f(2, 2, 2));
+		a.setScale(vec3f(2, 2, 2));
 		bw = b.getWorldPosition();
-		assert(bw.almostEqual(Vec3f(-7, 0, 0)), format("%s", bw.v));
+		assert(bw.almostEqual(vec3f(-7, 0, 0)), format("%s", bw.v));
 	}
 	
 	/*
@@ -476,17 +477,17 @@ class Node : Tree!(Node), IDisposable
 	 * A node's transformation values are stored in a consecutive array in its scene, for better cache performance
 	 * Or if, it has no scene, this structure is allocated on the heap. */
 	struct Transform
-	{	Vec3f position;
+	{	vec3f position;
 		Quatrn rotation;
-		Vec3f scale = Vec3f.ONE;
+		vec3f scale = vec3f(1.0, 1.0, 1.0);
 
-		Vec3f velocityDelta;	// Velocity times the scene increment, for faster updating.
-		Vec3f angularVelocity;	// Stored as a vector to allow storing rotations beyond -PI to PI
+		vec3f velocityDelta;	// Velocity times the scene increment, for faster updating.
+		vec3f angularVelocity;	// Stored as a vector to allow storing rotations beyond -PI to PI
 		Quatrn angularVelocityDelta; // Stored as a quaternion for faster updating.
 
-		Vec3f worldPosition;
+		vec3f worldPosition;
 		Quatrn worldRotation;
-		Vec3f worldScale = Vec3f.ONE;
+		vec3f worldScale = vec3f(1.0, 1.0, 1.0);
 
 		float cullRadius=0;	// TODO: unionize these with the vectors above for tighter packing once we switch to simd.
 		bool worldDirty = true;

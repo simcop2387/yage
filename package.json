@@ -4,13 +4,14 @@
   "copyright": "Copyright © 2014 Various",
   "authors": ["ryan", "various"],
   "dependencies": {
-    "derelict-ft": "~master",
-    "derelict-ogg": "~master",
-    "derelict-gl3": "~master",
-    "derelict-sdl2": "~master",
+    "gfm:core": ">=1.1.4",
+    "gfm:math": ">=1.0.0",
+    "gfm:opengl": ">=1.0.0",
+    "gfm:sdl2": ">=1.0.0",
+    "derelict-al": "*",
+    "derelict-vorbis": "*",
+    "derelict-ft": "*",
     "derelict-util": ">=1.0.0",
-    "derelict-al": "~master",
-    "derelict-vorbis": "~master",
     "tango": "~d2port"
   },
   "subPackages": [
@@ -20,13 +21,6 @@
       "sourcePaths": ["demo1/"],
       "importPaths": ["demo1/"],
       "dependencies": {
-        "derelict-ft": "~master",
-        "derelict-ogg": "~master",
-        "derelict-gl3": "~master",
-        "derelict-sdl2": "~master",
-        "derelict-util": ">=1.0.0",
-        "derelict-al": "~master",
-        "derelict-vorbis": "~master",
         "tango": "~d2port",
         "yage": "~master"
       },
@@ -37,13 +31,6 @@
       "sourcePaths": ["demo2/"],
       "importPaths": ["demo2/"],
       "dependencies": {
-        "derelict-ft": "~master",
-        "derelict-ogg": "~master",
-        "derelict-gl3": "~master",
-        "derelict-sdl2": "~master",
-        "derelict-util": ">=1.0.0",
-        "derelict-al": "~master",
-        "derelict-vorbis": "~master",
         "tango": "~d2port",
         "yage": "~master"
       },
@@ -54,13 +41,6 @@
       "sourcePaths": ["demo3/"],
       "importPaths": ["demo3/"],
       "dependencies": {
-        "derelict-ft": "~master",
-        "derelict-ogg": "~master",
-        "derelict-gl3": "~master",
-        "derelict-sdl2": "~master",
-        "derelict-util": ">=1.0.0",
-        "derelict-al": "~master",
-        "derelict-vorbis": "~master",
         "tango": "~d2port",
         "yage": "~master"
       },

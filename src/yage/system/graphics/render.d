@@ -30,6 +30,7 @@ import yage.system.graphics.probe;
 import yage.system.graphics.api;
 import yage.system.graphics.opengl;
 import yage.system.log;
+import gfm.math.vector;
 
 private struct AlphaTriangle
 {	Geometry geometry;
@@ -38,9 +39,9 @@ private struct AlphaTriangle
 	Matrix matrix;
 	LightNode[] lights;	
 	ulong triangle;	
-	Vec3f[3] vertices;	
+	vec3f[3] vertices;	
 	
-	static AlphaTriangle opCall(Geometry geometry, Mesh mesh, Material material, Matrix matrix, LightNode[] lights, ulong triangle, Vec3f[3] vertices)
+	static AlphaTriangle opCall(Geometry geometry, Mesh mesh, Material material, Matrix matrix, LightNode[] lights, ulong triangle, vec3f[3] vertices)
 	{	AlphaTriangle result = {geometry, mesh, material, matrix, lights, triangle, vertices};
 		return result;		
 	}
@@ -95,7 +96,7 @@ struct Render
 		bool hasBump;
 	}
 	protected static Shader[ShaderParams] generatedShaders;
-	protected static ArrayBuilder!(ShaderUniform) uniformsLookaside; // TODO: Can we use Memory.allocate instead?
+	protected static ArrayBuilder!(ShaderUniform) uniformsLookaside;
 	protected static bool[MaterialTechnique] failedTechniques;
 	protected static SDL_Window *sdlWindow;
 

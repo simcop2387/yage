@@ -156,11 +156,11 @@ class OpenGL : GraphicsAPI
 
 			// Light material properties
 			if (currentLight.ambient != light.ambient)
-				glLightfv(cast(uint)(GL_LIGHT0+num), GL_AMBIENT, light.ambient.vec4f.ptr);
+				glLightfv(cast(uint)(GL_LIGHT0+num), GL_AMBIENT, light.ambient.asVec4f.ptr);
 			if (currentLight.diffuse != light.diffuse)
-				glLightfv(cast(uint)(GL_LIGHT0+num), GL_DIFFUSE, light.diffuse.vec4f.ptr);
+				glLightfv(cast(uint)(GL_LIGHT0+num), GL_DIFFUSE, light.diffuse.asVec4f.ptr);
 			if (currentLight.specular != light.specular)
-				glLightfv(cast(uint)(GL_LIGHT0+num), GL_SPECULAR, light.specular.vec4f.ptr);
+				glLightfv(cast(uint)(GL_LIGHT0+num), GL_SPECULAR, light.specular.asVec4f.ptr);
 
 			// Attenuation properties TODO: only need to do this once per light
 			if (currentLight.quadAttenuation != light.quadAttenuation)
@@ -237,10 +237,10 @@ class OpenGL : GraphicsAPI
 		if (pass !is current.pass)
 		{	if (pass.lighting)
 			{	glEnable(GL_LIGHTING);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, pass.ambient.vec4f.ptr);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, pass.diffuse.vec4f.ptr);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, pass.specular.vec4f.ptr);
-				glMaterialfv(GL_FRONT, GL_EMISSION, pass.emissive.vec4f.ptr);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, pass.ambient.asVec4f.ptr);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, pass.diffuse.asVec4f.ptr);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, pass.specular.asVec4f.ptr);
+				glMaterialfv(GL_FRONT, GL_EMISSION, pass.emissive.asVec4f.ptr);
 				glMaterialfv(GL_FRONT, GL_SHININESS, &pass.shininess);
 				glColor4f(1, 1, 1, 1);
 			} else
@@ -251,7 +251,7 @@ class OpenGL : GraphicsAPI
 				glMaterialfv(GL_FRONT, GL_EMISSION, Vec4f().v.ptr);
 				float s=0;
 				glMaterialfv(GL_FRONT, GL_SHININESS, &s);
-				glColor4fv(pass.diffuse.vec4f.ptr);
+				glColor4fv(pass.diffuse.asVec4f.ptr);
 			}
 
 			// Blend
@@ -423,23 +423,23 @@ class OpenGL : GraphicsAPI
 	{	if (scene !is current.scene)
 		{	if (scene)
 			{	if (scene.fogEnabled)
-				{	glFogfv(GL_FOG_COLOR, scene.fogColor.vec4f.ptr);
+				{	glFogfv(GL_FOG_COLOR, scene.fogColor.asVec4f.ptr);
 					glFogf(GL_FOG_DENSITY, scene.fogDensity);
 					glEnable(GL_FOG);
 				} else
 					glDisable(GL_FOG);
 
-				Vec4f color = scene.backgroundColor.vec4f;
+				vec4f color = scene.backgroundColor.asVec4f;
 				glClearColor(color.x, color.y, color.z, color.w);
-				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, scene.ambient.vec4f.ptr);
+				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, scene.ambient.asVec4f.ptr);
 
 			} else
-			{	glFogfv(GL_FOG_COLOR, Vec4f(0).ptr);
+			{	glFogfv(GL_FOG_COLOR, vec4f(0).ptr);
 				glFogf(GL_FOG_DENSITY, 1);
 				glDisable(GL_FOG);
 
 				glClearColor(0, 0, 0, 0);
-				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, Vec4f(.2, .2, .2, 1).ptr);
+				glLightModelfv(GL_LIGHT_MODEL_AMBIENT, vec4f(.2, .2, .2, 1).ptr);
 		}	}
 		current.scene = scene;
 	}
@@ -841,7 +841,7 @@ class OpenGL : GraphicsAPI
 				// Get a new OpenGL buffer if there isn't one assigned yet.
 				ResourceInfo info = ResourceInfo.getOrCreate(vb, vbos);
 				if (!info.id)
-				{	glGenBuffers(1, &info.id);
+				{       glGenBuffers(1, &info.id);
 					vb.dirty = true;
 				}
 				// Bind buffer and update with new data if necessary.
