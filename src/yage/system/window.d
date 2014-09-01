@@ -15,6 +15,7 @@ import derelict.opengl3.ext;
 import derelict.util.exception;
 import derelict.sdl2.sdl;
 import derelict.sdl2.image;
+import derelict.sdl2.types;
 import yage.gui.surface;
 
 import yage.core.all;
@@ -57,6 +58,7 @@ class Window : IRenderTarget
 
 	protected SDL_Window* sdlWindow;
         protected SDL_Surface* sdlSurface;
+        protected SDL_GLContext mainGLContext;
 	protected Vec2ul size; // size of the window
 	protected Vec2i viewportPosition;
 	protected Vec2i viewportSize;
@@ -173,6 +175,9 @@ class Window : IRenderTarget
                                       flags); // TODO depth, is no longer an option.
 		
 		sdlSurface = SDL_GetWindowSurface(sdlWindow);
+                mainGLContext = SDL_GL_CreateContext(sdlWindow);
+		
+		DerelictGL.reload();
 		
 		if(sdlSurface is null)
 			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
