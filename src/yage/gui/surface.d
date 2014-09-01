@@ -291,7 +291,7 @@ class Surface : Tree!(Surface)
 		// Search self
 		vec2f[4] polygon;
 		getPolygon(polygon);
-		bool inside = yage.core.math.vec.inside(xy, polygon);
+		bool inside = xy.inside(polygon);
 
 		// Search children before self
 		if (useMouseChildren && mouseChildren)
@@ -414,7 +414,7 @@ class Surface : Tree!(Surface)
 		{	// TODO reimplement this
 		        // SDL_WM_GrabInput(SDL_GRAB_OFF);			
 			grabbedSurface = null; // [below] Move mouse back to pre-grabbed position
-			vec2i globalMouse = localToGlobal(vec2f(mouseX, mouseY)).vec2i;
+			Vec2i globalMouse = localToGlobal(vec2f(mouseX, mouseY)).vec2i;
 			// SDL_WarpMouse(globalMouse.x, globalMouse.y);
 		}		
 	}
@@ -527,7 +527,7 @@ class Surface : Tree!(Surface)
 		vec4f dimension = vec4f(top(), right(), bottom(), left());
 		
 		// Get a bounding box that surrounds the transformed surface
-		vec4f bounds = vec4f(float.infinity, -float.infinity, -float.infinity, float.infinity);
+		vec4fn bounds = vec4fn(float.infinity, -float.infinity, -float.infinity, float.infinity);
 		if (constrain)
 		{
 			Vec!(2, float, false)[4] polygon;

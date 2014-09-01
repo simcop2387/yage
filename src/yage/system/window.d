@@ -56,7 +56,6 @@ class Window : IRenderTarget
 	}
 
 	protected SDL_Window* sdlWindow;
-	protected SDL_GLContext mainGLContext;
         protected SDL_Surface* sdlSurface;
 	protected Vec2ul size; // size of the window
 	protected Vec2i viewportPosition;
@@ -174,7 +173,6 @@ class Window : IRenderTarget
                                       flags); // TODO depth, is no longer an option.
 		
 		sdlSurface = SDL_GetWindowSurface(sdlWindow);
-                mainGLContext = SDL_GL_CreateContext(sdlWindow);
 		
 		if(sdlSurface is null)
 			throw new YageException("Unable to set %dx%d video mode: %s ", size.x, size.y, SDL_GetError());
