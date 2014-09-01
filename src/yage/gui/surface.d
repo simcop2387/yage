@@ -26,7 +26,6 @@ import yage.gui.surfacegeometry;
 
 // For initializing freetype for unit tests
 import yage.system.libraries;
-import gfm.math.vector;
 
 /** 
  * Surfaces are similar to HTML DOM elements, including having text inside it, 
@@ -51,7 +50,7 @@ class Surface : Tree!(Surface)
 	bool multiLine = true; /// TODO
 	bool mouseChildren = true; /// Allow the mouse to interact with this Surface's children.
 	union {
-		vec2f mouse;
+		Vec2f mouse;
 		struct {
 			float mouseX, mouseY;	/// Current position of the mouse cursor.  (Read-only for now)
 		}
@@ -60,8 +59,8 @@ class Surface : Tree!(Surface)
 	/// Callback functions
 	void delegate() onBlur; ///
 	void delegate() onFocus; ///
-	void delegate(Input.MouseButton button, vec2f coordinates) onClick; /// When a mouse button is pressed and released without moving the mouse.
-	void delegate(Input.MouseButton button, vec2f coordinates) onDblCick; /// TODO unfinished
+	void delegate(Input.MouseButton button, Vec2f coordinates) onClick; /// When a mouse button is pressed and released without moving the mouse.
+	void delegate(Input.MouseButton button, Vec2f coordinates) onDblCick; /// TODO unfinished
 	void delegate(int key, int modifier) onKeyDown; /// Triggered once when a key is pressed down
 	void delegate(int key, int modifier) onKeyUp; /// Triggered once when a key is released
 	
@@ -69,9 +68,9 @@ class Surface : Tree!(Surface)
 	 * Triggered when a key is pressed down and repeats at Input's key repeat rates.
 	 * Unlike onKeyDown and onKeyUp, key is the unicode value of the key press, instead of the sdl key code. */
 	void delegate(dchar key, int modifier) onKeyPress; 
-	void delegate(Input.MouseButton button, vec2f coordinates) onMouseDown; ///
-	void delegate(Input.MouseButton button, vec2f coordinates) onMouseUp; ///
-	void delegate(vec2f amount) onMouseMove; ///
+	void delegate(Input.MouseButton button, Vec2f coordinates) onMouseDown; ///
+	void delegate(Input.MouseButton button, Vec2f coordinates) onMouseUp; ///
+	void delegate(Vec2f amount) onMouseMove; ///
 	void delegate() onMouseOver; /// TODO: send surface the mouse went to?
 	void delegate(Surface next) onMouseOut; ///
 	void delegate() onResize; ///
@@ -81,9 +80,9 @@ class Surface : Tree!(Surface)
 	protected bool mouseIn; 		// used to track mouseover/mouseout
 	protected bool mouseMoved;		// used for click() event, has the mouse exited this surface since being pressed?
 	protected bool textDirty = true;
-	protected vec4f oldBorder, oldPadding;
-	protected vec2f oldSize; // Used to see if dimensions have changed.
-	protected vec2f parent_size;		// Used for size if no parent
+	protected Vec4f oldBorder, oldPadding;
+	protected Vec2f oldSize; // Used to see if dimensions have changed.
+	protected Vec2f parent_size;		// Used for size if no parent
 	
 	protected SurfaceGeometry geometry; // geometry used to render this surface
 		
@@ -283,13 +282,13 @@ class Surface : Tree!(Surface)
 	 *     useMouseChildren = If true (the default), and a surface has mouseChildren=false, 
 	 *         the children will not be searched.
 	 * Returns: The surface at the coordinates (may be self), or null if coordinates are outside of this surface. */
-	Surface findSurface(vec2f xy, bool useMouseChildren=true)
+	Surface findSurface(Vec2f xy, bool useMouseChildren=true)
 	{	
 		if (!style.display)
 			return null;
 		
 		// Search self
-		vec2f[4] polygon;
+		Vec2f[4] polygon;
 		getPolygon(polygon);
 		bool inside = xy.inside(polygon);
 
@@ -320,11 +319,11 @@ class Surface : Tree!(Surface)
 		/*
 		a.update(); // calls TextBlock.update and loads the font.  We don't want to do this in a unittest.
 		
-		assert(a.findSurface(vec2f(3, 3)) is a);
-		assert(a.findSurface(vec2f(8, 3)) is a);
-		assert(a.findSurface(vec2f(8, 8)) is b);
-		assert(a.findSurface(vec2f(38, 38)) is c);
-		assert(a.findSurface(vec2f(180, 180)) is d);	
+		assert(a.findSurface(Vec2f(3, 3)) is a);
+		assert(a.findSurface(Vec2f(8, 3)) is a);
+		assert(a.findSurface(Vec2f(8, 8)) is b);
+		assert(a.findSurface(Vec2f(38, 38)) is c);
+		assert(a.findSurface(Vec2f(180, 180)) is d);	
 		*/
 	}
 	
@@ -347,13 +346,13 @@ class Surface : Tree!(Surface)
 		// Dimensional properties:
 		
 		// Convert all sizes to pixels
-		vec2f parent_size = parentSize();
+		Vec2f parent_size = parentSize();
 		cs.width = width();
 		cs.height = height();
 		cs.top = top();
 		cs.left = left();
 		
-		vec4f e = extra(); // border + padding in pixels
+		Vec4f e = extra(); // border + padding in pixels
 		if (isNaN(cs.bottom.value))
 			cs.bottom.value = parent_size.y - cs.top.value - cs.height.value - e.top - e.bottom;
 		if (isNaN(cs.right.value))
@@ -372,23 +371,23 @@ class Surface : Tree!(Surface)
 	 * Get a 4-sided polygon of the outline of this surface, after all styles and the transformation are applied.
 	 * Coordinates are relative to the parent Surface.
 	 * Params:
-	 *     polygon = A pointer to a vec2f[4] where the result will be stored and returned.  
+	 *     polygon = A pointer to a Vec2f[4] where the result will be stored and returned.  
 	 *         If null, new memory will be allocated. 
 	 * Returns:
 	 *     A polygon in the parent's coordinate system. */
-	vec2f[] getPolygon(vec2f[] polygon=null)
+	Vec2f[] getPolygon(Vec2f[] polygon=null)
 	{	if (polygon.length < 4)
-			polygon = new vec2f[4];
+			polygon = new Vec2f[4];
 	
-		vec2f parentSize = parentSize();
+		Vec2f parentSize = parentSize();
 		float top = extraTop();
 		float left = extraLeft();
-		vec2f size = vec2f(outerWidth(), outerHeight());
+		Vec2f size = Vec2f(outerWidth(), outerHeight());
 				
-		polygon[0] = localToParent(vec2f(-left, -top));			// top left
-		polygon[1] = localToParent(vec2f(size.x-left, -top));	// top right
-		polygon[2] = localToParent(vec2f(size.x-left, size.y-top));// bottom right
-		polygon[3] = localToParent(vec2f(-left, size.y-top));// bottom left
+		polygon[0] = localToParent(Vec2f(-left, -top));			// top left
+		polygon[1] = localToParent(Vec2f(size.x-left, -top));	// top right
+		polygon[2] = localToParent(Vec2f(size.x-left, size.y-top));// bottom right
+		polygon[3] = localToParent(Vec2f(-left, size.y-top));// bottom left
 		
 		// TODO: size may be null
 		debug foreach(p; polygon)
@@ -414,7 +413,7 @@ class Surface : Tree!(Surface)
 		{	// TODO reimplement this
 		        // SDL_WM_GrabInput(SDL_GRAB_OFF);			
 			grabbedSurface = null; // [below] Move mouse back to pre-grabbed position
-			Vec2i globalMouse = localToGlobal(vec2f(mouseX, mouseY)).vec2i;
+			Vec2i globalMouse = localToGlobal(Vec2f(mouseX, mouseY)).vec2i;
 			// SDL_WarpMouse(globalMouse.x, globalMouse.y);
 		}		
 	}
@@ -448,32 +447,32 @@ class Surface : Tree!(Surface)
 	 * Params:
 	 *     xy = Coordinates relative to the left side of the function name.
 	 * Returns: Coordinates relative to the right side of the function name. */
-	vec2f localToParent(vec2f xy)
+	Vec2f localToParent(Vec2f xy)
 	{	if (parent && style.transform != Matrix.IDENTITY)
 			xy = xy.vec3f.transform(style.transform).vec2f;
-		vec2f parent_size = parentSize();
-		xy += vec2f(left(), top());
-		xy += vec2f(
+		Vec2f parent_size = parentSize();
+		xy += Vec2f(left(), top());
+		xy += Vec2f(
 			style.borderLeftWidth.toPx(parent_size.x, false) + style.paddingLeft.toPx(parent_size.x, false),
 			style.borderTopWidth.toPx(parent_size.y, false) + style.paddingTop.toPx(parent_size.y, false));		
 		return xy;
 	}
-	vec2f localToGlobal(vec2f xy) /// ditto
+	Vec2f localToGlobal(Vec2f xy) /// ditto
 	{	if (parent)
 			return parent.localToGlobal(localToParent(xy));  // untested
 		return xy;
 	}
-	vec2f parentToLocal(vec2f xy) /// ditto
-	{	vec2f parent_size = parentSize();
-		xy -= vec2f(left(), top());
-		xy -= vec2f(
+	Vec2f parentToLocal(Vec2f xy) /// ditto
+	{	Vec2f parent_size = parentSize();
+		xy -= Vec2f(left(), top());
+		xy -= Vec2f(
 			style.borderLeftWidth.toPx(parent_size.x, false) + style.paddingLeft.toPx(parent_size.x, false),
 			style.borderTopWidth.toPx(parent_size.y, false) + style.paddingTop.toPx(parent_size.y, false));		
 		if (parent && style.transform != Matrix.IDENTITY)
 			return xy.vec3f.transform(style.transform.inverse()).vec2f; // TODO: this fails if there's non-z rotation		
 		return xy;
 	}
-	vec2f globalToLocal(vec2f xy) /// ditto
+	Vec2f globalToLocal(Vec2f xy) /// ditto
 	{	if (parent)
 			return parentToLocal(parent.globalToLocal(xy)); // untested
 		return xy;
@@ -486,20 +485,20 @@ class Surface : Tree!(Surface)
 		/*
 		a.update();
 		
-		assert(d.parentToLocal(vec2f(0, 140)) == vec2f(-140, 0));
+		assert(d.parentToLocal(Vec2f(0, 140)) == Vec2f(-140, 0));
 		
-		assert(a.globalToLocal(vec2f(0, 5)) == vec2f(0, 5));
-		assert(b.parentToLocal(vec2f(0, 5)) == vec2f(-5, 0));
-		assert(c.globalToLocal(vec2f(0, 34)) == vec2f(-34, 0));
-		assert(d.globalToLocal(vec2f(0, 174)) == vec2f(-174, 0));
+		assert(a.globalToLocal(Vec2f(0, 5)) == Vec2f(0, 5));
+		assert(b.parentToLocal(Vec2f(0, 5)) == Vec2f(-5, 0));
+		assert(c.globalToLocal(Vec2f(0, 34)) == Vec2f(-34, 0));
+		assert(d.globalToLocal(Vec2f(0, 174)) == Vec2f(-174, 0));
 		
-		assert(a.localToGlobal(vec2f(0, 5)) == vec2f(0, 5));
-		assert(b.localToGlobal(vec2f(-5, 0)) == vec2f(0, 5));
-		assert(c.localToGlobal(vec2f(0, 0)) == vec2f(34, 34));
-		assert(d.localToGlobal(vec2f(-174, 0)) == vec2f(0, 174));
+		assert(a.localToGlobal(Vec2f(0, 5)) == Vec2f(0, 5));
+		assert(b.localToGlobal(Vec2f(-5, 0)) == Vec2f(0, 5));
+		assert(c.localToGlobal(Vec2f(0, 0)) == Vec2f(34, 34));
+		assert(d.localToGlobal(Vec2f(-174, 0)) == Vec2f(0, 174));
 		
-		d.style.transform = d.style.transform.move(vec3f(20, 30, 0));
-		assert(d.localToGlobal(vec2f(-174, 0)) == vec2f(20, 204));
+		d.style.transform = d.style.transform.move(Vec3f(20, 30, 0));
+		assert(d.localToGlobal(Vec2f(-174, 0)) == Vec2f(20, 204));
 		*/
 	}
 	
@@ -520,14 +519,14 @@ class Surface : Tree!(Surface)
 	 * Params:
 	 *     amount = Amount to move the surface in pixels.
 	 *     constrain = Prevent this surface from going outside the boundaries of its parent.*/
-	void move(vec2f amount, bool constrain=false)
+	void move(Vec2f amount, bool constrain=false)
 	{	
 		// Get top, right, bottom, and left in terms of pixels, or nan.
-		vec2f parent_size = parentSize();	
-		vec4f dimension = vec4f(top(), right(), bottom(), left());
+		Vec2f parent_size = parentSize();	
+		Vec4f dimension = Vec4f(top(), right(), bottom(), left());
 		
 		// Get a bounding box that surrounds the transformed surface
-		vec4fn bounds = vec4fn(float.infinity, -float.infinity, -float.infinity, float.infinity);
+		Vec4fn bounds = Vec4fn(float.infinity, -float.infinity, -float.infinity, float.infinity);
 		if (constrain)
 		{
 			Vec!(2, float, false)[4] polygon;
@@ -579,15 +578,15 @@ class Surface : Tree!(Surface)
 	 * Update all of this Surface's dimensions, geometry, and children to prepare it for rendering.
 	 * Params:
 	 *     parentSize = If specified, this size will be used for the parent dimensions (and therefore percent calculations) */
-	void update(vec2f* parentSize = null)
+	void update(Vec2f* parentSize = null)
 	{	
 		// Get computed style
 		if (parentSize)
 			parent_size = *parentSize;
 		Style cs = getComputedStyle();		
-		vec4f border;
-		vec4f padding;
-		vec2f size = vec2f(cs.width.value, cs.height.value);
+		Vec4f border;
+		Vec4f padding;
+		Vec2f size = Vec2f(cs.width.value, cs.height.value);
 		for (int i=0; i<4; i++)
 		{	border[i] = cs.borderWidth[i].value;
 			padding[i] = cs.padding[i].value;
@@ -670,7 +669,7 @@ class Surface : Tree!(Surface)
 	 *     button = 
 	 *     coordinates = Coordinates relative to the Surface, with style.transform taken into account.
 	 *     allowFocus = Used internally to prevent focus from propagating updward */
-	void click(Input.MouseButton button, vec2f coordinates, bool allowFocus=true)
+	void click(Input.MouseButton button, Vec2f coordinates, bool allowFocus=true)
 	{	if (editable)
 		{	if (allowFocus && Surface.focusSurface !is this)
 		    	focus(); // give focus on click if editable not already focused.
@@ -743,7 +742,7 @@ class Surface : Tree!(Surface)
 	 * Params:
 	 *     button = Current state of the mouse buttons
 	 *     coordinates = Coordinates relative to the Surface, with style.transform taken into account. */
-	void mouseDown(Input.MouseButton button, vec2f coordinates) {
+	void mouseDown(Input.MouseButton button, Vec2f coordinates) {
 		mouseMoved = false;
 		if (parent) 
 		{	if (parent.onMouseDown)
@@ -760,7 +759,7 @@ class Surface : Tree!(Surface)
 	 *     button = Current state of the mouse buttons
 	 *     coordinates = Coordinates relative to the Surface, with style.transform taken into account. 
 	 *     allowClick = Used internally to prevent click event from propagating from here (it already propagates from click(). */
-	void mouseUp(Input.MouseButton button, vec2f coordinates, bool allowClick=true) { 		
+	void mouseUp(Input.MouseButton button, Vec2f coordinates, bool allowClick=true) { 		
 		if (!mouseMoved && allowClick) // trigger the click event if the mouse button went down and up without the mouse moving.
 		{	if (onClick)
 				onClick(button, coordinates);
@@ -778,7 +777,7 @@ class Surface : Tree!(Surface)
 	/**
 	 * Trigger a mouseMove event.  This is caulled automatically only if the onMouseMove callback isn't set.
 	 * By default, this will call the parent's mouseMove function.*/ 
-	void mouseMove(vec2f amount) {
+	void mouseMove(Vec2f amount) {
 		if( parent)
 		{	if (parent.onMouseMove)
 				parent.onMouseMove(amount);
@@ -884,9 +883,9 @@ class Surface : Tree!(Surface)
 	}
 	
 	// Get the amount of margin+padding on each side.
-	protected vec4f extra()
-	{	vec2f parent_size = parentSize();
-		return vec4f(
+	protected Vec4f extra()
+	{	Vec2f parent_size = parentSize();
+		return Vec4f(
 			style.paddingTop.toPx(parent_size.y, false) + style.borderTopWidth.toPx(parent_size.y, false),
 			style.paddingRight.toPx(parent_size.x, false) + style.borderRightWidth.toPx(parent_size.x, false),
 			style.paddingBottom.toPx(parent_size.y, false) + style.borderBottomWidth.toPx(parent_size.y, false),
@@ -912,9 +911,9 @@ class Surface : Tree!(Surface)
 	}
 	
 	// Get dimensions of this Surface's parent in pixels
-	protected vec2f parentSize()
+	protected Vec2f parentSize()
 	{	if (parent)
-			return vec2f(parent.width(), parent.height());
+			return Vec2f(parent.width(), parent.height());
 		return parent_size;
 	}
 }

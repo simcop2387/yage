@@ -15,7 +15,6 @@ import yage.scene.scene;
 import yage.system.graphics.probe;
 import yage.scene.camera;
 import yage.system.log;
-import gfm.math.vector;
 
 /**
  * LightNodes are Nodes that emit light.
@@ -59,7 +58,7 @@ class LightNode : Node
 	// properties I wish were private or would go away
 	public float quadAttenuation = 1.52e-5;	// (1/256)^2, radius of 256, arbitrary			
 	public int intensity; // Used internally as a temp variable to sort lights by intensity for each node.
-	public vec3f cameraSpacePosition; // Used internally to store the position in camera-space.
+	public Vec3f cameraSpacePosition; // Used internally to store the position in camera-space.
 
 	this()
 	{	// default constructor required for clone.
@@ -116,7 +115,7 @@ class LightNode : Node
 	 *         of that radius, instead of the default of a single point.  
 	 *         This is used internally for nodes that have a spotlight shine on one corner of them 
 	 *         but not at all at their center.*/
-	Color getBrightness(vec3f point, float margin=0.0)
+	Color getBrightness(Vec3f point, float margin=0.0)
 	{
 		// Directional lights are easy, since they don't depend on which way the light points
 		// or how far away the light is.

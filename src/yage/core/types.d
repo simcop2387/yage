@@ -9,6 +9,7 @@ module yage.core.types;
 import tango.stdc.string : memcpy;
 import tango.math.Math;
 import yage.core.math.math;
+import yage.core.math.vector:Vec4f;
 
 /**
  * Allow for easy bit-by-bit conversion from one two-byte type to another.

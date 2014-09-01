@@ -13,7 +13,7 @@ import tango.text.Ascii;
 import std.string;
 
 import yage.core.math.math;
-import gfm.math.vector;
+import yage.core.math.vector;
 import yage.core.types;
 import yage.core.object2;
 
@@ -109,10 +109,10 @@ struct Color
 			res.a = 255;
 		return res;
 	}
-	static Color opCall(vec3f v) /// ditto
+	static Color opCall(Vec3f v) /// ditto
 	{	return Color(v.v);
 	}
-	static Color opCall(vec4f v) /// ditto
+	static Color opCall(Vec4f v) /// ditto
 	{	return Color(v.v);
 	}
 	
@@ -237,15 +237,15 @@ struct Color
 	}
 	
 	/// Get the Color as a Vector
-	vec3f asVec3f()
-	{	vec3f res;
+	Vec3f vec3f()
+	{	Vec3f res;
 		res.v[0] = r * frac;
 		res.v[1] = g * frac;
 		res.v[2] = b * frac;
 		return res;
 	}
-	vec4f asVec4f() /// ditto
-	{	vec4f res;
+	Vec4f vec4f() /// ditto
+	{	Vec4f res;
 		res.v[0] = r * frac;
 		res.v[1] = g * frac;
 		res.v[2] = b * frac;
