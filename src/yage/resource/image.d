@@ -15,6 +15,8 @@ import derelict.sdl2.image;
 import yage.core.object2;
 import yage.core.color;
 
+import std.stdio;
+
 /**
  * A class for loading and manipulating images.
  * Supports loading images from any channels supported by SDL_Image.
@@ -99,11 +101,12 @@ class Image
 	{			
 		SDL_Surface *sdl_image;
 		char[] source = filename.dup; //toStringz(filename); // garbage
+		source ~= "\0";
 		scope(exit) delete source;
 		scope(exit) SDL_FreeSurface(sdl_image);
 		
 		// Attempt to load image
-		if ((sdl_image = IMG_Load(&source[0])) is null)
+		if ((sdl_image = IMG_Load(source.ptr)) is null)
 			throw new ResourceException("Could not open image file '%s'.", filename);		
 		width = sdl_image.w;
 		height = sdl_image.h;

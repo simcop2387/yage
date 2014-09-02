@@ -18,6 +18,8 @@ import yage.system.system;
 import yage.system.log;
 import std.string;
 
+import std.stdio;
+
 /**
  * An instance of a Texture.
  * This allows many options to be set per instance of a Texture instead of
